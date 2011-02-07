@@ -17,26 +17,18 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_ERROR_H
-#define __CPHVB_ERROR_H
+#include "svi.h"
+#include "util.h"
+#include <stdio.h>
 
-/* Error codes */
-typedef enum
+cphvb_error svi_get_array_pointer(cphvb_operand id, void** array)
 {
-    CPHVB_SUCCESS,
-    CPHVB_ERROR,
-    CPHVB_INST_ERROR,
-    CPHVB_INST_NOT_SUPPORTED,
-    CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-    CPHVB_TYPE_ERROR,
-    CPHVB_TYPE_NOT_SUPPORTED,
-    CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-    CPHVB_TYPE_COMBINATION_NOT_SUPPORTED,
-    CPHVB_OUT_OF_MEMORY,
-    CPHVB_RESULT_IS_CONSTANT,
-    CPHVB_OPERAND_UNKNOWN,
-    CPHVB_ALREADY_INITALIZED,
-    CPHVB_NOT_INITALIZED
-} cphvb_error ;
+    if (id > SVI_MAPSIZE-1)
+        return CPHVB_OPERAND_UNKNOWN;
+    *array = svi_operand_map[id];
+    if (*array == NULL)
+        return CPHVB_OPERAND_UNKNOWN;
+    
+    return CPHVB_SUCCESS;
+}
 
-#endif

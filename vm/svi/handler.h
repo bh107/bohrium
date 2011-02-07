@@ -17,26 +17,15 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_ERROR_H
-#define __CPHVB_ERROR_H
+#ifndef __SVI_HANDLER_H
+#define __SVI_HANDLER_H
+#include "svi.h"
 
-/* Error codes */
-typedef enum
-{
-    CPHVB_SUCCESS,
-    CPHVB_ERROR,
-    CPHVB_INST_ERROR,
-    CPHVB_INST_NOT_SUPPORTED,
-    CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-    CPHVB_TYPE_ERROR,
-    CPHVB_TYPE_NOT_SUPPORTED,
-    CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-    CPHVB_TYPE_COMBINATION_NOT_SUPPORTED,
-    CPHVB_OUT_OF_MEMORY,
-    CPHVB_RESULT_IS_CONSTANT,
-    CPHVB_OPERAND_UNKNOWN,
-    CPHVB_ALREADY_INITALIZED,
-    CPHVB_NOT_INITALIZED
-} cphvb_error ;
+cphvb_error svi_handle_add(cphvb_instruction*);
+cphvb_error svi_handle_malloc(cphvb_instruction*);
+cphvb_error svi_handle_free(cphvb_instruction*);
+cphvb_error svi_handle_read(cphvb_instruction*);
+
+cphvb_error svi_get_pointer(cphvb_operand, void**);
 
 #endif

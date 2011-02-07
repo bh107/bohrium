@@ -17,26 +17,31 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_ERROR_H
-#define __CPHVB_ERROR_H
+#ifndef __SVI_H
+#define __SVI_H
 
-/* Error codes */
-typedef enum
-{
-    CPHVB_SUCCESS,
-    CPHVB_ERROR,
-    CPHVB_INST_ERROR,
-    CPHVB_INST_NOT_SUPPORTED,
-    CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-    CPHVB_TYPE_ERROR,
-    CPHVB_TYPE_NOT_SUPPORTED,
-    CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-    CPHVB_TYPE_COMBINATION_NOT_SUPPORTED,
-    CPHVB_OUT_OF_MEMORY,
-    CPHVB_RESULT_IS_CONSTANT,
-    CPHVB_OPERAND_UNKNOWN,
-    CPHVB_ALREADY_INITALIZED,
-    CPHVB_NOT_INITALIZED
-} cphvb_error ;
+#include <cphvb.h>
+#include <cphvbutil.h>
+#include <stddef.h>
+
+#define SVI_MAPSIZE 128
+
+#define bool int
+#define FALSE 0
+#define TRUE (!FALSE)
+
+// Global array that maps cphvb_operand's to memory pointers
+void** svi_operand_map;
+
+typedef void (*svi_callback)(cphvb_int32 batch_id,
+                             cphvb_int32 instruction_count,
+                             cphvb_error error_code);
+
+
+cphvb_error svi_init(svi_callback callback);
+
+cphvb_error svi_execute(cphvb_int32 batch_id,
+                        cphvb_int32 instruction_count,
+                        char* instruction_pointer);
 
 #endif

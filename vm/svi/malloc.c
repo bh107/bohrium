@@ -17,26 +17,21 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_ERROR_H
-#define __CPHVB_ERROR_H
+#include "svi.h"
+#include "handler.h"
+#include "util.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-/* Error codes */
-typedef enum
+cphvb_error svi_handle_malloc(cphvb_instruction* inst)
 {
-    CPHVB_SUCCESS,
-    CPHVB_ERROR,
-    CPHVB_INST_ERROR,
-    CPHVB_INST_NOT_SUPPORTED,
-    CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-    CPHVB_TYPE_ERROR,
-    CPHVB_TYPE_NOT_SUPPORTED,
-    CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-    CPHVB_TYPE_COMBINATION_NOT_SUPPORTED,
-    CPHVB_OUT_OF_MEMORY,
-    CPHVB_RESULT_IS_CONSTANT,
-    CPHVB_OPERAND_UNKNOWN,
-    CPHVB_ALREADY_INITALIZED,
-    CPHVB_NOT_INITALIZED
-} cphvb_error ;
-
-#endif
+    if (inst->operand[0] > SVI_MAPSIZE-1)
+        return CPHVB_OPERAND_UNKNOWN;
+    size_t size = cphvb_nelements(inst->ndim, inst->shape) * 
+        cphvb_typesize[inst->type[0]];
+    void* ptr = malloc(size);
+    if (ptr == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+    svi_operand_map[inst->operand[0]] = ptr;
+    return CPHVB_SUCCESS;
+}
