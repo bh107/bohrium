@@ -84,5 +84,5 @@ char* cphvb_restore(cphvb_instruction* inst,
     inst->opcode = *(cphvb_opcode*)seri;
     inst->ndim = *(cphvb_int32*)(seri + sizeof(cphvb_opcode));
     char* res = _setup_pointers(inst,(char*)seri);
-    return res + cphvb_constants(inst);
+    return res + sizeof(cphvb_constant) * cphvb_constants(inst);
 }
