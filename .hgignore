@@ -1,0 +1,6 @@
+# use glob syntax.
+syntax: glob
+*.pyc
+*~
+*.o
+bridge/numpy/build/*
