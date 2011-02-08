@@ -3,4 +3,5 @@ syntax: glob
 *.pyc
 *~
 *.o
+*.so
 bridge/numpy/build/*

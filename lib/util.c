@@ -104,7 +104,7 @@ void cphvb_set_shape(cphvb_instruction* inst,
  * @operand  Id of the operand.
  * @type     Data type of the constant/operand.
  * @start    Start index of the operand.
- * @stride[] Stride in each dimention.
+ * @stride[] Stride in each dimention. If NULL it is ignored.
  *           
  */
 void cphvb_set_operand(cphvb_instruction* inst,
@@ -118,9 +118,12 @@ void cphvb_set_operand(cphvb_instruction* inst,
     inst->operand[idx] = operand;
     inst->type[idx] = type;
     inst->start[idx] = start;
-    for(i = 0; i < inst->ndim; ++i)
+    if (stride == NULL)
     {
-        inst->stride[idx][i] = stride[i];
+        for(i = 0; i < inst->ndim; ++i)
+        {
+            inst->stride[idx][i] = stride[i];
+        }
     }
 }
 
