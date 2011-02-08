@@ -372,7 +372,7 @@ class build_ext (old_build_ext):
                                            debug=self.debug,
                                            extra_postargs=extra_postargs,
                                            depends=ext.depends)
-        
+
         objects = c_objects + f_objects
 
         if ext.extra_objects:
@@ -383,10 +383,10 @@ class build_ext (old_build_ext):
 
         linker = self.compiler.link_shared_object
 
-        #DISTNUMPY hack.
-        if(self.compiler.compiler_so[0].find('mpi') != -1):
-            self.compiler.linker_so[0] = self.compiler.compiler_so[0]
-        
+        #cphVB hack.
+        self.compiler.linker_so.append("-L../../lib")
+        self.compiler.linker_so.append("-lcphvb")
+
         # Always use system linker when using MSVC compiler.
         if self.compiler.compiler_type=='msvc':
             # expand libraries with fcompiler libraries as we are
@@ -413,10 +413,10 @@ class build_ext (old_build_ext):
                build_temp=self.build_temp,**kws)
 
     def _add_dummy_mingwex_sym(self, c_sources):
-	build_src = self.get_finalized_command("build_src").build_src
-	build_clib = self.get_finalized_command("build_clib").build_clib
-	objects = self.compiler.compile([os.path.join(build_src,
-		"gfortran_vs2003_hack.c")],
+        build_src = self.get_finalized_command("build_src").build_src
+        build_clib = self.get_finalized_command("build_clib").build_clib
+        objects = self.compiler.compile([os.path.join(build_src,
+                "gfortran_vs2003_hack.c")],
                 output_dir=self.build_temp)
         self.compiler.create_static_lib(objects, "_gfortran_workaround", output_dir=build_clib, debug=self.debug)
 
