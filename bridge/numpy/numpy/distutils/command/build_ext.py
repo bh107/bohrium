@@ -317,6 +317,7 @@ class build_ext (old_build_ext):
                                               debug=self.debug,
                                               extra_postargs=extra_args,
                                               **kws)
+
         if cxx_sources:
             log.info("compiling C++ sources")
             c_objects += cxx_compiler.compile(cxx_sources,
@@ -382,11 +383,6 @@ class build_ext (old_build_ext):
         library_dirs = ext.library_dirs[:]
 
         linker = self.compiler.link_shared_object
-
-        #cphVB hack.
-        self.compiler.linker_so.append("-L../../lib")
-        self.compiler.linker_so.append("-lcphvb")
-
         # Always use system linker when using MSVC compiler.
         if self.compiler.compiler_type=='msvc':
             # expand libraries with fcompiler libraries as we are
