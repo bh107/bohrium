@@ -24,6 +24,10 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include "opcode.h"
 #include "error.h"
 #include "type.h"
@@ -178,5 +182,9 @@ void cphvb_set_constant(cphvb_instruction* inst,
 int cphvb_snprint(const cphvb_instruction* inst, 
                   size_t size, 
                   char* buf);
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif

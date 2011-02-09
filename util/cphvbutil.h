@@ -22,6 +22,10 @@
 
 #include <cphvb.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #define bool int
 #define FALSE 0
 #define TRUE (!FALSE)
@@ -82,5 +86,8 @@ cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
                               cphvb_index element);
 
 
+#ifdef __cplusplus
+}
+#endif 
 
 #endif
