@@ -36,7 +36,7 @@ cphvb_error svi_handle_read(cphvb_instruction* inst)
         if (res != CPHVB_SUCCESS)
             return res;
         *(inst->constant[0].ptr) = arrp + inst->start[0] * 
-                                          cphvb_operands[inst->type[0]];
+                                          cphvb_operands(inst->type[0]);
         return CPHVB_SUCCESS;
     }
     

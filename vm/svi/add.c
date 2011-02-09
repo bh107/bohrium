@@ -27,9 +27,9 @@ cphvb_error svi_add_int32(cphvb_instruction* inst)
 {
     // Check that we can convert to the result type
     if (!svi_can_cast_to_int32(inst->type[1]))
-        return CPHVB_TYPE_COMBINATION_NOT_SUPPORTED;
+        return CPHVB_TYPE_COMB_NOT_SUPPORTED;
     if (!svi_can_cast_to_int32(inst->type[2]))
-        return CPHVB_TYPE_COMBINATION_NOT_SUPPORTED;
+        return CPHVB_TYPE_COMB_NOT_SUPPORTED;
     
     // Check that all arrays are known
     // and take care of constants
@@ -69,9 +69,9 @@ cphvb_error svi_add_int32(cphvb_instruction* inst)
         off0 = cphvb_calc_offset(inst->ndim, inst->shape, inst->stride[0], i);
         off1 = cphvb_calc_offset(inst->ndim, inst->shape, inst->stride[1], i);
         off2 = cphvb_calc_offset(inst->ndim, inst->shape, inst->stride[2], i);
-        iarg1 = svi_to_int32(arg1 + off1 * cphvb_typesize[inst->type[1]], 
+        iarg1 = svi_to_int32(arg1 + off1 * cphvb_type_size(inst->type[1]), 
                           inst->type[1]);
-        iarg2 = svi_to_int32(arg2 + off2 * cphvb_typesize[inst->type[2]], 
+        iarg2 = svi_to_int32(arg2 + off2 * cphvb_type_size(inst->type[2]), 
                                      inst->type[2]);
         *(result + off0) = iarg1 + iarg2;
     }

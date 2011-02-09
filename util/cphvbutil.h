@@ -23,7 +23,10 @@
 #include <cphvb.h>
 
 #ifdef __cplusplus
+/* C++ includes go here */
 extern "C" {
+#else
+/* plain C includes go here */
 #endif 
 
 #define bool int

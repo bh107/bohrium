@@ -32,7 +32,7 @@ size_t cphvb_size(cphvb_opcode opcode,
                   cphvb_int32 ndim, 
                   int nc)
 {
-    int nops = cphvb_operands[opcode];
+    int nops = cphvb_operands(opcode);
     return sizeof(cphvb_opcode) +           //opcode
         sizeof(cphvb_int32) +               //ndim
         sizeof(cphvb_operand) * nops +      //operand[]
@@ -53,7 +53,7 @@ size_t cphvb_size(cphvb_opcode opcode,
 int cphvb_constants(const cphvb_instruction* inst)
 {
    int res = 0;
-   int nops = cphvb_operands[inst->opcode];
+   int nops = cphvb_operands(inst->opcode);
    for (int i = 0; i < nops; ++i)
        if (inst->operand[i] == CPHVB_CONSTANT)
            ++res;
