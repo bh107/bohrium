@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     cphvb_instruction* inst = &instruction_queue[instid];
     next_seri = cphvb_init(inst,CPHVB_MALLOC,1,0,next_seri);
     cphvb_set_shape(inst,(long[]){10});
-    cphvb_set_operand(inst,0,101,CPHVB_INT32,0,(long[]){1});
+    cphvb_set_operand(inst,0,101,CPHVB_INT32,0,NULL);
 //    error = svi_do(inst->serialized);
     char* buf = (char*)malloc(1024);    
     cphvb_snprint(inst,1024,buf);
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     inst = &instruction_queue[++instid];
     next_seri = cphvb_init(inst,CPHVB_MALLOC,1,0,next_seri);
     cphvb_set_shape(inst,(long[]){8});
-    cphvb_set_operand(inst,0,102,CPHVB_INT32,0,(long[]){1});
+    cphvb_set_operand(inst,0,102,CPHVB_INT32,0,NULL);
 //    error = svi_do(inst->serialized);
     cphvb_snprint(inst,1024,buf);
     printf("%s",buf);

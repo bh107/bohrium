@@ -118,7 +118,7 @@ void cphvb_set_operand(cphvb_instruction* inst,
     inst->operand[idx] = operand;
     inst->type[idx] = type;
     inst->start[idx] = start;
-    if (stride == NULL)
+    if (stride != NULL)
     {
         for(i = 0; i < inst->ndim; ++i)
         {
