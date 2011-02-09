@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include "cphvb.h"
 
+#define CPHVB_TYPE -1
+
 int _print_array(void* arr, int e, cphvb_type type,
                    size_t size, char* str)
 {
@@ -35,6 +37,10 @@ int _print_array(void* arr, int e, cphvb_type type,
         case CPHVB_INT64:
             nc = snprintf(str, size, "%ld",((cphvb_int64*)arr)[0]);
             break;
+        case CPHVB_TYPE:
+            nc = snprintf(str, size, "%s",
+                          cphvb_type_text(((cphvb_type*)arr)[0]));
+            break;
         default:
             nc = 0;
         }
@@ -49,6 +55,10 @@ int _print_array(void* arr, int e, cphvb_type type,
             break;
         case CPHVB_INT64:
             nc = snprintf(str, size, ", %ld",((cphvb_int64*)arr)[i]);
+            break;
+        case CPHVB_TYPE:
+            nc = snprintf(str, size, ", %s",
+                          cphvb_type_text(((cphvb_type*)arr)[i]));
             break;
         default:
             nc = 0;
@@ -87,15 +97,15 @@ int cphvb_snprint(const cphvb_instruction *inst , size_t size, char* str)
 {
     int res = 0;
     int nc, i;
-    int nops = cphvb_operands[inst->opcode];
-    nc = snprintf(str, size, "{\n\topcode: %d\n\tndim: %d\n\toperand: (", 
-                  inst->opcode, inst->ndim);
+    int nops = cphvb_operands(inst->opcode);
+    nc = snprintf(str, size, "{\n\topcode: %s\n\tndim: %d\n\toperand: (", 
+                  cphvb_opcode_text(inst->opcode), inst->ndim);
     str += nc; res += nc; size -= nc;
     nc = _print_array(inst->operand,nops,CPHVB_INT32,size,str);
     str += nc; res += nc; size -= nc;
     nc = snprintf(str, size, ")\n\ttype: (");
     str += nc; res += nc; size -= nc;
-    nc = _print_array(inst->type,nops,CPHVB_INT32,size,str);
+    nc = _print_array(inst->type,nops,CPHVB_TYPE,size,str);
     str += nc; res += nc; size -= nc;
     nc = snprintf(str, size, ")\n\tshape: (");
     str += nc; res += nc; size -= nc;

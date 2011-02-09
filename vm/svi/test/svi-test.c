@@ -8,7 +8,7 @@ void test_callback(cphvb_int32 batch_id,
                    cphvb_int32 instruction_count,
                    cphvb_error error_code)
 {
-    printf("[Test] Got callback: {batch_id: %d, instruction_count %d, error_code: %d}\n",batch_id,instruction_count, error_code);
+    printf("[Test] Got callback: {batch_id: %d, instruction_count %d, error_code: %s}\n",batch_id,instruction_count, cphvb_error_text(error_code));
 }
 
 
@@ -111,10 +111,10 @@ int main(int argc, char** argv)
     printf("%s",buf);
 
     error = svi_init(&test_callback);
-    printf("[Test] svi_init: %d\n",error);
+    printf("[Test] svi_init: %s\n",cphvb_error_text(error));
 
     error = svi_execute(7654,instid+1,seri);
-    printf("[Test] svi_execute: %d\n",error);
+    printf("[Test] svi_execute: %s\n",cphvb_error_text(error));
 
 
     int i,j;

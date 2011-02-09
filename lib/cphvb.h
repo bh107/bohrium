@@ -20,9 +20,18 @@
 #ifndef __CPHVB_H
 #define __CPHVB_H
 
+#ifdef __cplusplus
+/* C++ includes go here */
+#include <cstdint>
+#include <cstddef>
+#include <cstdarg>
+extern "C" {
+#else 
+/* plain C includes go here */
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
+#endif 
 
 #include "opcode.h"
 #include "error.h"
@@ -178,5 +187,49 @@ void cphvb_set_constant(cphvb_instruction* inst,
 int cphvb_snprint(const cphvb_instruction* inst, 
                   size_t size, 
                   char* buf);
+
+    
+/* Number of operands for operation
+ *
+ * @opcode Opcode for operation
+ * @return Number of operands
+ */
+int cphvb_operands(cphvb_opcode opcode);
+
+
+/* Text string for operation
+ *
+ * @opcode Opcode for operation
+ * @return Text string.
+ */
+const char* cphvb_opcode_text(cphvb_opcode opcode);
+
+
+/* Byte size for type
+ *
+ * @type   Type code
+ * @return Byte size
+ */
+int cphvb_type_size(cphvb_type type);
+
+
+/* Text string for type
+ *
+ * @type   Type code.
+ * @return Text string.
+ */
+const char* cphvb_type_text(cphvb_type type);
+
+
+/* Text string for error code
+ *
+ * @error  Error code.
+ * @return Text string.
+ */
+const char* cphvb_error_text(cphvb_error error);
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif

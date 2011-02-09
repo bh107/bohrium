@@ -28,7 +28,7 @@ cphvb_error svi_handle_malloc(cphvb_instruction* inst)
     if (inst->operand[0] > SVI_MAPSIZE-1)
         return CPHVB_OPERAND_UNKNOWN;
     size_t size = cphvb_nelements(inst->ndim, inst->shape) * 
-        cphvb_typesize[inst->type[0]];
+        cphvb_type_size(inst->type[0]);
     void* ptr = malloc(size);
     if (ptr == NULL)
         return CPHVB_OUT_OF_MEMORY;

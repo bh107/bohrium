@@ -19,8 +19,11 @@
 
 #ifndef __CPHVB_TYPE_H
 #define __CPHVB_TYPE_H
+
+#include <stdint.h>
+
 /* Codes for known data types */
-enum cphvb_type
+enum /* cphvb_type */
 {
     CPHVB_INT8,
     CPHVB_INT16,
@@ -33,26 +36,8 @@ enum cphvb_type
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64,
-    CPHVB_PTR
+    CPHVB_PTR,
 };
-
-/* Data size in bytes for the different types */
-static const int cphvb_typesize[] = 
-{ 
-    [CPHVB_INT8] = 1,
-    [CPHVB_INT16] = 2,
-    [CPHVB_INT32] = 4,
-    [CPHVB_INT64] = 8,
-    [CPHVB_UINT8] = 1,
-    [CPHVB_UINT16] = 2,
-    [CPHVB_UINT32] = 4,
-    [CPHVB_UINT64] = 8,
-    [CPHVB_FLOAT16] = 2,
-    [CPHVB_FLOAT32] = 4,
-    [CPHVB_FLOAT64] = 8,
-    [CPHVB_PTR] = sizeof(void*)
-};
-#define MAX_DATA_SIZE 8
 
 /* Mapping of cphvb data types to C data types */ 
 typedef int8_t   cphvb_int8;

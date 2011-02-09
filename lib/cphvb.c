@@ -32,7 +32,7 @@ char* _setup_pointers(cphvb_instruction* inst,
                       char* seri)
 {
     int i;
-    int nops = cphvb_operands[inst->opcode];
+    int nops = cphvb_operands(inst->opcode);
     inst->serialized = seri;
     inst->operand = (cphvb_operand*)(seri += sizeof(cphvb_opcode) + 
                                      sizeof(cphvb_int32));
