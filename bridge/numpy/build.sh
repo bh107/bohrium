@@ -5,8 +5,8 @@
 cd `dirname "$0"`
 
 #Set Environment variables.
-export CFLAGS="-I../../lib -I../../vm/svi -I../../util"
-export LDFLAGS="-L../../lib -lcphvb -L../../vm/svi -lsvi -L../../util -lcphvbutil"
+export CFLAGS="-I../../lib -I../../ve/svi -I../../util"
+export LDFLAGS="-L../../lib -lcphvb -L../../ve/svi -lsvi -L../../util -lcphvbutil"
 
 #Set Python Interpreter.
 if [ $# = 1 ]
