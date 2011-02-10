@@ -1,12 +1,20 @@
 #!/bin/bash
 #Bash script for building the NumPy bridge.
 
-#set Environment variables.
-CFLAGS="-I../../lib -I../../vm/svi -I../../util"
-LDFLAGS="-L../../lib -lcphvb -L../../vm/svi -lsvi -L../../util -lcphvbutil"
-
 #Change current directory to where numpy and this script is located.
 cd `dirname "$0"`
 
+#Set Environment variables.
+export CFLAGS="-I../../lib -I../../vm/svi -I../../util"
+export LDFLAGS="-L../../lib -lcphvb -L../../vm/svi -lsvi -L../../util -lcphvbutil"
+
+#Set Python Interpreter.
+if [ $# = 1 ]
+then
+    PYTHON="$1"
+else
+    PYTHON="/usr/bin/python"
+fi
+
 #Call NumPy build script
-python setup.py build
+$PYTHON setup.py build

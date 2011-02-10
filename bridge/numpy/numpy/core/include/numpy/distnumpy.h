@@ -1,6 +1,5 @@
 #ifndef DISTNUMPY_H
 #define DISTNUMPY_H
-#include "mpi.h"
 
 //ufunc definitions from numpy/ufuncobject.h.
 //They are included here instead.
@@ -27,35 +26,18 @@ typedef struct {
     char *core_signature;
 } PyUFuncObject;
 
-//#define DISTNUMPY_DEBUG
-//#define DNPY_STATISTICS
-//#define DNDY_TIME
-//#define DNDY_TIME_NODE 0
-
-
 //Easy retrieval of dnduid
 #define PyArray_DNDUID(obj) (((PyArrayObject *)(obj))->dnduid)
-
-//Maximum message size (in bytes)
-#define DNPY_MAX_MSG_SIZE 1024*4
-
-//Maximum number of view block operations in the sub-view-block DAG.
-#define DNPY_MAX_VB_IN_SVB_DAG 1000
 
 //Maximum number of allocated arrays
 #define DNPY_MAX_NARRAYS 1024
 
-//Maximum number of operation merged together.
-#define DNPY_MAX_OP_MERGES 10
+//The maximum size of a instruction batch in bytes (should be power of 2).
+#define DNPY_INSTRUCTION_BATCH_MAXSIZE 33554432 //32MB
 
-//Default blocksize
-#define DNPY_BLOCKSIZE 2
+//The maximum number of instructions in a batch.
+#define DNPY_MAX_NINST 1
 
-//Maximum number of nodes in the ready queue.
-#define DNPY_RDY_QUEUE_MAXSIZE 1024*10
-
-//The maximum size of the work buffer in bytes (should be power of 2).
-#define DNPY_WORK_BUFFER_MAXSIZE 536870912 //½GB
 
 //Operation types
 enum opt {DNPY_MSG_END, DNPY_CREATE_ARRAY, DNPY_DESTROY_ARRAY,
@@ -97,8 +79,6 @@ struct dndarray_struct
     npy_intp localdims[NPY_MAXDIMS];
     //Size of local block-dimensions (local to the MPI-process).
     npy_intp localblockdims[NPY_MAXDIMS];
-    //MPI-datatype that correspond to an array element.
-    MPI_Datatype mpi_dtype;
     //Root nodes (one per block).
     dndnode **rootnodes;
     //Next and prev are used for traversing all arrays.
