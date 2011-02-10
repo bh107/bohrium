@@ -1,7 +1,7 @@
 LIB=libcphvbutil.so
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -fPIC -std=gnu99 -I ../lib
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I ../lib
 LDFLAGS=-shared -Wl,-soname,$(LIB) -L../lib
 SRC=cphvbutil.c
 HEADERS= cphvbutil.h

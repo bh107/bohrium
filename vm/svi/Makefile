@@ -1,7 +1,7 @@
 LIB=libsvi.so
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -fPIC -I../../lib -I../../util -std=gnu99
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC -I../../lib -I../../util -std=gnu99
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cast.c free.c malloc.c read.c util.c add.c svi.c
 OBJ=$(SRC:.c=.o)

@@ -1,6 +1,6 @@
 CC=gcc
 WARNOPTS= -Wall
-CFLAGS= $(WARNOPTS) -I../../../lib -I../../../util -I.. -std=gnu99 
+CFLAGS= $(WARNOPTS) -g -O2 -I../../../lib -I../../../util -I.. -std=gnu99 
 LDFLAGS=-L../../../lib -L../../../util -L.. -lcphvb -lcphvbutil -lsvi
 SRC=svi-test.c
 OBJ=$(SRC:.c=.o)
