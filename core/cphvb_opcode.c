@@ -17,7 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opcode.h>
+#include <cphvb_opcode.h>
 #include <cphvb.h>
 
 /* Number of operands for a given operation */

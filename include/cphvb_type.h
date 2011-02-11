@@ -22,6 +22,18 @@
 
 #include <stdint.h>
 
+/* Mapping of cphvb data types to C data types */
+typedef int8_t   cphvb_int8;
+typedef int16_t  cphvb_int16;
+typedef int32_t  cphvb_int32;
+typedef int64_t  cphvb_int64;
+typedef uint8_t  cphvb_uint8;
+typedef uint16_t cphvb_uint16;
+typedef uint32_t cphvb_uint32;
+typedef uint64_t cphvb_uint64;
+typedef float    cphvb_float32;
+typedef double   cphvb_float64;
+
 /* Codes for known data types */
 enum /* cphvb_type */
 {
@@ -35,24 +47,10 @@ enum /* cphvb_type */
     CPHVB_UINT64,
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
-    CPHVB_FLOAT64,
-    CPHVB_PTR,
+    CPHVB_FLOAT64
 };
 
 typedef cphvb_int32 cphvb_type;
-
-/* Mapping of cphvb data types to C data types */
-typedef int8_t   cphvb_int8;
-typedef int16_t  cphvb_int16;
-typedef int32_t  cphvb_int32;
-typedef int64_t  cphvb_int64;
-typedef uint8_t  cphvb_uint8;
-typedef uint16_t cphvb_uint16;
-typedef uint32_t cphvb_uint32;
-typedef uint64_t cphvb_uint64;
-typedef float    cphvb_float32;
-typedef double   cphvb_float64;
-typedef void**   cphvb_ptr;
 
 typedef union
 {
@@ -66,7 +64,6 @@ typedef union
     cphvb_uint64   uint64;
     cphvb_float32  float32;
     cphvb_float64  float64;
-    cphvb_ptr      ptr;
 } cphvb_constant;
 
 enum // cphvb_array_type

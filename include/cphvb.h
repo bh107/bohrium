@@ -20,159 +20,79 @@
 #ifndef __CPHVB_H
 #define __CPHVB_H
 
+#include "cphvb_error.h"
+#include "cphvb_opcode.h"
+#include "cphvb_type.h"
+#include "cphvb_array.h"
+#include "cphvb_instruction.h"
+
 #ifdef __cplusplus
 /* C++ includes go here */
-#include <cstdint>
 #include <cstddef>
-#include <cstdarg>
 extern "C" {
 #else
 /* plain C includes go here */
-#include <stdint.h>
 #include <stddef.h>
-#include <stdarg.h>
 #endif
 
-#include "opcode.h"
-#include "error.h"
-#include "type.h"
+#define bool int
+#define FALSE 0
+#define TRUE (!FALSE)
 
-// Operand id used to indicate that the operand is a scalar constant
-#define CPHVB_CONSTANT -1
-
-// Data type for content of the CPHVB-instruction struct
-typedef cphvb_int32 cphvb_operand;
-typedef cphvb_int64 cphvb_index;
-typedef cphvb_int32 cphvb_opcode;
-typedef cphvb_int32 cphvb_type;
-
-/* Momory layout of the CPHVB instruction code data block
+/* Reduce nDarray info to a base shape
  *
- * opcode             //Opcode: Identifies the operation
- * ndim               //Number of dimentions
- * operand[nops]      //Id of each operand
- * type[nops]         //The type of data in each operand
- * shape[ndim]        //Number of elements in each dimention
- * start[nops]        //Index of start element for each operand
- * stride[nops][ndim] //The stride for each dimention per array
- * constant[?]        //The constants included in the instruction
- *                    // as indicated by operand == CPHVB_CONSTANT
+ * Remove dimentions that just indicate orientation in a
+ * higher dimention (Py:newaxis)
  *
- * nops is the number of operands. Discribed by the opcode
+ * @ndim          Number of dimentions
+ * @shape[]       Number of elements in each dimention.
+ * @stride[]      Stride in each dimention.
+ * @base_ndim     Placeholder for base number of dimentions
+ * @base_shape    Placeholder for base number of elements in each dimention.
+ * @base_stride   Placeholder for base stride in each dimention.
  */
+void cphvb_base_shape(cphvb_int32 ndim,
+                      const cphvb_index shape[],
+                      const cphvb_index stride[],
+                      cphvb_int32* base_ndim,
+                      cphvb_index* base_shape,
+                      cphvb_index* base_stride);
 
-typedef struct
-{
-    cphvb_opcode    opcode;    //Opcode: Identifies the operation
-    cphvb_int32     ndim;      //Number of dimentions
-    cphvb_operand*  operand;   //Id of each operand
-    cphvb_type*     type;      //The type of data in each operand
-    cphvb_index*    shape;     //Number of elements in each dimention
-    cphvb_index*    start;     //Index of start element for each operand
-    cphvb_index*    stride[CPHVB_MAX_NO_OPERANDS];
-    cphvb_constant* constant;  //Constants included in the instruction
-    char*         serialized;  //The raw data that reprecents the instruction
-} cphvb_instruction;
 
-/* Initialize a new instruction
+/* Is the data accessed continuously, and only once
  *
- * @inst   Will be initialized with constants and pointers.
- * @opcode Opcode.
- * @ndim   Number of dimentions.
- * @nc     Number of constants.
- * @seri   Start of the data area that will contain the serialized instruction.
- * @return Pointer to after the data area holding the serialized instruction.
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @stride[] Stride in each dimention.
+ * @return   Truth value indicating continuousity.
  */
-char* cphvb_init(cphvb_instruction* inst,
-                 cphvb_opcode opcode,
-                 cphvb_int32 ndim,
-                 int nc,
-                 char* seri);
+bool cphvb_is_continuous(cphvb_int32 ndim,
+                         const cphvb_index shape[],
+                         const cphvb_index stride[]);
 
 
-/* Restore an instruction from its serialized (raw) format
+/* Number of element in a given shape
  *
- * @inst   Will be initialized with constants and pointers.
- * @seri   Start of the data area that contains the serialized instruction.
- * @return Pointer to after the data area holding the serialized instruction.
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @return   Number of element operations
  */
-char* cphvb_restore(cphvb_instruction* inst,
-                    const char* seri);
+size_t cphvb_nelements(cphvb_int32 ndim,
+                       const cphvb_index shape[]);
 
 
-/* Number of constants in instruction
+/* Calculate the offset into an array based on element index
  *
- * @inst   Instruction in which number of constants is wanted.
- * @return Number of constants.
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @stride[] Stride in each dimention.
+ * @element  Index of element in question
+ * @return   Truth value indicating continuousity.
  */
-int cphvb_constants(const cphvb_instruction* inst);
-
-
-/* Size needed to store cooresponding serialized instruction
- *
- * @opcode Opcode.
- * @ndim   Number of dimentions.
- * @nc     Number of constants.
- * @return size needed to store cooresponding serialized instruction.
- */
-size_t cphvb_size(cphvb_opcode opcode,
-                  cphvb_int32 ndim,
-                  int nc);
-
-
-/* Create a new copy of an existing instruction
- *
- * @inst     Instruction to be copied.
- * @newinst  Will be initialized with constants and pointers.
- * @seri     Start of the data area that will contain the new instruction.
- * @return   Pointer to after the data area holding the serialized instruction.
- */
-char* cphvb_clone(const cphvb_instruction* inst,
-                  cphvb_instruction* newinst,
-                  char* seri);
-
-
-/* Set the shape of an instruction
- *
- * @inst    Instruction to update.
- * @shape[] Shape: number of elements in each dimention.
- */
-void cphvb_set_shape(cphvb_instruction* inst,
-                     cphvb_index shape[]);
-
-
-/* Set operand information of an instruction
- *
- * @inst     Instruction to update.
- * @idx      Index of the operand
- * @operand  Id of the operand.
- * @type     Data type of the constant/operand.
- * @start    Start index of the operand.
- * @stride[] Stride in each dimention. If NULL it is ignored.
- *
- */
-void cphvb_set_operand(cphvb_instruction* inst,
-                       int idx,
-                       cphvb_operand operand,
-                       cphvb_type type,
-                       cphvb_index start,
-                       cphvb_index stride[]);
-
-
-/* Sets a constant operand in CPHVB oparation.
- *
- * NOTE: Operands have to be set in accending order, when using this
- * function.
- *
- * @inst   Instruction to update.
- * @idx    Index of operand.
- * @c      The constant.
- * @type   Data type of the constant/operand.
-*/
-void cphvb_set_constant(cphvb_instruction* inst,
-                        int idx,
-                        cphvb_constant c,
-                        cphvb_type type);
+cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
+                              const cphvb_index shape[],
+                              const cphvb_index stride[],
+                              cphvb_index element);
 
 
 /* Pretty print instruction
@@ -227,6 +147,7 @@ const char* cphvb_type_text(cphvb_type type);
  * @return Text string.
  */
 const char* cphvb_error_text(cphvb_error error);
+
 
 #ifdef __cplusplus
 }

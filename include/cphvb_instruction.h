@@ -20,7 +20,8 @@
 #ifndef __CPHVB_INSTRUCTION_H
 #define __CPHVB_INSTRUCTION_H
 
-#include "opcode.h"
+#include "cphvb_opcode.h"
+#include "cphvb_array.h"
 
 //Memory layout of the CPHVB instruction
 typedef struct
@@ -28,7 +29,7 @@ typedef struct
     //Opcode: Identifies the operation
     cphvb_opcode   opcode;
     //Id of each operand
-    cphvb_operand  operand[CPHVB_MAX_NO_OPERANDS];
+    cphvb_array  operand[CPHVB_MAX_NO_OPERANDS];
     //Constants included in the instruction
     cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
 } cphvb_instruction;

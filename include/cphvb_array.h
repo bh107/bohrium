@@ -20,10 +20,14 @@
 #ifndef __CPHVB_ARRAY_H
 #define __CPHVB_ARRAY_H
 
-#include "type.h"
+#include "cphvb_type.h"
+
+#define CPHVB_MAXDIM (16)
+
+#define CPHVB_MAX_EXTRA_META_DATA (1024)
 
 // Operand id used to indicate that the operand is a scalar constant
-#define CPHVB_CONSTANT NULL
+#define CPHVB_CONSTANT (NULL)
 
 // Memory layout of an array
 typedef struct
@@ -48,7 +52,7 @@ typedef struct
     //NULL if not initialized
     void*            data;
     //Does the array have an initial value (if not initialized)
-    cpgvb_int32      has_init_value;
+    cphvb_int32      has_init_value;
     //The initial value
     cphvb_constant   init_value;
     //Ref Count

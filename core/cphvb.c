@@ -17,72 +17,105 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include <cphvb.h>
-#include "private.h"
 
-/* Setup the pointers in cphvb_instruction struct for seri
+/* Reduce nDarray info to a base shape
  *
- * @inst   Will be initialized with pointers
- * @seri   Start of the data area that contains the instruction
- * @return Pointer to after stride[][].
+ * Remove dimentions that just indicate orientation in a
+ * higher dimention (Py:newaxis)
+ *
+ * @ndim          Number of dimentions
+ * @shape[]       Number of elements in each dimention.
+ * @stride[]      Stride in each dimention.
+ * @base_ndim     Placeholder for base number of dimentions
+ * @base_shape    Placeholder for base number of elements in each dimention.
+ * @base_stride   Placeholder for base stride in each dimention.
  */
-char* _setup_pointers(cphvb_instruction* inst,
-                      char* seri)
+void cphvb_base_shape(cphvb_int32 ndim,
+                      const cphvb_index shape[],
+                      const cphvb_index stride[],
+                      cphvb_int32* base_ndim,
+                      cphvb_index* base_shape,
+                      cphvb_index* base_stride)
 {
-    int i;
-    int nops = cphvb_operands(inst->opcode);
-    inst->serialized = seri;
-    inst->operand = (cphvb_operand*)(seri += sizeof(cphvb_opcode) +
-                                     sizeof(cphvb_int32));
-    inst->type = (cphvb_type*)(seri += sizeof(cphvb_operand) * nops);
-    inst->shape = (cphvb_index*)(seri += sizeof(cphvb_type) * nops);
-    inst->start = (cphvb_index*)(seri += sizeof(cphvb_index) * inst->ndim);
-    seri += sizeof(cphvb_index) * nops;
-    for (i = 0; i < nops; ++i)
+    *base_ndim = 0;
+    for (int i = 0; i < ndim; ++i)
     {
-        inst->stride[i] = (cphvb_index*)seri;
-        seri += sizeof(cphvb_index) * inst->ndim;
+        // skipping (shape[i] == 1 && stride[i] == 0)
+        if (shape[i] != 1 || stride[i] != 0)
+        {
+            base_shape[*base_ndim] = shape[i];
+            base_stride[*base_ndim] = stride[i];
+            ++(*base_ndim);
+        }
     }
-    inst->constant = (cphvb_constant*)seri;
-    return seri;
 }
 
-/* Initialize a new instruction
+/* Is the data accessed continuously, and only once
  *
- * @inst   Will be initialized with constants and pointers.
- * @opcode Opcode.
- * @ndim   Number of dimentions.
- * @nc     Number of constants.
- * @seri   Start of the data area that will contain the serialized instruction.
- * @return Pointer to after the data area holding the serialized instruction.
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @stride[] Stride in each dimention.
+ * @return   Truth value indicating continuousity.
  */
-char* cphvb_init(cphvb_instruction* inst,
-                 cphvb_opcode opcode,
-                 cphvb_int32 ndim,
-                 int nc,
-                 char* seri)
+bool cphvb_is_continuous(cphvb_int32 ndim,
+                         const cphvb_index shape[],
+                         const cphvb_index stride[])
 {
-    inst->opcode = opcode;
-    inst->ndim = ndim;
-    *(cphvb_opcode*)seri = opcode;
-    *(cphvb_int32*)(seri + sizeof(cphvb_opcode)) = ndim;
-    return _setup_pointers(inst,seri) + sizeof(cphvb_constant) * nc;
+    cphvb_int32 my_ndim = 0;
+    cphvb_index my_shape[ndim];
+    cphvb_index my_stride[ndim];
+    cphvb_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
+    for (int i = 0; i < my_ndim - 1; ++i)
+    {
+        if (my_shape[i+1] != my_stride[i])
+            return FALSE;
+    }
+    if (my_stride[my_ndim-1] != 1)
+        return FALSE;
+
+    return TRUE;
 }
 
 
-/* Restore an instruction from its serialized (raw) format
+/* Number of element in a given shape
  *
- * @inst   Will be initialized with constants and pointers.
- * @seri   Start of the data area that contains the serialized instruction.
- * @return Pointer to after the data area holding the serialized instruction.
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @return   Number of element operations
  */
-char* cphvb_restore(cphvb_instruction* inst,
-                    const char* seri)
+size_t cphvb_nelements(cphvb_int32 ndim,
+                       const cphvb_index shape[])
 {
-    inst->opcode = *(cphvb_opcode*)seri;
-    inst->ndim = *(cphvb_int32*)(seri + sizeof(cphvb_opcode));
-    char* res = _setup_pointers(inst,(char*)seri);
-    return res + sizeof(cphvb_constant) * cphvb_constants(inst);
+    size_t res = 1;
+    for (int i = 0; i < ndim; ++i)
+    {
+        res *= shape[i];
+    }
+    return res;
+}
+
+
+/* Calculate the offset into an array based on element index
+ *
+ * @ndim     Number of dimentions
+ * @shape[]  Number of elements in each dimention.
+ * @stride[] Stride in each dimention.
+ * @element  Index of element in question
+ * @return   Truth value indicating continuousity.
+ */
+cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
+                              const cphvb_index shape[],
+                              const cphvb_index stride[],
+                              const cphvb_index element)
+{
+    cphvb_int32 dim = ndim -1;
+    cphvb_index dimbound = shape[dim];
+    cphvb_index offset = (element % dimbound) * stride[dim];
+    for (--dim; dim >= 0 ; --dim)
+    {
+        offset += (element / dimbound) * stride[dim];
+        dimbound *= shape[dim];
+    }
+    return offset;
 }

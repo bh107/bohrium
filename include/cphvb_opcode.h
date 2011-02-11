@@ -20,6 +20,8 @@
 #ifndef __CPHVB_OPCODE_H
 #define __CPHVB_OPCODE_H
 
+#include "cphvb_type.h"
+
 /* Codes for known oparations */
 enum /* cphvb_opcode */
 {

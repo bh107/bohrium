@@ -5,13 +5,12 @@ CC=gcc
 WARNOPTS=-Wall
 CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb.c snprint.c util.c opcode.c type.c error.c
-HEADERS=private.h
+SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c
 OBJ=$(SRC:.c=.o)
 
 all: $(LIB)
 
-%.o: %.c $(INCLUDE)/* $(HEADERS)
+%.o: %.c $(INCLUDE)/*
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 $(LIB): $(OBJ)

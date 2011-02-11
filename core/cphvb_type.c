@@ -17,7 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <type.h>
+#include <cphvb_type.h>
 #include <cphvb.h>
 
 /* Data size in bytes for the different types */
@@ -33,8 +33,7 @@ const int _type_size[] =
     [CPHVB_UINT64] = 8,
     [CPHVB_FLOAT16] = 2,
     [CPHVB_FLOAT32] = 4,
-    [CPHVB_FLOAT64] = 8,
-    [CPHVB_PTR] = sizeof(void*)
+    [CPHVB_FLOAT64] = 8
 };
 
 
@@ -61,8 +60,7 @@ const char* const _type_text[] =
     [CPHVB_UINT64] = "CPHVB_UINT64",
     [CPHVB_FLOAT16] = "CPHVB_FLOAT16",
     [CPHVB_FLOAT32] = "CPHVB_FLOAT32",
-    [CPHVB_FLOAT64] = "CPHVB_FLOAT64",
-    [CPHVB_PTR] = "CPHVB_PTR"
+    [CPHVB_FLOAT64] = "CPHVB_FLOAT64"
 };
 
 
