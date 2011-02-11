@@ -29,16 +29,13 @@ bool svi_initialized = FALSE;
 cphvb_instruction* svi_instruction_queue;
 
 
-svi_callback my_callback;
-
-cphvb_error svi_init(svi_callback callback)
+cphvb_error svi_init(void)
 {
     if (svi_initialized)
         return CPHVB_ALREADY_INITALIZED;
-    my_callback = callback;
+
     svi_operand_map = calloc(SVI_MAPSIZE,sizeof(void*));
-    svi_instruction_queue = (cphvb_instruction*)malloc(
-        sizeof(cphvb_instruction) * SVI_QUEUE_SIZE);
+    svi_instruction_queue = (cphvb_instruction*)malloc(sizeof(cphvb_instruction) * SVI_QUEUE_SIZE);
     if(svi_operand_map == NULL || svi_instruction_queue == NULL)
     {
         return CPHVB_ERROR;
@@ -47,7 +44,7 @@ cphvb_error svi_init(svi_callback callback)
         svi_initialized = TRUE;
         return CPHVB_SUCCESS;
     }
-    
+
 }
 
 cphvb_error svi_handle_inst(cphvb_instruction* inst)
@@ -82,7 +79,7 @@ cphvb_error svi_do(cphvb_instruction* inst)
 #endif
     if (inst->operand[0] == CPHVB_CONSTANT)
         return CPHVB_RESULT_IS_CONSTANT;
-    
+
     return svi_handle_inst(inst);
 }
 
@@ -93,10 +90,10 @@ cphvb_error svi_execute(cphvb_int32 batch_id,
                         char* seri)
 {
     cphvb_error res;
-    
+
     if (!svi_initialized)
         return CPHVB_NOT_INITALIZED;
-    
+
     int i;
     for (i = 0; i < instruction_count; ++i)
     {
@@ -104,12 +101,10 @@ cphvb_error svi_execute(cphvb_int32 batch_id,
         res = svi_do(&svi_instruction_queue[i]);
         if (res != CPHVB_SUCCESS)
         {
-            (*my_callback)(batch_id,i,res);
             return res;
         }
-        
+
     }
-    (*my_callback)(batch_id,i,CPHVB_SUCCESS);
-    
+
     return CPHVB_SUCCESS;
 }

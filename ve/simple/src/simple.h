@@ -26,22 +26,16 @@
 
 #define SVI_MAPSIZE 128
 
-#define bool int
-#define FALSE 0
-#define TRUE (!FALSE)
-
 // Global array that maps cphvb_operand's to memory pointers
 void** svi_operand_map;
 
-typedef void (*svi_callback)(cphvb_int32 batch_id,
-                             cphvb_int32 instruction_count,
-                             cphvb_error error_code);
 
 
-cphvb_error svi_init(svi_callback callback);
+cphvb_error cphvb_ve_simple_init(void);
 
-cphvb_error svi_execute(cphvb_int32 batch_id,
-                        cphvb_int32 instruction_count,
-                        char* instruction_pointer);
+cphvb_error cphvb_ve_simple_execute(cphvb_int32 instruction_count,
+                                    char* instruction_list);
+
+cphvb_error cphvb_ve_simple_shutdown(void);
 
 #endif
