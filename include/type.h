@@ -39,7 +39,9 @@ enum /* cphvb_type */
     CPHVB_PTR,
 };
 
-/* Mapping of cphvb data types to C data types */ 
+typedef cphvb_int32 cphvb_type;
+
+/* Mapping of cphvb data types to C data types */
 typedef int8_t   cphvb_int8;
 typedef int16_t  cphvb_int16;
 typedef int32_t  cphvb_int32;
@@ -66,5 +68,15 @@ typedef union
     cphvb_float64  float64;
     cphvb_ptr      ptr;
 } cphvb_constant;
+
+enum // cphvb_array_type
+{
+    BASE,
+    VIEW
+};
+
+typedef cphvb_int32 cphvb_array_type;
+typedef cphvb_int64 cphvb_index;
+
 
 #endif

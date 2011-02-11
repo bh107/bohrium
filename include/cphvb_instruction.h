@@ -17,26 +17,20 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_OPCODE_H
-#define __CPHVB_OPCODE_H
+#ifndef __CPHVB_INSTRUCTION_H
+#define __CPHVB_INSTRUCTION_H
 
-/* Codes for known oparations */
-enum /* cphvb_opcode */
+#include "opcode.h"
+
+//Memory layout of the CPHVB instruction
+typedef struct
 {
-    CPHVB_ADD,
-    CPHVB_SUB,
-    CPHVB_MULT,
-    CPHVB_DIV,
-    CPHVB_MOD,
-    CPHVB_NEG,
-    CPHVB_MALLOC,
-    CPHVB_FREE,
-    CPHVB_READ,
-    CPHVB_WRITE,
-};
-
-typedef cphvb_int32 cphvb_opcode;
-
-#define CPHVB_MAX_NO_OPERANDS 3
+    //Opcode: Identifies the operation
+    cphvb_opcode   opcode;
+    //Id of each operand
+    cphvb_operand  operand[CPHVB_MAX_NO_OPERANDS];
+    //Constants included in the instruction
+    cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
+} cphvb_instruction;
 
 #endif

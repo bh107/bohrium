@@ -27,7 +27,7 @@
 extern "C" {
 #else
 /* plain C includes go here */
-#endif 
+#endif
 
 #define bool int
 #define FALSE 0
@@ -35,39 +35,39 @@ extern "C" {
 
 /* Reduce nDarray info to a base shape
  *
- * Remove dimentions that just indicate orientation in a 
+ * Remove dimentions that just indicate orientation in a
  * higher dimention (Py:newaxis)
  *
- * @ndim          Number of dimentions 
+ * @ndim          Number of dimentions
  * @shape[]       Number of elements in each dimention.
  * @stride[]      Stride in each dimention.
- * @base_ndim     Placeholder for base number of dimentions 
+ * @base_ndim     Placeholder for base number of dimentions
  * @base_shape    Placeholder for base number of elements in each dimention.
  * @base_stride   Placeholder for base stride in each dimention.
  */
 void cphvb_base_shape(cphvb_int32 ndim,
-                      const cphvb_index shape[], 
+                      const cphvb_index shape[],
                       const cphvb_index stride[],
                       cphvb_int32* base_ndim,
-                      cphvb_index* base_shape, 
+                      cphvb_index* base_shape,
                       cphvb_index* base_stride);
 
 
 /* Is the data accessed continuously, and only once
  *
- * @ndim     Number of dimentions 
+ * @ndim     Number of dimentions
  * @shape[]  Number of elements in each dimention.
  * @stride[] Stride in each dimention.
- * @return   Truth value indicating continuousity. 
+ * @return   Truth value indicating continuousity.
  */
 bool cphvb_is_continuous(cphvb_int32 ndim,
-                         const cphvb_index shape[], 
+                         const cphvb_index shape[],
                          const cphvb_index stride[]);
 
 
 /* Number of element in a given shape
  *
- * @ndim     Number of dimentions 
+ * @ndim     Number of dimentions
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
@@ -77,11 +77,11 @@ size_t cphvb_nelements(cphvb_int32 ndim,
 
 /* Calculate the offset into an array based on element index
  *
- * @ndim     Number of dimentions 
+ * @ndim     Number of dimentions
  * @shape[]  Number of elements in each dimention.
  * @stride[] Stride in each dimention.
  * @element  Index of element in question
- * @return   Truth value indicating continuousity. 
+ * @return   Truth value indicating continuousity.
  */
 cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
                               const cphvb_index shape[],
@@ -89,8 +89,62 @@ cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
                               cphvb_index element);
 
 
+/* Pretty print instruction
+ *
+ * Mainly for debugging purposes.
+ *
+ * @inst   Instruction to print.
+ * @size   Write at most this many bytes to buffer.
+ * @buf    Buffer to contain the string.
+ * @return Number of characters printed.
+ */
+int cphvb_snprint(const cphvb_instruction* inst,
+                  size_t size,
+                  char* buf);
+
+
+/* Number of operands for operation
+ *
+ * @opcode Opcode for operation
+ * @return Number of operands
+ */
+int cphvb_operands(cphvb_opcode opcode);
+
+
+/* Text string for operation
+ *
+ * @opcode Opcode for operation
+ * @return Text string.
+ */
+const char* cphvb_opcode_text(cphvb_opcode opcode);
+
+
+/* Byte size for type
+ *
+ * @type   Type code
+ * @return Byte size
+ */
+int cphvb_type_size(cphvb_type type);
+
+
+/* Text string for type
+ *
+ * @type   Type code.
+ * @return Text string.
+ */
+const char* cphvb_type_text(cphvb_type type);
+
+
+/* Text string for error code
+ *
+ * @error  Error code.
+ * @return Text string.
+ */
+const char* cphvb_error_text(cphvb_error error);
+
+
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif
