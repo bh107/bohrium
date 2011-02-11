@@ -34,22 +34,19 @@ typedef struct
 {
     //Field used by VEM to manage ownership
     cphvb_int32      owner;
-    //The array type is either base-object or view-object.
-    //which determins the meaning of the data pointer
-    cphvb_array_type array_type;
+    //Pointer to the base array. If NULL this is a base array
+    cphvb_array*     base;
     //The type of data in the array
-    cphvb_type       data_type;
+    cphvb_type       type;
     //Number of dimentions
     cphvb_int32      ndim;
-    //Index of the start element (always 0 for base-object)
+    //Index of the start element (always 0 for base-array)
     cphvb_index      start;
     //Number of elements in each dimention
     cphvb_index      shape[CPHVB_MAXDIM];
     //The stride for each dimention
     cphvb_index      stride[CPHVB_MAXDIM];
-    //Pointer to the actual data for base-object
-    //else pointer to base-object
-    //NULL if not initialized
+    //Pointer to the actual data
     void*            data;
     //Does the array have an initial value (if not initialized)
     cphvb_int32      has_init_value;
