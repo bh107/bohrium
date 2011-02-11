@@ -17,8 +17,8 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "error.h"
-#include "cphvb.h"
+#include <error.h>
+#include <cphvb.h>
 
 const char* const _error_text[] =
 {

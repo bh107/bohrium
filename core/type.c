@@ -17,12 +17,12 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "type.h"
-#include "cphvb.h"
+#include <type.h>
+#include <cphvb.h>
 
 /* Data size in bytes for the different types */
-const int _type_size[] = 
-{ 
+const int _type_size[] =
+{
     [CPHVB_INT8] = 1,
     [CPHVB_INT16] = 2,
     [CPHVB_INT32] = 4,
@@ -46,11 +46,11 @@ const int _type_size[] =
 int cphvb_type_size(cphvb_type type)
 {
     return _type_size[type];
-} 
+}
 
 
-const char* const _type_text[] = 
-{ 
+const char* const _type_text[] =
+{
     [CPHVB_INT8] = "CPHVB_INT8",
     [CPHVB_INT16] = "CPHVB_INT16",
     [CPHVB_INT32] = "CPHVB_INT32",
@@ -74,4 +74,4 @@ const char* const _type_text[] =
 const char* cphvb_type_text(cphvb_type type)
 {
     return _type_text[type];
-} 
+}

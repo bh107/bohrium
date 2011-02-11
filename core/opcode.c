@@ -17,12 +17,12 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "opcode.h"
-#include "cphvb.h"
+#include <opcode.h>
+#include <cphvb.h>
 
 /* Number of operands for a given operation */
-const int _operands[] = 
-{ 
+const int _operands[] =
+{
     [CPHVB_ADD] = 3,
     [CPHVB_SUB] = 3,
     [CPHVB_MULT] = 3,

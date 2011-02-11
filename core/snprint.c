@@ -18,7 +18,7 @@
  */
 
 #include <stdio.h>
-#include "cphvb.h"
+#include <cphvb.h>
 
 #define CPHVB_TYPE -1
 
@@ -27,7 +27,7 @@ int _print_array(void* arr, int e, cphvb_type type,
 {
     int res = 0;
     int nc, i;
-    if (e > 0) 
+    if (e > 0)
     {
         switch(type)
         {
@@ -63,7 +63,7 @@ int _print_array(void* arr, int e, cphvb_type type,
         default:
             nc = 0;
         }
-        str += nc; res += nc; size -= nc;    
+        str += nc; res += nc; size -= nc;
     }
     return res;
 }
@@ -98,7 +98,7 @@ int cphvb_snprint(const cphvb_instruction *inst , size_t size, char* str)
     int res = 0;
     int nc, i;
     int nops = cphvb_operands(inst->opcode);
-    nc = snprintf(str, size, "{\n\topcode: %s\n\tndim: %d\n\toperand: (", 
+    nc = snprintf(str, size, "{\n\topcode: %s\n\tndim: %d\n\toperand: (",
                   cphvb_opcode_text(inst->opcode), inst->ndim);
     str += nc; res += nc; size -= nc;
     nc = _print_array(inst->operand,nops,CPHVB_INT32,size,str);
@@ -125,7 +125,7 @@ int cphvb_snprint(const cphvb_instruction *inst , size_t size, char* str)
     for(i = 0; i < nops; i++)
     {
         if(inst->operand[i] == CPHVB_CONSTANT)
-        { 
+        {
             switch(inst->type[i])
             {
             case CPHVB_INT8:
@@ -147,7 +147,7 @@ int cphvb_snprint(const cphvb_instruction *inst , size_t size, char* str)
             case CPHVB_UINT16:
                 nc = snprintf(str, size, "(%hu)",inst->constant[cidx].uint16);
                 break;
-            case CPHVB_UINT32: 
+            case CPHVB_UINT32:
                 nc = snprintf(str, size, "(%u)",inst->constant[cidx].uint32);
                 break;
             case CPHVB_UINT64:
@@ -170,7 +170,7 @@ int cphvb_snprint(const cphvb_instruction *inst , size_t size, char* str)
                 nc = snprintf(str, size, "(unknown type: %d)",inst->type[i]);
             }
             str += nc; res += nc; size -= nc; ++cidx;
-        } 
+        }
     }
     nc = snprintf(str, size, ")\n}\n");
     str += nc; res += nc; size -= nc;

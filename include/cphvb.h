@@ -26,12 +26,12 @@
 #include <cstddef>
 #include <cstdarg>
 extern "C" {
-#else 
+#else
 /* plain C includes go here */
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
-#endif 
+#endif
 
 #include "opcode.h"
 #include "error.h"
@@ -48,28 +48,28 @@ typedef cphvb_int32 cphvb_type;
 
 /* Momory layout of the CPHVB instruction code data block
  *
- * opcode             //Opcode: Identifies the operation            
- * ndim               //Number of dimentions                         
- * operand[nops]      //Id of each operand                           
- * type[nops]         //The type of data in each operand      
- * shape[ndim]        //Number of elements in each dimention         
- * start[nops]        //Index of start element for each operand 
- * stride[nops][ndim] //The stride for each dimention per array      
+ * opcode             //Opcode: Identifies the operation
+ * ndim               //Number of dimentions
+ * operand[nops]      //Id of each operand
+ * type[nops]         //The type of data in each operand
+ * shape[ndim]        //Number of elements in each dimention
+ * start[nops]        //Index of start element for each operand
+ * stride[nops][ndim] //The stride for each dimention per array
  * constant[?]        //The constants included in the instruction
- *                    // as indicated by operand == CPHVB_CONSTANT      
- *                            
+ *                    // as indicated by operand == CPHVB_CONSTANT
+ *
  * nops is the number of operands. Discribed by the opcode
  */
 
-typedef struct 
+typedef struct
 {
     cphvb_opcode    opcode;    //Opcode: Identifies the operation
     cphvb_int32     ndim;      //Number of dimentions
-    cphvb_operand*  operand;   //Id of each operand                           
+    cphvb_operand*  operand;   //Id of each operand
     cphvb_type*     type;      //The type of data in each operand
-    cphvb_index*    shape;     //Number of elements in each dimention         
-    cphvb_index*    start;     //Index of start element for each operand 
-    cphvb_index*    stride[CPHVB_MAX_NO_OPERANDS]; 
+    cphvb_index*    shape;     //Number of elements in each dimention
+    cphvb_index*    start;     //Index of start element for each operand
+    cphvb_index*    stride[CPHVB_MAX_NO_OPERANDS];
     cphvb_constant* constant;  //Constants included in the instruction
     char*         serialized;  //The raw data that reprecents the instruction
 } cphvb_instruction;
@@ -83,20 +83,20 @@ typedef struct
  * @seri   Start of the data area that will contain the serialized instruction.
  * @return Pointer to after the data area holding the serialized instruction.
  */
-char* cphvb_init(cphvb_instruction* inst, 
-                 cphvb_opcode opcode, 
-                 cphvb_int32 ndim, 
+char* cphvb_init(cphvb_instruction* inst,
+                 cphvb_opcode opcode,
+                 cphvb_int32 ndim,
                  int nc,
                  char* seri);
 
 
-/* Restore an instruction from its serialized (raw) format 
+/* Restore an instruction from its serialized (raw) format
  *
  * @inst   Will be initialized with constants and pointers.
  * @seri   Start of the data area that contains the serialized instruction.
  * @return Pointer to after the data area holding the serialized instruction.
  */
-char* cphvb_restore(cphvb_instruction* inst, 
+char* cphvb_restore(cphvb_instruction* inst,
                     const char* seri);
 
 
@@ -115,8 +115,8 @@ int cphvb_constants(const cphvb_instruction* inst);
  * @nc     Number of constants.
  * @return size needed to store cooresponding serialized instruction.
  */
-size_t cphvb_size(cphvb_opcode opcode, 
-                  cphvb_int32 ndim, 
+size_t cphvb_size(cphvb_opcode opcode,
+                  cphvb_int32 ndim,
                   int nc);
 
 
@@ -137,7 +137,7 @@ char* cphvb_clone(const cphvb_instruction* inst,
  * @inst    Instruction to update.
  * @shape[] Shape: number of elements in each dimention.
  */
-void cphvb_set_shape(cphvb_instruction* inst, 
+void cphvb_set_shape(cphvb_instruction* inst,
                      cphvb_index shape[]);
 
 
@@ -149,7 +149,7 @@ void cphvb_set_shape(cphvb_instruction* inst,
  * @type     Data type of the constant/operand.
  * @start    Start index of the operand.
  * @stride[] Stride in each dimention. If NULL it is ignored.
- *           
+ *
  */
 void cphvb_set_operand(cphvb_instruction* inst,
                        int idx,
@@ -159,9 +159,9 @@ void cphvb_set_operand(cphvb_instruction* inst,
                        cphvb_index stride[]);
 
 
-/* Sets a constant operand in CPHVB oparation. 
+/* Sets a constant operand in CPHVB oparation.
  *
- * NOTE: Operands have to be set in accending order, when using this 
+ * NOTE: Operands have to be set in accending order, when using this
  * function.
  *
  * @inst   Instruction to update.
@@ -169,9 +169,9 @@ void cphvb_set_operand(cphvb_instruction* inst,
  * @c      The constant.
  * @type   Data type of the constant/operand.
 */
-void cphvb_set_constant(cphvb_instruction* inst, 
-                        int idx, 
-                        cphvb_constant c, 
+void cphvb_set_constant(cphvb_instruction* inst,
+                        int idx,
+                        cphvb_constant c,
                         cphvb_type type);
 
 
@@ -184,11 +184,11 @@ void cphvb_set_constant(cphvb_instruction* inst,
  * @buf    Buffer to contain the string.
  * @return Number of characters printed.
  */
-int cphvb_snprint(const cphvb_instruction* inst, 
-                  size_t size, 
+int cphvb_snprint(const cphvb_instruction* inst,
+                  size_t size,
                   char* buf);
 
-    
+
 /* Number of operands for operation
  *
  * @opcode Opcode for operation
@@ -230,6 +230,6 @@ const char* cphvb_error_text(cphvb_error error);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif

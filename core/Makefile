@@ -1,15 +1,17 @@
+ROOT=..
+INCLUDE=../include
 LIB=libcphvb.so
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cphvb.c snprint.c util.c opcode.c type.c error.c
-HEADERS= cphvb.h error.h opcode.h type.h error.h
+HEADERS=private.h
 OBJ=$(SRC:.c=.o)
 
 all: $(LIB)
 
-%.o: %.c $(HEADERS)
+%.o: %.c $(INCLUDE)/* $(HEADERS)
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 $(LIB): $(OBJ)

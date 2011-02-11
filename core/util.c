@@ -18,7 +18,7 @@
  */
 
 #include <string.h>
-#include "cphvb.h"
+#include <cphvb.h>
 #include "private.h"
 
 /* Size needed to store cooresponding serialized instruction
@@ -28,8 +28,8 @@
  * @nc     Number of constants.
  * @return size needed to store cooresponding serialized instruction.
  */
-size_t cphvb_size(cphvb_opcode opcode, 
-                  cphvb_int32 ndim, 
+size_t cphvb_size(cphvb_opcode opcode,
+                  cphvb_int32 ndim,
                   int nc)
 {
     int nops = cphvb_operands(opcode);
@@ -57,7 +57,7 @@ int cphvb_constants(const cphvb_instruction* inst)
    for (int i = 0; i < nops; ++i)
        if (inst->operand[i] == CPHVB_CONSTANT)
            ++res;
-   
+
    return res;
 }
 
@@ -87,15 +87,15 @@ char* cphvb_clone(const cphvb_instruction* inst,
  * @inst    Instruction to update.
  * @shape[] Shape: number of elements in each dimention.
  */
-void cphvb_set_shape(cphvb_instruction* inst, 
+void cphvb_set_shape(cphvb_instruction* inst,
                      cphvb_index shape[])
 {
     for(int i = 0; i < inst->ndim; ++i)
     {
-        inst->shape[i] = shape[i]; 
+        inst->shape[i] = shape[i];
     }
 }
-                              
+
 
 /* Set operand information of an instruction
  *
@@ -105,7 +105,7 @@ void cphvb_set_shape(cphvb_instruction* inst,
  * @type     Data type of the constant/operand.
  * @start    Start index of the operand.
  * @stride[] Stride in each dimention. If NULL it is ignored.
- *           
+ *
  */
 void cphvb_set_operand(cphvb_instruction* inst,
                        int idx,
@@ -128,9 +128,9 @@ void cphvb_set_operand(cphvb_instruction* inst,
 }
 
 
-/* Sets a constant operand in CPHVB oparation. 
+/* Sets a constant operand in CPHVB oparation.
  *
- * NOTE: Operands have to be set in accending order, when using this 
+ * NOTE: Operands have to be set in accending order, when using this
  * function.
  *
  * @inst   Instruction to update.
@@ -138,9 +138,9 @@ void cphvb_set_operand(cphvb_instruction* inst,
  * @c      The constant.
  * @type   Data type of the constant/operand.
 */
-void cphvb_set_constant(cphvb_instruction* inst, 
-                        int idx, 
-                        cphvb_constant c, 
+void cphvb_set_constant(cphvb_instruction* inst,
+                        int idx,
+                        cphvb_constant c,
                         cphvb_type type)
 {
     int cidx = 0;
