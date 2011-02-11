@@ -30,7 +30,8 @@
 #define CPHVB_CONSTANT (NULL)
 
 // Memory layout of an array
-typedef struct
+typedef struct cphvb_array cphvb_array;
+struct cphvb_array
 {
     //Field used by VEM to manage ownership
     cphvb_int32      owner;
@@ -57,7 +58,7 @@ typedef struct
     //Space reserved for extra meta data.
     //Not persistent at ownership change
     char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
-} cphvb_array;
+};
 
 
 #endif
