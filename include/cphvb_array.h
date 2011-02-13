@@ -48,7 +48,7 @@ struct cphvb_array
     //The stride for each dimention
     cphvb_index      stride[CPHVB_MAXDIM];
     //Pointer to the actual data
-    void*            data;
+    cphvb_data_ptr   data;
     //Does the array have an initial value (if not initialized)
     cphvb_int32      has_init_value;
     //The initial value

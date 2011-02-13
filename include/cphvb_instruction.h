@@ -29,7 +29,7 @@ typedef struct
     //Opcode: Identifies the operation
     cphvb_opcode   opcode;
     //Id of each operand
-    cphvb_array  operand[CPHVB_MAX_NO_OPERANDS];
+    cphvb_array*   operand[CPHVB_MAX_NO_OPERANDS];
     //Constants included in the instruction
     cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
 } cphvb_instruction;

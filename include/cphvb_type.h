@@ -66,14 +66,7 @@ typedef union
     cphvb_float64  float64;
 } cphvb_constant;
 
-enum // cphvb_array_type
-{
-    BASE,
-    VIEW
-};
-
-typedef cphvb_int32 cphvb_array_type;
 typedef cphvb_int64 cphvb_index;
-
+typedef void* cphvb_data_ptr;
 
 #endif
