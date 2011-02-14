@@ -38,6 +38,7 @@ typedef double        cphvb_float64;
 /* Codes for known data types */
 enum /* cphvb_type */
 {
+    CPHVB_BOOL,
     CPHVB_INT8,
     CPHVB_INT16,
     CPHVB_INT32,
