@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include <cphvb.h>
-#include <svi.h>
 
 
 #ifndef CBLAS_HEADER
@@ -12,22 +11,6 @@
 #endif
 #include CBLAS_HEADER
 
-//Unique identification counter
-static cphvb_int32 uid_count=0;
-
-
-//Instructions info.
-static cphvb_instruction* instructions[DNPY_MAX_NINST];//Inst memory.
-static cphvb_instruction* next_inst; //Next instruction.
-
-//Instruction batch info.
-static int ninst_in_batch = 0; //Current number of instruction in batch.
-static char *instruction_batch;//Batch memory.
-static char *next_inst_batch;  //The next instruction in the batch.
-
-//Array-views belonging to local MPI process
-static dndview dndviews[DNPY_MAX_NARRAYS];
-static npy_intp dndviews_uid[DNPY_MAX_NARRAYS];
 //Pointer to the python module who has the ufunc operators.
 static PyObject *ufunc_module;
 //Pointers to the cblas functions.
@@ -39,374 +22,128 @@ static cblas_func_type *cblas_cgemm_func = NULL;
 
 /*===================================================================
  *
- * Returns a string describing dtype.
- * Private
+ * Convert from numpy type to cphVB type.
+ * Return 1 when the type is not supported.
+ * Private.
  */
-#ifdef DISTNUMPY_DEBUG
-static char *types_numpy2str(int dtype)
+static int
+types_numpy2cphvb(int dtype, int *rettype)
 {
     switch(dtype)
     {
         case NPY_BOOL:
-            return "NPY_BOOL";
+            *rettype = CPHVB_BOOL;
+            return 0;
         case NPY_BYTE:
-            return "NPY_BYTE";
+            *rettype = CPHVB_INT8;
+            return 0;
         case NPY_UBYTE:
-            return "NPY_UBYTE";
+            *rettype = CPHVB_UINT8;
+            return 0;
         case NPY_SHORT:
-            return "NPY_SHORT";
+            #if NPY_BITOF_SHORT != 16
+            #    error the NPY_BITOF_INT not 16 bit
+            #endif
+            *rettype = CPHVB_INT16;
+            return 0;
         case NPY_USHORT:
-            return "NPY_USHORT";
+            #if NPY_BITOF_SHORT != 16
+            #    error the NPY_BITOF_INT not 16 bit
+            #endif
+            *rettype = CPHVB_UINT16;
+            return 0;
         case NPY_INT:
-            return "NPY_INT";
+            #if NPY_BITOF_INT == 32
+            #    error the NPY_BITOF_INT not 32 bit
+            #endif
+            *rettype = CPHVB_INT32;
+            return 0;
         case NPY_UINT:
-            return "NPY_UINT";
+            #if NPY_BITOF_INT != 32
+            #    error the NPY_BITOF_INT not 32 bit
+            #endif
+            *rettype = CPHVB_UINT32;
+            return 0;
         case NPY_LONG:
-            return "NPY_LONG";
+            #if NPY_BITOF_LONG == 32
+                *rettype = CPHVB_INT32;
+            #elif NPY_BITOF_LONG == 64
+                *rettype = CPHVB_INT64;
+            #else
+            #    error the NPY_BITOF_LONG not 32 or 64 bit
+            #endif
+            return 0;
         case NPY_ULONG:
-            return "NPY_ULONG";
-        case NPY_LONGLONG:
-            return "NPY_LONGLONG";
-        case NPY_ULONGLONG:
-            return "NPY_ULONGLONG";
+            #if NPY_BITOF_LONG == 32
+                *rettype = CPHVB_UINT32;
+            #elif NPY_BITOF_LONG == 64
+                *rettype = CPHVB_UINT64;
+            #else
+            #    error the NPY_BITOF_LONG not 32 or 64 bit
+            #endif
         case NPY_FLOAT:
-            return "NPY_FLOAT";
+            #if NPY_BITOF_FLOAT != 32
+            #    error the NPY_BITOF_FLOAT not 32 bit
+            #endif
+            *rettype = CPHVB_FLOAT32;
+            return 0;
         case NPY_DOUBLE:
-            return "NPY_DOUBLE";
-        case NPY_LONGDOUBLE:
-            return "NPY_LONGDOUBLE";
-        case NPY_CFLOAT:
-            return "NPY_CFLOAT";
-        case NPY_CDOUBLE:
-            return "NPY_CDOUBLE";
-        case NPY_CLONGDOUBLE:
-            return "NPY_CLONGDOUBLE";
-        case NPY_OBJECT:
-            return "NPY_OBJECT";
-        case NPY_STRING:
-            return "NPY_STRING";
-        case NPY_UNICODE:
-            return "NPY_UNICODE";
-        case NPY_VOID:
-            return "NPY_VOID";
-        case NPY_NTYPES:
-            return "NPY_NTYPES";
-        case NPY_CHAR:
-            return "NPY_CHAR";
-        case NPY_USERDEF:
-            return "NPY_USERDEF";
+            #if NPY_BITOF_FLOAT == 64
+            #    error the NPY_BITOF_FLOAT not 64 bit
+            #endif
+            *rettype = CPHVB_FLOAT64;
+            return 0;
         default:
-            return "\"Unknown data type\"";
+            return 1;
     }
-} /* types_numpy2str */
-#endif
-
-/*===================================================================
- *
- * Returns a string describing the operation type.
- * Private
- */
-static char *optype2str(int optype)
-{
-    switch(optype)
-    {
-        case DNPY_CREATE_ARRAY:
-            return "DNPY_CREATE_ARRAY";
-        case DNPY_DESTROY_ARRAY:
-            return "del";
-        case DNPY_CREATE_VIEW:
-            return "DNPY_CREATE_VIEW";
-        case DNPY_PUT_ITEM:
-            return "DNPY_PUT_ITEM";
-        case DNPY_GET_ITEM:
-            return "DNPY_GET_ITEM";
-        case DNPY_UFUNC:
-            return "ufunc";
-        case DNPY_RECV:
-            return "recv";
-        case DNPY_SEND:
-            return "send";
-        case DNPY_BUF_RECV:
-            return "Brecv";
-        case DNPY_BUF_SEND:
-            return "Bsend";
-        case DNPY_APPLY:
-            return "apply";
-        case DNPY_UFUNC_REDUCE:
-            return "DNPY_UFUNC_REDUCE";
-        case DNPY_ZEROFILL:
-            return "DNPY_ZEROFILL";
-        case DNPY_DATAFILL:
-            return "DNPY_DATAFILL";
-        case DNPY_DIAGONAL:
-            return "DNPY_DIAGONAL";
-        case DNPY_MATMUL:
-            return "DNPY_MATMUL";
-        case DNPY_REDUCE_SEND:
-            return "reduce_send";
-        case DNPY_REDUCE_RECV:
-            return "DNPY_REDUCE_RECV";
-        default:
-            return "\"Unknown data type\"";
-    }
-} /* optype2str */
-
-/*===================================================================
- *
- * Put, get & remove views from local MPI process.
- * Private.
- */
-static dndview *get_dndview(npy_intp uid)
-{
-    npy_intp i;
-    if(uid)
-        for(i=0; i < DNPY_MAX_NARRAYS; i++)
-            if(dndviews_uid[i] == uid)
-                return &dndviews[i];
-    fprintf(stderr, "get_dndview, uid %ld does not exist\n", (long) uid);
-    return NULL;
-}
-static dndview *put_dndview(dndview *view)
-{
-    npy_intp i;
-    npy_intp ones[NPY_MAXDIMS];
-
-    //Initiate the Python Array Object.
-    for(i=0; i<view->ndims; i++)
-        ones[i] = 1; //Just need ones for the dim.
-
-    for(i=0; i < DNPY_MAX_NARRAYS; i++)
-        if(dndviews_uid[i] == 0)
-        {
-            memcpy(&dndviews[i], view, sizeof(dndview));
-            dndviews_uid[i] = view->uid;
-            return &dndviews[i];
-        }
-    fprintf(stderr, "put_dndarray, MAX_NARRAYS is exceeded\n");
-    return NULL;
-}
-//NB: rm_dndview will also free memory allocted for the dndarray
-//if it is the last reference to the dndarray.
-static void rm_dndview(npy_intp uid)
-{
-    npy_intp i;
-    if(uid)
-        for(i=0; i < DNPY_MAX_NARRAYS; i++)
-            if(dndviews_uid[i] == uid)
-            {
-                dndview *view = &dndviews[i];
-                //Cleanup base.
-                dndviews_uid[i] = 0;
-                if(view->base->ndims == 0)//Dummy Scalar.
-                {
-                    //Remove the array from to the lisked list used
-                    //when statistic is defined.
-                    #ifdef DNPY_STATISTICS
-                        if(view->base->next != NULL)
-                            view->base->next->prev = view->base->prev;
-                        if(view->base->prev != NULL)
-                            view->base->prev->next = view->base->next;
-                        else
-                            rootarray = view->base->next;
-                    #endif
-                    free(view->base->rootnodes);
-                    free(view->base->data);
-                    free(view->base);
-                }
-                else if(--view->base->refcount == 0)
-                {
-                    //Remove the array from to the lisked list used
-                    //when statistic is defined.
-                    #ifdef DNPY_STATISTICS
-                        if(view->base->next != NULL)
-                            view->base->next->prev = view->base->prev;
-                        if(view->base->prev != NULL)
-                            view->base->prev->next = view->base->next;
-                        else
-                            rootarray = view->base->next;
-                    #endif
-                    if(view->base->data != NULL)
-                    {
-                        #ifdef DNDY_TIME
-                            unsigned long long tdelta;
-                            DNDTIME(tdelta);
-                        #endif
-
-                        #ifdef DNDY_TIME
-                            DNDTIME_SUM(tdelta, t_arydata_free)
-                        #endif
-                    }
-                    free(view->base->rootnodes);
-                    free(view->base);
-                }
-                return;
-            }
-    fprintf(stderr, "rm_dndarray, uid %ld does not exist\n", (long)uid);
-    return;
-}/* Put, get & rm dndview */
-
-
-/*===================================================================
- *
- * Makes sure that the array's memory has been allocated.
- * Private.
- */
-static void
-delayed_array_allocation(dndarray *ary)
-{
-    #ifdef DNDY_TIME
-        unsigned long long tdelta;
-        DNDTIME(tdelta);
-    #endif
-
-    if(ary->data == NULL)
-        ary->data = malloc(ary->nelements * ary->elsize);
-
-
-    #ifdef DNDY_TIME
-        DNDTIME_SUM(tdelta, t_arydata_malloc)
-    #endif
-}/* delayed_array_allocation */
-
-/*===================================================================
- *
- * Convert visible vblock dimension index to base vblock
- * dimension index.
- * Private.
- */
-static npy_intp
-idx_v2b(const dndview *view, npy_intp vindex)
-{
-    assert(vindex < view->ndims);
-    npy_intp i, bindex=0;
-    for(i=0; i < view->nslice; i++)
-    {
-        if(view->slice[i].nsteps == SingleIndex)
-        {
-            if(view->base->ndims > 1)
-                bindex++;
-            continue;
-        }
-        if(vindex == 0)
-            break;
-        if(view->slice[i].nsteps != PseudoIndex)
-            bindex++;
-        vindex--;
-    }
-    //We need the MIN since bindex is too high when PseudoIndex is
-    //used at the end of the view.
-    return MIN(bindex, view->base->ndims-1);
-} /* idx_v2b */
-
-/*===================================================================
- *
- * Convert visible vblock dimension index to slice dimension index.
- * Private.
- */
-static npy_intp
-idx_v2s(const dndview *view, npy_intp vindex)
-{
-    npy_intp i;
-    assert(vindex < view->ndims);
-    for(i=0; i < view->nslice; i++)
-    {
-        if(view->slice[i].nsteps == SingleIndex)
-            continue;
-        if(vindex == 0)
-            break;
-        vindex--;
-    }
-    assert(i < view->nslice);
-    return i;
-} /* idx_v2s */
-
-
-/*===================================================================
- *
- * Executes all instruction in the current batch and do some cleanup.
- * Private.
- */
-static void
-flush_inst_batch(void)
-{
-    printf("HEJ\n");
-    //Execute instruction batch.
-    svi_execute(42,ninst_in_batch,instruction_batch);
-    //Resets counts and memory
-    ninst_in_batch = 0;
-    next_inst = instructions[0];
-    next_inst_batch = instruction_batch;
-} /* flush_inst_batch */
-
+} /* types_numpy2cphvb */
 
 
 /*NUMPY_API
  *===================================================================
  * Create dndarray.
+ * Return 1 when the dtype is not supported else 0.
  * Public
  */
-static intp
-dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int dtype,
-                       intp dtypesize)
+static int
+dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
+                       intp dtypesize, intp *uid)
 {
     int i;
-    next_inst_batch = cphvb_init(next_inst,CPHVB_MALLOC,ndims,0,
-                                 next_inst_batch);
-
-    //Set instruction shape
-    cphvb_int64 tdims[NPY_MAXDIMS];
-    for(i=0; i<ndims; ++i)
-        tdims[i] = (cphvb_int64) dims[i];
-    cphvb_set_shape(next_inst,tdims);
-
-    //Set instruction operand.
-    cphvb_set_operand(next_inst,0,++uid_count,CPHVB_INT32,0,tdims);
-
-    //Iterate to the memory of the next instruction.
-    ++next_inst;
-
-    //Check if we should flush the batched instructions.
-    if(DNPY_MAX_NINST > ++ninst_in_batch)
-        flush_inst_batch();
+    cphvb_type dtype;
+    cphvb_index s;
+    cphvb_index stride[CPHVB_MAXDIM];
+    cphvb_index shape[CPHVB_MAXDIM];
+    cphvb_error error;
 
 
-    return uid_count;
-    /*
-    int i;
-    assert(ndims > 0);
-    assert(ndims < NPY_MAXDIMS);
-
-    //Create dndarray.
-    dndarray *newarray = malloc(sizeof(dndarray));
-
-    newarray->dtype = dtype;
-    newarray->elsize = dtypesize;
-    newarray->ndims = ndims;
-    newarray->refcount = 1;
-    for(i=0; i<ndims; i++)
-        newarray->dims[i] = dims[i];
-
-    //Create dndview. NB: the base will have to be set when 'newarray'
-    //has found its final resting place. (Done by put_dndarray).
-    dndview *newview = malloc(sizeof(dndview));
-    newview->uid = ++uid_count;
-    newview->nslice = ndims;
-    newview->ndims = ndims;
-    newview->alterations = 0;
-    for(i=0; i<ndims; i++)
+    if(types_numpy2cphvb(numpytype, &dtype))
     {
-        //Default the view will span over the whole array.
-        newview->slice[i].start = 0;
-        newview->slice[i].step = 1;
-        newview->slice[i].nsteps = dims[i];
+        PyErr_SetString(PyExc_RuntimeError,
+                        "cphVB does not support the datatype\n");
+        return 1;//Datatype error.
     }
 
-    //Freeup memory.
-    free(newarray);
-    free(newview);
+    //Compute the stride.
+    s=1;
+    for(i=ndims-1, i>=0; --i)
+    {
+        stride[i] = s;
+        shape[i] = dims[i];//Convert from 'intp' to 'cphvb_index'.
+        s *= tdims[i];
+    }
 
-    return uid_count;
-    */
+    error = cphvb_vem_create_array(NULL, dtype, ndims, 0, shape,
+                                   NPY_FALSE, 0, uid);
+
+    if(error == CPHVB_OUT_OF_MEMORY)
+        PyErr_SetString(PyExc_MemoryError, "cphVB out of memory\n");
+    else if (error)
+        PyErr_SetString(PyExc_RuntimeError,
+                        "unknown cphVB error\n");
+
+    return 0;//Success.
+
 } /* dnumpy_create_dndarray */
 
 /*NUMPY_API
@@ -843,14 +580,6 @@ dnumpy_diagonal(intp uid, int offset, int axis1, int axis2)
     */
 } /* dnumpy_diagonal */
 
-
-void test_callback(cphvb_int32 batch_id,
-                   cphvb_int32 instruction_count,
-                   cphvb_error error_code)
-{
-    printf("[Test] Got callback: {batch_id: %d, instruction_count %d, error_code: %d}\n",batch_id,instruction_count, error_code);
-}
-
 /*NUMPY_API
  * ===================================================================
  * Public
@@ -860,22 +589,12 @@ static void
 dnumpy_init(void)
 {
     int error;
-    error = svi_init(&test_callback);
+    error = cphvb_vem_init();
     if(error)
     {
-        printf("Error in svi_init()\n");
+        printf("Error in cphvb_vem_init()\n");
         exit(-1);
     }
-
-    //Allocate instruction batch.
-    instruction_batch = malloc(DNPY_INSTRUCTION_BATCH_MAXSIZE);
-    next_inst_batch = instruction_batch;
-    if(instruction_batch == NULL)
-    {
-        printf("Memory error in dnumpy_init()\n");
-        exit(-1);
-    }
-    next_inst = instructions[0];
 
 } /* dnumpy_init */
 

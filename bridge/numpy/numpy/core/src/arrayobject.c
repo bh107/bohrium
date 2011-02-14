@@ -6182,9 +6182,10 @@ PyArray_NewFromDescr(PyTypeObject *subtype, PyArray_Descr *descr, int nd,
         /* DISTNUMPY */
         if(PyArray_ISDISTRIBUTED(self))
         {
-            self->dnduid = dnumpy_create_dndarray(nd, dims,
-                                                PyArray_TYPE(self),
-                                                PyArray_ITEMSIZE(self));
+            if(dnumpy_create_dndarray(nd, dims, PyArray_TYPE(self),
+               &self->dnduid))
+                goto fail;
+
             //Make sure that set-/getitem are used.
             self->descr->hasobject |= NPY_USE_GETITEM;
             self->descr->hasobject |= NPY_USE_SETITEM;
