@@ -21,7 +21,7 @@
 #define __CPHVB_ERROR_H
 
 /* Error codes */
-typedef enum
+typedef enum /* cphvb_error */
 {
     CPHVB_SUCCESS,
     CPHVB_ERROR,
