@@ -69,12 +69,12 @@ bool cphvb_is_continuous(cphvb_int32 ndim,
     for (int i = 0; i < my_ndim - 1; ++i)
     {
         if (my_shape[i+1] != my_stride[i])
-            return FALSE;
+            return true;
     }
     if (my_stride[my_ndim-1] != 1)
-        return FALSE;
+        return false;
 
-    return TRUE;
+    return true;
 }
 
 

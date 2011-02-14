@@ -20,6 +20,7 @@
 #ifndef __CPHVB_ARRAY_H
 #define __CPHVB_ARRAY_H
 
+#include <stdbool.h>
 #include "cphvb_type.h"
 
 #define CPHVB_MAXDIM (16)
@@ -40,7 +41,7 @@ struct cphvb_array
     //The type of data in the array
     cphvb_type       type;
     //Number of dimentions
-    cphvb_int32      ndim;
+    int              ndim;
     //Index of the start element (always 0 for base-array)
     cphvb_index      start;
     //Number of elements in each dimention
@@ -50,11 +51,11 @@ struct cphvb_array
     //Pointer to the actual data
     cphvb_data_ptr   data;
     //Does the array have an initial value (if not initialized)
-    cphvb_int32      has_init_value;
+    bool             has_init_value;
     //The initial value
     cphvb_constant   init_value;
     //Ref Count
-    cphvb_int32      ref_count;
+    int              ref_count;
     //Space reserved for extra meta data.
     //Not persistent at ownership change
     char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];

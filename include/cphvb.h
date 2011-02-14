@@ -33,11 +33,8 @@ extern "C" {
 #else
 /* plain C includes go here */
 #include <stddef.h>
+#include <stdbool.h>
 #endif
-
-#define bool int
-#define FALSE 0
-#define TRUE (!FALSE)
 
 /* Reduce nDarray info to a base shape
  *

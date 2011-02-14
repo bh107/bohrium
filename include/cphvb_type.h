@@ -23,16 +23,17 @@
 #include <stdint.h>
 
 /* Mapping of cphvb data types to C data types */
-typedef int8_t   cphvb_int8;
-typedef int16_t  cphvb_int16;
-typedef int32_t  cphvb_int32;
-typedef int64_t  cphvb_int64;
-typedef uint8_t  cphvb_uint8;
-typedef uint16_t cphvb_uint16;
-typedef uint32_t cphvb_uint32;
-typedef uint64_t cphvb_uint64;
-typedef float    cphvb_float32;
-typedef double   cphvb_float64;
+typedef unsigned char cphvb_bool;
+typedef int8_t        cphvb_int8;
+typedef int16_t       cphvb_int16;
+typedef int32_t       cphvb_int32;
+typedef int64_t       cphvb_int64;
+typedef uint8_t       cphvb_uint8;
+typedef uint16_t      cphvb_uint16;
+typedef uint32_t      cphvb_uint32;
+typedef uint64_t      cphvb_uint64;
+typedef float         cphvb_float32;
+typedef double        cphvb_float64;
 
 /* Codes for known data types */
 enum /* cphvb_type */
@@ -66,7 +67,7 @@ typedef union
     cphvb_float64  float64;
 } cphvb_constant;
 
-typedef cphvb_int64 cphvb_index;
+typedef long int cphvb_index;
 typedef void* cphvb_data_ptr;
 
 #endif
