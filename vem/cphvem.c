@@ -23,6 +23,10 @@
 #include <cphvb.h>
 #include "private.h"
 
+//UID count.
+static cphvb_int32 uid_count=0;
+
+
 cphvb_error cphvb_vem_init(void)
 {
 
@@ -36,9 +40,13 @@ cphvb_error cphvb_vem_create_array(cphvb_array*   base,
                                    cphvb_index    shape[CPHVB_MAXDIM],
                                    cphvb_index    stride[CPHVB_MAXDIM],
                                    cphvb_bool     has_init_value,
-                                   cphvb_constant init_value)
+                                   cphvb_constant init_value,
+                                   cphvb_int32    *uid)
 {
     cphvb_array *array    = malloc(sizeof(cphvb_array));
+    if(array == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+
     array->owner          = CPHVB_BRIDGE;
     array->base           = base;
     array->type           = type;
@@ -56,6 +64,7 @@ cphvb_error cphvb_vem_create_array(cphvb_array*   base,
         ++array->base->ref_count;
         array->data = array->base->data;
     }
+    *uid = ++uid_count;
     return CPHVB_SUCCESS;
 }
 

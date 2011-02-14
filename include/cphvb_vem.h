@@ -27,13 +27,14 @@
 cphvb_error cphvb_vem_init(void);
 
 cphvb_error cphvb_vem_create_array(cphvb_array*   base,
-                                   cphvb_type      type,
+                                   cphvb_type     type,
                                    cphvb_int32    ndim,
                                    cphvb_index    start,
                                    cphvb_index    shape[CPHVB_MAXDIM],
                                    cphvb_index    stride[CPHVB_MAXDIM],
                                    cphvb_bool     has_init_value,
-                                   cphvb_constant init_value);
+                                   cphvb_constant init_value,
+                                   cphvb_int32    *uid);
 
 
 cphvb_error cphvb_vem_execute(cphvb_int32 instruction_count,
