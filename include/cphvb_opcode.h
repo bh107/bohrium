@@ -95,9 +95,10 @@ typedef enum /* cphvb_opcode */
     CPHVB_LOG2,
     CPHVB_ISREAL,
     CPHVB_ISCOMPLEX,
-    CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD 
+    CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
     CPHVB_SYNC,
     CPHVB_DISCARD,
+    CPHVB_DESTORY //Inform VEM to deallocate an array.
 } cphvb_opcode;
 
 #define CPHVB_MAX_NO_OPERANDS 3
