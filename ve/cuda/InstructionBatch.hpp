@@ -20,12 +20,13 @@
 #ifndef __INSTRUCTIONBATCH_HPP
 #define __INSTRUCTIONBATCH_HPP
 
+#include "cphVBInstruction.h"
+
 class InstructionBatch
 {
 public:
-    InstructionBatch();
-    void add(cphVBInstruction inst);
-    void execute();
-}
+    virtual void add(cphVBInstruction inst) = 0;
+    virtual void execute() = 0;
+};
 
 #endif

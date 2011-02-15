@@ -23,10 +23,9 @@
 class DeviceManager
 {
 public:
-    DeviceManager();
-    int deviceCount();
-    virtual void initDevice(int deviceId);
-}
+    virtual int deviceCount() = 0;
+    virtual void initDevice(int deviceId) = 0;
+};
 
 #endif
 

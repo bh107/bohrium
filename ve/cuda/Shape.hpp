@@ -17,16 +17,21 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#inndef __SHAPE_HPP
+#ifndef __SHAPE_HPP
 #define __SHAPE_HPP
 
-#incluce <cphvb_array.h>
+#include <cphvb_array.h>
 
 class Shape
 {
+private:
+    int ndim;
+    cphvb_index* shape;
+
 public:
-    Shape(cphvb_int32 ndim, cphvb_index* shape);
+    //Shape();
+    Shape(int ndim, cphvb_index* shape);
     bool operator==(const Shape &that) const; 
-}
+};
 
 #endif

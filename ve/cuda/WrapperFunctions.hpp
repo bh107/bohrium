@@ -17,20 +17,12 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MEMORYMANAGER_HPP
-#define __MEMORYMANAGER_HPP
+#ifndef __WRAPPERFUNCTIONS_HPP
+#define __WRAPPERFUNCTIONS_HPP
 
-#include <cuda.h>
-#include "cphVBArray.h"
-
-class MemoryManager
+inline cphVBArray* cphVBBaseArray(cphVBArray* array)
 {
-public:
-    virtual CUdeviceptr deviceAlloc(cphVBArray* arraySpec) = 0;
-    virtual cphvb_data_ptr hostAlloc(cphVBArray* arraySpec) = 0;
-    virtual void copyToHost(cphVBArray* arraySpec) = 0;
-    virtual void copyToDevice(cphVBArray* arraySpec) = 0;
-};
+    return (cphVBArray*)cphvb_base_array((cphvb_array*)array);
+}
 
 #endif
-

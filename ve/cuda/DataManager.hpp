@@ -20,19 +20,20 @@
 #ifndef __DATAMANAGER_HPP
 #define __DATAMANAGER_HPP
 
-#import <cuda.h>
+#include <cuda.h>
+#include "cphVBArray.h"
+#include "InstructionBatch.hpp"
 
 class DataManager
 {
 public:
-    DataManager();
-    virtual void lock(cudaArray* operands, 
+    virtual void lock(cphVBArray* operands[], 
                       int nops, 
-                      InstructionBatch* batch);
-    virtual void release(cudaArray* array);
-    virtual void sync(cudaArray* array);
-    virtual void flushAll();
-}
+                      InstructionBatch* batch) = 0;
+    virtual void release(cphVBArray* array) = 0;
+    virtual void sync(cphVBArray* array) = 0;
+    virtual void flushAll() = 0;
+};
 
 #endif
 

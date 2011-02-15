@@ -21,13 +21,12 @@
 #ifndef __INSTRUCTIONSCHEDULER_HPP
 #define __INSTRUCTIONSCHEDULER_HPP
 
-#include "CudaInstruction.h"
+#include "cphVBInstruction.h"
 
 class InstructionScheduler
 {
 public:
-    InstructionScheduler();
-    void scedule(cphVBInstruction* inst);
-}
+    virtual void scedule(cphVBInstruction* inst) = 0;
+};
 
 #endif

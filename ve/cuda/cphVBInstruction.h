@@ -20,10 +20,11 @@
 #ifndef __CPHVBINSTRUCTION_H
 #define __CPHVBINSTRUCTION_H
 
-#include "cphvb_instruction.h"
+#include <cphvb_instruction.h>
+#include "cphVBArray.h"
 
 /* Matches memory layout of cphvb_instruction */
-typedef struct
+struct cphVBInstruction
 {
     //Opcode: Identifies the operation
     cphvb_opcode   opcode;
@@ -31,6 +32,6 @@ typedef struct
     cphVBArray*    operand[CPHVB_MAX_NO_OPERANDS];
     //Constants included in the instruction
     cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
-} cphVBInstruction;
+};
 
 #endif
