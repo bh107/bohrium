@@ -23,6 +23,7 @@
 /* Data size in bytes for the different types */
 const int _type_size[] =
 {
+    [CPHVB_BOOL] = 1,
     [CPHVB_INT8] = 1,
     [CPHVB_INT16] = 2,
     [CPHVB_INT32] = 4,
@@ -50,6 +51,7 @@ int cphvb_type_size(cphvb_type type)
 
 const char* const _type_text[] =
 {
+    [CPHVB_BOOL] = "CPHVB_BOOL",
     [CPHVB_INT8] = "CPHVB_INT8",
     [CPHVB_INT16] = "CPHVB_INT16",
     [CPHVB_INT32] = "CPHVB_INT32",

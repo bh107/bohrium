@@ -23,7 +23,7 @@
 #include "cphvb_type.h"
 
 /* Codes for known oparations */
-enum /* cphvb_opcode */
+typedef enum /* cphvb_opcode */
 {
     CPHVB_ADD,
     CPHVB_SUBTRACT,
@@ -95,10 +95,10 @@ enum /* cphvb_opcode */
     CPHVB_LOG2,
     CPHVB_ISREAL,
     CPHVB_ISCOMPLEX,
-    CPHVB_RELEASE
-};
-
-typedef cphvb_int32 cphvb_opcode;
+    CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD 
+    CPHVB_SYNC,
+    CPHVB_DISCARD,
+} cphvb_opcode;
 
 #define CPHVB_MAX_NO_OPERANDS 3
 

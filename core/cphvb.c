@@ -119,3 +119,20 @@ cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
     }
     return offset;
 }
+
+/* Find the base array for a given array/view
+ *
+ * @view   Array/view in question
+ * @return The Base array
+ */
+cphvb_array* cphvb_base_array(cphvb_array* view)
+{
+    if(view->base == NULL)
+    {
+        return view;
+    }
+    else 
+    {
+        return cphvb_base_array(view->base);
+    }
+}

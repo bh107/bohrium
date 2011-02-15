@@ -36,7 +36,7 @@ typedef float         cphvb_float32;
 typedef double        cphvb_float64;
 
 /* Codes for known data types */
-enum /* cphvb_type */
+typedef enum /* cphvb_type */
 {
     CPHVB_BOOL,
     CPHVB_INT8,
@@ -50,12 +50,11 @@ enum /* cphvb_type */
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64
-};
+} cphvb_type;
 
-typedef cphvb_int32 cphvb_type;
-
-typedef union
+typedef union /* cphvb_constant */
 {
+    cphvb_bool     bool;
     cphvb_int8     int8;
     cphvb_int16    int16;
     cphvb_int32    int32;
