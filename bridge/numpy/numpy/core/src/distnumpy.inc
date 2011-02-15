@@ -27,7 +27,7 @@ static cblas_func_type *cblas_cgemm_func = NULL;
  * Private.
  */
 static int
-types_numpy2cphvb(int dtype, int *rettype)
+types_numpy2cphvb(int dtype, cphvb_type *rettype)
 {
     switch(dtype)
     {
@@ -41,55 +41,55 @@ types_numpy2cphvb(int dtype, int *rettype)
             *rettype = CPHVB_UINT8;
             return 0;
         case NPY_SHORT:
-            #if NPY_BITOF_SHORT != 16
-            #    error the NPY_BITOF_INT not 16 bit
+            #if NPY_BITSOF_SHORT != 16
+            #    error the NPY_BITSOF_INT not 16 bit
             #endif
             *rettype = CPHVB_INT16;
             return 0;
         case NPY_USHORT:
-            #if NPY_BITOF_SHORT != 16
-            #    error the NPY_BITOF_INT not 16 bit
+            #if NPY_BITSOF_SHORT != 16
+            #    error the NPY_BITSOF_INT not 16 bit
             #endif
             *rettype = CPHVB_UINT16;
             return 0;
         case NPY_INT:
-            #if NPY_BITOF_INT == 32
-            #    error the NPY_BITOF_INT not 32 bit
+            #if NPY_BITSOF_INT != 32
+            #    error the NPY_BITSOF_INT not 32 bit
             #endif
             *rettype = CPHVB_INT32;
             return 0;
         case NPY_UINT:
-            #if NPY_BITOF_INT != 32
-            #    error the NPY_BITOF_INT not 32 bit
+            #if NPY_BITSOF_INT != 32
+            #    error the NPY_BITSOF_INT not 32 bit
             #endif
             *rettype = CPHVB_UINT32;
             return 0;
         case NPY_LONG:
-            #if NPY_BITOF_LONG == 32
+            #if NPY_BITSOF_LONG == 32
                 *rettype = CPHVB_INT32;
-            #elif NPY_BITOF_LONG == 64
+            #elif NPY_BITSOF_LONG == 64
                 *rettype = CPHVB_INT64;
             #else
-            #    error the NPY_BITOF_LONG not 32 or 64 bit
+            #    error the NPY_BITSOF_LONG not 32 or 64 bit
             #endif
             return 0;
         case NPY_ULONG:
-            #if NPY_BITOF_LONG == 32
+            #if NPY_BITSOF_LONG == 32
                 *rettype = CPHVB_UINT32;
-            #elif NPY_BITOF_LONG == 64
+            #elif NPY_BITSOF_LONG == 64
                 *rettype = CPHVB_UINT64;
             #else
-            #    error the NPY_BITOF_LONG not 32 or 64 bit
+            #    error the NPY_BITSOF_LONG not 32 or 64 bit
             #endif
         case NPY_FLOAT:
-            #if NPY_BITOF_FLOAT != 32
-            #    error the NPY_BITOF_FLOAT not 32 bit
+            #if NPY_BITSOF_FLOAT != 32
+            #    error the NPY_BITSOF_FLOAT not 32 bit
             #endif
             *rettype = CPHVB_FLOAT32;
             return 0;
         case NPY_DOUBLE:
-            #if NPY_BITOF_FLOAT == 64
-            #    error the NPY_BITOF_FLOAT not 64 bit
+            #if NPY_BITSOF_FLOAT == 64
+            #    error the NPY_BITSOF_FLOAT not 64 bit
             #endif
             *rettype = CPHVB_FLOAT64;
             return 0;
