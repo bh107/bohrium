@@ -54,7 +54,7 @@ typedef enum /* cphvb_type */
 
 typedef union /* cphvb_constant */
 {
-    cphvb_bool     bool;
+    cphvb_bool     bool8;
     cphvb_int8     int8;
     cphvb_int16    int16;
     cphvb_int32    int32;
