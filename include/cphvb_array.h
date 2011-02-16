@@ -32,28 +32,39 @@
 
 // Memory layout of an array
 /*
-    //Field used by VEM to manage ownership
-    cphvb_int32      owner;
-    //Pointer to the base array. If NULL this is a base array
+    Field used by VEM to manage ownership
+    cphvb_intp       owner;
+
+    Pointer to the base array. If NULL this is a base array
     cphvb_array*     base;
-    //The type of data in the array
+
+    The type of data in the array
     cphvb_type       type;
-    //Number of dimentions
-    int              ndim;
-    //Index of the start element (always 0 for base-array)
+
+    Number of dimentions
+    cphvb_intp       ndim;
+
+    Index of the start element (always 0 for base-array)
     cphvb_index      start;
-    //Number of elements in each dimention
+
+    Number of elements in each dimention
     cphvb_index      shape[CPHVB_MAXDIM];
-    //The stride for each dimention
+
+    The stride for each dimention
     cphvb_index      stride[CPHVB_MAXDIM];
-    //Pointer to the actual data
+
+    Pointer to the actual data. Ignored for views
     cphvb_data_ptr   data;
-    //Does the array have an initial value (if not initialized)
-    bool             has_init_value;
-    //The initial value
+
+    Does the array have an initial value (if not initialized)
+    Ignored for views
+    cphvb_intp       has_init_value;
+
+    The initial value
     cphvb_constant   init_value;
+
     //Ref Count
-    int              ref_count;
+    cphvb_intp       ref_count;
 */
 #define CPHVB_ARRAY_BASE                   \
     cphvb_intp       owner;                \
