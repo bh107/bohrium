@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <cphvb.h>
+#include <cphvb_vem.h>
 
 
 #ifndef CBLAS_HEADER
@@ -107,14 +108,16 @@ types_numpy2cphvb(int dtype, cphvb_type *rettype)
  */
 static int
 dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
-                       intp dtypesize, intp *uid)
+                       intp *uid)
 {
+    printf("dnumpy_create_dndarray\n");
     int i;
     cphvb_type dtype;
     cphvb_index s;
     cphvb_index stride[CPHVB_MAXDIM];
     cphvb_index shape[CPHVB_MAXDIM];
     cphvb_error error;
+    cphvb_array *new_ary;
 
 
     if(types_numpy2cphvb(numpytype, &dtype))
@@ -126,15 +129,19 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
 
     //Compute the stride.
     s=1;
-    for(i=ndims-1, i>=0; --i)
+    for(i=ndims-1; i>=0; --i)
     {
         stride[i] = s;
         shape[i] = dims[i];//Convert from 'intp' to 'cphvb_index'.
-        s *= tdims[i];
+        s *= shape[i];
     }
 
-    error = cphvb_vem_create_array(NULL, dtype, ndims, 0, shape,
-                                   NPY_FALSE, 0, uid);
+    error = cphvb_vem_create_array(NULL, dtype, ndims, 0, shape, stride,
+                                NPY_FALSE, (cphvb_constant)0, &new_ary);
+
+    //We save the array pointer in an 'intp'.
+    *uid = (intp) new_ary;
+    printf("uid (%ld)\n", *uid);
 
     if(error == CPHVB_OUT_OF_MEMORY)
         PyErr_SetString(PyExc_MemoryError, "cphVB out of memory\n");
@@ -154,10 +161,21 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
 static void
 dnumpy_destroy_dndarray(intp uid)
 {
-    printf("dnumpy_destroy_dndarray\n");
-    //Get arrray structs.
-    //dndview *ary = get_dndview(uid);
+    printf("dnumpy_destroy_dndarray (%ld)\n", uid);
 
+    cphvb_error error;
+    cphvb_instruction inst;
+    inst.opcode = CPHVB_DESTORY;
+    inst.operand[0] = (cphvb_array*) uid;
+
+    //We assume that the VEM supports the CPHVB_DESTORY opcode.
+    error = cphvb_vem_execute(1, &inst);
+    if(error)
+    {
+        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
+                       " in dnumpy_destroy_dndarray()\n");
+        exit(error);
+    }
 
 } /* dnumpy_destroy_dndarray */
 
@@ -299,6 +317,8 @@ dnumpy_evalflush(void)
 static char
 dnumpy_data_overlap(intp Auid, intp Buid)
 {
+    printf("dnumpy_data_overlap\n");
+    /*
     dndview *A = get_dndview(Auid);
     dndview *B = get_dndview(Buid);
     //At the moment we only check at the array-base level.
@@ -306,6 +326,8 @@ dnumpy_data_overlap(intp Auid, intp Buid)
         return 1;
     else
         return 0;
+    */
+    return 0;
 } /* dnumpy_data_overlap */
 
 /*NUMPY_API
