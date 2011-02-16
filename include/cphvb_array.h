@@ -56,16 +56,16 @@
     int              ref_count;
 */
 #define CPHVB_ARRAY_BASE                   \
-    cphvb_int32      owner;                \
+    cphvb_intp       owner;                \
     cphvb_array*     base;                 \
     cphvb_type       type;                 \
-    int              ndim;                 \
+    cphvb_intp       ndim;                 \
     cphvb_index      start;                \
     cphvb_index      shape[CPHVB_MAXDIM];  \
     cphvb_index      stride[CPHVB_MAXDIM]; \
     cphvb_data_ptr   data;                 \
-    bool             has_init_value;       \
-    int                ref_count;          \
+    cphvb_intp       has_init_value;       \
+    cphvb_intp       ref_count;            \
     cphvb_constant   init_value;           \
 
 typedef struct cphvb_array cphvb_array;

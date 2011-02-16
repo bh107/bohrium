@@ -36,7 +36,7 @@ typedef float         cphvb_float32;
 typedef double        cphvb_float64;
 
 /* Codes for known data types */
-typedef enum /* cphvb_type */
+enum /* cphvb_type */
 {
     CPHVB_BOOL,
     CPHVB_INT8,
@@ -50,7 +50,7 @@ typedef enum /* cphvb_type */
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64
-} cphvb_type;
+};
 
 typedef union /* cphvb_constant */
 {
@@ -67,7 +67,10 @@ typedef union /* cphvb_constant */
     cphvb_float64  float64;
 } cphvb_constant;
 
-typedef long int cphvb_index;
-typedef void* cphvb_data_ptr;
+typedef long int   cphvb_intp;
+typedef cphvb_intp cphvb_index;
+typedef cphvb_intp cphvb_type;
+typedef cphvb_intp cphvb_opcode;
+typedef void*      cphvb_data_ptr;
 
 #endif

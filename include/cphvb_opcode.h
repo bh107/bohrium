@@ -23,7 +23,7 @@
 #include "cphvb_type.h"
 
 /* Codes for known oparations */
-typedef enum /* cphvb_opcode */
+enum /* cphvb_opcode */
 {
     CPHVB_ADD,
     CPHVB_SUBTRACT,
@@ -99,7 +99,7 @@ typedef enum /* cphvb_opcode */
     CPHVB_SYNC,
     CPHVB_DISCARD,
     CPHVB_DESTORY //Inform VEM to deallocate an array.
-} cphvb_opcode;
+};
 
 #define CPHVB_MAX_NO_OPERANDS 3
 
