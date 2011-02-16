@@ -23,23 +23,61 @@
 #include <cphvb_array.h>
 #include <cphvb_error.h>
 #include <cphvb_type.h>
+#include <cphvb_instruction.h>
 
+/* Initialize the VEM
+ *
+ * @return Error codes (CPHVB_SUCCESS)
+ */
 cphvb_error cphvb_vem_init(void);
 
+
+/* Shutdown the VEM, which include a instruction flush
+ *
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error cphvb_vem_shutdown(void);
+
+
+/* Create an array, which are handled by the VEM.
+ *
+ * @base Pointer to the base array. If NULL this is a base array
+ * @type The type of data in the array
+ * @ndim Number of dimentions
+ * @start Index of the start element (always 0 for base-array)
+ * @shape[CPHVB_MAXDIM] Number of elements in each dimention
+ * @stride[CPHVB_MAXDIM] The stride for each dimention
+ * @has_init_value Does the array have an initial value
+ * @init_value The initial value
+ * @new_array The handler for the newly created array
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
 cphvb_error cphvb_vem_create_array(cphvb_array*   base,
                                    cphvb_type     type,
-                                   cphvb_int32    ndim,
+                                   cphvb_intp     ndim,
                                    cphvb_index    start,
                                    cphvb_index    shape[CPHVB_MAXDIM],
                                    cphvb_index    stride[CPHVB_MAXDIM],
-                                   cphvb_bool     has_init_value,
+                                   cphvb_intp     has_init_value,
                                    cphvb_constant init_value,
-                                   cphvb_int32    *uid);
+                                   cphvb_array**  new_array);
 
 
-cphvb_error cphvb_vem_execute(cphvb_int32 instruction_count,
-                                    char* instruction_list);
+/* Check whether the instruction is supported by the VEM or not
+ *
+ * @return non-zero when true and zero when false
+ */
+cphvb_intp cphvb_vem_instruction_check(cphvb_instruction *inst);
 
-cphvb_error cphvb_vem_shutdown(void);
+
+/* Execute a list of instructions (blocking, for the time being).
+ * It is required that the VEM supports all instructions in the list.
+ *
+ * @instruction A list of instructions to execute
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error cphvb_vem_execute(cphvb_intp count,
+                              cphvb_instruction inst_list[]);
+
 
 #endif
