@@ -31,9 +31,7 @@
 #define CPHVB_CONSTANT (NULL)
 
 // Memory layout of an array
-typedef struct cphvb_array cphvb_array;
-struct cphvb_array
-{
+/*
     //Field used by VEM to manage ownership
     cphvb_int32      owner;
     //Pointer to the base array. If NULL this is a base array
@@ -56,6 +54,24 @@ struct cphvb_array
     cphvb_constant   init_value;
     //Ref Count
     int              ref_count;
+*/
+#define CPHVB_ARRAY_BASE                   \
+    cphvb_int32      owner;                \
+    cphvb_array*     base;                 \
+    cphvb_type       type;                 \
+    int              ndim;                 \
+    cphvb_index      start;                \
+    cphvb_index      shape[CPHVB_MAXDIM];  \
+    cphvb_index      stride[CPHVB_MAXDIM]; \
+    cphvb_data_ptr   data;                 \
+    bool             has_init_value;       \
+    int                ref_count;          \
+    cphvb_constant   init_value;           \
+
+typedef struct cphvb_array cphvb_array;
+struct cphvb_array
+{
+    CPHVB_ARRAY_BASE
     //Space reserved for extra meta data.
     //Not persistent at ownership change
     char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
