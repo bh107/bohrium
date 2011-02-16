@@ -17,15 +17,12 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INSTRUCTIONBATCHSIMPLE_HPP
-#define __INSTRUCTIONBATCHSIMPLE_HPP
+#ifndef __WRAPPERFUNCTIONS_HPP
+#define __WRAPPERFUNCTIONS_HPP
 
-class InstructionBatchSimple : public InstructionBatch 
+inline cphVBArray* cphVBBaseArray(cphVBArray* array)
 {
-public:
-    InstructionBatchSimple(Shape shape);
-    void add(cphVBInstruction inst);
-    void execute();
+    return (cphVBArray*)cphvb_base_array((cphvb_array*)array);
 }
 
 #endif

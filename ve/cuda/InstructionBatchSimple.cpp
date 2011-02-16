@@ -17,20 +17,30 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "InstructionBatchSimple.hpp"
+#include <queue>
+#include <cphvb.h>
+#include "InstructionBatch.hpp"
+#include "DataManager.hpp"
+#include "Shape.hpp"
+
 
 class InstructionBatchSimple : public InstructionBatch 
 {
+private:
+    DataManager* dataManager;
+    Shape shape;
+    std::queue<cphVBInstruction*> batch;
+
 public:
-    InstructionBatchSimple(Shape shape) 
-    {
-        this.shape = shape;
-    }
+    InstructionBatchSimple(DataManager* dataManager_,
+                           Shape shape_) :
+        dataManager(dataManager_),
+        shape(shape_) {}
 
     void add(cphVBInstruction* inst)
     {
         int nops = cphvb_operands(inst->opcode);
-        dataManager.lock(inst->operand, nops, this);
+        dataManager->lock(inst->operand, nops, this);
         batch.push(inst);
     }
 
@@ -39,8 +49,5 @@ public:
         //TODO
     }
 
-private:
-    Shape shape;
-    std::queue<cphVBInstruction> batch;
-}
+};
 

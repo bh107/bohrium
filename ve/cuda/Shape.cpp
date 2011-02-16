@@ -17,34 +17,36 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cphvb_type.h>
+#include <cstddef>
 #include "Shape.hpp"
-#incluce <cphvb_array.h>
 
-class Shape
+/*
+Shape::Shape()
 {
-public:
-    Shape(cphvb_int32 ndim, cphvb_index* shape)
-    {
-        this.ndim = ndim;
-        this.shape = shape;
-    }
+    this->ndim = 0;
+    this->shape = NULL;
+}
+*/
 
-    bool operator==(const Shape &that) const 
+Shape::Shape(int ndim_, cphvb_index* shape_)
+{
+    ndim = ndim_;
+    shape = shape_;
+}
+
+bool Shape::operator==(const Shape &that) const 
+{
+    if (ndim != that.ndim)
     {
-        if (this.ndim != that.ndim)
+        return false;
+    }
+    for (int i = 0; i < ndim; ++i)
+    {
+        if (shape[i] != that.shape[i])
         {
             return false;
         }
-        for (int i = 0; i < this.ndim)
-        {
-            if (this.shape[i] != that.shape[i])
-            {
-                return false;
-            }
-        }
-        return true;
     }
-private:
-    cphvb_int32      ndim;
-    cphvb_index*     shape;
+        return true;
 }

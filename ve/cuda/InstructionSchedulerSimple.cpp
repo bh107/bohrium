@@ -17,9 +17,10 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "CudaInstruction.h"
-#include "InstructionSchedulerSimple.hpp"
+#include <map>
+#include "cphVBInstruction.h"
+#include "InstructionScheduler.hpp"
+#include "InstructionBatch.hpp"
 #include "Shape.hpp"
 
 class InstructionSchedulerSimple : public InstructionScheduler
@@ -33,6 +34,5 @@ public:
 
 private:
     std::map<Shape, InstructionBatch*> batches;
-}
+};
 
-#endif

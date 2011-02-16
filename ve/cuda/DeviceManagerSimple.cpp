@@ -19,19 +19,19 @@
 
 #include <cuda.h>
 #include <stdexcept>
-#include "DeviceManagerSimple.hpp"
+#include "DeviceManager.hpp"
 
 class DeviceManagerSimple : public DeviceManager
 {
+private:
+        CUdevice cuDevice;      
 public:
     void initDevice(int deviceId)
         {
-            CUresult error = cuDeviceGet(&cuDevice, device_id);
+            CUresult error = cuDeviceGet(&cuDevice, deviceId);
             if (error != CUDA_SUCCESS) 
             {
-                throw std::runtime_error("Could not init device: " << deviceId);
+                throw std::runtime_error("Could not init device.");
             }       
         }
-private:
-        CUdevice cuDevice;      
-}
+};

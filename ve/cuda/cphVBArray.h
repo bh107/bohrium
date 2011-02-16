@@ -23,17 +23,18 @@
 #include <cuda.h>  
 #include <cphvb_array.h>
 
+typedef struct cphVBArray cphVBArray;
 /* Matches memory layout of cphvb_array */
-typedef struct
+struct cphVBArray
 {
     //Field used by VEM to manage ownership
     cphvb_int32      owner;
     //Pointer to the base array. If NULL this is a base array
-    cphvb_array*     base;
+    cphVBArray*      base;
     //The type of data in the array
     cphvb_type       type;
     //Number of dimentions
-    cphvb_int32      ndim;
+    int              ndim;
     //Index of the start element (always 0 for base-array)
     cphvb_index      start;
     //Number of elements in each dimention
@@ -43,14 +44,19 @@ typedef struct
     //Pointer to the actual data
     cphvb_data_ptr   data;
     //Does the array have an initial value (if not initialized)
-    cphvb_int32      hasInitValue;
+    bool      hasInitValue;
     //The initial value
     cphvb_constant   initValue;
     //Ref Count
-    cphvb_int32      refCount;
+    int              refCount;
     //Space reserved for extra meta data.
     //Not persistent at ownership change
-    CUdeviceptr      cudaPtr
-} cphVBArray;
+    CUdeviceptr      cudaPtr;
+    cphvb_index      cudaStride[CPHVB_MAXDIM];
+    int              cudaPaddingDim;
+    int              cudaPadding;
+    cphvb_index      cudaSize;
+    cphvb_index      cudaElemPerPad;
+};
 
 #endif

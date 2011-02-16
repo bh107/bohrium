@@ -20,17 +20,17 @@
 #ifndef __MEMORYMANAGER_HPP
 #define __MEMORYMANAGER_HPP
 
-#import <cuda.h>
+#include <cuda.h>
+#include "cphVBArray.h"
 
 class MemoryManager
 {
 public:
-    MemoryManager();
-    CUdeviceprt deviceAlloc(cphvbArray arraySpec);
-    cphvb_data_ptr hostAlloc(cphvbArray arraySpec);
-    void copyToHost(cphvbArray arraySpec);
-    void copyToDevice(cphvbArray arraySpec);
-}
+    virtual CUdeviceptr deviceAlloc(cphVBArray* arraySpec) = 0;
+    virtual cphvb_data_ptr hostAlloc(cphVBArray* arraySpec) = 0;
+    virtual void copyToHost(cphVBArray* arraySpec) = 0;
+    virtual void copyToDevice(cphVBArray* arraySpec) = 0;
+};
 
 #endif
 

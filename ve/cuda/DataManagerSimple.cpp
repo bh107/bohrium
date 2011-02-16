@@ -17,79 +17,104 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "DataManagerSimple.hpp"
 #include <cassert>
+#include <queue>
+#include <map>
+#include <cphvb.h>
+#include "DataManager.hpp"
+#include "MemoryManager.hpp"
+#include "InstructionBatch.hpp"
+#include "WrapperFunctions.hpp"
 
-typedef struct
+struct LockHolders
 {
     InstructionBatch* writer;
     std::queue<InstructionBatch*> readers;
-} LockHolders;
+};
 
-typedef std::map<cphvb_array*, LockHolders> LockTable;
-typedef std::map<cphvb_array*, CUdeviceptr> ArrayMap;
+typedef std::map<cphVBArray*, LockHolders> LockTable;
+typedef std::map<cphVBArray*, CUdeviceptr> Base2CudaMap;
+typedef std::map<cphVBArray* ,cphVBArray*> Operand2BaseMap;
+
 
 class DataManagerSimple : public DataManager
 {
 private:
+    MemoryManager* memoryManager;
     LockTable lockTable;
-    ArrayMap  arrayMap;
+    Base2CudaMap base2Cuda;
+    Operand2BaseMap op2Base;
     
-    void copyNlock(cphvb_array* baseArrays, 
+    void copyNlock(cphVBArray* baseArrays[], 
                    int nops, 
                    InstructionBatch* batch)
     {
         //TODO
     }
 
-    void justLock(cphvb_array* baseArrays, 
+    void justLock(cphVBArray* baseArrays[], 
                    int nops, 
                    InstructionBatch* batch)
     {
         //TODO
     }
 
-    mapArrays(cphVBArray* operands,
-              cphvb_array* baseArrays,
-              int nops)
+    /* Map operands to CUDA device pointers via base arrays.
+     * Also updates cphVBArray with apropriate info.
+     */
+    void mapOperands(cphVBArray* operands[],
+                int nops)
     {
-        ArrayMap::iterator iter;
-        for (int i = 0; i < nops, ++i)
+        assert (nops > 0);
+        Operand2BaseMap::iterator oiter;
+        Base2CudaMap::iterator biter;
+        cphVBArray* baseArray;
+        cphVBArray* operand;
+        for (int i = 0; i < nops; ++i)
         {
-            iter = arrayMap.find(baseArray[i]);
-            if (iter != my_map.end())
-            {
-                operands[i]->cudaPtr = iter->second;
-            }
-            else
-            {
-                CUdeviceptr cudaPtr = memoryManager.deviceAlloc(baseArrays[i]);
-                arrayMap[baseArrays[i]] = cudaPtr;
-                operands[i]->cudaPtr = cudaPtr;
+            operand = operands[i];
+            oiter = op2Base.find(operand);
+            if (oiter == op2Base.end())
+            { 
+                baseArray = cphVBBaseArray(operand);
+                biter = base2Cuda.find(baseArray);
+                if (biter == base2Cuda.end())
+                {
+                    CUdeviceptr cudaPtr = memoryManager->deviceAlloc(baseArray);
+                    base2Cuda[baseArray] = cudaPtr;
+                    //setCudaStride(baseArray);
+                }
+                op2Base[operand] = baseArray;
+                if (operand != baseArray)
+                {
+                    //setCudaStride(operand);
+                }
             }
         }
     }
 
 public:
-    DataManagerSimple() {}
-    void lock(cphVBArray* operands, 
-                      int nops, 
-                      InstructionBatch* batch)
+    DataManagerSimple(MemoryManager* memoryManager_) :
+        memoryManager(memoryManager_)
+    {}
+    void lock(cphVBArray* operands[], 
+              int nops, 
+              InstructionBatch* batch)
     {
         assert(nops > 0);
-        cphvb_array baseArrays[CPHVB_MAX_NO_OPERANDS];
-        baseArrays[0] = cphvb_base_array(operands[0]);
+        cphVBArray* baseArrays[CPHVB_MAX_NO_OPERANDS];
+        baseArrays[0] = cphVBBaseArray(operands[0]);
         bool internalConflict = false;
         for (int i = 1; i < nops; ++i)
         {
-            baseArrays[i] = cphvb_baseArray(operands[i]);
+            baseArrays[i] = cphVBBaseArray(operands[i]);
             if (baseArrays[0] == baseArrays[i])
             {
                 internalConflict = true;
             }
         }
 
-        mapArrays(operands, baseArrays, nops);
+        mapOperands(operands, nops);
         
         if (internalConflict)
         {
@@ -97,7 +122,7 @@ public:
         }
         else
         {
-            justLock(base_arrays, nops, batch);
+            justLock(baseArrays, nops, batch);
         }
     }
 
@@ -117,6 +142,5 @@ public:
     }
 
     
-}
-#endif
+};
 
