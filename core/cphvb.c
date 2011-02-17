@@ -18,6 +18,7 @@
  */
 
 #include <cphvb.h>
+#include <assert.h>
 
 /* Reduce nDarray info to a base shape
  *
@@ -31,10 +32,10 @@
  * @base_shape    Placeholder for base number of elements in each dimention.
  * @base_stride   Placeholder for base stride in each dimention.
  */
-void cphvb_base_shape(cphvb_int32 ndim,
+void cphvb_base_shape(cphvb_intp ndim,
                       const cphvb_index shape[],
                       const cphvb_index stride[],
-                      cphvb_int32* base_ndim,
+                      cphvb_intp* base_ndim,
                       cphvb_index* base_shape,
                       cphvb_index* base_stride)
 {
@@ -58,11 +59,11 @@ void cphvb_base_shape(cphvb_int32 ndim,
  * @stride[] Stride in each dimention.
  * @return   Truth value indicating continuousity.
  */
-bool cphvb_is_continuous(cphvb_int32 ndim,
+bool cphvb_is_continuous(cphvb_intp ndim,
                          const cphvb_index shape[],
                          const cphvb_index stride[])
 {
-    cphvb_int32 my_ndim = 0;
+    cphvb_intp my_ndim = 0;
     cphvb_index my_shape[ndim];
     cphvb_index my_stride[ndim];
     cphvb_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
@@ -84,7 +85,7 @@ bool cphvb_is_continuous(cphvb_int32 ndim,
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-size_t cphvb_nelements(cphvb_int32 ndim,
+size_t cphvb_nelements(cphvb_intp ndim,
                        const cphvb_index shape[])
 {
     size_t res = 1;
@@ -104,12 +105,12 @@ size_t cphvb_nelements(cphvb_int32 ndim,
  * @element  Index of element in question
  * @return   Truth value indicating continuousity.
  */
-cphvb_index cphvb_calc_offset(cphvb_int32 ndim,
+cphvb_index cphvb_calc_offset(cphvb_intp ndim,
                               const cphvb_index shape[],
                               const cphvb_index stride[],
                               const cphvb_index element)
 {
-    cphvb_int32 dim = ndim -1;
+    cphvb_intp dim = ndim -1;
     cphvb_index dimbound = shape[dim];
     cphvb_index offset = (element % dimbound) * stride[dim];
     for (--dim; dim >= 0 ; --dim)
