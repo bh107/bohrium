@@ -190,6 +190,7 @@ dnumpy_create_dndview(intp org_view_uid, int nslice,
                       dndslice slice[NPY_MAXDIMS])
 {
     printf("dnumpy_create_dndview\n");
+    assert(1==2);
     return 0;
     /*
     //Get arrray structs.
@@ -342,16 +343,17 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
                         PyObject *item)
 {
     printf("dnumpy_dndarray_putitem\n");
-    /*
-    //Get arrray structs.
-    dndview *view = get_dndview(uid);
-    int ndims = view->ndims;
-    int elsize = view->base->elsize;
+    cphvb_error error;
+    cphvb_instruction inst;
+    cphvb_array *ary = (cphvb_array*) uid;
+    cphvb_array *base = cphvb_base_array(ary);
+    cphvb_intp dtypesize = cphvb_type_size(ary->type);
+    cphvb_intp d, offset;
 
     //Convert item to a compatible type.
     PyObject *item2 = PyArray_FROM_O(item);
     PyObject *citem2 = PyArray_Cast((PyArrayObject*)item2,
-                                    view->base->dtype);
+                                    cph2py[ary->type]);
 
     //Cleanup and return error if the cast failed.
     if(citem2 == NULL)
@@ -360,10 +362,41 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
         return -1;
     }
 
+    //Tell the VEM to release the data to us.
+    inst.opcode = CPHVB_RELEASE;
+    inst.operand[0] = ary;
+    //We assume that the VEM supports the CPHVB_RELEASE opcode.
+    error = cphvb_vem_execute(1, &inst);
+    if(error)
+    {
+        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
+                       " in dnumpy_dndarray_putitem()\n");
+        exit(error);
+    }
+
+    //We may have to allocate the array memory.
+    if(base->data == NULL)
+        if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
+        {
+            fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
+            exit(CPHVB_OUT_OF_MEMORY);
+        }
+
+    //Compute offset. May be use cphvb_calc_offset()?
+    offset = 0;
+    for(d=ary->ndim-1; d>=0; --d)
+        offset += coordinate[d] * ary->stride[d];
+    offset *= dtypesize;
+
+    printf("offset: %ld\n", offset);
+
+    //Write item to memory.
+    memcpy(base->data + offset, PyArray_DATA(citem2), dtypesize);
+
     //Clean up.
     Py_DECREF(citem2);
     Py_DECREF(item2);
-    */
+
     return 0;//Succes
 } /* dnumpy_dndarray_putitem */
 
@@ -377,10 +410,44 @@ static void
 dnumpy_dndarray_getitem(char *retdata, intp uid,
                         const intp coordinate[NPY_MAXDIMS])
 {
-    printf("dnumpy_dndarray_getitem\n");
-    //Get arrray structs.
-    //dndview *view = get_dndview(uid);
+    printf("dnumpy_dndarray_getitem(%ld)\n", uid);
+    cphvb_error error;
+    cphvb_instruction inst;
+    cphvb_array *ary = (cphvb_array*) uid;
+    cphvb_array *base = cphvb_base_array(ary);
+    cphvb_intp dtypesize = cphvb_type_size(ary->type);
+    cphvb_intp d, offset;
 
+    //Tell the VEM to release the data to us.
+    inst.opcode = CPHVB_RELEASE;
+    inst.operand[0] = ary;
+    //We assume that the VEM supports the CPHVB_RELEASE opcode.
+    error = cphvb_vem_execute(1, &inst);
+    if(error)
+    {
+        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
+                       " in dnumpy_dndarray_putitem()\n");
+        exit(error);
+    }
+
+    //We may have to allocate the array memory.
+    if(base->data == NULL)
+        if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
+        {
+            fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
+            exit(CPHVB_OUT_OF_MEMORY);
+        }
+
+    //Compute offset. May be use cphvb_calc_offset()?
+    offset = 0;
+    for(d=ary->ndim-1; d>=0; --d)
+        offset += coordinate[d] * ary->stride[d];
+    offset *= dtypesize;
+
+    printf("offset: %ld\n", offset);
+
+    //Write item to memory.
+    memcpy(retdata, base->data + offset, dtypesize);
 
 } /* dnumpy_dndarray_getitem */
 
