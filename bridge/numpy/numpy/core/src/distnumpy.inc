@@ -21,84 +21,85 @@ static cblas_func_type *cblas_sgemm_func = NULL;
 static cblas_func_type *cblas_zgemm_func = NULL;
 static cblas_func_type *cblas_cgemm_func = NULL;
 
+
+
 /*===================================================================
  *
- * Convert from numpy type to cphVB type.
- * Return 1 when the type is not supported.
+ * The data type conversion to and from NumPy and cphVB.
  * Private.
  */
-static int
-types_numpy2cphvb(int dtype, cphvb_type *rettype)
+#if NPY_BITSOF_SHORT != 16
+#    error the NPY_BITSOF_INT not 16 bit
+#endif
+#if NPY_BITSOF_INT != 32
+#    error the NPY_BITSOF_INT not 32 bit
+#endif
+#if NPY_BITSOF_LONG != 32 && NPY_BITSOF_LONG != 64
+#    error the NPY_BITSOF_LONG not 32 or 64 bit
+#endif
+#if NPY_BITSOF_LONGLONG != 64
+#    error the NPY_BITSOF_LONGLONG not 64 bit
+#endif
+#if NPY_BITSOF_FLOAT != 32
+#    error the NPY_BITSOF_FLOAT not 32 bit
+#endif
+#if NPY_BITSOF_FLOAT == 64
+#    error the NPY_BITSOF_FLOAT not 64 bit
+#endif
+ static const cphvb_type const py2cph[] =
 {
-    switch(dtype)
-    {
-        case NPY_BOOL:
-            *rettype = CPHVB_BOOL;
-            return 0;
-        case NPY_BYTE:
-            *rettype = CPHVB_INT8;
-            return 0;
-        case NPY_UBYTE:
-            *rettype = CPHVB_UINT8;
-            return 0;
-        case NPY_SHORT:
-            #if NPY_BITSOF_SHORT != 16
-            #    error the NPY_BITSOF_INT not 16 bit
-            #endif
-            *rettype = CPHVB_INT16;
-            return 0;
-        case NPY_USHORT:
-            #if NPY_BITSOF_SHORT != 16
-            #    error the NPY_BITSOF_INT not 16 bit
-            #endif
-            *rettype = CPHVB_UINT16;
-            return 0;
-        case NPY_INT:
-            #if NPY_BITSOF_INT != 32
-            #    error the NPY_BITSOF_INT not 32 bit
-            #endif
-            *rettype = CPHVB_INT32;
-            return 0;
-        case NPY_UINT:
-            #if NPY_BITSOF_INT != 32
-            #    error the NPY_BITSOF_INT not 32 bit
-            #endif
-            *rettype = CPHVB_UINT32;
-            return 0;
-        case NPY_LONG:
-            #if NPY_BITSOF_LONG == 32
-                *rettype = CPHVB_INT32;
-            #elif NPY_BITSOF_LONG == 64
-                *rettype = CPHVB_INT64;
-            #else
-            #    error the NPY_BITSOF_LONG not 32 or 64 bit
-            #endif
-            return 0;
-        case NPY_ULONG:
-            #if NPY_BITSOF_LONG == 32
-                *rettype = CPHVB_UINT32;
-            #elif NPY_BITSOF_LONG == 64
-                *rettype = CPHVB_UINT64;
-            #else
-            #    error the NPY_BITSOF_LONG not 32 or 64 bit
-            #endif
-        case NPY_FLOAT:
-            #if NPY_BITSOF_FLOAT != 32
-            #    error the NPY_BITSOF_FLOAT not 32 bit
-            #endif
-            *rettype = CPHVB_FLOAT32;
-            return 0;
-        case NPY_DOUBLE:
-            #if NPY_BITSOF_FLOAT == 64
-            #    error the NPY_BITSOF_FLOAT not 64 bit
-            #endif
-            *rettype = CPHVB_FLOAT64;
-            return 0;
-        default:
-            return 1;
-    }
-} /* types_numpy2cphvb */
-
+    [NPY_BOOL]   = CPHVB_BOOL,
+    [NPY_BYTE]   = CPHVB_INT8,
+    [NPY_UBYTE]  = CPHVB_UINT8,
+    [NPY_SHORT]  = CPHVB_INT16,
+    [NPY_USHORT] = CPHVB_UINT16,
+    [NPY_INT]    = CPHVB_INT32,
+    [NPY_UINT]   = CPHVB_UINT32,
+    #if NPY_BITSOF_LONG == 32
+        [NPY_LONG]  = CPHVB_INT32,
+        [NPY_ULONG] = CPHVB_UINT32,
+    #else
+        [NPY_LONG]  = CPHVB_INT64,
+        [NPY_ULONG] = CPHVB_UINT64,
+    #endif
+    [NPY_LONGLONG]    = CPHVB_INT64,
+    [NPY_ULONGLONG]   = CPHVB_UINT64,
+    [NPY_FLOAT]       = CPHVB_FLOAT32,
+    [NPY_DOUBLE]      = CPHVB_FLOAT64,
+    [NPY_LONGDOUBLE]  = CPHVB_UNKNOWN,
+    [NPY_CFLOAT]      = CPHVB_UNKNOWN,
+    [NPY_CDOUBLE]     = CPHVB_UNKNOWN,
+    [NPY_CLONGDOUBLE] = CPHVB_UNKNOWN,
+    [NPY_OBJECT]      = CPHVB_UNKNOWN,
+    [NPY_STRING]      = CPHVB_UNKNOWN,
+    [NPY_UNICODE]     = CPHVB_UNKNOWN,
+    [NPY_VOID]        = CPHVB_UNKNOWN,
+    [NPY_NTYPES]      = CPHVB_UNKNOWN,
+    [NPY_NOTYPE]      = CPHVB_UNKNOWN,
+    [NPY_CHAR]        = CPHVB_UNKNOWN,
+    [NPY_USERDEF]     = CPHVB_UNKNOWN
+};
+static const cphvb_type const cph2py[] =
+{
+    [CPHVB_BOOL]    = NPY_BOOL,
+    [CPHVB_INT8]    = NPY_BYTE,
+    [CPHVB_UINT8]   = NPY_UBYTE,
+    [CPHVB_INT16]   = NPY_SHORT,
+    [CPHVB_UINT16]  = NPY_USHORT,
+    [CPHVB_INT32]   = NPY_INT,
+    [CPHVB_UINT32]  = NPY_UINT,
+    #if NPY_BITSOF_LONG == 32
+        [CPHVB_INT32]  = NPY_LONG,
+        [CPHVB_UINT32] = NPY_ULONG,
+    #else
+        [CPHVB_INT64]  = NPY_LONG,
+        [CPHVB_UINT64] = NPY_ULONG,
+    #endif
+    [CPHVB_INT64]   = NPY_LONGLONG,
+    [CPHVB_UINT64]  = NPY_ULONGLONG,
+    [CPHVB_FLOAT32] = NPY_FLOAT,
+    [CPHVB_FLOAT64] = NPY_DOUBLE
+};
 
 /*NUMPY_API
  *===================================================================
@@ -110,17 +111,16 @@ static int
 dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
                        intp *uid)
 {
-    printf("dnumpy_create_dndarray\n");
+    printf("dnumpy_create_dndarray %d\n", numpytype);
     int i;
-    cphvb_type dtype;
     cphvb_index s;
     cphvb_index stride[CPHVB_MAXDIM];
     cphvb_index shape[CPHVB_MAXDIM];
     cphvb_error error;
     cphvb_array *new_ary;
+    cphvb_type dtype = py2cph[numpytype];
 
-
-    if(types_numpy2cphvb(numpytype, &dtype))
+    if(dtype == CPHVB_UNKNOWN)
     {
         PyErr_SetString(PyExc_RuntimeError,
                         "cphVB does not support the datatype\n");
@@ -144,7 +144,7 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     printf("uid (%ld)\n", *uid);
 
     if(error == CPHVB_OUT_OF_MEMORY)
-        PyErr_SetString(PyExc_MemoryError, "cphVB out of memory\n");
+        PyErr_NoMemory();
     else if (error)
         PyErr_SetString(PyExc_RuntimeError,
                         "unknown cphVB error\n");
