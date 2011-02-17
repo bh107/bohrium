@@ -106,6 +106,8 @@ cphvb_intp cphvb_vem_instruction_check(cphvb_instruction *inst)
     {
     case CPHVB_DESTORY:
         return 1;
+    case CPHVB_RELEASE:
+        return 1;
     default:
         return 0;
     }
@@ -149,14 +151,27 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
                 }
             }
             break;
+        case CPHVB_RELEASE:
+        {
+            printf("EXEC: CPHVB_RELEASE\n");
+            //Get the base
+            cphvb_array *base = inst->operand[0];
+            if(base->base != NULL)
+                base = base->base;
+            //Check the owner of the array
+            if(base->owner != CPHVB_BRIDGE)
+            {
+                fprintf(stderr, "VEM could not perform release\n");
+                exit(CPHVB_INST_ERROR);
+            }
+            break;
+        }
         default:
             fprintf(stderr, "cphvb_vem_execute() encountered an not "
                             "supported instruction opcode\n");
             exit(CPHVB_INST_NOT_SUPPORTED);
         }
-
     }
-
     return CPHVB_SUCCESS;
 }
 
