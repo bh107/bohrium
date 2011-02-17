@@ -6184,7 +6184,12 @@ PyArray_NewFromDescr(PyTypeObject *subtype, PyArray_Descr *descr, int nd,
         {
             if(dnumpy_create_dndarray(nd, dims, PyArray_TYPE(self),
                &self->dnduid))
+            {
+                //Since the array was not created we have to make sure
+                //that it is not treated as a distributed array.
+                self->flags &= ~DNPY_DISTRIBUTED;
                 goto fail;
+            }
 
             //Make sure that set-/getitem are used.
             self->descr->hasobject |= NPY_USE_GETITEM;
