@@ -145,12 +145,23 @@ const char* cphvb_type_text(cphvb_type type);
  */
 const char* cphvb_error_text(cphvb_error error);
 
+
 /* Find the base array for a given array/view
  *
  * @view   Array/view in question
  * @return The Base array
  */
 cphvb_array* cphvb_base_array(cphvb_array* view);
+
+
+/* Allocate data memory for the given array
+ * Initialize the memory if needed
+ *
+ * @array  The array in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_error cphvb_malloc_array_data(cphvb_array* array);
+
 
 #ifdef __cplusplus
 }

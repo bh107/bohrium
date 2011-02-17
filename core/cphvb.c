@@ -19,6 +19,8 @@
 
 #include <cphvb.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Reduce nDarray info to a base shape
  *
@@ -78,7 +80,6 @@ bool cphvb_is_continuous(cphvb_intp ndim,
     return true;
 }
 
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
@@ -95,7 +96,6 @@ size_t cphvb_nelements(cphvb_intp ndim,
     }
     return res;
 }
-
 
 /* Calculate the offset into an array based on element index
  *
@@ -137,4 +137,29 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
         assert(view->base->base == NULL);
         return view->base;
     }
+}
+
+/* Allocate data memory for the given array
+ * Initialize the memory if needed
+ *
+ * @array  The array in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_error cphvb_malloc_array_data(cphvb_array* array)
+{
+    cphvb_intp i;
+    cphvb_array* base = cphvb_base_array(array);
+    cphvb_intp nelem = cphvb_nelements(base->ndim, base->shape);
+    int dtypesize = cphvb_type_size(base->type);
+
+    assert(base->data == NULL);
+    base->data = malloc(nelem * dtypesize);
+    if(base->data == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+
+    if(base->has_init_value)
+        for(i=0; i<nelem; ++i)
+            memcpy(base->data+i*dtypesize, &base->init_value, dtypesize);
+
+    return CPHVB_SUCCESS;
 }
