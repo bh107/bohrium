@@ -155,9 +155,7 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         {
             printf("EXEC: CPHVB_RELEASE\n");
             //Get the base
-            cphvb_array *base = inst->operand[0];
-            if(base->base != NULL)
-                base = base->base;
+            cphvb_array *base = cphvb_base_array(inst->operand[0]);
             //Check the owner of the array
             if(base->owner != CPHVB_BRIDGE)
             {
