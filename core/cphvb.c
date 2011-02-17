@@ -131,8 +131,9 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
     {
         return view;
     }
-    else 
+    else
     {
-        return cphvb_base_array(view->base);
+        assert(view->base->base == NULL);
+        return view->base;
     }
 }
