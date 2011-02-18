@@ -25,6 +25,8 @@
 
 class InstructionSchedulerSimple : public InstructionScheduler
 {
+private:
+    std::map<Shape, InstructionBatch*> batches;
 public:
     InstructionSchedulerSimple();
     void scedule(cphVBInstruction* inst)
@@ -32,7 +34,5 @@ public:
         
     }
 
-private:
-    std::map<Shape, InstructionBatch*> batches;
 };
 

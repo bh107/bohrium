@@ -26,10 +26,13 @@
 class MemoryManager
 {
 public:
-    virtual CUdeviceptr deviceAlloc(cphVBArray* arraySpec) = 0;
-    virtual cphvb_data_ptr hostAlloc(cphVBArray* arraySpec) = 0;
-    virtual void copyToHost(cphVBArray* arraySpec) = 0;
-    virtual void copyToDevice(cphVBArray* arraySpec) = 0;
+    virtual CUdeviceptr deviceAlloc(cphVBArray* baseArray) = 0;
+    virtual cphvb_data_ptr hostAlloc(cphVBArray* baseArray) = 0;
+    virtual void copyToHost(cphVBArray* baseArray) = 0;
+    virtual void copyToDevice(cphVBArray* baseArray) = 0;
+    virtual void free(cphVBArray* baseArray) = 0;
+    virtual void deviceCopy(CUdeviceptr dest,
+                            cphVBArray* src) = 0;
 };
 
 #endif
