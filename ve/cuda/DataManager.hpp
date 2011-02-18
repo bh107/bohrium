@@ -27,9 +27,9 @@
 class DataManager
 {
 public:
-    virtual void lock(cphVBArray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
+    virtual CUdeviceptr lock(cphVBArray* operands[], 
+                             int nops, 
+                             InstructionBatch* batch) = 0;
     virtual void release(cphVBArray* array) = 0;
     virtual void sync(cphVBArray* array) = 0;
     virtual void flushAll() = 0;
