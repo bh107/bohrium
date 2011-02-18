@@ -86,10 +86,10 @@ bool cphvb_is_continuous(cphvb_intp ndim,
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-size_t cphvb_nelements(cphvb_intp ndim,
-                       const cphvb_index shape[])
+cphvb_index cphvb_nelements(cphvb_intp ndim,
+                            const cphvb_index shape[])
 {
-    size_t res = 1;
+    cphvb_index res = 1;
     for (int i = 0; i < ndim; ++i)
     {
         res *= shape[i];

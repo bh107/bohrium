@@ -74,8 +74,8 @@ bool cphvb_is_continuous(cphvb_intp ndim,
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-size_t cphvb_nelements(cphvb_intp ndim,
-                       const cphvb_index shape[]);
+cphvb_index cphvb_nelements(cphvb_intp ndim,
+                            const cphvb_index shape[]);
 
 
 /* Calculate the offset into an array based on element index
