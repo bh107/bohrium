@@ -146,8 +146,7 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     if(error == CPHVB_OUT_OF_MEMORY)
         PyErr_NoMemory();
     else if (error)
-        PyErr_SetString(PyExc_RuntimeError,
-                        "unknown cphVB error\n");
+        PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
 
     return 0;//Success.
 
@@ -182,116 +181,58 @@ dnumpy_destroy_dndarray(intp uid)
 
 /*NUMPY_API
  *===================================================================
- * Create a new view based on the 'org_view'.
+ * Create a new view based on the 'org_ary'.
  * Public
  */
 static int
-dnumpy_create_dndview(intp org_view_uid, int nslice,
-                      dndslice slice[NPY_MAXDIMS])
+dnumpy_create_dndview(intp org_ary_uid, intp ndim,
+                      intp dims[NPY_MAXDIMS],
+                      intp stride_inbyte[NPY_MAXDIMS],
+                      intp offset_inbyte)
 {
-    printf("dnumpy_create_dndview\n");
-    assert(1==2);
-    return 0;
-    /*
-    //Get arrray structs.
-    dndview *orgview = get_dndview(org_view_uid);
+    cphvb_intp i;
+    cphvb_array *org_ary = (cphvb_array *) org_ary_uid;
+    cphvb_array *base = cphvb_base_array(org_ary);
+    cphvb_array *new_ary;
+    cphvb_error error;
+    cphvb_index stride[CPHVB_MAXDIM];
+    cphvb_index shape[CPHVB_MAXDIM];
+    intp dtypesize = cphvb_type_size(org_ary->type);
+    cphvb_intp offset = offset_inbyte/dtypesize;
 
-    //Create new view based on 'org_view' and the 'slice'.
-    dndview newview;
-    newview.uid = ++uid_count;
-    newview.ndims = 0;
-    newview.alterations = 0;
+    printf("offset_inbyte: %ld\n", offset_inbyte);
 
-    //Merging the two views.
-    int si = 0; //slice index.
-    int ni = 0; //new index.
-    int oi = 0; //old index.
-    int di = 0; //dim index.
-    while(si < nslice || oi < orgview->nslice)
+    //Check for memory alignment and convert to element indexes
+    //rather than byte indexes.
+    if(offset_inbyte % dtypesize > 0)
     {
-        //If we come to the end of the slices, that happens
-        //if not all dimensions is included in the 'slices', we will
-        //use the whole dimension.
-        int vs = (si < nslice)?1:0;//Valid slice.
-
-        //If dimension is invisible we will just copy it to 'newview'.
-        if(oi < orgview->nslice &&
-           orgview->slice[oi].nsteps == SingleIndex)
+        PyErr_SetString(PyExc_RuntimeError, "cphVB does not support"
+                        " views with an unaligned offset\n");
+        return 0;
+    }
+    for(i=0; i<ndim; ++i)
+    {
+        shape[i]  = dims[i];
+        stride[i] = stride_inbyte[i]/dtypesize;
+        if(stride_inbyte[i] % dtypesize > 0)
         {
-            memcpy(&newview.slice[ni], &orgview->slice[oi],
-                   sizeof(dndslice));
-            ni++; oi++; di++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        //A single index makes the dimension invisible.
-        else if(vs && slice[si].nsteps == SingleIndex)
-        {
-            //If dimension is a Pseudo-dimension then just go to next
-            //dimension.
-            if(orgview->slice[oi].nsteps == PseudoIndex)
-            {
-                si++; oi++;
-            }
-            else
-            {//Copy single index to 'newview'.
-                newview.slice[ni].step = 0;
-                newview.slice[ni].nsteps = SingleIndex;
-                newview.slice[ni].start = orgview->slice[oi].start +
-                                          (vs?slice[si].start:0) *
-                                          orgview->slice[oi].step;
-                si++; ni++; oi++; di++;
-                newview.alterations |= DNPY_NDIMS;
-            }
-        }
-        //If a extra pseudo index should be added we just copy the
-        //slice to 'newview'.
-        else if(vs && slice[si].nsteps == PseudoIndex)
-        {
-            memcpy(&newview.slice[ni], &slice[si],
-                   sizeof(dndslice));
-            ni++; si++;
-            newview.ndims++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        else if(orgview->slice[oi].nsteps == PseudoIndex)
-        {
-            memcpy(&newview.slice[ni], &orgview->slice[oi],
-                   sizeof(dndslice));
-            ni++; oi++; si++;
-            newview.ndims++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        //If no special slices we just merge the two views.
-        else
-        {
-            if(vs)
-            {
-                newview.slice[ni].start = orgview->slice[oi].start +
-                                           slice[si].start *
-                                           orgview->slice[oi].step;
-                newview.slice[ni].step = slice[si].step *
-                                          orgview->slice[oi].step;
-                newview.slice[ni].nsteps = slice[si].nsteps;
-            }
-            else
-                memcpy(&newview.slice[ni], &orgview->slice[oi],
-                       sizeof(dndslice));
-
-            if(newview.slice[ni].step > 1)
-                newview.alterations |= DNPY_STEP | DNPY_NSTEPS;
-            else if(newview.slice[ni].nsteps < orgview->base->dims[di])
-            {
-                newview.alterations |= DNPY_NSTEPS;
-            }
-            newview.ndims++;
-            si++; ni++; oi++; di++;
+            PyErr_SetString(PyExc_RuntimeError, "cphVB does not support"
+                            " views with unaligned strides\n");
+            return 0;
         }
     }
-    //Save the total number of sliceses for the new view.
-    newview.nslice = ni;
 
-    return uid_count;
-    */
+    error = cphvb_vem_create_array(base, org_ary->type, ndim, offset,
+                                   shape, stride, NPY_FALSE,
+                                   (cphvb_constant)0, &new_ary);
+
+    if(error == CPHVB_OUT_OF_MEMORY)
+        PyErr_NoMemory();
+    else if (error)
+        PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
+
+    return (intp) new_ary;
+
 } /* dnumpy_create_dndview */
 
 /*NUMPY_API
@@ -386,6 +327,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     offset = 0;
     for(d=ary->ndim-1; d>=0; --d)
         offset += coordinate[d] * ary->stride[d];
+    offset += ary->start;
     offset *= dtypesize;
 
     printf("offset: %ld\n", offset);
@@ -442,6 +384,7 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
     offset = 0;
     for(d=ary->ndim-1; d>=0; --d)
         offset += coordinate[d] * ary->stride[d];
+    offset += ary->start;
     offset *= dtypesize;
 
     printf("offset: %ld\n", offset);
