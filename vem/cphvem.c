@@ -130,27 +130,20 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         switch(inst->opcode)
         {
         case CPHVB_DESTORY:
+        {
             printf("EXEC: CPHVB_DESTORY\n");
-            if(inst->operand[0]->base == NULL)
+            cphvb_array *base = cphvb_base_array(inst->operand[0]);
+            if(--base->ref_count <= 0)
             {
-                if(--inst->operand[0]->ref_count <= 0)
-                {
-                    if(inst->operand[0]->data != NULL)
-                        free(inst->operand[0]->data);
-                    free(inst->operand[0]);
-                }
+                if(base->data != NULL)
+                    free(base->data);
+
+                if(inst->operand[0]->base != NULL)
+                    free(base);
             }
-            else
-            {
-                if(--inst->operand[0]->base->ref_count <= 0)
-                {
-                    if(inst->operand[0]->base->data != NULL)
-                        free(inst->operand[0]->base->data);
-                    free(inst->operand[0]->base);
-                    free(inst->operand[0]);
-                }
-            }
+            free(inst->operand[0]);
             break;
+        }
         case CPHVB_RELEASE:
         {
             printf("EXEC: CPHVB_RELEASE\n");
