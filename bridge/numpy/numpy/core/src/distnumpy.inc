@@ -22,12 +22,7 @@ static cblas_func_type *cblas_zgemm_func = NULL;
 static cblas_func_type *cblas_cgemm_func = NULL;
 
 
-
-/*===================================================================
- *
- * The data type conversion to and from NumPy and cphVB.
- * Private.
- */
+//Check that the definitions in numpy are in accordance with cphVB.
 #if NPY_BITSOF_SHORT != 16
 #    error the NPY_BITSOF_INT not 16 bit
 #endif
@@ -46,7 +41,14 @@ static cblas_func_type *cblas_cgemm_func = NULL;
 #if NPY_BITSOF_FLOAT == 64
 #    error the NPY_BITSOF_FLOAT not 64 bit
 #endif
- static const cphvb_type const py2cph[] =
+
+
+/*===================================================================
+ *
+ * The data type conversion to and from NumPy and cphVB.
+ * Private.
+ */
+static const cphvb_type const type_py2cph[] =
 {
     [NPY_BOOL]   = CPHVB_BOOL,
     [NPY_BYTE]   = CPHVB_INT8,
@@ -79,7 +81,7 @@ static cblas_func_type *cblas_cgemm_func = NULL;
     [NPY_CHAR]        = CPHVB_UNKNOWN,
     [NPY_USERDEF]     = CPHVB_UNKNOWN
 };
-static const cphvb_type const cph2py[] =
+static const cphvb_type const type_cph2py[] =
 {
     [CPHVB_BOOL]    = NPY_BOOL,
     [CPHVB_INT8]    = NPY_BYTE,
@@ -118,7 +120,7 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     cphvb_index shape[CPHVB_MAXDIM];
     cphvb_error error;
     cphvb_array *new_ary;
-    cphvb_type dtype = py2cph[numpytype];
+    cphvb_type dtype = type_py2cph[numpytype];
 
     if(dtype == CPHVB_UNKNOWN)
     {
@@ -295,7 +297,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     //Convert item to a compatible type.
     PyObject *item2 = PyArray_FROM_O(item);
     PyObject *citem2 = PyArray_Cast((PyArrayObject*)item2,
-                                    cph2py[ary->type]);
+                                    type_cph2py[ary->type]);
 
     //Cleanup and return error if the cast failed.
     if(citem2 == NULL)
@@ -398,43 +400,67 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
 /*NUMPY_API
  *===================================================================
  * Public
- * Apply ufunc on distributed arrays in arylist.
- * op is the python name of the ufunction.
+ * Apply ufunc on distributed arrays in args.
  * Returns -1 on failure.
  */
 static int
-dnumpy_ufunc(PyArrayObject *arylist[NPY_MAXARGS], int narys,
-             int nout_arys, char *op, int appropriate_function)
+dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
 {
     printf("dnumpy_ufunc\n");
-    /*
-    int i;
-    //Tell slaves about the ufunc operations.
-    msg[0] = DNPY_UFUNC;
-    msg[1] = narys;
-    msg[2] = nout_arys;
-    msg[3] = appropriate_function;
-    msg[4] = 0; //Scalar datatype.
-    msg[5] = 0; //Scalar datasize, zero if no scalar is in arylist.
+    cphvb_intp i;
+    cphvb_instruction inst;
 
-    //Copy scalar if one is in the arylist.
-    for(i=0; i<narys;i++)
-        if(arylist[i]->dnduid == 0)
+    if(ufunc->nargs > CPHVB_MAX_NO_OPERANDS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Ufunc - number of "
+                        "arguments exceeds CPHVB_MAX_NO_OPERANDS\n");
+        return -1;
+    }
+
+    inst.opcode = ufunc->opcode;
+    for(i=0; i<ufunc->nargs; ++i)
+    {
+        if(args[i]->dnduid == 0)
         {
-            if(arylist[i]->nd != 0)
+            if(args[i]->nd != 0)//This us not a dndarray
             {
                 PyErr_SetString(PyExc_RuntimeError,
                                 "ufunc - distributed and non-"
-                                "distributed arrays do not mix. "
-                                "Scalars is allowed though.\n");
+                                "distributed arrays do not mix, "
+                                "scalars is allowed though.\n");
                 return -1;
             }
-            msg[4] = arylist[i]->descr->type_num;
-            msg[5] = arylist[i]->descr->elsize;
-            memcpy(msg+6, arylist[i]->data, msg[5]);
-            break;
+            //else this is a constant and we have to support the dtype.
+            if(type_py2cph[args[i]->descr->type_num] == CPHVB_UNKNOWN)
+            {
+                PyErr_SetString(PyExc_RuntimeError,
+                                "cphVB does not support the datatype\n");
+                return -1;
+            }
+            //TODO: How do we handle constants?!?
+            memcpy(&inst.constant[0], args[i]->data,
+                   args[i]->descr->elsize);
         }
-    */
+        else
+            inst.operand[i] = (cphvb_array*) args[i]->dnduid;
+    }
+
+    if(ufunc->opcode == CPHVB_NONE ||     //Marked as untranslatable.
+       cphvb_vem_instruction_check(&inst))//Or not supported by the VEM.
+    {
+        printf("The Bridge will do the ufunc!\n");
+        //Get Python function.
+        PyObject *PyOp = PyObject_GetAttrString(ufunc_module,
+                                                ufunc->name);
+        assert(PyOp != NULL);
+
+
+    }
+    else // Tell the VEM to perform the instruction.
+    {
+        assert(1==2);
+    }
+
     return 0;
 } /* dnumpy_ufunc */
 
