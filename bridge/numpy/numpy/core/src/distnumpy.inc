@@ -200,8 +200,6 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
     intp dtypesize = cphvb_type_size(org_ary->type);
     cphvb_intp offset = offset_inbyte/dtypesize;
 
-    printf("offset_inbyte: %ld\n", offset_inbyte);
-
     //Check for memory alignment and convert to element indexes
     //rather than byte indexes.
     if(offset_inbyte % dtypesize > 0)
@@ -222,7 +220,8 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
         }
     }
 
-    error = cphvb_vem_create_array(base, org_ary->type, ndim, offset,
+    error = cphvb_vem_create_array(base, org_ary->type, ndim,
+                                   offset+org_ary->start,
                                    shape, stride, NPY_FALSE,
                                    (cphvb_constant)0, &new_ary);
 
@@ -230,6 +229,8 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
         PyErr_NoMemory();
     else if (error)
         PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
+
+    printf("dnumpy_create_dndview(%ld)\n", (intp) new_ary);
 
     return (intp) new_ary;
 
