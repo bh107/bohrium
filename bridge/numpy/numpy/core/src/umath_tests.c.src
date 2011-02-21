@@ -212,14 +212,14 @@ addUfuncs(PyObject *dictionary) {
                                     2, 1, PyUFunc_None, "inner1d",
                                     "inner on the last dimension and broadcast on the rest \n"\
                                     "     \"(i),(i)->()\" \n",
-                                    0, inner1d_signature);
+                                    0, inner1d_signature, CPHVB_NONE);// DISTNUMPY
     PyDict_SetItemString(dictionary, "inner1d", f);
     Py_DECREF(f);
     f = PyUFunc_FromFuncAndDataAndSignature(innerwt_functions, innerwt_data, innerwt_signatures, 2,
                                     3, 1, PyUFunc_None, "innerwt",
                                     "inner1d with a weight argument \n"\
                                     "     \"(i),(i),(i)->()\" \n",
-                                    0, innerwt_signature);
+                                    0, innerwt_signature, CPHVB_NONE);// DISTNUMPY
     PyDict_SetItemString(dictionary, "innerwt", f);
     Py_DECREF(f);
     f = PyUFunc_FromFuncAndDataAndSignature(matrix_multiply_functions,
@@ -227,7 +227,7 @@ addUfuncs(PyObject *dictionary) {
                                     3, 2, 1, PyUFunc_None, "matrix_multiply",
                                     "matrix multiplication on last two dimensions \n"\
                                     "     \"(m,n),(n,p)->(m,p)\" \n",
-                                    0, matrix_multiply_signature);
+                                    0, matrix_multiply_signature, CPHVB_NONE);// DISTNUMPY
     PyDict_SetItemString(dictionary, "matrix_multiply", f);
     Py_DECREF(f);
 }
@@ -250,7 +250,7 @@ UMath_Tests_test_signature(PyObject *dummy, PyObject *args)
     f = PyUFunc_FromFuncAndDataAndSignature(NULL, NULL, NULL,
         0, nin, nout, PyUFunc_None, "no name",
         "doc:none",
-        1, PyString_AS_STRING(signature));
+        1, PyString_AS_STRING(signature), CPHVB_NONE); // DISTNUMPY
     if (f == NULL) return NULL;
     core_enabled = ((PyUFuncObject*)f)->core_enabled;
     return Py_BuildValue("i", core_enabled);

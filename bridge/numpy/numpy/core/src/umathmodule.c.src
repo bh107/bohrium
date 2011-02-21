@@ -22,6 +22,8 @@
 #include "numpy/ufuncobject.h"
 #include "abstract.h"
 #include "config.h"
+#include <cphvb.h>
+#include <cphvb_vem.h>
 
 #include "numpy/npy_math.h"
 
@@ -125,7 +127,8 @@ InitOtherOperators(PyObject *dictionary) {
                                 frexp_signatures, num,
                                 1, 2, PyUFunc_None, "frexp",
                                 "Split the number, x, into a normalized"\
-                                " fraction (y1) and exponent (y2)",0);
+                                " fraction (y1) and exponent (y2)",0,
+                                CPHVB_NONE);
     PyDict_SetItemString(dictionary, "frexp", f);
     Py_DECREF(f);
 
@@ -138,7 +141,7 @@ InitOtherOperators(PyObject *dictionary) {
 #endif
     f = PyUFunc_FromFuncAndData(ldexp_functions, blank3_data, ldexp_signatures, num,
                                 2, 1, PyUFunc_None, "ldexp",
-                                "Compute y = x1 * 2**x2.",0);
+                                "Compute y = x1 * 2**x2.",0, CPHVB_NONE);
     PyDict_SetItemString(dictionary, "ldexp", f);
     Py_DECREF(f);
 
@@ -147,7 +150,8 @@ InitOtherOperators(PyObject *dictionary) {
                                 dnumpy_urandom_signatures, 1,
                                 1, 1, PyUFunc_One, "ufunc_random",
                                 "Generates random numbers between 0 "
-                                "and 1. The input array is ignored.",0);
+                                "and 1. The input array is ignored.",0,
+                                CPHVB_NONE);
     PyDict_SetItemString(dictionary, "ufunc_random", f);
     Py_DECREF(f);
 

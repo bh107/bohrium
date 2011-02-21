@@ -98,7 +98,8 @@ enum /* cphvb_opcode */
     CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
     CPHVB_SYNC,
     CPHVB_DISCARD,
-    CPHVB_DESTORY //Inform VEM to deallocate an array.
+    CPHVB_DESTORY, //Inform VEM to deallocate an array.
+    CPHVB_NONE //Used by a brigde to mark untranslatable operations.
 };
 
 #define CPHVB_MAX_NO_OPERANDS 3

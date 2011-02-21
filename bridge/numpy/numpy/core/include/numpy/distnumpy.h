@@ -1,8 +1,12 @@
 #ifndef DISTNUMPY_H
 #define DISTNUMPY_H
 
+#include <cphvb.h>
+#include <cphvb_vem.h>
+
 //ufunc definitions from numpy/ufuncobject.h.
 //They are included here instead.
+//Opcode is added to the original struct.
 typedef void (*PyUFuncGenericFunction)
              (char **, npy_intp *, npy_intp *, void *);
 typedef struct {
@@ -24,6 +28,7 @@ typedef struct {
     int *core_dim_ixs;
     int *core_offsets;
     char *core_signature;
+    cphvb_opcode opcode;
 } PyUFuncObject;
 
 //Easy retrieval of dnduid

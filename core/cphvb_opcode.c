@@ -96,7 +96,8 @@ const int _operands[] =
     [CPHVB_RELEASE] = 1,
     [CPHVB_SYNC] = 1,
     [CPHVB_DISCARD] = 1,
-    [CPHVB_DESTORY] = 1
+    [CPHVB_DESTORY] = 1,
+    [CPHVB_NONE] = 0
 };
 
 
@@ -185,7 +186,8 @@ const char* const _opcode_text[] =
     [CPHVB_RELEASE] = "CPHVB_RELEASE",
     [CPHVB_SYNC] = "CPHVB_SYNC",
     [CPHVB_DISCARD] = "CPHVB_DISCARD",
-    [CPHVB_DESTORY] = "CPHVB_DESTORY"
+    [CPHVB_DESTORY] = "CPHVB_DESTORY",
+    [CPHVB_NONE] = "CPHVB_NONE"
 };
 
 
