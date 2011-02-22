@@ -23,6 +23,9 @@
 #include "cphvb_opcode.h"
 #include "cphvb_array.h"
 
+// Operand id used to indicate that the operand is a scalar constant
+#define CPHVB_CONSTANT (NULL)
+
 //Memory layout of the CPHVB instruction
 typedef struct
 {
@@ -32,6 +35,8 @@ typedef struct
     cphvb_array*   operand[CPHVB_MAX_NO_OPERANDS];
     //Constants included in the instruction
     cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
+    //The constant type
+    cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 } cphvb_instruction;
 
 #endif
