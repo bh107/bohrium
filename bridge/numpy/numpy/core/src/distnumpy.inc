@@ -465,8 +465,8 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         inst.operand[j] = (cphvb_array*) args[i]->dnduid;
     }
 
-    if(ufunc->opcode == CPHVB_NONE ||     //Marked as untranslatable.
-       cphvb_vem_instruction_check(&inst))//Or not supported by the VEM.
+    if(ufunc->opcode == CPHVB_NONE ||      //Marked as untranslatable.
+       !cphvb_vem_instruction_check(&inst))//Or not supported by the VEM.
     {
         printf("The Bridge will do the ufunc!\n");
         //Get Python function.

@@ -159,7 +159,8 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         }
         default:
             fprintf(stderr, "cphvb_vem_execute() encountered an not "
-                            "supported instruction opcode\n");
+                            "supported instruction opcode: %s\n",
+                            cphvb_opcode_text(inst->opcode));
             exit(CPHVB_INST_NOT_SUPPORTED);
         }
     }
