@@ -103,6 +103,31 @@ static const cphvb_type const type_cph2py[] =
     [CPHVB_FLOAT64] = NPY_DOUBLE
 };
 
+/*
+ *===================================================================
+ * Compose a release instruction and execute it.
+ * Fatal on error.
+ * Private
+ */
+static void
+util_release(cphvb_array *ary)
+{
+    cphvb_instruction inst;
+    cphvb_error error;
+    //Tell the VEM to release the data to us.
+    inst.opcode = CPHVB_RELEASE;
+    inst.operand[0] = ary;
+    //We assume that the VEM supports the CPHVB_RELEASE opcode.
+    error = cphvb_vem_execute(1, &inst);
+    if(error)
+    {
+        fprintf(stderr, "Unhandled error returned by "
+            "cphvb_vem_execute() in util_release()\n");
+        exit(error);
+    }
+} /* util_release */
+
+
 /*NUMPY_API
  *===================================================================
  * Create dndarray.
@@ -257,21 +282,23 @@ dnumpy_evalflush(void)
 /*NUMPY_API
  *===================================================================
  * Public
- * Returns True when the two array-view overlap.
+ * Returns True when the two arrays overlap.
  */
 static char
-dnumpy_data_overlap(intp Auid, intp Buid)
+dnumpy_data_overlap(intp A, intp B)
 {
     printf("dnumpy_data_overlap\n");
-    /*
-    dndview *A = get_dndview(Auid);
-    dndview *B = get_dndview(Buid);
+    cphvb_array *a = (cphvb_array *) A;
+    cphvb_array *b = (cphvb_array *) B;
+    assert(A != 0);
+    assert(B != 0);
+
     //At the moment we only check at the array-base level.
-    if(A->base->uid == B->base->uid)
+    if(cphvb_base_array(a) == cphvb_base_array(b))
         return 1;
     else
         return 0;
-    */
+
     return 0;
 } /* dnumpy_data_overlap */
 
@@ -287,8 +314,6 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
                         PyObject *item)
 {
     printf("dnumpy_dndarray_putitem\n");
-    cphvb_error error;
-    cphvb_instruction inst;
     cphvb_array *ary = (cphvb_array*) uid;
     cphvb_array *base = cphvb_base_array(ary);
     cphvb_intp dtypesize = cphvb_type_size(ary->type);
@@ -307,16 +332,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     }
 
     //Tell the VEM to release the data to us.
-    inst.opcode = CPHVB_RELEASE;
-    inst.operand[0] = ary;
-    //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = cphvb_vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
-                       " in dnumpy_dndarray_putitem()\n");
-        exit(error);
-    }
+    util_release(ary);
 
     //We may have to allocate the array memory.
     if(base->data == NULL)
@@ -356,24 +372,13 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
                         const intp coordinate[NPY_MAXDIMS])
 {
     printf("dnumpy_dndarray_getitem(%ld)\n", uid);
-    cphvb_error error;
-    cphvb_instruction inst;
     cphvb_array *ary = (cphvb_array*) uid;
     cphvb_array *base = cphvb_base_array(ary);
     cphvb_intp dtypesize = cphvb_type_size(ary->type);
     cphvb_intp d, offset;
 
     //Tell the VEM to release the data to us.
-    inst.opcode = CPHVB_RELEASE;
-    inst.operand[0] = ary;
-    //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = cphvb_vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
-                       " in dnumpy_dndarray_putitem()\n");
-        exit(error);
-    }
+    util_release(ary);
 
     //We may have to allocate the array memory.
     if(base->data == NULL)
@@ -417,9 +422,12 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         return -1;
     }
 
+    //Create an instruction that represent the ufunc operation.
+    //Note that the outputs are the first operands.
     inst.opcode = ufunc->opcode;
-    for(i=0; i<ufunc->nargs; ++i)
+    for(i=0; i<ufunc->nin; ++i)
     {
+        cphvb_intp j = i + ufunc->nout;
         if(args[i]->dnduid == 0)
         {
             if(args[i]->nd != 0)//This us not a dndarray
@@ -437,12 +445,24 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                                 "cphVB does not support the datatype\n");
                 return -1;
             }
-            //TODO: How do we handle constants?!?
-            memcpy(&inst.constant[0], args[i]->data,
+            inst.operand[j] = CPHVB_CONSTANT;
+            inst.const_type[j] = args[i]->descr->type_num;
+            memcpy(&inst.constant[j], args[i]->data,
                    args[i]->descr->elsize);
         }
         else
-            inst.operand[i] = (cphvb_array*) args[i]->dnduid;
+            inst.operand[j] = (cphvb_array*) args[i]->dnduid;
+    }
+    for(i=ufunc->nin; i<ufunc->nout; ++i)
+    {
+        cphvb_intp j = i - ufunc->nin;
+        if(args[i]->nd == 0)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                    "ufunc - scalar outputs is not allowed\n");
+            return -1;
+        }
+        inst.operand[j] = (cphvb_array*) args[i]->dnduid;
     }
 
     if(ufunc->opcode == CPHVB_NONE ||     //Marked as untranslatable.
@@ -452,17 +472,70 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         //Get Python function.
         PyObject *PyOp = PyObject_GetAttrString(ufunc_module,
                                                 ufunc->name);
+        PyObject *tuple = PyTuple_New(ufunc->nargs);
         assert(PyOp != NULL);
 
+        //Fill the tuple and apply the ufunc.
+        for(i=0; i<ufunc->nargs; ++i)
+        {
+            char *data;
+            if(args[i]->dnduid == 0)//Scalar.
+            {
+                assert(i < ufunc->nin);
+                assert(args[i]->nd == 0);
+                data = args[i]->data;
+            }
+            else
+            {
+                cphvb_array* a = (cphvb_array*) args[i]->dnduid;
+                cphvb_array* b = cphvb_base_array(a);
 
+                if(b->data == NULL)//We may have to allocate it.
+                    if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
+                    {
+                        fprintf(stderr, "Out of memory "
+                                        "in dnumpy_ufunc\n");
+                        exit(CPHVB_OUT_OF_MEMORY);
+                    }
+                data = b->data + a->start * cphvb_type_size(a->type);
+                printf("b->data: %p, a->start: %ld\n", b->data, a->start);
+                //Tell the VEM to release the data to us.
+                util_release(a);
+            }
+            PyObject *tary = PyArray_New(&PyArray_Type,
+                                         args[i]->nd,
+                                         args[i]->dimensions,
+                                         args[i]->descr->type_num,
+                                         args[i]->strides,
+                                         data, 0,
+                                         NPY_BEHAVED, NULL);
+            assert(tary != NULL);
+            PyTuple_SET_ITEM(tuple, i, tary);
+
+//            PyObject_Print(tary, stdout, 0);
+//            printf("\n");
+        }
+
+
+        PyObject *t = PyObject_CallObject(PyOp, tuple);
+        assert(t != NULL);
+
+//        PyObject_Print(tuple, stdout, 0);
+//        printf("\n");
+
+        Py_DECREF(t);
+        Py_DECREF(tuple);
+        Py_DECREF(PyOp);
     }
     else // Tell the VEM to perform the instruction.
     {
+        //NB: remember to create broadcasted view.
         assert(1==2);
     }
 
     return 0;
 } /* dnumpy_ufunc */
+
 
 /*NUMPY_API
  *===================================================================
@@ -476,6 +549,7 @@ dnumpy_ufunc_reduce(PyArrayObject *in_ary, PyArrayObject *out_ary,
                     int axis, char *op)
 {
     printf("dnumpy_ufunc_reduce\n");
+    assert(1==2);
     /*
     int i;
     dndview *in = get_dndview(in_ary->dnduid);
@@ -531,6 +605,7 @@ static void
 dnumpy_zerofill(intp ary_uid)
 {
     printf("dnumpy_zerofill\n");
+    assert(1==2);
     //Get arrray structs.
     //dndview *view = get_dndview(ary_uid);
 
@@ -566,7 +641,7 @@ dnumpy_datadump(intp ary_uid, const char *filename, long datapos)
     //Get array structs.
     //dndview *view = get_dndview(ary_uid);
 
-
+    assert(1==2);
 } /* dnumpy_datadump */
 
 /*NUMPY_API
@@ -579,6 +654,7 @@ static PyObject*
 dnumpy_diagonal(intp uid, int offset, int axis1, int axis2)
 {
     printf("dnumpy_diagonal\n");
+    assert(1==2);
     return NULL;
     /*
     PyObject *ret;
@@ -668,6 +744,7 @@ static void
 dnumpy_matrix_multiplication(intp Auid, intp Buid, intp Cuid)
 {
     printf("dnumpy_matrix_multiplication\n");
+    assert(1==2);
     /*
     //Get arrray structs.
     dndview *A = get_dndview(Auid);
