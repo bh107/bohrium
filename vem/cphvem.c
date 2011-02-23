@@ -131,7 +131,6 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         {
         case CPHVB_DESTORY:
         {
-            printf("EXEC: CPHVB_DESTORY\n");
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             if(--base->ref_count <= 0)
             {
@@ -146,7 +145,6 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         }
         case CPHVB_RELEASE:
         {
-            printf("EXEC: CPHVB_RELEASE\n");
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             //Check the owner of the array
