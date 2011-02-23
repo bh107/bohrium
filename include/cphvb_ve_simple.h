@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
  *
  * This file is part of cphVB.
  *
@@ -17,21 +17,16 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "svi.h"
-#include "handler.h"
-#include "util.h"
-#include <stdlib.h>
-#include <stdio.h>
+#ifndef __CPHVB_VE_SIMPLE_H
+#define __CPHVB_VE_SIMPLE_H
 
-cphvb_error svi_handle_malloc(cphvb_instruction* inst)
-{
-    if (inst->operand[0] > SVI_MAPSIZE-1)
-        return CPHVB_OPERAND_UNKNOWN;
-    size_t size = cphvb_nelements(inst->ndim, inst->shape) * 
-        cphvb_type_size(inst->type[0]);
-    void* ptr = malloc(size);
-    if (ptr == NULL)
-        return CPHVB_OUT_OF_MEMORY;
-    svi_operand_map[inst->operand[0]] = ptr;
-    return CPHVB_SUCCESS;
-}
+#include <cphvb.h>
+
+cphvb_error cphvb_ve_simple_init(void);
+
+cphvb_error cphvb_ve_simple_execute(cphvb_int32 instruction_count,
+                                    char* instruction_list);
+
+cphvb_error cphvb_ve_simple_shutdown(void);
+
+#endif

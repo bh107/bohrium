@@ -1,16 +1,16 @@
-LIB=libsvi.so
+ROOT=../..
+LIB=libcphvb_ve_simple.so
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -g -O2 -fPIC -I../../lib -I../../util -std=gnu99
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cast.c free.c malloc.c read.c util.c add.c svi.c
+SRC=cphvb_ve_simple.c
 OBJ=$(SRC:.c=.o)
-DEFS=-D SVI_DEBUG
 
 all: $(LIB)
 
-%.o: %.c cast.h handler.h util.h svi.h
-		$(CC) -c $< -o $@ $(CFLAGS) $(DEFS)
+%.o: %.c $(ROOT)/include/*
+		$(CC) -c $< -o $@ $(CFLAGS)
 
 $(LIB): $(OBJ)
 		$(CC) $(OBJ) -o $@ $(LDFLAGS)
