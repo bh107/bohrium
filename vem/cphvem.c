@@ -20,10 +20,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include <cphvb_vem.h>
 #include <cphvb.h>
 #include "private.h"
+
+#include <cphvb_vem.h>
+#include <cphvb_ve_simple.h>
 
 /* Initialize the VEM
  *
@@ -31,7 +32,7 @@
  */
 cphvb_error cphvb_vem_init(void)
 {
-    return CPHVB_SUCCESS;
+    return cphvb_ve_simple_init();
 }
 
 
@@ -41,7 +42,7 @@ cphvb_error cphvb_vem_init(void)
  */
 cphvb_error cphvb_vem_shutdown(void)
 {
-    return CPHVB_SUCCESS;
+    return cphvb_ve_simple_shutdown();
 }
 
 
