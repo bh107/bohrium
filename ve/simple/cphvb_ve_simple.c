@@ -20,20 +20,25 @@
 #include <cphvb_ve_simple.h>
 
 
-cphvb_error cphvb_ve_simple_init(void)
+cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
+                                 cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
+                                 cphvb_intp *datatype_count,
+                                 cphvb_type datatype_list[CPHVB_MAX_NO_OPERANDS])
 {
-    return CPHVB_SUCCESS;
-}
-
-
-cphvb_error cphvb_ve_simple_execute(cphvb_int32 instruction_count,
-                                    char* instruction_list)
-{
+    *opcode_count = 0;
+    *datatype_count = 0;
     return CPHVB_SUCCESS;
 }
 
 
 cphvb_error cphvb_ve_simple_shutdown(void)
+{
+    return CPHVB_SUCCESS;
+}
+
+
+cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
+                                    cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS])
 {
     return CPHVB_SUCCESS;
 }
