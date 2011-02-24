@@ -17,7 +17,7 @@ OBJECTS=$(IMPL:=.o) $(TYPES:=.o) $(CONTAINERS:=.o)
 
 all: $(LIB)
 
-%Simple.o: %Simple.cpp %.hpp
+%Simple.o: %Simple.cpp %Simple.hpp %.hpp
 		$(CXX) -c $< -o $@ $(CFLAGS)
 
 %.o: %.cpp %.hpp
