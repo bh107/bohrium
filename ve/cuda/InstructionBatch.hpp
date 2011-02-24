@@ -25,7 +25,7 @@
 class InstructionBatch
 {
 public:
-    virtual void add(cphVBInstruction inst) = 0;
+    virtual void add(cphVBInstruction* inst) = 0;
     virtual void execute() = 0;
 };
 

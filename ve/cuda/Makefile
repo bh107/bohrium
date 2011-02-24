@@ -11,8 +11,9 @@ LDFLAGS=-shared -Wl,-soname,$(LIB)
 MODULES=DataManager DeviceManager InstructionBatch InstructionScheduler \
 		MemoryManager
 IMPL=$(MODULES:=Simple)
-TYPES=Shape
-OBJECTS=$(IMPL:=.o) $(TYPES:=.o) 
+TYPES=PTXconstant PTXregister PTXoperand
+CONTAINERS=PTXconstantBuffer PTXregisterBank
+OBJECTS=$(IMPL:=.o) $(TYPES:=.o) $(CONTAINERS:=.o) 
 
 all: $(LIB)
 

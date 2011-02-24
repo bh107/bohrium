@@ -23,13 +23,18 @@
 #include "DataManager.hpp"
 #include "Shape.hpp"
 
+struct resInstruction
+{
+    CUdeviceptr resPtr;
+    cphVBInstruction* inst;
+};
 
 class InstructionBatchSimple : public InstructionBatch 
 {
 private:
     DataManager* dataManager;
     Shape shape;
-    std::queue<cphVBInstruction*> batch;
+    std::queue<resInstruction> batch;
 
 public:
     InstructionBatchSimple(DataManager* dataManager_,
@@ -40,8 +45,8 @@ public:
     void add(cphVBInstruction* inst)
     {
         int nops = cphvb_operands(inst->opcode);
-        dataManager->lock(inst->operand, nops, this);
-        batch.push(inst);
+        CUdeviceptr resPtr = dataManager->lock(inst->operand, nops, this);
+        batch.push((resInstruction){resPtr, inst});
     }
 
     void execute()

@@ -33,7 +33,10 @@ public:
     virtual void free(cphVBArray* baseArray) = 0;
     virtual void deviceCopy(CUdeviceptr dest,
                             cphVBArray* src) = 0;
+    virtual void memset(cphVBArray* baseArray) = 0;
 };
+
+class MemoryManagerSimple;
 
 #endif
 

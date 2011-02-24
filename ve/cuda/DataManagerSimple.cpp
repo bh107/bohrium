@@ -28,7 +28,6 @@
 
 
 typedef std::map<cphVBArray*, InstructionBatch*> WriteLockTable;
-typedef std::multimap<cphVBArray*, InstructionBatch*> ReadLockTable;
 typedef std::map<cphVBArray* ,CUdeviceptr> ShadowArrayTable; // <Orig,Shadow>
 typedef std::map<cphVBArray*, CUdeviceptr> Base2CudaMap;
 typedef std::map<cphVBArray* ,cphVBArray*> Operand2BaseMap;
@@ -40,12 +39,13 @@ class DataManagerSimple : public DataManager
 private:
     MemoryManager* memoryManager;
     WriteLockTable writeLockTable;
-    ReadLockTable readLockTable;
     ShadowArrayTable shadowArrayTable;
     Base2CudaMap base2Cuda;
     Operand2BaseMap op2Base;
+
+    InstructionBatch* activeBatch;
     
-    CUdevicePtr copyNlock(cphVBArray* operands[], 
+    CUdeviceptr copyNlock(cphVBArray* operands[], 
                    int nops, 
                    InstructionBatch* batch)
     {
@@ -59,72 +59,64 @@ private:
         return cudaPtr;
     }
 
-    CUdevicePtr justLock(cphVBArray* operands[], 
+    CUdeviceptr justLock(cphVBArray* operands[], 
                    int nops, 
                    InstructionBatch* batch)
     {
         assert(nops > 0);
-        WriteLockTable::iterator wliter;
         cphVBArray* baseArray;
-        /* If any of the base arrays for the operators 
-         * exist in the writeLockTable we need to flush 
-         * operations to the array */
+        /* We need to _sync all arrays in the operation*/
         for (int i = 0; i < nops; ++i)
         {
            baseArray = op2Base[operands[i]];  
-            wliter = writeLockTable.find(baseArray);
-            if (wliter != writeLockTable.end())
-            {
-                flush(baseArray);
-            }
+           _sync(baseArray);
         }
-        /* Now we can just take lock on the array */
+        /* Now we can just take the write lock on the array */
         baseArray = op2Base[operands[0]];
-        CUdevicePtr resPtr = base2Cuda[baseArray];
-        writeLock(baseArray, batch);
-        for (int i = 1; i < nops; ++i)
-        {
-            baseArray = op2Base[operands[i]];
-            readLockTable.insert(std::pair<cphVBArray*, InstructionBatch*>
-                                 (baseArray,batch));
-        }
+        CUdeviceptr resPtr = base2Cuda[baseArray];
+        writeLockTable[baseArray] = batch;
         return resPtr;
     }
-    
-    /* Take a write lock while upgrading from read lock if necessary*/
-    void writeLock(cphVBArray*baseArray, 
-                   InstructionBatch* batch)
-    {
-        readLockTable.erase(baseArray);
-        writeLockTable[baseArray] = batch;
-    }
 
-    void run(InstructionBatch* batch)
+    void flush(InstructionBatch* batch)
     {
         batch->execute();
-        ShadowArrayTable::iterator saiter = 
-shadowArrayTable;        
+        ShadowArrayTable::iterator saiter = shadowArrayTable.begin();
+        for (; saiter != shadowArrayTable.end(); ++saiter)
+        {
+            memoryManager->free(saiter->first);
+            saiter->first->cudaPtr = saiter->second;
+        }
+        shadowArrayTable.clear();
     }
 
-    void flush(cphVBArray* baseArray)
+    void _sync(cphVBArray* baseArray)
     {
-        /* First we flush readers*/
-        ReadLockTable::iterator rliter;
-        std::pair<ReadLockTable::iterator, ReadLockTable::iterator> rlrange =
-            readLockTable.equal_range(baseArray);
-        for (rliter = rlrange.first; rliter != rlrange.second;)
-        {
-            run(rliter->second);
-            readLockTable.erase(rliter++);
-        }
-
-        /* And the we flush the writer*/
-        WriteLockTable::iterator wliter;
-        wliter = writeLockTable.find(baseArray);
+        WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
         if (wliter != writeLockTable.end())
         {
-            run(wliter->second);
-            writeLockTable.erase(wliter);
+            flush(activeBatch);
+            activeBatch = NULL;
+        }
+    }
+
+    void initCudaArray(cphVBArray* baseArray)
+    {
+        assert(baseArray->base == NULL);
+        if (baseArray->data == NULL)
+        {
+            if (baseArray->hasInitValue)
+            {
+                memoryManager->memset(baseArray);
+            }
+            else  
+            {   //Nothing to init
+                return;
+            }
+        }
+        else
+        {
+            memoryManager->copyToDevice(baseArray);
         }
     }
 
@@ -149,9 +141,11 @@ shadowArrayTable;
                 biter = base2Cuda.find(baseArray);
                 if (biter == base2Cuda.end())
                 {   //The base array is not mapped to a cudaPtr - so we will
+                    //We also need to initialize it
                     CUdeviceptr cudaPtr = memoryManager->deviceAlloc(baseArray);
                     base2Cuda[baseArray] = cudaPtr;
                     baseArray->cudaPtr = cudaPtr;
+                    initCudaArray(baseArray);
                 }
                 op2Base[operand] = baseArray;
             }
@@ -173,13 +167,19 @@ shadowArrayTable;
 
 public:
     DataManagerSimple(MemoryManager* memoryManager_) :
-        memoryManager(memoryManager_)
-    {}
+        memoryManager(memoryManager_),
+        activeBatch(NULL) {}
 
     CUdeviceptr lock(cphVBArray* operands[], 
                      int nops, 
                      InstructionBatch* batch)
     {
+        if (batch != activeBatch && activeBatch != NULL)
+        {
+            flush(activeBatch);
+            activeBatch = batch;
+        }
+
         CUdeviceptr resPtr;
         assert(nops > 0);
         mapOperands(operands, nops);
@@ -204,7 +204,7 @@ public:
     void sync(cphVBArray* baseArray)
     {
         assert(baseArray->base == NULL);
-        flush(baseArray);
+        _sync(baseArray);
         if (baseArray->data == NULL)
         {
             cphvb_data_ptr ptr = memoryManager->hostAlloc(baseArray);
@@ -215,6 +215,7 @@ public:
 
     void discard(cphVBArray* baseArray)
     {
+        assert(baseArray->base == NULL);
         memoryManager->free(baseArray);
         baseArray->cudaPtr = 0;
         base2Cuda.erase(baseArray);
@@ -234,21 +235,8 @@ public:
 
     void flushAll()
     {
-        /* First we flush readers*/
-        ReadLockTable::iterator rliter = readLockTable.begin();
-        for (; rliter != readLockTable.end(); ++rliter)
-        {
-            run(rliter->second);
-        }
-        readLockTable.clear();
-
-        /* And the we flush writers*/
-        WriteLockTable::iterator wliter = writeLockTable.begin();
-        for (; wliter != writeLockTable.end(); ++wliter)
-        {
-            run(wliter->second);
-        }
-        writeLockTable.clear();
+        flush(activeBatch);
+        activeBatch = NULL;
     }
 
 };

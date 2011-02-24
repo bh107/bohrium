@@ -18,21 +18,52 @@
  */
 
 #include <map>
+#include <cphvb.h>
 #include "cphVBInstruction.h"
 #include "InstructionScheduler.hpp"
 #include "InstructionBatch.hpp"
+#include "DataManager.hpp"
 #include "Shape.hpp"
+
+typedef std::map<Shape, InstructionBatch*> BatchTable;
 
 class InstructionSchedulerSimple : public InstructionScheduler
 {
 private:
-    std::map<Shape, InstructionBatch*> batches;
+    DataManager* dataManager;
+    BatchTable batchTable;
 public:
-    InstructionSchedulerSimple();
+    InstructionSchedulerSimple(DataManager* dataManager_) :
+        dataManager(dataManager_) {}
+
     void scedule(cphVBInstruction* inst)
     {
-        
+        switch (inst->opcode)
+        {
+        case CPHVB_RELEASE:
+            dataManager->release(inst->operand[0]);
+            break;
+        case CPHVB_SYNC:
+            dataManager->sync(inst->operand[0]);
+            break;
+        case CPHVB_DISCARD:
+            dataManager->discard(inst->operand[0]);
+            break;
+        default:
+            Shape shape = cphvb_nelements(inst->operand[0]->ndim, 
+                inst->operand[0]->shape);
+            BatchTable::iterator biter = batchTable.find(shape);
+            if (biter != batchTable.end())
+            {
+                biter->second->add(inst);
+            }
+            else
+            {
+                InstructionBatch* newBatch = new InstructionBatchSimple(dataManager,shape);
+                newBatch->add(inst);
+                batchTable[shape] = newBatch;                
+            }
+        }
     }
-
 };
 

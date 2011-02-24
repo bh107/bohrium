@@ -114,7 +114,32 @@ public:
             throw std::runtime_error("Could not copy at Device.");
         }
     }
-    
+    void memset(cphVBArray* baseArray)
+    {
+        assert(baseArray->base == NULL);
+        assert(baseArray->cudaPtr != 0);
+        size_t nelements = cphvb_nelements(baseArray->ndim, baseArray->shape);
+        switch (cphvb_type_size(baseArray->type))
+        {
+        case 1:
+            cuMemsetD8(baseArray->cudaPtr,
+                       *(unsigned char*) &(baseArray->initValue),
+                       nelements);            
+            break;
+        case 2:
+            cuMemsetD16(baseArray->cudaPtr,
+                        *(unsigned short*) &(baseArray->initValue),
+                        nelements);
+            break;
+        case 4:
+            cuMemsetD32(baseArray->cudaPtr,
+                        *(unsigned int*) &(baseArray->initValue),
+                        nelements);
+            break;
+        case 8:
+        default:
+            throw std::runtime_error(
+                "Can not initialize array with data of that size.");
+        }
+    }    
 };
-
-

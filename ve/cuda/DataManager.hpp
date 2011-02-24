@@ -32,6 +32,7 @@ public:
                              InstructionBatch* batch) = 0;
     virtual void release(cphVBArray* array) = 0;
     virtual void sync(cphVBArray* array) = 0;
+    virtual void discard(cphVBArray* baseArray) = 0;
     virtual void flushAll() = 0;
 };
 
