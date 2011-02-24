@@ -71,6 +71,10 @@ enum /* cphvb_opcode */
     CPHVB_BITWISE_AND,
     CPHVB_BITWISE_OR,
     CPHVB_BITWISE_XOR,
+    CPHVB_LOGICAL_NOT,
+    CPHVB_LOGICAL_AND,
+    CPHVB_LOGICAL_OR,
+    CPHVB_LOGICAL_XOR,
     CPHVB_INVERT,
     CPHVB_LEFT_SHIFT,
     CPHVB_RIGHT_SHIFT,
@@ -98,8 +102,13 @@ enum /* cphvb_opcode */
     CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
     CPHVB_SYNC,
     CPHVB_DISCARD,
-    CPHVB_DESTORY //Inform VEM to deallocate an array.
+    CPHVB_DESTORY, //Inform VEM to deallocate an array.
+    //Used by a brigde to mark untranslatable operations.
+    //NB: CPHVB_NONE must be the last element in this enum.
+    CPHVB_NONE
 };
+
+#define CPHVB_NO_OPCODES CPHVB_NONE
 
 #define CPHVB_MAX_NO_OPERANDS 3
 

@@ -6,7 +6,7 @@ cd `dirname "$0"`
 
 #Set Environment variables.
 export CFLAGS="-I../../include"
-export LDFLAGS="-L../../core -lcphvb -L../../vem -lcphvem"
+export LDFLAGS="-L../../core -lcphvb -L../../vem -lcphvem -L../../ve/simple -lcphvb_ve_simple"
 
 #Set Python Interpreter.
 if [ $# = 1 ]

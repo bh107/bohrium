@@ -22,12 +22,7 @@ static cblas_func_type *cblas_zgemm_func = NULL;
 static cblas_func_type *cblas_cgemm_func = NULL;
 
 
-
-/*===================================================================
- *
- * The data type conversion to and from NumPy and cphVB.
- * Private.
- */
+//Check that the definitions in numpy are in accordance with cphVB.
 #if NPY_BITSOF_SHORT != 16
 #    error the NPY_BITSOF_INT not 16 bit
 #endif
@@ -46,7 +41,14 @@ static cblas_func_type *cblas_cgemm_func = NULL;
 #if NPY_BITSOF_FLOAT == 64
 #    error the NPY_BITSOF_FLOAT not 64 bit
 #endif
- static const cphvb_type const py2cph[] =
+
+
+/*===================================================================
+ *
+ * The data type conversion to and from NumPy and cphVB.
+ * Private.
+ */
+static const cphvb_type const type_py2cph[] =
 {
     [NPY_BOOL]   = CPHVB_BOOL,
     [NPY_BYTE]   = CPHVB_INT8,
@@ -79,7 +81,7 @@ static cblas_func_type *cblas_cgemm_func = NULL;
     [NPY_CHAR]        = CPHVB_UNKNOWN,
     [NPY_USERDEF]     = CPHVB_UNKNOWN
 };
-static const cphvb_type const cph2py[] =
+static const cphvb_type const type_cph2py[] =
 {
     [CPHVB_BOOL]    = NPY_BOOL,
     [CPHVB_INT8]    = NPY_BYTE,
@@ -101,6 +103,31 @@ static const cphvb_type const cph2py[] =
     [CPHVB_FLOAT64] = NPY_DOUBLE
 };
 
+/*
+ *===================================================================
+ * Compose a release instruction and execute it.
+ * Fatal on error.
+ * Private
+ */
+static void
+util_release(cphvb_array *ary)
+{
+    cphvb_instruction inst;
+    cphvb_error error;
+    //Tell the VEM to release the data to us.
+    inst.opcode = CPHVB_RELEASE;
+    inst.operand[0] = ary;
+    //We assume that the VEM supports the CPHVB_RELEASE opcode.
+    error = cphvb_vem_execute(1, &inst);
+    if(error)
+    {
+        fprintf(stderr, "Unhandled error returned by "
+            "cphvb_vem_execute() in util_release()\n");
+        exit(error);
+    }
+} /* util_release */
+
+
 /*NUMPY_API
  *===================================================================
  * Create dndarray.
@@ -111,14 +138,13 @@ static int
 dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
                        intp *uid)
 {
-    printf("dnumpy_create_dndarray %d\n", numpytype);
     int i;
     cphvb_index s;
     cphvb_index stride[CPHVB_MAXDIM];
     cphvb_index shape[CPHVB_MAXDIM];
     cphvb_error error;
     cphvb_array *new_ary;
-    cphvb_type dtype = py2cph[numpytype];
+    cphvb_type dtype = type_py2cph[numpytype];
 
     if(dtype == CPHVB_UNKNOWN)
     {
@@ -141,13 +167,11 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
 
     //We save the array pointer in an 'intp'.
     *uid = (intp) new_ary;
-    printf("uid (%ld)\n", *uid);
 
     if(error == CPHVB_OUT_OF_MEMORY)
         PyErr_NoMemory();
     else if (error)
-        PyErr_SetString(PyExc_RuntimeError,
-                        "unknown cphVB error\n");
+        PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
 
     return 0;//Success.
 
@@ -161,8 +185,6 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
 static void
 dnumpy_destroy_dndarray(intp uid)
 {
-    printf("dnumpy_destroy_dndarray (%ld)\n", uid);
-
     cphvb_error error;
     cphvb_instruction inst;
     inst.opcode = CPHVB_DESTORY;
@@ -182,116 +204,57 @@ dnumpy_destroy_dndarray(intp uid)
 
 /*NUMPY_API
  *===================================================================
- * Create a new view based on the 'org_view'.
+ * Create a new view based on the 'org_ary'.
  * Public
  */
 static int
-dnumpy_create_dndview(intp org_view_uid, int nslice,
-                      dndslice slice[NPY_MAXDIMS])
+dnumpy_create_dndview(intp org_ary_uid, intp ndim,
+                      intp dims[NPY_MAXDIMS],
+                      intp stride_inbyte[NPY_MAXDIMS],
+                      intp offset_inbyte)
 {
-    printf("dnumpy_create_dndview\n");
-    assert(1==2);
-    return 0;
-    /*
-    //Get arrray structs.
-    dndview *orgview = get_dndview(org_view_uid);
+    cphvb_intp i;
+    cphvb_array *org_ary = (cphvb_array *) org_ary_uid;
+    cphvb_array *base = cphvb_base_array(org_ary);
+    cphvb_array *new_ary;
+    cphvb_error error;
+    cphvb_index stride[CPHVB_MAXDIM];
+    cphvb_index shape[CPHVB_MAXDIM];
+    intp dtypesize = cphvb_type_size(org_ary->type);
+    cphvb_intp offset = offset_inbyte/dtypesize;
 
-    //Create new view based on 'org_view' and the 'slice'.
-    dndview newview;
-    newview.uid = ++uid_count;
-    newview.ndims = 0;
-    newview.alterations = 0;
-
-    //Merging the two views.
-    int si = 0; //slice index.
-    int ni = 0; //new index.
-    int oi = 0; //old index.
-    int di = 0; //dim index.
-    while(si < nslice || oi < orgview->nslice)
+    //Check for memory alignment and convert to element indexes
+    //rather than byte indexes.
+    if(offset_inbyte % dtypesize > 0)
     {
-        //If we come to the end of the slices, that happens
-        //if not all dimensions is included in the 'slices', we will
-        //use the whole dimension.
-        int vs = (si < nslice)?1:0;//Valid slice.
-
-        //If dimension is invisible we will just copy it to 'newview'.
-        if(oi < orgview->nslice &&
-           orgview->slice[oi].nsteps == SingleIndex)
+        PyErr_SetString(PyExc_RuntimeError, "cphVB does not support"
+                        " views with an unaligned offset\n");
+        return 0;
+    }
+    for(i=0; i<ndim; ++i)
+    {
+        shape[i]  = dims[i];
+        stride[i] = stride_inbyte[i]/dtypesize;
+        if(stride_inbyte[i] % dtypesize > 0)
         {
-            memcpy(&newview.slice[ni], &orgview->slice[oi],
-                   sizeof(dndslice));
-            ni++; oi++; di++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        //A single index makes the dimension invisible.
-        else if(vs && slice[si].nsteps == SingleIndex)
-        {
-            //If dimension is a Pseudo-dimension then just go to next
-            //dimension.
-            if(orgview->slice[oi].nsteps == PseudoIndex)
-            {
-                si++; oi++;
-            }
-            else
-            {//Copy single index to 'newview'.
-                newview.slice[ni].step = 0;
-                newview.slice[ni].nsteps = SingleIndex;
-                newview.slice[ni].start = orgview->slice[oi].start +
-                                          (vs?slice[si].start:0) *
-                                          orgview->slice[oi].step;
-                si++; ni++; oi++; di++;
-                newview.alterations |= DNPY_NDIMS;
-            }
-        }
-        //If a extra pseudo index should be added we just copy the
-        //slice to 'newview'.
-        else if(vs && slice[si].nsteps == PseudoIndex)
-        {
-            memcpy(&newview.slice[ni], &slice[si],
-                   sizeof(dndslice));
-            ni++; si++;
-            newview.ndims++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        else if(orgview->slice[oi].nsteps == PseudoIndex)
-        {
-            memcpy(&newview.slice[ni], &orgview->slice[oi],
-                   sizeof(dndslice));
-            ni++; oi++; si++;
-            newview.ndims++;
-            newview.alterations |= DNPY_NDIMS;
-        }
-        //If no special slices we just merge the two views.
-        else
-        {
-            if(vs)
-            {
-                newview.slice[ni].start = orgview->slice[oi].start +
-                                           slice[si].start *
-                                           orgview->slice[oi].step;
-                newview.slice[ni].step = slice[si].step *
-                                          orgview->slice[oi].step;
-                newview.slice[ni].nsteps = slice[si].nsteps;
-            }
-            else
-                memcpy(&newview.slice[ni], &orgview->slice[oi],
-                       sizeof(dndslice));
-
-            if(newview.slice[ni].step > 1)
-                newview.alterations |= DNPY_STEP | DNPY_NSTEPS;
-            else if(newview.slice[ni].nsteps < orgview->base->dims[di])
-            {
-                newview.alterations |= DNPY_NSTEPS;
-            }
-            newview.ndims++;
-            si++; ni++; oi++; di++;
+            PyErr_SetString(PyExc_RuntimeError, "cphVB does not support"
+                            " views with unaligned strides\n");
+            return 0;
         }
     }
-    //Save the total number of sliceses for the new view.
-    newview.nslice = ni;
 
-    return uid_count;
-    */
+    error = cphvb_vem_create_array(base, org_ary->type, ndim,
+                                   offset+org_ary->start,
+                                   shape, stride, NPY_FALSE,
+                                   (cphvb_constant)0, &new_ary);
+
+    if(error == CPHVB_OUT_OF_MEMORY)
+        PyErr_NoMemory();
+    else if (error)
+        PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
+
+    return (intp) new_ary;
+
 } /* dnumpy_create_dndview */
 
 /*NUMPY_API
@@ -302,32 +265,28 @@ dnumpy_create_dndview(intp org_view_uid, int nslice,
 static PyObject *
 dnumpy_evalflush(void)
 {
-    printf("dnumpy_evalflush\n");
-    //The master should also do the operation.
-    #ifdef DISTNUMPY_DEBUG
-        printf("Rank 0 received msg: EVALFLUSH\n");
-    #endif
     Py_RETURN_NONE;
 } /* dnumpy_evalflush */
 
 /*NUMPY_API
  *===================================================================
  * Public
- * Returns True when the two array-view overlap.
+ * Returns True when the two arrays overlap.
  */
 static char
-dnumpy_data_overlap(intp Auid, intp Buid)
+dnumpy_data_overlap(intp A, intp B)
 {
-    printf("dnumpy_data_overlap\n");
-    /*
-    dndview *A = get_dndview(Auid);
-    dndview *B = get_dndview(Buid);
+    cphvb_array *a = (cphvb_array *) A;
+    cphvb_array *b = (cphvb_array *) B;
+    assert(A != 0);
+    assert(B != 0);
+
     //At the moment we only check at the array-base level.
-    if(A->base->uid == B->base->uid)
+    if(cphvb_base_array(a) == cphvb_base_array(b))
         return 1;
     else
         return 0;
-    */
+
     return 0;
 } /* dnumpy_data_overlap */
 
@@ -342,9 +301,6 @@ static int
 dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
                         PyObject *item)
 {
-    printf("dnumpy_dndarray_putitem\n");
-    cphvb_error error;
-    cphvb_instruction inst;
     cphvb_array *ary = (cphvb_array*) uid;
     cphvb_array *base = cphvb_base_array(ary);
     cphvb_intp dtypesize = cphvb_type_size(ary->type);
@@ -353,7 +309,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     //Convert item to a compatible type.
     PyObject *item2 = PyArray_FROM_O(item);
     PyObject *citem2 = PyArray_Cast((PyArrayObject*)item2,
-                                    cph2py[ary->type]);
+                                    type_cph2py[ary->type]);
 
     //Cleanup and return error if the cast failed.
     if(citem2 == NULL)
@@ -363,16 +319,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     }
 
     //Tell the VEM to release the data to us.
-    inst.opcode = CPHVB_RELEASE;
-    inst.operand[0] = ary;
-    //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = cphvb_vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
-                       " in dnumpy_dndarray_putitem()\n");
-        exit(error);
-    }
+    util_release(ary);
 
     //We may have to allocate the array memory.
     if(base->data == NULL)
@@ -386,9 +333,8 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     offset = 0;
     for(d=ary->ndim-1; d>=0; --d)
         offset += coordinate[d] * ary->stride[d];
+    offset += ary->start;
     offset *= dtypesize;
-
-    printf("offset: %ld\n", offset);
 
     //Write item to memory.
     memcpy(base->data + offset, PyArray_DATA(citem2), dtypesize);
@@ -410,25 +356,13 @@ static void
 dnumpy_dndarray_getitem(char *retdata, intp uid,
                         const intp coordinate[NPY_MAXDIMS])
 {
-    printf("dnumpy_dndarray_getitem(%ld)\n", uid);
-    cphvb_error error;
-    cphvb_instruction inst;
     cphvb_array *ary = (cphvb_array*) uid;
     cphvb_array *base = cphvb_base_array(ary);
     cphvb_intp dtypesize = cphvb_type_size(ary->type);
     cphvb_intp d, offset;
 
     //Tell the VEM to release the data to us.
-    inst.opcode = CPHVB_RELEASE;
-    inst.operand[0] = ary;
-    //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = cphvb_vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
-                       " in dnumpy_dndarray_putitem()\n");
-        exit(error);
-    }
+    util_release(ary);
 
     //We may have to allocate the array memory.
     if(base->data == NULL)
@@ -442,9 +376,8 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
     offset = 0;
     for(d=ary->ndim-1; d>=0; --d)
         offset += coordinate[d] * ary->stride[d];
+    offset += ary->start;
     offset *= dtypesize;
-
-    printf("offset: %ld\n", offset);
 
     //Write item to memory.
     memcpy(retdata, base->data + offset, dtypesize);
@@ -454,45 +387,127 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
 /*NUMPY_API
  *===================================================================
  * Public
- * Apply ufunc on distributed arrays in arylist.
- * op is the python name of the ufunction.
+ * Apply ufunc on distributed arrays in args.
  * Returns -1 on failure.
  */
 static int
-dnumpy_ufunc(PyArrayObject *arylist[NPY_MAXARGS], int narys,
-             int nout_arys, char *op, int appropriate_function)
+dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
 {
-    printf("dnumpy_ufunc\n");
-    /*
-    int i;
-    //Tell slaves about the ufunc operations.
-    msg[0] = DNPY_UFUNC;
-    msg[1] = narys;
-    msg[2] = nout_arys;
-    msg[3] = appropriate_function;
-    msg[4] = 0; //Scalar datatype.
-    msg[5] = 0; //Scalar datasize, zero if no scalar is in arylist.
+    cphvb_intp i;
+    cphvb_instruction inst;
 
-    //Copy scalar if one is in the arylist.
-    for(i=0; i<narys;i++)
-        if(arylist[i]->dnduid == 0)
+    if(ufunc->nargs > CPHVB_MAX_NO_OPERANDS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Ufunc - number of "
+                        "arguments exceeds CPHVB_MAX_NO_OPERANDS\n");
+        return -1;
+    }
+
+    //Create an instruction that represent the ufunc operation.
+    //Note that the outputs are the first operands.
+    inst.opcode = ufunc->opcode;
+    for(i=0; i<ufunc->nin; ++i)
+    {
+        cphvb_intp j = i + ufunc->nout;
+        if(args[i]->dnduid == 0)
         {
-            if(arylist[i]->nd != 0)
+            if(args[i]->nd != 0)//This us not a dndarray
             {
                 PyErr_SetString(PyExc_RuntimeError,
                                 "ufunc - distributed and non-"
-                                "distributed arrays do not mix. "
-                                "Scalars is allowed though.\n");
+                                "distributed arrays do not mix, "
+                                "scalars is allowed though.\n");
                 return -1;
             }
-            msg[4] = arylist[i]->descr->type_num;
-            msg[5] = arylist[i]->descr->elsize;
-            memcpy(msg+6, arylist[i]->data, msg[5]);
-            break;
+            //else this is a constant and we have to support the dtype.
+            if(type_py2cph[args[i]->descr->type_num] == CPHVB_UNKNOWN)
+            {
+                PyErr_SetString(PyExc_RuntimeError,
+                                "cphVB does not support the datatype\n");
+                return -1;
+            }
+            inst.operand[j] = CPHVB_CONSTANT;
+            inst.const_type[j] = args[i]->descr->type_num;
+            memcpy(&inst.constant[j], args[i]->data,
+                   args[i]->descr->elsize);
         }
-    */
+        else
+            inst.operand[j] = (cphvb_array*) args[i]->dnduid;
+    }
+    for(i=ufunc->nin; i<ufunc->nout; ++i)
+    {
+        cphvb_intp j = i - ufunc->nin;
+        if(args[i]->nd == 0)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                    "ufunc - scalar outputs is not allowed\n");
+            return -1;
+        }
+        inst.operand[j] = (cphvb_array*) args[i]->dnduid;
+    }
+
+    //We may have to apply the ufunc ourselves.
+    if(!cphvb_vem_instruction_check(&inst))
+    {
+        //Get Python function.
+        PyObject *PyOp = PyObject_GetAttrString(ufunc_module,
+                                                ufunc->name);
+        PyObject *tuple = PyTuple_New(ufunc->nargs);
+        assert(PyOp != NULL);
+
+        //Fill the tuple and apply the ufunc.
+        for(i=0; i<ufunc->nargs; ++i)
+        {
+            char *data;
+            if(args[i]->dnduid == 0)//Scalar.
+            {
+                assert(i < ufunc->nin);
+                assert(args[i]->nd == 0);
+                data = args[i]->data;
+            }
+            else
+            {
+                cphvb_array* a = (cphvb_array*) args[i]->dnduid;
+                cphvb_array* b = cphvb_base_array(a);
+
+                if(b->data == NULL)//We may have to allocate it.
+                    if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
+                    {
+                        fprintf(stderr, "Out of memory "
+                                        "in dnumpy_ufunc\n");
+                        exit(CPHVB_OUT_OF_MEMORY);
+                    }
+                data = b->data + a->start * cphvb_type_size(a->type);
+                //Tell the VEM to release the data to us.
+                util_release(a);
+            }
+            PyObject *tary = PyArray_New(&PyArray_Type,
+                                         args[i]->nd,
+                                         args[i]->dimensions,
+                                         args[i]->descr->type_num,
+                                         args[i]->strides,
+                                         data, 0,
+                                         NPY_BEHAVED, NULL);
+            assert(tary != NULL);
+            PyTuple_SET_ITEM(tuple, i, tary);
+        }
+        PyObject *t = PyObject_CallObject(PyOp, tuple);
+        assert(t != NULL);
+
+        Py_DECREF(t);
+        Py_DECREF(tuple);
+        Py_DECREF(PyOp);
+    }
+    else // Tell the VEM to perform the instruction.
+    {
+        //NB: remember to create broadcasted view.
+        fprintf(stderr,"ERROR IN UFUNC\n");
+        exit(CPHVB_OUT_OF_MEMORY);
+    }
+
     return 0;
 } /* dnumpy_ufunc */
+
 
 /*NUMPY_API
  *===================================================================
@@ -505,7 +520,8 @@ static int
 dnumpy_ufunc_reduce(PyArrayObject *in_ary, PyArrayObject *out_ary,
                     int axis, char *op)
 {
-    printf("dnumpy_ufunc_reduce\n");
+    fprintf(stderr,"dnumpy_ufunc_reduce not implemented.\n");
+    exit(CPHVB_ERROR);
     /*
     int i;
     dndview *in = get_dndview(in_ary->dnduid);
@@ -560,7 +576,8 @@ dnumpy_ufunc_reduce(PyArrayObject *in_ary, PyArrayObject *out_ary,
 static void
 dnumpy_zerofill(intp ary_uid)
 {
-    printf("dnumpy_zerofill\n");
+    fprintf(stderr,"dnumpy_zerofill not implemented.\n");
+    exit(CPHVB_ERROR);
     //Get arrray structs.
     //dndview *view = get_dndview(ary_uid);
 
@@ -574,7 +591,8 @@ dnumpy_zerofill(intp ary_uid)
 static void
 dnumpy_datafill(intp ary_uid, const char *filename, long datapos)
 {
-    printf("dnumpy_datafill\n");
+    fprintf(stderr,"dnumpy_datafill not implemented.\n");
+    exit(CPHVB_ERROR);
     //Get arrray structs.
     //dndview *view = get_dndview(ary_uid);
 
@@ -592,10 +610,8 @@ dnumpy_datafill(intp ary_uid, const char *filename, long datapos)
 static void
 dnumpy_datadump(intp ary_uid, const char *filename, long datapos)
 {
-    printf("dnumpy_datadump\n");
-    //Get array structs.
-    //dndview *view = get_dndview(ary_uid);
-
+    fprintf(stderr,"dnumpy_datadump not implemented.\n");
+    exit(CPHVB_ERROR);
 
 } /* dnumpy_datadump */
 
@@ -608,7 +624,8 @@ dnumpy_datadump(intp ary_uid, const char *filename, long datapos)
 static PyObject*
 dnumpy_diagonal(intp uid, int offset, int axis1, int axis2)
 {
-    printf("dnumpy_diagonal\n");
+    fprintf(stderr,"dnumpy_diagonal not implemented.\n");
+    exit(CPHVB_ERROR);
     return NULL;
     /*
     PyObject *ret;
@@ -697,7 +714,8 @@ dnumpy_init(void)
 static void
 dnumpy_matrix_multiplication(intp Auid, intp Buid, intp Cuid)
 {
-    printf("dnumpy_matrix_multiplication\n");
+    fprintf(stderr,"dnumpy_matrix_multiplication not implemented.\n");
+    exit(CPHVB_ERROR);
     /*
     //Get arrray structs.
     dndview *A = get_dndview(Auid);
@@ -716,38 +734,7 @@ dnumpy_matrix_multiplication(intp Auid, intp Buid, intp Cuid)
 static void
 dnumpy_exit()
 {
-    printf("dnumpy_exit\n");
-    /*
-    int i;
-    if(myrank == 0)
-    {
-        //Shutdown slaves
-        msg[0] = DNPY_SHUTDOWN;
-        msg[1] = DNPY_MSG_END;
-        #ifdef DISTNUMPY_DEBUG
-            printf("Rank 0 received msg: SHUTDOWN\n");
-        #endif
-    }
 
-
-
-    //Free buffers.
-    free(workbuf);
-    //Free Cartesian Information.
-    for(i=0; i < NPY_MAXDIMS; i++)
-    {
-        free(cart_dim_strides[i]);
-        free(cart_dim_sizes[i]);
-    }
-    int nleaks = 0;
-    for(i=0; i < DNPY_MAX_NARRAYS; i++)
-        if(dndviews_uid[i] != 0)
-            nleaks++;
-
-    if(nleaks > 0)
-        printf("DistNumPy - Warning %d distributed arrays didn't get "
-               "deallocated.\n", nleaks);
-,   */
 } /* dnumpy_exit */
 
 /*NUMPY_API
@@ -761,9 +748,7 @@ dnumpy_exit()
 static PyObject *
 dnumpy_master_slave_split(void)
 {
-    printf("dnumpy_master_slave_split\n");
     return Py_True;
-
 } /* dnumpy_master_slave_split */
 
 /*NUMPY_API

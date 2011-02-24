@@ -27,9 +27,6 @@
 
 #define CPHVB_MAX_EXTRA_META_DATA (1024)
 
-// Operand id used to indicate that the operand is a scalar constant
-#define CPHVB_CONSTANT (NULL)
-
 // Memory layout of an array
 /*
     Field used by VEM to manage ownership

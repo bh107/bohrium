@@ -34,7 +34,8 @@ const int _type_size[] =
     [CPHVB_UINT64] = 8,
     [CPHVB_FLOAT16] = 2,
     [CPHVB_FLOAT32] = 4,
-    [CPHVB_FLOAT64] = 8
+    [CPHVB_FLOAT64] = 8,
+    [CPHVB_UNKNOWN] = -1
 };
 
 

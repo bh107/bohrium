@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
  *
  * This file is part of cphVB.
  *
@@ -17,18 +17,28 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "svi.h"
-#include "util.h"
-#include <stdio.h>
+#include <cphvb_ve_simple.h>
 
-cphvb_error svi_get_array_pointer(cphvb_operand id, void** array)
+
+cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
+                                 cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
+                                 cphvb_intp *datatype_count,
+                                 cphvb_type datatype_list[CPHVB_MAX_NO_OPERANDS])
 {
-    if (id > SVI_MAPSIZE-1)
-        return CPHVB_OPERAND_UNKNOWN;
-    *array = svi_operand_map[id];
-    if (*array == NULL)
-        return CPHVB_OPERAND_UNKNOWN;
-    
+    *opcode_count = 0;
+    *datatype_count = 0;
     return CPHVB_SUCCESS;
 }
 
+
+cphvb_error cphvb_ve_simple_shutdown(void)
+{
+    return CPHVB_SUCCESS;
+}
+
+
+cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
+                                    cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS])
+{
+    return CPHVB_SUCCESS;
+}

@@ -24,6 +24,14 @@
 #include <cphvb_error.h>
 #include <cphvb_type.h>
 #include <cphvb_instruction.h>
+#include <cphvb_opcode.h>
+
+//Information describing a VE.
+typedef struct
+{
+    cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
+    cphvb_bool type[CPHVB_NO_OPCODES];  //list of type support
+} cphvb_support;
 
 /* Initialize the VEM
  *

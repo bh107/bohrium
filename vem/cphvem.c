@@ -20,10 +20,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include <cphvb_vem.h>
 #include <cphvb.h>
 #include "private.h"
+
+#include <cphvb_vem.h>
+#include <cphvb_ve_simple.h>
+
+//The VE info.
+cphvb_support ve_support;
 
 /* Initialize the VEM
  *
@@ -31,6 +35,26 @@
  */
 cphvb_error cphvb_vem_init(void)
 {
+    cphvb_intp opcode_count, type_count;
+    cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
+    cphvb_type type[CPHVB_MAX_NO_OPERANDS];
+    cphvb_error err;
+
+    //Let us initiate the simple VE and register what it supports.
+    err = cphvb_ve_simple_init(&opcode_count, opcode, &type_count, type);
+    if(err)
+        return err;
+
+    //Init to False.
+    memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
+    memset(ve_support.type, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
+
+    while(--opcode_count >= 0)
+        ve_support.opcode[opcode[opcode_count]] = 1;//Set True
+
+    while(--type_count >= 0)
+        ve_support.type[type[type_count]] = 1;//Set True
+
     return CPHVB_SUCCESS;
 }
 
@@ -41,7 +65,7 @@ cphvb_error cphvb_vem_init(void)
  */
 cphvb_error cphvb_vem_shutdown(void)
 {
-    return CPHVB_SUCCESS;
+    return cphvb_ve_simple_shutdown();
 }
 
 
@@ -109,7 +133,24 @@ cphvb_intp cphvb_vem_instruction_check(cphvb_instruction *inst)
     case CPHVB_RELEASE:
         return 1;
     default:
-        return 0;
+        if(ve_support.opcode[inst->opcode])
+        {
+            cphvb_intp i;
+            cphvb_intp nop = cphvb_operands(inst->opcode);
+            for(i=0; i<nop; ++i)
+            {
+                cphvb_type t;
+                if(inst->operand[i] == CPHVB_CONSTANT)
+                    t = inst->const_type[i];
+                else
+                    t = inst->operand[i]->type;
+                if(!ve_support.type[t])
+                    return 0;
+            }
+            return 1;
+        }
+        else
+            return 0;
     }
 }
 
@@ -130,30 +171,21 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         switch(inst->opcode)
         {
         case CPHVB_DESTORY:
-            printf("EXEC: CPHVB_DESTORY\n");
-            if(inst->operand[0]->base == NULL)
+        {
+            cphvb_array *base = cphvb_base_array(inst->operand[0]);
+            if(--base->ref_count <= 0)
             {
-                if(--inst->operand[0]->ref_count <= 0)
-                {
-                    if(inst->operand[0]->data != NULL)
-                        free(inst->operand[0]->data);
-                    free(inst->operand[0]);
-                }
+                if(base->data != NULL)
+                    free(base->data);
+
+                if(inst->operand[0]->base != NULL)
+                    free(base);
             }
-            else
-            {
-                if(--inst->operand[0]->base->ref_count <= 0)
-                {
-                    if(inst->operand[0]->base->data != NULL)
-                        free(inst->operand[0]->base->data);
-                    free(inst->operand[0]->base);
-                    free(inst->operand[0]);
-                }
-            }
+            free(inst->operand[0]);
             break;
+        }
         case CPHVB_RELEASE:
         {
-            printf("EXEC: CPHVB_RELEASE\n");
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             //Check the owner of the array
@@ -166,7 +198,8 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
         }
         default:
             fprintf(stderr, "cphvb_vem_execute() encountered an not "
-                            "supported instruction opcode\n");
+                            "supported instruction opcode: %s\n",
+                            cphvb_opcode_text(inst->opcode));
             exit(CPHVB_INST_NOT_SUPPORTED);
         }
     }

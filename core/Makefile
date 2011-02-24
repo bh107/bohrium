@@ -1,5 +1,4 @@
 ROOT=..
-INCLUDE=../include
 LIB=libcphvb.so
 CC=gcc
 WARNOPTS=-Wall
@@ -10,7 +9,7 @@ OBJ=$(SRC:.c=.o)
 
 all: $(LIB)
 
-%.o: %.c $(INCLUDE)/*
+%.o: %.c $(ROOT)/include/* private.h
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 $(LIB): $(OBJ)

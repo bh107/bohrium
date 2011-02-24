@@ -1879,12 +1879,7 @@ PyUFunc_GenericFunction(PyUFuncObject *self, PyObject *args, PyObject *kwds,
     for(i=0; i<self->nargs; i++)
         if(PyArray_ISDISTRIBUTED(mps[i]))
         {
-            int appropriate = loop->appropriate_function;
-            if(loop->meth == BUFFER_UFUNCLOOP)
-                appropriate = -1;//Force compatible mode.
-
-            int ret = dnumpy_ufunc(mps, self->nargs, self->nout,
-                                   self->name, appropriate);
+            int ret = dnumpy_ufunc(self, mps);
             //Cleanup and return.
             ufuncloop_dealloc(loop);
             return ret;
@@ -3691,10 +3686,11 @@ static PyObject *
 PyUFunc_FromFuncAndData(PyUFuncGenericFunction *func, void **data,
                         char *types, int ntypes,
                         int nin, int nout, int identity,
-                        char *name, char *doc, int check_return)
+                        char *name, char *doc, int check_return,
+                        cphvb_opcode opcode)
 {
     return PyUFunc_FromFuncAndDataAndSignature(func, data, types, ntypes,
-        nin, nout, identity, name, doc, check_return, NULL);
+        nin, nout, identity, name, doc, check_return, NULL, opcode);
 }
 
 /*UFUNC_API*/
@@ -3703,7 +3699,8 @@ PyUFunc_FromFuncAndDataAndSignature(PyUFuncGenericFunction *func, void **data,
                                      char *types, int ntypes,
                                      int nin, int nout, int identity,
                                      char *name, char *doc,
-                                     int check_return, const char *signature)
+                                     int check_return, const char *signature,
+                                     cphvb_opcode opcode)
 {
     PyUFuncObject *self;
 
@@ -3726,6 +3723,7 @@ PyUFunc_FromFuncAndDataAndSignature(PyUFuncGenericFunction *func, void **data,
     self->ptr = NULL;
     self->obj = NULL;
     self->userloops=NULL;
+    self->opcode = opcode;
 
     if (name == NULL) {
         self->name = "?";

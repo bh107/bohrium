@@ -2295,14 +2295,13 @@ array_big_item(PyArrayObject *self, intp i)
     /* DISTNUMPY */
     if(PyArray_ISDISTRIBUTED(self))
     {
-        //Lets make a slice covering the whole 'self' array beside
-        //the Single Index 'i'.
-        dndslice slice = {i, 0, SingleIndex};
         //And then create the new view based on 'self'.
-        PyArray_DNDUID(r) = dnumpy_create_dndview(
-                                          PyArray_DNDUID(self),
-                                          1, &slice);
+        PyArray_DNDUID(r) = dnumpy_create_dndview(PyArray_DNDUID(self),
+                            self->nd-1, self->dimensions+1,
+                            self->strides+1, i*self->strides[0]);
         PyArray_FLAGS(r) |= DNPY_DISTRIBUTED;//Flag it as distributed.
+        if(PyArray_DNDUID(r) <= 0)
+            return NULL;
     }
 
     Py_INCREF(self);
@@ -2566,19 +2565,16 @@ parse_subindex(PyObject *op, intp *step_size, intp *n_steps, intp max)
     return -1;
 }
 
-/* DISTNUMPY */
-//We need some extra args if self is a distributed array.
+
 static int
 parse_index(PyArrayObject *self, PyObject *op,
-            intp *dimensions, intp *strides, intp *offset_ptr,
-            int *nslice, dndslice *slice)
+            intp *dimensions, intp *strides, intp *offset_ptr)
 {
     int i, j, n;
     int nd_old, nd_new, n_add, n_pseudo;
     intp n_steps, start, offset, step_size;
     PyObject *op1 = NULL;
     int is_slice;
-    int ret_nslice = 0;
 
     if (PySlice_Check(op) || op == Py_Ellipsis || op == Py_None) {
         n = 1;
@@ -2618,10 +2614,7 @@ parse_index(PyArrayObject *self, PyObject *op,
         }
         if (n_steps == PseudoIndex) {
             dimensions[nd_new] = 1; strides[nd_new] = 0;
-            slice[ret_nslice].start = 0;
-            slice[ret_nslice].step = 0;
-            slice[ret_nslice].nsteps = PseudoIndex;
-            nd_new++; ret_nslice++;
+            nd_new++;
         }
         else {
             if (n_steps == RubberIndex) {
@@ -2643,11 +2636,7 @@ parse_index(PyArrayObject *self, PyObject *op,
                         self->dimensions[nd_old];
                     strides[nd_new] = \
                         self->strides[nd_old];
-
-                    slice[ret_nslice].start = 0;
-                    slice[ret_nslice].step = 1;
-                    slice[ret_nslice].nsteps = self->dimensions[nd_old];
-                    nd_new++; nd_old++; ret_nslice++;
+                    nd_new++; nd_old++;
                 }
             }
             else {
@@ -2664,10 +2653,6 @@ parse_index(PyArrayObject *self, PyObject *op,
                         self->strides[nd_old-1];
                     nd_new++;
                 }
-                slice[ret_nslice].start = start;
-                slice[ret_nslice].step = step_size;
-                slice[ret_nslice].nsteps = n_steps;
-                ret_nslice++;
             }
         }
     }
@@ -2678,13 +2663,10 @@ parse_index(PyArrayObject *self, PyObject *op,
     for (j = 0; j < n_add; j++) {
         dimensions[nd_new] = self->dimensions[nd_old];
         strides[nd_new] = self->strides[nd_old];
-        slice[ret_nslice].start = 0;
-        slice[ret_nslice].step = 1;
-        slice[ret_nslice].nsteps = self->dimensions[nd_old];
-        nd_new++; nd_old++; ret_nslice++;
+        nd_new++;
+        nd_old++;
     }
     *offset_ptr = offset;
-    *nslice = ret_nslice;
     return nd_new;
 }
 
@@ -3074,9 +3056,6 @@ static PyObject *
 array_subscript_simple(PyArrayObject *self, PyObject *op)
 {
     intp dimensions[MAX_DIMS], strides[MAX_DIMS];
-    /* DISTNUMPY */
-    dndslice slice[MAX_DIMS];
-    int nslice=0;
     intp offset;
     int nd;
     PyArrayObject *other;
@@ -3089,11 +3068,9 @@ array_subscript_simple(PyArrayObject *self, PyObject *op)
     PyErr_Clear();
 
     /* Standard (view-based) Indexing */
-    /* DISTNUMPY */
-    if ((nd = parse_index(self, op, dimensions, strides, &offset,
-                          &nslice, slice)) == -1)
+    if ((nd = parse_index(self, op, dimensions, strides, &offset)) == -1) {
         return NULL;
-
+    }
     /* This will only work if new array will be a view */
     Py_INCREF(self->descr);
     if ((other = (PyArrayObject *)
@@ -3104,13 +3081,16 @@ array_subscript_simple(PyArrayObject *self, PyObject *op)
                               (PyObject *)self)) == NULL) {
         return NULL;
     }
+
     /* DISTNUMPY */
     if(PyArray_ISDISTRIBUTED(self))
     {
-        PyArray_DNDUID(other) = dnumpy_create_dndview(
-                                        PyArray_DNDUID(self),
-                                        nslice, slice);
+        PyArray_DNDUID(other) =
+                dnumpy_create_dndview(PyArray_DNDUID(self), nd,
+                                      dimensions, strides, offset);
         PyArray_FLAGS(other) |= DNPY_DISTRIBUTED;
+        if(PyArray_DNDUID(other) <= 0)
+            return NULL;
     }
     other->base = (PyObject *)self;
     Py_INCREF(self);
@@ -4588,10 +4568,12 @@ array_slice(PyArrayObject *self, Py_ssize_t ilow,
     /* DISTNUMPY */
     if(PyArray_ISDISTRIBUTED(self))
     {
-        dndslice slice = {ilow, 1, self->dimensions[0]};
-        PyArray_DNDUID(r) = dnumpy_create_dndview(
-                            PyArray_DNDUID(self), 1, &slice);
+        PyArray_DNDUID(r) = dnumpy_create_dndview(PyArray_DNDUID(self),
+                            self->nd, self->dimensions, self->strides,
+                            ilow*self->strides[0]);
         PyArray_FLAGS(r) |= DNPY_DISTRIBUTED;
+        if(PyArray_DNDUID(r) <= 0)
+            return NULL;
     }
 
     self->dimensions[0] = l;
