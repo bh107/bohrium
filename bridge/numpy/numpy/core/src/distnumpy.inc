@@ -434,16 +434,16 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         else
             inst.operand[j] = (cphvb_array*) args[i]->dnduid;
     }
-    for(i=ufunc->nin; i<ufunc->nout; ++i)
+    for(i=0; i<ufunc->nout; ++i)
     {
-        cphvb_intp j = i - ufunc->nin;
-        if(args[i]->nd == 0)
+        cphvb_intp j = i + ufunc->nin;
+        if(args[j]->nd == 0)
         {
             PyErr_SetString(PyExc_RuntimeError,
                     "ufunc - scalar outputs is not allowed\n");
             return -1;
         }
-        inst.operand[j] = (cphvb_array*) args[i]->dnduid;
+        inst.operand[i] = (cphvb_array*) args[j]->dnduid;
     }
 
     //We may have to apply the ufunc ourselves.
