@@ -34,6 +34,8 @@ private:
     CUfunction entry;
     Signature signature;
     void setParameters(ParameterList parameters);
+    void setBlockShape(int x, int y, int z);
+    void launchGrid(int width, int height);
 public:
     virtual void execute(ParameterList parameters) = 0;
 };

@@ -20,6 +20,7 @@
 #include <vector>
 #include <cassert>
 #include <cuda.h>
+#include <stdexcept>
 #include "PTXtype.hpp"
 #include "PTXparameter.hpp"
 #include "Kernel.hpp"
@@ -29,6 +30,7 @@
 
 void Kernel::setParameters(ParameterList parameters)
 {
+    CUresult error;
     int offset = 0;
     assert (parameters.size() == signature.size());
     Signature::iterator siter = signature.begin();
@@ -37,9 +39,36 @@ void Kernel::setParameters(ParameterList parameters)
     {
         assert (piter->type == *siter);
         ALIGN_UP(offset, ptxAlign(piter->type));
-        cuParamSetv(entry, offset, &piter->value, ptxSizeOf(piter->type));
+        error = cuParamSetv(entry, offset, &piter->value, 
+                            ptxSizeOf(piter->type));
+        if (error !=  CUDA_SUCCESS)
+        {
+            throw std::runtime_error("Could not set kernel parameter.");
+        }
         offset += ptxSizeOf(piter->type);
         ++piter; ++siter;
     }
-    cuParamSetSize(entry,offset);
+    error = cuParamSetSize(entry,offset);
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not set kernel parameter list size.");
+    }
+}
+
+void Kernel::setBlockShape(int x, int y, int z)
+{
+    CUresult error = cuFuncSetBlockShape(entry, x, y, y);
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not set kernel block shape.");
+    }
+}
+
+void Kernel::launchGrid(int width, int height)
+{
+    CUresult error = cuLaunchGrid(entry, width, height);
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not set kernel grid.");
+    }
 }
