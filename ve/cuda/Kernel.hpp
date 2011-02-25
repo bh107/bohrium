@@ -17,47 +17,25 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXTYPE_HPP
-#define __PTXTYPE_HPP
+#ifndef __KERNEL_HPP
+#define __KERNEL_HPP
 
-#include <cphvb.h>
-#include <cstdlib>
+#include <vector>
+#include "PTXparameter.hpp"
 
-enum PTXbaseType
+typedef std::vector<PTXparameter> ParameterList;
+typedef std::vector<PTXtype> Signature;
+
+class Kernel
 {
-    PTX_INT,
-    PTX_UINT,
-    PTX_FLOAT,
-    PTX_BITS,
-    PTX_BASE_TYPES //Number of base types 
+    friend class KernelSimple;
+private:
+    CUmodule module;
+    CUfunction entry;
+    Signature signature;
+    void setParameters(ParameterList parameters);
+public:
+    virtual void execute(ParameterList parameters) = 0;
 };
-
-enum PTXtype
-{
-    PTX_INT8,
-    PTX_INT16,
-    PTX_INT32,
-    PTX_INT64,
-    PTX_UINT8,
-    PTX_UINT16,
-    PTX_UINT32,
-    PTX_UINT64,
-    PTX_FLOAT16,
-    PTX_FLOAT32,
-    PTX_FLOAT64,
-    PTX_BITS8,
-    PTX_BITS16,
-    PTX_BITS32,
-    PTX_BITS64,
-    PTX_PRED,
-    PTX_TYPES //Number of types 
-};
-
-PTXtype ptxType(cphvb_type vbtype);
-PTXbaseType ptxBaseType(PTXtype type);
-PTXbaseType ptxBaseType(cphvb_type vbtype);
-const char* ptxTypeStr(PTXtype type);
-size_t ptxAlign(PTXtype type);
-size_t ptxSizeOf(PTXtype type);
 
 #endif

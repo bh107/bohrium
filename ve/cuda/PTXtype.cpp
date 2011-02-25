@@ -19,6 +19,8 @@
 
 #include <cassert>
 #include <cphvb.h>
+#include <cstdint>
+#include <cstdlib>
 #include "PTXtype.hpp"
 
 PTXtype ptxType(cphvb_type vbtype)
@@ -105,4 +107,62 @@ const char* _ptxTypeStr[] =
 const char* ptxTypeStr(PTXtype type)
 {
     return _ptxTypeStr[type];
+}
+
+size_t ptxAlign(PTXtype type)
+{
+    switch (type)
+    {
+    case PTX_INT8:
+        return __alignof(int8_t);
+    case PTX_INT16:
+        return __alignof(int16_t);
+    case PTX_INT32:
+        return __alignof(int32_t);
+    case PTX_INT64:
+        return __alignof(int64_t);
+    case PTX_UINT8:
+        return __alignof(uint8_t);
+    case PTX_UINT16:
+        return __alignof(uint16_t);
+    case PTX_UINT32:
+        return __alignof(uint32_t);
+    case PTX_UINT64:
+        return __alignof(uint64_t);
+    case PTX_FLOAT32:
+        return __alignof(float);
+    case PTX_FLOAT64:
+        return __alignof(double);
+    default:
+        assert(false);
+    }
+}
+
+size_t ptxSizeOf(PTXtype type)
+{
+    switch (type)
+    {
+    case PTX_INT8:
+        return sizeof(int8_t);
+    case PTX_INT16:
+        return sizeof(int16_t);
+    case PTX_INT32:
+        return sizeof(int32_t);
+    case PTX_INT64:
+        return sizeof(int64_t);
+    case PTX_UINT8:
+        return sizeof(uint8_t);
+    case PTX_UINT16:
+        return sizeof(uint16_t);
+    case PTX_UINT32:
+        return sizeof(uint32_t);
+    case PTX_UINT64:
+        return sizeof(uint64_t);
+    case PTX_FLOAT32:
+        return sizeof(float);
+    case PTX_FLOAT64:
+        return sizeof(double);
+    default:
+        assert(false);
+    }
 }
