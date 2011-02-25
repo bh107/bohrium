@@ -37,7 +37,7 @@ cphvb_error cphvb_vem_init(void)
 {
     cphvb_intp opcode_count, type_count;
     cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
-    cphvb_type type[CPHVB_MAX_NO_OPERANDS];
+    cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
     //Let us initiate the simple VE and register what it supports.
@@ -47,7 +47,7 @@ cphvb_error cphvb_vem_init(void)
 
     //Init to False.
     memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
-    memset(ve_support.type, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
+    memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
 
     while(--opcode_count >= 0)
         ve_support.opcode[opcode[opcode_count]] = 1;//Set True

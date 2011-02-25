@@ -25,7 +25,7 @@
 cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
                                  cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
                                  cphvb_intp *datatype_count,
-                                 cphvb_type datatype_list[CPHVB_MAX_NO_OPERANDS]);
+                                 cphvb_type datatype_list[CPHVB_NO_TYPES]);
 
 cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                                     cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS]);

@@ -50,8 +50,11 @@ enum /* cphvb_type */
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64,
+    //NB: CPHVB_UNKNOWN must be the last element in this enum.
     CPHVB_UNKNOWN
 };
+
+#define CPHVB_NO_TYPES CPHVB_UNKNOWN
 
 typedef union /* cphvb_constant */
 {
