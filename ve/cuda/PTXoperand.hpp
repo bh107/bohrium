@@ -22,22 +22,10 @@
 
 #include <cphvb.h>
 
-enum PTXtype
-{
-    PTX_INT,
-    PTX_UINT,
-    PTX_FLOAT,
-    PTX_BITS,
-    PTX_PRED
-};
-
-#define PTX_TYPES (5) 
-
 class PTXoperand
 {
 public:
     virtual char* asString() = 0;
-    static PTXtype ptxType(cphvb_type vbtype);
 };
 
 #endif

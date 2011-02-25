@@ -21,6 +21,7 @@
 #define __PTXCONSTANT_HPP
 
 #include <cuda.h>
+#include "PTXtype.hpp"
 #include "PTXoperand.hpp"
 
 #define PTX_ADDRESS (PTX_BITS)
@@ -36,7 +37,7 @@ union PTXconstVal
 class PTXconstant : public PTXoperand
 {
 private:
-    PTXtype     type;
+    PTXbaseType type;
     PTXconstVal value;
     char*       txtrep;
     void genTxt();

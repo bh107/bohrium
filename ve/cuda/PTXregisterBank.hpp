@@ -31,14 +31,13 @@ private:
     PTXregister registers[BANKSIZE];
     char names[BANKSIZE][32];
     int next;
-    int instanceTable[PTX_TYPES][PTX_SIZES];
+    int instanceTable[PTX_TYPES];
     void setRegName(PTXtype ptxType, 
-                    RegSize regSize, 
                     char* name);
 public:
     PTXregisterBank();
     void reset();
-    PTXregister* newRegister(PTXtype type, RegSize size);
+    PTXregister* newRegister(PTXtype type);
     PTXregister* newRegister(cphvb_type type);
 };
 

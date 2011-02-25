@@ -17,33 +17,46 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
+#ifndef __PTXTYPE_HPP
+#define __PTXTYPE_HPP
+
 #include <cphvb.h>
-#include "PTXoperand.hpp"
 
-PTXtype PTXoperand::ptxType(cphvb_type vbtype)
+enum PTXbaseType
 {
-    switch (vbtype)
-    {
-    case CPHVB_BOOL:
-        return PTX_BITS;
-    case CPHVB_INT8:
-    case CPHVB_INT16:
-    case CPHVB_INT32:
-    case CPHVB_INT64:
-        return PTX_INT;
-    case CPHVB_UINT8:
-    case CPHVB_UINT16:
-    case CPHVB_UINT32:
-    case CPHVB_UINT64:
-        return PTX_UINT;
-    case CPHVB_FLOAT16:
-    case CPHVB_FLOAT32:
-    case CPHVB_FLOAT64:
-        return PTX_FLOAT;
-    default:
-        assert(false);
-    }
-}
+    PTX_INT,
+    PTX_UINT,
+    PTX_FLOAT,
+    PTX_BITS,
+    PTX_BASE_TYPES //Number of base types 
+};
 
 
+
+enum PTXtype
+{
+    PTX_INT8,
+    PTX_INT16,
+    PTX_INT32,
+    PTX_INT64,
+    PTX_UINT8,
+    PTX_UINT16,
+    PTX_UINT32,
+    PTX_UINT64,
+    PTX_FLOAT16,
+    PTX_FLOAT32,
+    PTX_FLOAT64,
+    PTX_BITS8,
+    PTX_BITS16,
+    PTX_BITS32,
+    PTX_BITS64,
+    PTX_PRED,
+    PTX_TYPES //Number of types 
+};
+
+PTXtype ptxType(cphvb_type vbtype);
+PTXbaseType ptxBaseType(PTXtype type);
+PTXbaseType ptxBaseType(cphvb_type vbtype);
+const char* ptxTypeStr(PTXtype type);
+
+#endif

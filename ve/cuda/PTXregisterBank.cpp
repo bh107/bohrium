@@ -29,91 +29,53 @@ PTXregisterBank::PTXregisterBank() {}
 void PTXregisterBank::reset()
 {
     next = 0;
-    int i,j;
+    int i;
     for (i = 0; i < PTX_TYPES; ++i)
     {
-        for (j = 0; j < PTX_SIZES; ++j)
-        {
-            instanceTable[i][j] = 0;
-        }
+        instanceTable[i] = 0;
     }
 }
  
-const char* regTypeString(PTXtype type)
+const char* regTypeString[] =
 {
-    switch (type)
-    {
-    case PTX_INT:
-        return "i";
-    case PTX_UINT:
-        return "u";
-    case PTX_FLOAT:
-        return "f";
-    case PTX_BITS:
-        return "b";
-    case PTX_PRED:
-        return "p";
-    default:
-        assert(false);
-    }
+    /*[PTX_INT8] = */"sc",
+    /*[PTX_INT16] = */"sh",
+    /*[PTX_INT32] = */"si",
+    /*[PTX_INT64] = */"sd",
+    /*[PTX_UINT8] = */"uc",
+    /*[PTX_UINT16] = */"uh",
+    /*[PTX_UINT32] = */"ui",
+    /*[PTX_UINT64] = */"ud",
+    /*[PTX_FLOAT16] = */"fh",
+    /*[PTX_FLOAT32] = */"f_",
+    /*[PTX_FLOAT64] = */"fd",
+    /*[PTX_BITS8] = */"bc",
+    /*[PTX_BITS16] = */"bh",
+    /*[PTX_BITS32] = */"b_",
+    /*[PTX_BITS64] = */"bd",
+    /*[PTX_PRED] = */"p"
+};
+
+
+void PTXregisterBank::setRegName(PTXtype type, char* name)
+{
+    assert(type < PTX_TYPES);
+    std::sprintf(name, "$%s%d", 
+                 regTypeString[type],
+                 instanceTable[type]);
 }
 
-const char* regSizeString(RegSize size)
-{
-    switch (size)
-    {
-    case _8:
-        return "c";
-    case _16:
-        return "h";
-    case _32:
-        return "_";
-    case _64:
-        return "d";
-    default:
-        assert(false);
-    }
-}
-
-void PTXregisterBank::setRegName(PTXtype type, RegSize size, char* name)
-{
-    std::sprintf(name, "$%s%s%d", 
-                 regTypeString(type),
-                 regSizeString(size),
-                 instanceTable[type][size]);
-}
-
-PTXregister* PTXregisterBank::newRegister(PTXtype type, RegSize size)
+PTXregister* PTXregisterBank::newRegister(PTXtype type)
 {
     registers[next].type = type;
-    registers[next].size = size;
     registers[next].name = names[next];
-    setRegName(type, size, names[next]);
-    ++instanceTable[type][size];
+    setRegName(type, names[next]);
+    ++instanceTable[type];
     return &registers[next++];
 }
 
 
 PTXregister* PTXregisterBank::newRegister(cphvb_type vbtype)
 {
-    PTXtype type = PTXoperand::ptxType(vbtype);
-    RegSize size;
-    switch (cphvb_type_size(vbtype))
-    {
-    case 1:
-        size = _8;
-        break;
-    case 2:
-        size = _16;
-        break;
-    case 4:
-        size = _32;
-        break;
-    case 8:
-        size = _64;
-        break;
-    default:
-        assert(false);
-    }
-    return newRegister(type,size);
+    return newRegister(ptxType(vbtype));
 }

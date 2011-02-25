@@ -20,23 +20,13 @@
 #ifndef __PTXREGISTER_HPP
 #define __PTXREGISTER_HPP
 
+#include "PTXtype.hpp"
 #include "PTXoperand.hpp"
-
-enum RegSize
-{
-    _8,
-    _16,
-    _32,
-    _64
-};
-
-#define PTX_SIZES (4)
 
 class PTXregister : public PTXoperand
 {
     PTXtype type;
-    RegSize size;
-    char* name;
+    char*   name;
 public:
     char* asString();
     friend class PTXregisterBank;

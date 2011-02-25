@@ -63,7 +63,7 @@ PTXconstVal constVal(cphvb_type type,
     }
 }
 
-PTXconstant* PTXconstantBuffer::newConstant(PTXtype type, 
+PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
                                             PTXconstVal value)
 {
     constants[next].type = type;
@@ -76,6 +76,6 @@ PTXconstant* PTXconstantBuffer::newConstant(PTXtype type,
 PTXconstant* PTXconstantBuffer::newConstant(cphvb_type vbtype,
                                             cphvb_constant constant)
 {
-    return newConstant(PTXoperand::ptxType(vbtype), constVal(vbtype, constant));
+    return newConstant(ptxBaseType(vbtype), constVal(vbtype, constant));
 }
 

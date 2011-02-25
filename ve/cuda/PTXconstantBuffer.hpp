@@ -33,7 +33,7 @@ private:
 public:
     PTXconstantBuffer();
     void reset();
-    PTXconstant* newConstant(PTXtype type, 
+    PTXconstant* newConstant(PTXbaseType type, 
                              PTXconstVal value);
     PTXconstant* newConstant(cphvb_type type,
                              cphvb_constant value);
