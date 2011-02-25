@@ -19,21 +19,15 @@
 
 #include <stdexcept>
 #include <cuda.h>
-#include "DeviceManagerSimple.hpp"
+#include "DeviceManager.hpp"
 
-DeviceManagerSimple::DeviceManagerSimple() {}
-
-void DeviceManagerSimple::initDevice(int deviceId)
+int DeviceManager::deviceCount()
 {
-    CUresult error = cuDeviceGet(&cuDevice, deviceId);
+    int res;
+    CUresult error = cuDeviceGetCount(&res);
     if (error != CUDA_SUCCESS) 
     {
-        throw std::runtime_error("Could not init device.");
+        throw std::runtime_error("Could not get device count.");
     }
-    error = cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cuDevice);
-    if (error != CUDA_SUCCESS) 
-    {
-        throw std::runtime_error("Could not create context.");
-    }
+    return res;
 }
-

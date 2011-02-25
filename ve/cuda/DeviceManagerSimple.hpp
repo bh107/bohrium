@@ -17,23 +17,21 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdexcept>
+#ifndef __DEVICEMANAGERSIMPLE_HPP
+#define __DEVICEMANAGERSIMPLE_HPP
+
 #include <cuda.h>
-#include "DeviceManagerSimple.hpp"
+#include <stdexcept>
+#include "DeviceManager.hpp"
 
-DeviceManagerSimple::DeviceManagerSimple() {}
-
-void DeviceManagerSimple::initDevice(int deviceId)
+class DeviceManagerSimple : public DeviceManager
 {
-    CUresult error = cuDeviceGet(&cuDevice, deviceId);
-    if (error != CUDA_SUCCESS) 
-    {
-        throw std::runtime_error("Could not init device.");
-    }
-    error = cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cuDevice);
-    if (error != CUDA_SUCCESS) 
-    {
-        throw std::runtime_error("Could not create context.");
-    }
-}
+private:
+    CUdevice cuDevice;
+    CUcontext cuContext;
+public:
+    DeviceManagerSimple();
+    void initDevice(int deviceId);
+};
 
+#endif
