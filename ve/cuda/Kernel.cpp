@@ -41,4 +41,5 @@ void Kernel::setParameters(ParameterList parameters)
         offset += ptxSizeOf(piter->type);
         ++piter; ++siter;
     }
+    cuParamSetSize(entry,offset);
 }
