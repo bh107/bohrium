@@ -28,6 +28,14 @@
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
 
+Kernel::Kernel(CUmodule module_,
+               CUfunction entry_,
+               Signature signature_) :
+    module(module_),
+    entry(entry_),
+    signature(signature_) {}
+
+
 void Kernel::setParameters(ParameterList parameters)
 {
     CUresult error;

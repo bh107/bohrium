@@ -17,31 +17,20 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_HPP
-#define __KERNEL_HPP
+#include "Kernel.hpp"
+#include "KernelSimple.hpp"
 
-#include <vector>
-#include <cuda.h>
-#include "PTXparameter.hpp"
+KernelSimple::KernelSimple(CUmodule module_, 
+                           CUfunction entry_, 
+                           Signature signature_,
+                           KernelShape shape_) :
+    Kernel(module_, entry_, signature_),
+    shape(shape_) {}
 
-typedef std::vector<PTXparameter> ParameterList;
-typedef std::vector<PTXtype> Signature;
-
-class Kernel
+void KernelSimple::execute(ParameterList parameters)
 {
-    //friend class KernelSimple;
-protected:
-    CUmodule module;
-    CUfunction entry;
-    Signature signature;
-    Kernel(CUmodule module,
-           CUfunction entry,
-           Signature signature);
-    void setParameters(ParameterList parameters);
-    void setBlockShape(int x, int y, int z);
-    void launchGrid(int width, int height);
-public:
-    virtual void execute(ParameterList parameters) = 0;
-};
-
-#endif
+    setParameters(parameters);
+    setBlockShape(shape.threadsPerBlockX, 
+                  shape.threadsPerBlockY, shape.threadsPerBlockY);
+    launchGrid(shape.blocksPerGridX, shape.blocksPerGridY);
+}
