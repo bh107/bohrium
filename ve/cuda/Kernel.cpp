@@ -24,6 +24,7 @@
 #include "PTXtype.hpp"
 #include "PTXparameter.hpp"
 #include "Kernel.hpp"
+#include "KernelShape.hpp"
 
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
@@ -72,9 +73,12 @@ void Kernel::setBlockShape(int x, int y, int z)
     }
 }
 
-void Kernel::launchGrid(int width, int height)
+void Kernel::launchGrid(KernelShape shape)
 {
-    CUresult error = cuLaunchGrid(entry, width, height);
+    setBlockShape(shape.threadsPerBlockX, 
+                  shape.threadsPerBlockY, shape.threadsPerBlockY);
+    CUresult error = cuLaunchGrid(entry, shape.blocksPerGridX, 
+                                         shape.blocksPerGridY);
     if (error !=  CUDA_SUCCESS)
     {
         throw std::runtime_error("Could not set kernel grid.");

@@ -23,17 +23,17 @@
 #include <cuda.h>
 #include <vector>
 #include "Kernel.hpp"
-#include "KernelShape.hpp"
+#include "KernelShapeSimple.hpp"
 
 class KernelSimple : public Kernel
 {
 private:
-    KernelShape shape;
+    KernelShapeSimple shape;
 public:
     KernelSimple(CUmodule module, 
                  CUfunction entry, 
                  Signature signature,
-                 KernelShape shape);
+                 KernelShapeSimple shape);
     void execute(ParameterList parameters);
 };
 

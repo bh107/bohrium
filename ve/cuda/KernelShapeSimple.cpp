@@ -17,32 +17,13 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_HPP
-#define __KERNEL_HPP
+#include "KernelShapeSimple.hpp"
 
-#include <vector>
-#include <cuda.h>
-#include "PTXparameter.hpp"
-#include "KernelShape.hpp"
 
-typedef std::vector<PTXparameter> ParameterList;
-typedef std::vector<PTXtype> Signature;
+KernelShapeSimple::KernelShapeSimple(cphvb_intp nelements) :
+    KernelShape(_TPB, 
+                1, 
+                1, 
+                nelements / _TPB + (nelements % _TPB == 0 ? 0 : 1),
+                1) {}
 
-class Kernel
-{
-private:
-    void setBlockShape(int x, int y, int z);
-protected:
-    CUmodule module;
-    CUfunction entry;
-    Signature signature;
-    Kernel(CUmodule module,
-           CUfunction entry,
-           Signature signature);
-    void setParameters(ParameterList parameters);
-    void launchGrid(KernelShape shape);
-public:
-    virtual void execute(ParameterList parameters) = 0;
-};
-
-#endif

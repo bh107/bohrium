@@ -23,14 +23,12 @@
 KernelSimple::KernelSimple(CUmodule module_, 
                            CUfunction entry_, 
                            Signature signature_,
-                           KernelShape shape_) :
+                           KernelShapeSimple shape_) :
     Kernel(module_, entry_, signature_),
     shape(shape_) {}
 
 void KernelSimple::execute(ParameterList parameters)
 {
     setParameters(parameters);
-    setBlockShape(shape.threadsPerBlockX, 
-                  shape.threadsPerBlockY, shape.threadsPerBlockY);
-    launchGrid(shape.blocksPerGridX, shape.blocksPerGridY);
+    launchGrid(shape);
 }
