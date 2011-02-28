@@ -19,32 +19,33 @@
 
 #include <cassert>
 #include <cstdio>
-#include <cuda.h>
+#include <stdexcept>
 #include "PTXconstant.hpp"
 
-void PTXconstant::genTxt()
+int PTXconstant::snprint(char* buf, int size)
 {
+    int res;
     switch(type)
     {
     case PTX_INT:
-        sprintf(txtrep, "%ld", value.i);
+        res = std::snprintf(buf, size, "%ld", value.i);
         break;
     case PTX_UINT:
-        sprintf(txtrep, "%ldU", value.u);
+        res = std::snprintf(buf, size, "%ldU", value.u);
         break;
     case PTX_FLOAT:
-        sprintf(txtrep, "%#.24e", value.f);
+        res = std::snprintf(buf, size, "%#.24e", value.f);
         break;
     case PTX_BITS:
-        sprintf(txtrep, "%p", (void*)value.a);
+        res = std::snprintf(buf, size, "%p", (void*)value.a);
         break;
     default:
         assert(false);
     }
-}
-
-char* PTXconstant::asString()
-{
-    return txtrep;
+    if (res > size)
+    {
+        throw std::runtime_error("Not enough buffer space for printing.");
+    }
+    return res;
 }
 

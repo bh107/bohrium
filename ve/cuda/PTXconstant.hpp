@@ -36,14 +36,12 @@ union PTXconstVal
 
 class PTXconstant : public PTXoperand
 {
+    friend class PTXconstantBuffer;
 private:
     PTXbaseType type;
     PTXconstVal value;
-    char*       txtrep;
-    void genTxt();
 public:
-    char* asString();
-    friend class PTXconstantBuffer;
+    int snprint(char* buf, int size);
 };
 
 #endif
