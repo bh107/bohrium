@@ -22,7 +22,7 @@
 #include <cuda.h>
 #include <stdexcept>
 #include "PTXtype.hpp"
-#include "PTXparameter.hpp"
+#include "KernelParameter.hpp"
 #include "Kernel.hpp"
 #include "KernelShape.hpp"
 

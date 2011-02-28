@@ -17,19 +17,10 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXPARAMETER_HPP
-#define __PTXPARAMETER_HPP
-
 #include "PTXtype.hpp"
+#include "KernelParameter.hpp"
 
-class PTXparameter
-{
-private:
-    friend class Kernel;
-    PTXtype type;
-    cphvb_constant value;
-public:
-    PTXparameter(cphvb_type type, cphvb_constant value);
-};
+KernelParameter::KernelParameter(cphvb_type type_, cphvb_constant value_) :
+    type(ptxType(type_)),
+    value(value_) {}
 
-#endif

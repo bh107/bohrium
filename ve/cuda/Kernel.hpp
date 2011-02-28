@@ -22,10 +22,10 @@
 
 #include <vector>
 #include <cuda.h>
-#include "PTXparameter.hpp"
+#include "KernelParameter.hpp"
 #include "KernelShape.hpp"
 
-typedef std::vector<PTXparameter> ParameterList;
+typedef std::vector<KernelParameter> ParameterList;
 typedef std::vector<PTXtype> Signature;
 
 class Kernel
