@@ -322,12 +322,11 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     util_release(ary);
 
     //We may have to allocate the array memory.
-    if(base->data == NULL)
-        if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
-        {
-            fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
-            exit(CPHVB_OUT_OF_MEMORY);
-        }
+    if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
+    {
+        fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
+        exit(CPHVB_OUT_OF_MEMORY);
+    }
 
     //Compute offset. May be use cphvb_calc_offset()?
     offset = 0;
@@ -365,12 +364,11 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
     util_release(ary);
 
     //We may have to allocate the array memory.
-    if(base->data == NULL)
-        if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
-        {
-            fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
-            exit(CPHVB_OUT_OF_MEMORY);
-        }
+    if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)
+    {
+        fprintf(stderr,"Out of memory in dnumpy_dndarray_putitem\n");
+        exit(CPHVB_OUT_OF_MEMORY);
+    }
 
     //Compute offset. May be use cphvb_calc_offset()?
     offset = 0;
@@ -434,16 +432,16 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         else
             inst.operand[j] = (cphvb_array*) args[i]->dnduid;
     }
-    for(i=ufunc->nin; i<ufunc->nout; ++i)
+    for(i=0; i<ufunc->nout; ++i)
     {
-        cphvb_intp j = i - ufunc->nin;
-        if(args[i]->nd == 0)
+        cphvb_intp j = i + ufunc->nin;
+        if(args[j]->nd == 0)
         {
             PyErr_SetString(PyExc_RuntimeError,
                     "ufunc - scalar outputs is not allowed\n");
             return -1;
         }
-        inst.operand[j] = (cphvb_array*) args[i]->dnduid;
+        inst.operand[i] = (cphvb_array*) args[j]->dnduid;
     }
 
     //We may have to apply the ufunc ourselves.
@@ -470,13 +468,13 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 cphvb_array* a = (cphvb_array*) args[i]->dnduid;
                 cphvb_array* b = cphvb_base_array(a);
 
-                if(b->data == NULL)//We may have to allocate it.
-                    if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
-                    {
-                        fprintf(stderr, "Out of memory "
-                                        "in dnumpy_ufunc\n");
-                        exit(CPHVB_OUT_OF_MEMORY);
-                    }
+                //We may have to allocate it.
+                if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
+                {
+                    fprintf(stderr, "Out of memory "
+                                    "in dnumpy_ufunc\n");
+                    exit(CPHVB_OUT_OF_MEMORY);
+                }
                 data = b->data + a->start * cphvb_type_size(a->type);
                 //Tell the VEM to release the data to us.
                 util_release(a);
@@ -500,9 +498,51 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
     }
     else // Tell the VEM to perform the instruction.
     {
-        //NB: remember to create broadcasted view.
-        fprintf(stderr,"ERROR IN UFUNC\n");
-        exit(CPHVB_OUT_OF_MEMORY);
+        cphvb_error error;
+
+        //Broadcast to match the number of dimensions of the output by
+        //appending 1-length dimensions.
+        for(i=ufunc->nout; i<ufunc->nargs; ++i)
+        {
+            if(inst.operand[i] != CPHVB_CONSTANT &&
+               inst.operand[i]->ndim < inst.operand[0]->ndim)
+            {
+                cphvb_intp j;
+                cphvb_intp shape[CPHVB_MAXDIM];
+                cphvb_intp stride[CPHVB_MAXDIM];
+                cphvb_array *tary;
+
+                for(j=0; j<inst.operand[i]->ndim; ++j)
+                {
+                    shape[j] = inst.operand[i]->shape[j];
+                    stride[j] = inst.operand[i]->stride[j];
+                }
+
+                for(j=inst.operand[i]->ndim; j<inst.operand[0]->ndim; ++j)
+                {
+                    shape[j] = 1;
+                    stride[j] = 0;
+                }
+
+                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[0]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
+                if(error)
+                {
+                    char errtxt[256];
+                    sprintf(errtxt, "Ufunc - internal error when "
+                            "calling cphvb_vem_create_array(): %s.\n",
+                            cphvb_error_text(error));
+                    PyErr_SetString(PyExc_RuntimeError, errtxt);
+                    return -1;
+                }
+                inst.operand[i] = tary;
+            }
+        }
+        error = cphvb_vem_execute(1, &inst);
+        if(error)
+        {
+            fprintf(stderr,"ERROR IN UFUNC\n");
+            exit(CPHVB_OUT_OF_MEMORY);
+        }
     }
 
     return 0;

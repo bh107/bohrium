@@ -139,20 +139,30 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
     }
 }
 
-/* Allocate data memory for the given array
- * Initialize the memory if needed
+/* Allocate data memory for the given array if not already allocated.
+ * Initialize the memory if needed.
+ * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
 cphvb_error cphvb_malloc_array_data(cphvb_array* array)
 {
-    cphvb_intp i;
-    cphvb_array* base = cphvb_base_array(array);
-    cphvb_intp nelem = cphvb_nelements(base->ndim, base->shape);
-    int dtypesize = cphvb_type_size(base->type);
+    cphvb_intp i, nelem;
+    cphvb_array* base;
+    int dtypesize;
+
+    if(array == NULL)
+        return CPHVB_SUCCESS;
+
+    base = cphvb_base_array(array);
+
+    if(base->data != NULL)
+        return CPHVB_SUCCESS;
 
     assert(base->data == NULL);
+    nelem = cphvb_nelements(base->ndim, base->shape);
+    dtypesize = cphvb_type_size(base->type);
     base->data = malloc(nelem * dtypesize);
     if(base->data == NULL)
         return CPHVB_OUT_OF_MEMORY;

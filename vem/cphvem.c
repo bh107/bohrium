@@ -37,7 +37,7 @@ cphvb_error cphvb_vem_init(void)
 {
     cphvb_intp opcode_count, type_count;
     cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
-    cphvb_type type[CPHVB_MAX_NO_OPERANDS];
+    cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
     //Let us initiate the simple VE and register what it supports.
@@ -47,7 +47,7 @@ cphvb_error cphvb_vem_init(void)
 
     //Init to False.
     memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
-    memset(ve_support.type, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
+    memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
 
     while(--opcode_count >= 0)
         ve_support.opcode[opcode[opcode_count]] = 1;//Set True
@@ -110,6 +110,7 @@ cphvb_error cphvb_vem_create_array(cphvb_array*   base,
 
     if(array->base != NULL)
     {
+        assert(array->base->base == NULL);
         assert(!has_init_value);
         ++array->base->ref_count;
         array->data = array->base->data;
@@ -197,10 +198,17 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
             break;
         }
         default:
-            fprintf(stderr, "cphvb_vem_execute() encountered an not "
-                            "supported instruction opcode: %s\n",
-                            cphvb_opcode_text(inst->opcode));
-            exit(CPHVB_INST_NOT_SUPPORTED);
+        {
+            cphvb_error error = cphvb_ve_simple_execute(1, inst);
+            if(error)
+            {
+                fprintf(stderr, "cphvb_vem_execute() encountered an "
+                                "error (%s) when executing %s.",
+                                cphvb_error_text(error),
+                                cphvb_opcode_text(inst->opcode));
+                exit(error);
+            }
+        }
         }
     }
     return CPHVB_SUCCESS;
