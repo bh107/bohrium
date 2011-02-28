@@ -110,6 +110,7 @@ cphvb_error cphvb_vem_create_array(cphvb_array*   base,
 
     if(array->base != NULL)
     {
+        assert(array->base->base == NULL);
         assert(!has_init_value);
         ++array->base->ref_count;
         array->data = array->base->data;
@@ -197,10 +198,17 @@ cphvb_error cphvb_vem_execute(cphvb_intp count,
             break;
         }
         default:
-            fprintf(stderr, "cphvb_vem_execute() encountered an not "
-                            "supported instruction opcode: %s\n",
-                            cphvb_opcode_text(inst->opcode));
-            exit(CPHVB_INST_NOT_SUPPORTED);
+        {
+            cphvb_error error = cphvb_ve_simple_execute(1, inst);
+            if(error)
+            {
+                fprintf(stderr, "cphvb_vem_execute() encountered an "
+                                "error (%s) when executing %s.",
+                                cphvb_error_text(error),
+                                cphvb_opcode_text(inst->opcode));
+                exit(error);
+            }
+        }
         }
     }
     return CPHVB_SUCCESS;
