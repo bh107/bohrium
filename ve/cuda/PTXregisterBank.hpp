@@ -29,11 +29,8 @@ class PTXregisterBank
 {
 private:
     PTXregister registers[BANKSIZE];
-    char names[BANKSIZE][32];
     int next;
     int instanceTable[PTX_TYPES];
-    void setRegName(PTXtype ptxType, 
-                    char* name);
 public:
     PTXregisterBank();
     void reset();

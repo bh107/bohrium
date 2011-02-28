@@ -17,7 +17,6 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
 #include <cphvb.h>
 #include "PTXconstant.hpp"
 #include "PTXconstantBuffer.hpp"
@@ -30,52 +29,18 @@ void PTXconstantBuffer::reset()
     next = 0;
 }
 
-PTXconstVal constVal(cphvb_type type,
-                     cphvb_constant constant)
-                     
-{
-    switch (type)
-    {
-    case CPHVB_BOOL: 
-        return {(unsigned long int)constant.bool8};
-    case CPHVB_INT8:
-        return {(long int)constant.int8};
-    case CPHVB_INT16:
-        return {(long int)constant.int16};
-    case CPHVB_INT32:
-        return {(long int)constant.int32};
-    case CPHVB_INT64:
-        return {(long int)constant.int64};
-    case CPHVB_UINT8:
-        return {(unsigned long int)constant.uint8};
-    case CPHVB_UINT16:
-        return {(unsigned long int)constant.uint16};
-    case CPHVB_UINT32:
-        return {(unsigned long int)constant.uint32};
-    case CPHVB_UINT64:
-        return {(unsigned long int)constant.uint64};
-    case CPHVB_FLOAT32:
-        return {(unsigned long int)constant.float32};
-    case CPHVB_FLOAT64:
-        return {(unsigned long int)constant.float64};
-    default:
-        assert(false);
-    }
-}
-
 PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
                                             PTXconstVal value)
 {
     constants[next].type = type;
     constants[next].value = value;
-    constants[next].genTxt();
-    return &constants[next++];    
+    return &constants[next++];
 }
 
 
 PTXconstant* PTXconstantBuffer::newConstant(cphvb_type vbtype,
                                             cphvb_constant constant)
 {
-    return newConstant(ptxBaseType(vbtype), constVal(vbtype, constant));
+    constants[next].set(vbtype, constant);
+    return &constants[next++];
 }
-

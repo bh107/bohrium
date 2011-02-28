@@ -28,7 +28,6 @@ class PTXconstantBuffer
 {
 private:
     PTXconstant constants[BUFFERSIZE];
-    char txtreps[BUFFERSIZE][32];
     int next;
 public:
     PTXconstantBuffer();

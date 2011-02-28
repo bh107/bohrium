@@ -25,11 +25,11 @@
 
 class PTXregister : public PTXoperand
 {
-    PTXtype type;
-    char*   name;
-public:
-    char* asString();
     friend class PTXregisterBank;
+    PTXtype type;
+    int typeIdx;
+public:
+    int snprint(char* buf, int size);
 };
 
 #endif

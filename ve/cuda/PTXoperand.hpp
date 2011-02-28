@@ -25,7 +25,7 @@
 class PTXoperand
 {
 public:
-    virtual char* asString() = 0;
+    virtual int snprint(char* buf, int size) = 0;
 };
 
 #endif

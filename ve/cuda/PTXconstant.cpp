@@ -49,3 +49,36 @@ int PTXconstant::snprint(char* buf, int size)
     return res;
 }
 
+void PTXconstant::set(cphvb_type vbtype,
+                      cphvb_constant constant)
+                     
+{
+    type = ptxBaseType(vbtype);
+    switch (vbtype)
+    {
+    case CPHVB_BOOL: 
+        value = {(unsigned long int)constant.bool8};
+    case CPHVB_INT8:
+        value = {(long int)constant.int8};
+    case CPHVB_INT16:
+        value = {(long int)constant.int16};
+    case CPHVB_INT32:
+        value = {(long int)constant.int32};
+    case CPHVB_INT64:
+        value = {(long int)constant.int64};
+    case CPHVB_UINT8:
+        value = {(unsigned long int)constant.uint8};
+    case CPHVB_UINT16:
+        value = {(unsigned long int)constant.uint16};
+    case CPHVB_UINT32:
+        value = {(unsigned long int)constant.uint32};
+    case CPHVB_UINT64:
+        value = {(unsigned long int)constant.uint64};
+    case CPHVB_FLOAT32:
+        value = {(unsigned long int)constant.float32};
+    case CPHVB_FLOAT64:
+        value = {(unsigned long int)constant.float64};
+    default:
+        assert(false);
+    }
+}

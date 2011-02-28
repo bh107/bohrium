@@ -41,6 +41,8 @@ private:
     PTXbaseType type;
     PTXconstVal value;
 public:
+    void set(cphvb_type vbtype,
+             cphvb_constant constant);
     int snprint(char* buf, int size);
 };
 
