@@ -17,36 +17,34 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXCONSTANT_HPP
-#define __PTXCONSTANT_HPP
+#ifndef __PTXKERNELBODY
+#define __PTXKERNELBODY
 
-#include <cuda.h>
-#include "PTXtype.hpp"
+#include "PTXinstruction.hpp"
+#include "PTXregister.hpp"
 #include "PTXoperand.hpp"
 
-#define PTX_ADDRESS (PTX_BITS)
 
-union PTXconstVal
-{
-    long int i;
-    unsigned long int u;
-    double f;
-    CUdeviceptr a;
-};
+#define BUFFERSIZE (4096)
 
-class PTXconstant : public PTXoperand
+class PTXkernelBody
 {
-    friend class PTXconstantBuffer;
 private:
-    PTXbaseType type;
-    PTXconstVal value;
+    PTXinstruction instructions[BUFFERSIZE];
+    int next;
 public:
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    PTXkernelBody();
+    void reset();
+    void add(char* label,
+             bool guardMod,
+             PTXregister* guard,
+             Opcode opcode,
+             PTXregister* dest,
+             PTXoperand* src[]);
+    void add(Opcode opcode,
+             PTXregister* dest,
+             PTXoperand* src[]);
+    int snprint(char* buf, int size);
 };
 
 #endif

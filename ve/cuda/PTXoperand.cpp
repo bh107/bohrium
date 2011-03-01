@@ -17,36 +17,24 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXCONSTANT_HPP
-#define __PTXCONSTANT_HPP
-
-#include <cuda.h>
-#include "PTXtype.hpp"
 #include "PTXoperand.hpp"
 
-#define PTX_ADDRESS (PTX_BITS)
-
-union PTXconstVal
+int PTXoperand::snprint(char* buf, 
+                        int size)
 {
-    long int i;
-    unsigned long int u;
-    double f;
-    CUdeviceptr a;
-};
+    return snprint("",buf,size,"");
+}
 
-class PTXconstant : public PTXoperand
+int PTXoperand::snprint(const char* prefix, 
+                        char* buf, 
+                        int size)
 {
-    friend class PTXconstantBuffer;
-private:
-    PTXbaseType type;
-    PTXconstVal value;
-public:
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-};
+    return snprint(prefix,buf,size,"");
+}
 
-#endif
+int PTXoperand::snprint(char* buf, 
+                        int size, 
+                        const char* postfix)
+{
+    return snprint("",buf,size,postfix);
+}

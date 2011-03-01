@@ -17,36 +17,46 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXCONSTANT_HPP
-#define __PTXCONSTANT_HPP
+#ifndef __PTXKERNEL_HPP
+#define __PTXKERNEL_HPP
 
-#include <cuda.h>
-#include "PTXtype.hpp"
-#include "PTXoperand.hpp"
+#include <vector>
+#include "PTXkernelParameter.hpp"
+#include "PTXregisterBank.hpp"
+#include "PTXkernelBody.hpp"
 
-#define PTX_ADDRESS (PTX_BITS)
+typedef std::vector<PTXkernelParameter> PTXparameterList;
 
-union PTXconstVal
+enum PTXversion 
 {
-    long int i;
-    unsigned long int u;
-    double f;
-    CUdeviceptr a;
+    ISA_14,
+    ISA_22
 };
 
-class PTXconstant : public PTXoperand
+enum CUDAtarget
 {
-    friend class PTXconstantBuffer;
+    SM_10,
+    SM_11,
+    SM_12,
+    SM_13,
+    SM_20,
+};
+
+class PTXkernel
+{
 private:
-    PTXbaseType type;
-    PTXconstVal value;
+    PTXversion version;
+    CUDAtarget target;
+    char name[128];
+    PTXparameterList parameterList;
+    PTXregisterBank* registerBank;
+    PTXkernelBody* kernelBody;
 public:
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    PTXkernel(PTXversion version,
+                    CUDAtarget target,
+                    PTXregisterBank* registerBank,
+                    PTXkernelBody* kernelBody);
+    int snprint(char* buf, int size);
 };
 
 #endif

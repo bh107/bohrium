@@ -17,28 +17,47 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXKERNELPARAMETER_HPP
-#define __PTXKERNELPARAMETER_HPP
+#ifndef __PTXINSTRUCTION_HPP
+#define __PTXINSTRUCTION_HPP
 
-#include "PTXtype.hpp"
+#include <string>
 #include "PTXoperand.hpp"
+#include "PTXregister.hpp"
 
-class PTXkernelParameter : public PTXoperand
+enum Opcode
 {
-private:
-    PTXtype type;
-    char name[128];
-public:
-    int declare(char* buf, 
-                int size);
-    int declare(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-    
+    PTX_BRA,
+    PTX_ADD,
+    PTX_SUB,
+    PTX_MUL,
+    PTX_MAD,
+    PTX_DIV,
+    PTX_SAD,
+    PTX_REM,
+    PTX_STORE,
+    PTX_LOAD,
+    PTX_LDPARAM,
+    PTX_MOV
 };
+
+#define MAX_OPERANDS (4)
+
+class PTXinstruction
+{
+    friend class PTXkernelBody;
+private:
+    char* label;
+    bool guardMod;   //guard modifier 
+    PTXregister* guard; //the guard predicate register. NULL if not used.
+    Opcode opcode;
+    PTXregister* dest;
+    PTXoperand* src[MAX_OPERANDS-1];
+    int snprintAritOp(char* buf, int size);
+    int snprintOp(char* buf, int size);
+public:
+    static const int opSrc(Opcode opcode);
+    int snprint(char* buf, int size);
+};
+
 
 #endif

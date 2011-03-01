@@ -19,12 +19,29 @@
 
 #include <cstdio>
 #include <stdexcept>
-#include "PTXkernelParameter.hpp"
+#include "PTXregister.hpp"
 
-int PTXkernelParameter::declare(const char* prefix, char* buf, int size)
+const char* sregName[] =
 {
-    int res = std::snprintf(buf, size, "%s.param %s %s",
-                            prefix, ptxTypeStr(type), name);
+    /*[TID_X] = */"%tid.x",
+    /*[TID_Y] = */"%tid.y",
+    /*[TID_Z] = */"%tid.z",
+    /*[NTID_X] = */"%ntid.x",
+    /*[NTID_Y] = */"%ntid.y",
+    /*[NTID_Z] = */"%ntid.z",
+    /*[CTAID_X] = */"%ctaid.x",
+    /*[CTAID_Y] = */"%ctaid.y",
+    /*[CTAID_Z] = */"%ctaid.z",
+
+};
+
+int PTXregister::snprint(const char* prefix, 
+                         char* buf, 
+                         int size, 
+                         const char* postfix)
+{
+    int res = std::snprintf(buf, size, "%s$%s%s", prefix,
+                            sregName[type], postfix);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");
@@ -32,20 +49,3 @@ int PTXkernelParameter::declare(const char* prefix, char* buf, int size)
     return res;
 }
 
-int PTXkernelParameter::declare(char* buf, int size)
-{
-    return declare("",buf,size);
-}
-
-int PTXkernelParameter::snprint(const char* prefix, 
-                                char* buf, 
-                                int size, 
-                                const char* postfix)
-{
-    int res = std::snprintf(buf, size, "%s%s%s", prefix, name, postfix);
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
-}
