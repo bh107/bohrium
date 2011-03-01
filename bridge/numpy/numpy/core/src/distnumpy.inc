@@ -501,11 +501,11 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         cphvb_error error;
 
         //Broadcast to match the number of dimensions of the output by
-        //appending 1-length dimensions.
+        //appending and extending 1-length dimensions.
         for(i=ufunc->nout; i<ufunc->nargs; ++i)
         {
-            if(inst.operand[i] != CPHVB_CONSTANT &&
-               inst.operand[i]->ndim < inst.operand[0]->ndim)
+            if(inst.operand[i] != CPHVB_CONSTANT )//&&
+               //inst.operand[i]->ndim < inst.operand[0]->ndim)
             {
                 cphvb_intp j;
                 cphvb_intp shape[CPHVB_MAXDIM];
@@ -515,7 +515,13 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 for(j=0; j<inst.operand[i]->ndim; ++j)
                 {
                     shape[j] = inst.operand[i]->shape[j];
-                    stride[j] = inst.operand[i]->stride[j];
+                    if(shape[j] < inst.operand[0]->shape[j])
+                    {
+                        shape[j] = inst.operand[0]->shape[j];
+                        stride[j] = 0;
+                    }
+                    else
+                        stride[j] = inst.operand[i]->stride[j];
                 }
 
                 for(j=inst.operand[i]->ndim; j<inst.operand[0]->ndim; ++j)
@@ -524,7 +530,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                     stride[j] = 0;
                 }
 
-                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[0]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
+                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[i]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
                 if(error)
                 {
                     char errtxt[256];
