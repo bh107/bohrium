@@ -36,6 +36,7 @@ public:
     void reset();
     PTXregister* newRegister(PTXtype type);
     PTXregister* newRegister(cphvb_type type);
+    int declare(char* buf, int size);
 };
 
 #endif

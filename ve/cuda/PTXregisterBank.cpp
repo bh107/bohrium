@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <stdexcept>
 #include <cphvb.h>
 #include "PTXoperand.hpp"
 #include "PTXregister.hpp"
@@ -32,8 +33,7 @@ PTXregisterBank::PTXregisterBank()
 void PTXregisterBank::reset()
 {
     next = 0;
-    int i;
-    for (i = 0; i < PTX_TYPES; ++i)
+    for (int i = 0; i < PTX_TYPES; ++i)
     {
         instanceTable[i] = 0;
     }
@@ -50,4 +50,26 @@ PTXregister* PTXregisterBank::newRegister(PTXtype type)
 PTXregister* PTXregisterBank::newRegister(cphvb_type vbtype)
 {
     return newRegister(ptxType(vbtype));
+}
+
+int PTXregisterBank::declare(char* buf, int size)
+{
+    int res = 0;
+    int bp;
+    for (int i = 0; i < PTX_TYPES; ++i)
+    {
+        if (instanceTable[i] > 0)
+        {
+            bp = std::snprintf(buf, size, ".reg %s %s<%d>;",
+                               ptxTypeStr((PTXtype)i), 
+                               ptxRegPrefix((PTXtype)i),
+                               instanceTable[i]);
+            res += bp; buf += bp; size -= bp;
+        }
+    }
+    if (size < 0)
+    {
+        throw std::runtime_error("Not enough buffer space for printing.");
+    }
+    return res;
 }

@@ -22,22 +22,26 @@
 #include <stdexcept>
 #include "PTXconstant.hpp"
 
-int PTXconstant::snprint(char* buf, int size)
+int PTXconstant::snprint(const char* prefix, 
+                         char* buf, 
+                         int size,
+                         const char* postfix)
 {
     int res;
     switch(type)
     {
     case PTX_INT:
-        res = std::snprintf(buf, size, "%ld", value.i);
+        res = std::snprintf(buf, size, "%s%ld%s", prefix, value.i, postfix);
         break;
     case PTX_UINT:
-        res = std::snprintf(buf, size, "%ldU", value.u);
+        res = std::snprintf(buf, size, "%s%ldU%s", prefix, value.u, postfix);
         break;
     case PTX_FLOAT:
-        res = std::snprintf(buf, size, "%#.24e", value.f);
+        res = std::snprintf(buf, size, "%s%#.24e%s", prefix, value.f, postfix);
         break;
     case PTX_BITS:
-        res = std::snprintf(buf, size, "%p", (void*)value.a);
+        res = std::snprintf(buf, size, "%s%p%s", prefix, (void*)value.a, 
+                            postfix);
         break;
     default:
         assert(false);
