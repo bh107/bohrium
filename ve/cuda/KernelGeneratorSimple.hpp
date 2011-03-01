@@ -17,48 +17,32 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXKERNEL_HPP
-#define __PTXKERNEL_HPP
+#ifndef __KERNELSIMPLE_HPP
+#define __KERNELSIMPLE_HPP
 
-#include <vector>
-#include "PTXkernelParameter.hpp"
-#include "PTXregisterBank.hpp"
-#include "PTXkernelBody.hpp"
+#include <queue>
+#include <map>
+#include "OffsetMap.hpp"
+#include "PTXKernelBody.hpp"
+#include "PTXKernel.hpp"
 
-enum PTXversion 
-{
-    ISA_14,
-    ISA_22
-};
+typedef std::map<cphVBArray*, Register*> ElementMap;
+typedef std::map<Register*, cphVBArray*> StoreMap;
 
-enum CUDAtarget
-{
-    SM_10,
-    SM_11,
-    SM_12,
-    SM_13,
-    SM_20,
-};
-
-class PTXkernel
+class KernelGeneratorSimple
 {
 private:
-    PTXversion version;
-    CUDAtarget target;
-    char name[128];
-    PTXkernelParameter parameterList[128];
-    int parameterCount;
+    ElementMap elementMap;
+    StoreMap storeMap;
     PTXregisterBank* registerBank;
-    PTXkernelBody* kernelBody;
+    PTXconstantBuffer* constantBuffer;
+    OffsetMap* offsetMap;
+    PTXkernel* ptxKernel;
+    PTXkernelBody* instructionList;
+    PTXregister* threadID;
 public:
-    PTXkernel(PTXversion version,
-                    CUDAtarget target,
-                    PTXregisterBank* registerBank,
-                    PTXkernelBody* kernelBody);
-    PTXkernelParameter* addParameter(PTXtype type);
-    int snprint(char* buf, int size);
-    
-    
+    KernelGeneratorSimple();
+    void addInstruction(cphVBInstruction* inst);
 };
 
 #endif

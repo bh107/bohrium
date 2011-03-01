@@ -19,7 +19,10 @@
 
 #include <cstdio>
 #include <stdexcept>
-#include "PTXregister.hpp"
+#include "PTXspecialRegister.hpp"
+
+PTXspecialRegister::PTXspecialRegister(SregID id_) :
+    id(id_) {}
 
 const char* sregName[] =
 {
@@ -35,13 +38,13 @@ const char* sregName[] =
 
 };
 
-int PTXregister::snprint(const char* prefix, 
-                         char* buf, 
-                         int size, 
-                         const char* postfix)
+int PTXspecialRegister::snprint(const char* prefix, 
+                                char* buf, 
+                                int size, 
+                                const char* postfix)
 {
     int res = std::snprintf(buf, size, "%s$%s%s", prefix,
-                            sregName[type], postfix);
+                            sregName[id], postfix);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");

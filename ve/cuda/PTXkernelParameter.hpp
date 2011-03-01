@@ -25,9 +25,10 @@
 
 class PTXkernelParameter : public PTXoperand
 {
+    friend class PTXkernel;
 private:
     PTXtype type;
-    char name[128];
+    long id;
 public:
     int declare(char* buf, 
                 int size);

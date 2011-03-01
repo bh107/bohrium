@@ -23,9 +23,13 @@
 #include <cphvb.h>
 #include "PTXoperand.hpp"
 #include "PTXregister.hpp"
+#include "PTXspecialRegister.hpp"
 #include "PTXregisterBank.hpp"
 
-PTXregisterBank::PTXregisterBank() 
+PTXregisterBank::PTXregisterBank() :
+    tid_x(PTXspecialRegister(TID_X)),
+    ntid_x(PTXspecialRegister(NTID_X)),
+    ctaid_x(PTXspecialRegister(CTAID_X))
 {
     reset();
 }

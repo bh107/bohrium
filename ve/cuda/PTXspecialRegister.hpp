@@ -40,6 +40,7 @@ class PTXspecialRegister : public PTXoperand
 {
     SregID id;
 public:
+    PTXspecialRegister(SregID id_);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 

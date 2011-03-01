@@ -27,8 +27,16 @@ PTXkernel::PTXkernel(PTXversion version_,
                      PTXkernelBody* kernelBody_) :
     version(version_),
     target(target_),
+    parameterCount(0),
     registerBank(registerBank_),
     kernelBody(kernelBody_) {}
+
+PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
+{
+    parameterList[parameterCount].type = type;
+    parameterList[parameterCount].id = parameterCount;
+    return &parameterList[parameterCount++];
+}
 
 const char* versionStr[] =  
 {
@@ -54,15 +62,14 @@ int PTXkernel::snprint(char* buf, int size)
                        targetStr[target],
                        name);
     res += bp; buf += bp; size -= bp;
-    PTXparameterList::iterator piter = parameterList.begin();
-    if (piter != parameterList.end())
+    if (parameterCount > 0)
     {
-        bp = piter->declare("\t",buf, size);
+        bp = parameterList[0].declare("\t",buf, size);
         res += bp; buf += bp; size -= bp;
     }
-    while (piter != parameterList.end())
+    for (int i = 1; i < parameterCount; ++i)
     {
-        bp = piter->declare(",\n\t",buf, size);
+        bp = parameterList[i].declare(",\n\t",buf, size);
         res += bp; buf += bp; size -= bp;
     }
     bp = std::snprintf(buf, size, ")\n{\n");
