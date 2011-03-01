@@ -34,3 +34,23 @@ int PTXregister::snprint(const char* prefix,
     }
     return res;
 }
+
+int PTXregister::snprint(char* buf, 
+                        int size)
+{
+    return snprint("",buf,size,"");
+}
+
+int PTXregister::snprint(const char* prefix, 
+                        char* buf, 
+                        int size)
+{
+    return snprint(prefix,buf,size,"");
+}
+
+int PTXregister::snprint(char* buf, 
+                        int size, 
+                        const char* postfix)
+{
+    return snprint("",buf,size,postfix);
+}

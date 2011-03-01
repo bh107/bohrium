@@ -30,10 +30,19 @@ class PTXregister : public PTXoperand
     PTXtype type;
     int typeIdx;
 public:
+    int snprint(char* buf, 
+                int size);
+    int snprint(const char* prefix, 
+                char* buf, 
+                int size);
+    int snprint(char* buf, 
+                int size, 
+                const char* postfix);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 
                 const char* postfix);
+
 };
 
 #endif

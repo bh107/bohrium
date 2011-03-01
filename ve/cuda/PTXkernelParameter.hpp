@@ -29,7 +29,11 @@ private:
     PTXtype type;
     char name[128];
 public:
-    int declare(char* buf, int size);
+    int declare(char* buf, 
+                int size);
+    int declare(const char* prefix, 
+                char* buf, 
+                int size);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 

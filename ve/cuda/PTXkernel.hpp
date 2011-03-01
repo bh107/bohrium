@@ -17,47 +17,46 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXINSTRUCTION_HPP
-#define __PTXINSTRUCTION_HPP
+#ifndef __PTXKERNEL_HPP
+#define __PTXKERNEL_HPP
 
-#include <string>
-#include "PTXoperand.hpp"
-#include "PTXregister.hpp"
+#include <vector>
+#include "PTXkernelParameter.hpp"
+#include "PTXregisterBank.hpp"
+#include "PTXkernelBody.hpp"
 
-enum Opcode
+typedef std::vector<PTXkernelParameter> PTXparameterList;
+
+enum PTXversion 
 {
-    PTX_BRA,
-    PTX_ADD,
-    PTX_SUB,
-    PTX_MUL,
-    PTX_MAD,
-    PTX_DIV,
-    PTX_SAD,
-    PTX_REM,
-    PTX_STORE,
-    PTX_LOAD,
-    PTX_LDPARAM,
-    PTX_MOV
+    ISA_14,
+    ISA_22
 };
 
-#define MAX_OPERANDS (4)
-
-class PTXinstruction
+enum CUDAtarget
 {
-    friend class PTXkernelBody;
+    SM_10,
+    SM_11,
+    SM_12,
+    SM_13,
+    SM_20,
+};
+
+class PTXkernel
+{
 private:
-    char* label;
-    bool guardMod;   //guard modifier 
-    PTXregister* guard; //the guard predicate register. NULL if not used.
-    Opcode opcode;
-    PTXregister* dest;
-    PTXoperand* src[MAX_OPERANDS-1];
-    int snprintAritOp(char* buf, int size);
-    int snprintOp(char* buf, int size);
+    PTXversion version;
+    CUDAtarget target;
+    char name[128];
+    PTXparameterList parameterList;
+    PTXregisterBank* registerBank;
+    PTXkernelBody* kernelBody;
 public:
-    static const int opSrc(Opcode opcode);
+    PTXkernel(PTXversion version,
+                    CUDAtarget target,
+                    PTXregisterBank* registerBank,
+                    PTXkernelBody* kernelBody);
     int snprint(char* buf, int size);
 };
-
 
 #endif

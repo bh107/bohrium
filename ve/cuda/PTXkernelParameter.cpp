@@ -21,14 +21,20 @@
 #include <stdexcept>
 #include "PTXkernelParameter.hpp"
 
-int PTXkernelParameter::declare(char* buf, int size)
+int PTXkernelParameter::declare(const char* prefix, char* buf, int size)
 {
-    int res = std::snprintf(buf, size, ".param %s %s",ptxTypeStr(type), name);
+    int res = std::snprintf(buf, size, "%s.param %s %s",
+                            prefix, ptxTypeStr(type), name);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");
     }
     return res;
+}
+
+int PTXkernelParameter::declare(char* buf, int size)
+{
+    return declare("",buf,size);
 }
 
 int PTXkernelParameter::snprint(const char* prefix, 

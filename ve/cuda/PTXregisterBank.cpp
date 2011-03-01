@@ -60,7 +60,7 @@ int PTXregisterBank::declare(char* buf, int size)
     {
         if (instanceTable[i] > 0)
         {
-            bp = std::snprintf(buf, size, ".reg %s %s<%d>;",
+            bp = std::snprintf(buf, size, "\t.reg %s %s<%d>;\n",
                                ptxTypeStr((PTXtype)i), 
                                ptxRegPrefix((PTXtype)i),
                                instanceTable[i]);

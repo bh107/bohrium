@@ -17,47 +17,34 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXINSTRUCTION_HPP
-#define __PTXINSTRUCTION_HPP
+#ifndef __PTXKERNELBODY
+#define __PTXKERNELBODY
 
-#include <string>
-#include "PTXoperand.hpp"
+#include "PTXinstruction.hpp"
 #include "PTXregister.hpp"
+#include "PTXoperand.hpp"
 
-enum Opcode
+
+#define BUFFERSIZE (4096)
+
+class PTXkernelBody
 {
-    PTX_BRA,
-    PTX_ADD,
-    PTX_SUB,
-    PTX_MUL,
-    PTX_MAD,
-    PTX_DIV,
-    PTX_SAD,
-    PTX_REM,
-    PTX_STORE,
-    PTX_LOAD,
-    PTX_LDPARAM,
-    PTX_MOV
-};
-
-#define MAX_OPERANDS (4)
-
-class PTXinstruction
-{
-    friend class PTXkernelBody;
 private:
-    char* label;
-    bool guardMod;   //guard modifier 
-    PTXregister* guard; //the guard predicate register. NULL if not used.
-    Opcode opcode;
-    PTXregister* dest;
-    PTXoperand* src[MAX_OPERANDS-1];
-    int snprintAritOp(char* buf, int size);
-    int snprintOp(char* buf, int size);
+    PTXinstruction instructions[BUFFERSIZE];
+    int next;
 public:
-    static const int opSrc(Opcode opcode);
+    PTXkernelBody();
+    void reset();
+    void add(char* label,
+             bool guardMod,
+             PTXregister* guard,
+             Opcode opcode,
+             PTXregister* dest,
+             PTXoperand* src[]);
+    void add(Opcode opcode,
+             PTXregister* dest,
+             PTXoperand* src[]);
     int snprint(char* buf, int size);
 };
-
 
 #endif

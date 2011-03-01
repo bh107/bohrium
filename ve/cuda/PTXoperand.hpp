@@ -23,12 +23,12 @@
 class PTXoperand
 {
 public:
-    int snprint(char* buf, 
+    virtual int snprint(char* buf, 
                 int size);
-    int snprint(const char* prefix, 
+    virtual int snprint(const char* prefix, 
                 char* buf, 
                 int size);
-    int snprint(char* buf, 
+    virtual int snprint(char* buf, 
                 int size, 
                 const char* postfix);
     virtual int snprint(const char* prefix, 
