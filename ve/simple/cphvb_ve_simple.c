@@ -59,6 +59,22 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             cphvb_array *a1 = inst->operand[1];
             cphvb_array *a2 = inst->operand[2];
 
+            if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS)
+            {
+                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
+                exit(CPHVB_OUT_OF_MEMORY);
+            }
+            if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS)
+            {
+                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
+                exit(CPHVB_OUT_OF_MEMORY);
+            }
+            if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS)
+            {
+                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
+                exit(CPHVB_OUT_OF_MEMORY);
+            }
+
             d0 = cphvb_base_array(inst->operand[0])->data;
             if(a1 == CPHVB_CONSTANT)
                 d1 = (cphvb_float64*) &inst->constant[1];
@@ -69,14 +85,6 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 d2 = (cphvb_float64*) &inst->constant[2];
             else
                 d2 = cphvb_base_array(inst->operand[2])->data;
-
-            if(!(cphvb_malloc_array_data(a0) == CPHVB_SUCCESS &&
-                 cphvb_malloc_array_data(a1) == CPHVB_SUCCESS &&
-                 cphvb_malloc_array_data(a2) == CPHVB_SUCCESS))
-            {
-                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
-                exit(CPHVB_OUT_OF_MEMORY);
-            }
 
             for (j=0; j<cphvb_nelements(a0->ndim, a0->shape); ++j)
             {
