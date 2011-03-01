@@ -511,20 +511,22 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 cphvb_intp shape[CPHVB_MAXDIM];
                 cphvb_intp stride[CPHVB_MAXDIM];
                 cphvb_array *tary;
+                cphvb_intp nd_diff = inst.operand[0]->ndim -
+                                     inst.operand[i]->ndim;
 
-                for(j=0; j<inst.operand[i]->ndim; ++j)
+                for(j=inst.operand[0]->ndim-1; j>=nd_diff; --j)
                 {
-                    shape[j] = inst.operand[i]->shape[j];
+                    shape[j] = inst.operand[i]->shape[j-nd_diff];
                     if(shape[j] < inst.operand[0]->shape[j])
                     {
                         shape[j] = inst.operand[0]->shape[j];
                         stride[j] = 0;
                     }
                     else
-                        stride[j] = inst.operand[i]->stride[j];
+                        stride[j] = inst.operand[i]->stride[j-nd_diff];
                 }
 
-                for(j=inst.operand[i]->ndim; j<inst.operand[0]->ndim; ++j)
+                for(j=nd_diff-1; j>=0; --j)
                 {
                     shape[j] = 1;
                     stride[j] = 0;
