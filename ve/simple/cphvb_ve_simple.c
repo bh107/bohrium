@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cphvb_ve_simple.h>
+#include <assert.h>
 
 
 cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
@@ -59,6 +60,9 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             cphvb_array *a1 = inst->operand[1];
             cphvb_array *a2 = inst->operand[2];
 
+            assert(a0->ndim == a1->ndim);
+            assert(a0->ndim == a2->ndim);
+
             if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS)
             {
                 fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
@@ -86,14 +90,14 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             else
                 d2 = cphvb_base_array(inst->operand[2])->data;
 
-            for (j=0; j<cphvb_nelements(a0->ndim, a0->shape); ++j)
+            for(j=0; j<cphvb_nelements(a0->ndim, a0->shape); ++j)
             {
                 cphvb_intp off0, off1=0, off2=0;
-                off0 = cphvb_calc_offset(a0->ndim, a0->shape, a0->stride, j);
+                off0 = cphvb_calc_offset(a0->ndim, a0->shape, a0->stride, j) + a0->start;
                 if(a1 != CPHVB_CONSTANT)
-                    off1 = cphvb_calc_offset(a1->ndim, a1->shape, a1->stride, j);
+                    off1 = cphvb_calc_offset(a1->ndim, a1->shape, a1->stride, j) + a1->start;
                 if(a2 != CPHVB_CONSTANT)
-                    off2 = cphvb_calc_offset(a2->ndim, a2->shape, a2->stride, j);
+                    off2 = cphvb_calc_offset(a2->ndim, a2->shape, a2->stride, j) + a2->start;
                 *(d0 + off0) = *(d1 + off1) + *(d2 + off2);
             }
 
