@@ -21,31 +21,13 @@
 #include <stdexcept>
 #include "PTXregister.hpp"
 
-const char* prefix[] =
+int PTXregister::snprint(const char* prefix, 
+                         char* buf, 
+                         int size, 
+                         const char* postfix)
 {
-    /*[PTX_INT8] = */"sc",
-    /*[PTX_INT16] = */"sh",
-    /*[PTX_INT32] = */"si",
-    /*[PTX_INT64] = */"sd",
-    /*[PTX_UINT8] = */"uc",
-    /*[PTX_UINT16] = */"uh",
-    /*[PTX_UINT32] = */"ui",
-    /*[PTX_UINT64] = */"ud",
-    /*[PTX_FLOAT16] = */"fh",
-    /*[PTX_FLOAT32] = */"f_",
-    /*[PTX_FLOAT64] = */"fd",
-    /*[PTX_BITS8] = */"bc",
-    /*[PTX_BITS16] = */"bh",
-    /*[PTX_BITS32] = */"b_",
-    /*[PTX_BITS64] = */"bd",
-    /*[PTX_PRED] = */"p"
-};
-
-int PTXregister::snprint(char* buf, int size)
-{
-    int res = std::snprintf(buf, size, "$%s%d", 
-                            prefix[type],
-                            typeIdx);
+    int res = std::snprintf(buf, size, "%s$%s%d%s", prefix,
+                            ptxRegPrefix(type), typeIdx, postfix);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");

@@ -20,12 +20,21 @@
 #ifndef __PTXOPERAND_HPP
 #define __PTXOPERAND_HPP
 
-#include <cphvb.h>
-
 class PTXoperand
 {
 public:
-    virtual int snprint(char* buf, int size) = 0;
+    int snprint(char* buf, 
+                int size);
+    int snprint(const char* prefix, 
+                char* buf, 
+                int size);
+    int snprint(char* buf, 
+                int size, 
+                const char* postfix);
+    virtual int snprint(const char* prefix, 
+                        char* buf, 
+                        int size, 
+                        const char* postfix) = 0;
 };
 
 #endif

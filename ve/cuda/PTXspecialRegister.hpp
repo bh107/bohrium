@@ -17,32 +17,29 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXCONSTANT_HPP
-#define __PTXCONSTANT_HPP
+#ifndef __PTXSPECIALREGISTER_HPP
+#define __PTXSPECIALREGISTER_HPP
 
-#include <cuda.h>
-#include "PTXtype.hpp"
 #include "PTXoperand.hpp"
 
-#define PTX_ADDRESS (PTX_BITS)
-
-union PTXconstVal
+enum SregID
 {
-    long int i;
-    unsigned long int u;
-    double f;
-    CUdeviceptr a;
+    TID_X,
+    TID_Y,
+    TID_Z,
+    NTID_X,
+    NTID_Y,
+    NTID_Z,
+    CTAID_X,
+    CTAID_Y,
+    CTAID_Z
+
 };
 
-class PTXconstant : public PTXoperand
+class PTXspecialRegister : public PTXoperand
 {
-    friend class PTXconstantBuffer;
-private:
-    PTXbaseType type;
-    PTXconstVal value;
+    SregID id;
 public:
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 

@@ -59,5 +59,6 @@ PTXbaseType ptxBaseType(cphvb_type vbtype);
 const char* ptxTypeStr(PTXtype type);
 size_t ptxAlign(PTXtype type);
 size_t ptxSizeOf(PTXtype type);
+const char* ptxRegPrefix(PTXtype type);
 
 #endif

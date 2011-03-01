@@ -17,36 +17,45 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXCONSTANT_HPP
-#define __PTXCONSTANT_HPP
+#ifndef __PTXINSTRUCTION_HPP
+#define __PTXINSTRUCTION_HPP
 
-#include <cuda.h>
-#include "PTXtype.hpp"
+#include <string>
 #include "PTXoperand.hpp"
+#include "PTXregister.hpp"
 
-#define PTX_ADDRESS (PTX_BITS)
-
-union PTXconstVal
+enum Opcode
 {
-    long int i;
-    unsigned long int u;
-    double f;
-    CUdeviceptr a;
+    PTX_BRA,
+    PTX_ADD,
+    PTX_SUB,
+    PTX_MUL,
+    PTX_MAD,
+    PTX_DIV,
+    PTX_SAD,
+    PTX_REM,
+    PTX_STORE,
+    PTX_LOAD,
+    PTX_LDPARAM,
+    PTX_MOV
 };
 
-class PTXconstant : public PTXoperand
+#define MAX_OPERANDS (4)
+
+class PTXinstruction
 {
-    friend class PTXconstantBuffer;
 private:
-    PTXbaseType type;
-    PTXconstVal value;
+    char* label;
+    bool guardMod;   //guard modifier 
+    PTXregister* guard; //the guard predicate register. NULL if not used.
+    Opcode opcode;
+    PTXregister* dest;
+    PTXoperand* src[MAX_OPERANDS-1];
+    int snprintAritOp(char* buf, int size);
+    int snprintOp(char* buf, int size);
 public:
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    int snprint(char* buf, int size);
 };
+
 
 #endif

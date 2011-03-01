@@ -21,14 +21,20 @@
 #define __PTXKERNELPARAMETER_HPP
 
 #include "PTXtype.hpp"
+#include "PTXoperand.hpp"
 
-class PTXkernelParameter
+class PTXkernelParameter : public PTXoperand
 {
 private:
     PTXtype type;
     char name[128];
 public:
-    int snprint(char* buf, int size);
+    int declare(char* buf, int size);
+    int snprint(const char* prefix, 
+                char* buf, 
+                int size, 
+                const char* postfix);
+    
 };
 
 #endif
