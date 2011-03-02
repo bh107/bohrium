@@ -17,29 +17,33 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXINSTRUCTION_HPP
-#define __PTXINSTRUCTION_HPP
+#ifndef __PTXSREG_HPP
+#define __PTXSREG_HPP
 
-#include <string>
-#include "PTXopcode.h"
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
-#include "PTXregister.hpp"
+#include <cphvb.h>
 
-class PTXinstruction
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum 
 {
-    friend class PTXinstructionList;
-private:
-    char* label;
-    bool guardMod;   //guard modifier 
-    PTXregister* guard; //the guard predicate register. NULL if not used.
-    PTXopcode opcode;
-    PTXregister* dest;
-    PTXoperand* src[PTX_MAX_OPERANDS-1];
-    int snprintAritOp(char* buf, int size);
-    int snprintOp(char* buf, int size);
-public:
-    int snprint(char* buf, int size);
-};
+    TID_X,
+    TID_Y,
+    TID_Z,
+    NTID_X,
+    NTID_Y,
+    NTID_Z,
+    CTAID_X,
+    CTAID_Y,
+    CTAID_Z
+
+} Sreg;
+
+const char* ptxSregStr(Sreg sreg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

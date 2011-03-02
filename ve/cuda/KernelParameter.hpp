@@ -20,7 +20,7 @@
 #ifndef __KERNELPARAMETER_HPP
 #define __KERNELPARAMETER_HPP
 
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 
 class KernelParameter
 {

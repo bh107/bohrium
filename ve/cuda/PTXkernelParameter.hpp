@@ -20,7 +20,7 @@
 #ifndef __PTXKERNELPARAMETER_HPP
 #define __PTXKERNELPARAMETER_HPP
 
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 #include "PTXoperand.hpp"
 
 class PTXkernelParameter : public PTXoperand

@@ -17,29 +17,29 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXINSTRUCTION_HPP
-#define __PTXINSTRUCTION_HPP
+#include "PTXversion.h"
 
-#include <string>
-#include "PTXopcode.h"
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
-#include "PTXregister.hpp"
-
-class PTXinstruction
+const char* _ptxVersionStr[] =  
 {
-    friend class PTXinstructionList;
-private:
-    char* label;
-    bool guardMod;   //guard modifier 
-    PTXregister* guard; //the guard predicate register. NULL if not used.
-    PTXopcode opcode;
-    PTXregister* dest;
-    PTXoperand* src[PTX_MAX_OPERANDS-1];
-    int snprintAritOp(char* buf, int size);
-    int snprintOp(char* buf, int size);
-public:
-    int snprint(char* buf, int size);
+    [ISA_14] = "1.4",
+    [ISA_22] = "2.2"
 };
 
-#endif
+const char* ptxVersionStr(PTXversion version)
+{
+    return _ptxVersionStr[version];
+}  
+
+const char* _cudaTargetStr[] =  
+{
+    [SM_10] = "sm_10",
+    [SM_11] = "sm_11",
+    [SM_12] = "sm_12",
+    [SM_13] = "sm_13",
+    [SM_20] = "sm_20"
+};
+
+const char* cudaTargetStr(CUDAtarget target)
+{
+    return _cudaTargetStr[target];
+}

@@ -17,34 +17,23 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXKERNELBODY
-#define __PTXKERNELBODY
+#include "PTXsreg.h"
 
-#include "PTXinstruction.hpp"
-#include "PTXregister.hpp"
-#include "PTXoperand.hpp"
-
-
-#define BUFFERSIZE (4096)
-
-class PTXkernelBody
+const char* _ptxSregStr[] =
 {
-private:
-    PTXinstruction instructions[BUFFERSIZE];
-    int next;
-public:
-    PTXkernelBody();
-    void reset();
-    void add(char* label,
-             bool guardMod,
-             PTXregister* guard,
-             Opcode opcode,
-             PTXregister* dest,
-             PTXoperand* src[]);
-    void add(Opcode opcode,
-             PTXregister* dest,
-             PTXoperand* src[]);
-    int snprint(char* buf, int size);
+    [TID_X] = "%tid.x",
+    [TID_Y] = "%tid.y",
+    [TID_Z] = "%tid.z",
+    [NTID_X] = "%ntid.x",
+    [NTID_Y] = "%ntid.y",
+    [NTID_Z] = "%ntid.z",
+    [CTAID_X] = "%ctaid.x",
+    [CTAID_Y] = "%ctaid.y",
+    [CTAID_Z] = "%ctaid.z",
+
 };
 
-#endif
+const char* ptxSregStr(Sreg sreg)
+{
+    return _ptxSregStr[sreg];
+}

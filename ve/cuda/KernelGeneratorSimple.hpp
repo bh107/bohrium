@@ -25,6 +25,8 @@
 #include "OffsetMap.hpp"
 #include "PTXKernelBody.hpp"
 #include "PTXKernel.hpp"
+#include "Kernel.hpp"
+#include "KernelParameter.hpp"
 
 typedef std::map<cphVBArray*, Register*> ElementMap;
 typedef std::map<Register*, cphVBArray*> StoreMap;
@@ -40,6 +42,7 @@ private:
     PTXkernel* ptxKernel;
     PTXkernelBody* instructionList;
     PTXregister* threadID;
+    ParameterList parameters;
 public:
     KernelGeneratorSimple();
     void addInstruction(cphVBInstruction* inst);

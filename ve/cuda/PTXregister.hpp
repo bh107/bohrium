@@ -20,7 +20,7 @@
 #ifndef __PTXREGISTER_HPP
 #define __PTXREGISTER_HPP
 
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 #include "PTXoperand.hpp"
 
 class PTXregister : public PTXoperand

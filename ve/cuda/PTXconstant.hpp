@@ -21,7 +21,7 @@
 #define __PTXCONSTANT_HPP
 
 #include <cuda.h>
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 #include "PTXoperand.hpp"
 
 #define PTX_ADDRESS (PTX_BITS)

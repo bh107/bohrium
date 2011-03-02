@@ -24,12 +24,12 @@
 PTXkernel::PTXkernel(PTXversion version_,
                      CUDAtarget target_,
                      PTXregisterBank* registerBank_,
-                     PTXkernelBody* kernelBody_) :
+                     PTXinstructionList* instructionList_) :
     version(version_),
     target(target_),
     parameterCount(0),
     registerBank(registerBank_),
-    kernelBody(kernelBody_) {}
+    instructionList(instructionList_) {}
 
 PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
 {
@@ -38,28 +38,13 @@ PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
     return &parameterList[parameterCount++];
 }
 
-const char* versionStr[] =  
-{
-    /*[ISA_14] = */"1.4",
-    /*[ISA_22] = */"2.2"
-};
-
-const char* targetStr[] =  
-{
-    /*[SM_10] = */"sm_10",
-    /*[SM_11] = */"sm_11",
-    /*[SM_12] = */"sm_12",
-    /*[SM_13] = */"sm_13",
-    /*[SM_20] = */"sm_20"
-};
-
 int PTXkernel::snprint(char* buf, int size)
 {
     int res = 0;
     int bp;
     bp = std::snprintf(buf, size, ".version %s\n.target %s\n.entry %s (", 
-                       versionStr[version],
-                       targetStr[target],
+                       ptxVersionStr(version),
+                       cudaTargetStr(target),
                        name);
     res += bp; buf += bp; size -= bp;
     if (parameterCount > 0)
@@ -76,7 +61,7 @@ int PTXkernel::snprint(char* buf, int size)
     res += bp; buf += bp; size -= bp;
     bp = registerBank->declare(buf,size);
     res += bp; buf += bp; size -= bp;
-    bp = kernelBody->snprint(buf,size);
+    bp = instructionList->snprint(buf,size);
     res += bp; buf += bp; size -= bp;
     bp = std::snprintf(buf, size, "}\n");
     return res + bp;

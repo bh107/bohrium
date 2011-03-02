@@ -21,22 +21,8 @@
 #include <stdexcept>
 #include "PTXspecialRegister.hpp"
 
-PTXspecialRegister::PTXspecialRegister(SregID id_) :
+PTXspecialRegister::PTXspecialRegister(Sreg id_) :
     id(id_) {}
-
-const char* sregName[] =
-{
-    /*[TID_X] = */"%tid.x",
-    /*[TID_Y] = */"%tid.y",
-    /*[TID_Z] = */"%tid.z",
-    /*[NTID_X] = */"%ntid.x",
-    /*[NTID_Y] = */"%ntid.y",
-    /*[NTID_Z] = */"%ntid.z",
-    /*[CTAID_X] = */"%ctaid.x",
-    /*[CTAID_Y] = */"%ctaid.y",
-    /*[CTAID_Z] = */"%ctaid.z",
-
-};
 
 int PTXspecialRegister::snprint(const char* prefix, 
                                 char* buf, 
@@ -44,7 +30,7 @@ int PTXspecialRegister::snprint(const char* prefix,
                                 const char* postfix)
 {
     int res = std::snprintf(buf, size, "%s$%s%s", prefix,
-                            sregName[id], postfix);
+                            ptxSregStr(id), postfix);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");

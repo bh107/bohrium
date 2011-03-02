@@ -21,7 +21,7 @@
 #include <map>
 #include <cphvb.h>
 #include "KernelGeneratorSimple.hpp"
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 
 
 KernelGeneratorSimple::KernelGeneratorSimple()
@@ -100,11 +100,11 @@ PTXregister* KernelGeneratorSimple::loadElement(cphVBArray array);
 PTXregister* KernelGeneratorSimple::loadScalar(cphvb_type type,
                                                cphvb_constant value)
 {
-    PTXkernelParameter param = ptxKernel->addParameter(ptxType(type));
-    
-    addScalarParameter(inst->const_type[i],
-                       inst->constant[i]) 
-
+    PTXkernelParameter ptxParam = ptxKernel->addParameter(ptxType(type));
+    parameters.push_back(KernelParameter(type,value));
+    PTXregister* scalarReg = registerBank->newRegister(type);
+    instructionList->add(PTX_LD_PARAM, scalarReg, ptxParam,)  
+    return scalarReg;
 }
 
 void KernelGeneratorSimple::addInstruction(cphVBInstruction* inst)
@@ -145,12 +145,12 @@ void KernelGeneratorSimple::addInstruction(cphVBInstruction* inst)
         }
         else
         {   //Constant
-            operands[i] = loadScalar(inst->constant[i], 
-                                     inst->const_type[i]);
+            src[i-1] = loadScalar(inst->constant[i], 
+                                  inst->const_type[i]);
         }
     }
     
     //generate PTX instruction
-    generatePTXinstruction(inst->opcode, operands);
+    generatePTXinstruction(inst->opcode, dest, src);
     
 }
