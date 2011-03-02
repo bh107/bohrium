@@ -17,33 +17,26 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXREGISTER_HPP
-#define __PTXREGISTER_HPP
+#ifndef __INSTRUCTIONTRANSLATORSIMPLE_HPP
+#define __INSTRUCTIONTRANSLATORSIMPLE_HPP
 
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
+#include "InstructionTranslator.hpp"
+#include "PTXinstructionList.hpp"
+#include "PTXregisterBank.hpp"
 
-class PTXregister : public PTXoperand
+class InstructionTranslator
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
-    PTXtype type;
-    int typeIdx;
+private:
+    PTXinstructionList* instructionList;
+    PTXregisterBank* registerBank;
+    PTXregister* convert(PTXtype resType, 
+                         PTXregister* src);
 public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-
+    InstructionTranslator(PTXinstructionList* instuctionList,
+                          PTXregisterBank* registerBank);
+    void translate(cphvb_opcode vbOpcode, 
+                   PTXregister* dest, 
+                   PTXregister* src[]);
 };
 
 #endif
