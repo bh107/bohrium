@@ -501,30 +501,39 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         cphvb_error error;
 
         //Broadcast to match the number of dimensions of the output by
-        //appending 1-length dimensions.
+        //appending and extending 1-length dimensions.
         for(i=ufunc->nout; i<ufunc->nargs; ++i)
         {
-            if(inst.operand[i] != CPHVB_CONSTANT &&
-               inst.operand[i]->ndim < inst.operand[0]->ndim)
+            if(inst.operand[i] != CPHVB_CONSTANT )//&&
+               //inst.operand[i]->ndim < inst.operand[0]->ndim)
             {
                 cphvb_intp j;
                 cphvb_intp shape[CPHVB_MAXDIM];
                 cphvb_intp stride[CPHVB_MAXDIM];
                 cphvb_array *tary;
+                cphvb_intp nd_diff = inst.operand[0]->ndim -
+                                     inst.operand[i]->ndim;
 
-                for(j=0; j<inst.operand[i]->ndim; ++j)
+                for(j=inst.operand[0]->ndim-1; j>=nd_diff; --j)
                 {
-                    shape[j] = inst.operand[i]->shape[j];
-                    stride[j] = inst.operand[i]->stride[j];
+                    shape[j] = inst.operand[i]->shape[j-nd_diff];
+                    if(shape[j] < inst.operand[0]->shape[j])
+                    {
+                        assert(shape[j] == 1);
+                        shape[j] = inst.operand[0]->shape[j];
+                        stride[j] = 0;
+                    }
+                    else
+                        stride[j] = inst.operand[i]->stride[j-nd_diff];
                 }
 
-                for(j=inst.operand[i]->ndim; j<inst.operand[0]->ndim; ++j)
+                for(j=nd_diff-1; j>=0; --j)
                 {
                     shape[j] = 1;
                     stride[j] = 0;
                 }
 
-                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[0]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
+                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[i]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
                 if(error)
                 {
                     char errtxt[256];
