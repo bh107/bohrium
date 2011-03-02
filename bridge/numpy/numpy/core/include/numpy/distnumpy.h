@@ -2,7 +2,7 @@
 #define DISTNUMPY_H
 
 #include <cphvb.h>
-#include <cphvb_vem.h>
+#include <cphvb_vem_node.h>
 
 //ufunc definitions from numpy/ufuncobject.h.
 //They are included here instead.

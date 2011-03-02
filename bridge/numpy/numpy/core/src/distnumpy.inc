@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include <cphvb.h>
-#include <cphvb_vem.h>
+#include <cphvb_vem_node.h>
 
 
 #ifndef CBLAS_HEADER
@@ -118,11 +118,11 @@ util_release(cphvb_array *ary)
     inst.opcode = CPHVB_RELEASE;
     inst.operand[0] = ary;
     //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = cphvb_vem_execute(1, &inst);
+    error = cphvb_vem_node_execute(1, &inst);
     if(error)
     {
         fprintf(stderr, "Unhandled error returned by "
-            "cphvb_vem_execute() in util_release()\n");
+            "cphvb_vem_node_execute() in util_release()\n");
         exit(error);
     }
 } /* util_release */
@@ -162,8 +162,9 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
         s *= shape[i];
     }
 
-    error = cphvb_vem_create_array(NULL, dtype, ndims, 0, shape, stride,
-                                NPY_FALSE, (cphvb_constant)0, &new_ary);
+    error = cphvb_vem_node_create_array(NULL, dtype, ndims, 0, shape,
+                                        stride, NPY_FALSE,
+                                        (cphvb_constant)0, &new_ary);
 
     //We save the array pointer in an 'intp'.
     *uid = (intp) new_ary;
@@ -191,7 +192,7 @@ dnumpy_destroy_dndarray(intp uid)
     inst.operand[0] = (cphvb_array*) uid;
 
     //We assume that the VEM supports the CPHVB_DESTORY opcode.
-    error = cphvb_vem_execute(1, &inst);
+    error = cphvb_vem_node_execute(1, &inst);
     if(error)
     {
         fprintf(stderr,"Unhandled error returned by cphvb_vem_execute()"
@@ -243,10 +244,10 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
         }
     }
 
-    error = cphvb_vem_create_array(base, org_ary->type, ndim,
-                                   offset+org_ary->start,
-                                   shape, stride, NPY_FALSE,
-                                   (cphvb_constant)0, &new_ary);
+    error = cphvb_vem_node_create_array(base, org_ary->type, ndim,
+                                        offset+org_ary->start,
+                                        shape, stride, NPY_FALSE,
+                                        (cphvb_constant)0, &new_ary);
 
     if(error == CPHVB_OUT_OF_MEMORY)
         PyErr_NoMemory();
@@ -445,7 +446,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
     }
 
     //We may have to apply the ufunc ourselves.
-    if(!cphvb_vem_instruction_check(&inst))
+    if(!cphvb_vem_node_instruction_check(&inst))
     {
         //Get Python function.
         PyObject *PyOp = PyObject_GetAttrString(ufunc_module,
@@ -526,14 +527,21 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                     else
                         stride[j] = inst.operand[i]->stride[j-nd_diff];
                 }
-
                 for(j=nd_diff-1; j>=0; --j)
                 {
                     shape[j] = 1;
                     stride[j] = 0;
                 }
-
-                error = cphvb_vem_create_array(cphvb_base_array(inst.operand[i]), inst.operand[i]->type, inst.operand[0]->ndim, inst.operand[i]->start, shape, stride, NPY_FALSE, (cphvb_constant)0, &tary);
+                error = cphvb_vem_node_create_array(
+                                    cphvb_base_array(inst.operand[i]),
+                                    inst.operand[i]->type,
+                                    inst.operand[0]->ndim,
+                                    inst.operand[i]->start,
+                                    shape,
+                                    stride,
+                                    NPY_FALSE,
+                                    (cphvb_constant)0,
+                                    &tary);
                 if(error)
                 {
                     char errtxt[256];
@@ -546,7 +554,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 inst.operand[i] = tary;
             }
         }
-        error = cphvb_vem_execute(1, &inst);
+        error = cphvb_vem_node_execute(1, &inst);
         if(error)
         {
             fprintf(stderr,"ERROR IN UFUNC\n");
@@ -744,7 +752,7 @@ static void
 dnumpy_init(void)
 {
     int error;
-    error = cphvb_vem_init();
+    error = cphvb_vem_node_init();
     if(error)
     {
         printf("Error in cphvb_vem_init()\n");

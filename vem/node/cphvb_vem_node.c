@@ -23,7 +23,7 @@
 #include <cphvb.h>
 #include "private.h"
 
-#include <cphvb_vem.h>
+#include <cphvb_vem_node.h>
 #include <cphvb_ve_simple.h>
 
 //The VE info.
@@ -33,7 +33,7 @@ cphvb_support ve_support;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_init(void)
+cphvb_error cphvb_vem_node_init(void)
 {
     cphvb_intp opcode_count, type_count;
     cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
@@ -63,7 +63,7 @@ cphvb_error cphvb_vem_init(void)
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_shutdown(void)
+cphvb_error cphvb_vem_node_shutdown(void)
 {
     return cphvb_ve_simple_shutdown();
 }
@@ -82,15 +82,15 @@ cphvb_error cphvb_vem_shutdown(void)
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_vem_create_array(cphvb_array*   base,
-                                   cphvb_type     type,
-                                   cphvb_intp     ndim,
-                                   cphvb_index    start,
-                                   cphvb_index    shape[CPHVB_MAXDIM],
-                                   cphvb_index    stride[CPHVB_MAXDIM],
-                                   cphvb_intp     has_init_value,
-                                   cphvb_constant init_value,
-                                   cphvb_array**  new_array)
+cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
+                                        cphvb_type     type,
+                                        cphvb_intp     ndim,
+                                        cphvb_index    start,
+                                        cphvb_index    shape[CPHVB_MAXDIM],
+                                        cphvb_index    stride[CPHVB_MAXDIM],
+                                        cphvb_intp     has_init_value,
+                                        cphvb_constant init_value,
+                                        cphvb_array**  new_array)
 {
     cphvb_array *array    = malloc(sizeof(cphvb_array));
     if(array == NULL)
@@ -125,7 +125,7 @@ cphvb_error cphvb_vem_create_array(cphvb_array*   base,
  *
  * @return non-zero when true and zero when false
  */
-cphvb_intp cphvb_vem_instruction_check(cphvb_instruction *inst)
+cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
 {
     switch(inst->opcode)
     {
@@ -162,8 +162,8 @@ cphvb_intp cphvb_vem_instruction_check(cphvb_instruction *inst)
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_execute(cphvb_intp count,
-                              cphvb_instruction inst_list[])
+cphvb_error cphvb_vem_node_execute(cphvb_intp count,
+                                   cphvb_instruction inst_list[])
 {
     cphvb_intp i;
     for(i=0; i<count; ++i)

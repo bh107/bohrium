@@ -1,18 +1,18 @@
-ROOT=..
-INCLUDE=../include
-LIB=libcphvem.so
+ROOT=../..
+INCLUDE=include
+LIB=libcphvb_vem_node.so
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvem.c
+SRC=cphvb_vem_node.c
 HEADER=private.h
 OBJ=$(SRC:.c=.o)
 
 
 all: $(LIB)
 
-%.o: %.c $(INCLUDE)/* $(HEADER)
+%.o: %.c $(ROOT)/$(INCLUDE)/* $(HEADER)
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 $(LIB): $(OBJ)
