@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <cphvb.h>
 
+#include <cphvb_vem_cluster.h>
 #include <cphvb_vem_node.h>
-#include <cphvb_ve_simple.h>
 #include <cphvb_vem.h>
 
 //The VE info.
@@ -33,28 +33,8 @@ cphvb_support ve_support;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(void)
+cphvb_error cphvb_vem_cluster_init(void)
 {
-    cphvb_intp opcode_count, type_count;
-    cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
-    cphvb_type type[CPHVB_NO_TYPES];
-    cphvb_error err;
-
-    //Let us initiate the simple VE and register what it supports.
-    err = cphvb_ve_simple_init(&opcode_count, opcode, &type_count, type);
-    if(err)
-        return err;
-
-    //Init to False.
-    memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
-    memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
-
-    while(--opcode_count >= 0)
-        ve_support.opcode[opcode[opcode_count]] = 1;//Set True
-
-    while(--type_count >= 0)
-        ve_support.type[type[type_count]] = 1;//Set True
-
     return CPHVB_SUCCESS;
 }
 
@@ -63,9 +43,9 @@ cphvb_error cphvb_vem_node_init(void)
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_shutdown(void)
+cphvb_error cphvb_vem_cluster_shutdown(void)
 {
-    return cphvb_ve_simple_shutdown();
+    return CPHVB_SUCCESS;
 }
 
 
@@ -82,15 +62,15 @@ cphvb_error cphvb_vem_node_shutdown(void)
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
-                                        cphvb_type     type,
-                                        cphvb_intp     ndim,
-                                        cphvb_index    start,
-                                        cphvb_index    shape[CPHVB_MAXDIM],
-                                        cphvb_index    stride[CPHVB_MAXDIM],
-                                        cphvb_intp     has_init_value,
-                                        cphvb_constant init_value,
-                                        cphvb_array**  new_array)
+cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
+                                           cphvb_type     type,
+                                           cphvb_intp     ndim,
+                                           cphvb_index    start,
+                                           cphvb_index    shape[CPHVB_MAXDIM],
+                                           cphvb_index    stride[CPHVB_MAXDIM],
+                                           cphvb_intp     has_init_value,
+                                           cphvb_constant init_value,
+                                           cphvb_array**  new_array)
 {
     cphvb_array *array    = malloc(sizeof(cphvb_array));
     if(array == NULL)
@@ -125,7 +105,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
  *
  * @return non-zero when true and zero when false
  */
-cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
+cphvb_intp cphvb_vem_cluster_instruction_check(cphvb_instruction *inst)
 {
     switch(inst->opcode)
     {
@@ -162,8 +142,8 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_execute(cphvb_intp count,
-                                   cphvb_instruction inst_list[])
+cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
+                                      cphvb_instruction inst_list[])
 {
     cphvb_intp i;
     for(i=0; i<count; ++i)
@@ -199,7 +179,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         }
         default:
         {
-            cphvb_error error = cphvb_ve_simple_execute(1, inst);
+            cphvb_error error=1;// = cphvb_ve_simple_execute(1, inst);
             if(error)
             {
                 fprintf(stderr, "cphvb_vem_execute() encountered an "

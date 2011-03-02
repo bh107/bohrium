@@ -1,11 +1,11 @@
 ROOT=../..
 INCLUDE=include
-LIB=libcphvb_vem_node.so
+LIB=libcphvb_vem_cluster.so
 CC=gcc
 WARNOPTS=-Wall
 CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb_vem_node.c
+SRC=cphvb_vem_cluster.c
 HEADER=
 OBJ=$(SRC:.c=.o)
 

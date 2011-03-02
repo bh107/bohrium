@@ -17,10 +17,20 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_PRIVATE_H
-#define __CPHVB_PRIVATE_H
+#ifndef __CPHVB_VEM_H
+#define __CPHVB_VEM_H
 
 #include <cphvb_type.h>
+#include <cphvb_instruction.h>
+#include <cphvb_opcode.h>
+
+
+typedef struct
+{
+    cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
+    cphvb_bool type[CPHVB_NO_OPCODES];  //list of type support
+} cphvb_support;
+
 
 /* Codes for known components */
 enum /* cphvb_comp */
@@ -29,6 +39,6 @@ enum /* cphvb_comp */
     CPHVB_VE_SIMPLE,
     CPHVB_VE_CUDA
 };
+typedef cphvb_intp cphvb_comp;
 
-typedef cphvb_int32 cphvb_comp;
 #endif
