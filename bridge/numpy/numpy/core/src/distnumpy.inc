@@ -519,6 +519,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                     shape[j] = inst.operand[i]->shape[j-nd_diff];
                     if(shape[j] < inst.operand[0]->shape[j])
                     {
+                        assert(shape[j] == 1);
                         shape[j] = inst.operand[0]->shape[j];
                         stride[j] = 0;
                     }
