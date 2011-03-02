@@ -23,8 +23,8 @@
 
 int PTXkernelParameter::declare(const char* prefix, char* buf, int size)
 {
-    int res = std::snprintf(buf, size, "%s.param %s %s",
-                            prefix, ptxTypeStr(type), name);
+    int res = std::snprintf(buf, size, "%s.param %s kp%ld_",
+                            prefix, ptxTypeStr(type), id);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");
@@ -42,7 +42,7 @@ int PTXkernelParameter::snprint(const char* prefix,
                                 int size, 
                                 const char* postfix)
 {
-    int res = std::snprintf(buf, size, "%s%s%s", prefix, name, postfix);
+    int res = std::snprintf(buf, size, "%skp%ld_%s", prefix, id, postfix);
     if (res > size)
     {
         throw std::runtime_error("Not enough buffer space for printing.");

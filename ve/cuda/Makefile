@@ -5,7 +5,9 @@ LIB=libvecuda.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x $(INCLUDE)
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE)
+CCFLAGS = $(CFLAGS) -std=gnu99
+CXXFLAGS = $(CFLAGS) -std=gnu++0x
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 
 MODULES=DataManager DeviceManager InstructionBatch InstructionScheduler \
@@ -13,18 +15,21 @@ MODULES=DataManager DeviceManager InstructionBatch InstructionScheduler \
 IMPL=$(MODULES:=Simple)
 TYPES=PTXconstant PTXregister PTXoperand
 CONTAINERS=PTXconstantBuffer PTXregisterBank
-OBJECTS=$(IMPL:=.o) $(TYPES:=.o) $(CONTAINERS:=.o) 
+OBJECTS=$(IMPL:=.oo) $(TYPES:=.oo) $(CONTAINERS:=.oo) $(CFILES:=.o) 
 
 all: $(LIB)
 
 %Simple.o: %Simple.cpp %Simple.hpp %.hpp
-		$(CXX) -c $< -o $@ $(CFLAGS)
+		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-%.o: %.cpp %.hpp
-		$(CXX) -c $< -o $@ $(CFLAGS)
+%.o: %.c %.h
+		$(CC) -c $< -o $@ $(CCFLAGS)
+
+%.oo: %.cpp %.hpp
+		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 $(LIB): $(OBJECTS)
 		$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-		rm -rf *.o *~ $(LIB)
+		rm -rf *.o  *.oo *~ $(LIB)

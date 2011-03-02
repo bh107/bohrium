@@ -22,6 +22,7 @@
 
 #include <cphvb.h>
 #include "PTXregister.hpp"
+#include "PTXspecialRegister.hpp"
 
 #define BANKSIZE (1024)
 
@@ -37,6 +38,11 @@ public:
     PTXregister* newRegister(PTXtype type);
     PTXregister* newRegister(cphvb_type type);
     int declare(char* buf, int size);
+
+    // Special registers
+    PTXspecialRegister tid_x;
+    PTXspecialRegister ntid_x;
+    PTXspecialRegister ctaid_x;
 };
 
 #endif

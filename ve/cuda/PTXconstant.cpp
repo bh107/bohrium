@@ -57,7 +57,7 @@ void PTXconstant::set(cphvb_type vbtype,
                       cphvb_constant constant)
                      
 {
-    type = ptxBaseType(vbtype);
+    type = ptxBaseType(ptxType(vbtype));
     switch (vbtype)
     {
     case CPHVB_BOOL: 

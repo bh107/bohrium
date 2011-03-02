@@ -17,33 +17,33 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXREGISTER_HPP
-#define __PTXREGISTER_HPP
+#ifndef __PTXSREG_HPP
+#define __PTXSREG_HPP
 
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
+#include <cphvb.h>
 
-class PTXregister : public PTXoperand
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum 
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
-    PTXtype type;
-    int typeIdx;
-public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    TID_X,
+    TID_Y,
+    TID_Z,
+    NTID_X,
+    NTID_Y,
+    NTID_Z,
+    CTAID_X,
+    CTAID_Y,
+    CTAID_Z
 
-};
+} Sreg;
+
+const char* ptxSregStr(Sreg sreg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -17,33 +17,36 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXREGISTER_HPP
-#define __PTXREGISTER_HPP
+#ifndef __PTXVERSION_HPP
+#define __PTXVERSION_HPP
 
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
+#include <cphvb.h>
 
-class PTXregister : public PTXoperand
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+typedef enum
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
-    PTXtype type;
-    int typeIdx;
-public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    ISA_14,
+    ISA_22
+} PTXversion;
 
-};
+typedef enum
+{
+    SM_10,
+    SM_11,
+    SM_12,
+    SM_13,
+    SM_20,
+} CUDAtarget;
+
+const char* ptxVersionStr(PTXversion version);
+const char* cudaTargetStr(CUDAtarget target);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

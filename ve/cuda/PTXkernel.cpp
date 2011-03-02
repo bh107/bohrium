@@ -24,52 +24,44 @@
 PTXkernel::PTXkernel(PTXversion version_,
                      CUDAtarget target_,
                      PTXregisterBank* registerBank_,
-                     PTXkernelBody* kernelBody_) :
+                     PTXinstructionList* instructionList_) :
     version(version_),
     target(target_),
+    parameterCount(0),
     registerBank(registerBank_),
-    kernelBody(kernelBody_) {}
+    instructionList(instructionList_) {}
 
-const char* versionStr[] =  
+PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
 {
-    /*[ISA_14] = */"1.4",
-    /*[ISA_22] = */"2.2"
-};
-
-const char* targetStr[] =  
-{
-    /*[SM_10] = */"sm_10",
-    /*[SM_11] = */"sm_11",
-    /*[SM_12] = */"sm_12",
-    /*[SM_13] = */"sm_13",
-    /*[SM_20] = */"sm_20"
-};
+    parameterList[parameterCount].type = type;
+    parameterList[parameterCount].id = parameterCount;
+    return &parameterList[parameterCount++];
+}
 
 int PTXkernel::snprint(char* buf, int size)
 {
     int res = 0;
     int bp;
     bp = std::snprintf(buf, size, ".version %s\n.target %s\n.entry %s (", 
-                       versionStr[version],
-                       targetStr[target],
+                       ptxVersionStr(version),
+                       cudaTargetStr(target),
                        name);
     res += bp; buf += bp; size -= bp;
-    PTXparameterList::iterator piter = parameterList.begin();
-    if (piter != parameterList.end())
+    if (parameterCount > 0)
     {
-        bp = piter->declare("\t",buf, size);
+        bp = parameterList[0].declare("\t",buf, size);
         res += bp; buf += bp; size -= bp;
     }
-    while (piter != parameterList.end())
+    for (int i = 1; i < parameterCount; ++i)
     {
-        bp = piter->declare(",\n\t",buf, size);
+        bp = parameterList[i].declare(",\n\t",buf, size);
         res += bp; buf += bp; size -= bp;
     }
     bp = std::snprintf(buf, size, ")\n{\n");
     res += bp; buf += bp; size -= bp;
     bp = registerBank->declare(buf,size);
     res += bp; buf += bp; size -= bp;
-    bp = kernelBody->snprint(buf,size);
+    bp = instructionList->snprint(buf,size);
     res += bp; buf += bp; size -= bp;
     bp = std::snprintf(buf, size, "}\n");
     return res + bp;

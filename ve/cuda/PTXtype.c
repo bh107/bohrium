@@ -17,11 +17,11 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
+#include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <cphvb.h>
-#include <cstdint>
-#include <cstdlib>
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 
 PTXtype ptxType(cphvb_type vbtype)
 {
@@ -79,34 +79,50 @@ PTXbaseType ptxBaseType(PTXtype type)
     }
 }
 
-PTXbaseType ptxBaseType(cphvb_type vbtype)
-{
-    return(ptxBaseType(ptxType(vbtype)));
-}
-
 const char* _ptxTypeStr[] =
 {
-    /*[PTX_INT8] = */".s8",
-    /*[PTX_INT16] = */".s16",
-    /*[PTX_INT32] = */".s32",
-    /*[PTX_INT64] = */".s64",
-    /*[PTX_UINT8] = */".u8",
-    /*[PTX_UINT16] = */".u16",
-    /*[PTX_UINT32] = */".u32",
-    /*[PTX_UINT64] = */".u64",
-    /*[PTX_FLOAT16] = */".f16",
-    /*[PTX_FLOAT32] = */".f32",
-    /*[PTX_FLOAT64] = */".f64",
-    /*[PTX_BITS8] = */".b8",
-    /*[PTX_BITS16] = */".b16",
-    /*[PTX_BITS32] = */".b32",
-    /*[PTX_BITS64] = */".b64",
-    /*[PTX_PRED] = */".pred"
+    [PTX_INT8] = ".s8",
+    [PTX_INT16] = ".s16",
+    [PTX_INT32] = ".s32",
+    [PTX_INT64] = ".s64",
+    [PTX_UINT8] = ".u8",
+    [PTX_UINT16] = ".u16",
+    [PTX_UINT32] = ".u32",
+    [PTX_UINT64] = ".u64",
+    [PTX_FLOAT16] = ".f16",
+    [PTX_FLOAT32] = ".f32",
+    [PTX_FLOAT64] = ".f64",
+    [PTX_BITS8] = ".b8",
+    [PTX_BITS16] = ".b16",
+    [PTX_BITS32] = ".b32",
+    [PTX_BITS64] = ".b64",
+    [PTX_PRED] = ".pred"
 };
 
 const char* ptxTypeStr(PTXtype type)
 {
     return _ptxTypeStr[type];
+}
+
+const char* ptxWideOpStr(PTXtype type)
+{
+    switch (type)
+    {
+    case PTX_INT32:
+        return ".s16";
+        break;
+    case PTX_INT64:
+        return ".s32";
+        break;
+    case PTX_UINT32:
+        return ".u16";
+        break;
+    case PTX_UINT64:
+        return ".u32";
+        break;
+    default:
+        assert (false);
+    }
 }
 
 size_t ptxAlign(PTXtype type)
@@ -169,22 +185,22 @@ size_t ptxSizeOf(PTXtype type)
 
 const char* _ptxRegPrefix[] =
 {
-    /*[PTX_INT8] = */"sc",
-    /*[PTX_INT16] = */"sh",
-    /*[PTX_INT32] = */"si",
-    /*[PTX_INT64] = */"sd",
-    /*[PTX_UINT8] = */"uc",
-    /*[PTX_UINT16] = */"uh",
-    /*[PTX_UINT32] = */"ui",
-    /*[PTX_UINT64] = */"ud",
-    /*[PTX_FLOAT16] = */"fh",
-    /*[PTX_FLOAT32] = */"f_",
-    /*[PTX_FLOAT64] = */"fd",
-    /*[PTX_BITS8] = */"bc",
-    /*[PTX_BITS16] = */"bh",
-    /*[PTX_BITS32] = */"b_",
-    /*[PTX_BITS64] = */"bd",
-    /*[PTX_PRED] = */"p"
+    [PTX_INT8] = "sc",
+    [PTX_INT16] = "sh",
+    [PTX_INT32] = "si",
+    [PTX_INT64] = "sd",
+    [PTX_UINT8] = "uc",
+    [PTX_UINT16] = "uh",
+    [PTX_UINT32] = "ui",
+    [PTX_UINT64] = "ud",
+    [PTX_FLOAT16] = "fh",
+    [PTX_FLOAT32] = "f_",
+    [PTX_FLOAT64] = "fd",
+    [PTX_BITS8] = "bc",
+    [PTX_BITS16] = "bh",
+    [PTX_BITS32] = "b_",
+    [PTX_BITS64] = "bd",
+    [PTX_PRED] = "p"
 };
 
 const char* ptxRegPrefix(PTXtype type)

@@ -20,26 +20,14 @@
 #ifndef __PTXSPECIALREGISTER_HPP
 #define __PTXSPECIALREGISTER_HPP
 
+#include "PTXsreg.h"
 #include "PTXoperand.hpp"
-
-enum SregID
-{
-    TID_X,
-    TID_Y,
-    TID_Z,
-    NTID_X,
-    NTID_Y,
-    NTID_Z,
-    CTAID_X,
-    CTAID_Y,
-    CTAID_Z
-
-};
 
 class PTXspecialRegister : public PTXoperand
 {
-    SregID id;
+    Sreg id;
 public:
+    PTXspecialRegister(Sreg id_);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 

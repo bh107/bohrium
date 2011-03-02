@@ -21,7 +21,7 @@
 #include <cassert>
 #include <cuda.h>
 #include <stdexcept>
-#include "PTXtype.hpp"
+#include "PTXtype.h"
 #include "KernelParameter.hpp"
 #include "Kernel.hpp"
 #include "KernelShape.hpp"

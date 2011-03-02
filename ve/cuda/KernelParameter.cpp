@@ -17,7 +17,6 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PTXtype.hpp"
 #include "KernelParameter.hpp"
 
 KernelParameter::KernelParameter(cphvb_type type_, cphvb_constant value_) :

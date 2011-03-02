@@ -21,26 +21,10 @@
 #define __PTXKERNEL_HPP
 
 #include <vector>
+#include "PTXversion.h"
 #include "PTXkernelParameter.hpp"
 #include "PTXregisterBank.hpp"
-#include "PTXkernelBody.hpp"
-
-typedef std::vector<PTXkernelParameter> PTXparameterList;
-
-enum PTXversion 
-{
-    ISA_14,
-    ISA_22
-};
-
-enum CUDAtarget
-{
-    SM_10,
-    SM_11,
-    SM_12,
-    SM_13,
-    SM_20,
-};
+#include "PTXinstructionList.hpp"
 
 class PTXkernel
 {
@@ -48,15 +32,19 @@ private:
     PTXversion version;
     CUDAtarget target;
     char name[128];
-    PTXparameterList parameterList;
+    PTXkernelParameter parameterList[128];
+    int parameterCount;
     PTXregisterBank* registerBank;
-    PTXkernelBody* kernelBody;
+    PTXinstructionList* instructionList;
 public:
     PTXkernel(PTXversion version,
                     CUDAtarget target,
                     PTXregisterBank* registerBank,
-                    PTXkernelBody* kernelBody);
+                    PTXinstructionList* instructionList);
+    PTXkernelParameter* addParameter(PTXtype type);
     int snprint(char* buf, int size);
+    
+    
 };
 
 #endif

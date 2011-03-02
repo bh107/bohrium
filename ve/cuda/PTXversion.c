@@ -17,33 +17,29 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXREGISTER_HPP
-#define __PTXREGISTER_HPP
+#include "PTXversion.h"
 
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
-
-class PTXregister : public PTXoperand
+const char* _ptxVersionStr[] =  
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
-    PTXtype type;
-    int typeIdx;
-public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-
+    [ISA_14] = "1.4",
+    [ISA_22] = "2.2"
 };
 
-#endif
+const char* ptxVersionStr(PTXversion version)
+{
+    return _ptxVersionStr[version];
+}  
+
+const char* _cudaTargetStr[] =  
+{
+    [SM_10] = "sm_10",
+    [SM_11] = "sm_11",
+    [SM_12] = "sm_12",
+    [SM_13] = "sm_13",
+    [SM_20] = "sm_20"
+};
+
+const char* cudaTargetStr(CUDAtarget target)
+{
+    return _cudaTargetStr[target];
+}

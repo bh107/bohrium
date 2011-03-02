@@ -21,43 +21,25 @@
 #define __PTXINSTRUCTION_HPP
 
 #include <string>
+#include "PTXopcode.h"
+#include "PTXtype.h"
 #include "PTXoperand.hpp"
 #include "PTXregister.hpp"
 
-enum Opcode
-{
-    PTX_BRA,
-    PTX_ADD,
-    PTX_SUB,
-    PTX_MUL,
-    PTX_MAD,
-    PTX_DIV,
-    PTX_SAD,
-    PTX_REM,
-    PTX_STORE,
-    PTX_LOAD,
-    PTX_LDPARAM,
-    PTX_MOV
-};
-
-#define MAX_OPERANDS (4)
-
 class PTXinstruction
 {
-    friend class PTXkernelBody;
+    friend class PTXinstructionList;
 private:
     char* label;
     bool guardMod;   //guard modifier 
     PTXregister* guard; //the guard predicate register. NULL if not used.
-    Opcode opcode;
+    PTXopcode opcode;
     PTXregister* dest;
-    PTXoperand* src[MAX_OPERANDS-1];
+    PTXoperand* src[PTX_MAX_OPERANDS-1];
     int snprintAritOp(char* buf, int size);
     int snprintOp(char* buf, int size);
 public:
-    static const int opSrc(Opcode opcode);
     int snprint(char* buf, int size);
 };
-
 
 #endif

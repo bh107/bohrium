@@ -17,33 +17,35 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXREGISTER_HPP
-#define __PTXREGISTER_HPP
+#ifndef __KERNELSIMPLE_HPP
+#define __KERNELSIMPLE_HPP
 
-#include "PTXtype.h"
-#include "PTXoperand.hpp"
+#include <queue>
+#include <map>
+#include "OffsetMap.hpp"
+#include "PTXKernelBody.hpp"
+#include "PTXKernel.hpp"
+#include "Kernel.hpp"
+#include "KernelParameter.hpp"
 
-class PTXregister : public PTXoperand
+typedef std::map<cphVBArray*, Register*> ElementMap;
+typedef std::map<Register*, cphVBArray*> StoreMap;
+
+class KernelGeneratorSimple
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
-    PTXtype type;
-    int typeIdx;
+private:
+    ElementMap elementMap;
+    StoreMap storeMap;
+    PTXregisterBank* registerBank;
+    PTXconstantBuffer* constantBuffer;
+    OffsetMap* offsetMap;
+    PTXkernel* ptxKernel;
+    PTXkernelBody* instructionList;
+    PTXregister* threadID;
+    ParameterList parameters;
 public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-
+    KernelGeneratorSimple();
+    void addInstruction(cphVBInstruction* inst);
 };
 
 #endif

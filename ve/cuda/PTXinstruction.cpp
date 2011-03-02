@@ -22,27 +22,6 @@
 #include <stdexcept>
 #include "PTXinstruction.hpp"
 
-const int _opSrc[] =
-{
-    /*PTX_BRA = */0, 
-    /*PTX_ADD = */2,
-    /*PTX_SUB = */2,
-    /*PTX_MUL = */2,
-    /*PTX_MAD = */3,
-    /*PTX_DIV = */2,
-    /*PTX_SAD = */3,
-    /*PTX_REM = */2,
-    /*PTX_STORE = */2,
-    /*PTX_LOAD = */2,
-    /*PTX_LDPARAM = */1,
-    /*PTX_MOV = */1
-};
-
-const int PTXinstruction::opSrc(Opcode opcode)
-{
-    return _opSrc[opcode];
-}
-
 int PTXinstruction::snprintAritOp(char* buf, int size)
 { 
     int res = 0;
@@ -61,6 +40,9 @@ int PTXinstruction::snprintAritOp(char* buf, int size)
     case PTX_MAD:
         bp = std::snprintf(buf, size, "mad.lo.%s\t", ptxTypeStr(dest->type));
         break;
+    case PTX_MAD_WIDE:
+        bp = std::snprintf(buf, size, "mad.wide.%s\t",ptxWideOpStr(dest->type));
+        break;
     case PTX_DIV:
         bp = std::snprintf(buf, size, "div.%s\t", ptxTypeStr(dest->type));
         break;
@@ -75,7 +57,7 @@ int PTXinstruction::snprintAritOp(char* buf, int size)
      }
     res += bp; buf += bp; size -= bp;
     dest->snprint(buf,size);
-    for (int i = 0; i < opSrc(opcode); ++i)
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
     {
         bp = src[i]->snprint(", ",buf,size); 
         res += bp; buf += bp; size -= bp;
@@ -92,7 +74,7 @@ int PTXinstruction::snprintOp(char* buf, int size)
     {
     case PTX_BRA:
         return std::snprintf(buf, size, "bra\t%s;\n", label);
-    case PTX_LOAD:
+    case PTX_LD_GLOBAL:
         bp = std::snprintf(buf, size, "ld.global.%s\t", 
                            ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;
@@ -102,14 +84,14 @@ int PTXinstruction::snprintOp(char* buf, int size)
         res += bp; buf += bp; size -= bp;
         bp = src[1]->snprint(buf,size,"];\n");
         return res + bp;
-    case PTX_LDPARAM:
+    case PTX_LD_PARAM:
         bp = std::snprintf(buf, size, "ld.param.%s\t", ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;
         bp = dest->snprint(buf,size,", ");
         res += bp; buf += bp; size -= bp;
         bp = src[0]->snprint("[",buf,size,"];\n");
         return res + bp;
-    case PTX_STORE:
+    case PTX_ST_GLOBAL:
         bp = std::snprintf(buf, size, "st.global.%s\t", 
                            ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;

@@ -17,48 +17,40 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXTYPE_HPP
-#define __PTXTYPE_HPP
+#ifndef __PTXOPCODE_H
+#define __PTXOPCODE_H
 
 #include <cphvb.h>
-#include <cstdlib>
 
-enum PTXbaseType
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum 
 {
-    PTX_INT,
-    PTX_UINT,
-    PTX_FLOAT,
-    PTX_BITS,
-    PTX_BASE_TYPES //Number of base types 
-};
+    PTX_BRA,
+    PTX_ADD,
+    PTX_SUB,
+    PTX_MUL,
+    PTX_MAD,
+    PTX_MAD_WIDE,
+    PTX_DIV,
+    PTX_REM,
+    PTX_ST_GLOBAL,
+    PTX_LD_GLOBAL,
+    PTX_LD_PARAM,
+    PTX_MOV
+} PTXopcode;
 
-enum PTXtype
-{
-    PTX_INT8,
-    PTX_INT16,
-    PTX_INT32,
-    PTX_INT64,
-    PTX_UINT8,
-    PTX_UINT16,
-    PTX_UINT32,
-    PTX_UINT64,
-    PTX_FLOAT16,
-    PTX_FLOAT32,
-    PTX_FLOAT64,
-    PTX_BITS8,
-    PTX_BITS16,
-    PTX_BITS32,
-    PTX_BITS64,
-    PTX_PRED,
-    PTX_TYPES //Number of types 
-};
+#define PTX_MAX_OPERANDS (4)
 
-PTXtype ptxType(cphvb_type vbtype);
-PTXbaseType ptxBaseType(PTXtype type);
-PTXbaseType ptxBaseType(cphvb_type vbtype);
-const char* ptxTypeStr(PTXtype type);
-size_t ptxAlign(PTXtype type);
-size_t ptxSizeOf(PTXtype type);
-const char* ptxRegPrefix(PTXtype type);
+
+const int ptxOperands(PTXopcode opcode);
+const int ptxSrcOperands(PTXopcode opcode);
+PTXopcode ptxOpcodeMap(cphvb_opcode opcode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
