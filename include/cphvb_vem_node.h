@@ -17,43 +17,29 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VEM_H
-#define __CPHVB_VEM_H
+#ifndef __CPHVB_VEM_NODE_H
+#define __CPHVB_VEM_NODE_H
 
+#include <cphvb_array.h>
+#include <cphvb_error.h>
 #include <cphvb_type.h>
 #include <cphvb_instruction.h>
 #include <cphvb_opcode.h>
-
-
-typedef struct
-{
-    cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
-    cphvb_bool type[CPHVB_NO_OPCODES];  //list of type support
-} cphvb_support;
-
-
-/* Codes for known components */
-enum /* cphvb_comp */
-{
-    CPHVB_PARENT,
-    CPHVB_VE_SIMPLE,
-    CPHVB_VE_CUDA
-};
-typedef cphvb_intp cphvb_comp;
+#include <cphvb_vem.h>
 
 
 /* Initialize the VEM
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_vem_init)(void);
+cphvb_error cphvb_vem_node_init(void);
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_vem_shutdown)(void);
+cphvb_error cphvb_vem_node_shutdown(void);
 
 
 /* Create an array, which are handled by the VEM.
@@ -69,23 +55,23 @@ typedef cphvb_error (*cphvb_vem_shutdown)(void);
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-typedef cphvb_error (*cphvb_vem_create_array)(
-                                   cphvb_array*   base,
-                                   cphvb_type     type,
-                                   cphvb_intp     ndim,
-                                   cphvb_index    start,
-                                   cphvb_index    shape[CPHVB_MAXDIM],
-                                   cphvb_index    stride[CPHVB_MAXDIM],
-                                   cphvb_intp     has_init_value,
-                                   cphvb_constant init_value,
-                                   cphvb_array**  new_array);
+cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
+                                        cphvb_type     type,
+                                        cphvb_intp     ndim,
+                                        cphvb_index    start,
+                                        cphvb_index    shape[CPHVB_MAXDIM],
+                                        cphvb_index    stride[CPHVB_MAXDIM],
+                                        cphvb_intp     has_init_value,
+                                        cphvb_constant init_value,
+                                        cphvb_array**  new_array);
 
 
 /* Check whether the instruction is supported by the VEM or not
  *
  * @return non-zero when true and zero when false
  */
-typedef cphvb_intp (*cphvb_vem_instruction_check)(cphvb_instruction *inst);
+cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst);
+
 
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
@@ -93,8 +79,8 @@ typedef cphvb_intp (*cphvb_vem_instruction_check)(cphvb_instruction *inst);
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_vem_execute)(cphvb_intp count,
-                                         cphvb_instruction inst_list[]);
+cphvb_error cphvb_vem_node_execute(cphvb_intp count,
+                                   cphvb_instruction inst_list[]);
 
 
 #endif
