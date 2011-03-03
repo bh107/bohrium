@@ -96,7 +96,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
     if(array == NULL)
         return CPHVB_OUT_OF_MEMORY;
 
-    array->owner          = CPHVB_BRIDGE;
+    array->owner          = CPHVB_PARENT;
     array->base           = base;
     array->type           = type;
     array->ndim           = ndim;
@@ -190,7 +190,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             //Check the owner of the array
-            if(base->owner != CPHVB_BRIDGE)
+            if(base->owner != CPHVB_PARENT)
             {
                 fprintf(stderr, "VEM could not perform release\n");
                 exit(CPHVB_INST_ERROR);
