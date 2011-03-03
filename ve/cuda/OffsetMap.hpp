@@ -28,14 +28,14 @@ class OffsetMap
 {
 public:
     virtual PTXregister* find(cphvb_intp ndim,
-                              cphvb_index shape[],
-                              cphvb_index stride[]) = 0;
-    virtual PTXregister* find(cphVBArray* array) = 0;
+                              const cphvb_index shape[],
+                              const cphvb_index stride[]) = 0;
+    virtual PTXregister* find(const cphVBArray* array) = 0;
     virtual void insert(cphvb_intp ndim,
-                        cphvb_index shape[],
-                        cphvb_index stride[],
+                        const cphvb_index shape[],
+                        const cphvb_index stride[],
                         PTXregister* reg) = 0;
-    virtual void insert(cphVBArray* array,
+    virtual void insert(const cphVBArray* array,
                         PTXregister* reg) = 0;
     virtual void clear() = 0;
 };

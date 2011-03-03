@@ -38,13 +38,12 @@ private:
     PTXinstructionList* instructionList;
 public:
     PTXkernel(PTXversion version,
-                    CUDAtarget target,
-                    PTXregisterBank* registerBank,
-                    PTXinstructionList* instructionList);
+              CUDAtarget target,
+              PTXregisterBank* registerBank,
+              PTXinstructionList* instructionList);
+    void clear();
     PTXkernelParameter* addParameter(PTXtype type);
     int snprint(char* buf, int size);
-    
-    
 };
 
 #endif

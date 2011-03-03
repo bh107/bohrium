@@ -24,7 +24,7 @@
 PTXconstantBuffer::PTXconstantBuffer() : 
     next(0) {} 
 
-void PTXconstantBuffer::reset()
+void PTXconstantBuffer::clear()
 {
     next = 0;
 }
@@ -37,6 +37,37 @@ PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type,
     return &constants[next++];
 }
 
+PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
+                                            long int value)
+{
+    constants[next].type = type;
+    constants[next].value.i = value;
+    return &constants[next++];
+}
+
+PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
+                                            unsigned long int value)
+{
+    constants[next].type = type;
+    constants[next].value.u = value;
+    return &constants[next++];
+}
+
+PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
+                                            double value)
+{
+    constants[next].type = type;
+    constants[next].value.f = value;
+    return &constants[next++];
+}
+
+PTXconstant* PTXconstantBuffer::newConstant(PTXbaseType type, 
+                                            CUdeviceptr value)
+{
+    constants[next].type = type;
+    constants[next].value.a = value;
+    return &constants[next++];
+}
 
 PTXconstant* PTXconstantBuffer::newConstant(cphvb_type vbtype,
                                             cphvb_constant constant)

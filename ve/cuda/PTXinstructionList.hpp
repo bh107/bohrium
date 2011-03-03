@@ -25,16 +25,16 @@
 #include "PTXoperand.hpp"
 
 
-#define BUFFERSIZE (4096)
+#define INSTRUCTIONBUFFERSIZE (4096)
 
 class PTXinstructionList
 {
 private:
-    PTXinstruction instructions[BUFFERSIZE];
+    PTXinstruction instructions[INSTRUCTIONBUFFERSIZE];
     int next;
 public:
     PTXinstructionList();
-    void reset();
+    void clear();
     void add(char* label,
              bool guardMod,
              PTXregister* guard,

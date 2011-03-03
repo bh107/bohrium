@@ -22,7 +22,7 @@
 PTXinstructionList::PTXinstructionList() :
     next(0) {}
 
-void PTXinstructionList::reset()
+void PTXinstructionList::clear()
 {
     next = 0;
 }

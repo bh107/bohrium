@@ -20,32 +20,55 @@
 #ifndef __KERNELSIMPLE_HPP
 #define __KERNELSIMPLE_HPP
 
-#include <queue>
 #include <map>
+#include "PTXregister.hpp"
+#include "PTXconstant.hpp"
+#include "PTXregisterBank.hpp"
+#include "PTXconstantBuffer.hpp"
 #include "OffsetMap.hpp"
-#include "PTXKernelBody.hpp"
-#include "PTXKernel.hpp"
+#include "PTXinstructionList.hpp"
+#include "PTXkernel.hpp"
 #include "Kernel.hpp"
 #include "KernelParameter.hpp"
+#include "InstructionTranslator.hpp"
+#include "cphVBInstruction.h"
 
-typedef std::map<cphVBArray*, Register*> ElementMap;
-typedef std::map<Register*, cphVBArray*> StoreMap;
+struct PTXaddress
+{
+    PTXregister* reg;
+    PTXconstant* off;
+};
+
+typedef std::map<const cphVBArray*, PTXregister*> ElementMap;
+typedef std::map<const cphVBArray*, PTXaddress> AddressMap;
+typedef std::map<PTXregister*, const cphVBArray*> StoreMap;
 
 class KernelGeneratorSimple
 {
 private:
     ElementMap elementMap;
     StoreMap storeMap;
+    AddressMap addressMap;
+    OffsetMap* offsetMap;
     PTXregisterBank* registerBank;
     PTXconstantBuffer* constantBuffer;
-    OffsetMap* offsetMap;
+    PTXinstructionList* instructionList;
+    InstructionTranslator* translator;
     PTXkernel* ptxKernel;
-    PTXkernelBody* instructionList;
     PTXregister* threadID;
-    ParameterList parameters;
+    ParameterList* parameters;
+    void init();
+    void clear();
+    void addInstruction(const cphVBInstruction* inst);
+    PTXregister* calcOffset(const cphVBArray* array);
+    PTXaddress   calcAddress(const cphVBArray* array);
+    PTXregister* loadElement(const cphVBArray* array);
+    PTXregister* loadScalar(cphvb_type type,
+                            cphvb_constant value);
+    void storeAll();
 public:
     KernelGeneratorSimple();
-    void addInstruction(cphVBInstruction* inst);
+    
 };
 
 #endif

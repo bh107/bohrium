@@ -22,18 +22,26 @@
 
 #include "PTXconstant.hpp"
 
-#define BUFFERSIZE (1024)
+#define CONSTANTBUFFERSIZE (1024)
 
 class PTXconstantBuffer
 {
 private:
-    PTXconstant constants[BUFFERSIZE];
+    PTXconstant constants[CONSTANTBUFFERSIZE];
     int next;
 public:
     PTXconstantBuffer();
-    void reset();
+    void clear();
     PTXconstant* newConstant(PTXbaseType type, 
                              PTXconstVal value);
+    PTXconstant* newConstant(PTXbaseType type, 
+                             long int value);
+    PTXconstant* newConstant(PTXbaseType type, 
+                             unsigned long int value);
+    PTXconstant* newConstant(PTXbaseType type, 
+                             double value);
+    PTXconstant* newConstant(PTXbaseType type, 
+                             CUdeviceptr value);
     PTXconstant* newConstant(cphvb_type type,
                              cphvb_constant value);
 };

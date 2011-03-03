@@ -27,36 +27,10 @@ typedef struct cphVBArray cphVBArray;
 /* Matches memory layout of cphvb_array */
 struct cphVBArray
 {
-    //Field used by VEM to manage ownership
-    cphvb_int32      owner;
-    //Pointer to the base array. If NULL this is a base array
-    cphVBArray*      base;
-    //The type of data in the array
-    cphvb_type       type;
-    //Number of dimentions
-    int              ndim;
-    //Index of the start element (always 0 for base-array)
-    cphvb_index      start;
-    //Number of elements in each dimention
-    cphvb_index      shape[CPHVB_MAXDIM];
-    //The stride for each dimention
-    cphvb_index      stride[CPHVB_MAXDIM];
-    //Pointer to the actual data
-    cphvb_data_ptr   data;
-    //Does the array have an initial value (if not initialized)
-    bool      hasInitValue;
-    //The initial value
-    cphvb_constant   initValue;
-    //Ref Count
-    int              refCount;
+    CPHVB_ARRAY_BASE
     //Space reserved for extra meta data.
     //Not persistent at ownership change
     CUdeviceptr      cudaPtr;
-    cphvb_index      cudaStride[CPHVB_MAXDIM];
-    int              cudaPaddingDim;
-    int              cudaPadding;
-    cphvb_index      cudaSize;
-    cphvb_index      cudaElemPerPad;
 };
 
 #endif

@@ -35,14 +35,14 @@ private:
 public:
     OffsetMapSimple();
     PTXregister* find(cphvb_intp ndim,
-                      cphvb_index shape[],
-                      cphvb_index stride[]);
-    PTXregister* find(cphVBArray* array);
+                      const cphvb_index shape[],
+                      const cphvb_index stride[]);
+    PTXregister* find(const cphVBArray* array);
     void insert(cphvb_intp ndim,
-                cphvb_index shape[],
-                cphvb_index stride[],
+                const cphvb_index shape[],
+                const cphvb_index stride[],
                 PTXregister* reg);
-    void insert(cphVBArray* array,
+    void insert(const cphVBArray* array,
                 PTXregister* reg);
     void clear();
 };

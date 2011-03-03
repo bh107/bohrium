@@ -34,7 +34,7 @@ private:
     int instanceTable[PTX_TYPES];
 public:
     PTXregisterBank();
-    void reset();
+    void clear();
     PTXregister* newRegister(PTXtype type);
     PTXregister* newRegister(cphvb_type type);
     int declare(char* buf, int size);

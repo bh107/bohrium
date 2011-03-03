@@ -25,8 +25,8 @@
 #include "OffsetMapSimple.hpp"
 
 std::string toString(cphvb_intp ndim,
-                     cphvb_index shape[],
-                     cphvb_index stride[])
+                     const cphvb_index shape[],
+                     const cphvb_index stride[])
 {
     std::ostringstream outs;
     for (int i = 0; i < ndim; ++i)
@@ -39,8 +39,8 @@ std::string toString(cphvb_intp ndim,
 OffsetMapSimple::OffsetMapSimple() {}
 
 PTXregister* OffsetMapSimple::find(cphvb_intp ndim,
-                                cphvb_index shape[],
-                                cphvb_index stride[])
+                                const cphvb_index shape[],
+                                const cphvb_index stride[])
 {
     std::string str = toString(ndim, shape, stride);
     MyOffsetMap::iterator iter = internalMap.find(str);
@@ -51,20 +51,20 @@ PTXregister* OffsetMapSimple::find(cphvb_intp ndim,
     return iter->second;
 }
 
-PTXregister* OffsetMapSimple::find(cphVBArray* array)
+PTXregister* OffsetMapSimple::find(const cphVBArray* array)
 {
     return find(array->ndim, array->shape, array->stride);
 }
 
 void OffsetMapSimple::insert(cphvb_intp ndim,
-                             cphvb_index shape[],
-                             cphvb_index stride[],
+                             const cphvb_index shape[],
+                             const cphvb_index stride[],
                              PTXregister* reg)
 {
     internalMap[toString(ndim, shape, stride)] = reg;
 }
 
-void OffsetMapSimple::insert(cphVBArray* array,
+void OffsetMapSimple::insert(const cphVBArray* array,
                              PTXregister* reg)
 {
     insert(array->ndim, array->shape, array->stride,reg);

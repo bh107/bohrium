@@ -14,21 +14,28 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <queue>
 #include <map>
+#include <cassert>
 #include <cphvb.h>
+//#include "Configuration.hpp"
 #include "KernelGeneratorSimple.hpp"
+#include "OffsetMapSimple.hpp"
 #include "PTXtype.h"
 
 
-KernelGeneratorSimple::KernelGeneratorSimple()
+KernelGeneratorSimple::KernelGeneratorSimple() :
+    offsetMap(new OffsetMapSimple()),
+    registerBank(new PTXregisterBank()),
+    constantBuffer(new PTXconstantBuffer()),
+    instructionList(new PTXinstructionList())
 {
-    registerBank = new RegisterBank();
-    offsetMap = createOffsetMap;
-}
+    translator = new InstructionTranslator(instructionList,registerBank);
+    ptxKernel = new PTXkernel(ISA_14,SM_12,registerBank,instructionList);
+ }
 
 void KernelGeneratorSimple::init()
 {
@@ -36,43 +43,56 @@ void KernelGeneratorSimple::init()
     PTXregister* tidx = registerBank->newRegister(PTX_UINT32);
     PTXregister* ntidx = registerBank->newRegister(PTX_UINT32);
     PTXregister* ctaidx = registerBank->newRegister(PTX_UINT32);
-    instructionList->add(PTX_MOV, tidx, registerBank->tid_x);
-    instructionList->add(PTX_MOV, ntidx, registerBank->ntid_x);
-    instructionList->add(PTX_MOV, ctaidx, registerBank->ctaid_x);
+    instructionList->add(PTX_MOV, tidx, &registerBank->tid_x);
+    instructionList->add(PTX_MOV, ntidx, &registerBank->ntid_x);
+    instructionList->add(PTX_MOV, ctaidx, &registerBank->ctaid_x);
     instructionList->add(PTX_MAD, threadID, ntidx, ctaidx, tidx); 
 }
 
-void KernelGeneratorSimple::calcOffset(cphVBArray array, PTXregister* reg)
+void KernelGeneratorSimple::clear()
 {
+    elementMap.clear();
+    storeMap.clear();
+    offsetMap->clear();
+    registerBank->clear();
+    constantBuffer->clear();
+    instructionList->clear();
+    ptxKernel->clear();
+}
+
+
+PTXregister* KernelGeneratorSimple::calcOffset(const cphVBArray* array)
+{
+    PTXregister* offsetReg = registerBank->newRegister(PTX_UINT32);
     cphvb_intp dim = array->ndim -1;
     cphvb_index dimbound = array->shape[dim];
     PTXregister* tmpReg = registerBank->newRegister(PTX_UINT32);
-    instructionList->add(PTX_MOD, tmpReg, threadID, 
-                         constantBuffer->newConstant(PTX_UINT32,dimbound));
+    instructionList->add(PTX_REM, tmpReg, threadID, 
+                         constantBuffer->newConstant(PTX_UINT,dimbound));
     instructionList->add(PTX_MUL, offsetReg, tmpReg,  
-                  constantBuffer->newConstant(PTX_UINT32,array->stride[dim]));
+                  constantBuffer->newConstant(PTX_UINT,array->stride[dim]));
     for (--dim; dim >= 0; --dim)
     {
         instructionList->add(PTX_DIV, tmpReg, threadID,  
-                             constantBuffer->newConstant(PTX_UINT32,dimbound));
+                             constantBuffer->newConstant(PTX_UINT,dimbound));
         instructionList->add(PTX_MAD, offsetReg, tmpReg,
-                    constantBuffer->newConstant(PTX_UINT32,array->stride[dim]),
+                    constantBuffer->newConstant(PTX_UINT,array->stride[dim]),
                              offsetReg);
         dimbound *= array->shape[dim];
     }
+    offsetMap->insert(array, offsetReg);
+    return offsetReg;
 }
 
-PTXregister* KernelGeneratorSimple::loadElement(cphVBArray array);
+PTXaddress KernelGeneratorSimple::calcAddress(const cphVBArray* array)
 {
     PTXregister* offsetReg = offsetMap->find(array);
     if (offsetReg == NULL)
     {
-        offsetReg = registerBank->newRegister(PTX_UINT32);
-        calcOffset(array,offsetReg);
-        offsetMap->insert(array, offsetReg);
+        offsetReg  = calcOffset(array);
     }
     PTXregister* addressReg;
-    int eSize = cphvb_type_size(array->type);
+    long int eSize = cphvb_type_size(array->type);
     switch (sizeof(void*))
     {
     case 4:
@@ -90,9 +110,16 @@ PTXregister* KernelGeneratorSimple::loadElement(cphVBArray array);
     default:
         assert (false);
     }
+    PTXconstant* off = constantBuffer->newConstant(PTX_UINT,eSize*array->start);
+    addressMap[array] = {addressReg, off};
+    return {addressReg, off};
+}
+
+PTXregister* KernelGeneratorSimple::loadElement(const cphVBArray* array)
+{
+    PTXaddress address = calcAddress(array);
     PTXregister* elementReg = registerBank->newRegister(array->type);
-    instructionList->add(PTX_LOAD, elementReg, addressReg,  
-                   constantBuffer->newConstant(PTX_UINT,eSize*array->start));
+    instructionList->add(PTX_LD_GLOBAL, elementReg, address.reg, address.off);
     return elementReg;
 }
 
@@ -100,23 +127,23 @@ PTXregister* KernelGeneratorSimple::loadElement(cphVBArray array);
 PTXregister* KernelGeneratorSimple::loadScalar(cphvb_type type,
                                                cphvb_constant value)
 {
-    PTXkernelParameter ptxParam = ptxKernel->addParameter(ptxType(type));
-    parameters.push_back(KernelParameter(type,value));
+    PTXkernelParameter* ptxParam = ptxKernel->addParameter(ptxType(type));
+    parameters->push_back(KernelParameter(type,value));
     PTXregister* scalarReg = registerBank->newRegister(type);
-    instructionList->add(PTX_LD_PARAM, scalarReg, ptxParam,)  
+    instructionList->add(PTX_LD_PARAM, scalarReg, ptxParam);  
     return scalarReg;
 }
 
-void KernelGeneratorSimple::addInstruction(cphVBInstruction* inst)
+void KernelGeneratorSimple::addInstruction(const cphVBInstruction* inst)
 {
     assert(inst->operand[0] != CPHVB_CONSTANT);
     int nops = cphvb_operands(inst->opcode);
-    PTXregister dest;
-    PTXregister src[CPHVB_MAX_NO_OPERANDS-1];
+    PTXregister* dest;
+    PTXregister* src[CPHVB_MAX_NO_OPERANDS-1];
 
     // get register for result
     ElementMap::iterator eiter = elementMap.find(inst->operand[0]);
-    if (deiter == elementMap.end())
+    if (eiter == elementMap.end())
     {
         dest = registerBank->newRegister(inst->operand[0]->type);
         elementMap[inst->operand[0]] = dest;
@@ -136,7 +163,7 @@ void KernelGeneratorSimple::addInstruction(cphVBInstruction* inst)
             if (eiter == elementMap.end())
             {
                 src[i-1] = loadElement(inst->operand[i]);
-                elementMap[src[i-1]] = operands[i];
+                elementMap[inst->operand[i]] = src[i-1];
             }
             else
             {
@@ -145,12 +172,30 @@ void KernelGeneratorSimple::addInstruction(cphVBInstruction* inst)
         }
         else
         {   //Constant
-            src[i-1] = loadScalar(inst->constant[i], 
-                                  inst->const_type[i]);
+            src[i-1] = loadScalar(inst->const_type[i], inst->constant[i]);
         }
     }
-    
     //generate PTX instruction
-    generatePTXinstruction(inst->opcode, dest, src);
-    
+    translator->translate(inst->opcode, dest, src);
+}
+
+void KernelGeneratorSimple::storeAll()
+{
+    StoreMap::iterator siter = storeMap.begin();
+    AddressMap::iterator aiter;
+    PTXaddress address;
+    for (;siter != storeMap.end(); ++siter)
+    {
+        aiter = addressMap.find(siter->second);
+        if (aiter != addressMap.end())
+        {
+            address = aiter->second;
+        }
+        else
+        {
+            address = calcAddress(siter->second);
+        }
+        instructionList->add(PTX_ST_GLOBAL, siter->first, 
+                             address.reg, address.off);
+    }
 }

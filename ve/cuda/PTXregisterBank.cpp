@@ -27,14 +27,18 @@
 #include "PTXregisterBank.hpp"
 
 PTXregisterBank::PTXregisterBank() :
+    next(0),
     tid_x(PTXspecialRegister(TID_X)),
     ntid_x(PTXspecialRegister(NTID_X)),
     ctaid_x(PTXspecialRegister(CTAID_X))
 {
-    reset();
+    for (int i = 0; i < PTX_TYPES; ++i)
+    {
+        instanceTable[i] = 0;
+    }
 }
 
-void PTXregisterBank::reset()
+void PTXregisterBank::clear()
 {
     next = 0;
     for (int i = 0; i < PTX_TYPES; ++i)

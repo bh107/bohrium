@@ -31,6 +31,12 @@ PTXkernel::PTXkernel(PTXversion version_,
     registerBank(registerBank_),
     instructionList(instructionList_) {}
 
+void PTXkernel::clear()
+{
+    parameterCount = 0;
+    //registerBank and instructioList is cleared form KernelGenerator
+}
+
 PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
 {
     parameterList[parameterCount].type = type;
