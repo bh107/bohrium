@@ -20,9 +20,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <cphvb.h>
-#include <mpi.h>
 
+#include "private.h"
 #include <cphvb_vem.h>
 #include <cphvb_vem_cluster.h>
 
@@ -30,8 +29,13 @@
 cphvb_support ve_support;
 
 //MPI info.
-int myrank;
-int worldsize;
+static int myrank;
+static int worldsize;
+static cphvb_intp blocksize;
+static cphvb_intp msg[CLUSTER_MSG_SIZE];
+//Cartesian dimension information - one for every dimension-order.
+static int *cart_dim_strides[CPHVB_MAXDIM];
+static int *cart_dim_sizes[CPHVB_MAXDIM];
 
 /* Initialize the VEM
  *
@@ -68,8 +72,91 @@ cphvb_error cphvb_vem_cluster_init(void)
  */
 cphvb_intp cphvb_vem_cluster_master_slave_split(void)
 {
+    int i,j;
     if(myrank == 0)
     {
+        int tmpsizes[CPHVB_MAXDIM*CPHVB_MAXDIM];
+        //Check for user-defined block size.
+        char *env = getenv("CLUSTER_BLOCKSIZE");
+        if(env == NULL)
+            blocksize = CLUSTER_BLOCKSIZE;
+        else
+            blocksize = atoi(env);
+
+        if(blocksize <= 0)
+        {
+            fprintf(stderr, "User-defined blocksize must be greater "
+                            "than zero\n");
+            MPI_Abort(MPI_COMM_WORLD, -1);
+        }
+        //Send block size to clients.
+        msg[0] = CLUSTER_INIT_BLOCKSIZE;
+        msg[1] = blocksize;
+        msg[2] = CLUSTER_MSG_END;
+//        msg2slaves(msg, 3 * sizeof(cphvb_intp));
+        #ifdef CLUSTER_DEBUG
+            printf("Rank 0 received msg: ");
+        #endif
+//        do_INIT_BLOCKSIZE(msg[1]);
+
+        //Check for user-defined process grid.
+        //The syntax used is: ndims:dim:size;
+        //E.g. DNPY_PROC_SIZE="2:2:4;3:3:2" which means that array
+        //with two dimensions should, at its second dimension, have
+        //a size of four etc.
+        memset(tmpsizes, 0, CPHVB_MAXDIM*CPHVB_MAXDIM*sizeof(int));
+        env = getenv("CLUSTER_PROC_GRID");
+        if(env != NULL)
+        {
+            char *res = strtok(env, ";");
+            while(res != NULL)
+            {
+                char *size_ptr;
+                int dsize = 0;
+                int dim = 0;
+                int ndims = strtol(res, &size_ptr, 10);
+                if(size_ptr != '\0')
+                    dim = strtol(size_ptr+1, &size_ptr, 10);
+                if(size_ptr != '\0')
+                    dsize = strtol(size_ptr+1, NULL, 10);
+                //Make sure the input is valid.
+                if(dsize <= 0 || dim <= 0 || dim > ndims ||
+                   ndims <= 0 || ndims > CPHVB_MAXDIM)
+                {
+                    fprintf(stderr, "DNPY_PROC_GRID, invalid syntax or"
+                                    " value at \"%s\"\n", res);
+                    MPI_Abort(MPI_COMM_WORLD, -1);
+                }
+                tmpsizes[(ndims-1)*CPHVB_MAXDIM+(dim-1)] = dsize;
+                //Go to next token.
+                res = strtok(NULL, ";");
+            }
+        }
+        //Initilization of cart_dim_strides.
+        for(i=0; i<CPHVB_MAXDIM; i++)
+        {
+            int ndims = i+1;
+            int t[CPHVB_MAXDIM];
+            int d = 0;
+            //Need to reverse the order to match MPI_Dims_create
+            for(j=i; j>=0; j--)
+                t[d++] = tmpsizes[i*CPHVB_MAXDIM+j];
+
+            //Find a balanced distributioin of processes per direction
+            //and use the restrictions specified by the user.
+            MPI_Dims_create(worldsize, ndims, t);
+            d = ndims;
+            for(j=0; j<ndims; j++)
+                msg[1+i*CPHVB_MAXDIM+j] = t[--d];
+        }
+        //Process grid to clients.
+        msg[0] = CLUSTER_INIT_PROC_GRID;
+        msg[CPHVB_MAXDIM*CPHVB_MAXDIM+1] = CLUSTER_MSG_END;
+//        msg2slaves(msg, (CPHVB_MAXDIM*CPHVB_MAXDIM+2)*sizeof(cphvb_intp));
+        #ifdef CLUSTER_DEBUG
+            printf("Rank 0 received msg: ");
+        #endif
+//        do_INIT_PROC_GRID(&msg[1]);
         return 0;
     }
     return 1;
