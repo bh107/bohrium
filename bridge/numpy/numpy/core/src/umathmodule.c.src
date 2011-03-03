@@ -23,7 +23,6 @@
 #include "abstract.h"
 #include "config.h"
 #include <cphvb.h>
-#include <cphvb_vem_node.h>
 
 #include "numpy/npy_math.h"
 

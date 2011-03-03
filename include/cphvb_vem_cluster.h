@@ -27,6 +27,13 @@
  */
 cphvb_error cphvb_vem_cluster_init(void);
 
+/* From this point on the master will continue with the pyton code
+ * and the slaves will stay in C.
+ * This only makes sense when combined with VEM_CLUSTER.
+ * @return Non-zero when this is a master.
+ */
+cphvb_intp cphvb_vem_cluster_master_slave_split(void);
+
 
 /* Shutdown the VEM, which include a instruction flush
  *

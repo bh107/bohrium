@@ -1,7 +1,7 @@
 ROOT=../..
 INCLUDE=include
 LIB=libcphvb_vem_cluster.so
-CC=gcc
+CC=mpicc
 WARNOPTS=-Wall
 CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
 LDFLAGS=-shared -Wl,-soname,$(LIB)

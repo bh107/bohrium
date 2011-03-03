@@ -21,23 +21,59 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cphvb.h>
+#include <mpi.h>
 
-#include <cphvb_vem_cluster.h>
-#include <cphvb_vem_node.h>
 #include <cphvb_vem.h>
+#include <cphvb_vem_cluster.h>
 
 //The VE info.
 cphvb_support ve_support;
 
+//MPI info.
+int myrank;
+int worldsize;
+
 /* Initialize the VEM
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
 cphvb_error cphvb_vem_cluster_init(void)
 {
+    int provided;
+
+    //We make use of MPI_Init_thread even though we only ask for
+    //a MPI_THREAD_SINGLE level thread-safety because MPICH2 only
+    //supports MPICH_ASYNC_PROGRESS when MPI_Init_thread is used.
+    //Note that when MPICH_ASYNC_PROGRESS is defined the thread-safety
+    //level will automatically be set to MPI_THREAD_MULTIPLE.
+    MPI_Init_thread(NULL, NULL, MPI_THREAD_SINGLE, &provided);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
+
+    printf("cphvb_vem_cluster_init -- rank %d of %d\n", myrank, worldsize);
+/*
+    //Allocate buffers.
+    workbuf = malloc(DNPY_WORK_BUFFER_MAXSIZE);
+    workbuf_nextfree = workbuf;
+    assert(workbuf != NULL);
+*/
     return CPHVB_SUCCESS;
 }
 
+/* From this point on the master will continue with the pyton code
+ * and the slaves will stay in C.
+ * This only makes sense when combined with VEM_CLUSTER.
+ * @return Zero when this is a master.
+ */
+cphvb_intp cphvb_vem_cluster_master_slave_split(void)
+{
+    if(myrank == 0)
+    {
+        return 0;
+    }
+    return 1;
+}
 
 /* Shutdown the VEM, which include a instruction flush
  *
@@ -45,6 +81,7 @@ cphvb_error cphvb_vem_cluster_init(void)
  */
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
+    MPI_Finalize();
     return CPHVB_SUCCESS;
 }
 
@@ -76,7 +113,7 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
     if(array == NULL)
         return CPHVB_OUT_OF_MEMORY;
 
-    array->owner          = CPHVB_BRIDGE;
+    array->owner          = CPHVB_PARENT;
     array->base           = base;
     array->type           = type;
     array->ndim           = ndim;
@@ -170,7 +207,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             //Check the owner of the array
-            if(base->owner != CPHVB_BRIDGE)
+            if(base->owner != CPHVB_PARENT)
             {
                 fprintf(stderr, "VEM could not perform release\n");
                 exit(CPHVB_INST_ERROR);
