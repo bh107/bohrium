@@ -29,14 +29,11 @@ extern "C" {
 /* plain C includes go here */
 #endif 
 
-    cphvb_error cphvb_ve_cuda_init_device(int deviceId)
-
-    cphvb_error cphvb_ve_cuda_init();
-
-    cphvb_error cphvb_ve_cuda_execute(cphvb_int32 instructionCount,
-                                      cphvb_instruction* instruktionList);
-
-    cphvb_error cphvb_ve_cuda_shutdown();
+cphvb_error cphvb_ve_cuda_init_device(int deviceId);
+cphvb_error cphvb_ve_cuda_init();
+cphvb_error cphvb_ve_cuda_execute(cphvb_int32 instructionCount,
+                                  cphvb_instruction* instruktionList);
+cphvb_error cphvb_ve_cuda_shutdown();
 
 #ifdef __cplusplus 
 }

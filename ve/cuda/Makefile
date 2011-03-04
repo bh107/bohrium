@@ -9,18 +9,17 @@ CFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE)
 CCFLAGS = $(CFLAGS) -std=gnu99
 CXXFLAGS = $(CFLAGS) -std=gnu++0x
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-
-MODULES=DataManager DeviceManager InstructionBatch InstructionScheduler \
-		MemoryManager
-IMPL=$(MODULES:=Simple)
-TYPES=PTXconstant PTXregister PTXoperand
-CONTAINERS=PTXconstantBuffer PTXregisterBank
-OBJECTS=$(IMPL:=.oo) $(TYPES:=.oo) $(CONTAINERS:=.oo) $(CFILES:=.o) 
+CFILES=PTXopcode PTXsreg PTXtype PTXversion  cphvb_ve_cuda
+CPPFILES=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
+		DeviceManager PTXconstantBuffer DeviceManagerSimple PTXconstant \
+		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
+		PTXinstructionList InstructionTranslator PTXkernel Kernel \
+		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
+		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
+		PTXspecialRegister
+OBJECTS=$(CPPFILES:=.oo) $(CFILES:=.o) 
 
 all: $(LIB)
-
-%Simple.o: %Simple.cpp %Simple.hpp %.hpp
-		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.o: %.c %.h
 		$(CC) -c $< -o $@ $(CCFLAGS)

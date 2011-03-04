@@ -25,6 +25,7 @@
 #include "cphVBInstruction.h"
 #include "InstructionScheduler.hpp"
 #include "InstructionBatchSimple.hpp"
+#include "KernelGenerator.hpp"
 #include "DataManager.hpp"
 
 typedef std::map<Threads, InstructionBatchSimple*> BatchTable;
@@ -33,9 +34,11 @@ class InstructionSchedulerSimple : public InstructionScheduler
 {
 private:
     DataManager* dataManager;
+    KernelGeneratorSimple* kernelGenerator;
     BatchTable batchTable;
 public:
-    InstructionSchedulerSimple(DataManager* dataManager);
+    InstructionSchedulerSimple(DataManager* dataManager,
+                               KernelGeneratorSimple* kernelGenerator);
     void scedule(cphVBInstruction* inst);
 };
 

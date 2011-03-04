@@ -21,8 +21,10 @@
 #include "InstructionSchedulerSimple.hpp"
 
 InstructionSchedulerSimple::InstructionSchedulerSimple(
-    DataManager* dataManager_) :
-    dataManager(dataManager_) {}
+    DataManager* dataManager_,
+    KernelGeneratorSimple* kernelGenerator_) :
+    dataManager(dataManager_),
+    kernelGenerator(kernelGenerator_){}
 
 void InstructionSchedulerSimple::scedule(cphVBInstruction* inst)
 {
@@ -48,7 +50,8 @@ void InstructionSchedulerSimple::scedule(cphVBInstruction* inst)
         else
         {
             InstructionBatchSimple* newBatch = 
-                new InstructionBatchSimple(dataManager,threads);
+                new InstructionBatchSimple(threads, dataManager, 
+                                           kernelGenerator);
             newBatch->add(inst);
             batchTable[threads] = newBatch;                
         }

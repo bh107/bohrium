@@ -19,7 +19,7 @@
 
 #include <cphvb.h>
 #include <cuda.h>
-#include "cphvb_vm_cuda.h"
+#include "cphvb_ve_cuda.h"
 
 
 cphvb_error cphvb_ve_cuda_device_count(int* count)
