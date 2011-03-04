@@ -23,6 +23,9 @@
 #include "cphvb_opcode.h"
 #include "cphvb_array.h"
 
+// Maximum number of instructions in a batch.
+#define CPHVB_MAX_NO_INST (1)
+
 // Operand id used to indicate that the operand is a scalar constant
 #define CPHVB_CONSTANT (NULL)
 

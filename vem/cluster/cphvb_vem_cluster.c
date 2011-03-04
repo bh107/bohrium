@@ -22,22 +22,20 @@
 #include <stdio.h>
 
 #include "private.h"
+#include "message.h"
+#include "handle.h"
 #include <cphvb_vem.h>
 #include <cphvb_vem_cluster.h>
+
+//Temporary memory used for the communication message.
+char message_tmp_mem[CLUSTER_MSG_SIZE];
+void *msg_mem = message_tmp_mem;
 
 //The VE info.
 cphvb_support ve_support;
 
-//MPI info.
-static int myrank;
-static int worldsize;
-static cphvb_intp blocksize;
-static cphvb_intp msg[CLUSTER_MSG_SIZE];
-//Cartesian dimension information - one for every dimension-order.
-static int *cart_dim_strides[CPHVB_MAXDIM];
-static int *cart_dim_sizes[CPHVB_MAXDIM];
-
-/* Initialize the VEM
+/* Initialize the VEM.
+ * This is a collective operation.
  *
  * @return Error codes (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
@@ -68,14 +66,16 @@ cphvb_error cphvb_vem_cluster_init(void)
 /* From this point on the master will continue with the pyton code
  * and the slaves will stay in C.
  * This only makes sense when combined with VEM_CLUSTER.
+ * And this is a collective operation.
  * @return Zero when this is a master.
  */
 cphvb_intp cphvb_vem_cluster_master_slave_split(void)
 {
-    int i,j;
     if(myrank == 0)
     {
+/*
         int tmpsizes[CPHVB_MAXDIM*CPHVB_MAXDIM];
+        cluster_msg msg;
         //Check for user-defined block size.
         char *env = getenv("CLUSTER_BLOCKSIZE");
         if(env == NULL)
@@ -90,7 +90,8 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
             MPI_Abort(MPI_COMM_WORLD, -1);
         }
         //Send block size to clients.
-        msg[0] = CLUSTER_INIT_BLOCKSIZE;
+
+        msg->type = CLUSTER_INIT_BLOCKSIZE;
         msg[1] = blocksize;
         msg[2] = CLUSTER_MSG_END;
 //        msg2slaves(msg, 3 * sizeof(cphvb_intp));
@@ -157,17 +158,49 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
             printf("Rank 0 received msg: ");
         #endif
 //        do_INIT_PROC_GRID(&msg[1]);
+*/
         return 0;
+    }
+
+    while(1)
+    {
+        cluster_msg *msg = msg_mem;
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+        if(msg->type == CLUSTER_SHUTDOWN)
+        {
+            #ifdef CLUSTER_DEBUG
+                printf("Rank %d SHUTDOWN\n", myrank);
+            #endif
+            break;
+        }
+        else
+        {
+            assert(msg->type == CLUSTER_INST);
+            assert(1==2);
+        }
     }
     return 1;
 }
 
-/* Shutdown the VEM, which include a instruction flush
+/* Shutdown the VEM, which include a instruction flush.
+ * This is a collective operation.
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
+    if(myrank == 0)
+    {
+        cluster_msg *msg = msg_mem;
+        #ifdef CLUSTER_DEBUG
+            printf("Rank %d SHUTDOWN\n", myrank);
+        #endif
+        msg->type = CLUSTER_SHUTDOWN;
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
+    }
     MPI_Finalize();
     return CPHVB_SUCCESS;
 }

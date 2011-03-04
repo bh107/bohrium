@@ -1,15 +1,31 @@
+/*
+ * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
+ *
+ * This file is part of cphVB.
+ *
+ * cphVB is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * cphVB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef CPHVB_VEM_CLUSTER_PRIVATE_H
 #define CPHVB_VEM_CLUSTER_PRIVATE_H
 #include <mpi.h>
 #include <cphvb.h>
 
-//#define CLUSTER_DEBUG
+#define CLUSTER_DEBUG
 //#define CLUSTER_STATISTICS
 //#define CLUSTER_TIME
 //#define CLUSTER_TIME_NODE 0
-
-//Maximum message size (in bytes)
-#define CLUSTER_MSG_SIZE (1024*4)
 
 //Maximum number of view block operations in the sub-view-block DAG.
 #define CLUSTER_MAX_VB_IN_SVB_DAG (1000)
@@ -30,14 +46,14 @@
 #define CLUSTER_WORK_BUFFER_MAXSIZE (536870912) //½GB
 
 //Operation types
-enum opt {CLUSTER_MSG_END, CLUSTER_INIT_BLOCKSIZE,
-          CLUSTER_INIT_PROC_GRID, CLUSTER_RECV, CLUSTER_SEND,
-          CLUSTER_BRECV, CLUSTER_BSEND, CLUSTER_APPLY, CLUSTER_COMM,
-          CLUSTER_NONCOMM, CLUSTER_PUT_ITEM, CLUSTER_GET_ITEM};
+enum opt {CLUSTER_RECV, CLUSTER_SEND, CLUSTER_BRECV, CLUSTER_BSEND,
+          CLUSTER_APPLY, CLUSTER_COMM, CLUSTER_NONCOMM,
+          CLUSTER_PUT_ITEM, CLUSTER_GET_ITEM};
 
 //dndnode prototype.
 typedef struct dndnode_struct dndnode;
 typedef struct dndarray_struct dndarray;
+
 
 //Type describing a distributed array.
 struct dndarray_struct
@@ -233,5 +249,16 @@ struct dndnode_struct
         cphvb_intp uid;
     #endif
 };
+
+
+/*===================================================================
+ * Global variables
+ */
+int myrank;
+int worldsize;
+cphvb_intp blocksize;
+//Cartesian dimension information - one for every dimension-order.
+int *cart_dim_strides[CPHVB_MAXDIM];
+int *cart_dim_sizes[CPHVB_MAXDIM];
 
 #endif
