@@ -5,8 +5,8 @@ CC=mpicc
 WARNOPTS=-Wall
 CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb_vem_cluster.c
-HEADER=private.h
+SRC=cphvb_vem_cluster.c handle.c
+HEADER=private.h handle.h message.h
 OBJ=$(SRC:.c=.o)
 
 
