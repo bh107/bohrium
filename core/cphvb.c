@@ -116,7 +116,7 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
     for (--dim; dim >= 0 ; --dim)
     {
         offset += (element / dimbound) * stride[dim];
-        dimbound *= shape[dim];
+        dimbound *= stride[dim]?shape[dim]:1;
     }
     return offset;
 }
