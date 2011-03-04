@@ -26,17 +26,19 @@
 #include "PTXregisterBank.hpp"
 #include "PTXinstructionList.hpp"
 
+typedef std::vector<PTXtype> Signature;
+
 class PTXkernel
 {
 private:
     PTXversion version;
     CUDAtarget target;
-    char name[128];
     PTXkernelParameter parameterList[128];
     int parameterCount;
     PTXregisterBank* registerBank;
     PTXinstructionList* instructionList;
 public:
+    char name[128];
     PTXkernel(PTXversion version,
               CUDAtarget target,
               PTXregisterBank* registerBank,
@@ -44,6 +46,7 @@ public:
     void clear();
     PTXkernelParameter* addParameter(PTXtype type);
     int snprint(char* buf, int size);
+    Signature getSignature();
 };
 
 #endif

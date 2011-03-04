@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <vector>
 #include <cassert>
 #include <cuda.h>
@@ -29,12 +30,63 @@
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
 
+Kernel::Kernel() {}
+
 Kernel::Kernel(CUmodule module_,
                CUfunction entry_,
                Signature signature_) :
     module(module_),
     entry(entry_),
     signature(signature_) {}
+
+#define JIT_LOG_BUFFER_SIZE (4096)
+#define KERNEL_SOURCE_BUFFER_SIZE (16384)
+char jitInfoLogBuffer[JIT_LOG_BUFFER_SIZE];
+char jitErrorLogBuffer[JIT_LOG_BUFFER_SIZE];
+char ptxKernelSource[KERNEL_SOURCE_BUFFER_SIZE];
+
+Kernel::Kernel(PTXkernel* ptxKernel)
+{
+    ptxKernel->snprint(ptxKernelSource, KERNEL_SOURCE_BUFFER_SIZE);
+
+    const unsigned int options = 4;
+    CUjit_option jitOptions[options];
+    void* jitValues[options];
+
+	jitOptions[0] = CU_JIT_INFO_LOG_BUFFER;
+	jitValues[0] = jitInfoLogBuffer;
+	jitOptions[1] = CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+	jitValues[1] = (void *)JIT_LOG_BUFFER_SIZE;
+	jitOptions[2] = CU_JIT_ERROR_LOG_BUFFER;
+	jitValues[2] = jitErrorLogBuffer;
+	jitOptions[3] = CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+	jitValues[3] = (void *)JIT_LOG_BUFFER_SIZE;
+
+    CUresult error = cuModuleLoadDataEx(&module, ptxKernelSource, 
+                                        options, jitOptions, jitValues);
+    std::cerr << "Compilation failed." << std::endl;
+    std::cerr << "--- INFO BEGIN ---" << std::endl;
+    std::cerr << jitInfoLogBuffer << std::endl;
+    std::cerr << "---- INFO END ----" << std::endl;		
+    std::cerr << "--- ERROR BEGIN ---" << std::endl;
+    std::cerr << jitErrorLogBuffer << std::endl;
+    std::cerr << "---- ERRORS END ----" << std::endl;		
+    std::cerr << "---- CODE BEGIN ----" << std::endl;
+    std::cerr << ptxKernelSource << std::endl;
+    std::cerr << "----- CODE END -----" << std::endl;	
+
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not compile kermel");
+    }
+    
+    error = cuModuleGetFunction(&entry, module, ptxKernel->name);
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not get function name.");
+    }
+    signature = ptxKernel->getSignature();
+}
 
 
 void Kernel::setParameters(ParameterList parameters)
@@ -73,12 +125,12 @@ void Kernel::setBlockShape(int x, int y, int z)
     }
 }
 
-void Kernel::launchGrid(KernelShape shape)
+void Kernel::launchGrid(KernelShape* shape)
 {
-    setBlockShape(shape.threadsPerBlockX, 
-                  shape.threadsPerBlockY, shape.threadsPerBlockY);
-    CUresult error = cuLaunchGrid(entry, shape.blocksPerGridX, 
-                                         shape.blocksPerGridY);
+    setBlockShape(shape->threadsPerBlockX, 
+                  shape->threadsPerBlockY, shape->threadsPerBlockY);
+    CUresult error = cuLaunchGrid(entry, shape->blocksPerGridX, 
+                                         shape->blocksPerGridY);
     if (error !=  CUDA_SUCCESS)
     {
         throw std::runtime_error("Could not set kernel grid.");

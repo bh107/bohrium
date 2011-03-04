@@ -23,8 +23,13 @@
 KernelSimple::KernelSimple(CUmodule module_, 
                            CUfunction entry_, 
                            Signature signature_,
-                           KernelShapeSimple shape_) :
+                           KernelShapeSimple* shape_) :
     Kernel(module_, entry_, signature_),
+    shape(shape_) {}
+
+KernelSimple::KernelSimple(PTXkernel* ptxKernel,
+                           KernelShapeSimple* shape_) :
+    Kernel(ptxKernel),
     shape(shape_) {}
 
 void KernelSimple::execute(ParameterList parameters)

@@ -32,7 +32,9 @@ const int _ptxOperands[] =
     [PTX_ST_GLOBAL] = 3,
     [PTX_LD_GLOBAL] = 3,
     [PTX_LD_PARAM] = 2,
-    [PTX_MOV] = 2
+    [PTX_MOV] = 2,
+    [PTX_SETP_GE] = 3,
+    [PTX_EXIT] = 0
 };
 
 const int ptxOperands(PTXopcode opcode)

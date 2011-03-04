@@ -17,53 +17,42 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <map>
 #include <cphvb.h>
-#include "cphVBInstruction.h"
-#include "InstructionScheduler.hpp"
-#include "InstructionBatch.hpp"
-#include "DataManager.hpp"
-#include "Shape.hpp"
+#include "InstructionSchedulerSimple.hpp"
 
-typedef std::map<Shape, InstructionBatch*> BatchTable;
+InstructionSchedulerSimple::InstructionSchedulerSimple(
+    DataManager* dataManager_) :
+    dataManager(dataManager_) {}
 
-class InstructionSchedulerSimple : public InstructionScheduler
+void InstructionSchedulerSimple::scedule(cphVBInstruction* inst)
 {
-private:
-    DataManager* dataManager;
-    BatchTable batchTable;
-public:
-    InstructionSchedulerSimple(DataManager* dataManager_) :
-        dataManager(dataManager_) {}
-
-    void scedule(cphVBInstruction* inst)
+    switch (inst->opcode)
     {
-        switch (inst->opcode)
+    case CPHVB_RELEASE:
+        dataManager->release(inst->operand[0]);
+        break;
+    case CPHVB_SYNC:
+        dataManager->sync(inst->operand[0]);
+        break;
+    case CPHVB_DISCARD:
+        dataManager->discard(inst->operand[0]);
+        break;
+    default:
+        Threads threads = cphvb_nelements(inst->operand[0]->ndim, 
+                                          inst->operand[0]->shape);
+        BatchTable::iterator biter = batchTable.find(threads);
+        if (biter != batchTable.end())
         {
-        case CPHVB_RELEASE:
-            dataManager->release(inst->operand[0]);
-            break;
-        case CPHVB_SYNC:
-            dataManager->sync(inst->operand[0]);
-            break;
-        case CPHVB_DISCARD:
-            dataManager->discard(inst->operand[0]);
-            break;
-        default:
-            Shape shape = cphvb_nelements(inst->operand[0]->ndim, 
-                inst->operand[0]->shape);
-            BatchTable::iterator biter = batchTable.find(shape);
-            if (biter != batchTable.end())
-            {
-                biter->second->add(inst);
-            }
-            else
-            {
-                InstructionBatch* newBatch = new InstructionBatchSimple(dataManager,shape);
-                newBatch->add(inst);
-                batchTable[shape] = newBatch;                
-            }
+            biter->second->add(inst);
+        }
+        else
+        {
+            InstructionBatchSimple* newBatch = 
+                new InstructionBatchSimple(dataManager,threads);
+            newBatch->add(inst);
+            batchTable[threads] = newBatch;                
         }
     }
-};
+}
+
 

@@ -17,8 +17,8 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNELSIMPLE_HPP
-#define __KERNELSIMPLE_HPP
+#ifndef __KERNELGENERATORSIMPLE_HPP
+#define __KERNELGENERATORSIMPLE_HPP
 
 #include <map>
 #include "PTXregister.hpp"
@@ -32,6 +32,7 @@
 #include "KernelParameter.hpp"
 #include "InstructionTranslator.hpp"
 #include "cphVBInstruction.h"
+#include "InstructionBatchSimple.hpp"
 
 struct PTXaddress
 {
@@ -43,9 +44,12 @@ typedef std::map<const cphVBArray*, PTXregister*> ElementMap;
 typedef std::map<const cphVBArray*, PTXaddress> AddressMap;
 typedef std::map<PTXregister*, const cphVBArray*> StoreMap;
 
+class InstructionBatchSimple;
+
 class KernelGeneratorSimple
 {
 private:
+    int kernelID;
     ElementMap elementMap;
     StoreMap storeMap;
     AddressMap addressMap;
@@ -56,8 +60,8 @@ private:
     InstructionTranslator* translator;
     PTXkernel* ptxKernel;
     PTXregister* threadID;
-    ParameterList* parameters;
-    void init();
+    ParameterList parameters;
+    void init(Threads threads);
     void clear();
     void addInstruction(const cphVBInstruction* inst);
     PTXregister* calcOffset(const cphVBArray* array);
@@ -66,9 +70,10 @@ private:
     PTXregister* loadScalar(cphvb_type type,
                             cphvb_constant value);
     void storeAll();
+    
 public:
     KernelGeneratorSimple();
-    
+    void run(InstructionBatchSimple* batch);
 };
 
 #endif

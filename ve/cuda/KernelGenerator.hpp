@@ -17,23 +17,12 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DATAMANAGER_HPP
-#define __DATAMANAGER_HPP
-
-#include "cphVBArray.h"
-#include "InstructionBatch.hpp"
-
-class DataManager
+#ifndef __KERNELGENERATOR_HPP
+#define __KERNELGENERATOR_HPP
+class KernelGenerator
 {
 public:
-    virtual void lock(cphVBArray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
-    virtual void release(cphVBArray* array) = 0;
-    virtual void sync(cphVBArray* array) = 0;
-    virtual void discard(cphVBArray* baseArray) = 0;
-    virtual void flushAll() = 0;
+    void run(InstructionBatch* batch);
 };
 
 #endif
-

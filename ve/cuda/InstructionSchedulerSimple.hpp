@@ -17,23 +17,26 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DATAMANAGER_HPP
-#define __DATAMANAGER_HPP
 
-#include "cphVBArray.h"
-#include "InstructionBatch.hpp"
+#ifndef __INSTRUCTIONSCHEDULERSIMPLE_HPP
+#define __INSTRUCTIONSCHEDULERSIMPLE_HPP
 
-class DataManager
+#include <map>
+#include "cphVBInstruction.h"
+#include "InstructionScheduler.hpp"
+#include "InstructionBatchSimple.hpp"
+#include "DataManager.hpp"
+
+typedef std::map<Threads, InstructionBatchSimple*> BatchTable;
+
+class InstructionSchedulerSimple : public InstructionScheduler
 {
+private:
+    DataManager* dataManager;
+    BatchTable batchTable;
 public:
-    virtual void lock(cphVBArray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
-    virtual void release(cphVBArray* array) = 0;
-    virtual void sync(cphVBArray* array) = 0;
-    virtual void discard(cphVBArray* baseArray) = 0;
-    virtual void flushAll() = 0;
+    InstructionSchedulerSimple(DataManager* dataManager);
+    void scedule(cphVBInstruction* inst);
 };
 
 #endif
-

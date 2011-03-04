@@ -73,4 +73,12 @@ int PTXkernel::snprint(char* buf, int size)
     return res + bp;
 }
 
-
+Signature PTXkernel::getSignature()
+{
+    Signature sig;
+    for (int i = 0; i < parameterCount; ++i)
+    {
+        sig.push_back(parameterList[i].type);
+    }
+    return sig;
+}

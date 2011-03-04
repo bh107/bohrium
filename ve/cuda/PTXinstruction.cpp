@@ -66,12 +66,49 @@ int PTXinstruction::snprintAritOp(char* buf, int size)
     return res + bp;
 }
 
+int PTXinstruction::snprintLogicOp(char* buf, int size)
+{ 
+    int res = 0;
+    int bp;
+    PTXregister* srcReg;
+    PTXtype type = PTX_INT32;
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
+    {
+        srcReg = dynamic_cast<PTXregister*>(src[i]);
+        if (srcReg != NULL)
+        {
+            type = srcReg->type;
+            break;
+        }
+    }
+    switch (opcode)
+    {    
+    case PTX_SETP_GE:
+        bp = std::snprintf(buf, size, "setp.ge.%s\t", ptxTypeStr(type));
+        break;
+    default:
+        assert (false);
+    }
+    res += bp; buf += bp; size -= bp;
+    dest->snprint(buf,size);
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
+    {
+        bp = src[i]->snprint(", ",buf,size); 
+        res += bp; buf += bp; size -= bp;
+    }
+    bp = std::snprintf(buf, size,";\n");
+    return res + bp;    
+}
+
+
 int PTXinstruction::snprintOp(char* buf, int size)
 {
     int res = 0;
     int bp;
     switch (opcode)
     {
+    case PTX_EXIT:
+        return std::snprintf(buf, size, "exit;\n");
     case PTX_BRA:
         return std::snprintf(buf, size, "bra\t%s;\n", label);
     case PTX_LD_GLOBAL:
@@ -101,6 +138,8 @@ int PTXinstruction::snprintOp(char* buf, int size)
         res += bp; buf += bp; size -= bp;
         bp = dest->snprint(", ",buf,size,";\n");
         return res + bp;
+    case PTX_SETP_GE:
+        return snprintLogicOp(buf, size);
     default:
         return snprintAritOp(buf, size);
     }

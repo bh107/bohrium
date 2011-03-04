@@ -17,42 +17,25 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <queue>
 #include <cphvb.h>
-#include "InstructionBatch.hpp"
-#include "DataManager.hpp"
-#include "Shape.hpp"
+#include "InstructionBatchSimple.hpp"
 
-struct resInstruction
+InstructionBatchSimple::InstructionBatchSimple(Threads threads_, 
+                                   DataManager* dataManager_,
+                                   KernelGeneratorSimple* kernelGenerator_) :
+    threads(threads_),
+    dataManager(dataManager_),
+    kernelGenerator(kernelGenerator_) {}
+
+
+void InstructionBatchSimple::add(cphVBInstruction* inst)
 {
-    CUdeviceptr resPtr;
-    cphVBInstruction* inst;
-};
+    int nops = cphvb_operands(inst->opcode);
+    dataManager->lock(inst->operand, nops, this);
+    batch.push_back(inst);
+}
 
-class InstructionBatchSimple : public InstructionBatch 
+void InstructionBatchSimple::execute()
 {
-private:
-    DataManager* dataManager;
-    Shape shape;
-    std::queue<resInstruction> batch;
-
-public:
-    InstructionBatchSimple(DataManager* dataManager_,
-                           Shape shape_) :
-        dataManager(dataManager_),
-        shape(shape_) {}
-
-    void add(cphVBInstruction* inst)
-    {
-        int nops = cphvb_operands(inst->opcode);
-        CUdeviceptr resPtr = dataManager->lock(inst->operand, nops, this);
-        batch.push((resInstruction){resPtr, inst});
-    }
-
-    void execute()
-    {
-        //TODO
-    }
-
-};
-
+    kernelGenerator->run(this);
+}

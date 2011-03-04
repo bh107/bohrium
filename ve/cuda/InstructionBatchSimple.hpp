@@ -17,23 +17,32 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DATAMANAGER_HPP
-#define __DATAMANAGER_HPP
+#ifndef __INSTRUCTIONBATCHSIMPLE_HPP
+#define __INSTRUCTIONBATCHSIMPLE_HPP
 
-#include "cphVBArray.h"
+typedef long int Threads;
+
+#include <vector>
 #include "InstructionBatch.hpp"
+#include "KernelGeneratorSimple.hpp"
+#include "DataManager.hpp"
 
-class DataManager
+class KernelGeneratorSimple;
+
+class InstructionBatchSimple : public InstructionBatch 
 {
+    friend class KernelGeneratorSimple;
+private:
+    Threads threads;
+    DataManager* dataManager;
+    KernelGeneratorSimple* kernelGenerator;
+    std::vector<cphVBInstruction*> batch;
 public:
-    virtual void lock(cphVBArray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
-    virtual void release(cphVBArray* array) = 0;
-    virtual void sync(cphVBArray* array) = 0;
-    virtual void discard(cphVBArray* baseArray) = 0;
-    virtual void flushAll() = 0;
+    InstructionBatchSimple(Threads threads,
+                           DataManager* dataManager,
+                           KernelGeneratorSimple* kernelGenerator);
+    void add(cphVBInstruction* inst);
+    void execute();
 };
 
 #endif
-

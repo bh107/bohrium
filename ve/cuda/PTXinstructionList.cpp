@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include "PTXinstructionList.hpp"
 
 PTXinstructionList::PTXinstructionList() :
@@ -80,6 +81,20 @@ void PTXinstructionList::add(PTXopcode opcode,
                              PTXoperand* src3)
 {
     add(NULL,false,NULL,opcode,dest,(PTXoperand*[]){src1,src2,src3});
+}
+void PTXinstructionList::add(PTXregister* guard,
+                             PTXopcode opcode,
+                             char* label)
+{
+    assert(opcode == PTX_BRA);
+    add(label,true,guard,opcode,NULL,NULL);
+}
+
+void PTXinstructionList::add(PTXregister* guard,
+                             PTXopcode opcode)
+{
+    assert(opcode == PTX_BRA);
+    add(NULL,true,guard,opcode,NULL,NULL);
 }
 
 int PTXinstructionList::snprint(char* buf, 

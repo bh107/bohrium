@@ -37,6 +37,7 @@ private:
     PTXregister* dest;
     PTXoperand* src[PTX_MAX_OPERANDS-1];
     int snprintAritOp(char* buf, int size);
+    int snprintLogicOp(char* buf, int size);
     int snprintOp(char* buf, int size);
 public:
     int snprint(char* buf, int size);

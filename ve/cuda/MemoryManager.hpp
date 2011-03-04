@@ -36,7 +36,5 @@ public:
     virtual void memset(cphVBArray* baseArray) = 0;
 };
 
-class MemoryManagerSimple;
-
 #endif
 

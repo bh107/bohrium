@@ -58,6 +58,11 @@ public:
              PTXoperand* src1,
              PTXoperand* src2,             
              PTXoperand* src3);
+    void add(PTXregister* guard,
+             PTXopcode opcode,
+             char* label);
+    void add(PTXregister* guard,
+             PTXopcode opcode);
     int snprint(char* buf, int size);
 };
 

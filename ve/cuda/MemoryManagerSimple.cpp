@@ -18,128 +18,125 @@
  */
 
 
-#include <cuda.h>
 #include <stdexcept>
 #include <cassert>
 #include <cstdlib>
+#include <cuda.h>
 #include <cphvb.h>
-#include "MemoryManager.hpp"
+#include "MemoryManagerSimple.hpp"
 
-class MemoryManagerSimple : public MemoryManager
+size_t MemoryManagerSimple::dataSize(cphVBArray* baseArray)
 {
-private:
-    size_t dataSize(cphVBArray* baseArray)
-    {
-        size_t size = cphvb_nelements(baseArray->ndim, baseArray->shape);
-        size *= cphvb_type_size(baseArray->type);
-        return size;
-    }
+    size_t size = cphvb_nelements(baseArray->ndim, baseArray->shape);
+    size *= cphvb_type_size(baseArray->type);
+    return size;
+}
 
-public:
-    MemoryManagerSimple() {}
+MemoryManagerSimple::MemoryManagerSimple() {}
     
-    CUdeviceptr deviceAlloc(cphVBArray* baseArray)
+CUdeviceptr MemoryManagerSimple::deviceAlloc(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    assert(baseArray->ndim > 0);
+    CUdeviceptr cudaPtr;
+    size_t size = dataSize(baseArray);
+    CUresult error = cuMemAlloc(&cudaPtr, size);
+    if (error !=  CUDA_SUCCESS)
     {
-        assert(baseArray->base == NULL);
-        assert(baseArray->ndim > 0);
-        CUdeviceptr cudaPtr;
-        size_t size = dataSize(baseArray);
-        CUresult error = cuMemAlloc(&cudaPtr, size);
-        if (error !=  CUDA_SUCCESS)
-        {
-            throw std::runtime_error("Could not allocate memory on device");
-        }
-        return cudaPtr;
+        throw std::runtime_error("Could not allocate memory on device");
     }
+    return cudaPtr;
+}
 
-    cphvb_data_ptr hostAlloc(cphVBArray* baseArray)
+cphvb_data_ptr MemoryManagerSimple::hostAlloc(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    size_t size = dataSize(baseArray);
+    cphvb_data_ptr res = (cphvb_data_ptr)std::malloc(size);
+    if (res == NULL)
     {
-        assert(baseArray->base == NULL);
-        size_t size = dataSize(baseArray);
-        cphvb_data_ptr res = (cphvb_data_ptr)std::malloc(size);
-        if (res == NULL)
-        {
-            throw std::runtime_error("Could not allocate memory on host");
-        }
-        return res;
+        throw std::runtime_error("Could not allocate memory on host");
     }
+    return res;
+}
 
-    void copyToHost(cphVBArray* baseArray)
+void MemoryManagerSimple::copyToHost(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    assert(baseArray->cudaPtr != 0);
+    assert(baseArray->data != NULL);
+    size_t size = dataSize(baseArray);
+    CUresult error = cuMemcpyDtoH(baseArray->data, baseArray->cudaPtr, 
+                                  size);
+    if (error !=  CUDA_SUCCESS)
     {
-        assert(baseArray->base == NULL);
-        assert(baseArray->cudaPtr != 0);
-        assert(baseArray->data != NULL);
-        size_t size = dataSize(baseArray);
-        CUresult error = cuMemcpyDtoH(baseArray->data, baseArray->cudaPtr, 
-                                      size);
-        if (error !=  CUDA_SUCCESS)
-        {
-            throw std::runtime_error("Could not copy to Host.");
-        }
-        return;
+        throw std::runtime_error("Could not copy to Host.");
     }
+    return;
+}
 
-    void copyToDevice(cphVBArray* baseArray)
+void MemoryManagerSimple::copyToDevice(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    assert(baseArray->data != NULL);
+    assert(baseArray->cudaPtr != 0);
+    size_t size = dataSize(baseArray);
+    CUresult error = cuMemcpyHtoD(baseArray->cudaPtr, baseArray->data,
+                                  size);
+    if (error !=  CUDA_SUCCESS)
     {
-        assert(baseArray->base == NULL);
-        assert(baseArray->data != NULL);
-        assert(baseArray->cudaPtr != 0);
-        size_t size = dataSize(baseArray);
-        CUresult error = cuMemcpyHtoD(baseArray->cudaPtr, baseArray->data,
-                                      size);
-        if (error !=  CUDA_SUCCESS)
-        {
-            throw std::runtime_error("Could not copy to Device.");
-        }
+        throw std::runtime_error("Could not copy to Device.");
     }
+}
+
+void MemoryManagerSimple::free(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    CUresult error = cuMemFree(baseArray->cudaPtr);
+    if (error !=  CUDA_SUCCESS)
+    {
+        throw std::runtime_error("Could not free device memory.");
+    }
+}
     
-    void free(cphVBArray* baseArray)
+void MemoryManagerSimple::deviceCopy(CUdeviceptr dest,
+                                     cphVBArray* src)
+{
+    assert(src->base == NULL);
+    assert(src->cudaPtr != 0);
+    size_t size = dataSize(src);
+    CUresult error = cuMemcpyDtoD(dest, src->cudaPtr, size);
+    if (error !=  CUDA_SUCCESS)
     {
-        assert(baseArray->base == NULL);
-        CUresult error = cuMemFree(baseArray->cudaPtr);
-        if (error !=  CUDA_SUCCESS)
-        {
-            throw std::runtime_error("Could not free device memory.");
-        }
+        throw std::runtime_error("Could not copy at Device.");
     }
-    void deviceCopy(CUdeviceptr dest,
-                    cphVBArray* src)
+}
+
+void MemoryManagerSimple::memset(cphVBArray* baseArray)
+{
+    assert(baseArray->base == NULL);
+    assert(baseArray->cudaPtr != 0);
+    size_t nelements = cphvb_nelements(baseArray->ndim, baseArray->shape);
+    switch (cphvb_type_size(baseArray->type))
     {
-        assert(src->base == NULL);
-        assert(src->cudaPtr != 0);
-        size_t size = dataSize(src);
-        CUresult error = cuMemcpyDtoD(dest, src->cudaPtr, size);
-        if (error !=  CUDA_SUCCESS)
-        {
-            throw std::runtime_error("Could not copy at Device.");
-        }
+    case 1:
+        cuMemsetD8(baseArray->cudaPtr,
+                   *(unsigned char*) &(baseArray->init_value),
+                   nelements);            
+        break;
+    case 2:
+        cuMemsetD16(baseArray->cudaPtr,
+                    *(unsigned short*) &(baseArray->init_value),
+                    nelements);
+        break;
+    case 4:
+        cuMemsetD32(baseArray->cudaPtr,
+                    *(unsigned int*) &(baseArray->init_value),
+                    nelements);
+        break;
+    case 8:
+    default:
+        throw std::runtime_error(
+            "Can not initialize array with data of that size.");
     }
-    void memset(cphVBArray* baseArray)
-    {
-        assert(baseArray->base == NULL);
-        assert(baseArray->cudaPtr != 0);
-        size_t nelements = cphvb_nelements(baseArray->ndim, baseArray->shape);
-        switch (cphvb_type_size(baseArray->type))
-        {
-        case 1:
-            cuMemsetD8(baseArray->cudaPtr,
-                       *(unsigned char*) &(baseArray->initValue),
-                       nelements);            
-            break;
-        case 2:
-            cuMemsetD16(baseArray->cudaPtr,
-                        *(unsigned short*) &(baseArray->initValue),
-                        nelements);
-            break;
-        case 4:
-            cuMemsetD32(baseArray->cudaPtr,
-                        *(unsigned int*) &(baseArray->initValue),
-                        nelements);
-            break;
-        case 8:
-        default:
-            throw std::runtime_error(
-                "Can not initialize array with data of that size.");
-        }
-    }    
-};
+}    

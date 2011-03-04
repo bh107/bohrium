@@ -39,7 +39,9 @@ typedef enum
     PTX_ST_GLOBAL,
     PTX_LD_GLOBAL,
     PTX_LD_PARAM,
-    PTX_MOV
+    PTX_MOV,
+    PTX_SETP_GE,
+    PTX_EXIT
 } PTXopcode;
 
 #define PTX_MAX_OPERANDS (4)

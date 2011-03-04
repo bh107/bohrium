@@ -28,12 +28,14 @@
 class KernelSimple : public Kernel
 {
 private:
-    KernelShapeSimple shape;
+    KernelShapeSimple* shape;
 public:
     KernelSimple(CUmodule module, 
                  CUfunction entry, 
                  Signature signature,
-                 KernelShapeSimple shape);
+                 KernelShapeSimple* shape);
+    KernelSimple(PTXkernel* ptxKernel,
+                 KernelShapeSimple* shape);
     void execute(ParameterList parameters);
 };
 
