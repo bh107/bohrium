@@ -22,11 +22,11 @@
 
 InstructionSchedulerSimple::InstructionSchedulerSimple(
     DataManager* dataManager_,
-    KernelGeneratorSimple* kernelGenerator_) :
+    KernelGenerator* kernelGenerator_) :
     dataManager(dataManager_),
     kernelGenerator(kernelGenerator_){}
 
-void InstructionSchedulerSimple::scedule(cphVBInstruction* inst)
+void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 {
     switch (inst->opcode)
     {
@@ -55,6 +55,24 @@ void InstructionSchedulerSimple::scedule(cphVBInstruction* inst)
             newBatch->add(inst);
             batchTable[threads] = newBatch;                
         }
+    }
+}
+
+void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
+                                         cphVBInstruction* instructionList)
+{
+    for (cphvb_intp i = 0; i < instructionCount; ++i)
+    {
+        instructionList++;
+    }
+}
+
+void InstructionSchedulerSimple::flush()
+{
+    BatchTable::iterator iter = batchTable.begin();
+    for (; iter !=  batchTable.end(); ++iter)
+    {
+        iter->second->execute();
     }
 }
 

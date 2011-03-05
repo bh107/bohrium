@@ -19,10 +19,20 @@
 
 #ifndef __KERNELGENERATOR_HPP
 #define __KERNELGENERATOR_HPP
+
+#include <vector>
+#include "cphVBInstruction.h"
+
+typedef long int Threads;
+typedef std::vector<cphVBInstruction*>::iterator InstructionIterator;
+
+
 class KernelGenerator
 {
 public:
-    void run(InstructionBatch* batch);
+    virtual void run(Threads threads,
+                     InstructionIterator first,
+                     InstructionIterator last) = 0;
 };
 
 #endif

@@ -26,7 +26,10 @@
 class InstructionScheduler
 {
 public:
-    virtual void scedule(cphVBInstruction* inst) = 0;
+    virtual void schedule(cphVBInstruction* inst) = 0;
+    virtual void schedule(cphvb_intp instructionCount,
+                          cphVBInstruction* instructionList) = 0;
+    virtual void flush() = 0;
 };
 
 #endif

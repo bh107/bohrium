@@ -21,8 +21,8 @@
 #include "InstructionBatchSimple.hpp"
 
 InstructionBatchSimple::InstructionBatchSimple(Threads threads_, 
-                                   DataManager* dataManager_,
-                                   KernelGeneratorSimple* kernelGenerator_) :
+                                        DataManager* dataManager_,
+                                        KernelGenerator* kernelGenerator_) :
     threads(threads_),
     dataManager(dataManager_),
     kernelGenerator(kernelGenerator_) {}
@@ -37,5 +37,6 @@ void InstructionBatchSimple::add(cphVBInstruction* inst)
 
 void InstructionBatchSimple::execute()
 {
-    kernelGenerator->run(this);
+    kernelGenerator->run(threads, batch.begin(), batch.end());
+    batch.clear();
 }

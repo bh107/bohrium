@@ -21,6 +21,7 @@
 #define __KERNELGENERATORSIMPLE_HPP
 
 #include <map>
+#include "KernelGenerator.hpp"
 #include "PTXregister.hpp"
 #include "PTXconstant.hpp"
 #include "PTXregisterBank.hpp"
@@ -32,7 +33,6 @@
 #include "KernelParameter.hpp"
 #include "InstructionTranslator.hpp"
 #include "cphVBInstruction.h"
-#include "InstructionBatchSimple.hpp"
 
 struct PTXaddress
 {
@@ -46,7 +46,7 @@ typedef std::map<PTXregister*, const cphVBArray*> StoreMap;
 
 class InstructionBatchSimple;
 
-class KernelGeneratorSimple
+class KernelGeneratorSimple : public KernelGenerator
 {
 private:
     int kernelID;
@@ -73,7 +73,9 @@ private:
     
 public:
     KernelGeneratorSimple();
-    void run(InstructionBatchSimple* batch);
+    void run(Threads threads,
+             InstructionIterator first,
+             InstructionIterator last);
 };
 
 #endif

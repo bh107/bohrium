@@ -17,58 +17,59 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
 #include <cphvb.h>
 #include <cuda.h>
 #include "cphvb_ve_cuda.h"
+#include "PTXopcode.h"
+#include "Configuration.hpp"
 
+InstructionScheduler* instructionScheduler;
+DeviceManager* deviceManager;
 
-cphvb_error cphvb_ve_cuda_device_count(int* count)
+cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
+                                 cphvb_opcode opcode_list[],
+                                 cphvb_intp *datatype_count,
+                                 cphvb_type datatype_list[])
 {
-    try {
-        if (deviceManager == NULL)
+    *opcode_count = 0;
+    for (cphvb_opcode oc = 0; oc < CPHVB_NO_OPCODES; ++oc)
+    {
+        if (ptxOpcodeMap(oc) >= 0)
         {
-            deviceManager = new DeviceManagerSimple();
+            opcode_list[*opcode_count] = oc;
+            ++*opcode_count;
         }
-        *count = deviceManager->deviceCount();
+    }
+    
+    datatype_list[0] = CPHVB_FLOAT32;
+    *datatype_count = 1;
+
+    try {
+        deviceManager = createDeviceManager();
+        deviceManager->initDevice(0);
+        MemoryManager* memoryManager = createMemoryManager();
+        DataManager* dataManager = createDataManager(memoryManager);
+        KernelGenerator* kernelGenerator = createKernelGenerator();
+        instructionScheduler = createInstructionScheduler(dataManager,
+                                                          kernelGenerator);
     } 
-    catch (exception& e)
+    catch (std::exception& e)
     {
         return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
 }
 
-
-cphvb_error cphvb_ve_cuda_init_device(int device_id)
+cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
+                                  cphvb_instruction instruction_list[])
 {
     try {
-        if (deviceManager == NULL)
-        {
-            deviceManager = new DeviceManagerSimple();
-        }
-        deviceManager->initDevice(device_id);
-        dataManager = new DataManagerSimple();
-        instructionScheduler = new instructionSchedulerSimple();
-    } 
-    catch (exception& e)
-    {
-        return CPHVB_ERROR;
+        instructionScheduler->schedule(instruction_count,
+                                       (cphVBInstruction*)instruction_list);
+        instructionScheduler->flush();
     }
-    return CPHVB_SUCCESS;
-}
-
-cphvb_error cphvb_ve_cuda_init()
-{
-    return cphvb_vm_cuda_init_device(0);
-}
-
-cphvb_error cphvb_ve_cuda_execute(cphvb_int32 instructionCount,
-                                  cphvb_instruction* instruktionList)
-{
-    try {
-        instructionScheduler->add(instruction_count,instructionList);
-    }
-    catch (exception& e)
+    catch (std::exception& e)
     {
         return CPHVB_ERROR;
     }
@@ -79,11 +80,8 @@ cphvb_error cphvb_ve_cuda_shutdown()
 {
     try {
         instructionScheduler->flush();
-        delete instructionScheduler;
-        delete dataManager;
-        delete deviceManager;
     }
-    catch (exception& e)
+    catch (std::exception& e)
     {
         return CPHVB_ERROR;
     }

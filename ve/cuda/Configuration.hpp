@@ -17,32 +17,39 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __CONFIGARATION_HPP
+#define __CONFIGARATION_HPP
 
-#ifndef __INSTRUCTIONSCHEDULERSIMPLE_HPP
-#define __INSTRUCTIONSCHEDULERSIMPLE_HPP
-
-#include <map>
-#include "cphVBInstruction.h"
-#include "InstructionScheduler.hpp"
-#include "InstructionBatchSimple.hpp"
-#include "KernelGenerator.hpp"
+#include "DeviceManager.hpp"
+#include "MemoryManager.hpp"
 #include "DataManager.hpp"
+#include "InstructionScheduler.hpp"
+#include "InstructionBatch.hpp"
+#include "KernelGenerator.hpp"
+#include "OffsetMap.hpp"
+/*
+#include "KernelShape.hpp"
+#include "Kernel.hpp"
+*/
 
-typedef std::map<Threads, InstructionBatch*> BatchTable;
+DeviceManager* createDeviceManager();
 
-class InstructionSchedulerSimple : public InstructionScheduler
-{
-private:
-    DataManager* dataManager;
-    KernelGenerator* kernelGenerator;
-    BatchTable batchTable;
-public:
-    InstructionSchedulerSimple(DataManager* dataManager,
-                               KernelGenerator* kernelGenerator);
-    void schedule(cphVBInstruction* inst);
-    void schedule(cphvb_intp instructionCount,
-                  cphVBInstruction* instructionList);
-    void flush();
-};
+MemoryManager* createMemoryManager();
+
+DataManager* createDataManager(MemoryManager* memoryManager);
+
+InstructionScheduler* createInstructionScheduler(
+    DataManager* dataManager,
+    KernelGenerator* kernelGenerator);
+
+
+InstructionBatch* createInstructionBatch(Threads threads,
+                                         DataManager* datamanager,
+                                         KernelGenerator* kernelGenerator);
+
+
+KernelGenerator* createKernelGenerator();
+
+OffsetMap* createOffsetMap();
 
 #endif

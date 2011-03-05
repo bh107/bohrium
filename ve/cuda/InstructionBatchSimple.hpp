@@ -20,27 +20,24 @@
 #ifndef __INSTRUCTIONBATCHSIMPLE_HPP
 #define __INSTRUCTIONBATCHSIMPLE_HPP
 
-typedef long int Threads;
-
 #include <vector>
 #include "InstructionBatch.hpp"
-#include "KernelGeneratorSimple.hpp"
+#include "KernelGenerator.hpp"
 #include "DataManager.hpp"
 
 class KernelGeneratorSimple;
 
 class InstructionBatchSimple : public InstructionBatch 
 {
-    friend class KernelGeneratorSimple;
 private:
     Threads threads;
     DataManager* dataManager;
-    KernelGeneratorSimple* kernelGenerator;
+    KernelGenerator* kernelGenerator;
     std::vector<cphVBInstruction*> batch;
 public:
     InstructionBatchSimple(Threads threads,
                            DataManager* dataManager,
-                           KernelGeneratorSimple* kernelGenerator);
+                           KernelGenerator* kernelGenerator);
     void add(cphVBInstruction* inst);
     void execute();
 };

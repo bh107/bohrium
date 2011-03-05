@@ -21,7 +21,7 @@
 #include <map>
 #include <cassert>
 #include <cphvb.h>
-//#include "Configuration.hpp"
+#include "Configuration.hpp"
 #include "KernelGeneratorSimple.hpp"
 #include "OffsetMapSimple.hpp"
 #include "PTXtype.h"
@@ -30,7 +30,7 @@
 
 KernelGeneratorSimple::KernelGeneratorSimple() :
     kernelID(0),
-    offsetMap(new OffsetMapSimple()),
+    offsetMap(createOffsetMap()),
     registerBank(new PTXregisterBank()),
     constantBuffer(new PTXconstantBuffer()),
     instructionList(new PTXinstructionList())
@@ -210,17 +210,18 @@ void KernelGeneratorSimple::storeAll()
     }
 }
 
-void KernelGeneratorSimple::run(InstructionBatchSimple* batch)
+void KernelGeneratorSimple::run(Threads threads,
+                                InstructionIterator first,
+                                InstructionIterator last)
 {
-    init(batch->threads);
-    std::vector<cphVBInstruction*>::iterator iter = batch->batch.begin();
-    for (;iter != batch->batch.end(); ++iter)
+    init(threads);
+    for (;first != last; ++first)
     {
-        addInstruction(*iter);        
+        addInstruction(*first);
     }
     storeAll();
     
-    KernelShapeSimple* shape = new KernelShapeSimple(batch->threads);
+    KernelShapeSimple* shape = new KernelShapeSimple(threads);
     KernelSimple* kernel = new KernelSimple(ptxKernel,shape);
     kernel->execute(parameters);
 }
