@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cuda.h>
 #include "DeviceManagerSimple.hpp"
+#include "cuda_runtime_api.h"
 
 DeviceManagerSimple::DeviceManagerSimple() {}
 

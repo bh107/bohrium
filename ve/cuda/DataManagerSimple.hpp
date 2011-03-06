@@ -37,7 +37,6 @@ private:
     Base2CudaMap base2Cuda;
     Operand2BaseMap op2Base;
     InstructionBatch* activeBatch;
-    void flush(InstructionBatch* batch);
     void _sync(cphVBArray* baseArray);
     void initCudaArray(cphVBArray* baseArray);
     void mapOperands(cphVBArray* operands[],

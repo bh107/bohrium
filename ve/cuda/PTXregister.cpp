@@ -26,7 +26,7 @@ int PTXregister::snprint(const char* prefix,
                          int size, 
                          const char* postfix)
 {
-    int res = std::snprintf(buf, size, "%s$%s%d%s", prefix,
+    int res = std::snprintf(buf, size, "%s%s%d%s", prefix,
                             ptxRegPrefix(type), typeIdx, postfix);
     if (res > size)
     {

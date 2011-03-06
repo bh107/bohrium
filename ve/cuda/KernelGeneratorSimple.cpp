@@ -106,14 +106,14 @@ PTXaddress KernelGeneratorSimple::calcAddress(const cphVBArray* array)
     switch (sizeof(void*))
     {
     case 4:
-        addressReg = registerBank->newRegister(PTX_UINT64);
-        instructionList->add(PTX_MAD_WIDE, addressReg, offsetReg, 
+        addressReg = registerBank->newRegister(PTX_UINT32);
+        instructionList->add(PTX_MAD, addressReg, offsetReg, 
                    constantBuffer->newConstant(PTX_UINT,eSize),
                    constantBuffer->newConstant(PTX_ADDRESS,array->cudaPtr));
         break;
     case 8:
-        addressReg = registerBank->newRegister(PTX_UINT32);
-        instructionList->add(PTX_MAD, addressReg, offsetReg, 
+        addressReg = registerBank->newRegister(PTX_UINT64);
+        instructionList->add(PTX_MAD_WIDE, addressReg, offsetReg, 
                    constantBuffer->newConstant(PTX_UINT,eSize),
                    constantBuffer->newConstant(PTX_ADDRESS,array->cudaPtr));
         break;
@@ -207,6 +207,7 @@ void KernelGeneratorSimple::storeAll()
         }
         instructionList->add(PTX_ST_GLOBAL, siter->first, 
                              address.reg, address.off);
+
     }
 }
 
@@ -224,4 +225,5 @@ void KernelGeneratorSimple::run(Threads threads,
     KernelShapeSimple* shape = new KernelShapeSimple(threads);
     KernelSimple* kernel = new KernelSimple(ptxKernel,shape);
     kernel->execute(parameters);
+    clear();
 }

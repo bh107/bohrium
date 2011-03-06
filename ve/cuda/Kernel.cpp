@@ -63,17 +63,19 @@ Kernel::Kernel(PTXkernel* ptxKernel)
 	jitValues[3] = (void *)JIT_LOG_BUFFER_SIZE;
 
     CUresult error = cuModuleLoadDataEx(&module, ptxKernelSource, 
-                                        options, jitOptions, jitValues);
-    std::cerr << "Compilation failed." << std::endl;
-    std::cerr << "--- INFO BEGIN ---" << std::endl;
-    std::cerr << jitInfoLogBuffer << std::endl;
-    std::cerr << "---- INFO END ----" << std::endl;		
-    std::cerr << "--- ERROR BEGIN ---" << std::endl;
-    std::cerr << jitErrorLogBuffer << std::endl;
-    std::cerr << "---- ERRORS END ----" << std::endl;		
-    std::cerr << "---- CODE BEGIN ----" << std::endl;
-    std::cerr << ptxKernelSource << std::endl;
-    std::cerr << "----- CODE END -----" << std::endl;	
+                                        options, jitOptions, jitValues);      
+#ifdef DEBUG
+    std::cout << "Compilation failed." << std::endl;
+    std::cout << "--- INFO BEGIN ---" << std::endl;
+    std::cout << jitInfoLogBuffer << std::endl;
+    std::cout << "---- INFO END ----" << std::endl;		
+    std::cout << "--- ERROR BEGIN ---" << std::endl;
+    std::cout << jitErrorLogBuffer << std::endl;
+    std::cout << "---- ERRORS END ----" << std::endl;		
+    std::cout << "---- CODE BEGIN ----" << std::endl;
+    std::cout << ptxKernelSource << std::endl;
+    std::cout << "----- CODE END -----" << std::endl;	
+#endif
 
     if (error !=  CUDA_SUCCESS)
     {

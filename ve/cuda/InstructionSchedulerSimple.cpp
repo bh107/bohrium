@@ -61,9 +61,10 @@ void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
                                          cphVBInstruction* instructionList)
 {
+
     for (cphvb_intp i = 0; i < instructionCount; ++i)
     {
-        instructionList++;
+        schedule(instructionList++);
     }
 }
 

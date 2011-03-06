@@ -44,6 +44,7 @@ void PTXinstructionList::add(char* label,
     {
         instructions[next].src[i] = src[i];
     }
+    ++next;
 }
 
 void PTXinstructionList::add(PTXopcode opcode,
@@ -93,7 +94,6 @@ void PTXinstructionList::add(PTXregister* guard,
 void PTXinstructionList::add(PTXregister* guard,
                              PTXopcode opcode)
 {
-    assert(opcode == PTX_BRA);
     add(NULL,true,guard,opcode,NULL,NULL);
 }
 

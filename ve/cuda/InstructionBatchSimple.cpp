@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <cphvb.h>
 #include "InstructionBatchSimple.hpp"
 
@@ -25,7 +26,13 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
                                         KernelGenerator* kernelGenerator_) :
     threads(threads_),
     dataManager(dataManager_),
-    kernelGenerator(kernelGenerator_) {}
+    kernelGenerator(kernelGenerator_) 
+{
+#ifdef DEBUG
+    std::cout << "Created InstructionBatch with " << threads << "threads." << 
+        std::endl;
+#endif
+}
 
 
 void InstructionBatchSimple::add(cphVBInstruction* inst)
@@ -37,6 +44,9 @@ void InstructionBatchSimple::add(cphVBInstruction* inst)
 
 void InstructionBatchSimple::execute()
 {
-    kernelGenerator->run(threads, batch.begin(), batch.end());
-    batch.clear();
+    if (batch.begin() != batch.end())
+    {
+        kernelGenerator->run(threads, batch.begin(), batch.end());
+        batch.clear();
+    }
 }

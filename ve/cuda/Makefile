@@ -5,24 +5,28 @@ LIB=libvecuda.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-CFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE)
+CFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE) -DDEBUG
 CCFLAGS = $(CFLAGS) -std=gnu99
 CXXFLAGS = $(CFLAGS) -std=gnu++0x
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-CFILES=PTXopcode PTXsreg PTXtype PTXversion  cphvb_ve_cuda
-CPPFILES=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
+CSRC=PTXopcode PTXsreg PTXtype PTXversion
+CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		DeviceManager PTXconstantBuffer DeviceManagerSimple PTXconstant \
 		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
 		PTXinstructionList InstructionTranslator PTXkernel Kernel \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
 		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
-		PTXspecialRegister
-OBJECTS=$(CPPFILES:=.oo) $(CFILES:=.o) 
+		PTXspecialRegister Configuration cphvb_ve_cuda 
+OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o) 
+INSTALLDIR=/usr/local/lib/
 
 all: $(LIB)
 
 %.o: %.c %.h
 		$(CC) -c $< -o $@ $(CCFLAGS)
+
+cphvb_ve_cuda.oo: cphvb_ve_cuda.cpp  cphvb_ve_cuda.h
+		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.oo: %.cpp %.hpp
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
@@ -32,3 +36,9 @@ $(LIB): $(OBJECTS)
 
 clean:
 		rm -rf *.o  *.oo *~ $(LIB)
+
+install: all
+		sudo cp $(LIB) $(INSTALLDIR)
+
+test: cudatest.c
+		$(CC) $< -o $@ $(CCFLAGS) -L/usr/local/lib -L/usr/lib/nvidia -lcphvb -lvecuda -lcuda 

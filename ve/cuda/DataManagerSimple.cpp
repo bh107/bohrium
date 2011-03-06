@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <cassert>
 #include <queue>
 #include <map>
@@ -29,7 +30,7 @@ void DataManagerSimple::_sync(cphVBArray* baseArray)
     WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
     if (wliter != writeLockTable.end())
     {
-        flush(activeBatch);
+        activeBatch->execute();
         activeBatch = NULL;
     }
 }
@@ -95,7 +96,11 @@ void DataManagerSimple::lock(cphVBArray* operands[],
                              int nops, 
                              InstructionBatch* batch)
 {
-    if (batch != activeBatch && activeBatch != NULL)
+    if (activeBatch == NULL)
+    {
+        activeBatch = batch;
+    } 
+    else if (batch != activeBatch)
     {
         activeBatch->execute();
         activeBatch = batch;
@@ -118,6 +123,9 @@ void DataManagerSimple::lock(cphVBArray* operands[],
 
 void DataManagerSimple::release(cphVBArray* baseArray)
 {
+#ifdef DEBUG
+    std::cout << "DataManagerSimple::release()" << std::endl;
+#endif
     sync(baseArray);
     discard(baseArray);
 }

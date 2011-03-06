@@ -14,12 +14,21 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdexcept>
 #include <cuda.h>
 #include "DeviceManager.hpp"
+
+DeviceManager::DeviceManager()
+{
+    CUresult error = cuInit(0);
+    if (error != CUDA_SUCCESS) 
+    {
+        throw std::runtime_error("Could not init driver.");
+    }
+}
 
 int DeviceManager::deviceCount()
 {

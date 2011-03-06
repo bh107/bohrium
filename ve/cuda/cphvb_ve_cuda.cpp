@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <stdexcept>
 #include <cphvb.h>
 #include <cuda.h>
@@ -27,10 +28,10 @@
 InstructionScheduler* instructionScheduler;
 DeviceManager* deviceManager;
 
-cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
-                                 cphvb_opcode opcode_list[],
-                                 cphvb_intp *datatype_count,
-                                 cphvb_type datatype_list[])
+cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
+                               cphvb_opcode opcode_list[],
+                               cphvb_intp *datatype_count,
+                               cphvb_type datatype_list[])
 {
     *opcode_count = 0;
     for (cphvb_opcode oc = 0; oc < CPHVB_NO_OPCODES; ++oc)
@@ -56,6 +57,7 @@ cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
     } 
     catch (std::exception& e)
     {
+        std::cerr << e.what() << std::endl;
         return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
@@ -71,6 +73,7 @@ cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
     }
     catch (std::exception& e)
     {
+        std::cerr << e.what() << std::endl;
         return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
@@ -83,6 +86,7 @@ cphvb_error cphvb_ve_cuda_shutdown()
     }
     catch (std::exception& e)
     {
+        std::cerr << e.what() << std::endl;
         return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;

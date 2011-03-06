@@ -29,34 +29,38 @@ int PTXinstruction::snprintAritOp(char* buf, int size)
     switch (opcode)
     {
     case PTX_ADD:
-        bp = std::snprintf(buf, size, "add.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tadd%s\t", ptxTypeStr(dest->type));
         break;
     case PTX_SUB:
-        bp = std::snprintf(buf, size, "sub.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tsub%s\t", ptxTypeStr(dest->type));
         break;
     case PTX_MUL:
-        bp = std::snprintf(buf, size, "mul.lo.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tmul%s%s\t", 
+                           (ptxBaseType(dest->type) == PTX_FLOAT)?"":".lo", 
+                           ptxTypeStr(dest->type));
         break;
     case PTX_MAD:
-        bp = std::snprintf(buf, size, "mad.lo.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tmad.lo%s\t", ptxTypeStr(dest->type));
         break;
     case PTX_MAD_WIDE:
-        bp = std::snprintf(buf, size, "mad.wide.%s\t",ptxWideOpStr(dest->type));
+        bp = std::snprintf(buf, size, "\tmad.wide%s\t",
+                           ptxWideOpStr(dest->type));
         break;
     case PTX_DIV:
-        bp = std::snprintf(buf, size, "div.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tdiv%s\t", ptxTypeStr(dest->type));
         break;
     case PTX_REM:
-        bp = std::snprintf(buf, size, "rem.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\trem%s\t", ptxTypeStr(dest->type));
         break;
     case PTX_MOV:
-        bp = std::snprintf(buf, size, "mov.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tmov%s\t", ptxTypeStr(dest->type));
         break;
     default:
         assert (false);
      }
     res += bp; buf += bp; size -= bp;
-    dest->snprint(buf,size);
+    bp = dest->snprint(buf,size);
+    res += bp; buf += bp; size -= bp;
     for (int i = 0; i < ptxSrcOperands(opcode); ++i)
     {
         bp = src[i]->snprint(", ",buf,size); 
@@ -84,13 +88,14 @@ int PTXinstruction::snprintLogicOp(char* buf, int size)
     switch (opcode)
     {    
     case PTX_SETP_GE:
-        bp = std::snprintf(buf, size, "setp.ge.%s\t", ptxTypeStr(type));
+        bp = std::snprintf(buf, size, "\tsetp.ge%s\t", ptxTypeStr(type));
         break;
     default:
         assert (false);
     }
     res += bp; buf += bp; size -= bp;
-    dest->snprint(buf,size);
+    bp = dest->snprint(buf,size);
+    res += bp; buf += bp; size -= bp;
     for (int i = 0; i < ptxSrcOperands(opcode); ++i)
     {
         bp = src[i]->snprint(", ",buf,size); 
@@ -108,11 +113,11 @@ int PTXinstruction::snprintOp(char* buf, int size)
     switch (opcode)
     {
     case PTX_EXIT:
-        return std::snprintf(buf, size, "exit;\n");
+        return std::snprintf(buf, size, "\texit;\n");
     case PTX_BRA:
-        return std::snprintf(buf, size, "bra\t%s;\n", label);
+        return std::snprintf(buf, size, "\tbra\t%s;\n", label);
     case PTX_LD_GLOBAL:
-        bp = std::snprintf(buf, size, "ld.global.%s\t", 
+        bp = std::snprintf(buf, size, "\tld.global%s\t", 
                            ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;
         bp = dest->snprint(buf,size,", ");
@@ -122,14 +127,14 @@ int PTXinstruction::snprintOp(char* buf, int size)
         bp = src[1]->snprint(buf,size,"];\n");
         return res + bp;
     case PTX_LD_PARAM:
-        bp = std::snprintf(buf, size, "ld.param.%s\t", ptxTypeStr(dest->type));
+        bp = std::snprintf(buf, size, "\tld.param%s\t", ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;
         bp = dest->snprint(buf,size,", ");
         res += bp; buf += bp; size -= bp;
         bp = src[0]->snprint("[",buf,size,"];\n");
         return res + bp;
     case PTX_ST_GLOBAL:
-        bp = std::snprintf(buf, size, "st.global.%s\t", 
+        bp = std::snprintf(buf, size, "\tst.global%s\t", 
                            ptxTypeStr(dest->type));
         res += bp; buf += bp; size -= bp;
         bp = src[0]->snprint("[",buf,size,"+");
@@ -156,7 +161,7 @@ int PTXinstruction::snprint(char* buf, int size)
     }
     if (guard != NULL)
     {
-        bp = snprintf(buf, size, "@%s",guardMod?"":"!");
+        bp = snprintf(buf, size, "      @%s ",guardMod?"":"!");
         res += bp; buf += bp; size -= bp;
         bp = guard->snprint(buf,size);
         res += bp; buf += bp; size -= bp;
