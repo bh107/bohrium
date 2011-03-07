@@ -175,7 +175,7 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     }
 
     error = vem_create_array(NULL, dtype, ndims, 0, shape, stride,
-                             NPY_FALSE, (cphvb_constant)0, &new_ary);
+                             NPY_FALSE, (cphvb_constant)0L, &new_ary);
 
     //We save the array pointer in an 'intp'.
     *uid = (intp) new_ary;
@@ -258,7 +258,7 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
     error = vem_create_array(base, org_ary->type, ndim,
                              offset+org_ary->start,
                              shape, stride, NPY_FALSE,
-                             (cphvb_constant)0, &new_ary);
+                             (cphvb_constant)0L, &new_ary);
 
     if(error == CPHVB_OUT_OF_MEMORY)
         PyErr_NoMemory();
@@ -437,7 +437,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 return -1;
             }
             inst.operand[j] = CPHVB_CONSTANT;
-            inst.const_type[j] = args[i]->descr->type_num;
+            inst.const_type[j] = type_py2cph[args[i]->descr->type_num];
             memcpy(&inst.constant[j], args[i]->data,
                    args[i]->descr->elsize);
         }
@@ -551,7 +551,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                                     shape,
                                     stride,
                                     NPY_FALSE,
-                                    (cphvb_constant)0,
+                                    (cphvb_constant)0L,
                                     &tary);
                 if(error)
                 {
