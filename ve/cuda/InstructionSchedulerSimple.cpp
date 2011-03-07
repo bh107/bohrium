@@ -17,6 +17,7 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <cphvb.h>
 #include "InstructionSchedulerSimple.hpp"
 
@@ -28,6 +29,10 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
 
 void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 {
+#ifdef DEBUG
+    std::cout << "InstructionSchedulerSimple::schedule(" <<  
+        cphvb_opcode_text(inst->opcode) << ")" << std::endl;
+#endif
     switch (inst->opcode)
     {
     case CPHVB_RELEASE:
