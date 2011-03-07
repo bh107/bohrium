@@ -3861,13 +3861,15 @@ PyArray_MatrixProduct(PyObject *op1, PyObject *op2)
                             "arrays of type float, double, cfloat & "
                             "cdouble are supported");
             goto fail;
-        }
+        }/*
         dnumpy_zerofill(PyArray_DNDUID(ret));
         dnumpy_matrix_multiplication(PyArray_DNDUID(ap1),
                                      PyArray_DNDUID(ap2),
                                      PyArray_DNDUID(ret));
         Py_DECREF(ap1);
-        Py_DECREF(ap2);
+        Py_DECREF(ap2);*/
+        //TODO: implement matrix multiplication;
+        goto fail;
         return (PyObject *)ret;
     }
 
@@ -6613,19 +6615,22 @@ PyArray_Zeros(int nd, intp *dims, PyArray_Descr *type, int flags)
     if (!type) {
         type = PyArray_DescrFromType(PyArray_DEFAULT);
     }
+
     ret = (PyArrayObject *)PyArray_NewFromDescr(&PyArray_Type,
                                                 type,
                                                 nd, dims,
                                                 NULL, NULL,
-                                                flags, NULL);
+                                                /* DISTNUMPY */
+                                                flags | DNPY_ZEROES,
+                                                NULL);
     if (ret == NULL) {
         return NULL;
     }
     /* DISTNUMPY */
-    if(PyArray_ISDISTRIBUTED(ret))
-        dnumpy_zerofill(PyArray_DNDUID(ret));
-    else if (_zerofill(ret) < 0) {
-        return NULL;
+    if(!PyArray_ISDISTRIBUTED(ret))
+    {
+        if (_zerofill(ret) < 0)
+            return NULL;
     }
     return (PyObject *)ret;
 

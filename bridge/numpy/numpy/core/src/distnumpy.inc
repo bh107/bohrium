@@ -148,7 +148,7 @@ util_release(cphvb_array *ary)
  */
 static int
 dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
-                       intp *uid)
+                       int zerofill, intp *uid)
 {
     int i;
     cphvb_index s;
@@ -175,7 +175,7 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     }
 
     error = vem_create_array(NULL, dtype, ndims, 0, shape, stride,
-                             NPY_FALSE, (cphvb_constant)0L, &new_ary);
+                             zerofill, (cphvb_constant)0L, &new_ary);
 
     //We save the array pointer in an 'intp'.
     *uid = (intp) new_ary;
