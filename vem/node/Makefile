@@ -3,7 +3,7 @@ INCLUDE=include
 LIB=libcphvb_vem_node.so
 CC=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE) -DDEBUG
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cphvb_vem_node.c
 HEADER=
