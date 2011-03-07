@@ -136,6 +136,12 @@ void DataManagerSimple::release(cphVBArray* baseArray)
 void DataManagerSimple::sync(cphVBArray* baseArray)
 {
     assert(baseArray->base == NULL);
+    
+    // I may recieve sync for arrays I don't own :-(
+    Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
+    if (biter == base2Cuda.end())
+        return;
+
     _sync(baseArray);
     if (baseArray->data == NULL)
     {
@@ -148,6 +154,13 @@ void DataManagerSimple::sync(cphVBArray* baseArray)
 void DataManagerSimple::discard(cphVBArray* baseArray)
 {
     assert(baseArray->base == NULL);
+    
+    // I may recieve discard for arrays I don't own :-( 
+    Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
+    if (biter == base2Cuda.end())
+        return;
+
+
     memoryManager->free(baseArray);
     baseArray->cudaPtr = 0;
     base2Cuda.erase(baseArray);
