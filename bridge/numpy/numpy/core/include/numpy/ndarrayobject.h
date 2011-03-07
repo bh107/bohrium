@@ -591,6 +591,8 @@ typedef int (PyArray_FinalizeFunc)(PyArrayObject *, PyObject *);
 
 /* DISTNUMPY - This flag is for the distributed array */
 #define DNPY_DISTRIBUTED 0x2000
+/* DISTNUMPY - This flag is for the zero array */
+#define DNPY_ZEROES 0x4000
 
 
 #define NPY_BEHAVED (NPY_ALIGNED | NPY_WRITEABLE)
@@ -645,6 +647,7 @@ typedef int (PyArray_FinalizeFunc)(PyArrayObject *, PyObject *);
 
 /* DISTNUMPY */
 #define PyArray_ISDISTRIBUTED(m) PyArray_CHKFLAGS(m, DNPY_DISTRIBUTED)
+
 
 #if NPY_ALLOW_THREADS
 #define NPY_BEGIN_ALLOW_THREADS Py_BEGIN_ALLOW_THREADS

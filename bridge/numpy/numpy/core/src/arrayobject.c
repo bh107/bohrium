@@ -6036,6 +6036,9 @@ PyArray_NewFromDescr(PyTypeObject *subtype, PyArray_Descr *descr, int nd,
     intp largest;
     intp size;
 
+    /* DISTNUMPY */
+    int zerofill = ((flags & DNPY_ZEROES) == DNPY_ZEROES);
+
     if (descr->subarray) {
         PyObject *ret;
         intp newdims[2*MAX_DIMS];
@@ -6165,7 +6168,7 @@ PyArray_NewFromDescr(PyTypeObject *subtype, PyArray_Descr *descr, int nd,
         if(PyArray_ISDISTRIBUTED(self))
         {
             if(dnumpy_create_dndarray(nd, dims, PyArray_TYPE(self),
-               &self->dnduid))
+               zerofill, &self->dnduid))
             {
                 //Since the array was not created we have to make sure
                 //that it is not treated as a distributed array.
