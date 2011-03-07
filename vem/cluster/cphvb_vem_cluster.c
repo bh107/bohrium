@@ -175,6 +175,16 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
             #endif
             break;
         }
+        else if(msg->type == CLUSTER_ARRAY)
+        {
+            #ifdef CLUSTER_DEBUG
+                printf("Rank %d CLUSTER_ARRAY\n", myrank);
+            #endif
+
+
+
+            break;
+        }
         else
         {
             assert(msg->type == CLUSTER_INST);
@@ -229,10 +239,8 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
                                            cphvb_constant init_value,
                                            cphvb_array**  new_array)
 {
-    cphvb_array *array    = malloc(sizeof(cphvb_array));
-    if(array == NULL)
-        return CPHVB_OUT_OF_MEMORY;
-
+    cluster_msg_array *msg= msg_mem;
+    cphvb_array *array    = &msg->array;
     array->owner          = CPHVB_PARENT;
     array->base           = base;
     array->type           = type;
@@ -245,6 +253,12 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
     memcpy(array->shape, shape, ndim * sizeof(cphvb_index));
     memcpy(array->stride, stride, ndim * sizeof(cphvb_index));
 
+    msg->type = CLUSTER_ARRAY;
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+
+/*
     if(array->base != NULL)
     {
         assert(array->base->base == NULL);
@@ -252,7 +266,7 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
         ++array->base->ref_count;
         array->data = array->base->data;
     }
-
+*/
     *new_array = array;
     return CPHVB_SUCCESS;
 }
