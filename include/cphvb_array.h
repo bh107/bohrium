@@ -73,8 +73,8 @@
     cphvb_index      stride[CPHVB_MAXDIM]; \
     cphvb_data_ptr   data;                 \
     cphvb_intp       has_init_value;       \
-    cphvb_intp       ref_count;            \
     cphvb_constant   init_value;           \
+    cphvb_intp       ref_count;            \
 
 typedef struct cphvb_array cphvb_array;
 struct cphvb_array
