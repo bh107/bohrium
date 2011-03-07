@@ -12,13 +12,22 @@ export LDFLAGS="-L$ROOT/vem/node -lcphvb_vem_node $LDFLAGS"
 export LDFLAGS="-L$ROOT/ve/simple -lcphvb_ve_simple $LDFLAGS"
 PYTHON="/usr/bin/python"
 
-while getopts "D:C:" opt; do
+while getopts "M:E:C:" opt; do
   case $opt in
-    D)
+    M)
       HIGH=`echo $OPTARG  | tr '[a-z]' '[A-Z]'`
       LOW=`echo $OPTARG  | tr '[A-Z]' '[a-z]'`
       export CFLAGS="-D$HIGH $CFLAGS"
       export LDFLAGS="-L$ROOT/vem/$LOW -lcphvb_vem_$LOW $LDFLAGS"
+      ;;
+    E)
+      HIGH=`echo $OPTARG  | tr '[a-z]' '[A-Z]'`
+      LOW=`echo $OPTARG  | tr '[A-Z]' '[a-z]'`
+      export CFLAGS="-D$HIGH $CFLAGS"
+      export LDFLAGS="-L$ROOT/ve/$LOW -lcphvb_ve_$LOW $LDFLAGS"
+      if [ $HIGH = "CUDA" ] ; then
+        export LDFLAGS="-L/usr/lib/nvidia -lcuda $LDFLAGS"
+      fi
       ;;
     C)
       PYTHON="$OPTARG"
