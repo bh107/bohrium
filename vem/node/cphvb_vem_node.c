@@ -65,7 +65,7 @@ cphvb_error cphvb_vem_node_init(void)
     #endif
 
     //Let us initiate the simple VE and register what it supports.
-    err = cphvb_ve_cuda_init(&opcode_count, opcode, &type_count, type);
+    err = ve_init(&opcode_count, opcode, &type_count, type);
     if(err)
         return err;
 
@@ -73,14 +73,31 @@ cphvb_error cphvb_vem_node_init(void)
     memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
     memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
 
+#ifdef DEBUG
+    printf("[VEM node] Supported opcodes:\n");
+#endif
     while(--opcode_count >= 0)
+    {
         ve_support.opcode[opcode[opcode_count]] = 1;//Set True
+#ifdef DEBUG
+        printf("\t%s\n",cphvb_opcode_text(opcode[opcode_count]));
+#endif
+    }
 
+#ifdef DEBUG
+    printf("[VEM node] Supported types:\n");
+#endif
     while(--type_count >= 0)
+    {
         ve_support.type[type[type_count]] = 1;//Set True
-
+#ifdef DEBUG
+        printf("\t%s\n",cphvb_type_text(type[type_count]));
+#endif
+    }
     return CPHVB_SUCCESS;
 }
+
+
 
 
 /* Shutdown the VEM, which include a instruction flush
