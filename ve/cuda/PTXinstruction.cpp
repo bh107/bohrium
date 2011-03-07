@@ -161,7 +161,7 @@ int PTXinstruction::snprint(char* buf, int size)
     }
     if (guard != NULL)
     {
-        bp = snprintf(buf, size, "      @%s ",guardMod?"":"!");
+        bp = snprintf(buf, size, "%4s",guardMod?"@":"@!");
         res += bp; buf += bp; size -= bp;
         bp = guard->snprint(buf,size);
         res += bp; buf += bp; size -= bp;

@@ -1,7 +1,7 @@
 CPHVB_BASE=../../
 CUDA_BASE=/usr/local/cuda/
 INCLUDE=-I$(CPHVB_BASE)include -I$(CUDA_BASE)include
-LIB=libvecuda.so
+LIB=libcphvb_ve_cuda.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
@@ -41,4 +41,4 @@ install: all
 		sudo cp $(LIB) $(INSTALLDIR)
 
 test: cudatest.c
-		$(CC) $< -o $@ $(CCFLAGS) -L/usr/local/lib -L/usr/lib/nvidia -lcphvb -lvecuda -lcuda 
+		$(CC) $< -o $@ $(CCFLAGS) -L/usr/local/lib -L/usr/lib/nvidia -lcphvb -lcphvb_ve_cuda -lcuda 

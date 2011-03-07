@@ -6,6 +6,7 @@ CFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c
 OBJ=$(SRC:.c=.o)
+INSTALLDIR=/usr/local/lib
 
 all: $(LIB)
 
@@ -17,3 +18,6 @@ $(LIB): $(OBJ)
 
 clean:
 		rm -rf *.o *~ $(LIB)
+
+install: all
+		sudo cp $(LIB) $(INSTALLDIR)

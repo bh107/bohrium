@@ -69,21 +69,24 @@ void DataManagerSimple::mapOperands(cphVBArray* operands[],
     for (int i = 0; i < nops; ++i)
     {
         operand = operands[i];
-        oiter = op2Base.find(operand);
-        if (oiter == op2Base.end())
-        {   //The operand is not mapped to a base array - so we will 
-            baseArray = cphVBBaseArray(operand);
-            biter = base2Cuda.find(baseArray);
-            if (biter == base2Cuda.end())
-            {   //The base array is not mapped to a cudaPtr - so we will
-                //We also need to initialize it
-                CUdeviceptr cudaPtr = memoryManager->deviceAlloc(baseArray);
-                base2Cuda[baseArray] = cudaPtr;
-                baseArray->cudaPtr = cudaPtr;
-                initCudaArray(baseArray);
+        if (operand != CPHVB_CONSTANT)
+        {
+            oiter = op2Base.find(operand);
+            if (oiter == op2Base.end())
+            {   //The operand is not mapped to a base array - so we will 
+                baseArray = cphVBBaseArray(operand);
+                biter = base2Cuda.find(baseArray);
+                if (biter == base2Cuda.end())
+                {   //The base array is not mapped to a cudaPtr - so we will
+                    //We also need to initialize it
+                    CUdeviceptr cudaPtr = memoryManager->deviceAlloc(baseArray);
+                    base2Cuda[baseArray] = cudaPtr;
+                    baseArray->cudaPtr = cudaPtr;
+                    initCudaArray(baseArray);
+                }
+                operand->cudaPtr = baseArray->cudaPtr;
+                op2Base[operand] = baseArray;
             }
-            operand->cudaPtr = baseArray->cudaPtr;
-            op2Base[operand] = baseArray;
         }
     }
 }
