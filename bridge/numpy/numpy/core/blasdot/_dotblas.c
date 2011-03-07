@@ -453,8 +453,12 @@ dotblas_matrixproduct(PyObject *NPY_UNUSED(dummy), PyObject *args)
         /* DISTNUMPY */
         if(PyArray_ISDISTRIBUTED(ret))
         {
-            PyArrayObject *arylist[3] = {ap1, ap2, ret};
-            dnumpy_ufunc(arylist, 3, 1, "multiply", -1);
+            PyObject *PyOp = PyObject_GetAttrString(
+                             dnumpy_get_reged_ufunc_module(),"multiply");
+            assert(PyOp != NULL);
+
+            PyObject *t = PyObject_CallFunctionObjArgs(PyOp, ap1, ap2, ret);
+            Py_XDECREF(t);
         }
         else
         {

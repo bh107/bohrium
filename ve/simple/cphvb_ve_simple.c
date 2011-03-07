@@ -53,6 +53,12 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
         cphvb_instruction *inst = &instruction_list[i];
         switch(inst->opcode)
         {
+        case CPHVB_DISCARD:
+            //Nothing to do since we only use main memory.
+            break;
+        case CPHVB_RELEASE:
+            //Nothing to do since we only use main memory.
+            break;
         case CPHVB_ADD:
         {
             cphvb_intp j, notfinished=1;

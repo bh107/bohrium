@@ -8,7 +8,7 @@ LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cphvb_vem_node.c
 HEADER=
 OBJ=$(SRC:.c=.o)
-
+INSTALLDIR=/usr/local/lib
 
 all: $(LIB)
 
@@ -20,3 +20,6 @@ $(LIB): $(OBJ)
 
 clean:
 		rm -rf *.o *~ $(LIB)
+
+install: all
+		sudo cp $(LIB) $(INSTALLDIR)

@@ -23,8 +23,21 @@
 #include <cphvb.h>
 
 #include <cphvb_vem_node.h>
-#include <cphvb_ve_simple.h>
 #include <cphvb_vem.h>
+#include <cphvb_ve.h>
+
+//Function pointers to the VE.
+static cphvb_ve_init ve_init;
+static cphvb_ve_execute ve_execute;
+static cphvb_ve_shutdown ve_shutdown;
+
+//For now, we determent which VE to use at compile time.
+#ifdef CUDA
+    #include <cphvb_ve_cuda.h>
+#else
+    #include <cphvb_ve_simple.h>
+#endif
+
 
 //The VE info.
 cphvb_support ve_support;
@@ -40,8 +53,19 @@ cphvb_error cphvb_vem_node_init(void)
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
+    //Find the VEM
+    #ifdef CUDA
+        ve_init = &cphvb_ve_cuda_init;
+        ve_execute = &cphvb_ve_cuda_execute;
+        ve_shutdown = &cphvb_ve_cuda_shutdown;
+    #else
+        ve_init = &cphvb_ve_simple_init;
+        ve_execute = &cphvb_ve_simple_execute;
+        ve_shutdown = &cphvb_ve_simple_shutdown;
+    #endif
+
     //Let us initiate the simple VE and register what it supports.
-    err = cphvb_ve_simple_init(&opcode_count, opcode, &type_count, type);
+    err = cphvb_ve_cuda_init(&opcode_count, opcode, &type_count, type);
     if(err)
         return err;
 
@@ -65,7 +89,7 @@ cphvb_error cphvb_vem_node_init(void)
  */
 cphvb_error cphvb_vem_node_shutdown(void)
 {
-    return cphvb_ve_simple_shutdown();
+    return ve_shutdown();
 }
 
 
@@ -174,8 +198,22 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         case CPHVB_DESTORY:
         {
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
+
             if(--base->ref_count <= 0)
             {
+                //Tell the VE to discard the array.
+                inst->operand[0] = base;
+                inst->opcode = CPHVB_DISCARD;
+                cphvb_error error = ve_execute(1, inst);
+                if(error)
+                {
+                    fprintf(stderr, "cphvb_vem_execute() encountered an"
+                                    " error (%s) when executing %s.\n",
+                                    cphvb_error_text(error),
+                                    cphvb_opcode_text(inst->opcode));
+                    exit(error);
+                }
+                //Cleanup the array.
                 if(base->data != NULL)
                     free(base->data);
 
@@ -189,21 +227,28 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         {
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
-            //Check the owner of the array
-            if(base->owner != CPHVB_PARENT)
+
+            //Tell the VE to release the array.
+            inst->operand[0] = base;
+            inst->opcode = CPHVB_RELEASE;
+            cphvb_error error = ve_execute(1, inst);
+            if(error)
             {
-                fprintf(stderr, "VEM could not perform release\n");
-                exit(CPHVB_INST_ERROR);
+                fprintf(stderr, "cphvb_vem_execute() encountered an"
+                                " error (%s) when executing %s.\n",
+                                cphvb_error_text(error),
+                                cphvb_opcode_text(inst->opcode));
+                exit(error);
             }
             break;
         }
         default:
         {
-            cphvb_error error = cphvb_ve_simple_execute(1, inst);
+            cphvb_error error = ve_execute(1, inst);
             if(error)
             {
                 fprintf(stderr, "cphvb_vem_execute() encountered an "
-                                "error (%s) when executing %s.",
+                                "error (%s) when executing %s.\n",
                                 cphvb_error_text(error),
                                 cphvb_opcode_text(inst->opcode));
                 exit(error);

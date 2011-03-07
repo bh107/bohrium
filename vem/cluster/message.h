@@ -47,9 +47,12 @@ typedef struct
 //Communication message.
 typedef struct
 {
-    //Message type. (e.g. CLUSTER_DEFAULT, CLUSTER_SHUTDOWN, etc.)
+    //Message type, which is CLUSTER_ARRAY in this case.
     cphvb_intp type;
+    //The new array.
+    cphvb_array array;
 }cluster_msg_array;
+
 
 
 #define CLUSTER_MSG_SIZE (sizeof(cluster_msg_inst))
