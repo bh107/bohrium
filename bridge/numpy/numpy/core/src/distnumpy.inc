@@ -564,7 +564,10 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 inst.operand[i] = tary;
             }
         }
-        error = vem_execute(1, &inst);
+        //Only execute the ufunc if the output is greater than zero.
+        if(cphvb_nelements(inst.operand[0]->ndim,
+                           inst.operand[0]->shape) > 0)
+            error = vem_execute(1, &inst);
         if(error)
         {
             fprintf(stderr,"ERROR IN UFUNC\n");
