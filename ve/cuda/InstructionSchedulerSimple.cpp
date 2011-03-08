@@ -50,6 +50,10 @@ void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 #endif
         Threads threads = cphvb_nelements(inst->operand[0]->ndim, 
                                           inst->operand[0]->shape);
+        if (threads == 0)
+        {
+            return;
+        }
         BatchTable::iterator biter = batchTable.find(threads);
         if (biter != batchTable.end())
         {
