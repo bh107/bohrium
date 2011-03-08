@@ -95,7 +95,7 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
         msg[1] = blocksize;
         msg[2] = CLUSTER_MSG_END;
 //        msg2slaves(msg, 3 * sizeof(cphvb_intp));
-        #ifdef CLUSTER_DEBUG
+        #ifdef DEBUG
             printf("Rank 0 received msg: ");
         #endif
 //        do_INIT_BLOCKSIZE(msg[1]);
@@ -154,7 +154,7 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
         msg[0] = CLUSTER_INIT_PROC_GRID;
         msg[CPHVB_MAXDIM*CPHVB_MAXDIM+1] = CLUSTER_MSG_END;
 //        msg2slaves(msg, (CPHVB_MAXDIM*CPHVB_MAXDIM+2)*sizeof(cphvb_intp));
-        #ifdef CLUSTER_DEBUG
+        #ifdef DEBUG
             printf("Rank 0 received msg: ");
         #endif
 //        do_INIT_PROC_GRID(&msg[1]);
@@ -170,15 +170,15 @@ cphvb_intp cphvb_vem_cluster_master_slave_split(void)
 
         if(msg->type == CLUSTER_SHUTDOWN)
         {
-            #ifdef CLUSTER_DEBUG
-                printf("Rank %d SHUTDOWN\n", myrank);
+            #ifdef DEBUG
+                printf("[VEM cluster] Rank %d SHUTDOWN\n", myrank);
             #endif
             break;
         }
         else if(msg->type == CLUSTER_ARRAY)
         {
-            #ifdef CLUSTER_DEBUG
-                printf("Rank %d CLUSTER_ARRAY\n", myrank);
+            #ifdef DEBUG
+                printf("[VEM cluster] Rank %d CLUSTER_ARRAY\n", myrank);
             #endif
 
 
@@ -204,9 +204,9 @@ cphvb_error cphvb_vem_cluster_shutdown(void)
     if(myrank == 0)
     {
         cluster_msg *msg = msg_mem;
-        #ifdef CLUSTER_DEBUG
-            printf("Rank %d SHUTDOWN\n", myrank);
-        #endif
+    #ifdef DEBUG
+        printf("[VEM cluster] Rank %d SHUTDOWN\n", myrank);
+    #endif
         msg->type = CLUSTER_SHUTDOWN;
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);

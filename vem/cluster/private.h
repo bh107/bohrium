@@ -22,7 +22,6 @@
 #include <mpi.h>
 #include <cphvb.h>
 
-#define CLUSTER_DEBUG
 //#define CLUSTER_STATISTICS
 //#define CLUSTER_TIME
 //#define CLUSTER_TIME_NODE 0
