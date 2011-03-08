@@ -135,6 +135,14 @@ void Kernel::launchGrid(KernelShape* shape)
                                          shape->blocksPerGridY);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "KernelShape : " << std::endl <<
+            "\tthreadsPerBlockX: " << shape->threadsPerBlockX << std::endl << 
+            "\tthreadsPerBlockY: " << shape->threadsPerBlockY << std::endl << 
+            "\tthreadsPerBlockZ: " << shape->threadsPerBlockZ << std::endl << 
+            "\tblocksPerGridX: " << shape->blocksPerGridX << std::endl << 
+            "\tblocksPerGridY: " << shape->blocksPerGridY << std::endl; 
+#endif
         throw std::runtime_error("Could not set kernel grid.");
     }
 }

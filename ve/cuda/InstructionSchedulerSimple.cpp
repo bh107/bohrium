@@ -29,10 +29,6 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
 
 void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 {
-#ifdef DEBUG
-    std::cout << "InstructionSchedulerSimple::schedule(" <<  
-        cphvb_opcode_text(inst->opcode) << ")" << std::endl;
-#endif
     switch (inst->opcode)
     {
     case CPHVB_RELEASE:
@@ -45,8 +41,19 @@ void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
         dataManager->discard(inst->operand[0]);
         break;
     default:
+#ifdef DEBUG
+    std::cout << "[VE CUDA] InstructionSchedulerSimple::schedule(" <<  
+        cphvb_opcode_text(inst->opcode) << " ," << 
+        inst->operand[0]  << " ," << 
+        inst->operand[1]  << " ," << 
+        inst->operand[2]  << ")" << std::endl;
+#endif
         Threads threads = cphvb_nelements(inst->operand[0]->ndim, 
                                           inst->operand[0]->shape);
+        if (threads == 0)
+        {
+            return;
+        }
         BatchTable::iterator biter = batchTable.find(threads);
         if (biter != batchTable.end())
         {
