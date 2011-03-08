@@ -183,7 +183,10 @@ void DataManagerSimple::discard(cphVBArray* baseArray)
 
 void DataManagerSimple::flushAll()
 {
-    activeBatch->execute();
+    if (activeBatch != NULL)
+    {
+        activeBatch->execute();
+    }
     writeLockTable.clear(); //OK because we are only working with one batch
     activeBatch = NULL;
 }
