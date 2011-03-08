@@ -65,6 +65,7 @@ void KernelGeneratorSimple::clear()
     constantBuffer->clear();
     instructionList->clear();
     ptxKernel->clear();
+    parameters.clear();
 }
 
 

@@ -33,7 +33,6 @@ cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
                                cphvb_intp *datatype_count,
                                cphvb_type datatype_list[])
 {
-    std::cout << "CUDA Init" << std::endl;
     *opcode_count = 0;
     for (cphvb_opcode oc = 0; oc < CPHVB_NO_OPCODES; ++oc)
     {
@@ -67,7 +66,6 @@ cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
 cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
                                   cphvb_instruction instruction_list[])
 {
-    std::cout << "CUDA Execute" << std::endl;
     try {
         instructionScheduler->schedule(instruction_count,
                                        (cphVBInstruction*)instruction_list);
@@ -93,4 +91,3 @@ cphvb_error cphvb_ve_cuda_shutdown()
     }
     return CPHVB_SUCCESS;
 }
-

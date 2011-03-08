@@ -30,7 +30,12 @@ void DataManagerSimple::_sync(cphVBArray* baseArray)
     WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
     if (wliter != writeLockTable.end())
     {
-        activeBatch->execute();
+        //assert(activeBatch != NULL);
+        if (activeBatch != NULL)
+        {
+            activeBatch->execute();
+        }
+        writeLockTable.clear(); //OK because we are only working with one batch
         activeBatch = NULL;
     }
 }
@@ -106,6 +111,7 @@ void DataManagerSimple::lock(cphVBArray* operands[],
     else if (batch != activeBatch)
     {
         activeBatch->execute();
+        writeLockTable.clear(); //OK because we are only working with one batch
         activeBatch = batch;
     }
     
@@ -126,9 +132,6 @@ void DataManagerSimple::lock(cphVBArray* operands[],
 
 void DataManagerSimple::release(cphVBArray* baseArray)
 {
-#ifdef DEBUG
-    std::cout << "DataManagerSimple::release()" << std::endl;
-#endif
     sync(baseArray);
     discard(baseArray);
 }
@@ -181,8 +184,6 @@ void DataManagerSimple::discard(cphVBArray* baseArray)
 void DataManagerSimple::flushAll()
 {
     activeBatch->execute();
+    writeLockTable.clear(); //OK because we are only working with one batch
     activeBatch = NULL;
 }
-
-
-
