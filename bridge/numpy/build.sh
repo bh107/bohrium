@@ -61,8 +61,5 @@ for arg in $@
       then
         $PYTHON setup.py build
     fi
-    if [ "$arg" = "all" ]
-      then
-        $PYTHON setup.py build
-    fi
 done
+$PYTHON setup.py build
