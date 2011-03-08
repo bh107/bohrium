@@ -69,9 +69,6 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             cphvb_index coord[CPHVB_MAXDIM];
             memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-            assert(a0->ndim == a1->ndim);
-            assert(a0->ndim == a2->ndim);
-
             if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS)
             {
                 fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
@@ -105,6 +102,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 
                 for(j=0; j<a0->ndim; ++j)
                     off0 += coord[j] * a0->stride[j];
+                off0 += a0->start;
                 if(a1 != CPHVB_CONSTANT)
                 {
                     for(j=0; j<a0->ndim; ++j)
