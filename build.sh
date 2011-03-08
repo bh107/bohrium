@@ -10,8 +10,11 @@ PYTHON="/usr/bin/python"
 CUDA=0
 CLUSTER=0
 BRIDGE=""
+preBUILD=""
+posBUILD=""
+INSTALL=0
 
-while getopts "M:E:C:" opt; do
+while getopts "M:E:C:D:" opt; do
   case $opt in
     M)
       HIGH=`echo $OPTARG  | tr '[a-z]' '[A-Z]'`
@@ -24,6 +27,10 @@ while getopts "M:E:C:" opt; do
       LOW=`echo $OPTARG  | tr '[A-Z]' '[a-z]'`
       export CFLAGS="-D$HIGH $CFLAGS"
       CUDA=1
+      ;;
+    D)
+      export CFLAGS="-D$OPTARG $CFLAGS"
+      BRIDGE="$BRIDGE -D$OPTARG"
       ;;
     C)
       PYTHON="$OPTARG"
@@ -39,36 +46,61 @@ while getopts "M:E:C:" opt; do
   esac
 done
 
+# Decrements the argument pointer so it points to next argument.
+# $1 now references the first non-option item supplied on the command-line
+# if one exists.
+shift $(($OPTIND - 1))
+
+for arg in $@
+  do
+    if [ "$arg" = "clean" ]
+      then
+        posBUILD="$posBUILD clean"
+    fi
+    if [ "$arg" = "install" ]
+      then
+        posBUILD="$posBUILD install"
+        INSTALL=1
+    fi
+    if [ "$arg" = "all" ]
+      then
+        posBUILD="$posBUILD all"
+    fi
+done
 
 #Change current directory to where numpy and this script is located.
-cd `dirname "$0"`
 if [ "$CLUSTER" -eq "1" ]
   then
     echo "***Building VEM-CLUSTER***"
     cd vem/cluster
-    make clean all
+    make $posBUILD
     cd ../..
     BRIDGE="$BRIDGE -MCLUSTER"
 fi
 echo "***Building VEM-NODE***"
 cd vem/node
-make clean all
+$preBUILD make $posBUILD
 cd ../../
 if [ "$CUDA" -eq "1" ]
   then
     echo "***Building VE-CUDA***"
     cd ve/cuda
-    make all
+    $preBUILD make $posBUILD
     cd ../../
     BRIDGE="$BRIDGE -ECUDA"
 fi
 echo "***Building VE-SIMPLE***"
 cd ve/simple
-make all
+$preBUILD make $posBUILD
 cd ../../
 echo "***Building CORE***"
 cd core
-make all
+$preBUILD make $posBUILD
 cd ..
 echo "***Building NUMPY_BRIDGE***"
-bridge/numpy/build.sh -C$PYTHON $BRIDGE
+bridge/numpy/build.sh -C$PYTHON $BRIDGE $posBUILD
+
+if [ "$INSTALL" -eq "1" ]
+  then
+    sudo ldconfig
+fi

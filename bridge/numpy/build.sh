@@ -12,7 +12,7 @@ export LDFLAGS="-L$ROOT/vem/node -lcphvb_vem_node $LDFLAGS"
 export LDFLAGS="-L$ROOT/ve/simple -lcphvb_ve_simple $LDFLAGS"
 PYTHON="/usr/bin/python"
 
-while getopts "M:E:C:" opt; do
+while getopts "M:E:C:D:" opt; do
   case $opt in
     M)
       HIGH=`echo $OPTARG  | tr '[a-z]' '[A-Z]'`
@@ -29,6 +29,9 @@ while getopts "M:E:C:" opt; do
         export LDFLAGS="-L/usr/lib/nvidia -lcuda $LDFLAGS"
       fi
       ;;
+    D)
+      export CFLAGS="-D$OPTARG $CFLAGS"
+      ;;
     C)
       PYTHON="$OPTARG"
       ;;
@@ -42,6 +45,24 @@ while getopts "M:E:C:" opt; do
   esac
 done
 
+# Decrements the argument pointer so it points to next argument.
+# $1 now references the first non-option item supplied on the command-line
+# if one exists.
+shift $(($OPTIND - 1))
 
-#Call NumPy build script
-$PYTHON setup.py build
+for arg in $@
+  do
+    if [ "$arg" = "clean" ]
+      then
+        echo "rm -R build/"
+        rm -R build/
+    fi
+    if [ "$arg" = "install" ]
+      then
+        $PYTHON setup.py build
+    fi
+    if [ "$arg" = "all" ]
+      then
+        $PYTHON setup.py build
+    fi
+done
