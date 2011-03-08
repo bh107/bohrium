@@ -293,11 +293,10 @@ dnumpy_data_overlap(intp A, intp B)
     assert(A != 0);
     assert(B != 0);
 
-    //At the moment we only check at the array-base level.
-    if(cphvb_base_array(a) == cphvb_base_array(b))
-        return 1;
-    else
+    if(a == b)//No conflict since it is the exact same array-view.
         return 0;
+    else if(cphvb_base_array(a) == cphvb_base_array(b))
+        return 1;
 
     return 0;
 } /* dnumpy_data_overlap */
