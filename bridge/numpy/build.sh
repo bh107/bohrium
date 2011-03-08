@@ -50,16 +50,24 @@ done
 # if one exists.
 shift $(($OPTIND - 1))
 
+DEFAULT=1
 for arg in $@
   do
     if [ "$arg" = "clean" ]
       then
         echo "rm -R build/"
         rm -R build/
+        DEFAULT=0
     fi
     if [ "$arg" = "install" ]
       then
         $PYTHON setup.py build
+        DEFAULT=0
     fi
 done
-$PYTHON setup.py build
+
+if [ "$DEFAULT" -eq "1" ]
+  then
+    $PYTHON setup.py build
+fi
+
