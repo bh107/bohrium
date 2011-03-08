@@ -158,6 +158,8 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
     }
 
     *new_array = array;
+
+//    printf("create_array (%p) -- base: %p, type: %s, ndim: %ld, start: %ld, shape: (%ld), stride: (%ld), has_init: %ld\n", array, base, cphvb_type_text(type), ndim, start, shape[0], stride[0], has_init_value);
     return CPHVB_SUCCESS;
 }
 
@@ -261,6 +263,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         }
         default:
         {
+            #ifdef DEBUG
+                printf("[VEM node] execute: %s\n",
+                       cphvb_opcode_text(inst->opcode));
+            #endif
             cphvb_error error = ve_execute(1, inst);
             if(error)
             {

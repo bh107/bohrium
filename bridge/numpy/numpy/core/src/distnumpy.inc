@@ -412,6 +412,13 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         return -1;
     }
 
+    #ifdef DEBUG
+        printf("[NumPy] ufunc (output last):");
+        for(i=0; i<ufunc->nargs; ++i)
+            printf(" %p", (cphvb_array*) args[i]->dnduid);
+        printf("\n");
+    #endif
+
     //Create an instruction that represent the ufunc operation.
     //Note that the outputs are the first operands.
     inst.opcode = ufunc->opcode;
