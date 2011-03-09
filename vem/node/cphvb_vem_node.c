@@ -216,7 +216,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         {
         case CPHVB_DESTORY:
         {
-            cphvb_array *base = cphvb_base_array(inst->operand[0]);
+            cphvb_array *ary = inst->operand[0];
+            cphvb_array *base = cphvb_base_array(ary);
 
             if(--base->ref_count <= 0)
             {
@@ -235,11 +236,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 //Cleanup the array.
                 if(base->data != NULL)
                     free(base->data);
-
-                if(inst->operand[0]->base != NULL)
+                if(ary->base != NULL)//ary is a view.
                     free(base);
             }
-            free(inst->operand[0]);
+            free(ary);
             break;
         }
         case CPHVB_RELEASE:
