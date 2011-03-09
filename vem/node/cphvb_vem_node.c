@@ -248,7 +248,11 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         {
             //Get the base
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
-
+            if (base->owner == CPHVB_PARENT)
+            {
+                return CPHVB_SUCCESS;
+            }
+            
             //Tell the VE to release the array.
             inst->operand[0] = base;
             inst->opcode = CPHVB_RELEASE;
@@ -261,10 +265,22 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                 cphvb_opcode_text(inst->opcode));
                 exit(error);
             }
+            else
+            {
+                base->owner = CPHVB_PARENT;
+            }
             break;
         }
         default:
         {
+            for (int i = 0; i < cphvb_operands(inst->opcode); ++i)
+            {
+                if (inst->operand[i] != CPHVB_CONSTANT)
+                {
+                    cphvb_array *base = cphvb_base_array(inst->operand[i]);
+                    base->owner = CPHVB_CHILD;
+                }
+            }
             #ifdef DEBUG
                 printf("[VEM node] execute: %s\n",
                        cphvb_opcode_text(inst->opcode));
