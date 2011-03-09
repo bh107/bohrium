@@ -28,6 +28,8 @@
 #include "KernelShape.hpp"
 #include "CUDAerrorCode.h"
 
+#undef DEBUG
+
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
 

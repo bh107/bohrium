@@ -33,6 +33,6 @@ struct cphVBarray
     CUdeviceptr      cudaPtr;
 };
 
-void printArraySpec(cphVBarray array);
+void printArraySpec(cphVBarray* array);
 
 #endif
