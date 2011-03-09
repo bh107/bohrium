@@ -22,7 +22,7 @@
 #define __INSTRUCTIONSCHEDULERSIMPLE_HPP
 
 #include <map>
-#include "cphVBinstruction.h"
+#include "cphVBinstruction.hpp"
 #include "InstructionScheduler.hpp"
 #include "InstructionBatchSimple.hpp"
 #include "KernelGenerator.hpp"

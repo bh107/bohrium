@@ -29,8 +29,8 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
     kernelGenerator(kernelGenerator_) 
 {
 #ifdef DEBUG
-    std::cout << "Created InstructionBatch with " << threads << "threads." << 
-        std::endl;
+    std::cout << "[VE CUDA] Created InstructionBatch with " << threads 
+              << "threads." << std::endl;
 #endif
 }
 

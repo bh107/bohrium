@@ -16,7 +16,8 @@ CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		PTXinstructionList InstructionTranslator PTXkernel Kernel \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
 		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
-		PTXspecialRegister Configuration cphVBarray cphvb_ve_cuda
+		PTXspecialRegister Configuration cphVBarray cphVBinstruction \
+		cphvb_ve_cuda
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/usr/local/lib/
 

@@ -17,10 +17,10 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBINSTRUCTION_H
-#define __CPHVBINSTRUCTION_H
+#ifndef __CPHVBINSTRUCTION_HPP
+#define __CPHVBINSTRUCTION_HPP
 
-#include <cphvb_instruction.h>
+#include <cphvb.h>
 #include "cphVBarray.hpp"
 
 /* Matches memory layout of cphvb_instruction */
@@ -35,5 +35,7 @@ struct cphVBinstruction
     //The constant type
     cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 };
+
+void printInstSpec(cphVBinstruction* inst);
 
 #endif

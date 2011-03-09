@@ -21,7 +21,7 @@
 #define __KERNELGENERATOR_HPP
 
 #include <vector>
-#include "cphVBinstruction.h"
+#include "cphVBinstruction.hpp"
 
 typedef long int Threads;
 typedef std::vector<cphVBinstruction*>::iterator InstructionIterator;

@@ -21,7 +21,7 @@
 #ifndef __INSTRUCTIONSCHEDULER_HPP
 #define __INSTRUCTIONSCHEDULER_HPP
 
-#include "cphVBinstruction.h"
+#include "cphVBinstruction.hpp"
 
 class InstructionScheduler
 {

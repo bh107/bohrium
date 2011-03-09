@@ -20,7 +20,7 @@
 #ifndef __INSTRUCTIONBATCH_HPP
 #define __INSTRUCTIONBATCH_HPP
 
-#include "cphVBinstruction.h"
+#include "cphVBinstruction.hpp"
 
 class InstructionBatch
 {

@@ -32,7 +32,7 @@
 #include "Kernel.hpp"
 #include "KernelParameter.hpp"
 #include "InstructionTranslator.hpp"
-#include "cphVBinstruction.h"
+#include "cphVBinstruction.hpp"
 
 struct PTXaddress
 {
