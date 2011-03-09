@@ -35,7 +35,7 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
 }
 
 
-void InstructionBatchSimple::add(cphVBInstruction* inst)
+void InstructionBatchSimple::add(cphVBinstruction* inst)
 {
     int nops = cphvb_operands(inst->opcode);
     dataManager->lock(inst->operand, nops, this);

@@ -22,7 +22,7 @@
 #define __INSTRUCTIONSCHEDULERSIMPLE_HPP
 
 #include <map>
-#include "cphVBInstruction.h"
+#include "cphVBinstruction.h"
 #include "InstructionScheduler.hpp"
 #include "InstructionBatchSimple.hpp"
 #include "KernelGenerator.hpp"
@@ -39,9 +39,9 @@ private:
 public:
     InstructionSchedulerSimple(DataManager* dataManager,
                                KernelGenerator* kernelGenerator);
-    void schedule(cphVBInstruction* inst);
+    void schedule(cphVBinstruction* inst);
     void schedule(cphvb_intp instructionCount,
-                  cphVBInstruction* instructionList);
+                  cphVBinstruction* instructionList);
     void flush();
 };
 

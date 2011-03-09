@@ -9,14 +9,14 @@ LCFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-CSRC=PTXopcode PTXsreg PTXtype PTXversion
+CSRC=PTXopcode PTXsreg PTXtype PTXversion CUDAerrorCode
 CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		DeviceManager PTXconstantBuffer DeviceManagerSimple PTXconstant \
 		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
 		PTXinstructionList InstructionTranslator PTXkernel Kernel \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
 		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
-		PTXspecialRegister Configuration cphvb_ve_cuda
+		PTXspecialRegister Configuration cphVBarray cphvb_ve_cuda
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/usr/local/lib/
 

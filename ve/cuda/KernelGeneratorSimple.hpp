@@ -32,7 +32,7 @@
 #include "Kernel.hpp"
 #include "KernelParameter.hpp"
 #include "InstructionTranslator.hpp"
-#include "cphVBInstruction.h"
+#include "cphVBinstruction.h"
 
 struct PTXaddress
 {
@@ -40,9 +40,9 @@ struct PTXaddress
     PTXconstant* off;
 };
 
-typedef std::map<const cphVBArray*, PTXregister*> ElementMap;
-typedef std::map<const cphVBArray*, PTXaddress> AddressMap;
-typedef std::map<PTXregister*, const cphVBArray*> StoreMap;
+typedef std::map<const cphVBarray*, PTXregister*> ElementMap;
+typedef std::map<const cphVBarray*, PTXaddress> AddressMap;
+typedef std::map<PTXregister*, const cphVBarray*> StoreMap;
 
 class InstructionBatchSimple;
 
@@ -63,10 +63,10 @@ private:
     ParameterList parameters;
     void init(Threads threads);
     void clear();
-    void addInstruction(const cphVBInstruction* inst);
-    PTXregister* calcOffset(const cphVBArray* array);
-    PTXaddress   calcAddress(const cphVBArray* array);
-    PTXregister* loadElement(const cphVBArray* array);
+    void addInstruction(const cphVBinstruction* inst);
+    PTXregister* calcOffset(const cphVBarray* array);
+    PTXaddress   calcAddress(const cphVBarray* array);
+    PTXregister* loadElement(const cphVBarray* array);
     PTXregister* loadScalar(cphvb_type type,
                             cphvb_constant value);
     void storeAll();

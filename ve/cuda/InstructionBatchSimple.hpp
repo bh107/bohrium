@@ -33,12 +33,12 @@ private:
     Threads threads;
     DataManager* dataManager;
     KernelGenerator* kernelGenerator;
-    std::vector<cphVBInstruction*> batch;
+    std::vector<cphVBinstruction*> batch;
 public:
     InstructionBatchSimple(Threads threads,
                            DataManager* dataManager,
                            KernelGenerator* kernelGenerator);
-    void add(cphVBInstruction* inst);
+    void add(cphVBinstruction* inst);
     void execute();
 };
 

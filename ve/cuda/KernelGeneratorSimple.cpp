@@ -70,7 +70,7 @@ void KernelGeneratorSimple::clear()
 }
 
 
-PTXregister* KernelGeneratorSimple::calcOffset(const cphVBArray* array)
+PTXregister* KernelGeneratorSimple::calcOffset(const cphVBarray* array)
 {
     PTXregister* offsetReg = registerBank->newRegister(PTX_UINT32);
     cphvb_intp dim = array->ndim -1;
@@ -107,7 +107,7 @@ PTXregister* KernelGeneratorSimple::calcOffset(const cphVBArray* array)
     return offsetReg;
 }
 
-PTXaddress KernelGeneratorSimple::calcAddress(const cphVBArray* array)
+PTXaddress KernelGeneratorSimple::calcAddress(const cphVBarray* array)
 {
     PTXregister* offsetReg = offsetMap->find(array);
     if (offsetReg == NULL)
@@ -138,7 +138,7 @@ PTXaddress KernelGeneratorSimple::calcAddress(const cphVBArray* array)
     return {addressReg, off};
 }
 
-PTXregister* KernelGeneratorSimple::loadElement(const cphVBArray* array)
+PTXregister* KernelGeneratorSimple::loadElement(const cphVBarray* array)
 {
     PTXaddress address = calcAddress(array);
     PTXregister* elementReg = registerBank->newRegister(array->type);
@@ -157,7 +157,7 @@ PTXregister* KernelGeneratorSimple::loadScalar(cphvb_type type,
     return scalarReg;
 }
 
-void KernelGeneratorSimple::addInstruction(const cphVBInstruction* inst)
+void KernelGeneratorSimple::addInstruction(const cphVBinstruction* inst)
 {
     assert(inst->operand[0] != CPHVB_CONSTANT);
     int nops = cphvb_operands(inst->opcode);

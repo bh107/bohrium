@@ -25,17 +25,17 @@
 class MemoryManagerSimple : public MemoryManager
 {
 private:
-    size_t dataSize(cphVBArray* baseArray);
+    size_t dataSize(cphVBarray* baseArray);
 public:
     MemoryManagerSimple();
-    CUdeviceptr deviceAlloc(cphVBArray* baseArray);
-    cphvb_data_ptr hostAlloc(cphVBArray* baseArray);
-    void copyToHost(cphVBArray* baseArray);
-    void copyToDevice(cphVBArray* baseArray);
-    void free(cphVBArray* baseArray);
+    CUdeviceptr deviceAlloc(cphVBarray* baseArray);
+    cphvb_data_ptr hostAlloc(cphVBarray* baseArray);
+    void copyToHost(cphVBarray* baseArray);
+    void copyToDevice(cphVBarray* baseArray);
+    void free(cphVBarray* baseArray);
     void deviceCopy(CUdeviceptr dest,
-                    cphVBArray* src);
-    void memset(cphVBArray* baseArray);
+                    cphVBarray* src);
+    void memset(cphVBarray* baseArray);
 };
 
 #endif

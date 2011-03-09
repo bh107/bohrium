@@ -17,20 +17,23 @@
  * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_H
-#define __CPHVBARRAY_H
+#ifndef __CPHVBINSTRUCTION_H
+#define __CPHVBINSTRUCTION_H
 
-#include <cuda.h>  
-#include <cphvb_array.h>
+#include <cphvb_instruction.h>
+#include "cphVBarray.hpp"
 
-typedef struct cphVBArray cphVBArray;
-/* Matches memory layout of cphvb_array */
-struct cphVBArray
+/* Matches memory layout of cphvb_instruction */
+struct cphVBinstruction
 {
-    CPHVB_ARRAY_BASE
-    //Space reserved for extra meta data.
-    //Not persistent at ownership change
-    CUdeviceptr      cudaPtr;
+    //Opcode: Identifies the operation
+    cphvb_opcode   opcode;
+    //Id of each operand
+    cphVBarray*    operand[CPHVB_MAX_NO_OPERANDS];
+    //Constants included in the instruction
+    cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
+    //The constant type
+    cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 };
 
 #endif

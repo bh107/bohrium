@@ -21,19 +21,19 @@
 #define __MEMORYMANAGER_HPP
 
 #include <cuda.h>
-#include "cphVBArray.h"
+#include "cphVBarray.hpp"
 
 class MemoryManager
 {
 public:
-    virtual CUdeviceptr deviceAlloc(cphVBArray* baseArray) = 0;
-    virtual cphvb_data_ptr hostAlloc(cphVBArray* baseArray) = 0;
-    virtual void copyToHost(cphVBArray* baseArray) = 0;
-    virtual void copyToDevice(cphVBArray* baseArray) = 0;
-    virtual void free(cphVBArray* baseArray) = 0;
+    virtual CUdeviceptr deviceAlloc(cphVBarray* baseArray) = 0;
+    virtual cphvb_data_ptr hostAlloc(cphVBarray* baseArray) = 0;
+    virtual void copyToHost(cphVBarray* baseArray) = 0;
+    virtual void copyToDevice(cphVBarray* baseArray) = 0;
+    virtual void free(cphVBarray* baseArray) = 0;
     virtual void deviceCopy(CUdeviceptr dest,
-                            cphVBArray* src) = 0;
-    virtual void memset(cphVBArray* baseArray) = 0;
+                            cphVBarray* src) = 0;
+    virtual void memset(cphVBarray* baseArray) = 0;
 };
 
 #endif

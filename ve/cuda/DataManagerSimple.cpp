@@ -25,7 +25,7 @@
 #include "DataManagerSimple.hpp"
 #include "WrapperFunctions.hpp"
 
-void DataManagerSimple::_sync(cphVBArray* baseArray)
+void DataManagerSimple::_sync(cphVBarray* baseArray)
 {
     WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
     if (wliter != writeLockTable.end())
@@ -40,7 +40,7 @@ void DataManagerSimple::_sync(cphVBArray* baseArray)
     }
 }
 
-void DataManagerSimple::initCudaArray(cphVBArray* baseArray)
+void DataManagerSimple::initCudaArray(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     if (baseArray->data == NULL)
@@ -61,16 +61,16 @@ void DataManagerSimple::initCudaArray(cphVBArray* baseArray)
 }
 
 /* Map operands to CUDA device pointers via base arrays.
- * Also updates cphVBArray with apropriate info.
+ * Also updates cphVBarray with apropriate info.
  */
-void DataManagerSimple::mapOperands(cphVBArray* operands[],
+void DataManagerSimple::mapOperands(cphVBarray* operands[],
                                     int nops)
 {
     assert (nops > 0);
     Operand2BaseMap::iterator oiter;
     Base2CudaMap::iterator biter;
-    cphVBArray* baseArray;
-    cphVBArray* operand;
+    cphVBarray* baseArray;
+    cphVBarray* operand;
     for (int i = 0; i < nops; ++i)
     {
         operand = operands[i];
@@ -100,7 +100,7 @@ DataManagerSimple::DataManagerSimple(MemoryManager* memoryManager_) :
     memoryManager(memoryManager_),
     activeBatch(NULL) {}
 
-void DataManagerSimple::lock(cphVBArray* operands[], 
+void DataManagerSimple::lock(cphVBarray* operands[], 
                              int nops, 
                              InstructionBatch* batch)
 {
@@ -118,7 +118,7 @@ void DataManagerSimple::lock(cphVBArray* operands[],
     assert(nops > 0);
     mapOperands(operands, nops);
     
-    cphVBArray* baseArray;
+    cphVBarray* baseArray;
     /* We need to _sync all arrays that are read in the operation*/
     for (int i = 1; i < nops; ++i)
     {
@@ -130,21 +130,22 @@ void DataManagerSimple::lock(cphVBArray* operands[],
     writeLockTable[baseArray] = batch;
 }
 
-void DataManagerSimple::release(cphVBArray* baseArray)
+void DataManagerSimple::release(cphVBarray* baseArray)
 {
     sync(baseArray);
     discard(baseArray);
 }
 
-void DataManagerSimple::sync(cphVBArray* baseArray)
+void DataManagerSimple::sync(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     
     // I may recieve sync for arrays I don't own :-(
     Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
     if (biter == base2Cuda.end())
-        return;
-
+    {
+       return;
+    }
     _sync(baseArray);
     if (baseArray->data == NULL)
     {
@@ -154,16 +155,16 @@ void DataManagerSimple::sync(cphVBArray* baseArray)
     memoryManager->copyToHost(baseArray);
 }
 
-void DataManagerSimple::discard(cphVBArray* baseArray)
+void DataManagerSimple::discard(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     
     // I may recieve discard for arrays I don't own :-( 
     Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
     if (biter == base2Cuda.end())
+    {
         return;
-
-
+    }
     memoryManager->free(baseArray);
     baseArray->cudaPtr = 0;
     base2Cuda.erase(baseArray);

@@ -25,9 +25,9 @@
 #include "MemoryManager.hpp"
 #include "InstructionBatch.hpp"
 
-typedef std::map<cphVBArray*, InstructionBatch*> WriteLockTable;
-typedef std::map<cphVBArray*, CUdeviceptr> Base2CudaMap;
-typedef std::map<cphVBArray* ,cphVBArray*> Operand2BaseMap;
+typedef std::map<cphVBarray*, InstructionBatch*> WriteLockTable;
+typedef std::map<cphVBarray*, CUdeviceptr> Base2CudaMap;
+typedef std::map<cphVBarray* ,cphVBarray*> Operand2BaseMap;
 
 class DataManagerSimple : public DataManager
 {
@@ -37,18 +37,18 @@ private:
     Base2CudaMap base2Cuda;
     Operand2BaseMap op2Base;
     InstructionBatch* activeBatch;
-    void _sync(cphVBArray* baseArray);
-    void initCudaArray(cphVBArray* baseArray);
-    void mapOperands(cphVBArray* operands[],
+    void _sync(cphVBarray* baseArray);
+    void initCudaArray(cphVBarray* baseArray);
+    void mapOperands(cphVBarray* operands[],
                      int nops);
 public:
     DataManagerSimple(MemoryManager* memoryManager_);
-    void lock(cphVBArray* operands[], 
+    void lock(cphVBarray* operands[], 
               int nops, 
               InstructionBatch* batch);
-    void release(cphVBArray* baseArray);
-    void sync(cphVBArray* baseArray);
-    void discard(cphVBArray* baseArray);
+    void release(cphVBarray* baseArray);
+    void sync(cphVBarray* baseArray);
+    void discard(cphVBarray* baseArray);
     void flushAll();
 };
 

@@ -20,9 +20,9 @@
 #ifndef __WRAPPERFUNCTIONS_HPP
 #define __WRAPPERFUNCTIONS_HPP
 
-inline cphVBArray* cphVBBaseArray(cphVBArray* array)
+inline cphVBarray* cphVBBaseArray(cphVBarray* array)
 {
-    return (cphVBArray*)cphvb_base_array((cphvb_array*)array);
+    return (cphVBarray*)cphvb_base_array((cphvb_array*)array);
 }
 
 #endif

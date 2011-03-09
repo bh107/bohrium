@@ -18,14 +18,16 @@
  */
 
 
+#include <iostream>
 #include <stdexcept>
 #include <cassert>
 #include <cstdlib>
 #include <cuda.h>
 #include <cphvb.h>
 #include "MemoryManagerSimple.hpp"
+#include "CUDAerrorCode.h"
 
-size_t MemoryManagerSimple::dataSize(cphVBArray* baseArray)
+size_t MemoryManagerSimple::dataSize(cphVBarray* baseArray)
 {
     size_t size = cphvb_nelements(baseArray->ndim, baseArray->shape);
     size *= cphvb_type_size(baseArray->type);
@@ -34,21 +36,28 @@ size_t MemoryManagerSimple::dataSize(cphVBArray* baseArray)
 
 MemoryManagerSimple::MemoryManagerSimple() {}
     
-CUdeviceptr MemoryManagerSimple::deviceAlloc(cphVBArray* baseArray)
+CUdeviceptr MemoryManagerSimple::deviceAlloc(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     assert(baseArray->ndim > 0);
     CUdeviceptr cudaPtr;
     size_t size = dataSize(baseArray);
     CUresult error = cuMemAlloc(&cudaPtr, size);
+#ifdef DEBUG
+    std::cout << "[VE CUDA] cuMemAlloc(" << (void*)cudaPtr << ", " << 
+        size << ")" << std::endl;
+#endif
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not allocate memory on device");
     }
     return cudaPtr;
 }
 
-cphvb_data_ptr MemoryManagerSimple::hostAlloc(cphVBArray* baseArray)
+cphvb_data_ptr MemoryManagerSimple::hostAlloc(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     size_t size = dataSize(baseArray);
@@ -60,22 +69,29 @@ cphvb_data_ptr MemoryManagerSimple::hostAlloc(cphVBArray* baseArray)
     return res;
 }
 
-void MemoryManagerSimple::copyToHost(cphVBArray* baseArray)
+void MemoryManagerSimple::copyToHost(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     assert(baseArray->cudaPtr != 0);
     assert(baseArray->data != NULL);
     size_t size = dataSize(baseArray);
+#ifdef DEBUG
+    std::cout << "[VE CUDA] cuMemcpyDtoH(" << baseArray->data << ", " << 
+        (void*)baseArray->cudaPtr << ", " << size << ")" << std::endl;
+#endif
     CUresult error = cuMemcpyDtoH(baseArray->data, baseArray->cudaPtr, 
                                   size);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not copy to Host.");
     }
     return;
 }
 
-void MemoryManagerSimple::copyToDevice(cphVBArray* baseArray)
+void MemoryManagerSimple::copyToDevice(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     assert(baseArray->data != NULL);
@@ -85,22 +101,28 @@ void MemoryManagerSimple::copyToDevice(cphVBArray* baseArray)
                                   size);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not copy to Device.");
     }
 }
 
-void MemoryManagerSimple::free(cphVBArray* baseArray)
+void MemoryManagerSimple::free(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     CUresult error = cuMemFree(baseArray->cudaPtr);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not free device memory.");
     }
 }
     
 void MemoryManagerSimple::deviceCopy(CUdeviceptr dest,
-                                     cphVBArray* src)
+                                     cphVBarray* src)
 {
     assert(src->base == NULL);
     assert(src->cudaPtr != 0);
@@ -108,11 +130,14 @@ void MemoryManagerSimple::deviceCopy(CUdeviceptr dest,
     CUresult error = cuMemcpyDtoD(dest, src->cudaPtr, size);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not copy at Device.");
     }
 }
 
-void MemoryManagerSimple::memset(cphVBArray* baseArray)
+void MemoryManagerSimple::memset(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     assert(baseArray->cudaPtr != 0);

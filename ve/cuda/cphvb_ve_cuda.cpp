@@ -68,7 +68,7 @@ cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
 {
     try {
         instructionScheduler->schedule(instruction_count,
-                                       (cphVBInstruction*)instruction_list);
+                                       (cphVBinstruction*)instruction_list);
         instructionScheduler->flush();
     }
     catch (std::exception& e)

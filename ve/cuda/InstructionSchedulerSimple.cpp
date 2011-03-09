@@ -27,7 +27,7 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
     dataManager(dataManager_),
     kernelGenerator(kernelGenerator_){}
 
-void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
+void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 {
     switch (inst->opcode)
     {
@@ -71,7 +71,7 @@ void InstructionSchedulerSimple::schedule(cphVBInstruction* inst)
 }
 
 void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
-                                         cphVBInstruction* instructionList)
+                                         cphVBinstruction* instructionList)
 {
 
     for (cphvb_intp i = 0; i < instructionCount; ++i)

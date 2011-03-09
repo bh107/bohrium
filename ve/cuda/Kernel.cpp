@@ -26,6 +26,7 @@
 #include "KernelParameter.hpp"
 #include "Kernel.hpp"
 #include "KernelShape.hpp"
+#include "CUDAerrorCode.h"
 
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
@@ -65,7 +66,7 @@ Kernel::Kernel(PTXkernel* ptxKernel)
     CUresult error = cuModuleLoadDataEx(&module, ptxKernelSource, 
                                         options, jitOptions, jitValues);      
 #ifdef DEBUG
-    std::cout << "Compilation failed." << std::endl;
+    std::cout << "[VE CUDA] Compilation info:" << std::endl;
     std::cout << "--- INFO BEGIN ---" << std::endl;
     std::cout << jitInfoLogBuffer << std::endl;
     std::cout << "---- INFO END ----" << std::endl;		
@@ -79,12 +80,18 @@ Kernel::Kernel(PTXkernel* ptxKernel)
 
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not compile kermel");
     }
     
     error = cuModuleGetFunction(&entry, module, ptxKernel->name);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not get function name.");
     }
     signature = ptxKernel->getSignature();
@@ -106,6 +113,9 @@ void Kernel::setParameters(ParameterList parameters)
                             ptxSizeOf(piter->type));
         if (error !=  CUDA_SUCCESS)
         {
+#ifdef DEBUG
+            std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
             throw std::runtime_error("Could not set kernel parameter.");
         }
         offset += ptxSizeOf(piter->type);
@@ -114,6 +124,9 @@ void Kernel::setParameters(ParameterList parameters)
     error = cuParamSetSize(entry,offset);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not set kernel parameter list size.");
     }
 }
@@ -123,6 +136,9 @@ void Kernel::setBlockShape(int x, int y, int z)
     CUresult error = cuFuncSetBlockShape(entry, x, y, y);
     if (error !=  CUDA_SUCCESS)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
+#endif
         throw std::runtime_error("Could not set kernel block shape.");
     }
 }
@@ -136,6 +152,7 @@ void Kernel::launchGrid(KernelShape* shape)
     if (error !=  CUDA_SUCCESS)
     {
 #ifdef DEBUG
+        std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
         std::cout << "KernelShape : " << std::endl <<
             "\tthreadsPerBlockX: " << shape->threadsPerBlockX << std::endl << 
             "\tthreadsPerBlockY: " << shape->threadsPerBlockY << std::endl << 

@@ -22,7 +22,7 @@
 
 #include <map>
 #include <cphvb.h>
-#include "cphVBArray.h"
+#include "cphVBarray.hpp"
 #include "PTXregister.hpp"
 #include "OffsetMap.hpp"
 
@@ -37,12 +37,12 @@ public:
     PTXregister* find(cphvb_intp ndim,
                       const cphvb_index shape[],
                       const cphvb_index stride[]);
-    PTXregister* find(const cphVBArray* array);
+    PTXregister* find(const cphVBarray* array);
     void insert(cphvb_intp ndim,
                 const cphvb_index shape[],
                 const cphvb_index stride[],
                 PTXregister* reg);
-    void insert(const cphVBArray* array,
+    void insert(const cphVBarray* array,
                 PTXregister* reg);
     void clear();
 };

@@ -20,18 +20,18 @@
 #ifndef __DATAMANAGER_HPP
 #define __DATAMANAGER_HPP
 
-#include "cphVBArray.h"
+#include "cphVBarray.hpp"
 #include "InstructionBatch.hpp"
 
 class DataManager
 {
 public:
-    virtual void lock(cphVBArray* operands[], 
+    virtual void lock(cphVBarray* operands[], 
                       int nops, 
                       InstructionBatch* batch) = 0;
-    virtual void release(cphVBArray* array) = 0;
-    virtual void sync(cphVBArray* array) = 0;
-    virtual void discard(cphVBArray* baseArray) = 0;
+    virtual void release(cphVBarray* array) = 0;
+    virtual void sync(cphVBarray* array) = 0;
+    virtual void discard(cphVBarray* baseArray) = 0;
     virtual void flushAll() = 0;
 };
 

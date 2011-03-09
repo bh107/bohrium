@@ -21,7 +21,7 @@
 #define __OFFSETMAP_HPP
 
 #include <cphvb.h>
-#include "cphVBArray.h"
+#include "cphVBarray.hpp"
 #include "PTXregister.hpp"
 
 class OffsetMap
@@ -30,12 +30,12 @@ public:
     virtual PTXregister* find(cphvb_intp ndim,
                               const cphvb_index shape[],
                               const cphvb_index stride[]) = 0;
-    virtual PTXregister* find(const cphVBArray* array) = 0;
+    virtual PTXregister* find(const cphVBarray* array) = 0;
     virtual void insert(cphvb_intp ndim,
                         const cphvb_index shape[],
                         const cphvb_index stride[],
                         PTXregister* reg) = 0;
-    virtual void insert(const cphVBArray* array,
+    virtual void insert(const cphVBarray* array,
                         PTXregister* reg) = 0;
     virtual void clear() = 0;
 };

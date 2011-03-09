@@ -21,14 +21,14 @@
 #ifndef __INSTRUCTIONSCHEDULER_HPP
 #define __INSTRUCTIONSCHEDULER_HPP
 
-#include "cphVBInstruction.h"
+#include "cphVBinstruction.h"
 
 class InstructionScheduler
 {
 public:
-    virtual void schedule(cphVBInstruction* inst) = 0;
+    virtual void schedule(cphVBinstruction* inst) = 0;
     virtual void schedule(cphvb_intp instructionCount,
-                          cphVBInstruction* instructionList) = 0;
+                          cphVBinstruction* instructionList) = 0;
     virtual void flush() = 0;
 };
 

@@ -51,7 +51,7 @@ PTXregister* OffsetMapSimple::find(cphvb_intp ndim,
     return iter->second;
 }
 
-PTXregister* OffsetMapSimple::find(const cphVBArray* array)
+PTXregister* OffsetMapSimple::find(const cphVBarray* array)
 {
     return find(array->ndim, array->shape, array->stride);
 }
@@ -64,7 +64,7 @@ void OffsetMapSimple::insert(cphvb_intp ndim,
     internalMap[toString(ndim, shape, stride)] = reg;
 }
 
-void OffsetMapSimple::insert(const cphVBArray* array,
+void OffsetMapSimple::insert(const cphVBarray* array,
                              PTXregister* reg)
 {
     insert(array->ndim, array->shape, array->stride,reg);
