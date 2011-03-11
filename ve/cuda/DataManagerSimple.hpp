@@ -50,6 +50,7 @@ public:
     void sync(cphVBarray* baseArray);
     void discard(cphVBarray* baseArray);
     void flushAll();
+    void batchEnd();
 };
 
 #endif

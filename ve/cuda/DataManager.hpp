@@ -33,6 +33,7 @@ public:
     virtual void sync(cphVBarray* array) = 0;
     virtual void discard(cphVBarray* baseArray) = 0;
     virtual void flushAll() = 0;
+    virtual void batchEnd() = 0;
 };
 
 #endif

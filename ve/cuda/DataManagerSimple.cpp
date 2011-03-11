@@ -76,10 +76,16 @@ void DataManagerSimple::mapOperands(cphVBarray* operands[],
         operand = operands[i];
         if (operand != CPHVB_CONSTANT)
         {
+#ifdef DEBUG
+            std::cout << "[VE CUDA] Mapping " << operand;
+#endif            
             oiter = op2Base.find(operand);
             if (oiter == op2Base.end())
             {   //The operand is not mapped to a base array - so we will 
                 baseArray = cphVBBaseArray(operand);
+#ifdef DEBUG
+            std::cout << " to " << baseArray;
+#endif                            
                 biter = base2Cuda.find(baseArray);
                 if (biter == base2Cuda.end())
                 {   //The base array is not mapped to a cudaPtr - so we will
@@ -88,10 +94,29 @@ void DataManagerSimple::mapOperands(cphVBarray* operands[],
                     base2Cuda[baseArray] = cudaPtr;
                     baseArray->cudaPtr = cudaPtr;
                     initCudaArray(baseArray);
+#ifdef DEBUG
+                    std::cout << " which was unknown. Now has cudaPtr " <<
+                        (void*)cudaPtr << std::endl;
+#endif                            
                 }
+#ifdef DEBUG
+                else
+                {
+                    std::cout << " which is known to have cudaPtr " <<
+                        (void*)baseArray->cudaPtr << std::endl;
+                }
+#endif
                 operand->cudaPtr = baseArray->cudaPtr;
                 op2Base[operand] = baseArray;
             }
+#ifdef DEBUG
+            else
+            {
+                std::cout << ": Allready mapped to " << oiter->second << 
+                    " with cudaPtr " << (void*)oiter->second->cudaPtr << 
+                    std::endl;
+            }
+#endif
         }
     }
 }
@@ -158,7 +183,7 @@ void DataManagerSimple::sync(cphVBarray* baseArray)
 void DataManagerSimple::discard(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
-    
+  
     // I may recieve discard for arrays I don't own :-( 
     Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
     if (biter == base2Cuda.end())
@@ -190,4 +215,10 @@ void DataManagerSimple::flushAll()
     }
     writeLockTable.clear(); //OK because we are only working with one batch
     activeBatch = NULL;
+}
+
+void DataManagerSimple::batchEnd()
+{
+    flushAll();
+    op2Base.clear();
 }
