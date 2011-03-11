@@ -36,13 +36,14 @@ private:
     DataManager* dataManager;
     KernelGenerator* kernelGenerator;
     BatchTable batchTable;
+protected:
+    void schedule(cphVBinstruction* inst);
 public:
     InstructionSchedulerSimple(DataManager* dataManager,
                                KernelGenerator* kernelGenerator);
-    void schedule(cphVBinstruction* inst);
     void schedule(cphvb_intp instructionCount,
                   cphVBinstruction* instructionList);
-    void flush();
+    void flushAll();
 };
 
 #endif

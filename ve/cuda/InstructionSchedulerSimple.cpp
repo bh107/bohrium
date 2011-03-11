@@ -68,23 +68,22 @@ void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
     }
 }
 
+void InstructionSchedulerSimple::flushAll()
+{
+    dataManager->flushAll();
+}
+
 void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
                                          cphVBinstruction* instructionList)
 {
-
     for (cphvb_intp i = 0; i < instructionCount; ++i)
     {
         schedule(instructionList++);
     }
+    
+    /* End of batch cleanup */
+    dataManager->batchEnd();
 }
 
-void InstructionSchedulerSimple::flush()
-{
-    BatchTable::iterator iter = batchTable.begin();
-    for (; iter !=  batchTable.end(); ++iter)
-    {
-        iter->second->execute();
-    }
-}
 
 

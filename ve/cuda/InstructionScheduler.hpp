@@ -25,11 +25,12 @@
 
 class InstructionScheduler
 {
-public:
+protected:
     virtual void schedule(cphVBinstruction* inst) = 0;
+public:
+    virtual void flushAll() = 0;
     virtual void schedule(cphvb_intp instructionCount,
                           cphVBinstruction* instructionList) = 0;
-    virtual void flush() = 0;
 };
 
 #endif
