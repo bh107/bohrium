@@ -66,10 +66,10 @@ cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
 cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
                                   cphvb_instruction instruction_list[])
 {
-    try {
+    try 
+    {
         instructionScheduler->schedule(instruction_count,
                                        (cphVBinstruction*)instruction_list);
-        instructionScheduler->flush();
     }
     catch (std::exception& e)
     {
@@ -81,8 +81,9 @@ cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
 
 cphvb_error cphvb_ve_cuda_shutdown()
 {
-    try {
-        instructionScheduler->flush();
+    try 
+    {
+        instructionScheduler->flushAll();
     }
     catch (std::exception& e)
     {

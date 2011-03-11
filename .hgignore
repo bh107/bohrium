@@ -5,4 +5,8 @@ syntax: glob
 *.o
 *.oo
 *.so
+*.orig
 bridge/numpy/build/*
+ve/cuda/log
+ve/cuda/pytest
+stuff

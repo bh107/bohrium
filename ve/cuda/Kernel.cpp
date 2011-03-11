@@ -28,7 +28,6 @@
 #include "KernelShape.hpp"
 #include "CUDAerrorCode.h"
 
-#undef DEBUG
 
 #define ALIGN_UP(offset, alignment) \
 	(offset) = ((offset) + (alignment) - 1) & ~((alignment) - 1)
@@ -85,7 +84,7 @@ Kernel::Kernel(PTXkernel* ptxKernel)
 #ifdef DEBUG
         std::cout << "[VE CUDA] " << cudaErrorStr(error) << std::endl;
 #endif
-        throw std::runtime_error("Could not compile kermel");
+        throw std::runtime_error("Could not compile kernel");
     }
     
     error = cuModuleGetFunction(&entry, module, ptxKernel->name);
