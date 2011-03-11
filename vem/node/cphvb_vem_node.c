@@ -133,7 +133,11 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_constant init_value,
                                         cphvb_array**  new_array)
 {
+#ifdef DEBUG
+    cphvb_array *array    = calloc(1,sizeof(cphvb_array));
+#else
     cphvb_array *array    = malloc(sizeof(cphvb_array));
+#endif
     if(array == NULL)
         return CPHVB_OUT_OF_MEMORY;
 
