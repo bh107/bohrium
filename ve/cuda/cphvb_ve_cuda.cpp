@@ -21,7 +21,7 @@
 #include <stdexcept>
 #include <cphvb.h>
 #include <cuda.h>
-#include "cphvb_ve_cuda.h"
+#include <cphvb_ve_cuda.h>
 #include "PTXopcode.h"
 #include "Configuration.hpp"
 

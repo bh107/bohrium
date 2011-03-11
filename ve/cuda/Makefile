@@ -1,4 +1,5 @@
 CPHVB_BASE=../../
+CPHVB_INCLUDE=$(CPHVB_BASE)include/
 CUDA_BASE=/usr/local/cuda/
 INCLUDE=-I$(CPHVB_BASE)include -I$(CUDA_BASE)include
 LIB=libcphvb_ve_cuda.so
@@ -26,7 +27,7 @@ all: $(LIB)
 %.o: %.c %.h
 		$(CC) -c $< -o $@ $(CCFLAGS)
 
-cphvb_ve_cuda.oo: cphvb_ve_cuda.cpp  cphvb_ve_cuda.h
+cphvb_ve_cuda.oo: cphvb_ve_cuda.cpp  $(CPHVB_INCLUDE)cphvb_ve_cuda.h
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.oo: %.cpp %.hpp
