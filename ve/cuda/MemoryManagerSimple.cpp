@@ -101,6 +101,12 @@ void MemoryManagerSimple::copyToDevice(cphVBarray* baseArray)
     assert(baseArray->data != NULL);
     assert(baseArray->cudaPtr != 0);
     size_t size = dataSize(baseArray);
+#ifdef DEBUG
+    std::cout << "[VE CUDA] copyToDevice: " << std::endl;
+    printArraySpec(baseArray);
+    std::cout << "[VE CUDA] cuMemcpyHtoD(" <<  (void*)baseArray->cudaPtr << 
+        ", " << baseArray->data << ", " << size << ")" << std::endl;
+#endif
     CUresult error = cuMemcpyHtoD(baseArray->cudaPtr, baseArray->data,
                                   size);
     if (error !=  CUDA_SUCCESS)

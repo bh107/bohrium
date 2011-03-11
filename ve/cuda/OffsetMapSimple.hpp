@@ -45,6 +45,9 @@ public:
     void insert(const cphVBarray* array,
                 PTXregister* reg);
     void clear();
+#ifdef DEBUG
+    PTXregister* get(int i);
+#endif    
 };
 
 

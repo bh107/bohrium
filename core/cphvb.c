@@ -110,19 +110,15 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
                               const cphvb_index stride[],
                               const cphvb_index element)
 {
-    cphvb_intp dimIndex;
-    cphvb_intp dim = ndim -1;
-    cphvb_index dimBound = shape[dim];
-    cphvb_index offset = (element % dimBound) * stride[dim];
-    for (--dim; dim >= 0 ; --dim)
+    cphvb_index offset = 0;
+    cphvb_index dimIndex; 
+    cphvb_intp i;
+    for (i = 0; i < ndim; ++i)
     {
-        if (stride[dim] > 0)
-        {
-            dimIndex = element % (dimBound * shape[dim]);
-            dimIndex = dimIndex / dimBound; 
-            offset = offset + dimIndex * stride[dim];
-            dimBound *= shape[dim];
-        }
+        dimIndex = element % cphvb_nelements(ndim - i, &shape[i]);
+        if (i != ndim - 1)
+            dimIndex = dimIndex / cphvb_nelements(ndim - (i+1), &shape[i+1]);
+        offset += dimIndex * stride[i]; 
     }
     return offset;
 }

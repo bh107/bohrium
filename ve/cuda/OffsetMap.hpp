@@ -38,6 +38,9 @@ public:
     virtual void insert(const cphVBarray* array,
                         PTXregister* reg) = 0;
     virtual void clear() = 0;
+#ifdef DEBUG
+    virtual PTXregister* get(int i) = 0;
+#endif    
 };
 
 

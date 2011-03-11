@@ -75,3 +75,15 @@ void OffsetMapSimple::clear()
     internalMap.clear();
 }
 
+#ifdef DEBUG
+PTXregister* OffsetMapSimple::get(int i)
+{
+    MyOffsetMap::iterator iter = internalMap.begin();
+    while (i > 0)
+    {
+        ++iter; --i;
+    }
+    return iter->second;
+}
+#endif    
+
