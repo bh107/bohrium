@@ -30,13 +30,27 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
 {
 #ifdef DEBUG
     std::cout << "[VE CUDA] Created InstructionBatch with " << threads 
-              << "threads." << std::endl;
+              << " threads." << std::endl;
 #endif
 }
 
 
 void InstructionBatchSimple::add(cphVBinstruction* inst)
 {
+#ifdef DEBUG
+    std::cout << "[VE CUDA] Adding instruction to batch with dimentions: ";
+    for (int i = 0; i < inst->operand[0]->ndim; ++i)
+    {
+        std::cout << inst->operand[0]->shape[i] << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "[VE CUDA] Adding instruction to batch with stride: ";
+    for (int i = 0; i < inst->operand[0]->ndim; ++i)
+    {
+        std::cout << inst->operand[0]->stride[i] << " ";
+    }
+    std::cout << std::endl;
+#endif
     int nops = cphvb_operands(inst->opcode);
     dataManager->lock(inst->operand, nops, this);
     batch.push_back(inst);
