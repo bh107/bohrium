@@ -97,6 +97,12 @@ void PTXinstructionList::add(PTXregister* guard,
     add(NULL,true,guard,opcode,NULL,NULL);
 }
 
+void PTXinstructionList::add(PTXopcode opcode)
+{
+    assert(opcode == PTX_EXIT);
+    add(NULL,true,NULL,opcode,NULL,NULL);
+}
+
 int PTXinstructionList::snprint(char* buf, 
                                 int size)
 {

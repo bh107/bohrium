@@ -34,6 +34,8 @@ const int _ptxOperands[] =
     [PTX_LD_PARAM] = 2,
     [PTX_MOV] = 2,
     [PTX_SETP_GE] = 3,
+    [PTX_CVT] = 2,
+    [PTX_MEMBAR] = 0,
     [PTX_EXIT] = 0
 };
 

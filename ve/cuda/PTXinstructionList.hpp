@@ -63,6 +63,7 @@ public:
              char* label);
     void add(PTXregister* guard,
              PTXopcode opcode);
+    void add(PTXopcode opcode);
     int snprint(char* buf, int size);
 };
 

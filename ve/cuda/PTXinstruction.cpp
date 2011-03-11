@@ -105,6 +105,20 @@ int PTXinstruction::snprintLogicOp(char* buf, int size)
     return res + bp;    
 }
 
+int PTXinstruction::snprintConvertOp(char* buf, int size)
+{
+    int res = 0;
+    int bp;
+    PTXregister* srcReg = dynamic_cast<PTXregister*>(src[0]);
+    assert (srcReg != NULL);
+    bp = std::snprintf(buf, size, "\tcvt.rn%s%s\t", ptxTypeStr(dest->type),
+                         ptxTypeStr(srcReg->type));
+    res += bp; buf += bp; size -= bp;
+    bp = dest->snprint(buf,size);
+    res += bp; buf += bp; size -= bp;
+    bp = srcReg->snprint(", ",buf,size,";\n");
+    return res + bp;    
+}
 
 int PTXinstruction::snprintOp(char* buf, int size)
 {
@@ -114,6 +128,8 @@ int PTXinstruction::snprintOp(char* buf, int size)
     {
     case PTX_EXIT:
         return std::snprintf(buf, size, "\texit;\n");
+    case PTX_MEMBAR:
+        return std::snprintf(buf, size, "\tmembar.gl;\n");
     case PTX_BRA:
         return std::snprintf(buf, size, "\tbra\t%s;\n", label);
     case PTX_LD_GLOBAL:
@@ -143,6 +159,8 @@ int PTXinstruction::snprintOp(char* buf, int size)
         res += bp; buf += bp; size -= bp;
         bp = dest->snprint(", ",buf,size,";\n");
         return res + bp;
+    case PTX_CVT:
+        return snprintConvertOp(buf, size);
     case PTX_SETP_GE:
         return snprintLogicOp(buf, size);
     default:

@@ -41,6 +41,8 @@ typedef enum
     PTX_LD_PARAM,
     PTX_MOV,
     PTX_SETP_GE,
+    PTX_CVT,
+    PTX_MEMBAR,
     PTX_EXIT
 } PTXopcode;
 
