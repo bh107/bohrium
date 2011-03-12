@@ -7,6 +7,7 @@ type=np.float32
 def run():
     max_ndim = 6
     for i in xrange(1,max_ndim+1):
+        print "[PyTest] Test 1. Dim: ", i
         src = numpytest.random_list(random.sample(xrange(1, 10),i))
         Ad = np.array(src, dtype=type, dist=True)
         Af = np.array(src, dtype=type, dist=False)
@@ -29,9 +30,11 @@ def run():
         Cd[1:] = Cd[:-1]
         Cf[1:] = Cf[:-1]
         if not numpytest.array_equal(Cd,Cf):
-            raise Exception("Uncorrect result array\n")
-
+            print "[PyTest] Test 1. Dim: ", i, ": Failed"
+            raise Exception("Incorrect result array\n")
+        print "[PyTest] Test 1. Dim: ", i, ": Passed"
     for i in xrange(3,max_ndim+3):
+        print "[PyTest] Test 2. Dim: ", i
         src = numpytest.random_list([i,i,i])
         Ad = np.array(src, dist=True, dtype=type)
         Af = np.array(src, dist=False, dtype=type)
@@ -40,7 +43,10 @@ def run():
         Cd = Ad[::2, ::2, ::2] + Bd[::2, ::2, ::2] + Ad[::2,1,2]
         Cf = Af[::2, ::2, ::2] + Bf[::2, ::2, ::2] + Af[::2,1,2]
         if not numpytest.array_equal(Cd,Cf):
-            raise Exception("Uncorrect result array\n")
+            print "[PyTest] Test 2. Dim: ", i, ": Failed"
+            raise Exception("Incorrect result array\n")
+        print "[PyTest] Test 2. Dim: ", i, ": Passed"
+
 
 if __name__ == "__main__":
     run()

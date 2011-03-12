@@ -28,6 +28,7 @@ def array_equal(A,B):
 
     for i in range(len(A)):
         if not A[i] == B[i]:
+            print "[PyTest] A[",i,"] ", A[i],  "!= B[",i,"] " , B[i]
             return False
     return True
 
@@ -72,8 +73,8 @@ if __name__ == "__main__":
 
     random.seed(seed)
 
-    print "*"*100
-    print "*"*31, "Testing Distributed Numerical Python", "*"*31
+    print "*"*80
+    print "*"*21, "Testing Distributed Numerical Python", "*"*21
     for i in xrange(len(script_list)):
         f = script_list[i]
         if f.startswith("test_") and f.endswith("py")\
@@ -105,7 +106,7 @@ if __name__ == "__main__":
             else:
                 print "Succes"
 
-    print "*"*100
-    print "*"*46, "Finish", "*"*46
-    print "*"*100
+    print "*"*80
+    print "*"*36, "Finish", "*"*36
+    print "*"*80
 
