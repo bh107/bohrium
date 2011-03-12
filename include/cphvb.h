@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __CPHVB_H
@@ -91,6 +91,16 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
                               const cphvb_index stride[],
                               cphvb_index element);
 
+
+/* Calculate the dimention boundries for shape
+ *
+ * @ndim      Number of dimentions
+ * @shape[]   Number of elements in each dimention.
+ * @dimbound  Placeholder for dimbound (return
+ */
+void cphvb_dimbound(cphvb_intp ndim,
+                    const cphvb_index shape[],
+                    cphvb_index dimbound[CPHVB_MAXDIM]);
 
 /* Pretty print instruction
  *

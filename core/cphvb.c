@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <cphvb.h>
@@ -96,6 +96,24 @@ cphvb_index cphvb_nelements(cphvb_intp ndim,
     }
     return res;
 }
+
+/* Calculate the dimention boundries for shape
+ *
+ * @ndim      Number of dimentions
+ * @shape[]   Number of elements in each dimention.
+ * @dimbound  Placeholder for dimbound (return
+ */
+void cphvb_dimbound(cphvb_intp ndim,
+                    const cphvb_index shape[],
+                    cphvb_index* dimbound)
+{
+    dimbound[ndim -1] = shape[ndim -1]; 
+    for (int i = ndim -2 ; i >= 0; --i)
+    {
+        dimbound[i] = dimbound[i+1] * shape[i];
+    }
+}
+
 
 /* Calculate the offset into an array based on element index
  *

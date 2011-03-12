@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <map>
@@ -31,7 +31,10 @@ std::string toString(cphvb_intp ndim,
     std::ostringstream outs;
     for (int i = 0; i < ndim; ++i)
     {
-        outs << shape[i] << stride[i];
+        if (shape[i] != 1 && stride[i] != 0)
+        {
+            outs << shape[i] << stride[i];
+        }
     }
     return outs.str();
 }

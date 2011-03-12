@@ -39,6 +39,21 @@ KernelGeneratorSimple::KernelGeneratorSimple() :
     ptxKernel = new PTXkernel(ISA_14,SM_12,registerBank,instructionList);
 }
 
+void KernelGeneratorSimple::clear()
+{
+    elementMap.clear();
+    storeMap.clear();
+    addressMap.clear();
+    offsetMap->clear();
+    registerBank->clear();
+    constantBuffer->clear();
+    instructionList->clear();
+    ptxKernel->clear();
+    parameters.clear();
+}
+
+static PTXregister* dimIndex;
+static PTXconstant* zero;
 void KernelGeneratorSimple::init(Threads threads)
 {
     sprintf(ptxKernel->name,"kernel_%d",kernelID++);
@@ -54,39 +69,26 @@ void KernelGeneratorSimple::init(Threads threads)
     instructionList->add(PTX_SETP_GE, skip, threadID, 
                          constantBuffer->newConstant(PTX_UINT,threads));
     instructionList->add(skip,PTX_EXIT);
-}
 
-void KernelGeneratorSimple::clear()
-{
-    elementMap.clear();
-    storeMap.clear();
-    addressMap.clear();
-    offsetMap->clear();
-    registerBank->clear();
-    constantBuffer->clear();
-    instructionList->clear();
-    ptxKernel->clear();
-    parameters.clear();
+    dimIndex = registerBank->newRegister(PTX_UINT32);
+    zero = constantBuffer->newConstant(PTX_UINT, 0L);
 }
-
 
 PTXregister* KernelGeneratorSimple::calcOffset(const cphVBarray* array)
 {
+    cphvb_index dimbound[CPHVB_MAXDIM];
+    cphvb_dimbound(array->ndim, array->shape, dimbound);
     PTXregister* offsetReg = registerBank->newRegister(PTX_UINT32);
-    PTXregister* dimIndex = registerBank->newRegister(PTX_UINT32);
-    PTXconstant* zero = constantBuffer->newConstant(PTX_UINT, 0L);
     instructionList->add(PTX_ADD, offsetReg, zero, zero);
     for (int i = 0; i < array->ndim; ++i)
     {
         if (array->shape[i] == 1 || array->stride[i] == 0) {continue;}
         instructionList->add(PTX_REM, dimIndex, threadID,
-                   constantBuffer->newConstant(PTX_UINT, 
-                           cphvb_nelements(array->ndim - i,&array->shape[i])));
+                   constantBuffer->newConstant(PTX_UINT, dimbound[i])); 
         if (i != array->ndim - 1)
         {
             instructionList->add(PTX_DIV, dimIndex, dimIndex, 
-                   constantBuffer->newConstant(PTX_UINT, 
-                      cphvb_nelements(array->ndim - (i+1),&array->shape[i+1])));
+                   constantBuffer->newConstant(PTX_UINT, dimbound[i+1]));
         }
         instructionList->add(PTX_MAD, offsetReg, dimIndex, 
                    constantBuffer->newConstant(PTX_UINT, array->stride[i]), 
