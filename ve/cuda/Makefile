@@ -12,7 +12,7 @@ CXXFLAGS = $(LCFLAGS) -std=gnu++0x
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 CSRC=PTXopcode PTXsreg PTXtype PTXversion CUDAerrorCode
 CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
-		DeviceManager PTXconstantBuffer DeviceManagerSimple PTXconstant \
+		DeviceManager DeviceManagerSimple PTXconstant \
 		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
 		PTXinstructionList InstructionTranslator PTXkernel Kernel \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
@@ -37,7 +37,7 @@ $(LIB): $(OBJECTS)
 		$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-		rm -rf *.o  *.oo *~ $(LIB)
+		rm -rf *.o  *.oo *~ *.gch *.orig $(LIB)
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)

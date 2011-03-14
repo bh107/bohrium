@@ -86,3 +86,34 @@ void PTXconstant::set(cphvb_type vbtype,
         assert(false);
     }
 }
+
+void PTXconstant::set(PTXbaseType type_, 
+                      PTXconstVal value_)
+{
+    type = type;
+    value = value_;
+}
+
+void PTXconstant::set(long int value_)
+{
+    type = PTX_INT;
+    value.i = value_;
+}
+
+void PTXconstant::set(unsigned long int value_)
+{
+    type = PTX_UINT;
+    value.u = value_;
+}
+
+void PTXconstant::set(double value_)
+{
+    type = PTX_FLOAT;
+    value.f = value_;
+}
+
+void PTXconstant::set(CUdeviceptr value_)
+{
+    type = PTX_BITS;
+    value.a = value_;
+}

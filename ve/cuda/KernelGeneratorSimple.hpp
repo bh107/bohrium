@@ -21,11 +21,11 @@
 #define __KERNELGENERATORSIMPLE_HPP
 
 #include <map>
+#include <StaticContainer.hpp>
 #include "KernelGenerator.hpp"
 #include "PTXregister.hpp"
 #include "PTXconstant.hpp"
 #include "PTXregisterBank.hpp"
-#include "PTXconstantBuffer.hpp"
 #include "OffsetMap.hpp"
 #include "PTXinstructionList.hpp"
 #include "PTXkernel.hpp"
@@ -55,7 +55,7 @@ private:
     AddressMap addressMap;
     OffsetMap* offsetMap;
     PTXregisterBank* registerBank;
-    PTXconstantBuffer* constantBuffer;
+    StaticContainer<PTXconstant>* constantBuffer;
     PTXinstructionList* instructionList;
     InstructionTranslator* translator;
     PTXkernel* ptxKernel;

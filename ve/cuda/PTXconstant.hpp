@@ -36,13 +36,18 @@ union PTXconstVal
 
 class PTXconstant : public PTXoperand
 {
-    friend class PTXconstantBuffer;
 private:
     PTXbaseType type;
     PTXconstVal value;
 public:
+    void set(PTXbaseType type, 
+             PTXconstVal value);
     void set(cphvb_type vbtype,
              cphvb_constant constant);
+    void set(long int value);
+    void set(unsigned long int value);
+    void set(double value);
+    void set(CUdeviceptr value);
     int snprint(const char* prefix, 
                 char* buf, 
                 int size, 

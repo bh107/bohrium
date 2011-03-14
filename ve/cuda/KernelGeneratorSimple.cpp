@@ -32,7 +32,7 @@ KernelGeneratorSimple::KernelGeneratorSimple() :
     kernelID(0),
     offsetMap(createOffsetMap()),
     registerBank(new PTXregisterBank()),
-    constantBuffer(new PTXconstantBuffer()),
+    constantBuffer(new StaticContainer<PTXconstant>()),
     instructionList(new PTXinstructionList())
 {
     translator = new InstructionTranslator(instructionList,registerBank);
@@ -67,11 +67,11 @@ void KernelGeneratorSimple::init(Threads threads)
     instructionList->add(PTX_MOV, ctaidx, &registerBank->ctaid_x);
     instructionList->add(PTX_MAD, threadID, ntidx, ctaidx, tidx);
     instructionList->add(PTX_SETP_GE, skip, threadID, 
-                         constantBuffer->newConstant(PTX_UINT,threads));
+                         constantBuffer->setNext(threads));
     instructionList->add(skip,PTX_EXIT);
 
     dimIndex = registerBank->newRegister(PTX_UINT32);
-    zero = constantBuffer->newConstant(PTX_UINT, 0L);
+    zero = constantBuffer->setNext(0L);
 }
 
 PTXregister* KernelGeneratorSimple::calcOffset(const cphVBarray* array)
@@ -84,15 +84,15 @@ PTXregister* KernelGeneratorSimple::calcOffset(const cphVBarray* array)
     {
         if (array->shape[i] == 1 || array->stride[i] == 0) {continue;}
         instructionList->add(PTX_REM, dimIndex, threadID,
-                   constantBuffer->newConstant(PTX_UINT, dimbound[i])); 
+                             constantBuffer->setNext(dimbound[i])); 
         if (i != array->ndim - 1)
         {
             instructionList->add(PTX_DIV, dimIndex, dimIndex, 
-                   constantBuffer->newConstant(PTX_UINT, dimbound[i+1]));
+                                 constantBuffer->setNext(dimbound[i+1]));
         }
         instructionList->add(PTX_MAD, offsetReg, dimIndex, 
-                   constantBuffer->newConstant(PTX_UINT, array->stride[i]), 
-                                               offsetReg);
+                             constantBuffer->setNext(array->stride[i]), 
+                             offsetReg);
     }
     offsetMap->insert(array, offsetReg);
     return offsetReg;
@@ -112,19 +112,19 @@ PTXaddress KernelGeneratorSimple::calcAddress(const cphVBarray* array)
     case 4:
         addressReg = registerBank->newRegister(PTX_UINT32);
         instructionList->add(PTX_MAD, addressReg, offsetReg, 
-                   constantBuffer->newConstant(PTX_UINT,eSize),
-                   constantBuffer->newConstant(PTX_ADDRESS,array->cudaPtr));
+                             constantBuffer->setNext(eSize),
+                             constantBuffer->setNext(array->cudaPtr));
         break;
     case 8:
         addressReg = registerBank->newRegister(PTX_UINT64);
         instructionList->add(PTX_MAD_WIDE, addressReg, offsetReg, 
-                   constantBuffer->newConstant(PTX_UINT,eSize),
-                   constantBuffer->newConstant(PTX_ADDRESS,array->cudaPtr));
+                             constantBuffer->setNext(eSize),
+                             constantBuffer->setNext(array->cudaPtr));
         break;
     default:
         assert (false);
     }
-    PTXconstant* off = constantBuffer->newConstant(PTX_UINT,eSize*array->start);
+    PTXconstant* off = constantBuffer->setNext(eSize*array->start);
     addressMap[array] = {addressReg, off};
     return {addressReg, off};
 }
@@ -211,10 +211,6 @@ void KernelGeneratorSimple::storeAll()
         }
         instructionList->add(PTX_ST_GLOBAL, siter->first, 
                              address.reg, address.off);
-//        PTXregister* reg = registerBank->newRegister(PTX_FLOAT32);
-//        instructionList->add(PTX_CVT, reg, offsetMap->get(0));
-//        instructionList->add(PTX_ST_GLOBAL, reg, 
-//                             address.reg, address.off);
 
     }
 }
