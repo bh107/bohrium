@@ -21,14 +21,14 @@
 #define __PTXKERNEL_HPP
 
 #include <vector>
-#include <StaticContainer.hpp>
+#include <StaticStack.hpp>
 #include "PTXversion.h"
 #include "PTXkernelParameter.hpp"
 #include "PTXregisterBank.hpp"
 #include "PTXinstruction.hpp"
 
 typedef std::vector<PTXtype> Signature;
-typedef StaticContainer<PTXkernelParameter> PTXparameterList;
+typedef StaticStack<PTXkernelParameter> PTXparameterList;
 
 class PTXkernel
 {

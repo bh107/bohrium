@@ -32,8 +32,8 @@ KernelGeneratorSimple::KernelGeneratorSimple() :
     kernelID(0),
     offsetMap(createOffsetMap()),
     registerBank(new PTXregisterBank()),
-    constantBuffer(new StaticContainer<PTXconstant>(1024)),
-    instructionList(new StaticContainer<PTXinstruction>(2048))
+    constantBuffer(new StaticStack<PTXconstant>(1024)),
+    instructionList(new StaticStack<PTXinstruction>(2048))
 {
     translator = new InstructionTranslator(instructionList,registerBank);
     ptxKernel = new PTXkernel(ISA_14,SM_12,registerBank,instructionList);

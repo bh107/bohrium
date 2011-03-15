@@ -21,14 +21,14 @@
 #define __PTXREGISTERBANK_HPP
 
 #include <cphvb.h>
-#include <StaticContainer.hpp>
+#include <StaticStack.hpp>
 #include "PTXregister.hpp"
 #include "PTXspecialRegister.hpp"
 
 class PTXregisterBank
 {
 private:
-    StaticContainer<PTXregister>* registers;
+    StaticStack<PTXregister>* registers;
     int instanceTable[PTX_TYPES];
 protected:
     void declareOn(std::ostream& os) const;

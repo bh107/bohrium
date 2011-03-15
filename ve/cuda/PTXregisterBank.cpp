@@ -28,7 +28,7 @@
 #include "PTXregisterBank.hpp"
 
 PTXregisterBank::PTXregisterBank() :
-    registers(new StaticContainer<PTXregister>(1024)),
+    registers(new StaticStack<PTXregister>(1024)),
     tid_x(PTXspecialRegister(TID_X)),
     ntid_x(PTXspecialRegister(NTID_X)),
     ctaid_x(PTXspecialRegister(CTAID_X))

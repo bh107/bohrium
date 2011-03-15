@@ -21,7 +21,7 @@
 #define __PTXINSTRUCTION_HPP
 
 #include <string>
-#include <StaticContainer.hpp>
+#include <StaticStack.hpp>
 #include "PTXopcode.h"
 #include "PTXtype.h"
 #include "PTXoperand.hpp"
@@ -78,6 +78,6 @@ public:
     PTXinstruction(PTXopcode opcode);
 };
 
-typedef StaticContainer<PTXinstruction> PTXinstructionList;
+typedef StaticStack<PTXinstruction> PTXinstructionList;
 
 #endif

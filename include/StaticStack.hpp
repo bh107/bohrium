@@ -17,8 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __STATICCONTAINER_HPP
-#define __STATICCONTAINER_HPP
+#ifndef __STATICSTACK_HPP
+#define __STATICSTACK_HPP
 
 #include <cstring>
 #include <vector>
@@ -34,16 +34,16 @@
 
 #define __SC_DEFAULT_BUFFER_SIZE (4096)
 
-class StaticContainerException 
+class StaticStackException 
 {
 private:
     int code;
 public:
-    StaticContainerException(int code_) : code(code_) {}
+    StaticStackException(int code_) : code(code_) {}
 };
 
 template <typename T>
-class StaticContainer 
+class StaticStack
 {
 private:
     T* buffer;
@@ -54,9 +54,9 @@ private:
     typedef T* reference;
     typedef const T* const_iterator;
     typedef const T* const_reference;
-    StaticContainer(size_t size);
-    StaticContainer();
-    ~StaticContainer();
+    StaticStack(size_t size);
+    StaticStack();
+    ~StaticStack();
     virtual T* push_back(const T& e);
     virtual void pop_back();
     virtual void clear();
@@ -72,7 +72,7 @@ private:
 
 
 template <typename T> 
-StaticContainer<T>::StaticContainer(size_t initialSize) :
+StaticStack<T>::StaticStack(size_t initialSize) :
     bufferSize(initialSize)
 {
     buffer = (T*)malloc(initialSize*sizeof(T));
@@ -82,7 +82,7 @@ StaticContainer<T>::StaticContainer(size_t initialSize) :
     }
     nextElement = buffer;
 #ifdef DEBUG
-    std::cout << "StaticContainer<" << typeid(T).name() << ">(): ";
+    std::cout << "StaticStack<" << typeid(T).name() << ">(): ";
     std::cout << "\n  buffer: " << buffer;
     std::cout << "\n  bufferSize: " << bufferSize;
     std::cout << "\n  dataSize: " << bufferSize*sizeof(T) << std::endl;
@@ -90,72 +90,72 @@ StaticContainer<T>::StaticContainer(size_t initialSize) :
 }
 
 template <typename T> 
-StaticContainer<T>::StaticContainer()
+StaticStack<T>::StaticStack()
 {
-    StaticContainer(__SC_DEFAULT_BUFFER_SIZE);
+    StaticStack(__SC_DEFAULT_BUFFER_SIZE);
 }
 
 template <typename T> 
-StaticContainer<T>::~StaticContainer()
+StaticStack<T>::~StaticStack()
 {
     free(buffer);
 }
 
 template <typename T> 
 template <typename... As>
-T* StaticContainer<T>::next(As... as)
+T* StaticStack<T>::next(As... as)
 {
     if (nextElement >= buffer + bufferSize)
     {
-        throw StaticContainerException(0);
+        throw StaticStackException(0);
     }
     return new(nextElement++) T(as...);
 }
 
 template <typename T> 
-T* StaticContainer<T>::push_back(const T& e)
+T* StaticStack<T>::push_back(const T& e)
 {
     return new(nextElement++) T(e);
 }
 
 template <typename T> 
-void StaticContainer<T>::pop_back()
+void StaticStack<T>::pop_back()
 {
     --nextElement;
 }
 
 template <typename T> 
-void StaticContainer<T>::clear()
+void StaticStack<T>::clear()
 {
     nextElement = buffer;
 }
 
 template <typename T> 
-size_t StaticContainer<T>::size()
+size_t StaticStack<T>::size()
 {
     return (buffer - nextElement) / sizeof(T);
 }
 
 template <typename T> 
-typename StaticContainer<T>::iterator StaticContainer<T>::begin() 
+typename StaticStack<T>::iterator StaticStack<T>::begin() 
 { 
     return buffer; 
 }
 
 template <typename T> 
-typename StaticContainer<T>::iterator StaticContainer<T>::end() 
+typename StaticStack<T>::iterator StaticStack<T>::end() 
 { 
     return nextElement; 
 }
 
 template <typename T> 
-typename StaticContainer<T>::iterator StaticContainer<T>::last() 
+typename StaticStack<T>::iterator StaticStack<T>::last() 
 { 
     return nextElement-1; 
 }
 
 template <typename T> 
-typename StaticContainer<T>::reference StaticContainer<T>::operator[] (size_t n)
+typename StaticStack<T>::reference StaticStack<T>::operator[] (size_t n)
 {
     return buffer + n;
 }
