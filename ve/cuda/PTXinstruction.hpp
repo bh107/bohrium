@@ -21,14 +21,15 @@
 #define __PTXINSTRUCTION_HPP
 
 #include <string>
+#include <StaticContainer.hpp>
 #include "PTXopcode.h"
 #include "PTXtype.h"
 #include "PTXoperand.hpp"
+#include "PTXconstant.hpp"
 #include "PTXregister.hpp"
 
 class PTXinstruction
 {
-    friend class PTXinstructionList;
 private:
     char* label;
     bool guardMod;   //guard modifier 
@@ -36,12 +37,47 @@ private:
     PTXopcode opcode;
     PTXregister* dest;
     PTXoperand* src[PTX_MAX_OPERANDS-1];
-    int snprintAritOp(char* buf, int size);
-    int snprintLogicOp(char* buf, int size);
-    int snprintConvertOp(char* buf, int size);
-    int snprintOp(char* buf, int size);
+    void printOpModifierOn(std::ostream& os) const;
+    void printAritOpOn(std::ostream& os) const;
+    void printLogicOpOn(std::ostream& os) const;
+    void printConvertOpOn(std::ostream& os) const;
+    void printOpOn(std::ostream& os) const;
+protected:
+    void printOn(std::ostream& os) const;
 public:
-    int snprint(char* buf, int size);
+    friend std::ostream& operator<< (std::ostream& os, 
+                                     PTXinstruction const& ptxInstruction);
+    PTXinstruction(char* label,
+                   bool guardMod,
+                   PTXregister* guard,
+                   PTXopcode opcode,
+                   PTXregister* dest,
+                   PTXoperand* src[]);
+    PTXinstruction(PTXopcode opcode,
+                   PTXregister* dest,
+                   PTXoperand* src[]);
+    PTXinstruction(PTXopcode opcode,
+                   PTXregister* dest);
+    PTXinstruction(PTXopcode opcode,
+                   PTXregister* dest,
+                   PTXoperand* src1);
+    PTXinstruction(PTXopcode opcode,
+                   PTXregister* dest,
+                   PTXoperand* src1,             
+                   PTXoperand* src2);
+    PTXinstruction(PTXopcode opcode,
+                   PTXregister* dest,
+                   PTXoperand* src1,
+                   PTXoperand* src2,             
+                   PTXoperand* src3);
+    PTXinstruction(PTXregister* guard,
+                   PTXopcode opcode,
+                   char* label);
+    PTXinstruction(PTXregister* guard,
+                   PTXopcode opcode);
+    PTXinstruction(PTXopcode opcode);
 };
+
+typedef StaticContainer<PTXinstruction> PTXinstructionList;
 
 #endif

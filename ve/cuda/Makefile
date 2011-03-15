@@ -14,7 +14,7 @@ CSRC=PTXopcode PTXsreg PTXtype PTXversion CUDAerrorCode
 CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		DeviceManager DeviceManagerSimple PTXconstant \
 		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
-		PTXinstructionList InstructionTranslator PTXkernel Kernel \
+		InstructionTranslator PTXkernel Kernel \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
 		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
 		PTXspecialRegister Configuration cphVBarray cphVBinstruction \

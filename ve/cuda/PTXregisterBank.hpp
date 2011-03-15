@@ -21,24 +21,24 @@
 #define __PTXREGISTERBANK_HPP
 
 #include <cphvb.h>
+#include <StaticContainer.hpp>
 #include "PTXregister.hpp"
 #include "PTXspecialRegister.hpp"
-
-#define BANKSIZE (1024)
 
 class PTXregisterBank
 {
 private:
-    PTXregister registers[BANKSIZE];
-    int next;
+    StaticContainer<PTXregister>* registers;
     int instanceTable[PTX_TYPES];
+protected:
+    void declareOn(std::ostream& os) const;
 public:
     PTXregisterBank();
     void clear();
-    PTXregister* newRegister(PTXtype type);
-    PTXregister* newRegister(cphvb_type type);
-    int declare(char* buf, int size);
-
+    PTXregister* next(PTXtype type);
+    PTXregister* next(cphvb_type type);
+    friend std::ostream& operator<<= (std::ostream& os, 
+                                      PTXregisterBank const& ptxRegisterBank);
     // Special registers
     PTXspecialRegister tid_x;
     PTXspecialRegister ntid_x;

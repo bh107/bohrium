@@ -23,7 +23,7 @@
 #include <vector>
 #include "cphVBinstruction.hpp"
 
-typedef long int Threads;
+typedef unsigned long int Threads;
 typedef std::vector<cphVBinstruction*>::iterator InstructionIterator;
 
 

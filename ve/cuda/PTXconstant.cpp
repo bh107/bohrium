@@ -18,46 +18,35 @@
  */
 
 #include <cassert>
-#include <cstdio>
 #include <stdexcept>
 #include "PTXconstant.hpp"
 
-int PTXconstant::snprint(const char* prefix, 
-                         char* buf, 
-                         int size,
-                         const char* postfix)
+
+void PTXconstant::printOn(std::ostream& os) const
 {
-    int res;
     switch(type)
     {
     case PTX_INT:
-        res = std::snprintf(buf, size, "%s%ld%s", prefix, value.i, postfix);
+        os << value.i;
         break;
     case PTX_UINT:
-        res = std::snprintf(buf, size, "%s%ldU%s", prefix, value.u, postfix);
+        os << value.u;
         break;
     case PTX_FLOAT:
-        res = std::snprintf(buf, size, "%s%#.24e%s", prefix, value.f, postfix);
+        os << value.f;
         break;
     case PTX_BITS:
-        res = std::snprintf(buf, size, "%s%p%s", prefix, (void*)value.a, 
-                            postfix);
+        os << (void*)value.a;
         break;
     default:
         assert(false);
     }
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
 }
 
-void PTXconstant::set(cphvb_type vbtype,
-                      cphvb_constant constant)
-                     
+PTXconstant::PTXconstant(cphvb_type vbtype,
+                         cphvb_constant constant) :
+    type(ptxBaseType(ptxType(vbtype)))
 {
-    type = ptxBaseType(ptxType(vbtype));
     switch (vbtype)
     {
     case CPHVB_BOOL: 
@@ -87,33 +76,25 @@ void PTXconstant::set(cphvb_type vbtype,
     }
 }
 
-void PTXconstant::set(PTXbaseType type_, 
-                      PTXconstVal value_)
-{
-    type = type;
-    value = value_;
-}
+PTXconstant::PTXconstant(PTXbaseType type_, 
+                         PTXconstVal value_) :
+    type(type_),
+    value(value) {}
 
-void PTXconstant::set(long int value_)
-{
-    type = PTX_INT;
-    value.i = value_;
-}
+PTXconstant::PTXconstant(long int value_) :
+    type(PTX_INT),
+    value({value_}) {}
 
-void PTXconstant::set(unsigned long int value_)
-{
-    type = PTX_UINT;
-    value.u = value_;
-}
+PTXconstant::PTXconstant(unsigned long int value_) :
+    type(PTX_UINT),
+    value({value_}) {}
 
-void PTXconstant::set(double value_)
+PTXconstant::PTXconstant(double value_) :
+    type(PTX_FLOAT)
 {
-    type = PTX_FLOAT;
     value.f = value_;
 }
 
-void PTXconstant::set(CUdeviceptr value_)
-{
-    type = PTX_BITS;
-    value.a = value_;
-}
+PTXconstant::PTXconstant(CUdeviceptr value_) :
+    type(PTX_BITS),
+    value({value_}) {}

@@ -17,7 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 #include "PTXkernel.hpp"
 
 
@@ -27,6 +28,7 @@ PTXkernel::PTXkernel(PTXversion version_,
                      PTXinstructionList* instructionList_) :
     version(version_),
     target(target_),
+    parameterList(new PTXparameterList(128)),
     parameterCount(0),
     registerBank(registerBank_),
     instructionList(instructionList_) {}
@@ -34,51 +36,55 @@ PTXkernel::PTXkernel(PTXversion version_,
 void PTXkernel::clear()
 {
     parameterCount = 0;
+    parameterList->clear();
     //registerBank and instructioList is cleared form KernelGenerator
 }
 
 PTXkernelParameter* PTXkernel::addParameter(PTXtype type)
 {
-    parameterList[parameterCount].type = type;
-    parameterList[parameterCount].id = parameterCount;
-    return &parameterList[parameterCount++];
+    return parameterList->next(type, parameterCount++);
 }
 
-int PTXkernel::snprint(char* buf, int size)
+inline void PTXkernel::printOn(std::ostream& os) const
 {
-    int res = 0;
-    int bp;
-    bp = std::snprintf(buf, size, ".version %s\n.target %s\n.entry %s (", 
-                       ptxVersionStr(version),
-                       cudaTargetStr(target),
-                       name);
-    res += bp; buf += bp; size -= bp;
-    if (parameterCount > 0)
+    os << ".version " << ptxVersionStr(version) << "\n";
+    os << ".target "<< cudaTargetStr(target) << "\n";
+    os << ".entry " << std::setw(10) << name << " (";
+    PTXparameterList::iterator piter = parameterList->begin();
+    if (piter != parameterList->end())
     {
-        bp = parameterList[0].declare("\t",buf, size);
-        res += bp; buf += bp; size -= bp;
+        os <<= *piter;
+        for (++piter; piter != parameterList->end(); ++piter)
+        {
+            os << ",\n" << std::setw(21) << " ";
+            os <<= *piter;
+        }
     }
-    for (int i = 1; i < parameterCount; ++i)
+    os << ")\n{\n";
+    os <<= *registerBank;
+    PTXinstructionList::iterator iter = instructionList->begin();
+    for(;iter != instructionList->end(); ++iter)
     {
-        bp = parameterList[i].declare(",\n\t",buf, size);
-        res += bp; buf += bp; size -= bp;
+        os << *iter;
     }
-    bp = std::snprintf(buf, size, ")\n{\n");
-    res += bp; buf += bp; size -= bp;
-    bp = registerBank->declare(buf,size);
-    res += bp; buf += bp; size -= bp;
-    bp = instructionList->snprint(buf,size);
-    res += bp; buf += bp; size -= bp;
-    bp = std::snprintf(buf, size, "}\n");
-    return res + bp;
+    os << "}\n";
+}
+
+std::ostream& operator<< (std::ostream& os, 
+                          PTXkernel const& ptxKernel)
+{
+    ptxKernel.printOn(os);
+    return os;
 }
 
 Signature PTXkernel::getSignature()
 {
     Signature sig;
-    for (int i = 0; i < parameterCount; ++i)
+    PTXparameterList::iterator iter = parameterList->begin();
+    for (; iter != parameterList->end(); ++iter)
     {
-        sig.push_back(parameterList[i].type);
+        sig.push_back(iter->getType());
     }
     return sig;
 }
+

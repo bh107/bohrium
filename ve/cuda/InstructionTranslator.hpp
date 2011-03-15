@@ -21,7 +21,7 @@
 #define __INSTRUCTIONTRANSLATORSIMPLE_HPP
 
 #include "InstructionTranslator.hpp"
-#include "PTXinstructionList.hpp"
+#include "PTXinstruction.hpp"
 #include "PTXregisterBank.hpp"
 
 class InstructionTranslator

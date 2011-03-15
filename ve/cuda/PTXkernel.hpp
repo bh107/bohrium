@@ -21,22 +21,26 @@
 #define __PTXKERNEL_HPP
 
 #include <vector>
+#include <StaticContainer.hpp>
 #include "PTXversion.h"
 #include "PTXkernelParameter.hpp"
 #include "PTXregisterBank.hpp"
-#include "PTXinstructionList.hpp"
+#include "PTXinstruction.hpp"
 
 typedef std::vector<PTXtype> Signature;
+typedef StaticContainer<PTXkernelParameter> PTXparameterList;
 
 class PTXkernel
 {
 private:
     PTXversion version;
     CUDAtarget target;
-    PTXkernelParameter parameterList[128];
+    PTXparameterList* parameterList;
     int parameterCount;
     PTXregisterBank* registerBank;
     PTXinstructionList* instructionList;
+protected:
+    void printOn(std::ostream& os) const;
 public:
     char name[128];
     PTXkernel(PTXversion version,
@@ -45,8 +49,9 @@ public:
               PTXinstructionList* instructionList);
     void clear();
     PTXkernelParameter* addParameter(PTXtype type);
-    int snprint(char* buf, int size);
     Signature getSignature();
+    friend std::ostream& operator<< (std::ostream& os, 
+                                     PTXkernel const& ptxKernel);
 };
 
 #endif

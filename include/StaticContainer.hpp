@@ -24,6 +24,13 @@
 #include <vector>
 #include <stdexcept>
 #include <cstdlib>
+#include <iostream>
+
+#ifdef DEBUG
+#include <iostream>
+#include <typeinfo> 
+#endif
+
 
 #define __SC_DEFAULT_BUFFER_SIZE (4096)
 
@@ -50,17 +57,17 @@ private:
     StaticContainer(size_t size);
     StaticContainer();
     ~StaticContainer();
-    virtual T* push_back(const T* e);
+    virtual T* push_back(const T& e);
     virtual void pop_back();
     virtual void clear();
-    virtual T* next();
-    template <typename I>
-    T* setNext(I i);
+    template <typename... As>
+    T* next(As... as);
     virtual iterator begin();
     virtual iterator end();
     virtual iterator last();
     //virtual reference at(size_t n);
     virtual reference operator[] (size_t n);
+    virtual size_t size();
 };
 
 
@@ -68,11 +75,18 @@ template <typename T>
 StaticContainer<T>::StaticContainer(size_t initialSize) :
     bufferSize(initialSize)
 {
-    buffer = (T*)malloc(bufferSize*sizeof(T));
+    buffer = (T*)malloc(initialSize*sizeof(T));
     if (buffer == NULL)
     {
         throw std::runtime_error("Out of memory");
     }
+    nextElement = buffer;
+#ifdef DEBUG
+    std::cout << "StaticContainer<" << typeid(T).name() << ">(): ";
+    std::cout << "\n  buffer: " << buffer;
+    std::cout << "\n  bufferSize: " << bufferSize;
+    std::cout << "\n  dataSize: " << bufferSize*sizeof(T) << std::endl;
+#endif
 }
 
 template <typename T> 
@@ -88,28 +102,20 @@ StaticContainer<T>::~StaticContainer()
 }
 
 template <typename T> 
-T* StaticContainer<T>::next()
+template <typename... As>
+T* StaticContainer<T>::next(As... as)
 {
     if (nextElement >= buffer + bufferSize)
     {
         throw StaticContainerException(0);
     }
-    return nextElement++;
+    return new(nextElement++) T(as...);
 }
 
 template <typename T> 
-template <typename I>
-T* StaticContainer<T>::setNext(I i)
+T* StaticContainer<T>::push_back(const T& e)
 {
-    T* nextp = next();
-    nextp->set(i);
-    return nextp;
-}
-
-template <typename T> 
-T* StaticContainer<T>::push_back(const T* e)
-{
-    return (T*)memcpy(next(),e,sizeof(T));
+    return new(nextElement++) T(e);
 }
 
 template <typename T> 
@@ -124,6 +130,11 @@ void StaticContainer<T>::clear()
     nextElement = buffer;
 }
 
+template <typename T> 
+size_t StaticContainer<T>::size()
+{
+    return (buffer - nextElement) / sizeof(T);
+}
 
 template <typename T> 
 typename StaticContainer<T>::iterator StaticContainer<T>::begin() 

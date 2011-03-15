@@ -24,17 +24,8 @@
 PTXspecialRegister::PTXspecialRegister(Sreg id_) :
     id(id_) {}
 
-int PTXspecialRegister::snprint(const char* prefix, 
-                                char* buf, 
-                                int size, 
-                                const char* postfix)
+inline void PTXspecialRegister::printOn(std::ostream& os) const
 {
-    int res = std::snprintf(buf, size, "%s%s%s", prefix,
-                            ptxSregStr(id), postfix);
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
+    os << ptxSregStr(id);
 }
 

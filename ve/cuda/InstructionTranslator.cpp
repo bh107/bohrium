@@ -38,11 +38,11 @@ void InstructionTranslator::translate(cphvb_opcode vbOpcode,
                                       PTXregister* dest, 
                                       PTXregister* src[])
 {
-    PTXtype resType = dest->type;
+    PTXtype resType = dest->getType();
     PTXoperand* mySrc[CPHVB_MAX_NO_OPERANDS-1];
     for (int i = 0; i < cphvb_operands(vbOpcode) -1; ++i)
     {
-        if (src[i]->type != resType)
+        if (src[i]->getType() != resType)
         {
             mySrc[i] = convert(resType, src[i]);
         }
@@ -56,5 +56,5 @@ void InstructionTranslator::translate(cphvb_opcode vbOpcode,
     {
         throw std::runtime_error("Operation not supported.");
     }
-    instructionList->add(ptxOpcode, dest, mySrc);
+    instructionList->next(ptxOpcode, dest, mySrc);
 }

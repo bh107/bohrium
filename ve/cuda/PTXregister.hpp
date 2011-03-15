@@ -25,25 +25,15 @@
 
 class PTXregister : public PTXoperand
 {
-    friend class PTXregisterBank;
-    friend class PTXinstruction;
-    friend class InstructionTranslator;
+private:
     PTXtype type;
     int typeIdx;
+protected:
+    void printOn(std::ostream& os) const;
 public:
-    int snprint(char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(char* buf, 
-                int size, 
-                const char* postfix);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-
+    PTXregister(PTXtype type, 
+                int typeIdx);
+    PTXtype getType();
 };
 
 #endif

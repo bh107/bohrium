@@ -18,62 +18,79 @@
  */
 
 #include <cassert>
-#include <cstdio>
+#include <iostream>
+#include <sstream>
+#include <iomanip> 
 #include <stdexcept>
 #include "PTXinstruction.hpp"
 
-int PTXinstruction::snprintAritOp(char* buf, int size)
+inline void PTXinstruction::printOpModifierOn(std::ostream& os) const
+{
+    switch (opcode)
+    {
+    case PTX_MUL:
+    case PTX_MAD:
+        if (ptxBaseType(dest->getType()) == PTX_INT || 
+            ptxBaseType(dest->getType()) == PTX_UINT)
+        {
+            
+            os << ".lo";
+        }
+        break;
+    case PTX_DIV:
+        if (ptxBaseType(dest->getType()) == PTX_FLOAT)
+        {
+            
+            os << ".approx";
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+inline void PTXinstruction::printAritOpOn(std::ostream& os) const
 { 
-    int res = 0;
-    int bp;
     switch (opcode)
     {
     case PTX_ADD:
-        bp = std::snprintf(buf, size, "\tadd%s\t", ptxTypeStr(dest->type));
+        os << "add";
         break;
     case PTX_SUB:
-        bp = std::snprintf(buf, size, "\tsub%s\t", ptxTypeStr(dest->type));
+        os << "sub";
         break;
     case PTX_MUL:
-        bp = std::snprintf(buf, size, "\tmul%s%s\t", 
-                           (ptxBaseType(dest->type) == PTX_FLOAT)?"":".lo", 
-                           ptxTypeStr(dest->type));
+        os << "mul";
         break;
     case PTX_MAD:
-        bp = std::snprintf(buf, size, "\tmad.lo%s\t", ptxTypeStr(dest->type));
+        os << "mad";
         break;
     case PTX_MAD_WIDE:
-        bp = std::snprintf(buf, size, "\tmad.wide%s\t",
-                           ptxWideOpStr(dest->type));
+        os << "mad.wide";
         break;
     case PTX_DIV:
-        bp = std::snprintf(buf, size, "\tdiv%s\t", ptxTypeStr(dest->type));
+        os << "div";
         break;
     case PTX_REM:
-        bp = std::snprintf(buf, size, "\trem%s\t", ptxTypeStr(dest->type));
+        os << "rem";
         break;
     case PTX_MOV:
-        bp = std::snprintf(buf, size, "\tmov%s\t", ptxTypeStr(dest->type));
+        os << "mov";
         break;
     default:
         assert (false);
      }
-    res += bp; buf += bp; size -= bp;
-    bp = dest->snprint(buf,size);
-    res += bp; buf += bp; size -= bp;
+    printOpModifierOn(os);
+    os << ((opcode==PTX_MAD_WIDE)?ptxWideOpStr(dest->getType()):
+        ptxTypeStr(dest->getType())) << " " << *dest;
     for (int i = 0; i < ptxSrcOperands(opcode); ++i)
     {
-        bp = src[i]->snprint(", ",buf,size); 
-        res += bp; buf += bp; size -= bp;
+        os << ", " << *src[i];
     }
-    bp = std::snprintf(buf, size,";\n");
-    return res + bp;
 }
 
-int PTXinstruction::snprintLogicOp(char* buf, int size)
+inline void PTXinstruction::printLogicOpOn(std::ostream& os) const
 { 
-    int res = 0;
-    int bp;
     PTXregister* srcReg;
     PTXtype type = PTX_INT32;
     for (int i = 0; i < ptxSrcOperands(opcode); ++i)
@@ -81,116 +98,193 @@ int PTXinstruction::snprintLogicOp(char* buf, int size)
         srcReg = dynamic_cast<PTXregister*>(src[i]);
         if (srcReg != NULL)
         {
-            type = srcReg->type;
+            type = srcReg->getType();
             break;
         }
     }
+    
     switch (opcode)
     {    
     case PTX_SETP_GE:
-        bp = std::snprintf(buf, size, "\tsetp.ge%s\t", ptxTypeStr(type));
+        os << "setp.ge";
         break;
     default:
         assert (false);
     }
-    res += bp; buf += bp; size -= bp;
-    bp = dest->snprint(buf,size);
-    res += bp; buf += bp; size -= bp;
-    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
-    {
-        bp = src[i]->snprint(", ",buf,size); 
-        res += bp; buf += bp; size -= bp;
-    }
-    bp = std::snprintf(buf, size,";\n");
-    return res + bp;    
+    os <<  ptxTypeStr(type) << " " << *dest << ", " << *src[0] << ", " << 
+        *src[1];
 }
 
-int PTXinstruction::snprintConvertOp(char* buf, int size)
+inline void PTXinstruction::printConvertOpOn(std::ostream& os) const
 {
-    int res = 0;
-    int bp;
     PTXregister* srcReg = dynamic_cast<PTXregister*>(src[0]);
     assert (srcReg != NULL);
-    bp = std::snprintf(buf, size, "\tcvt.rn%s%s\t", ptxTypeStr(dest->type),
-                         ptxTypeStr(srcReg->type));
-    res += bp; buf += bp; size -= bp;
-    bp = dest->snprint(buf,size);
-    res += bp; buf += bp; size -= bp;
-    bp = srcReg->snprint(", ",buf,size,";\n");
-    return res + bp;    
+    os << "cvt.rn" << ptxTypeStr(dest->getType()) << "."  << 
+        ptxTypeStr(srcReg->getType()) << " " << *dest << ", " << *srcReg;
 }
 
-int PTXinstruction::snprintOp(char* buf, int size)
+inline void PTXinstruction::printOpOn(std::ostream& os) const 
 {
-    int res = 0;
-    int bp;
     switch (opcode)
     {
     case PTX_EXIT:
-        return std::snprintf(buf, size, "\texit;\n");
+        os << "exit";
+        break;
     case PTX_MEMBAR:
-        return std::snprintf(buf, size, "\tmembar.gl;\n");
+        os << "membar.gl";
+        break;
     case PTX_BRA:
-        return std::snprintf(buf, size, "\tbra\t%s;\n", label);
+        os << "bra " << label;
+        break;
     case PTX_LD_GLOBAL:
-        bp = std::snprintf(buf, size, "\tld.global%s\t", 
-                           ptxTypeStr(dest->type));
-        res += bp; buf += bp; size -= bp;
-        bp = dest->snprint(buf,size,", ");
-        res += bp; buf += bp; size -= bp;
-        bp = src[0]->snprint("[",buf,size,"+");
-        res += bp; buf += bp; size -= bp;
-        bp = src[1]->snprint(buf,size,"];\n");
-        return res + bp;
+        os << "ld.global" << ptxTypeStr(dest->getType()) << " " << *dest << ", " << 
+            "[" << *src[0] << "+" << *src[1] << "]";
+        break;
     case PTX_LD_PARAM:
-        bp = std::snprintf(buf, size, "\tld.param%s\t", ptxTypeStr(dest->type));
-        res += bp; buf += bp; size -= bp;
-        bp = dest->snprint(buf,size,", ");
-        res += bp; buf += bp; size -= bp;
-        bp = src[0]->snprint("[",buf,size,"];\n");
-        return res + bp;
+        os << "ld.param" << ptxTypeStr(dest->getType()) << " " << *dest << ", " << 
+            "[" << *src[0] << "]";
+        break;
     case PTX_ST_GLOBAL:
-        bp = std::snprintf(buf, size, "\tst.global%s\t", 
-                           ptxTypeStr(dest->type));
-        res += bp; buf += bp; size -= bp;
-        bp = src[0]->snprint("[",buf,size,"+");
-        res += bp; buf += bp; size -= bp;
-        bp = src[1]->snprint(buf,size,"]");
-        res += bp; buf += bp; size -= bp;
-        bp = dest->snprint(", ",buf,size,";\n");
-        return res + bp;
+        os << "st.global" << ptxTypeStr(dest->getType()) <<  " [" << *src[0] << 
+            "+" << *src[1] << "], " << *dest; 
+        break;
     case PTX_CVT:
-        return snprintConvertOp(buf, size);
+        printConvertOpOn(os);
+        break;
     case PTX_SETP_GE:
-        return snprintLogicOp(buf, size);
+        printLogicOpOn(os);
+        break;
     default:
-        return snprintAritOp(buf, size);
+        printAritOpOn(os);
+        break;
     }
 }
 
-int PTXinstruction::snprint(char* buf, int size)
+inline void PTXinstruction::printOn(std::ostream& os) const 
 {
-    int res = 0;
-    int bp;
     if (label != NULL && opcode != PTX_BRA)    
     {
-        bp = snprintf(buf, size, "%s:\n",label);
-        res += bp; buf += bp; size -= bp;
+        os << label << ":\n";
     }
     if (guard != NULL)
     {
-        bp = snprintf(buf, size, "%4s",guardMod?"@":"@!");
-        res += bp; buf += bp; size -= bp;
-        bp = guard->snprint(buf,size);
-        res += bp; buf += bp; size -= bp;
-    }
-    bp = snprintOp(buf, size);
-    res += bp;
-    if (bp > size)
+        os << std::setw(6) << (guardMod?"@":"@!") << *guard << " ";
+    } 
+    else
     {
-        throw std::runtime_error("Not enough buffer space for printing.");
+        os << "          ";
     }
-    return res;
+    printOpOn(os);
+    os << ";\n";
+}
+
+std::ostream& operator<< (std::ostream& os, 
+                          PTXinstruction const& ptxInstruction)
+{
+    ptxInstruction.printOn(os);
+    return os;
+}
+
+PTXinstruction::PTXinstruction(char* label_,
+                               bool guardMod_,
+                               PTXregister* guard_,
+                               PTXopcode opcode_,
+                               PTXregister* dest_,
+                               PTXoperand* src_[]) :
+    label(label_),
+    guardMod(guardMod_),
+    guard(guard_),
+    opcode(opcode_),
+    dest(dest_)
+{
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
+    {
+        src[i] = src_[i];
+    }
+}
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_,
+                               PTXregister* dest_,
+                               PTXoperand* src_[]) :
+    label(NULL),
+    guardMod(false),
+    guard(NULL),
+    opcode(opcode_),
+    dest(dest_)
+{
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
+    {
+        src[i] = src_[i];
+    }
 }
 
 
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_,
+                               PTXregister* dest_) :
+    label(NULL),
+    guardMod(false),
+    guard(NULL),
+    opcode(opcode_),
+    dest(dest_),
+    src({NULL,NULL,NULL}) {}
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_,
+                               PTXregister* dest_,
+                               PTXoperand* src0) :
+    label(NULL),
+    guardMod(false),
+    guard(NULL),
+    opcode(opcode_),
+    dest(dest_),
+    src({src0,NULL,NULL}) {}
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_,
+                               PTXregister* dest_,
+                               PTXoperand* src0,             
+                               PTXoperand* src1) :
+    label(NULL),
+    guardMod(false),
+    guard(NULL),
+    opcode(opcode_),
+    dest(dest_),
+    src({src0,src1,NULL}) {}
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_,
+                               PTXregister* dest_,
+                               PTXoperand* src0,
+                               PTXoperand* src1,             
+                               PTXoperand* src2) :
+    label(NULL),
+    guardMod(false),
+    guard(NULL),
+    opcode(opcode_),
+    dest(dest_),
+    src({src0,src1,src2}) {}
+
+PTXinstruction::PTXinstruction(PTXregister* guard_,
+                               PTXopcode opcode_,
+                               char* label_):
+    label(label_),
+    guardMod(true),
+    guard(guard_),
+    opcode(opcode_),
+    dest(NULL),
+    src({NULL,NULL,NULL}) {}
+
+PTXinstruction::PTXinstruction(PTXregister* guard_,
+                               PTXopcode opcode_) :
+    label(NULL),
+    guardMod(true),
+    guard(guard_),
+    opcode(opcode_),
+    dest(NULL),
+    src({NULL,NULL,NULL}) {}
+
+PTXinstruction::PTXinstruction(PTXopcode opcode_) :
+    label(NULL),
+    guardMod(true),
+    guard(NULL),
+    opcode(opcode_),
+    dest(NULL),
+    src({NULL,NULL,NULL}) {}

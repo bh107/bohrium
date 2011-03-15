@@ -25,21 +25,17 @@
 
 class PTXkernelParameter : public PTXoperand
 {
-    friend class PTXkernel;
 private:
     PTXtype type;
-    long id;
+    int id;
+protected:
+    void printOn(std::ostream& os) const;     
+    void declareOn(std::ostream& os) const; 
 public:
-    int declare(char* buf, 
-                int size);
-    int declare(const char* prefix, 
-                char* buf, 
-                int size);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
-    
+    PTXkernelParameter(PTXtype type, int id);
+    PTXtype getType();
+    friend std::ostream& operator<<= (std::ostream& os, 
+                                  PTXkernelParameter const& ptxKernelParameter);
 };
 
 #endif

@@ -25,13 +25,12 @@
 
 class PTXspecialRegister : public PTXoperand
 {
+private:
     Sreg id;
+protected:
+    void printOn(std::ostream& os) const;
 public:
     PTXspecialRegister(Sreg id_);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
 };
 
 #endif

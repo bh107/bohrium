@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <cassert>
 #include <cuda.h>
@@ -42,14 +43,15 @@ Kernel::Kernel(CUmodule module_,
     signature(signature_) {}
 
 #define JIT_LOG_BUFFER_SIZE (4096)
-#define KERNEL_SOURCE_BUFFER_SIZE (16384)
 char jitInfoLogBuffer[JIT_LOG_BUFFER_SIZE];
 char jitErrorLogBuffer[JIT_LOG_BUFFER_SIZE];
-char ptxKernelSource[KERNEL_SOURCE_BUFFER_SIZE];
 
 Kernel::Kernel(PTXkernel* ptxKernel)
 {
-    ptxKernel->snprint(ptxKernelSource, KERNEL_SOURCE_BUFFER_SIZE);
+    std::ostringstream ptxKernelSource;
+    ptxKernelSource << *ptxKernel;
+    std::string ks = ptxKernelSource.str();
+    const char* cks = ks.c_str();
 
     const unsigned int options = 4;
     CUjit_option jitOptions[options];
@@ -64,7 +66,7 @@ Kernel::Kernel(PTXkernel* ptxKernel)
 	jitOptions[3] = CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
 	jitValues[3] = (void *)JIT_LOG_BUFFER_SIZE;
 
-    CUresult error = cuModuleLoadDataEx(&module, ptxKernelSource, 
+    CUresult error = cuModuleLoadDataEx(&module, cks, 
                                         options, jitOptions, jitValues);      
 #ifdef DEBUG
     std::cout << "[VE CUDA] Compilation info:" << std::endl;
@@ -75,7 +77,7 @@ Kernel::Kernel(PTXkernel* ptxKernel)
     std::cout << jitErrorLogBuffer << std::endl;
     std::cout << "---- ERRORS END ----" << std::endl;		
     std::cout << "---- CODE BEGIN ----" << std::endl;
-    std::cout << ptxKernelSource << std::endl;
+    std::cout << cks << std::endl;
     std::cout << "----- CODE END -----" << std::endl;	
 #endif
 

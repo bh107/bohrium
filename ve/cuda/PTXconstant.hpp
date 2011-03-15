@@ -39,19 +39,17 @@ class PTXconstant : public PTXoperand
 private:
     PTXbaseType type;
     PTXconstVal value;
+protected:
+    void printOn(std::ostream& os) const;
 public:
-    void set(PTXbaseType type, 
-             PTXconstVal value);
-    void set(cphvb_type vbtype,
-             cphvb_constant constant);
-    void set(long int value);
-    void set(unsigned long int value);
-    void set(double value);
-    void set(CUdeviceptr value);
-    int snprint(const char* prefix, 
-                char* buf, 
-                int size, 
-                const char* postfix);
+    PTXconstant(PTXbaseType type, 
+                PTXconstVal value);
+    PTXconstant(cphvb_type vbtype,
+                cphvb_constant constant);
+    PTXconstant(long int value);
+    PTXconstant(unsigned long int value);
+    PTXconstant(double value);
+    PTXconstant(CUdeviceptr value);
 };
 
 #endif

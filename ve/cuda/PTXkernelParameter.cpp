@@ -21,31 +21,29 @@
 #include <stdexcept>
 #include "PTXkernelParameter.hpp"
 
-int PTXkernelParameter::declare(const char* prefix, char* buf, int size)
+inline void PTXkernelParameter::declareOn(std::ostream& os) const
 {
-    int res = std::snprintf(buf, size, "%s.param %s kp%ld_",
-                            prefix, ptxTypeStr(type), id);
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
+    os << ".param " << ptxTypeStr(type) << " kp" << id;
 }
 
-int PTXkernelParameter::declare(char* buf, int size)
+inline void PTXkernelParameter::printOn(std::ostream& os) const
 {
-    return declare("",buf,size);
+    os << "kp" << id;
 }
 
-int PTXkernelParameter::snprint(const char* prefix, 
-                                char* buf, 
-                                int size, 
-                                const char* postfix)
+std::ostream& operator<<= (std::ostream& os, 
+                                  PTXkernelParameter const& ptxKernelParameter)
 {
-    int res = std::snprintf(buf, size, "%skp%ld_%s", prefix, id, postfix);
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
+    ptxKernelParameter.declareOn(os);
+    return os;
+}
+
+PTXkernelParameter::PTXkernelParameter(PTXtype type_, 
+                                            int id_) :
+    type(type_),
+    id(id_) {}
+
+PTXtype PTXkernelParameter::getType()
+{
+    return type;
 }

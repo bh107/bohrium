@@ -27,7 +27,7 @@
 #include "PTXconstant.hpp"
 #include "PTXregisterBank.hpp"
 #include "OffsetMap.hpp"
-#include "PTXinstructionList.hpp"
+#include "PTXinstruction.hpp"
 #include "PTXkernel.hpp"
 #include "Kernel.hpp"
 #include "KernelParameter.hpp"
@@ -56,7 +56,7 @@ private:
     OffsetMap* offsetMap;
     PTXregisterBank* registerBank;
     StaticContainer<PTXconstant>* constantBuffer;
-    PTXinstructionList* instructionList;
+    StaticContainer<PTXinstruction>* instructionList;
     InstructionTranslator* translator;
     PTXkernel* ptxKernel;
     PTXregister* threadID;
@@ -70,7 +70,6 @@ private:
     PTXregister* loadScalar(cphvb_type type,
                             cphvb_constant value);
     void storeAll();
-    
 public:
     KernelGeneratorSimple();
     void run(Threads threads,

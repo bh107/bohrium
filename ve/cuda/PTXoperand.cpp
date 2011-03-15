@@ -19,22 +19,9 @@
 
 #include "PTXoperand.hpp"
 
-int PTXoperand::snprint(char* buf, 
-                        int size)
+std::ostream& operator<< (std::ostream& os, 
+                          PTXoperand const& ptxOperand)
 {
-    return snprint("",buf,size,"");
-}
-
-int PTXoperand::snprint(const char* prefix, 
-                        char* buf, 
-                        int size)
-{
-    return snprint(prefix,buf,size,"");
-}
-
-int PTXoperand::snprint(char* buf, 
-                        int size, 
-                        const char* postfix)
-{
-    return snprint("",buf,size,postfix);
+    ptxOperand.printOn(os);
+    return os;
 }

@@ -18,7 +18,8 @@
  */
 
 #include <cassert>
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <cphvb.h>
 #include "PTXoperand.hpp"
@@ -27,7 +28,7 @@
 #include "PTXregisterBank.hpp"
 
 PTXregisterBank::PTXregisterBank() :
-    next(0),
+    registers(new StaticContainer<PTXregister>(1024)),
     tid_x(PTXspecialRegister(TID_X)),
     ntid_x(PTXspecialRegister(NTID_X)),
     ctaid_x(PTXspecialRegister(CTAID_X))
@@ -40,44 +41,40 @@ PTXregisterBank::PTXregisterBank() :
 
 void PTXregisterBank::clear()
 {
-    next = 0;
+    registers->clear();
     for (int i = 0; i < PTX_TYPES; ++i)
     {
         instanceTable[i] = 0;
     }
 }
 
-PTXregister* PTXregisterBank::newRegister(PTXtype type)
+PTXregister* PTXregisterBank::next(PTXtype type)
 {
-    registers[next].type = type;
-    registers[next].typeIdx = instanceTable[type]++;
-    return &registers[next++];
+    return registers->next(type,instanceTable[type]++);
 }
 
-
-PTXregister* PTXregisterBank::newRegister(cphvb_type vbtype)
+PTXregister* PTXregisterBank::next(cphvb_type vbtype)
 {
-    return newRegister(ptxType(vbtype));
+    PTXtype type = ptxType(vbtype);
+    return registers->next(type,instanceTable[type]++);
 }
 
-int PTXregisterBank::declare(char* buf, int size)
+inline void PTXregisterBank::declareOn(std::ostream& os) const
 {
-    int res = 0;
-    int bp;
     for (int i = 0; i < PTX_TYPES; ++i)
     {
         if (instanceTable[i] > 0)
         {
-            bp = std::snprintf(buf, size, "\t.reg %s %s<%d>;\n",
-                               ptxTypeStr((PTXtype)i), 
-                               ptxRegPrefix((PTXtype)i),
-                               instanceTable[i]);
-            res += bp; buf += bp; size -= bp;
+            os << std::setw(10) << "";
+            os << ".reg " << ptxTypeStr((PTXtype)i) << " " << 
+                ptxRegPrefix((PTXtype)i) << " <" << instanceTable[i] << ">;\n";
         }
     }
-    if (size < 0)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
+}
+
+std::ostream& operator<<= (std::ostream& os, 
+                                  PTXregisterBank const& ptxRegisterBank)
+{
+    ptxRegisterBank.declareOn(os);
+    return os;
 }

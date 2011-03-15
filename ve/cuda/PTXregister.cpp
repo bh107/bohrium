@@ -17,40 +17,19 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
-#include <stdexcept>
 #include "PTXregister.hpp"
 
-int PTXregister::snprint(const char* prefix, 
-                         char* buf, 
-                         int size, 
-                         const char* postfix)
+void PTXregister::printOn(std::ostream& os) const
 {
-    int res = std::snprintf(buf, size, "%s%s%d%s", prefix,
-                            ptxRegPrefix(type), typeIdx, postfix);
-    if (res > size)
-    {
-        throw std::runtime_error("Not enough buffer space for printing.");
-    }
-    return res;
+    os << ptxRegPrefix(type) << typeIdx;
 }
 
-int PTXregister::snprint(char* buf, 
-                        int size)
-{
-    return snprint("",buf,size,"");
-}
+PTXregister::PTXregister(PTXtype type_, 
+                         int typeIdx_) :
+    type(type_),
+    typeIdx(typeIdx_) {}
 
-int PTXregister::snprint(const char* prefix, 
-                        char* buf, 
-                        int size)
+PTXtype PTXregister::getType()
 {
-    return snprint(prefix,buf,size,"");
-}
-
-int PTXregister::snprint(char* buf, 
-                        int size, 
-                        const char* postfix)
-{
-    return snprint("",buf,size,postfix);
+    return type;
 }
