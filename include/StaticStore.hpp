@@ -31,13 +31,8 @@
 
 #define __SC_DEFAULT_BUFFER_SIZE (4096)
 
-class StaticStoreException 
-{
-private:
-    int code;
-public:
-    StaticStoreException(int code_) : code(code_) {}
-};
+class StaticStoreException : public std::exception {};
+
 
 template <typename T>
 class StaticStore
@@ -55,6 +50,7 @@ private:
     void erase(T* e);
     template <typename... As>
     T* next(As... as);
+    T* c_next();
 };
 
 
@@ -87,6 +83,31 @@ StaticStore<T>::~StaticStore()
 {
     free(buffer);
 }
+
+template <typename T> 
+T* StaticStore<T>::c_next()
+{
+    if (nextElement) 
+    {
+        if (nextElement >= buffer + bufferSize)
+        {
+            nextElement = 0;
+        }
+        else
+        {
+            return nextElement++;
+        }
+    }
+    if (emptySlot.empty())
+    {
+        throw StaticStoreException();
+    }
+    T* ref = emptySlot.front();
+    emptySlot.pop_front();
+    return ref;
+
+}
+
 
 template <typename T> 
 template <typename... As>

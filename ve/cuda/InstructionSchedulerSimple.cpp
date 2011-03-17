@@ -27,7 +27,7 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
     dataManager(dataManager_),
     kernelGenerator(kernelGenerator_){}
 
-void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
+inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 {
 #ifdef DEBUG
         std::cout << "[VE CUDA] InstructionSchedulerSimple::schedule("; 
@@ -36,6 +36,8 @@ void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 #endif
     switch (inst->opcode)
     {
+    case CPHVB_NONE:
+        break;
     case CPHVB_RELEASE:
         dataManager->release(inst->operand[0]);
         break;

@@ -58,6 +58,10 @@ void InstructionBatchSimple::add(cphVBinstruction* inst)
 
 void InstructionBatchSimple::execute()
 {
+#ifdef DEBUG
+    std::cout << "[VE CUDA] Executing InstructionBatch with " << batch.size() 
+              << " instructions." << std::endl;
+#endif
     if (batch.begin() != batch.end())
     {
         kernelGenerator->run(threads, batch.begin(), batch.end());

@@ -27,6 +27,9 @@
 #include <cphvb_opcode.h>
 #include <cphvb_vem.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Initialize the VEM
  *
@@ -82,5 +85,8 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst);
 cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                    cphvb_instruction inst_list[]);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
