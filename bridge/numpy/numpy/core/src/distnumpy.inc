@@ -11,6 +11,10 @@
 #endif
 #include CBLAS_HEADER
 
+//Scheduled instruction. At the moment we only have one batch.
+static cphvb_instruction inst_scheduled[DNPY_MAX_NINST];
+static cphvb_intp ninst_scheduled=0;
+
 //Pointer to the python module who has the ufunc operators.
 static PyObject *ufunc_module;
 //Pointers to the cblas functions.
@@ -115,6 +119,36 @@ static const cphvb_type const type_cph2py[] =
     [CPHVB_FLOAT64] = NPY_DOUBLE
 };
 
+
+/*
+ *===================================================================
+ * Schedule one instruction.
+ * Private
+ */
+static void
+util_schedule(cphvb_instruction *inst, int force_flush)
+{
+    cphvb_error error;
+    if(inst != NULL)
+        inst_scheduled[ninst_scheduled++] = *inst;
+
+    if(ninst_scheduled >= DNPY_MAX_NINST || force_flush)
+    {
+        if(ninst_scheduled > 0)
+        {
+            error = vem_execute(ninst_scheduled, inst_scheduled);
+            ninst_scheduled = 0;
+            if(error)
+            {
+                fprintf(stderr, "Unhandled error returned by "
+                                "vem_execute() in util_schedule()\n");
+                exit(error);
+            }
+        }
+    }
+} /* util_schedule */
+
+
 /*
  *===================================================================
  * Compose a release instruction and execute it.
@@ -125,18 +159,10 @@ static void
 util_release(cphvb_array *ary)
 {
     cphvb_instruction inst;
-    cphvb_error error;
     //Tell the VEM to release the data to us.
     inst.opcode = CPHVB_RELEASE;
     inst.operand[0] = ary;
-    //We assume that the VEM supports the CPHVB_RELEASE opcode.
-    error = vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr, "Unhandled error returned by "
-                        "vem_execute() in util_release()\n");
-        exit(error);
-    }
+    util_schedule(&inst, 1);//Force a flush.
 } /* util_release */
 
 
@@ -197,19 +223,11 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
 static void
 dnumpy_destroy_dndarray(intp uid)
 {
-    cphvb_error error;
     cphvb_instruction inst;
     inst.opcode = CPHVB_DESTORY;
     inst.operand[0] = (cphvb_array*) uid;
 
-    //We assume that the VEM supports the CPHVB_DESTORY opcode.
-    error = vem_execute(1, &inst);
-    if(error)
-    {
-        fprintf(stderr,"Unhandled error returned by vem_execute()"
-                       " in dnumpy_destroy_dndarray()\n");
-        exit(error);
-    }
+    util_schedule(&inst, 0);
 
 } /* dnumpy_destroy_dndarray */
 
@@ -277,6 +295,7 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
 static PyObject *
 dnumpy_evalflush(void)
 {
+    util_schedule(NULL, 1);//Force a flush.
     Py_RETURN_NONE;
 } /* dnumpy_evalflush */
 
@@ -574,12 +593,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
         //Only execute the ufunc if the output is greater than zero.
         if(cphvb_nelements(inst.operand[0]->ndim,
                            inst.operand[0]->shape) > 0)
-            error = vem_execute(1, &inst);
-        if(error)
-        {
-            fprintf(stderr,"ERROR IN UFUNC\n");
-            exit(CPHVB_OUT_OF_MEMORY);
-        }
+            util_schedule(&inst, 0);
     }
 
     return 0;
@@ -826,6 +840,7 @@ dnumpy_matrix_multiplication(intp Auid, intp Buid, intp Cuid)
 static void
 dnumpy_exit()
 {
+    dnumpy_evalflush();
     vem_shutdown();
 } /* dnumpy_exit */
 

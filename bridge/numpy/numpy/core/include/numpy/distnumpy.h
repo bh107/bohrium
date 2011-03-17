@@ -41,7 +41,7 @@ typedef struct {
 #define DNPY_INSTRUCTION_BATCH_MAXSIZE 33554432 //32MB
 
 //The maximum number of instructions in a batch.
-#define DNPY_MAX_NINST 1
+#define DNPY_MAX_NINST 100
 
 
 #endif
