@@ -172,7 +172,7 @@ util_release(cphvb_array *ary)
  * Return 1 when the dtype is not supported else 0.
  * Public
  */
-static int
+static intp
 dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
                        int zerofill, intp *uid)
 {
@@ -207,9 +207,15 @@ dnumpy_create_dndarray(int ndims, intp dims[NPY_MAXDIMS], int numpytype,
     *uid = (intp) new_ary;
 
     if(error == CPHVB_OUT_OF_MEMORY)
+    {
         PyErr_NoMemory();
+        return 1;
+    }
     else if (error)
+    {
         PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
+        return 1;
+    }
 
     return 0;//Success.
 
@@ -237,7 +243,7 @@ dnumpy_destroy_dndarray(intp uid)
  * Create a new view based on the 'org_ary'.
  * Public
  */
-static int
+static intp
 dnumpy_create_dndview(intp org_ary_uid, intp ndim,
                       intp dims[NPY_MAXDIMS],
                       intp stride_inbyte[NPY_MAXDIMS],
@@ -272,17 +278,20 @@ dnumpy_create_dndview(intp org_ary_uid, intp ndim,
             return 0;
         }
     }
-
     error = vem_create_array(base, org_ary->type, ndim,
                              offset+org_ary->start,
                              shape, stride, NPY_FALSE,
                              (cphvb_constant)0L, &new_ary);
-
     if(error == CPHVB_OUT_OF_MEMORY)
+    {
         PyErr_NoMemory();
+        return 0;
+    }
     else if (error)
+    {
         PyErr_SetString(PyExc_RuntimeError, "unknown cphVB error\n");
-
+        return 0;
+    }
     return (intp) new_ary;
 
 } /* dnumpy_create_dndview */
@@ -345,6 +354,7 @@ dnumpy_dndarray_putitem(intp uid, intp coordinate[NPY_MAXDIMS],
     if(citem2 == NULL)
     {
         Py_DECREF(item2);
+        fprintf(stderr,"Cast failed\n");
         return -1;
     }
 
@@ -861,7 +871,7 @@ dnumpy_master_slave_split(void)
         if(cphvb_vem_cluster_master_slave_split())
             ret = Py_False;
     #endif
-    return ret;
+        return ret;
 } /* dnumpy_master_slave_split */
 
 /*NUMPY_API
