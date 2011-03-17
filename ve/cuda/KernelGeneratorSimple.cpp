@@ -219,9 +219,10 @@ void KernelGeneratorSimple::run(Threads threads,
                                 InstructionIterator last)
 {
     init(threads);
-    for (;first != last; ++first)
+    InstructionIterator it;
+    for (it = first ;it != last; ++it)
     {
-        addInstruction(*first);
+        addInstruction(*it);
     }
     storeAll();
    

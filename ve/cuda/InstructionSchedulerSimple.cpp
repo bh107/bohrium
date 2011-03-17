@@ -30,9 +30,8 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
 inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 {
 #ifdef DEBUG
-        std::cout << "[VE CUDA] InstructionSchedulerSimple::schedule("; 
-        printInstSpec(inst);
-        std::cout << ")" << std::endl;
+    std::cout << "[VE CUDA] InstructionSchedulerSimple::schedule(" << 
+        *inst << ")" << std::endl;
 #endif
     switch (inst->opcode)
     {
@@ -76,8 +75,12 @@ void InstructionSchedulerSimple::flushAll()
 }
 
 void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
-                                         cphVBinstruction* instructionList)
+                                          cphVBinstruction* instructionList)
 {
+#ifdef DEBUG
+    std::cout << "[VE CUDA] InstructionSchedulerSimple: recieved batch with " << 
+        instructionCount << " instructions." << std::endl;
+#endif
     for (cphvb_intp i = 0; i < instructionCount; ++i)
     {
         schedule(instructionList++);
@@ -86,6 +89,3 @@ void InstructionSchedulerSimple::schedule(cphvb_intp instructionCount,
     /* End of batch cleanup */
     dataManager->batchEnd();
 }
-
-
-

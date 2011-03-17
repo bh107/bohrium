@@ -26,6 +26,7 @@
 
 #ifdef DEBUG
 #include <iostream>
+#include <typeinfo>
 #endif
 
 

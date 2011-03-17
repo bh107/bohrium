@@ -54,6 +54,10 @@ void InstructionTranslator::translate(cphvb_opcode vbOpcode,
     PTXopcode ptxOpcode = ptxOpcodeMap(vbOpcode);
     if (ptxOpcode < 0)
     {
+#ifdef DEBUG
+        std::cout << "[VE CUDA] InstructionTranslator::translate(" << 
+            cphvb_opcode_text(vbOpcode) << ")" << std::endl;
+#endif
         throw std::runtime_error("Operation not supported.");
     }
     instructionList->next(ptxOpcode, dest, mySrc);

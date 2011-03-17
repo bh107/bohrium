@@ -83,7 +83,7 @@ cphvb_error cphvb_vem_node_init(void)
     {
         ve_support.opcode[opcode[opcode_count]] = 1;//Set True
 #ifdef DEBUG
-        std::cout << "\t" << cphvb_opcode_text(opcode[opcode_count]) << s
+        std::cout << "\t" << cphvb_opcode_text(opcode[opcode_count]) <<
             std::endl;
 #endif
     }
@@ -210,15 +210,14 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     for(i=0; i<count; ++i)
     {
         cphvb_instruction* inst = &inst_list[i];
+        cphvb_array* base = cphvb_base_array(inst->operand[0]);
         switch(inst->opcode)
         {
-            cphvb_array* base;
         case CPHVB_DESTORY:
             if (inst->operand[0]->base != NULL)
             {   // It's a view and we can mark it for deletion
                 arrayManager->erasePending(inst->operand[0]);
             }
-            base = cphvb_base_array(inst->operand[0]);
             if(--base->ref_count <= 0) //decrease refcount
             {
                 // Mark the Base for deletion
@@ -235,27 +234,20 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             break;
         case CPHVB_RELEASE:
             //Get the base
-            base = cphvb_base_array(inst->operand[0]);
             if (base->owner == CPHVB_PARENT)
             {   //The owner is upstream so we do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
+                inst->opcode = CPHVB_DISCARD;
             }
-            
-            //Tell the VE to release the array.
-            inst->operand[0] = base;
-            inst->opcode = CPHVB_RELEASE;
-            arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+            else
+            {
+                //Tell the VE to release the array.
+                inst->operand[0] = base;
+                inst->opcode = CPHVB_RELEASE;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+            }
             break;
         default:
-            for (int i = 0; i < cphvb_operands(inst->opcode); ++i)
-            {
-                if (inst->operand[i] != CPHVB_CONSTANT)
-                {
-                    base = cphvb_base_array(inst->operand[i]);
-                    base->owner = CPHVB_CHILD;
-                }
-            }
+            base->owner = CPHVB_CHILD;
         }
     }
     if (valid_instruction_count > 0)
@@ -264,8 +256,9 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     }
     else 
     {
+#ifdef DEBUG
+        std::cout << "[VEM node] No valid instructions in batch." << std::endl;
+#endif
         return CPHVB_SUCCESS;
     }
 }
-
-

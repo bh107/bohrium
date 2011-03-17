@@ -81,7 +81,7 @@ if __name__ == "__main__":
            and f not in exclude_list:
             m = f[:-3]#Remove ".py"
             m = __import__(m)
-            print "*"*100
+            print "*"*80
             print "Testing %s"%f
             err = False
             msg = ""

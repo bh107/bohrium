@@ -29,8 +29,8 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
     kernelGenerator(kernelGenerator_) 
 {
 #ifdef DEBUG
-    std::cout << "[VE CUDA] Created InstructionBatch with " << threads 
-              << " threads." << std::endl;
+    std::cout << "[VE CUDA] Created InstructionBatch(" << this << ") with " << 
+        threads << " threads." << std::endl;
 #endif
 }
 
@@ -38,21 +38,15 @@ InstructionBatchSimple::InstructionBatchSimple(Threads threads_,
 void InstructionBatchSimple::add(cphVBinstruction* inst)
 {
 #ifdef DEBUG
-    std::cout << "[VE CUDA] Adding instruction to batch with dimentions: ";
-    for (int i = 0; i < inst->operand[0]->ndim; ++i)
-    {
-        std::cout << inst->operand[0]->shape[i] << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "[VE CUDA] Adding instruction to batch with stride: ";
-    for (int i = 0; i < inst->operand[0]->ndim; ++i)
-    {
-        std::cout << inst->operand[0]->stride[i] << " ";
-    }
-    std::cout << std::endl;
+    std::cout << "[VE CUDA] InstructionBatchSimple(" << this << ")::add(" << 
+        *inst << ")" << std::endl;
 #endif
     int nops = cphvb_operands(inst->opcode);
     dataManager->lock(inst->operand, nops, this);
+#ifdef DEBUG
+    std::cout << "[VE CUDA] InstructionBatchSimple(" << this << ")::add(" << 
+        inst << ") : Queued" << std::endl;
+#endif
     batch.push_back(inst);
 }
 
@@ -60,10 +54,17 @@ void InstructionBatchSimple::execute()
 {
 #ifdef DEBUG
     std::cout << "[VE CUDA] Executing InstructionBatch with " << batch.size() 
-              << " instructions." << std::endl;
+              << " instructions: " << std::endl;
 #endif
     if (batch.begin() != batch.end())
     {
+#ifdef DEBUG
+        InstructionIterator it;
+        for (it = batch.begin() ;it != batch.end(); ++it)
+        {
+            std::cout << "[VE CUDA] \t" << **it << std::endl;
+        }
+#endif
         kernelGenerator->run(threads, batch.begin(), batch.end());
         batch.clear();
     }

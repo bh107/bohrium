@@ -20,32 +20,35 @@
 #include <iostream>
 #include "cphVBinstruction.hpp"
 
-void printInstSpec(cphVBinstruction* inst)
+std::ostream& operator<< (std::ostream& os, 
+                          cphVBinstruction const& inst)
 {
-    std::cout << cphvb_opcode_text(inst->opcode);
-    for (int i = 0; i < cphvb_operands(inst->opcode); ++i)
+    os << (&inst) << ": ";
+    os << cphvb_opcode_text(inst.opcode);
+    for (int i = 0; i < cphvb_operands(inst.opcode); ++i)
     {
-        if (inst->operand[i] == CPHVB_CONSTANT)
+        if (inst.operand[i] == CPHVB_CONSTANT)
         {
-            switch(inst->const_type[i])
+            switch(inst.const_type[i])
             {
             case CPHVB_INT32:
-                std::cout << ", " << inst->constant[i].int32;
+                os << ", " << inst.constant[i].int32;
                 break;
             case CPHVB_UINT32:
-                std::cout << ", " << inst->constant[i].uint32;
+                os << ", " << inst.constant[i].uint32;
                 break;
             case CPHVB_FLOAT32:
-                std::cout << ", " << inst->constant[i].float32;
+                os << ", " << inst.constant[i].float32;
                 break;
             default:
-                std::cout << ", const";
+                os << ", const";
             }
         }
         else
         {
-            std::cout << ", " << inst->operand[i] << "(" << 
-                inst->operand[i]->base << ")";
+            os << ", " << inst.operand[i] << "(" << 
+                inst.operand[i]->base << ")";
         }
     }
+    return os;
 }

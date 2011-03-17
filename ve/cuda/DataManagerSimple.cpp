@@ -27,16 +27,15 @@
 
 void DataManagerSimple::_sync(cphVBarray* baseArray)
 {
+    if (activeBatch == NULL)
+    {
+        return;
+    }
     WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
     if (wliter != writeLockTable.end())
     {
-        //assert(activeBatch != NULL);
-        if (activeBatch != NULL)
-        {
-            activeBatch->execute();
-        }
+        activeBatch->execute();
         writeLockTable.clear(); //OK because we are only working with one batch
-        activeBatch = NULL;
     }
 }
 
@@ -129,6 +128,10 @@ void DataManagerSimple::lock(cphVBarray* operands[],
                              int nops, 
                              InstructionBatch* batch)
 {
+    assert(nops > 0);
+    mapOperands(operands, nops);
+    cphVBarray* baseArray;
+
     if (activeBatch == NULL)
     {
         activeBatch = batch;
@@ -139,16 +142,14 @@ void DataManagerSimple::lock(cphVBarray* operands[],
         writeLockTable.clear(); //OK because we are only working with one batch
         activeBatch = batch;
     }
-    
-    assert(nops > 0);
-    mapOperands(operands, nops);
-    
-    cphVBarray* baseArray;
-    /* We need to _sync all arrays that are read in the operation*/
-    for (int i = 1; i < nops; ++i)
+    else
     {
-        baseArray = op2Base[operands[i]];  
-        _sync(baseArray);
+        /* We need to _sync all arrays that are read in the operation*/
+        for (int i = 1; i < nops; ++i)
+        {
+            baseArray = op2Base[operands[i]];  
+            _sync(baseArray);
+        }
     }
     /* Now we can just take the write lock on the array */
     baseArray = op2Base[operands[0]];
@@ -219,6 +220,9 @@ void DataManagerSimple::flushAll()
 
 void DataManagerSimple::batchEnd()
 {
+#ifdef DEBUG
+    std::cout << "[VE CUDA] DatamanagerSimple::batchEnd() " << std::endl;
+#endif
     flushAll();
     op2Base.clear();
 }

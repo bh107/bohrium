@@ -44,8 +44,6 @@ CUdeviceptr MemoryManagerSimple::deviceAlloc(cphVBarray* baseArray)
     size_t size = dataSize(baseArray);
     CUresult error = cuMemAlloc(&cudaPtr, size);
 #ifdef DEBUG
-    std::cout << "[VE CUDA] deviceAlloc: " << std::endl;
-    printArraySpec(baseArray);
     std::cout << "[VE CUDA] cuMemAlloc(" << (void*)cudaPtr << ", " << 
         size << ")" << std::endl;
 #endif
@@ -78,8 +76,6 @@ void MemoryManagerSimple::copyToHost(cphVBarray* baseArray)
     assert(baseArray->data != NULL);
     size_t size = dataSize(baseArray);
 #ifdef DEBUG
-    std::cout << "[VE CUDA] copyToHost: " << std::endl;
-    printArraySpec(baseArray);
     std::cout << "[VE CUDA] cuMemcpyDtoH(" << baseArray->data << ", " << 
         (void*)baseArray->cudaPtr << ", " << size << ")" << std::endl;
 #endif
@@ -102,8 +98,6 @@ void MemoryManagerSimple::copyToDevice(cphVBarray* baseArray)
     assert(baseArray->cudaPtr != 0);
     size_t size = dataSize(baseArray);
 #ifdef DEBUG
-    std::cout << "[VE CUDA] copyToDevice: " << std::endl;
-    printArraySpec(baseArray);
     std::cout << "[VE CUDA] cuMemcpyHtoD(" <<  (void*)baseArray->cudaPtr << 
         ", " << baseArray->data << ", " << size << ")" << std::endl;
 #endif

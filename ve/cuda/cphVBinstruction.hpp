@@ -20,6 +20,7 @@
 #ifndef __CPHVBINSTRUCTION_HPP
 #define __CPHVBINSTRUCTION_HPP
 
+#include <iostream>
 #include <cphvb.h>
 #include "cphVBarray.hpp"
 
@@ -36,6 +37,8 @@ struct cphVBinstruction
     cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 };
 
-void printInstSpec(cphVBinstruction* inst);
+std::ostream& operator<< (std::ostream& os, 
+                          cphVBinstruction const& inst);
+
 
 #endif
