@@ -27,13 +27,19 @@
 
 typedef std::multimap<cphvb_array*, cphvb_array*> ViewMap;
 
+struct OwnerTicket
+{
+    cphvb_array* array;
+    cphvb_comp owner;
+};
+
 class ArrayManager
 {
 private:
     StaticStore<cphvb_array>* arrayStore;
     ViewMap deletePending; // for delete pending accross batches
     std::deque<cphvb_array*> eraseQueue;
-    std::deque<cphvb_array*> ownerChangeQueue;
+    std::deque<OwnerTicket> ownerChangeQueue;
     
 public:
     ArrayManager();

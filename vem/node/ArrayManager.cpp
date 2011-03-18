@@ -63,40 +63,43 @@ void ArrayManager::erasePending(cphvb_array* array)
 }
 
 void ArrayManager::changeOwnerPending(cphvb_array* base,
-                                      cphvb_intp owner)
+                                      cphvb_comp owner)
 {
     assert(base->base == NULL);
-    assert(owner == CPHVB_PARENT); //All we can handle for now
-    ownerChangeQueue.push_back(base);
+    ownerChangeQueue.push_back((OwnerTicket){base,owner});
 }
 
 void ArrayManager::flush()
 {
     std::pair<ViewMap::iterator,ViewMap::iterator> range;
     ViewMap::iterator rit;
-    std::deque<cphvb_array*>::iterator it = ownerChangeQueue.begin();
-    for (; it != ownerChangeQueue.end(); ++it)
+    std::deque<OwnerTicket>::iterator oit = ownerChangeQueue.begin();
+    for (; oit != ownerChangeQueue.end(); ++oit)
     {
-        (*it)->owner = CPHVB_PARENT; //All we need to handle for now
-        range = deletePending.equal_range(*it);
+        (*oit).array->owner = (*oit).owner;
+#ifdef DEBUG
+        std::cout << "[VEM] setting ownner on " << (*oit).array << " to " <<
+            (*oit).owner << std::endl;
+#endif
+        range = deletePending.equal_range((*oit).array);
         for (rit=range.first; rit!=range.second; ++rit)
         {
             arrayStore->erase(rit->second);
             deletePending.erase(rit);
         }
     }
-    
-    for (it = eraseQueue.begin(); it != eraseQueue.end(); ++it)
+    std::deque<cphvb_array*>::iterator eit = eraseQueue.begin();
+    for (; eit != eraseQueue.end(); ++eit)
     {
-        if ((*it)->owner == CPHVB_PARENT)
+        if ((*eit)->owner == CPHVB_PARENT || (*eit)->owner == CPHVB_SELF)
         {
-            arrayStore->erase(*it);
+            arrayStore->erase(*eit);
         }
         else
         {
-            assert((*it)->base != NULL);
+            assert((*eit)->base != NULL);
             deletePending.insert(std::pair<cphvb_array*, 
-                                           cphvb_array*>((*it)->base, *it));
+                                           cphvb_array*>((*eit)->base, *eit));
         }
     }
 }

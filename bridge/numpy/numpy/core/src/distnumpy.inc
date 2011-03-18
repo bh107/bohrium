@@ -166,6 +166,23 @@ util_release(cphvb_array *ary)
 } /* util_release */
 
 
+/*
+ *===================================================================
+ * Compose a sync instruction and execute it.
+ * Fatal on error.
+ * Private
+ */
+static void
+util_sync(cphvb_array *ary)
+{
+    cphvb_instruction inst;
+    //Tell the VEM to syncronize the data
+    inst.opcode = CPHVB_SYNC;
+    inst.operand[0] = ary;
+    util_schedule(&inst, 1);//Force a flush.
+} /* util_release */
+
+
 /*NUMPY_API
  *===================================================================
  * Create dndarray.
@@ -400,8 +417,8 @@ dnumpy_dndarray_getitem(char *retdata, intp uid,
     cphvb_intp dtypesize = cphvb_type_size(ary->type);
     cphvb_intp d, offset;
 
-    //Tell the VEM to release the data to us.
-    util_release(ary);
+    //Tell the VEM to ensure that the data is syncronized.
+    util_sync(ary);
 
     //We may have to allocate the array memory.
     if(cphvb_malloc_array_data(base) != CPHVB_SUCCESS)

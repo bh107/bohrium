@@ -222,9 +222,17 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             {
                 // Mark the Base for deletion
                 arrayManager->erasePending(base);
-                //Tell the VE to discard the base array.
-                inst->operand[0] = base;
-                inst->opcode = CPHVB_DISCARD;
+                if (base->owner != CPHVB_PARENT)
+                {
+                    //Tell the VE to discard the base array.
+                    inst->operand[0] = base;
+                    inst->opcode = CPHVB_DISCARD;
+                }
+                else 
+                {
+                    inst->opcode = CPHVB_NONE;
+                    --valid_instruction_count;
+                }
             }
             else
             {   //Tell the VE to do nothing
@@ -233,32 +241,56 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             }
             break;
         case CPHVB_RELEASE:
-            //Get the base
-            if (base->owner == CPHVB_PARENT)
-            {   //The owner is upstream so we do nothing
-                inst->opcode = CPHVB_DISCARD;
-            }
-            else
+            switch (base->owner)
             {
-                //Tell the VE to release the array.
+            case CPHVB_PARENT:
+                //The owner is upstream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            case CPHVB_SELF:
+                //We own the date: Send discards down stream 
+                //and change owner to upstream
                 inst->operand[0] = base;
-                inst->opcode = CPHVB_RELEASE;
+                inst->opcode = CPHVB_DISCARD;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+                break;
+            default:
+                //The owner is downsteam so send the release down
+                inst->operand[0] = base;
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
             }
             break;
+        case CPHVB_SYNC:
+            switch (base->owner)
+            {
+            case CPHVB_PARENT:
+            case CPHVB_SELF:
+                //The owner is not down stream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            default:
+                //The owner is downsteam so send the sync down
+                //and take ownership
+                inst->operand[0] = base;
+                arrayManager->changeOwnerPending(base,CPHVB_SELF);
+            }
+            break;
         default:
+            // "Regular" operation: set ownership and send down stream
             base->owner = CPHVB_CHILD;
         }
     }
     if (valid_instruction_count > 0)
     {
-        return ve_execute(count, inst_list); 
+        cphvb_error e = ve_execute(count, inst_list); 
+        arrayManager->flush();
+        return e;
     }
     else 
     {
-#ifdef DEBUG
-        std::cout << "[VEM node] No valid instructions in batch." << std::endl;
-#endif
+        // No validf instructions in batch
         return CPHVB_SUCCESS;
     }
 }
