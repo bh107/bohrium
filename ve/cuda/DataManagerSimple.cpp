@@ -108,6 +108,7 @@ void DataManagerSimple::mapOperands(cphVBarray* operands[],
                 operand->cudaPtr = baseArray->cudaPtr;
                 op2Base[operand] = baseArray;
             }
+
 #ifdef DEBUG
             else
             {
@@ -166,7 +167,7 @@ void DataManagerSimple::sync(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
     
-    // I may recieve sync for arrays I don't own :-(
+    // I may recieve sync for arrays I don't own 
     Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
     if (biter == base2Cuda.end())
     {
@@ -185,7 +186,7 @@ void DataManagerSimple::discard(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
   
-    // I may recieve discard for arrays I don't own :-( 
+    // I may recieve discard for arrays I don't own
     Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
     if (biter == base2Cuda.end())
     {
@@ -199,7 +200,7 @@ void DataManagerSimple::discard(cphVBarray* baseArray)
     {
         if (oiter->second == baseArray)
         {
-            op2Base.erase(oiter++);    
+            op2Base.erase(oiter++);
         }
         else
         {
@@ -224,5 +225,4 @@ void DataManagerSimple::batchEnd()
     std::cout << "[VE CUDA] DatamanagerSimple::batchEnd() " << std::endl;
 #endif
     flushAll();
-    op2Base.clear();
 }

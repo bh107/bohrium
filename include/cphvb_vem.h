@@ -35,8 +35,8 @@ typedef struct
 /* Codes for known components */
 enum /* cphvb_comp */
 {
-    CPHVB_SELF,
     CPHVB_PARENT,
+    CPHVB_SELF,
     CPHVB_CHILD
 
 };

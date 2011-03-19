@@ -88,50 +88,40 @@ StaticStore<T>::~StaticStore()
 template <typename T> 
 T* StaticStore<T>::c_next()
 {
-    if (nextElement) 
+    if (!emptySlot.empty())
     {
-        if (nextElement >= buffer + bufferSize)
-        {
-            nextElement = 0;
-        }
-        else
-        {
-            return nextElement++;
-        }
+        T* ref = emptySlot.front();
+        emptySlot.pop_front();
+        return ref;
     }
-    if (emptySlot.empty())
+    else if (nextElement < buffer + bufferSize)
+    {
+        return nextElement++;
+    }
+    else
     {
         throw StaticStoreException();
     }
-    T* ref = emptySlot.front();
-    emptySlot.pop_front();
-    return ref;
-
 }
-
 
 template <typename T> 
 template <typename... As>
 T* StaticStore<T>::next(As... as)
 {
-    if (nextElement) 
+    if (!emptySlot.empty())
     {
-        if (nextElement >= buffer + bufferSize)
-        {
-            nextElement = 0;
-        }
-        else
-        {
-            return new(nextElement++) T(as...);
-        }
+        T* ref = emptySlot.front();
+        emptySlot.pop_front();
+        return new(ref) T(as...);
     }
-    if (emptySlot.empty())
+    else if (nextElement < buffer + bufferSize)
     {
-        throw StaticStoreException(0);
+        return new(nextElement++) T(as...);
     }
-    T* ref = emptySlot.front();
-    emptySlot.pop_front();
-    return new(ref) T(as...);
+    else
+    {
+        throw StaticStoreException();
+    }
 }
 
 template <typename T> 

@@ -218,7 +218,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             {   // It's a view and we can mark it for deletion
                 arrayManager->erasePending(inst->operand[0]);
             }
-            if(--base->ref_count <= 0) //decrease refcount
+            --base->ref_count; //decrease refcount
+            if(base->ref_count <= 0) 
             {
                 // Mark the Base for deletion
                 arrayManager->erasePending(base);
@@ -280,6 +281,14 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         default:
             // "Regular" operation: set ownership and send down stream
             base->owner = CPHVB_CHILD;
+            for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
+            {
+                if (inst->operand[i] != CPHVB_CONSTANT &&
+                    cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                {
+                    cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
+                }
+            }
         }
     }
     if (valid_instruction_count > 0)

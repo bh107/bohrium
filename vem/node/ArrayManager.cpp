@@ -71,35 +71,45 @@ void ArrayManager::changeOwnerPending(cphvb_array* base,
 
 void ArrayManager::flush()
 {
-    std::pair<ViewMap::iterator,ViewMap::iterator> range;
-    ViewMap::iterator rit;
+    std::pair<BaseToViewMMap::iterator,BaseToViewMMap::iterator> range;
+    BaseToViewMMap::iterator rit;
     std::deque<OwnerTicket>::iterator oit = ownerChangeQueue.begin();
+
+    //First we change ownership for all those pending
     for (; oit != ownerChangeQueue.end(); ++oit)
     {
         (*oit).array->owner = (*oit).owner;
-#ifdef DEBUG
-        std::cout << "[VEM] setting ownner on " << (*oit).array << " to " <<
-            (*oit).owner << std::endl;
-#endif
-        range = deletePending.equal_range((*oit).array);
-        for (rit=range.first; rit!=range.second; ++rit)
-        {
-            arrayStore->erase(rit->second);
-            deletePending.erase(rit);
+        if ((*oit).array->base == NULL)
+        {   //if it is a base array we chech to se if there are stale views
+            range = staleView.equal_range((*oit).array);
+            for (rit=range.first; rit!=range.second; ++rit)
+            {   //If there are any we delete them
+                arrayStore->erase(rit->second);
+                staleView.erase(rit);
+            }
         }
     }
+    // All ownerships have been changes. So we clear the queue
+    ownerChangeQueue.clear();
+
+    //Then we delete those array specs marked for deletion
     std::deque<cphvb_array*>::iterator eit = eraseQueue.begin();
     for (; eit != eraseQueue.end(); ++eit)
     {
-        if ((*eit)->owner == CPHVB_PARENT || (*eit)->owner == CPHVB_SELF)
-        {
+        if ((*eit)->base == NULL)
+        {   //Its a base array so we can delete it
+            arrayStore->erase(*eit);
+        }
+        else if ((*eit)->base->owner == CPHVB_PARENT)
+        {   //The base owner is up stream so we can delete it
             arrayStore->erase(*eit);
         }
         else
-        {
-            assert((*eit)->base != NULL);
-            deletePending.insert(std::pair<cphvb_array*, 
-                                           cphvb_array*>((*eit)->base, *eit));
+        {   //The base owner is down stream. So we postpone deletion
+            staleView.insert(std::pair<cphvb_array*, 
+                                 cphvb_array*>((*eit)->base, *eit));
         }
     }
+    // All erases have been delt with. So we clear the queue
+    eraseQueue.clear();
 }
