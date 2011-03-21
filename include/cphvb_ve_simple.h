@@ -20,6 +20,10 @@
 #ifndef __CPHVB_VE_SIMPLE_H
 #define __CPHVB_VE_SIMPLE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include <cphvb.h>
 
 cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
@@ -31,5 +35,9 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                                     cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS]);
 
 cphvb_error cphvb_ve_simple_shutdown(void);
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif
