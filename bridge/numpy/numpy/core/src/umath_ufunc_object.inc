@@ -2576,7 +2576,7 @@ PyUFunc_Reduce(PyUFuncObject *self, PyArrayObject *arr, PyArrayObject *out,
     /* DISTNUMPY */
     if(PyArray_ISDISTRIBUTED(arr))
     {
-        if(dnumpy_ufunc_reduce(arr, loop->ret, axis, self->name) < 0)
+        if(dnumpy_ufunc_reduce(self, arr, loop->ret, axis) < 0)
         {
             ufuncreduce_dealloc(loop);
             return NULL;

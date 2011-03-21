@@ -631,58 +631,67 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
  *===================================================================
  * Public
  * Apply ufunc method "reduce" on distributed array in_ary over axis.
- * op is the python name of the ufunction.
  * Returns -1 on failure.
  */
 static int
-dnumpy_ufunc_reduce(PyArrayObject *in_ary, PyArrayObject *out_ary,
-                    int axis, char *op)
+dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
+                    PyArrayObject *out, int axis)
 {
-    fprintf(stderr,"dnumpy_ufunc_reduce not implemented.\n");
-    exit(CPHVB_ERROR);
-    /*
-    int i;
-    dndview *in = get_dndview(in_ary->dnduid);
+    cphvb_intp i;
 
-    //We do not support reduce on views.
-    for(i=0; i<in->nslice;i++)
+    #ifdef DEBUG
+        printf("[NumPy] ufunc reduce in: %p, out: %p\n",
+                (cphvb_array*) in->dnduid, (cphvb_array*) out->dnduid);
+
+    #endif
+
+    //For now we will just de the reduction our self.
+    PyArrayObject *arys[2] = {in,out};
+
+    //Get Python function.
+    PyObject *PyOp = PyObject_GetAttrString(ufunc_module, ufunc->name);
+    PyObject *tuple[2];
+    assert(PyOp != NULL);
+
+    //Fill the tuple and apply the ufunc.
+    for(i=0; i<2; ++i)
     {
-        if(in->slice[i].nsteps == SingleIndex ||
-           in->slice[i].nsteps == PseudoIndex ||
-           in->slice[i].start != 0 || in->slice[i].step != 1 ||
-           in->slice[i].nsteps != in->base->dims[i])
+        char *data;
+        if(arys[i]->dnduid == 0)//Scalar.
         {
-            PyErr_SetString(PyExc_RuntimeError, "reduce on distributed "
-                            "arrays must be whole arrays and not a "
-                            "partial view of a underlying array.");
-            return -1;
+            tuple[i] = PyArray_SimpleNewFromData(0, NULL,
+                       arys[i]->descr->type_num, arys[i]->data);
+        }
+        else
+        {
+            cphvb_array* a = (cphvb_array*) arys[i]->dnduid;
+            cphvb_array* b = cphvb_base_array(a);
+
+            //We may have to allocate it.
+            if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
+            {
+                fprintf(stderr, "Out of memory "
+                                "in dnumpy_ufunc\n");
+                exit(CPHVB_OUT_OF_MEMORY);
+            }
+            data = b->data + a->start * cphvb_type_size(a->type);
+            //Tell the VEM to release the data to us.
+            util_release(a);
+
+            tuple[i] = PyArray_New(&PyArray_Type,
+                                   arys[i]->nd,
+                                   arys[i]->dimensions,
+                                   arys[i]->descr->type_num,
+                                   arys[i]->strides,
+                                   data, 0,
+                                   NPY_BEHAVED, NULL);
+            assert(tuple[i] != NULL);
         }
     }
-    if(out_ary->dnduid > 0)
-    {
-        dndview *out = get_dndview(out_ary->dnduid);
-        //Check if the views covers the whole array.
-        if(in->alterations != 0 || out->alterations != 0)
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "reduce on distributed arrays must"
-                            "be whole arrays and not a partial"
-                            " view of a underlying array.");
-            return -1;
-        }
-    }
-
-    //Tell slaves
-    msg[0] = DNPY_UFUNC_REDUCE;
-    msg[1] = in_ary->dnduid;
-    msg[2] = out_ary->dnduid;
-    //If out_ary is a scalar we will send the datatype and datatypesize.
-    if(out_ary->dnduid == 0)
-    {
-        msg[3] = PyArray_TYPE(out_ary);
-        msg[4] = PyArray_ITEMSIZE(out_ary);
-    }
-    */
+    PyObject *t = PyObject_CallMethod(PyOp, "reduce", "(O,i,O,O)",
+                                      tuple[0], axis, Py_None, tuple[1]);
+    Py_XDECREF(t);
+    Py_DECREF(PyOp);
     return 0;
 } /* dnumpy_ufunc_reduce */
 
