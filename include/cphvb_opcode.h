@@ -110,6 +110,8 @@ enum /* cphvb_opcode */
 
 #define CPHVB_NO_OPCODES CPHVB_NONE
 
+#define CPHVB_REDUCE (1<<15) 
+
 #define CPHVB_MAX_NO_OPERANDS 3
 
 #endif

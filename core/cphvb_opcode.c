@@ -17,6 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <cphvb_opcode.h>
 #include <cphvb.h>
 
@@ -112,7 +114,9 @@ const int _operands[] =
  */
 int cphvb_operands(cphvb_opcode opcode)
 {
-    return _operands[opcode];
+    // The reduce family of operations take the same number of arguments 
+    // as the regular operation
+    return _operands[~CPHVB_REDUCE & opcode];
 }
 
 const char* const _opcode_text[] =
@@ -204,7 +208,27 @@ const char* const _opcode_text[] =
  * @opcode Opcode for operation
  * @return Text string.
  */
+static int first = 1;
+char* _reduce_opcode_text;
 const char* cphvb_opcode_text(cphvb_opcode opcode)
 {
-    return _opcode_text[opcode];
+    if (first)
+    {
+        size_t str_size = 128;
+        _reduce_opcode_text = (char*)malloc(str_size*CPHVB_NONE);
+        for (int i = 0; i < CPHVB_NONE; ++i)
+        {
+            snprintf(_reduce_opcode_text+i*str_size,str_size,"%s_REDUCE",
+                     _opcode_text[~CPHVB_REDUCE & i]);
+        }
+        first = 0;
+    }
+    if (CPHVB_REDUCE & opcode)
+    {
+        return _reduce_opcode_text+(~CPHVB_REDUCE & opcode);
+    }
+    else
+    {
+        return _opcode_text[opcode];
+    }
 }
