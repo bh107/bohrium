@@ -745,6 +745,51 @@ dnumpy_datadump(intp ary_uid, const char *filename, long datapos)
 /*NUMPY_API
  *===================================================================
  * Public
+ * Generate
+ */
+static PyObject *
+dnumpy_random(PyObject *ary)
+{
+    intp uid;
+    cphvb_instruction inst;
+    cphvb_array *array;
+
+    //We may have to create the array.
+    if(!PyArray_ISDISTRIBUTED(ary))
+    {
+        if(dnumpy_create_dndarray(PyArray_NDIM(ary), PyArray_DIMS(ary),
+                                  PyArray_TYPE(ary), 0, &uid))
+            return NULL;
+    }
+    else
+        uid = PyArray_DNDUID(ary);
+
+    array = (cphvb_array*) uid;
+
+    #ifdef DEBUG
+        printf("[NumPy] random -- ary: %p\n", array);
+    #endif
+
+    inst.opcode = CPHVB_RANDOM;
+    inst.operand[0] = array;
+
+    if(!vem_instruction_check(&inst))
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Random is not supported by the VEM\n");
+        return NULL;
+    }
+    else
+        util_schedule(&inst, 1);
+
+
+    Py_INCREF(ary);
+    return ary;
+} /* dnumpy_random */
+
+/*NUMPY_API
+ *===================================================================
+ * Public
  * Returns a new 1-dim dist array filled with the diagonal from 'uid'.
  * Returns NULL on failure.
  */

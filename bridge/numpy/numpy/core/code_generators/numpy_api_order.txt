@@ -192,3 +192,4 @@ dnumpy_get_reged_ufunc_module
 dnumpy_reg_cblas
 dnumpy_evalflush
 dnumpy_data_overlap
+dnumpy_random

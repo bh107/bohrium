@@ -7540,6 +7540,16 @@ static PyObject *array_correlate(PyObject *NPY_UNUSED(dummy), PyObject *args, Py
     return PyArray_Correlate(a0, shape, mode);
 }
 
+/* DISTNUMPY */
+static PyObject *dnumpy_array_random(PyObject *NPY_UNUSED(dummy), PyObject *args) {
+    PyObject *a;
+
+    if (!PyArg_ParseTuple(args, "O", &a)) {
+        return NULL;
+    }
+    return _ARET(dnumpy_random(a));
+}
+
 
 /*NUMPY_API
   Arange,
@@ -8426,6 +8436,9 @@ static struct PyMethodDef array_module_methods[] = {
         METH_VARARGS, NULL},
     {"evalflush",
         (PyCFunction)dnumpy_evalflush,
+        METH_VARARGS, NULL},
+    {"random",
+        (PyCFunction)dnumpy_array_random,
         METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}                /* sentinel */
 };
