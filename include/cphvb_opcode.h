@@ -103,6 +103,8 @@ enum /* cphvb_opcode */
     CPHVB_SYNC,
     CPHVB_DISCARD,
     CPHVB_DESTORY, //Inform VEM to deallocate an array.
+    CPHVB_RANDOM,  //file out with random
+    CPHVB_ARANGE, // out, start, step
     //Used by a brigde to mark untranslatable operations.
     //NB: CPHVB_NONE must be the last element in this enum.
     CPHVB_NONE

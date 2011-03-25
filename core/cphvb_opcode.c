@@ -103,6 +103,8 @@ const int _operands[] =
     [CPHVB_SYNC] = 1,
     [CPHVB_DISCARD] = 1,
     [CPHVB_DESTORY] = 1,
+    [CPHVB_RANDOM] = 1,
+    [CPHVB_ARANGE] = 3,
     [CPHVB_NONE] = 0
 };
 
@@ -199,6 +201,8 @@ const char* const _opcode_text[] =
     [CPHVB_SYNC] = "CPHVB_SYNC",
     [CPHVB_DISCARD] = "CPHVB_DISCARD",
     [CPHVB_DESTORY] = "CPHVB_DESTORY",
+    [CPHVB_RANDOM] = "CPHVB_RANDOM",
+    [CPHVB_ARANGE] = "CPHVB_ARANGE",
     [CPHVB_NONE] = "CPHVB_NONE"
 };
 
