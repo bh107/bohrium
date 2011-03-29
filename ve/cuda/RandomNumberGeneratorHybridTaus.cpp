@@ -91,15 +91,15 @@ void RandomNumberGeneratorHybridTaus::fill(cphVBarray* array)
     parameters.push_back(KernelParameter(PTX_POINTER, base->cudaPtr));
     parameters.push_back(KernelParameter(PTX_UINT32, elements));
     parameters.push_back(KernelParameter(PTX_POINTER, cudaState));
-    switch (base->type)
+    switch (base->cudaType)
     {
-    case CPHVB_FLOAT32:
+    case PTX_FLOAT32:
         htrand_float32->execute(parameters,shape);
         break;
-    case CPHVB_INT32:
+    case PTX_INT32:
         htrand_int32->execute(parameters,shape);
         break;
-    case CPHVB_UINT32:
+    case PTX_UINT32:
         htrand_uint32->execute(parameters,shape);
         break;
     default:

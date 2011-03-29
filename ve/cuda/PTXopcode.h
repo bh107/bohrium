@@ -40,6 +40,12 @@ typedef enum
     PTX_LD_GLOBAL,
     PTX_LD_PARAM,
     PTX_MOV,
+    PTX_SET_EQ, //  =
+    PTX_SET_NE, // !=
+    PTX_SET_LT, //  <
+    PTX_SET_LE, // <=
+    PTX_SET_GT, //  >
+    PTX_SET_GE, // >=
     PTX_SETP_GE,
     PTX_CVT,
     PTX_MEMBAR,

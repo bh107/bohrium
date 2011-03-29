@@ -39,6 +39,7 @@ private:
     PTXoperand* src[PTX_MAX_OPERANDS-1];
     void printOpModifierOn(std::ostream& os) const;
     void printAritOpOn(std::ostream& os) const;
+    void printRelOpOn(std::ostream& os) const;
     void printLogicOpOn(std::ostream& os) const;
     void printConvertOpOn(std::ostream& os) const;
     void printOpOn(std::ostream& os) const;

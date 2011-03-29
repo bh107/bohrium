@@ -105,7 +105,7 @@ PTXaddress KernelGeneratorSimple::calcAddress(const cphVBarray* array)
         offsetReg  = calcOffset(array);
     }
     PTXregister* addressReg;
-    long int eSize = cphvb_type_size(array->type);
+    long int eSize = ptxTypeSize(array->cudaType);
     switch (sizeof(void*))
     {
     case 4:
@@ -131,7 +131,7 @@ PTXaddress KernelGeneratorSimple::calcAddress(const cphVBarray* array)
 PTXregister* KernelGeneratorSimple::loadElement(const cphVBarray* array)
 {
     PTXaddress address = calcAddress(array);
-    PTXregister* elementReg = registerBank->next(array->type);
+    PTXregister* elementReg = registerBank->next(array->cudaType);
     instructionList->next(PTX_LD_GLOBAL, elementReg, address.reg, address.off);
     return elementReg;
 }
@@ -140,9 +140,10 @@ PTXregister* KernelGeneratorSimple::loadElement(const cphVBarray* array)
 PTXregister* KernelGeneratorSimple::loadScalar(cphvb_type type,
                                                cphvb_constant value)
 {
-    PTXkernelParameter* ptxParam = ptxKernel->addParameter(ptxType(type));
-    parameters.push_back(KernelParameter(type,value));
-    PTXregister* scalarReg = registerBank->next(type);
+    PTXtype t = ptxType(type);
+    PTXkernelParameter* ptxParam = ptxKernel->addParameter(t);
+    parameters.push_back(KernelParameter(t,value));
+    PTXregister* scalarReg = registerBank->next(t);
     instructionList->next(PTX_LD_PARAM, scalarReg, ptxParam);  
     return scalarReg;
 }
@@ -158,7 +159,7 @@ void KernelGeneratorSimple::addInstruction(const cphVBinstruction* inst)
     ElementMap::iterator eiter = elementMap.find(inst->operand[0]);
     if (eiter == elementMap.end())
     {
-        dest = registerBank->next(inst->operand[0]->type);
+        dest = registerBank->next(inst->operand[0]->cudaType);
         elementMap[inst->operand[0]] = dest;
         storeMap[dest] = inst->operand[0];
     }

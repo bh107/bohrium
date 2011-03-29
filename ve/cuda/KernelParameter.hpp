@@ -30,7 +30,6 @@ private:
     PTXtype type;
     cphvb_constant value;
 public:
-    KernelParameter(cphvb_type type, cphvb_constant value);
     KernelParameter(PTXtype type, cphvb_constant value);
     KernelParameter(PTXtype type, CUdeviceptr value);
     KernelParameter(PTXtype type, int value);

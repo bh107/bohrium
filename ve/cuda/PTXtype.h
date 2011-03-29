@@ -64,6 +64,7 @@ typedef enum
 PTXtype ptxType(cphvb_type vbtype);
 PTXbaseType ptxBaseType(PTXtype type);
 const char* ptxTypeStr(PTXtype type);
+int ptxTypeSize(PTXtype type);
 const char* ptxWideOpStr(PTXtype type);
 size_t ptxAlign(PTXtype type);
 size_t ptxSizeOf(PTXtype type);

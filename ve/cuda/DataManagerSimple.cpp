@@ -89,6 +89,10 @@ void DataManagerSimple::mapOperands(cphVBarray* operands[],
                 if (biter == base2Cuda.end())
                 {   //The base array is not mapped to a cudaPtr - so we will
                     //We also need to initialize it
+                    /* TODO: Do correct mapping 
+                     * This works for now becaus we only support floay32 
+                     * and bool*/
+                    baseArray->cudaType = PTX_FLOAT32; //TODO HACK
                     CUdeviceptr cudaPtr = memoryManager->deviceAlloc(baseArray);
                     base2Cuda[baseArray] = cudaPtr;
                     baseArray->cudaPtr = cudaPtr;
@@ -106,6 +110,7 @@ void DataManagerSimple::mapOperands(cphVBarray* operands[],
                 }
 #endif
                 operand->cudaPtr = baseArray->cudaPtr;
+                operand->cudaType = baseArray->cudaType;
                 op2Base[operand] = baseArray;
             }
 

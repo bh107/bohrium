@@ -53,12 +53,6 @@ PTXregister* PTXregisterBank::next(PTXtype type)
     return registers->next(type,instanceTable[type]++);
 }
 
-PTXregister* PTXregisterBank::next(cphvb_type vbtype)
-{
-    PTXtype type = ptxType(vbtype);
-    return registers->next(type,instanceTable[type]++);
-}
-
 inline void PTXregisterBank::declareOn(std::ostream& os) const
 {
     for (int i = 0; i < PTX_TYPES; ++i)

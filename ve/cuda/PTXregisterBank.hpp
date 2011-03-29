@@ -36,7 +36,6 @@ public:
     PTXregisterBank();
     void clear();
     PTXregister* next(PTXtype type);
-    PTXregister* next(cphvb_type type);
     friend std::ostream& operator<<= (std::ostream& os, 
                                       PTXregisterBank const& ptxRegisterBank);
     // Special registers

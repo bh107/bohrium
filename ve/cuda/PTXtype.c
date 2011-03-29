@@ -104,6 +104,31 @@ const char* ptxTypeStr(PTXtype type)
     return _ptxTypeStr[type];
 }
 
+int _ptxTypeSize[] =
+{
+    [PTX_INT8] = 1,
+    [PTX_INT16] = 2,
+    [PTX_INT32] = 4,
+    [PTX_INT64] = 8,
+    [PTX_UINT8] = 1,
+    [PTX_UINT16] = 2,
+    [PTX_UINT32] = 4,
+    [PTX_UINT64] = 8,
+    [PTX_FLOAT16] = 2,
+    [PTX_FLOAT32] = 4,
+    [PTX_FLOAT64] = 8,
+    [PTX_BITS8] = 1,
+    [PTX_BITS16] = 2,
+    [PTX_BITS32] = 4,
+    [PTX_BITS64] = 8,
+    [PTX_PRED] = -1
+};
+
+int ptxTypeSize(PTXtype type)
+{
+    return _ptxTypeSize[type];
+}
+
 const char* ptxWideOpStr(PTXtype type)
 {
     switch (type)

@@ -89,6 +89,38 @@ inline void PTXinstruction::printAritOpOn(std::ostream& os) const
     }
 }
 
+inline void PTXinstruction::printRelOpOn(std::ostream& os) const
+{ 
+    switch (opcode)
+    {
+    case PTX_SET_EQ:
+        os << "set.eq";
+        break;
+    case PTX_SET_NE:
+        os << "set.ne";
+        break;
+    case PTX_SET_LT:
+        os << "set.lt";
+        break;
+    case PTX_SET_LE:
+        os << "set.le";
+        break;
+    case PTX_SET_GT:
+        os << "set.gt";
+        break;
+    case PTX_SET_GE:
+        os << "set.ge";
+        break;
+    default:
+        assert (false);
+     }
+    os << ptxTypeStr(dest->getType()) << ptxTypeStr(dest->getType());
+    for (int i = 0; i < ptxSrcOperands(opcode); ++i)
+    {
+        os << ", " << *src[i];
+    }
+}
+
 inline void PTXinstruction::printLogicOpOn(std::ostream& os) const
 { 
     PTXregister* srcReg;
@@ -153,6 +185,14 @@ inline void PTXinstruction::printOpOn(std::ostream& os) const
         break;
     case PTX_SETP_GE:
         printLogicOpOn(os);
+        break;
+    case PTX_SET_EQ:
+    case PTX_SET_NE:
+    case PTX_SET_LT:
+    case PTX_SET_LE:
+    case PTX_SET_GT:
+    case PTX_SET_GE:
+        printRelOpOn(os);
         break;
     default:
         printAritOpOn(os);

@@ -17,6 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <stdexcept>
 #include "InstructionTranslator.hpp"
 
@@ -44,6 +45,10 @@ void InstructionTranslator::translate(cphvb_opcode vbOpcode,
     {
         if (src[i]->getType() != resType)
         {
+#ifdef DEBUG
+            std::cout << "Converting " << ptxTypeStr(src[i]->getType()) << 
+                " to " << ptxTypeStr(resType) << std::endl;
+#endif
             mySrc[i] = convert(resType, src[i]);
         }
         else

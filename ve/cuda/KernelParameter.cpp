@@ -20,10 +20,6 @@
 #include <cassert>
 #include "KernelParameter.hpp"
 
-KernelParameter::KernelParameter(cphvb_type type_, cphvb_constant value_) :
-    type(ptxType(type_)),
-    value(value_) {}
-
 KernelParameter::KernelParameter(PTXtype type_, cphvb_constant value_) :
     type(type_),
     value(value_) {}

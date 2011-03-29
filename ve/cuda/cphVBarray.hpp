@@ -22,6 +22,7 @@
 
 #include <cuda.h>  
 #include <cphvb_array.h>
+#include "PTXtype.h"
 
 typedef struct cphVBarray cphVBarray;
 /* Matches memory layout of cphvb_array */
@@ -30,7 +31,8 @@ struct cphVBarray
     CPHVB_ARRAY_BASE
     //Space reserved for extra meta data.
     //Not persistent at ownership change
-    CUdeviceptr      cudaPtr;
+    CUdeviceptr   cudaPtr;
+    PTXtype       cudaType;
 };
 
 void printArraySpec(cphVBarray* array);
