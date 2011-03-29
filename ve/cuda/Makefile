@@ -14,10 +14,11 @@ CSRC=PTXopcode PTXsreg PTXtype PTXversion CUDAerrorCode
 CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		DeviceManager DeviceManagerSimple PTXconstant \
 		InstructionBatchSimple PTXinstruction InstructionSchedulerSimple \
-		InstructionTranslator PTXkernel Kernel \
+		InstructionTranslator PTXkernel Kernel KernelGenerated KernelPredefined \
 		PTXkernelParameter KernelGeneratorSimple PTXoperand KernelParameter \
 		PTXregisterBank KernelShape PTXregister KernelShapeSimple \
 		PTXspecialRegister Configuration cphVBarray cphVBinstruction \
+		RandomNumberGeneratorHybridTaus \
 		cphvb_ve_cuda
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/usr/local/lib/

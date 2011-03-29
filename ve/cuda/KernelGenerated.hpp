@@ -17,45 +17,22 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXOPCODE_H
-#define __PTXOPCODE_H
+#ifndef __KERNELGENERATED_HPP
+#define __KERNELGENERATED_HPP
 
-#include <cphvb.h>
+#include <vector>
+#include <cuda.h>
+#include "Kernel.hpp"
+#include "KernelParameter.hpp"
+#include "KernelShape.hpp"
+#include "PTXkernel.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum 
+class KernelGenerated : public Kernel
 {
-    PTX_BRA,
-    PTX_ADD,
-    PTX_SUB,
-    PTX_MUL,
-    PTX_MAD,
-    PTX_MAD_WIDE,
-    PTX_DIV,
-    PTX_REM,
-    PTX_ST_GLOBAL,
-    PTX_LD_GLOBAL,
-    PTX_LD_PARAM,
-    PTX_MOV,
-    PTX_SETP_GE,
-    PTX_CVT,
-    PTX_MEMBAR,
-    PTX_EXIT,
-    PTX_NONE
-} PTXopcode;
-
-#define PTX_MAX_OPERANDS (4)
-
-
-const int ptxOperands(PTXopcode opcode);
-const int ptxSrcOperands(PTXopcode opcode);
-PTXopcode ptxOpcodeMap(cphvb_opcode opcode);
-
-#ifdef __cplusplus
-}
-#endif
+protected:
+    KernelGenerated(PTXkernel* ptxKernel);
+public:
+    virtual void execute(ParameterList parameters) = 0;
+};
 
 #endif

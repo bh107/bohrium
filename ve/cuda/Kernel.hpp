@@ -32,19 +32,16 @@ class Kernel
 {
 private:
     void setBlockShape(int x, int y, int z);
-    Kernel();
 protected:
     CUmodule module;
     CUfunction entry;
     Signature signature;
+    Kernel();
     Kernel(CUmodule module,
            CUfunction entry,
            Signature signature);
-    Kernel(PTXkernel* ptxKernel);
     void setParameters(ParameterList parameters);
-    void launchGrid(KernelShape *shape);
-public:
-    virtual void execute(ParameterList parameters) = 0;
+    void launchGrid(KernelShape* shape);
 };
 
 #endif

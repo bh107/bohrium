@@ -19,13 +19,15 @@
 
 #include <iostream>
 #include <cphvb.h>
+#include "Configuration.hpp"
 #include "InstructionSchedulerSimple.hpp"
 
 InstructionSchedulerSimple::InstructionSchedulerSimple(
     DataManager* dataManager_,
     KernelGenerator* kernelGenerator_) :
     dataManager(dataManager_),
-    kernelGenerator(kernelGenerator_){}
+    kernelGenerator(kernelGenerator_),
+    randomNumberGenerator(0) {}
 
 inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 {
@@ -45,6 +47,14 @@ inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
         break;
     case CPHVB_DISCARD:
         dataManager->discard(inst->operand[0]);
+        break;
+    case CPHVB_RANDOM:
+        if(randomNumberGenerator == 0)
+        {
+            randomNumberGenerator = createRandomNumberGenerator();
+        }
+        dataManager->lock(inst->operand,1,NULL);
+        randomNumberGenerator->fill(inst->operand[0]);
         break;
     default:
         Threads threads = cphvb_nelements(inst->operand[0]->ndim, 

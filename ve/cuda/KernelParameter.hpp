@@ -20,6 +20,7 @@
 #ifndef __KERNELPARAMETER_HPP
 #define __KERNELPARAMETER_HPP
 
+#include <cuda.h>
 #include "PTXtype.h"
 
 class KernelParameter
@@ -30,6 +31,10 @@ private:
     cphvb_constant value;
 public:
     KernelParameter(cphvb_type type, cphvb_constant value);
+    KernelParameter(PTXtype type, cphvb_constant value);
+    KernelParameter(PTXtype type, CUdeviceptr value);
+    KernelParameter(PTXtype type, int value);
+    KernelParameter(PTXtype type, unsigned int value);
 };
 
 #endif

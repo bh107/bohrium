@@ -17,9 +17,41 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include "KernelParameter.hpp"
 
 KernelParameter::KernelParameter(cphvb_type type_, cphvb_constant value_) :
     type(ptxType(type_)),
     value(value_) {}
 
+KernelParameter::KernelParameter(PTXtype type_, cphvb_constant value_) :
+    type(type_),
+    value(value_) {}
+
+KernelParameter::KernelParameter(PTXtype type_, CUdeviceptr value_) :
+    type(type_)
+{
+    switch (sizeof(void*))
+    {
+    case 4:
+        value.uint32 = value_;
+        break;
+    case 8:
+        value.uint64 = value_;
+        break;
+    default:
+        assert(false);
+    }
+}
+
+KernelParameter::KernelParameter(PTXtype type_, int value_) :
+    type(type_)
+{
+    value.int32 = value_;
+}
+
+KernelParameter::KernelParameter(PTXtype type_, unsigned int value_) :
+    type(type_)
+{
+    value.uint32 = value_;
+}

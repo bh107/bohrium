@@ -36,6 +36,7 @@ private:
     DataManager* dataManager;
     KernelGenerator* kernelGenerator;
     BatchTable batchTable;
+    RandomNumberGenerator* randomNumberGenerator;
 protected:
     void schedule(cphVBinstruction* inst);
 public:

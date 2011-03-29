@@ -17,6 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits.h>
 #include "PTXopcode.h"
 
 const int _ptxOperands[] =
@@ -125,10 +126,12 @@ const int _ptxOpcodeMap[] =
     [CPHVB_LOG2] = -1,
     [CPHVB_ISREAL] = -1,
     [CPHVB_ISCOMPLEX] = -1,
-    [CPHVB_RELEASE] = -1,
-    [CPHVB_SYNC] = -1,
-    [CPHVB_DISCARD] = -1,
+    [CPHVB_RELEASE] = PTX_NONE,
+    [CPHVB_SYNC] = PTX_NONE,
+    [CPHVB_DISCARD] = PTX_NONE,
     [CPHVB_DESTORY] = -1,
+    [CPHVB_RANDOM] = PTX_NONE,
+    [CPHVB_ARANGE] = -1,
     [CPHVB_NONE] = -1
 };
 

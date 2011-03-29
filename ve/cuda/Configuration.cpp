@@ -27,6 +27,7 @@
 #include "InstructionSchedulerSimple.hpp"
 #include "OffsetMapSimple.hpp"
 #include "KernelGeneratorSimple.hpp"
+#include "RandomNumberGeneratorHybridTaus.hpp"
 
 DeviceManager* createDeviceManager()
 {
@@ -66,4 +67,9 @@ KernelGenerator* createKernelGenerator()
 OffsetMap* createOffsetMap()
 {
     return new OffsetMapSimple();
+}
+
+RandomNumberGenerator* createRandomNumberGenerator()
+{
+    return new RandomNumberGeneratorHybridTaus();
 }

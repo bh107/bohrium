@@ -55,6 +55,11 @@ typedef enum
     PTX_PRED,
     PTX_TYPES //Number of types 
 } PTXtype;
+#ifdef __LP64__
+#define PTX_POINTER PTX_UINT64
+#else
+#define PTX_POINTER PTX_UINT32
+#endif
 
 PTXtype ptxType(cphvb_type vbtype);
 PTXbaseType ptxBaseType(PTXtype type);

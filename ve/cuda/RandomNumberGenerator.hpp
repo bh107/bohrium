@@ -17,45 +17,15 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PTXOPCODE_H
-#define __PTXOPCODE_H
+#ifndef __RANDOMNUMBERGENERATOR_HPP
+#define __RANDOMNUMBERGENERATOR_HPP
 
-#include <cphvb.h>
+#include "cphVBarray.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum 
+class RandomNumberGenerator
 {
-    PTX_BRA,
-    PTX_ADD,
-    PTX_SUB,
-    PTX_MUL,
-    PTX_MAD,
-    PTX_MAD_WIDE,
-    PTX_DIV,
-    PTX_REM,
-    PTX_ST_GLOBAL,
-    PTX_LD_GLOBAL,
-    PTX_LD_PARAM,
-    PTX_MOV,
-    PTX_SETP_GE,
-    PTX_CVT,
-    PTX_MEMBAR,
-    PTX_EXIT,
-    PTX_NONE
-} PTXopcode;
-
-#define PTX_MAX_OPERANDS (4)
-
-
-const int ptxOperands(PTXopcode opcode);
-const int ptxSrcOperands(PTXopcode opcode);
-PTXopcode ptxOpcodeMap(cphvb_opcode opcode);
-
-#ifdef __cplusplus
-}
-#endif
+public:
+    virtual void fill(cphVBarray* array) = 0;
+};
 
 #endif

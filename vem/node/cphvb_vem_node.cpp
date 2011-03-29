@@ -52,7 +52,7 @@ cphvb_support ve_support;
 cphvb_error cphvb_vem_node_init(void)
 {
     cphvb_intp opcode_count, type_count;
-    cphvb_opcode opcode[CPHVB_MAX_NO_OPERANDS];
+    cphvb_opcode opcode[CPHVB_NO_OPCODES];
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
@@ -77,7 +77,7 @@ cphvb_error cphvb_vem_node_init(void)
     std::memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
 
 #ifdef DEBUG
-    std::cout << "[VEM node] Supported opcodes:\n" << std::endl;
+    std::cout << "[VEM node] Supported opcodes:" << opcode_count << std::endl;
 #endif
     while(--opcode_count >= 0)
     {

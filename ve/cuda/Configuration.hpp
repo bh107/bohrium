@@ -27,10 +27,7 @@
 #include "InstructionBatch.hpp"
 #include "KernelGenerator.hpp"
 #include "OffsetMap.hpp"
-/*
-#include "KernelShape.hpp"
-#include "Kernel.hpp"
-*/
+#include "RandomNumberGenerator.hpp"
 
 DeviceManager* createDeviceManager();
 
@@ -51,5 +48,7 @@ InstructionBatch* createInstructionBatch(Threads threads,
 KernelGenerator* createKernelGenerator();
 
 OffsetMap* createOffsetMap();
+
+RandomNumberGenerator* createRandomNumberGenerator();
 
 #endif
