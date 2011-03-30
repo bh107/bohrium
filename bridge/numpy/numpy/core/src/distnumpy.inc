@@ -459,10 +459,10 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
     }
 
     #ifdef DEBUG
-        printf("[NumPy] ufunc (output last):");
-        for(i=0; i<ufunc->nargs; ++i)
-            printf(" %p", (cphvb_array*) args[i]->dnduid);
-        printf("\n");
+    printf("[NumPy] ufunc %s (output last):", ufunc->name);
+    for(i=0; i<ufunc->nargs; ++i)
+        printf(" %p", (cphvb_array*) args[i]->dnduid);
+    printf("\n");
     #endif
 
     //Create an instruction that represent the ufunc operation.
@@ -532,6 +532,15 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 cphvb_array* a = (cphvb_array*) args[i]->dnduid;
                 cphvb_array* b = cphvb_base_array(a);
 
+                //Tell the VEM to sync/release the data.
+                if (i < ufunc->nin) // It's an input parmeter
+                {  
+                    util_sync(a); // So just sync it
+                }
+                else
+                {
+                    util_release(a);
+                }
                 //We may have to allocate it.
                 if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
                 {
@@ -540,8 +549,6 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                     exit(CPHVB_OUT_OF_MEMORY);
                 }
                 data = b->data + a->start * cphvb_type_size(a->type);
-                //Tell the VEM to release the data to us.
-                util_release(a);
             }
             PyObject *tary = PyArray_New(&PyArray_Type,
                                          args[i]->nd,
@@ -639,11 +646,10 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
 {
     cphvb_intp i;
 
-    #ifdef DEBUG
-        printf("[NumPy] ufunc reduce in: %p, out: %p\n",
-                (cphvb_array*) in->dnduid, (cphvb_array*) out->dnduid);
-
-    #endif
+#ifdef DEBUG
+    printf("[NumPy] ufunc %s.reduce in: %p, out: %p\n", ufunc->name,
+           (cphvb_array*) in->dnduid, (cphvb_array*) out->dnduid);
+#endif
 
     //For now we will just de the reduction our self.
     PyArrayObject *arys[2] = {in,out};
@@ -667,6 +673,16 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
             cphvb_array* a = (cphvb_array*) arys[i]->dnduid;
             cphvb_array* b = cphvb_base_array(a);
 
+            //Tell the VEM to sync/release the data.
+            if (i == 0) // It's the input parmeter
+            {  
+                util_sync(a); // So just sync it
+            }
+            else
+            {
+                util_release(a);
+            }
+
             //We may have to allocate it.
             if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
             {
@@ -675,8 +691,6 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
                 exit(CPHVB_OUT_OF_MEMORY);
             }
             data = b->data + a->start * cphvb_type_size(a->type);
-            //Tell the VEM to release the data to us.
-            util_release(a);
 
             tuple[i] = PyArray_New(&PyArray_Type,
                                    arys[i]->nd,
