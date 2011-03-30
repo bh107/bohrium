@@ -114,7 +114,8 @@ inline void PTXinstruction::printRelOpOn(std::ostream& os) const
     default:
         assert (false);
      }
-    os << ptxTypeStr(dest->getType()) << ptxTypeStr(dest->getType());
+    os << ptxTypeStr(dest->getType()) << ptxTypeStr(dest->getType()) << 
+        " " << *dest;;
     for (int i = 0; i < ptxSrcOperands(opcode); ++i)
     {
         os << ", " << *src[i];

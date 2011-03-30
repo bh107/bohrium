@@ -76,7 +76,7 @@ void MemoryManagerSimple::copyToHost(cphVBarray* baseArray)
     assert(baseArray->data != NULL);
     if (ptxType(baseArray->type) != baseArray->cudaType)
     {
-        throw std::runtime_error("Type Conversion not implemented yet");
+        throw std::runtime_error("copyToHost: Type conversion not implemented yet");
         
     } 
     size_t size = dataSize(baseArray);
@@ -101,16 +101,16 @@ void MemoryManagerSimple::copyToDevice(cphVBarray* baseArray)
     assert(baseArray->base == NULL);
     assert(baseArray->data != NULL);
     assert(baseArray->cudaPtr != 0);
-    if (ptxType(baseArray->type) != baseArray->cudaType)
-    {
-        throw std::runtime_error("Type Conversion not implemented yet");
-        
-    }
     size_t size = dataSize(baseArray);
 #ifdef DEBUG
     std::cout << "[VE CUDA] cuMemcpyHtoD(" <<  (void*)baseArray->cudaPtr << 
-        ", " << baseArray->data << ", " << size << ")" << std::endl;
+        ", "<< baseArray << "(" << baseArray->data << "), " << size << ")" << std::endl;
 #endif
+    if (ptxType(baseArray->type) != baseArray->cudaType)
+    {
+        throw std::runtime_error("copyToDevice: Type conversion not implemented yet");
+        
+    }
     CUresult error = cuMemcpyHtoD(baseArray->cudaPtr, baseArray->data,
                                   size);
     if (error !=  CUDA_SUCCESS)
@@ -157,7 +157,7 @@ void MemoryManagerSimple::memset(cphVBarray* baseArray)
     assert(baseArray->cudaPtr != 0);
     if (ptxType(baseArray->type) != baseArray->cudaType)
     {
-        throw std::runtime_error("Type Conversion not implemented yet");
+        throw std::runtime_error("memset: Type conversion not implemented yet");
         
     }
     size_t nelements = cphvb_nelements(baseArray->ndim, baseArray->shape);

@@ -44,7 +44,8 @@ cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
     }
     
     datatype_list[0] = CPHVB_FLOAT32;
-    *datatype_count = 1;
+    datatype_list[1] = CPHVB_BOOL;
+    *datatype_count = 2;
 
     try {
         deviceManager = createDeviceManager();
