@@ -154,20 +154,8 @@ void KernelGeneratorSimple::addInstruction(const cphVBinstruction* inst)
     int nops = cphvb_operands(inst->opcode);
     PTXregister* dest;
     PTXregister* src[CPHVB_MAX_NO_OPERANDS-1];
+    ElementMap::iterator eiter;
 
-    // get register for result
-    ElementMap::iterator eiter = elementMap.find(inst->operand[0]);
-    if (eiter == elementMap.end())
-    {
-        dest = registerBank->next(inst->operand[0]->cudaType);
-        elementMap[inst->operand[0]] = dest;
-        storeMap[dest] = inst->operand[0];
-    }
-    else
-    {
-        dest = eiter->second;
-    }
-    
     //get registers for input
     for (int i = 1; i < nops; ++i)
     {
@@ -189,6 +177,21 @@ void KernelGeneratorSimple::addInstruction(const cphVBinstruction* inst)
             src[i-1] = loadScalar(inst->const_type[i], inst->constant[i]);
         }
     }
+
+    // get register for result
+    eiter = elementMap.find(inst->operand[0]);
+    if (eiter == elementMap.end())
+    {
+        dest = registerBank->next(inst->operand[0]->cudaType);
+        elementMap[inst->operand[0]] = dest;
+        storeMap[dest] = inst->operand[0];
+    }
+    else
+    {
+        dest = eiter->second;
+        storeMap[dest] = inst->operand[0];
+    }
+
     //generate PTX instruction
     translator->translate(inst->opcode, dest, src);
 }

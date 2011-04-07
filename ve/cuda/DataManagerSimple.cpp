@@ -197,6 +197,10 @@ void DataManagerSimple::discard(cphVBarray* baseArray)
     {
         return;
     }
+    //TODO: Need to check if we need to flush: Is the array an input parameter 
+    // for any operations
+    flushAll();
+
     memoryManager->free(baseArray);
     baseArray->cudaPtr = 0;
     base2Cuda.erase(baseArray);

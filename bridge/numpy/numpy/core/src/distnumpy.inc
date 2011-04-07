@@ -584,7 +584,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                 cphvb_array *tary;
                 cphvb_intp nd_diff = inst.operand[0]->ndim -
                                      inst.operand[i]->ndim;
-
+                int broadcast = 0; // false
                 for(j=inst.operand[0]->ndim-1; j>=nd_diff; --j)
                 {
                     shape[j] = inst.operand[i]->shape[j-nd_diff];
@@ -593,35 +593,42 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
                         assert(shape[j] == 1);
                         shape[j] = inst.operand[0]->shape[j];
                         stride[j] = 0;
+                        broadcast = 1; // true
                     }
                     else
+                    {
                         stride[j] = inst.operand[i]->stride[j-nd_diff];
+                    }
                 }
                 for(j=nd_diff-1; j>=0; --j)
                 {
                     shape[j] = 1;
                     stride[j] = 0;
+                    broadcast = 1; // true
                 }
-                error = vem_create_array(
-                                    cphvb_base_array(inst.operand[i]),
-                                    inst.operand[i]->type,
-                                    inst.operand[0]->ndim,
-                                    inst.operand[i]->start,
-                                    shape,
-                                    stride,
-                                    NPY_FALSE,
-                                    (cphvb_constant)0L,
-                                    &tary);
-                if(error)
+                if (broadcast)
                 {
-                    char errtxt[256];
-                    sprintf(errtxt, "Ufunc - internal error when "
-                            "calling vem_create_array(): %s.\n",
-                            cphvb_error_text(error));
-                    PyErr_SetString(PyExc_RuntimeError, errtxt);
-                    return -1;
+                    error = vem_create_array(
+                        cphvb_base_array(inst.operand[i]),
+                        inst.operand[i]->type,
+                        inst.operand[0]->ndim,
+                        inst.operand[i]->start,
+                        shape,
+                        stride,
+                        NPY_FALSE,
+                        (cphvb_constant)0L,
+                        &tary);
+                    if(error)
+                    {
+                        char errtxt[256];
+                        sprintf(errtxt, "Ufunc - internal error when "
+                                "calling vem_create_array(): %s.\n",
+                                cphvb_error_text(error));
+                        PyErr_SetString(PyExc_RuntimeError, errtxt);
+                        return -1;
+                    }
+                    inst.operand[i] = tary;
                 }
-                inst.operand[i] = tary;
             }
         }
         //Only execute the ufunc if the output is greater than zero.

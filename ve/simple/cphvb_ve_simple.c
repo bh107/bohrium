@@ -32,7 +32,7 @@ cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
     opcode_list[0] = CPHVB_ADD;
     *opcode_count = 1;
 
-    datatype_list[0] = CPHVB_FLOAT64;
+    datatype_list[0] = CPHVB_FLOAT32;
     *datatype_count = 1;
     return CPHVB_SUCCESS;
 }
@@ -53,16 +53,16 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
         cphvb_instruction *inst = &instruction_list[i];
         switch(inst->opcode)
         {
+        case CPHVB_NONE:
         case CPHVB_DISCARD:
-            //Nothing to do since we only use main memory.
-            break;
         case CPHVB_RELEASE:
+        case CPHVB_SYNC:
             //Nothing to do since we only use main memory.
             break;
         case CPHVB_ADD:
         {
             cphvb_intp j, notfinished=1;
-            cphvb_float64 *d0, *d1, *d2;
+            cphvb_float32 *d0, *d1, *d2;
             cphvb_array *a0 = inst->operand[0];
             cphvb_array *a1 = inst->operand[1];
             cphvb_array *a2 = inst->operand[2];
@@ -87,12 +87,12 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 
             d0 = cphvb_base_array(inst->operand[0])->data;
             if(a1 == CPHVB_CONSTANT)
-                d1 = (cphvb_float64*) &inst->constant[1];
+                d1 = (cphvb_float32*) &inst->constant[1];
             else
                 d1 = cphvb_base_array(inst->operand[1])->data;
 
             if(a2 == CPHVB_CONSTANT)
-                d2 = (cphvb_float64*) &inst->constant[2];
+                d2 = (cphvb_float32*) &inst->constant[2];
             else
                 d2 = cphvb_base_array(inst->operand[2])->data;
 
