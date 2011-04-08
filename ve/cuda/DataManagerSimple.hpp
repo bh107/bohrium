@@ -25,7 +25,7 @@
 #include "MemoryManager.hpp"
 #include "InstructionBatch.hpp"
 
-typedef std::map<cphVBarray*, InstructionBatch*> WriteLockTable;
+typedef std::map<cphVBarray*, cphVBarray*> WriteLockTable; //<base,view>
 typedef std::map<cphVBarray*, CUdeviceptr> Base2CudaMap;
 typedef std::map<cphVBarray* ,cphVBarray*> Operand2BaseMap;
 
@@ -38,6 +38,7 @@ private:
     Operand2BaseMap op2Base;
     InstructionBatch* activeBatch;
     void _sync(cphVBarray* baseArray);
+    void _flush(cphVBarray* view);
     void initCudaArray(cphVBarray* baseArray);
     void mapOperands(cphVBarray* operands[],
                      int nops);

@@ -39,6 +39,21 @@ void DataManagerSimple::_sync(cphVBarray* baseArray)
     }
 }
 
+inline void DataManagerSimple::_flush(cphVBarray* view)
+{
+    if (activeBatch == NULL)
+    {
+        return;
+    }
+    cphVBarray* baseArray = op2Base[view];
+    WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
+    if (wliter != writeLockTable.end() && wliter->second != view)
+    {
+        activeBatch->execute();
+        writeLockTable.clear(); //OK because we are only working with one batch
+    }
+}
+
 void DataManagerSimple::initCudaArray(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
@@ -150,16 +165,15 @@ void DataManagerSimple::lock(cphVBarray* operands[],
     }
     else
     {
-        /* We need to _sync all arrays that are read in the operation*/
+        /* We need to _flush all arrays that are read in the operation*/
         for (int i = 1; i < nops; ++i)
         {
-            baseArray = op2Base[operands[i]];  
-            _sync(baseArray);
+            _flush(operands[i]);
         }
     }
     /* Now we can just take the write lock on the array */
     baseArray = op2Base[operands[0]];
-    writeLockTable[baseArray] = batch;
+    writeLockTable[baseArray] = operands[0];
 }
 
 void DataManagerSimple::release(cphVBarray* baseArray)
