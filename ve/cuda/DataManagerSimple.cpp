@@ -54,6 +54,21 @@ inline void DataManagerSimple::_flush(cphVBarray* view)
     }
 }
 
+void DataManagerSimple::flush(cphVBarray* view)
+{
+    if (activeBatch == NULL)
+    {
+        return;
+    }
+    cphVBarray* baseArray = cphVBBaseArray(view);
+    WriteLockTable::iterator wliter = writeLockTable.find(baseArray);
+    if (wliter != writeLockTable.end())
+    {
+        activeBatch->execute();
+        writeLockTable.clear(); //OK because we are only working with one batch
+    }
+}
+
 void DataManagerSimple::initCudaArray(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);

@@ -1,3 +1,4 @@
+/* -*- Mode: C -*- */ 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -130,8 +131,9 @@ util_schedule(cphvb_instruction *inst, int force_flush)
 {
     cphvb_error error;
     if(inst != NULL)
+    {
         inst_scheduled[ninst_scheduled++] = *inst;
-
+    }
     if(ninst_scheduled >= DNPY_MAX_NINST || force_flush)
     {
         if(ninst_scheduled > 0)
@@ -652,67 +654,102 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
                     PyArrayObject *out, int axis)
 {
     cphvb_intp i;
+    cphvb_instruction inst;
 
 #ifdef DEBUG
     printf("[NumPy] ufunc %s.reduce in: %p, out: %p\n", ufunc->name,
            (cphvb_array*) in->dnduid, (cphvb_array*) out->dnduid);
 #endif
 
-    //For now we will just de the reduction our self.
-    PyArrayObject *arys[2] = {in,out};
-
-    //Get Python function.
-    PyObject *PyOp = PyObject_GetAttrString(ufunc_module, ufunc->name);
-    PyObject *tuple[2];
-    assert(PyOp != NULL);
-
-    //Fill the tuple and apply the ufunc.
-    for(i=0; i<2; ++i)
+    //Create an instruction that represent the reduce.ufunc operation.
+    inst.opcode = ufunc->opcode | CPHVB_REDUCE;
+    
+    if(out->dnduid == 0)//Scalar.
     {
-        char *data;
-        if(arys[i]->dnduid == 0)//Scalar.
-        {
-            tuple[i] = PyArray_SimpleNewFromData(0, NULL,
-                       arys[i]->descr->type_num, arys[i]->data);
-        }
-        else
-        {
-            cphvb_array* a = (cphvb_array*) arys[i]->dnduid;
-            cphvb_array* b = cphvb_base_array(a);
+        PyErr_SetString(PyExc_RuntimeError,
+                        "cphVB result must be an array\n");
+        return -1;
+    }
+    else
+    {
+        inst.operand[0] = (cphvb_array*) out->dnduid;
+    }
 
-            //Tell the VEM to sync/release the data.
-            if (i == 0) // It's the input parmeter
-            {  
-                util_sync(a); // So just sync it
+    if(in->dnduid == 0)//Scalar.
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "reduce - scalar input is not allowed\n");
+        return -1;
+    }
+    inst.operand[1] = (cphvb_array*) in->dnduid;
+
+    inst.operand[2] = CPHVB_CONSTANT;
+    inst.const_type[2] = CPHVB_INDEX;
+    inst.constant[2].int32 = axis;
+
+    //We may have to apply the reduce function ourselves.
+    if(!vem_instruction_check(&inst))
+    {
+        PyArrayObject *arys[2] = {in,out};
+
+        //Get Python function.
+        PyObject *PyOp = PyObject_GetAttrString(ufunc_module, ufunc->name);
+        PyObject *tuple[2];
+        assert(PyOp != NULL);
+        
+        //Fill the tuple and apply the ufunc.
+        for(i=0; i<2; ++i)
+        {
+            char *data;
+            if(arys[i]->dnduid == 0)//Scalar.
+            {
+                tuple[i] = PyArray_SimpleNewFromData(0, NULL,
+                                                     arys[i]->descr->type_num, 
+                                                     arys[i]->data);
             }
             else
             {
-                util_release(a);
+                cphvb_array* a = (cphvb_array*) arys[i]->dnduid;
+                cphvb_array* b = cphvb_base_array(a);
+                
+                //Tell the VEM to sync/release the data.
+                if (i == 0) // It's the input parmeter
+                {  
+                    util_sync(a); // So just sync it
+                }
+                else
+                {
+                    util_release(a);
+                }
+                
+                //We may have to allocate it.
+                if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
+                {
+                    fprintf(stderr, "Out of memory "
+                            "in dnumpy_ufunc\n");
+                    exit(CPHVB_OUT_OF_MEMORY);
+                }
+                data = b->data + a->start * cphvb_type_size(a->type);
+                
+                tuple[i] = PyArray_New(&PyArray_Type,
+                                       arys[i]->nd,
+                                       arys[i]->dimensions,
+                                       arys[i]->descr->type_num,
+                                       arys[i]->strides,
+                                       data, 0,
+                                       NPY_BEHAVED, NULL);
+                assert(tuple[i] != NULL);
             }
-
-            //We may have to allocate it.
-            if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
-            {
-                fprintf(stderr, "Out of memory "
-                                "in dnumpy_ufunc\n");
-                exit(CPHVB_OUT_OF_MEMORY);
-            }
-            data = b->data + a->start * cphvb_type_size(a->type);
-
-            tuple[i] = PyArray_New(&PyArray_Type,
-                                   arys[i]->nd,
-                                   arys[i]->dimensions,
-                                   arys[i]->descr->type_num,
-                                   arys[i]->strides,
-                                   data, 0,
-                                   NPY_BEHAVED, NULL);
-            assert(tuple[i] != NULL);
         }
+        PyObject *t = PyObject_CallMethod(PyOp, "reduce", "(O,i,O,O)",
+                                          tuple[0], axis, Py_None, tuple[1]);
+        Py_XDECREF(t);
+        Py_DECREF(PyOp);
     }
-    PyObject *t = PyObject_CallMethod(PyOp, "reduce", "(O,i,O,O)",
-                                      tuple[0], axis, Py_None, tuple[1]);
-    Py_XDECREF(t);
-    Py_DECREF(PyOp);
+    else // Tell the VEM to perform the instruction.
+    {
+        util_schedule(&inst, 0);
+    }
     return 0;
 } /* dnumpy_ufunc_reduce */
 

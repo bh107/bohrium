@@ -42,6 +42,10 @@ cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
             ++*opcode_count;
         }
     }
+
+    //TODO create propper list of supported reduce functions
+    opcode_list[*opcode_count] = CPHVB_ADD | CPHVB_REDUCE;
+    ++*opcode_count;
     
     datatype_list[0] = CPHVB_FLOAT32;
     datatype_list[1] = CPHVB_BOOL;

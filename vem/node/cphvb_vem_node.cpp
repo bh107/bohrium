@@ -40,6 +40,9 @@ static cphvb_ve_shutdown ve_shutdown;
     #include <cphvb_ve_simple.h>
 #endif
 
+#define PLAININST (1)
+#define REDUCEINST (2)
+
 ArrayManager* arrayManager;
 
 //The VE info.
@@ -52,7 +55,7 @@ cphvb_support ve_support;
 cphvb_error cphvb_vem_node_init(void)
 {
     cphvb_intp opcode_count, type_count;
-    cphvb_opcode opcode[CPHVB_NO_OPCODES];
+    cphvb_opcode opcode[CPHVB_NO_OPCODES*2];
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
@@ -81,7 +84,15 @@ cphvb_error cphvb_vem_node_init(void)
 #endif
     while(--opcode_count >= 0)
     {
-        ve_support.opcode[opcode[opcode_count]] = 1;//Set True
+        if (opcode[opcode_count] & CPHVB_REDUCE)
+        {
+            ve_support.opcode[~CPHVB_REDUCE & opcode[opcode_count]] |= 
+                REDUCEINST;
+        }
+        else
+        {
+            ve_support.opcode[opcode[opcode_count]] |= PLAININST;
+        }
 #ifdef DEBUG
         std::cout << "\t" << cphvb_opcode_text(opcode[opcode_count]) <<
             std::endl;
@@ -174,7 +185,11 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
     case CPHVB_RELEASE:
         return 1;
     default:
-        if(ve_support.opcode[inst->opcode])
+        if( //it's a reduce instruction and we support it  
+            (inst->opcode & CPHVB_REDUCE &&
+             ve_support.opcode[~CPHVB_REDUCE & inst->opcode] & REDUCEINST) ||
+            //it's a "normal" instuction and we support it
+            ve_support.opcode[inst->opcode] & PLAININST)
         {
             cphvb_intp i;
             cphvb_intp nop = cphvb_operands(inst->opcode);
@@ -185,7 +200,7 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
                     t = inst->const_type[i];
                 else
                     t = inst->operand[i]->type;
-                if(!ve_support.type[t])
+                if(!ve_support.type[t] && t != CPHVB_INDEX)
                     return 0;
             }
             return 1;

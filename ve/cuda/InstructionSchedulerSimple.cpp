@@ -56,6 +56,14 @@ inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
         dataManager->lock(inst->operand,1,NULL);
         randomNumberGenerator->fill(inst->operand[0]);
         break;
+    case (CPHVB_ADD | CPHVB_REDUCE):
+        if(reduceAdd == 0)
+        {
+            reduceAdd = new ReduceTB();
+        }
+        dataManager->flush(inst->operand[1]);
+        reduceAdd->reduce(inst->operand[0],inst->operand[1]);
+        break;
     default:
         Threads threads = cphvb_nelements(inst->operand[0]->ndim, 
                                           inst->operand[0]->shape);

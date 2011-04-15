@@ -17,25 +17,30 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DATAMANAGER_HPP
-#define __DATAMANAGER_HPP
+#ifndef __REDUCETB_HPP
+#define __REDUCETB_HPP
 
+#include <cuda.h>
 #include "cphVBarray.hpp"
-#include "InstructionBatch.hpp"
+#include "KernelPredefined.hpp"
 
-class DataManager
+#define R_TPB (32)
+#define R_BPG (192)
+
+//typedef unsigned int uint;
+
+class ReduceTB
 {
+private:
+    KernelPredefined* add_reduce_float_1d;
+    KernelShape* shape;
+    float hostRes[R_TPB*R_BPG];
+    CUdeviceptr cudaRes;
+    void initState();
 public:
-    virtual void lock(cphVBarray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
-    virtual void release(cphVBarray* array) = 0;
-    virtual void sync(cphVBarray* array) = 0;
-    virtual void flush(cphVBarray* array) = 0;
-    virtual void discard(cphVBarray* baseArray) = 0;
-    virtual void flushAll() = 0;
-    virtual void batchEnd() = 0;
+    ReduceTB();
+    ~ReduceTB();
+    void reduce(cphVBarray* resArray, cphVBarray* array);
 };
 
 #endif
-

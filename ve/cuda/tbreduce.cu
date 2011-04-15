@@ -17,25 +17,18 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DATAMANAGER_HPP
-#define __DATAMANAGER_HPP
-
-#include "cphVBarray.hpp"
-#include "InstructionBatch.hpp"
-
-class DataManager
+extern "C" __global__ 
+void add_reduce_float_1d(float* in, uint elements, float* out)
 {
-public:
-    virtual void lock(cphVBarray* operands[], 
-                      int nops, 
-                      InstructionBatch* batch) = 0;
-    virtual void release(cphVBarray* array) = 0;
-    virtual void sync(cphVBarray* array) = 0;
-    virtual void flush(cphVBarray* array) = 0;
-    virtual void discard(cphVBarray* baseArray) = 0;
-    virtual void flushAll() = 0;
-    virtual void batchEnd() = 0;
-};
+    const uint nThreads = blockDim.x*gridDim.x;
+	const uint outIdx = threadIdx.x + blockIdx.x*blockDim.x;
+    float myRes = 0.0;
+    uint inIdx;
+	for (inIdx = outIdx; inIdx < elements; inIdx += nThreads) 
+	{
+        myRes += in[inIdx];
+	}
+    out[outIdx] = myRes;
+}
 
-#endif
 

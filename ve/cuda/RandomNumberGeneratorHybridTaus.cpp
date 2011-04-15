@@ -58,7 +58,7 @@ RandomNumberGeneratorHybridTaus::RandomNumberGeneratorHybridTaus() :
     shape(new KernelShape(HT_TPB,1,1,HT_BPG,1))
 {
     initState();
-    CUmodule module = KernelPredefined::loadSource("/usr/local/cphvb/sourcekernels/htrand.ptx");
+    CUmodule module = KernelPredefined::loadSource("/usr/local/cphvb/htrand.ptx");
     htrand_float32 = new KernelPredefined(module, "htrand_float32", 
                                         {PTX_POINTER, PTX_UINT32, PTX_POINTER});
     htrand_uint32 = new KernelPredefined(module, "htrand_uint32",  

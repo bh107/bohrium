@@ -27,6 +27,7 @@
 #include "InstructionBatchSimple.hpp"
 #include "KernelGenerator.hpp"
 #include "DataManager.hpp"
+#include "ReduceTB.hpp"
 
 typedef std::map<Threads, InstructionBatch*> BatchTable;
 
@@ -37,6 +38,7 @@ private:
     KernelGenerator* kernelGenerator;
     BatchTable batchTable;
     RandomNumberGenerator* randomNumberGenerator;
+    ReduceTB* reduceAdd;
 protected:
     void schedule(cphVBinstruction* inst);
 public:

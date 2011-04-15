@@ -50,6 +50,7 @@ enum /* cphvb_type */
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64,
+    CPHVB_INDEX, // Not a data type same as INT32 used for e.g. reduce dim
     //NB: CPHVB_UNKNOWN must be the last element in this enum.
     CPHVB_UNKNOWN
 };
