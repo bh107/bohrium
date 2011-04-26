@@ -24,7 +24,7 @@
 #include "cphVBarray.hpp"
 #include "KernelPredefined.hpp"
 
-#define R_TPB (32)
+#define R_TPB (128)
 #define R_BPG (192)
 
 //typedef unsigned int uint;

@@ -25,7 +25,7 @@
 #include "RandomNumberGenerator.hpp"
 
 
-#define HT_TPB (32)
+#define HT_TPB (128)
 #define HT_BPG (192)
 
 //typedef unsigned int uint;
