@@ -6,10 +6,8 @@ import sys
 DEBUG = False
 
 d = int(sys.argv[1]) #CUDA
-S = int(sys.argv[3]) #Size of Model
-I = int(sys.argv[2]) #Number of iterations
-
-d=False
+S = int(sys.argv[2]) #Size of Model
+I = int(sys.argv[3]) #Number of iterations
 
 H = S 
 W = S
