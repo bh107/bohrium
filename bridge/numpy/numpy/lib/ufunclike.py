@@ -2,7 +2,7 @@
 Module of functions that are like ufuncs in acting on arrays and optionally
 storing results in an output array.
 """
-__all__ = ['fix', 'isneginf', 'isposinf', 'log2']
+__all__ = ['fix', 'isneginf', 'isposinf']
 
 import numpy.core.numeric as nx
 

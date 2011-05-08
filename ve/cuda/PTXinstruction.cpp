@@ -38,6 +38,8 @@ inline void PTXinstruction::printOpModifierOn(std::ostream& os) const
         }
         break;
     case PTX_DIV:
+    case PTX_EXP2:
+    case PTX_LOG2:
         if (ptxBaseType(dest->getType()) == PTX_FLOAT)
         {
             
@@ -73,6 +75,21 @@ inline void PTXinstruction::printAritOpOn(std::ostream& os) const
         break;
     case PTX_REM:
         os << "rem";
+        break;
+    case PTX_EXP2:
+        os << "ex2";
+        break;
+    case PTX_LOG2:
+        os << "lg2";
+        break;
+    case PTX_ABS:
+        os << "abs";
+        break;
+    case PTX_NEG:
+        os << "neg";
+        break;
+    case PTX_SQRT:
+        os << "sqrt";
         break;
     case PTX_MOV:
         os << "mov";

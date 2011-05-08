@@ -513,6 +513,10 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
     //We may have to apply the ufunc ourselves.
     if(!vem_instruction_check(&inst))
     {
+//#ifdef DEBUG
+        printf("[NumPy] Unsupported instruction: %s \n", 
+               cphvb_opcode_text(inst.opcode));
+//#endif
         //Get Python function.
         PyObject *PyOp = PyObject_GetAttrString(ufunc_module,
                                                 ufunc->name);

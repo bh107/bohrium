@@ -470,13 +470,13 @@ defdict = {
           TD(M, f='tanh'),
           ),
 'exp' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_EXP',1, 1, None,
           docstrings.get('numpy.core.umath.exp'),
           TD(inexact, f='exp'),
           TD(M, f='exp'),
           ),
 'exp2' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_EXP2',1, 1, None,
           docstrings.get('numpy.core.umath.exp2'),
           TD(inexact, f='exp2'),
           TD(M, f='exp2'),
@@ -488,19 +488,19 @@ defdict = {
           TD(M, f='expm1'),
           ),
 'log' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_LOG',1, 1, None,
           docstrings.get('numpy.core.umath.log'),
           TD(inexact, f='log'),
           TD(M, f='log'),
           ),
 'log2' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_LOG2',1, 1, None,
           docstrings.get('numpy.core.umath.log2'),
           TD(inexact, f='log2'),
           TD(M, f='log2'),
           ),
 'log10' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_LOG10',1, 1, None,
           docstrings.get('numpy.core.umath.log10'),
           TD(inexact, f='log10'),
           TD(M, f='log10'),
@@ -512,7 +512,7 @@ defdict = {
           TD(M, f='log1p'),
           ),
 'sqrt' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_SQRT',1, 1, None,
           docstrings.get('numpy.core.umath.sqrt'),
           TD(inexact, f='sqrt'),
           TD(M, f='sqrt'),

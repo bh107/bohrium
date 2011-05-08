@@ -40,7 +40,7 @@ for i in range(I):
   work += down
   work *= 0.2
   np.add(work,0.0,cells)
-  np.core.multiarray.evalflush()  
+#  np.core.multiarray.evalflush()  
 
 t2 = time.time()
 

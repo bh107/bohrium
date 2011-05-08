@@ -8837,9 +8837,11 @@ PyArray_CastTo(PyArrayObject *out, PyArrayObject *mp)
     /* DISTNUMPY */
     if(PyArray_ISDISTRIBUTED(out) || PyArray_ISDISTRIBUTED(mp))
     {
-        PyErr_SetString(PyExc_RuntimeError, "PyArray_CastTo for "
-                        "distributed arrays are not implemented");
-        return -1;
+        //    PyErr_SetString(PyExc_RuntimeError, "PyArray_CastTo for "
+        //                "distributed arrays are not implemented");
+        //return -1;
+        memcpy(out,mp,sizeof(PyArrayObject));
+        return 0;
     }
 
     if (mpsize == 0) {

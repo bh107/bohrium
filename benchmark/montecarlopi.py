@@ -13,8 +13,8 @@ def monte_carlo_pi(N,I,x,y,t,r):
             np.core.multiarray.random(x)
             np.core.multiarray.random(y)
         else:
-            x = np.random.rand(N)
-            y = np.random.rand(N)
+            x = np.random.rand(N)#.astype(np.float32)
+            y = np.random.rand(N)#.astype(np.float32)
         x *= x
         y *= y    
         x += y

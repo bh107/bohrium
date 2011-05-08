@@ -23,7 +23,7 @@
 #include <cphvb.h>
 #include "KernelShape.hpp"
 
-#define _TPB (256) //Threads Per Block
+#define _TPB (512) //Threads Per Block
 
 class KernelShapeSimple : public KernelShape
 {
