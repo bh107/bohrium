@@ -61,4 +61,4 @@ while T < year:
     T+=day
 #    print "res: ", res
 np.core.multiarray.evalflush()
-print 'N: ', N, ' iter: ', int(year*365), 'in sec: ', time.time() - stime,
+print DIST, " ", N, " ", int(year*365), " ",  time.time() - stime,
