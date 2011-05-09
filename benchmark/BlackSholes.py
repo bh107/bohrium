@@ -59,9 +59,6 @@ while T < year:
     np.add.reduce(BlackSholes('c', S, X, T, r, v),out=R)
     res = R[0]/N
     T+=day
+#    print "res: ", res
 np.core.multiarray.evalflush()
 print 'N: ', N, ' iter: ', year*365, 'in sec: ', time.time() - stime,
-if DIST:
-    print " (Dist) notes: %s"%sys.argv[4]
-else:
-    print " (Non-Dist) notes: %s"%sys.argv[4]
