@@ -50,5 +50,6 @@ clean:
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)
+		sudo mkdir -p $(KERNELDIR)
 		sudo cp *.ptx $(KERNELDIR)
 
