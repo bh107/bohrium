@@ -27,7 +27,8 @@ InstructionSchedulerSimple::InstructionSchedulerSimple(
     KernelGenerator* kernelGenerator_) :
     dataManager(dataManager_),
     kernelGenerator(kernelGenerator_),
-    randomNumberGenerator(0) {}
+    randomNumberGenerator(0),
+    reduceAdd(0) {}
 
 inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
 {
