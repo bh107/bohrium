@@ -249,7 +249,7 @@ static void
 dnumpy_destroy_dndarray(intp uid)
 {
     cphvb_instruction inst;
-    inst.opcode = CPHVB_DESTORY;
+    inst.opcode = CPHVB_DESTROY;
     inst.operand[0] = (cphvb_array*) uid;
 
     util_schedule(&inst, 0);

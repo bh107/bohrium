@@ -180,7 +180,7 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
 {
     switch(inst->opcode)
     {
-    case CPHVB_DESTORY:
+    case CPHVB_DESTROY:
         return 1;
     case CPHVB_RELEASE:
         return 1;
@@ -228,7 +228,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         cphvb_array* base = cphvb_base_array(inst->operand[0]);
         switch(inst->opcode)
         {
-        case CPHVB_DESTORY:
+        case CPHVB_DESTROY:
             if (inst->operand[0]->base != NULL)
             {   // It's a view and we can mark it for deletion
                 arrayManager->erasePending(inst->operand[0]);

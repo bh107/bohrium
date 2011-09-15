@@ -280,7 +280,7 @@ cphvb_intp cphvb_vem_cluster_instruction_check(cphvb_instruction *inst)
 {
     switch(inst->opcode)
     {
-    case CPHVB_DESTORY:
+    case CPHVB_DESTROY:
         return 1;
     case CPHVB_RELEASE:
         return 1;
@@ -322,7 +322,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
         cphvb_instruction *inst = &inst_list[i];
         switch(inst->opcode)
         {
-        case CPHVB_DESTORY:
+        case CPHVB_DESTROY:
         {
             cphvb_array *base = cphvb_base_array(inst->operand[0]);
             if(--base->ref_count <= 0)
