@@ -1,7 +1,7 @@
 /*
  * Copyright 2011 Troels Blum <troels@blum.dk>
  *
- * This file is part of cphVB.
+ * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
  * cphVB is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VM_CUDA_H
-#define __CPHVB_VM_CUDA_H
+#ifndef __CPHVB_VM_GPU_H
+#define __CPHVB_VM_GPU_H
 
 #include <cphvb.h>
 
@@ -29,15 +29,15 @@ extern "C" {
 /* plain C includes go here */
 #endif 
 
-cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
+cphvb_error cphvb_ve_gpu_init(cphvb_intp *opcode_count,
                                cphvb_opcode opcode_list[],
                                cphvb_intp *datatype_count,
                                cphvb_type datatype_list[]);
 
-cphvb_error cphvb_ve_cuda_execute(cphvb_intp instruction_count,
+cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
                                   cphvb_instruction instruction_list[]);
 
-cphvb_error cphvb_ve_cuda_shutdown(void);
+cphvb_error cphvb_ve_gpu_shutdown(void);
 
 
 #ifdef __cplusplus 

@@ -1,7 +1,7 @@
 /*
  * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
  *
- * This file is part of cphVB.
+ * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
  * cphVB is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
