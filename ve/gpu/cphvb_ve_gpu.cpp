@@ -23,7 +23,7 @@
 #include <cphvb_ve_gpu.h>
 
 InstructionScheduler* instructionScheduler;
-DeviceManager* deviceManager;
+recourceManager* ResourceManager;
 
 cphvb_error cphvb_ve_gpu_init(cphvb_intp *opcode_count,
                                cphvb_opcode opcode_list[],
@@ -38,8 +38,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_intp *opcode_count,
     *datatype_count = 0;
 
     try {
-        deviceManager = createDeviceManager();
-        deviceManager->initDevice(0);
+        resourceManager = new ResourceManager();
         MemoryManager* memoryManager = createMemoryManager();
         DataManager* dataManager = createDataManager(memoryManager);
         KernelGenerator* kernelGenerator = createKernelGenerator();

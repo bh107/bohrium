@@ -21,8 +21,8 @@
 #define __CPHVBARRAY_HPP
 
 #include <cphvb_array.h>
-#include <cl.hpp>
-#include <OCLtype.h>
+#include <CL/cl.hpp>
+#include "OCLtype.h"
 
 typedef struct cphVBarray cphVBarray;
 /* Matches memory layout of cphvb_array */

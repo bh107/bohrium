@@ -20,10 +20,27 @@
 #ifndef __RESOURCEMANAGER_HPP
 #define __RESOURCEMANAGER_HPP
 
+#include <CL/cl.hpp>
+#include <vector>
+
 class ResourceManager
 {
+private:
+    cl::Context context;
+    std::vector<cl::Device> devices;
+    std::vector<cl::CommandQueue> commandQueues;
 public:
-    static virtual ResourceManager create() = 0;
+    ResourceManager();
+    cl::Buffer createBuffer(size_t size);
+    cl::Event enqueueReadBuffer(const cl::Buffer buffer,
+                                void* hostPtr, 
+                                const std::vector<cl::Event>* waitFor,
+                                int device);
+    cl::Event enqueueWriteBuffer(const cl::Buffer buffer,
+                                 const void* hostPtr, 
+                                 const std::vector<cl::Event>* waitFor,
+                                 int device);
+    cl::Kernel createKernel(const char* source, const char* kernelName);
 };
 
 #endif

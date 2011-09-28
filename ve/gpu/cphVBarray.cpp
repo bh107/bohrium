@@ -24,35 +24,36 @@
 std::ostream& operator<< (std::ostream& os, 
                           cphVBarray const& array)
 {
-    os << "cphVBarray ID: " << array << " {" << std::endl; 
-    os << "\towner: " << array->owner << std::endl; 
-    os << "\tbase: " << array->base << std::endl; 
-    os << "\ttype: " << cphvb_type_text(array->type) << std::endl; 
-    os << "\tndim: " << array->ndim << std::endl; 
-    os << "\tstart: " << array->start << std::endl; 
-    for (int i = 0; i < array->ndim; ++i)
+    os << "cphVBarray ID: " << &array << " {" << std::endl; 
+    os << "\towner: " << array.owner << std::endl; 
+    os << "\tbase: " << array.base << std::endl; 
+    os << "\ttype: " << cphvb_type_text(array.type) << std::endl; 
+    os << "\tndim: " << array.ndim << std::endl; 
+    os << "\tstart: " << array.start << std::endl; 
+    for (int i = 0; i < array.ndim; ++i)
     {
-        os << "\tshape["<<i<<"]: " << array->shape[i] << std::endl;
+        os << "\tshape["<<i<<"]: " << array.shape[i] << std::endl;
     } 
-    for (int i = 0; i < array->ndim; ++i)
+    for (int i = 0; i < array.ndim; ++i)
     {
-        os << "\tstride["<<i<<"]: " << array->stride[i] << std::endl;
+        os << "\tstride["<<i<<"]: " << array.stride[i] << std::endl;
     } 
-    os << "\tdata: " << array->data << std::endl; 
-    os << "\thas_init_value: " << array->has_init_value << std::endl;
-    switch(array->type)
+    os << "\tdata: " << array.data << std::endl; 
+    os << "\thas_init_value: " << array.has_init_value << std::endl;
+    switch(array.type)
     {
     case CPHVB_INT32:
-        os << "\tinit_value: " << array->init_value.int32 << std::endl;
+        os << "\tinit_value: " << array.init_value.int32 << std::endl;
         break;
     case CPHVB_UINT32:
-        os << "\tinit_value: " << array->init_value.uint32 << std::endl;
+        os << "\tinit_value: " << array.init_value.uint32 << std::endl;
         break;
     case CPHVB_FLOAT32:
-        os << "\tinit_value: " << array->init_value.float32 << std::endl;
+        os << "\tinit_value: " << array.init_value.float32 << std::endl;
         break;
     }
-    os << "\tref_count: " << array->ref_count << std::endl; 
-    os << "\tbufPtr: " << (void*)array->bufPtr << std::endl;
+    os << "\tref_count: " << array.ref_count << std::endl; 
+    os << "\tbufPtr: " << &array.bufPtr << std::endl;
     os << "}"<< std::endl;
+    return os;
 }

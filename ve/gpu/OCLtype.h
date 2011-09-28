@@ -17,22 +17,37 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __RESOURCEMANAGERSIMPLE_HPP
-#define __RESOURCEMANAGERSIMPLE_HPP
+#ifndef __OCLTYPE_HPP
+#define __OCLTYPE_HPP
 
-#include "ResourceManager.hpp"
+#include <cphvb.h>
 
-class ResourceManagerSimple : public ResourceManager 
-{
-private:
-    cl::Platform platform;
-    cl::Context context;
-    std::vector<cl::Device> devices;
-    std::vector<cl::CommandQueue> commandQueues;
-public:
-    ContextManagerSingle(cl::Platform);
-    static ContextManager create();
-};
-
+#ifdef __cplusplus
+extern "C" {
 #endif
 
+typedef enum
+{
+    OCL_INT8,
+    OCL_INT16,
+    OCL_INT32,
+    OCL_INT64,
+    OCL_UINT8,
+    OCL_UINT16,
+    OCL_UINT32,
+    OCL_UINT64,
+    OCL_FLOAT16,
+    OCL_FLOAT32,
+    OCL_FLOAT64,
+    OCL_TYPES //Number of types 
+} OCLtype;
+
+OCLtype oclType(cphvb_type vbtype);
+const char* oclTypeStr(OCLtype type);
+size_t oclSizeOf(OCLtype type);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
