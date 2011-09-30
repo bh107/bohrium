@@ -17,31 +17,24 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_HPP
-#define __CPHVBARRAY_HPP
+#ifndef __OPERAND_HPP
+#define __OPERAND_HPP
 
 #include <cphvb_array.h>
 #include <CL/cl.hpp>
 #include "OCLtype.h"
 
-class cphVBarray
+class Operand
 {
 private:
-    cphvb_array* arraySpec;
-    ResourceManager* resourceManager;
-    cl::Buffer buffer;
-    OCLtype oclType;
-    size_t size();
 protected:
+    cphvb_array* spec;
     void printOn(std::ostream& os) const;
 public:
-    cphVBarray(cphvb_array* arraySpec, ResourceManager* resourceManager);
-    cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
-    void allocate();
-    bool allocated();
-    boot initialized();
+    size_t size();
     friend std::ostream& operator<< (std::ostream& os, 
-                              cphVBarray const& array);
+                                     cphVBarray const& array);
+    virtual oclType getType();
 };
 
 

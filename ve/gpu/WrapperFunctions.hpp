@@ -17,32 +17,12 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_HPP
-#define __CPHVBARRAY_HPP
+#ifndef __WRAPPERFUNCTIONS_HPP
+#define __WRAPPERFUNCTIONS_HPP
 
-#include <cphvb_array.h>
-#include <CL/cl.hpp>
-#include "OCLtype.h"
-
-class cphVBarray
+inline cphVBarray* cphVBBaseArray(cphVBarray* array)
 {
-private:
-    cphvb_array* arraySpec;
-    ResourceManager* resourceManager;
-    cl::Buffer buffer;
-    OCLtype oclType;
-    size_t size();
-protected:
-    void printOn(std::ostream& os) const;
-public:
-    cphVBarray(cphvb_array* arraySpec, ResourceManager* resourceManager);
-    cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
-    void allocate();
-    bool allocated();
-    boot initialized();
-    friend std::ostream& operator<< (std::ostream& os, 
-                              cphVBarray const& array);
-};
-
+    return (cphVBarray*)cphvb_base_array((cphvb_array*)array);
+}
 
 #endif

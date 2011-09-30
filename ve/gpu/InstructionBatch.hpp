@@ -17,32 +17,26 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_HPP
-#define __CPHVBARRAY_HPP
+#ifndef __INSTRUCTIONBATCH_HPP
+#define __INSTRUCTIONBATCH_HPP
 
-#include <cphvb_array.h>
-#include <CL/cl.hpp>
-#include "OCLtype.h"
+#include <vector>
+#include "KernelGenerator.hpp"
+#include "DataManager.hpp"
 
-class cphVBarray
+class InstructionBatch
 {
 private:
-    cphvb_array* arraySpec;
-    ResourceManager* resourceManager;
-    cl::Buffer buffer;
-    OCLtype oclType;
-    size_t size();
-protected:
-    void printOn(std::ostream& os) const;
+    unsigned long workItems;
+    DataManager* dataManager;
+    KernelGenerator* kernelGenerator;
+    std::vector<cphVBinstruction*> batch;
 public:
-    cphVBarray(cphvb_array* arraySpec, ResourceManager* resourceManager);
-    cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
-    void allocate();
-    bool allocated();
-    boot initialized();
-    friend std::ostream& operator<< (std::ostream& os, 
-                              cphVBarray const& array);
+    InstructionBatch(unsigned long workItems_,
+                     DataManager* dataManager_,
+                     KernelGenerator* kernelGenerator_);
+    void add(cphVBinstruction* inst);
+    void execute();
 };
-
 
 #endif

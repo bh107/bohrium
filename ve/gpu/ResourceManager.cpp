@@ -62,7 +62,7 @@ cl::Event ResourceManager::enqueueReadBuffer(const cl::Buffer buffer,
 {
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    commandQueues[device].enqueueReadBuffer(buffer, CL_FALSE, 0, size, hostPtr, waitFor, &event);
+    commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, waitFor, &event);
     return event;
 }
 
@@ -73,7 +73,7 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer buffer,
 {
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, waitFor, &event);
+    commandQueues[device].enqueueWriteBuffer(buffer, CL_TRUE, 0, size, hostPtr, waitFor, &event);
     return event;
 }
 

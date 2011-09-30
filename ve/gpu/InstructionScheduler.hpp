@@ -17,32 +17,34 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_HPP
-#define __CPHVBARRAY_HPP
 
-#include <cphvb_array.h>
-#include <CL/cl.hpp>
-#include "OCLtype.h"
+#ifndef __INSTRUCTIONSCHEDULER_HPP
+#define __INSTRUCTIONSCHEDULER_HPP
 
-class cphVBarray
+#include <map>
+#include "cphVBinstruction.hpp"
+#include "InstructionBatch.hpp"
+#include "KernelGenerator.hpp"
+#include "DataManager.hpp"
+#include "ReduceTB.hpp"
+
+typedef std::map<unsigned long workItems, InstructionBatch*> BatchTable;
+
+class InstructionScheduler
 {
 private:
-    cphvb_array* arraySpec;
-    ResourceManager* resourceManager;
-    cl::Buffer buffer;
-    OCLtype oclType;
-    size_t size();
+    DataManager* dataManager;
+    KernelGenerator* kernelGenerator;
+    BatchTable batchTable;
+    RandomNumberGenerator* randomNumberGenerator;
 protected:
-    void printOn(std::ostream& os) const;
+    void schedule(cphVBinstruction* inst);
 public:
-    cphVBarray(cphvb_array* arraySpec, ResourceManager* resourceManager);
-    cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
-    void allocate();
-    bool allocated();
-    boot initialized();
-    friend std::ostream& operator<< (std::ostream& os, 
-                              cphVBarray const& array);
+    InstructionScheduler(DataManager* dataManager_,
+                         KernelGenerator* kernelGenerator_);
+    void schedule(cphvb_intp instructionCount,
+                  cphVBinstruction* instructionList);
+    void flushAll();
 };
-
 
 #endif

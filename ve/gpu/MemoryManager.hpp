@@ -17,32 +17,24 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVBARRAY_HPP
-#define __CPHVBARRAY_HPP
+#ifndef __MEMORYMANAGER_HPP
+#define __MEMORYMANAGER_HPP
 
-#include <cphvb_array.h>
 #include <CL/cl.hpp>
-#include "OCLtype.h"
+#include "cphVBarray.hpp"
+#include "ResourceManager.hpp"
 
-class cphVBarray
+class MemoryManager
 {
 private:
-    cphvb_array* arraySpec;
     ResourceManager* resourceManager;
-    cl::Buffer buffer;
-    OCLtype oclType;
-    size_t size();
-protected:
-    void printOn(std::ostream& os) const;
+    size_t dataSize(cphVBarray* baseArray);
 public:
-    cphVBarray(cphvb_array* arraySpec, ResourceManager* resourceManager);
-    cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
-    void allocate();
-    bool allocated();
-    boot initialized();
-    friend std::ostream& operator<< (std::ostream& os, 
-                              cphVBarray const& array);
+    MemoryManager(ResourceManager* resourceManager_);
+    cl::Buffer deviceAlloc(cphVBarray* baseArray);
+    cphvb_data_ptr hostAlloc(cphVBarray* baseArray);
+    void copyToHost(cphVBarray* baseArray);
+    void copyToDevice(cphVBarray* baseArray);
 };
-
 
 #endif
