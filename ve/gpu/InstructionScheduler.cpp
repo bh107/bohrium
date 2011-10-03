@@ -28,7 +28,7 @@ InstructionScheduler::InstructionScheduler(DataManager* dataManager_,
     randomNumberGenerator(0)
 {}
 
-inline void InstructionScheduler::schedule(cphVBinstruction* inst)
+inline void InstructionScheduler::schedule(cphvb_instruction* inst)
 {
 #ifdef DEBUG
     std::cout << "[VE GPU] InstructionScheduler::schedule(" << 
@@ -91,7 +91,7 @@ void InstructionScheduler::flushAll()
 }
 
 void InstructionScheduler::schedule(cphvb_intp instructionCount,
-                                    cphVBinstruction* instructionList)
+                                    cphvb_instruction* instructionList)
 {
 #ifdef DEBUG
     std::cout << "[VE CUDA] InstructionScheduler: recieved batch with " << 

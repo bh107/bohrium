@@ -77,6 +77,13 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer buffer,
     return event;
 }
 
+cl::Event ResourceManager::completeEvent()
+{
+    cl::UserEvent event(context);
+    event.setStatus(CL_COMPLETE);
+    return event;
+}
+
 cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
 {
     cl::Program program(context,cl::Program::Sources(1,std::make_pair(source,0)));

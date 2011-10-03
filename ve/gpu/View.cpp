@@ -17,25 +17,14 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __OPERAND_HPP
-#define __OPERAND_HPP
+#include "View.hpp"
 
-#include <cphvb_array.h>
-#include <CL/cl.hpp>
-#include "OCLtype.h"
+View::View(cphvb_array* spec, BaseArray* base)
+    : ArrayOperand(spec)
+    , baseArray(base)
+{}
 
-class Operand
+OCLtype View::type()
 {
-private:
-protected:
-    cphvb_array* spec;
-    void printOn(std::ostream& os) const;
-public:
-    size_t size();
-    friend std::ostream& operator<< (std::ostream& os, 
-                                     cphVBarray const& array);
-    virtual oclType getType();
-};
-
-
-#endif
+    return baseArray->type();
+}

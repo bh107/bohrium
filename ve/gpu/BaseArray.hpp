@@ -17,34 +17,28 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __BASEARRAY_HPP
+#define __BASEARRAY_HPP
 
-#ifndef __INSTRUCTIONSCHEDULER_HPP
-#define __INSTRUCTIONSCHEDULER_HPP
+#include "ArrayOperand.hpp"
+#include "ResourceManager.hpp"
 
-#include <map>
-#include <cphvb_instruction.h>
-#include "InstructionBatch.hpp"
-#include "KernelGenerator.hpp"
-#include "DataManager.hpp"
-#include "ReduceTB.hpp"
-
-typedef std::map<unsigned long workItems, InstructionBatch*> BatchTable;
-
-class InstructionScheduler
+class BaseArray : public ArrayOperand 
 {
 private:
-    DataManager* dataManager;
-    KernelGenerator* kernelGenerator;
-    BatchTable batchTable;
-    RandomNumberGenerator* randomNumberGenerator;
+    ResourceManager* resourceManager;
+    OCLtype bufferType;
+    bool bufferAllocated;
+    cl::Buffer buffer;
 protected:
-    void schedule(cphvb_instruction* inst);
 public:
-    InstructionScheduler(DataManager* dataManager_,
-                         KernelGenerator* kernelGenerator_);
-    void schedule(cphvb_intp instructionCount,
-                  cphvb_instruction* instructionList);
-    void flushAll();
+    BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
+    OCLtype type();
+    void deviceAlloc();
+    void hostAlloc();
+    void copyToHost();
+    void copyToDevice();
 };
+
 
 #endif

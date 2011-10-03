@@ -40,6 +40,7 @@ public:
                                  const void* hostPtr, 
                                  const std::vector<cl::Event>* waitFor,
                                  int device);
+    cl::Event completeEvent();
     cl::Kernel createKernel(const char* source, const char* kernelName);
 };
 

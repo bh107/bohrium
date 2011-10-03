@@ -69,97 +69,50 @@ void DataManager::flush(cphVBarray* view)
     }
 }
 
-void DataManager::initBuffer(cphVBarray* baseArray)
-{
-    assert(baseArray->base == NULL);
-    if (baseArray->data == NULL)
-    {
-        if (baseArray->has_init_value)
-        {
-            //TODO memset now has to be implemented in the Kernel
-            throw std::runtime_error("Setting initial value has not been imnplemented.");
-        }
-        else  
-        {   //Nothing to init
-            return;
-        }
-    }
-    else
-    {
-        memoryManager->copyToDevice(baseArray);
-    }
-}
-
-/* Map operands to GPU device pointers via base arrays.
- * Also updates cphVBarray with apropriate info.
+/* Do we know the operands? If not create them
  */
-void DataManager::mapOperands(cphVBarray* operands[],
+void DataManager::mapOperands(cphbv_array* operands[],
                               int nops)
 {
     assert (nops > 0);
-    Operand2BaseMap::iterator oiter;
-    Base2BufferMap::iterator biter;
-    cphVBarray* baseArray;
-    cphVBarray* operand;
     for (int i = 0; i < nops; ++i)
     {
-        operand = operands[i];
+        cphvb_array* operand = operands[i];
         if (operand != CPHVB_CONSTANT)
         {
-#ifdef DEBUG
-            std::cout << "[VE GPU] Mapping " << operand;
-#endif            
-            oiter = op2Base.find(operand);
-            if (oiter == op2Base.end())
-            {   //The operand is not mapped to a base array - so we will 
-                baseArray = cphVBBaseArray(operand);
-#ifdef DEBUG
-            std::cout << " to " << baseArray;
-#endif                            
-                biter = base2Buffer.find(baseArray);
-                if (biter == base2Buffer.end())
-                {   //The base array is not mapped to a buffer - so we will
-                    //We also need to initialize it
-                    /* TODO: Do correct mapping 
-                     * This works for now becaus we only support float32 
-                     * and bool*/
-                    baseArray->oclType = OCL_FLOAT32; //TODO HACK
-                    cl::BUffer buffer = memoryManager->deviceAlloc(baseArray);
-                    base2Buffer[baseArray] = buffer;
-                    baseArray->buffer = buffer;
-                    initBuffer(baseArray);
-#ifdef DEBUG
-                    std::cout << " which was unknown. Now has buffer " <<
-                        (void*)buffer << std::endl;
-#endif                            
-                }
-#ifdef DEBUG
-                else
-                {
-                    std::cout << " which is known to have buffer " <<
-                        (void*)baseArray->buffer << std::endl;
-                }
-#endif
-                operand->buffer = baseArray->buffer;
-                operand->oclType = baseArray->oclType;
-                op2Base[operand] = baseArray;
-            }
-
-#ifdef DEBUG
-            else
-            {
-                std::cout << ": Allready mapped to " << oiter->second << 
-                    " with buffer " << (void*)oiter->second->buffer << 
-                    std::endl;
-            }
-#endif
+            continue;
+        }
+        if (operandMap.find(operand) != operandMap.end())
+        {
+            //It is a known operand
+            continue;
+        }
+        //Unknown operand:
+        if (operand->base == NULL)
+        {
+            operandMap[operand] = new BaseArray(operand, resourceManager);
+            continue;
+        }
+        //Do we know the base array
+        OperandMap::iterator oiter = operandMap.find(operand->base)
+        if (oiter != operandMap.end())
+        {
+            //Just create the wiew
+            operandMap[operand] = new View(operand, oiter->second);
+        } 
+        else
+        {
+            BaseArray* baseArray =  new BaseArray(operand->base, resourceManager);
+            operandMap[operand->base] = baseArray;
+            operandMap[operand] = new View(operand, baseArray);
         }
     }
 }
 
-DataManager::DataManager(MemoryManager* memoryManager_) :
-    memoryManager(memoryManager_),
-    activeBatch(NULL) {}
+DataManager::DataManager(ResourceManager* resourceManager_)
+    : resourceManager(resourceManager_)
+    , activeBatch(NULL) 
+{}
 
 void DataManager::lock(cphVBarray* operands[], 
                        int nops, 

@@ -54,12 +54,11 @@ cphvb_error cphvb_ve_gpu_init(cphvb_intp *opcode_count,
 }
 
 cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
-                                  cphvb_instruction instruction_list[])
+                                 cphvb_instruction instruction_list[])
 {
     try 
     {
-        instructionScheduler->schedule(instruction_count,
-                                       (cphVBinstruction*)instruction_list);
+        instructionScheduler->schedule(instruction_count, instruction_list);
     }
     catch (std::exception& e)
     {

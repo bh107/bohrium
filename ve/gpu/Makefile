@@ -11,7 +11,7 @@ CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = -shared -Wl,-soname,$(LIB)
 CSRC = oclType
-CPPSRC = cphVBarray cphVBinstruction ResourceManager cphvb_ve_gpu InstructionBatch
+CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch ArrayOperand BaseArray View InstructionScheduler
 
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/usr/local/lib/

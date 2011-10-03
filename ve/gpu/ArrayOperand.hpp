@@ -17,34 +17,26 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __ARRAYOPERAND_HPP
+#define __ARRAYOPERAND_HPP
 
-#ifndef __INSTRUCTIONSCHEDULER_HPP
-#define __INSTRUCTIONSCHEDULER_HPP
+#include <cphvb_array.h>
+#include <CL/cl.hpp>
+#include "OCLtype.h"
 
-#include <map>
-#include <cphvb_instruction.h>
-#include "InstructionBatch.hpp"
-#include "KernelGenerator.hpp"
-#include "DataManager.hpp"
-#include "ReduceTB.hpp"
-
-typedef std::map<unsigned long workItems, InstructionBatch*> BatchTable;
-
-class InstructionScheduler
+class ArrayOperand
 {
 private:
-    DataManager* dataManager;
-    KernelGenerator* kernelGenerator;
-    BatchTable batchTable;
-    RandomNumberGenerator* randomNumberGenerator;
 protected:
-    void schedule(cphvb_instruction* inst);
+    cphvb_array* spec;
+    void printOn(std::ostream& os) const;
+    ArrayOperand(cphvb_array* spec);
 public:
-    InstructionScheduler(DataManager* dataManager_,
-                         KernelGenerator* kernelGenerator_);
-    void schedule(cphvb_intp instructionCount,
-                  cphvb_instruction* instructionList);
-    void flushAll();
+    size_t size();
+    friend std::ostream& operator<< (std::ostream& os, 
+                                     ArrayOperand const& array);
+    virtual OCLtype type() = 0;
 };
+
 
 #endif
