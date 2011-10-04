@@ -25,27 +25,18 @@
 #include <CL/cl.hpp>
 #include "InstructionBatch.hpp"
 
-typedef std::map<cphvb_array*, ArrayOperand*> OperandMap
-
-typedef std::map<cphVBarray* base, cphVBarray* view> WriteLockTable;
-typedef std::map<cphVBarray*, cl::Buffer> Base2BufferMap;
-typedef std::map<cphVBarray* ,cphVBarray*> Operand2BaseMap;
+typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
 
 class DataManager
 {
 private:
-    OperandMap operandMap;
-    WriteLockTable writeLockTable;
-    Base2BufferMap base2Buffer;
-    Operand2BaseMap op2Base;
+    ArrayMap arrayMap;
     InstructionBatch* activeBatch;
     void _sync(cphvb_array* baseArray);
     void _flush(cphvb_array* view);
     void initCudaArray(cphvb_array* baseArray);
-    void mapOperands(cphvb_array* operands[],
-                     int nops);
 public:
-    DataManager(MemoryManager* memoryManager_);
+    DataManager(ResourceManager* resourceManager);
     void lock(cphvb_array* operands[], 
               int nops, 
               InstructionBatch* batch);

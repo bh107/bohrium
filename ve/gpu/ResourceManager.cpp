@@ -55,25 +55,23 @@ cl::Buffer ResourceManager::createBuffer(size_t size)
     return cl::Buffer(context, CL_MEM_READ_WRITE, size, NULL);
 }
 
-cl::Event ResourceManager::enqueueReadBuffer(const cl::Buffer buffer,
-                                             void* hostPtr, 
-                                             const std::vector<cl::Event>* waitFor,
-                                             int device)
+void ResourceManager::readBuffer(const cl::Buffer buffer,
+                                 void* hostPtr, 
+                                 cl::Event waitFor,
+                                 unsigned int device)
 {
-    cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, waitFor, &event);
-    return event;
+    readerWaitFor[0] = waitFor;
+    commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, NULL);
 }
 
 cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer buffer,
                                               const void* hostPtr, 
-                                              const std::vector<cl::Event>* waitFor,
-                                              int device)
+                                              unsigned int device)
 {
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    commandQueues[device].enqueueWriteBuffer(buffer, CL_TRUE, 0, size, hostPtr, waitFor, &event);
+    commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, NULL, &event);
     return event;
 }
 

@@ -69,46 +69,6 @@ void DataManager::flush(cphVBarray* view)
     }
 }
 
-/* Do we know the operands? If not create them
- */
-void DataManager::mapOperands(cphbv_array* operands[],
-                              int nops)
-{
-    assert (nops > 0);
-    for (int i = 0; i < nops; ++i)
-    {
-        cphvb_array* operand = operands[i];
-        if (operand != CPHVB_CONSTANT)
-        {
-            continue;
-        }
-        if (operandMap.find(operand) != operandMap.end())
-        {
-            //It is a known operand
-            continue;
-        }
-        //Unknown operand:
-        if (operand->base == NULL)
-        {
-            operandMap[operand] = new BaseArray(operand, resourceManager);
-            continue;
-        }
-        //Do we know the base array
-        OperandMap::iterator oiter = operandMap.find(operand->base)
-        if (oiter != operandMap.end())
-        {
-            //Just create the wiew
-            operandMap[operand] = new View(operand, oiter->second);
-        } 
-        else
-        {
-            BaseArray* baseArray =  new BaseArray(operand->base, resourceManager);
-            operandMap[operand->base] = baseArray;
-            operandMap[operand] = new View(operand, baseArray);
-        }
-    }
-}
-
 DataManager::DataManager(ResourceManager* resourceManager_)
     : resourceManager(resourceManager_)
     , activeBatch(NULL) 
@@ -119,9 +79,21 @@ void DataManager::lock(cphVBarray* operands[],
                        InstructionBatch* batch)
 {
     assert(nops > 0);
-    mapOperands(operands, nops);
-    cphVBarray* baseArray;
-
+    for (int i = 0; i < nops; ++i)
+    {
+        cphvb_array* operand = operands[i];
+        // Is it a new base array we haven't heard of before?
+        if (operand != CPHVB_CONSTANT)
+        {
+            cphvb_array* base = cphvb_base_array(operand); 
+            if (arrayMap.find(base) == arrayMap.end())
+            {
+                // Then create it
+                arrayMap[base] = new BaseArray(base, resourceManager);
+            }
+        }
+    }
+    
     if (activeBatch == NULL)
     {
         activeBatch = batch;
@@ -135,13 +107,17 @@ void DataManager::lock(cphVBarray* operands[],
     else
     {
         /* We need to _flush all arrays that are read in the operation*/
-        for (int i = 1; i < nops; ++i)
+        for (int i = 0; i < nops; ++i)
         {
-            _flush(operands[i]);
+            cphvb_array* operand = operands[i];
+            if (operand != CPHVB_CONSTANT)
+            {
+                _flush(operands[i]);
+            }
         }
     }
     /* Now we can just take the write lock on the array */
-    baseArray = op2Base[operands[0]];
+    cphVBarray* baseArray = op2Base[operands[0]];
     writeLockTable[baseArray] = operands[0];
 }
 
@@ -154,50 +130,25 @@ void DataManager::release(cphVBarray* baseArray)
 void DataManager::sync(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
-    
-    // I may recieve sync for arrays I don't own 
-    Base2CudaMap::iterator biter = base2Cuda.find(baseArray);
-    if (biter == base2Buffer.end())
+    // We may recieve sync for arrays I don't own
+    ArrayMap::iterator it = arrayMap.find(base);
+    if (it != arrayMap.end())
     {
-       return;
+        it->second->sync();
     }
-    _sync(baseArray);
-    if (baseArray->data == NULL)
-    {
-        cphvb_data_ptr ptr = memoryManager->hostAlloc(baseArray);
-        baseArray->data = ptr;
-    }
-    memoryManager->copyToHost(baseArray);
 }
 
 void DataManager::discard(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);
-  
-    // I may recieve discard for arrays I don't own
-    Base2BufferMap::iterator biter = base2Buffer.find(baseArray);
-    if (biter == base2Buffer.end())
+    // We may recieve discard for arrays I don't own
+    ArrayMap::iterator it = arrayMap.find(base);
+    if (it != arrayMap.end())
     {
-        return;
-    }
-    //TODO: Need to check if we need to flush: Is the array an input parameter 
-    // for any operations
-    flushAll();
-
-    memoryManager->free(baseArray);
-    baseArray->buffer = 0;
-    base2Buffer.erase(baseArray);
-    Operand2BaseMap::iterator oiter = op2Base.begin();
-    while (oiter != op2Base.end())
-    {
-        if (oiter->second == baseArray)
-        {
-            op2Base.erase(oiter++);
-        }
-        else
-        {
-            ++oiter;
-        }
+        //TODO: Need to check if we need to flush: Is the array an input parameter 
+        // for any operations
+        flushAll();
+        arrayMap.erase(base);
     }
 }
 

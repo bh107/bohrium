@@ -28,16 +28,18 @@ class BaseArray : public ArrayOperand
 private:
     ResourceManager* resourceManager;
     OCLtype bufferType;
-    bool bufferAllocated;
+    //TODO have a map<buffer, device> 
+    //and split the array into several buffers
     cl::Buffer buffer;
+    unsigned int device;
+    cl::Event writeEvent;
+    std::vector<cl::Event> readEvents;
+    std::vector<View> views; 
 protected:
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     OCLtype type();
-    void deviceAlloc();
-    void hostAlloc();
-    void copyToHost();
-    void copyToDevice();
+    void sync();
 };
 
 

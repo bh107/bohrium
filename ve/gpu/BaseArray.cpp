@@ -27,71 +27,32 @@ BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager_)
     : ArrayOperand(spec_)
     , resourceManager(resourceManager_)
     , bufferType(oclType(spec_->type))
-    , bufferAllocated(false)
 {
     assert(spec->base == NULL);
-    deviceAlloc();
+    assert(spec->ndim > 0);
+    buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
     if (spec->data != NULL)
     {
-        copyToDevice();
+        device = 0;
+        writeEvent = resourceManager->enqueueWriteBuffer(buffer, spec->data, device);
     } 
     else 
     {
-        waitFor = resourceManager.completeEvent();
+        writeEvent = resourceManager->completeEvent();
     }
 }
 
-void BaseArray::deviceAlloc()
+void BaseArray::sync()
 {
-    assert(spec->ndim > 0);
-    assert(!bufferAllocated);
-    buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
-#ifdef DEBUG
-    std::cout << "[VE GPU] createBuffer(" << size() << ") -> " << (void*)buffer << std::endl;
-#endif
-    bufferAllocated = true;
-}
-
-void BaseArray::hostAlloc()
-{
-    assert(spec->data == NULL);
-    spec->data = (cphvb_data_ptr)std::malloc(size() * oclSizeOf(bufferType));
     if (spec->data == NULL)
     {
-        throw std::runtime_error("Could not allocate memory on host");
+        spec->data = (cphvb_data_ptr)std::malloc(size() * oclSizeOf(bufferType));
+        if (spec->data == NULL)
+        {
+            throw std::runtime_error("Could not allocate memory on host");
+        }
     }
-}
-
-void BaseArray::copyToHost()
-{
-    assert(bufferAllocated);
-    assert(spec->data != NULL);
-    if (oclType(spec->type) != bufferType)
-    {
-        //TODO implement type conversion
-        throw std::runtime_error("copyToHost: Type conversion not implemented yet");
-    } 
-#ifdef DEBUG
-    std::cout << "[VE GPU] enqueueReadBuffer(" << (void*)buffer << ", " << 
-        spec->data << ", NULL, 0)" << std::endl;
-#endif
-    resourceManager->enqueueReadBuffer(buffer, spec->data, NULL, 0);
-}
-
-void BaseArray::copyToDevice()
-{
-    assert(spec->data != NULL);
-    assert(bufferAllocated);
-#ifdef DEBUG
-    std::cout << "[VE GPU] >enqueueWriteBuffer(" <<  (void*)buffer << 
-        ", "<< spec->data << "(" << baseArray << "), NULL, 0)" << std::endl;
-#endif
-    if (oclType(spec->type) != bufferType)
-    {
-        //TODO implement type conversion
-        throw std::runtime_error("copyToDevice: Type conversion not implemented yet");        
-    }
-    waitFor = resourceManager->enqueueWriteBuffer(buffer, spec->data, NULL, 0);
+    resourceManager->readBuffer(buffer, spec->data, writeEvent, device);
 }
 
 OCLtype BaseArray::type()
