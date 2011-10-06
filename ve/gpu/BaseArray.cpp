@@ -59,3 +59,8 @@ OCLtype BaseArray::type()
 {
     return bufferType;
 }
+
+void BaseArray::setWriteEvent(cl::Event event)
+{
+    writeEvent = event;
+}

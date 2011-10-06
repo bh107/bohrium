@@ -18,54 +18,56 @@
  */
 
 #include <iostream>
+#include <cassert>
 #include <cphvb.h>
-#include "Instruction.hpp"
+#include "InstructionBatch.hpp"
 
-InstructionBatch::InstructionBatch(unsigned long workItems_, 
-                                   DataManager* dataManager_,
-                                   KernelGenerator* kernelGenerator_) :
-    workItems(workItems_),
-    dataManager(dataManager_),
-    kernelGenerator(kernelGenerator_) 
+InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
-#ifdef DEBUG
-    std::cout << "[VE GPU] Created InstructionBatch(" << this << ") with " << 
-        workItems << " work items." << std::endl;
-#endif
+    accept(inst, operandBase);
 }
 
-
-void InstructionBatch::add(cphVBinstruction* inst)
+void InstructionBatch::accept(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
-#ifdef DEBUG
-    std::cout << "[VE GPU] InstructionBatch(" << this << ")::add(" << 
-        *inst << ")" << std::endl;
-#endif
     int nops = cphvb_operands(inst->opcode);
-    dataManager->lock(inst->operand, nops, this);
-#ifdef DEBUG
-    std::cout << "[VE GPU] InstructionBatch(" << this << ")::add(" << 
-        inst << ") : Queued" << std::endl;
-#endif
-    batch.push_back(inst);
+    assert(nops > 0);
+    output[operandBase[0]] = inst->operand[0];
+    for (int i = 1; i < nops; ++i)
+    {
+        cphvb_array* operand = inst->operand[i];
+        if (operand != CPHVB_CONSTANT)
+        {
+            input.insert(operandBase[i]);
+        }
+    }
+    instructions.push_back(inst);
 }
 
-void InstructionBatch::execute()
+void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
-#ifdef DEBUG
-    std::cout << "[VE CUDA] Executing InstructionBatch with " << batch.size() 
-              << " instructions: " << std::endl;
-#endif
-    if (batch.begin() != batch.end())
+    int nops = cphvb_operands(inst->opcode);
+    assert(nops > 0);
+    for (int i = 1; i < nops; ++i)
     {
-#ifdef DEBUG
-        InstructionIterator it;
-        for (it = batch.begin() ;it != batch.end(); ++it)
+        cphvb_array* operand = inst->operand[i];
+        if (operand != CPHVB_CONSTANT)
         {
-            std::cout << "[VE CUDA] \t" << **it << std::endl;
+            Output::iterator it = output.find(operandBase[i]);
+            if (it != output.end() && it->second != operand)
+            {
+                throw BatchException(0);
+            }
         }
-#endif
-        kernelGenerator->run(threads, batch.begin(), batch.end());
-        batch.clear();
     }
+    accept(inst, operandBase);
 }
+
+bool InstructionBatch::use(BaseArray* baseArray)
+{
+    if (output.find(baseArray) == output.end() && input.find(baseArray) == input.end())
+    { 
+        return true;
+    }
+    return false;
+}
+

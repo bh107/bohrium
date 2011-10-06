@@ -21,22 +21,33 @@
 #define __INSTRUCTIONBATCH_HPP
 
 #include <vector>
-#include "KernelGenerator.hpp"
-#include "DataManager.hpp"
+#include <map>
+#include <set>
+#include "BaseArray.hpp"
+
+typedef std::map<BaseArray*, cphvb_array*> Output;
+
+class BatchException 
+{
+private:
+    int code;
+public:
+    BatchException(int code_) : code(code_) {}
+};
+
 
 class InstructionBatch
 {
 private:
-    unsigned long workItems;
-    DataManager* dataManager;
-    KernelGenerator* kernelGenerator;
-    std::vector<cphVBinstruction*> batch;
+    std::vector<cphvb_instruction*> instructions;
+    Output output;
+    std::set<BaseArray*> input;
+    void accept(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
 public:
-    InstructionBatch(unsigned long workItems_,
-                     DataManager* dataManager_,
-                     KernelGenerator* kernelGenerator_);
-    void add(cphVBinstruction* inst);
-    void execute();
+    InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    bool use(BaseArray* baseArray);
+    //KernelSource generateKernel();
 };
 
 #endif

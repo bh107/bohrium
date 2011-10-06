@@ -107,7 +107,7 @@ void DataManager::lock(cphVBarray* operands[],
     else
     {
         /* We need to _flush all arrays that are read in the operation*/
-        for (int i = 0; i < nops; ++i)
+        for (int i = 1; i < nops; ++i)
         {
             cphvb_array* operand = operands[i];
             if (operand != CPHVB_CONSTANT)

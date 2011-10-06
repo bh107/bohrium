@@ -24,27 +24,26 @@
 #include <map>
 #include <cphvb_instruction.h>
 #include "InstructionBatch.hpp"
-#include "KernelGenerator.hpp"
-#include "DataManager.hpp"
-#include "ReduceTB.hpp"
+#include "ResourceManager.hpp"
 
-typedef std::map<unsigned long workItems, InstructionBatch*> BatchTable;
+typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
 
 class InstructionScheduler
 {
 private:
-    DataManager* dataManager;
-    KernelGenerator* kernelGenerator;
-    BatchTable batchTable;
-    RandomNumberGenerator* randomNumberGenerator;
-protected:
+    ResourceManager* resourceManager;
+    InstructionBatch* activeBatch;
+    unsigned long workItems; // number of work items in the active batch
+    ArrayMap arrayMap;
     void schedule(cphvb_instruction* inst);
+    void sync(cphvb_array* base);
+    void discard(cphvb_array* base);
+    void executeBatch();
 public:
-    InstructionScheduler(DataManager* dataManager_,
-                         KernelGenerator* kernelGenerator_);
+    InstructionScheduler(ResourceManager* resourceManager);
     void schedule(cphvb_intp instructionCount,
                   cphvb_instruction* instructionList);
-    void flushAll();
+    void forceFlush();
 };
 
 #endif

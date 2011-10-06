@@ -18,14 +18,14 @@
  */
 
 #include <iostream>
+#include <cassert>
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
 
-InstructionScheduler::InstructionScheduler(DataManager* dataManager_,
-                                           KernelGenerator* kernelGenerator_) :
-    dataManager(dataManager_),
-    kernelGenerator(kernelGenerator_),
-    randomNumberGenerator(0)
+InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
+    : resourceManager(resourceManager_) 
+    , activeBatch(0)
+    , workItems(0)
 {}
 
 inline void InstructionScheduler::schedule(cphvb_instruction* inst)
@@ -39,62 +39,69 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
     case CPHVB_NONE:
         break;
     case CPHVB_RELEASE:
-        dataManager->release(inst->operand[0]);
+        sync(inst->operand[0]);
+        discard(inst->operand[0]);
         break;
     case CPHVB_SYNC:
-        dataManager->sync(inst->operand[0]);
+        sync(inst->operand[0]);
         break;
     case CPHVB_DISCARD:
-        dataManager->discard(inst->operand[0]);
-        break;
-    case CPHVB_RANDOM:
-        if(randomNumberGenerator == 0)
-        {
-            randomNumberGenerator = createRandomNumberGenerator();
-        }
-        dataManager->lock(inst->operand,1,NULL);
-        randomNumberGenerator->fill(inst->operand[0]);
+        discard(inst->operand[0]);
         break;
     default:
-        if (inst->opcode & CPHVB_REDUCE)
+        int nops = cphvb_operands(inst->opcode);
+        assert(nops > 0);
+        std::vector<BaseArray*> operandBase(CPHVB_MAX_NO_OPERANDS);
+        for (int i = 0; i < nops; ++i)
         {
-            //TODO: Implement handleing reduce operations
+            cphvb_array* operand = inst->operand[i];
+            // Is it a new base array we haven't heard of before?
+            if (operand != CPHVB_CONSTANT)
+            {
+                cphvb_array* base = cphvb_base_array(operand);
+                ArrayMap::iterator it = arrayMap.find(base);
+                if (it == arrayMap.end())
+                {
+                    // Then create it
+                    operandBase[i] = new BaseArray(base, resourceManager);
+                    arrayMap[base] = operandBase[i];
+                }
+                else
+                {
+                    operandBase[i] = it->second;
+                }
+            }
         }
-        else
+        unsigned long instWorkItems = cphvb_nelements(inst->operand[0]->ndim, 
+                                                      inst->operand[0]->shape);
+        assert(instWorkItems > 0);
+        if (instWorkItems != workItems)
         {
-            unsigned long workItems = cphvb_nelements(inst->operand[0]->ndim, 
-						      inst->operand[0]->shape);
-            if (workItems == 0)
-            {
-                return;
-            }
-            BatchTable::iterator biter = batchTable.find(workItems);
-            if (biter != batchTable.end())
-            {
-                biter->second->add(inst);
-            }
-            else
-            {
-                InstructionBatch* newBatch = 
-		  new InstructionBatch(workItems, dataManager, 
-				       kernelGenerator);
-                newBatch->add(inst);
-                batchTable[workItems] = newBatch;                
-            }
+            executeBatch();
+            activeBatch = new InstructionBatch(inst, operandBase);
+        }
+        try 
+        {
+            activeBatch->add(inst, operandBase);
+        } 
+        catch (BatchException& be)
+        {
+            executeBatch();
+            activeBatch = new InstructionBatch(inst, operandBase);
         }
     }
 }
 
-void InstructionScheduler::flushAll()
+void InstructionScheduler::forceFlush()
 {
-    dataManager->flushAll();
+    executeBatch();
 }
 
 void InstructionScheduler::schedule(cphvb_intp instructionCount,
                                     cphvb_instruction* instructionList)
 {
 #ifdef DEBUG
-    std::cout << "[VE CUDA] InstructionScheduler: recieved batch with " << 
+    std::cout << "[VE GPU] InstructionScheduler: recieved batch with " << 
         instructionCount << " instructions." << std::endl;
 #endif
     for (cphvb_intp i = 0; i < instructionCount; ++i)
@@ -103,5 +110,49 @@ void InstructionScheduler::schedule(cphvb_intp instructionCount,
     }
     
     /* End of batch cleanup */
-    dataManager->batchEnd();
+    executeBatch();
+}
+
+void InstructionScheduler::sync(cphvb_array* base)
+{
+    assert(base->base == NULL);
+    // We may recieve sync for arrays I don't own
+    ArrayMap::iterator it = arrayMap.find(base);
+    if  (it == arrayMap.end())
+    {
+        return;
+    }
+    if (activeBatch && activeBatch->use(it->second))
+    {
+        executeBatch();
+    }
+    it->second->sync();
+}
+
+void InstructionScheduler::discard(cphvb_array* base)
+{
+    assert(base->base == NULL);
+    // We may recieve sync for arrays I don't own
+    ArrayMap::iterator it = arrayMap.find(base);
+    if  (it == arrayMap.end())
+    {
+        return;
+    }
+    if (activeBatch && activeBatch->use(it->second))
+    {
+        executeBatch();
+    }
+    delete it->second;
+    arrayMap.erase(it);
+}
+
+void InstructionScheduler::executeBatch()
+{
+    if (activeBatch)
+    {
+        //TODO compile and execute activeBatch
+        delete activeBatch;
+    }
+    activeBatch = 0;
+    workItems = 0;
 }

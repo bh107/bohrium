@@ -23,7 +23,7 @@
 #include "ArrayOperand.hpp"
 #include "ResourceManager.hpp"
 
-class BaseArray : public ArrayOperand 
+class BaseArray : public ArrayOperand
 {
 private:
     ResourceManager* resourceManager;
@@ -34,12 +34,12 @@ private:
     unsigned int device;
     cl::Event writeEvent;
     std::vector<cl::Event> readEvents;
-    std::vector<View> views; 
 protected:
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     OCLtype type();
     void sync();
+    void setWriteEvent(cl::Event);
 };
 
 
