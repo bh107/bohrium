@@ -62,13 +62,13 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
         }
         else
         {
-            Threads threads = cphvb_nelements(inst->operand[0]->ndim, 
-                                              inst->operand[0]->shape);
-            if (threads == 0)
+            unsigned long workItems = cphvb_nelements(inst->operand[0]->ndim, 
+						      inst->operand[0]->shape);
+            if (workItems == 0)
             {
                 return;
             }
-            BatchTable::iterator biter = batchTable.find(threads);
+            BatchTable::iterator biter = batchTable.find(workItems);
             if (biter != batchTable.end())
             {
                 biter->second->add(inst);
@@ -76,10 +76,10 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
             else
             {
                 InstructionBatch* newBatch = 
-                    new InstructionBatch(threads, dataManager, 
-                                         kernelGenerator);
+		  new InstructionBatch(workItems, dataManager, 
+				       kernelGenerator);
                 newBatch->add(inst);
-                batchTable[threads] = newBatch;                
+                batchTable[workItems] = newBatch;                
             }
         }
     }

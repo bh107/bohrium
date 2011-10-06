@@ -25,7 +25,9 @@
 #include <CL/cl.hpp>
 #include "InstructionBatch.hpp"
 
-typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
+typedef std::map<cphvb_array* base, BaseArray*> ArrayMap;
+typedef std::map<BaseArray*, cphvb_array* view> WriteTable;
+typedef std::set<BaseArray*> ReadTable;
 
 class DataManager
 {
@@ -34,7 +36,6 @@ private:
     InstructionBatch* activeBatch;
     void _sync(cphvb_array* baseArray);
     void _flush(cphvb_array* view);
-    void initCudaArray(cphvb_array* baseArray);
 public:
     DataManager(ResourceManager* resourceManager);
     void lock(cphvb_array* operands[], 
