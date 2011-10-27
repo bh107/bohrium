@@ -1,4 +1,4 @@
-/* -*- Mode: C -*- */ 
+/* -*- Mode: C -*- */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@
 
 #include <cphvb.h>
 #include <cphvb_vem.h>
+#include <cphvb_conf.h>
 
 #ifndef CBLAS_HEADER
 #define CBLAS_HEADER "../blasdot/cblas.h"
@@ -514,7 +515,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
     if(!vem_instruction_check(&inst))
     {
 //#ifdef DEBUG
-        printf("[NumPy] Unsupported instruction: %s \n", 
+        printf("[NumPy] Unsupported instruction: %s \n",
                cphvb_opcode_text(inst.opcode));
 //#endif
         //Get Python function.
@@ -540,7 +541,7 @@ dnumpy_ufunc(PyUFuncObject *ufunc, PyArrayObject *args[NPY_MAXARGS])
 
                 //Tell the VEM to sync/release the data.
                 if (i < ufunc->nin) // It's an input parmeter
-                {  
+                {
                     util_sync(a); // So just sync it
                 }
                 else
@@ -667,7 +668,7 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
 
     //Create an instruction that represent the reduce.ufunc operation.
     inst.opcode = ufunc->opcode | CPHVB_REDUCE;
-    
+
     if(out->dnduid == 0)//Scalar.
     {
         PyErr_SetString(PyExc_RuntimeError,
@@ -700,7 +701,7 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
         PyObject *PyOp = PyObject_GetAttrString(ufunc_module, ufunc->name);
         PyObject *tuple[2];
         assert(PyOp != NULL);
-        
+
         //Fill the tuple and apply the ufunc.
         for(i=0; i<2; ++i)
         {
@@ -708,24 +709,24 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
             if(arys[i]->dnduid == 0)//Scalar.
             {
                 tuple[i] = PyArray_SimpleNewFromData(0, NULL,
-                                                     arys[i]->descr->type_num, 
+                                                     arys[i]->descr->type_num,
                                                      arys[i]->data);
             }
             else
             {
                 cphvb_array* a = (cphvb_array*) arys[i]->dnduid;
                 cphvb_array* b = cphvb_base_array(a);
-                
+
                 //Tell the VEM to sync/release the data.
                 if (i == 0) // It's the input parmeter
-                {  
+                {
                     util_sync(a); // So just sync it
                 }
                 else
                 {
                     util_release(a);
                 }
-                
+
                 //We may have to allocate it.
                 if(cphvb_malloc_array_data(b) != CPHVB_SUCCESS)
                 {
@@ -734,7 +735,7 @@ dnumpy_ufunc_reduce(PyUFuncObject *ufunc, PyArrayObject *in,
                     exit(CPHVB_OUT_OF_MEMORY);
                 }
                 data = b->data + a->start * cphvb_type_size(a->type);
-                
+
                 tuple[i] = PyArray_New(&PyArray_Type,
                                        arys[i]->nd,
                                        arys[i]->dimensions,
@@ -929,6 +930,9 @@ static void
 dnumpy_init(void)
 {
     int error;
+    cphvb_vem_interface if_vem;
+    cphvb_conf_children(&if_vem);
+
     //Find the VEM
     #ifdef CLUSTER
         vem_init = &cphvb_vem_cluster_init;

@@ -6,7 +6,7 @@ cd `dirname "$0"`
 
 #Set the default environment variables.
 ROOT="../.."
-export CFLAGS="-I$ROOT/include"
+export CFLAGS="-I$ROOT/include -I$ROOT/iniparser/src"
 export LDFLAGS="-L$ROOT/core -lcphvb $LDFLAGS"
 export LDFLAGS="-L$ROOT/vem/node -lcphvb_vem_node $LDFLAGS"
 export LDFLAGS="-L$ROOT/ve/simple -lcphvb_ve_simple $LDFLAGS"

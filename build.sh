@@ -93,6 +93,10 @@ echo "***Building VE-SIMPLE***"
 cd ve/simple
 $preBUILD make $posBUILD
 cd ../../
+echo "***Building INIPARSER***"
+cd iniparser
+$preBUILD make $posBUILD
+cd ..
 echo "***Building CORE***"
 cd core
 $preBUILD make $posBUILD
