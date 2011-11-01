@@ -19,7 +19,6 @@
 
 #include <cstring>
 #include <cassert>
-#include <cphvb_vem_node.h>
 #include "ArrayManager.hpp"
 ArrayManager::ArrayManager() :
     arrayStore(new StaticStore<cphvb_array>(4096)) {}
@@ -34,7 +33,7 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
                                   cphvb_constant init_value)
 {
     cphvb_array* array = arrayStore->c_next();
-    
+
     array->owner          = CPHVB_PARENT;
     array->base           = base;
     array->type           = type;
@@ -106,7 +105,7 @@ void ArrayManager::flush()
         }
         else
         {   //The base owner is down stream. So we postpone deletion
-            staleView.insert(std::pair<cphvb_array*, 
+            staleView.insert(std::pair<cphvb_array*,
                                  cphvb_array*>((*eit)->base, *eit));
         }
     }

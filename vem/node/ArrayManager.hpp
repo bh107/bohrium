@@ -27,6 +27,23 @@
 
 typedef std::multimap<cphvb_array*, cphvb_array*> BaseToViewMMap;
 
+typedef struct
+{
+    cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
+    cphvb_bool type[CPHVB_NO_OPCODES];  //list of type support
+} cphvb_support;
+
+
+/* Codes for known components */
+enum /* cphvb_comp */
+{
+    CPHVB_PARENT,
+    CPHVB_SELF,
+    CPHVB_CHILD
+
+};
+typedef cphvb_intp cphvb_comp;
+
 struct OwnerTicket
 {
     cphvb_array* array;
@@ -41,7 +58,7 @@ private:
     BaseToViewMMap staleView;
     std::deque<cphvb_array*> eraseQueue;
     std::deque<OwnerTicket> ownerChangeQueue;
-    
+
 public:
     ArrayManager();
     cphvb_array* create(cphvb_array* base,

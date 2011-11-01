@@ -5,7 +5,6 @@
 #include <math.h>
 
 #include <cphvb.h>
-#include <cphvb_vem.h>
 #include <cphvb_conf.h>
 
 #ifndef CBLAS_HEADER
@@ -27,18 +26,11 @@ static cblas_func_type *cblas_zgemm_func = NULL;
 static cblas_func_type *cblas_cgemm_func = NULL;
 
 //Function pointers to the VEM.
-static cphvb_vem_init vem_init;
-static cphvb_vem_execute vem_execute;
-static cphvb_vem_shutdown vem_shutdown;
-static cphvb_vem_create_array vem_create_array;
-static cphvb_vem_instruction_check vem_instruction_check;
-
-//For now, we determent which VEM to use at compile time.
-#ifdef CLUSTER
-    #include <cphvb_vem_cluster.h>
-#else
-    #include <cphvb_vem_node.h>
-#endif
+static cphvb_init vem_init;
+static cphvb_execute vem_execute;
+static cphvb_shutdown vem_shutdown;
+static cphvb_create_array vem_create_array;
+static cphvb_instruction_check vem_instruction_check;
 
 //Check that the definitions in numpy are in accordance with cphVB.
 #if NPY_BITSOF_SHORT != 16
@@ -930,38 +922,20 @@ static void
 dnumpy_init(void)
 {
     int error;
-    cphvb_vem_interface if_vem;
-    if(cphvb_conf_children("bridge",&if_vem) != CPHVB_SUCCESS)
+    cphvb_interface f;
+    if(cphvb_conf_children("bridge",&f) != CPHVB_SUCCESS)
     {
         printf("Error in cphvb_conf_children()\n");
         exit(-1);
     }
 
-    /*
-    //Find the VEM
-    #ifdef CLUSTER
-        vem_init = &cphvb_vem_cluster_init;
-        vem_execute = &cphvb_vem_cluster_execute;
-        vem_shutdown = &cphvb_vem_cluster_shutdown;
-        vem_create_array = &cphvb_vem_cluster_create_array;
-        vem_instruction_check = &cphvb_vem_cluster_instruction_check;
-    #else
-        vem_init = &cphvb_vem_node_init;
-        vem_execute = &cphvb_vem_node_execute;
-        vem_shutdown = &cphvb_vem_node_shutdown;
-        vem_create_array = &cphvb_vem_node_create_array;
-        vem_instruction_check = &cphvb_vem_node_instruction_check;
-    #endif
-    */
+    vem_init = f.init;
+    vem_execute = f.execute;
+    vem_shutdown = f.shutdown;
+    vem_create_array = f.create_array;
+    vem_instruction_check = f.instruction_check;
 
-    vem_init = if_vem.init;
-    vem_execute = if_vem.execute;
-    vem_shutdown = if_vem.shutdown;
-    vem_create_array = if_vem.create_array;
-    vem_instruction_check = if_vem.instruction_check;
-
-
-    error = vem_init();
+    error = vem_init(NULL, NULL, NULL, NULL);
     if(error)
     {
         printf("Error in vem_init()\n");

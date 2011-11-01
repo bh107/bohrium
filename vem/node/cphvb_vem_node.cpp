@@ -21,24 +21,18 @@
 #include <cstring>
 #include <iostream>
 #include <cphvb.h>
+#include <cphvb_interface.h>
+#include <cphvb_conf.h>
+#include <cphvb_error.h>
 
-#include <cphvb_vem_node.h>
-#include <cphvb_vem.h>
-#include <cphvb_ve.h>
-
+#include "cphvb_vem_node.h"
 #include "ArrayManager.hpp"
 
 //Function pointers to the VE.
-static cphvb_ve_init ve_init;
-static cphvb_ve_execute ve_execute;
-static cphvb_ve_shutdown ve_shutdown;
+static cphvb_init ve_init;
+static cphvb_execute ve_execute;
+static cphvb_shutdown ve_shutdown;
 
-//For now, we determent which VE to use at compile time.
-#ifdef CUDA
-    #include <cphvb_ve_cuda.h>
-#else
-    #include <cphvb_ve_simple.h>
-#endif
 
 #define PLAININST (1)
 #define REDUCEINST (2)
@@ -59,16 +53,17 @@ cphvb_error cphvb_vem_node_init(void)
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
 
-    //Find the VEM
-    #ifdef CUDA
-        ve_init = &cphvb_ve_cuda_init;
-        ve_execute = &cphvb_ve_cuda_execute;
-        ve_shutdown = &cphvb_ve_cuda_shutdown;
-    #else
-        ve_init = &cphvb_ve_simple_init;
-        ve_execute = &cphvb_ve_simple_execute;
-        ve_shutdown = &cphvb_ve_simple_shutdown;
-    #endif
+    cphvb_interface f;
+    err = cphvb_conf_children("node",&f);
+    if(err != CPHVB_SUCCESS)
+    {
+        printf("Error in cphvb_conf_children()\n");
+        return err;
+    }
+
+    ve_init = f.init;
+    ve_execute = f.execute;
+    ve_shutdown = f.shutdown;
 
     //Let us initiate the simple VE and register what it supports.
     err = ve_init(&opcode_count, opcode, &type_count, type);
@@ -86,7 +81,7 @@ cphvb_error cphvb_vem_node_init(void)
     {
         if (opcode[opcode_count] & CPHVB_REDUCE)
         {
-            ve_support.opcode[~CPHVB_REDUCE & opcode[opcode_count]] |= 
+            ve_support.opcode[~CPHVB_REDUCE & opcode[opcode_count]] |=
                 REDUCEINST;
         }
         else
@@ -159,14 +154,14 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_array**  new_array)
 {
 
-    try 
+    try
     {
         *new_array = arrayManager->create(base, type, ndim, start, shape,
                                           stride, has_init_value, init_value);
     }
     catch(std::exception& e)
     {
-        return CPHVB_OUT_OF_MEMORY;        
+        return CPHVB_OUT_OF_MEMORY;
     }
     return CPHVB_SUCCESS;
 }
@@ -185,7 +180,7 @@ cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
     case CPHVB_RELEASE:
         return 1;
     default:
-        if( //it's a reduce instruction and we support it  
+        if( //it's a reduce instruction and we support it
             (inst->opcode & CPHVB_REDUCE &&
              ve_support.opcode[~CPHVB_REDUCE & inst->opcode] & REDUCEINST) ||
             //it's a "normal" instuction and we support it
@@ -234,7 +229,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 arrayManager->erasePending(inst->operand[0]);
             }
             --base->ref_count; //decrease refcount
-            if(base->ref_count <= 0) 
+            if(base->ref_count <= 0)
             {
                 // Mark the Base for deletion
                 arrayManager->erasePending(base);
@@ -244,7 +239,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                     inst->operand[0] = base;
                     inst->opcode = CPHVB_DISCARD;
                 }
-                else 
+                else
                 {
                     inst->opcode = CPHVB_NONE;
                     --valid_instruction_count;
@@ -265,7 +260,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
                 break;
             case CPHVB_SELF:
-                //We own the date: Send discards down stream 
+                //We own the date: Send discards down stream
                 //and change owner to upstream
                 inst->operand[0] = base;
                 inst->opcode = CPHVB_DISCARD;
@@ -308,11 +303,11 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     }
     if (valid_instruction_count > 0)
     {
-        cphvb_error e = ve_execute(count, inst_list); 
+        cphvb_error e = ve_execute(count, inst_list);
         arrayManager->flush();
         return e;
     }
-    else 
+    else
     {
         // No validf instructions in batch
         return CPHVB_SUCCESS;

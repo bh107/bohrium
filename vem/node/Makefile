@@ -1,13 +1,12 @@
 ROOT=../..
-INCLUDE=$(ROOT)/include
 LIB=libcphvb_vem_node.so
 CC=gcc
 CXX=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(INCLUDE)
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS=-shared -Wl,-soname,$(LIB)
 SRC=cphvb_vem_node.cpp ArrayManager.cpp
-HEADER=ArrayManager.hpp $(INCLUDE)/cphvb_vem_node.h
+HEADER=ArrayManager.hpp cphvb_vem_node.h
 OBJ=$(SRC:.cpp=.o)
 INSTALLDIR=/usr/local/lib
 

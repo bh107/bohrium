@@ -25,7 +25,6 @@
 #include <cphvb_type.h>
 #include <cphvb_instruction.h>
 #include <cphvb_opcode.h>
-#include <cphvb_vem.h>
 
 #ifdef __cplusplus
 extern "C" {

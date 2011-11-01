@@ -34,7 +34,64 @@ static dictionary *load_conf(void)
 
 }
 
-cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem)
+static cphvb_component get_type(dictionary *dict, const char *name)
+{
+    char tmp[1024];
+    sprintf(tmp, "%s:type", name);
+    char *s = iniparser_getstring(dict, tmp, NULL);
+    if(s == NULL)
+    {
+        fprintf(stderr,"In section \"%s\" type is not set. "\
+                       "Should be bridge, vem or ve.\n",name);
+        return CPHVB_COMPONENT_ERROR;
+    }
+    else
+    {
+        if(!strcasecmp(s, "bridge"))
+            return CPHVB_BRIDGE;
+        if(!strcasecmp(s, "vem"))
+            return CPHVB_VEM;
+        if(!strcasecmp(s, "ve"))
+            return CPHVB_VE;
+    }
+    fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
+            name, s);
+    return CPHVB_COMPONENT_ERROR;
+}
+
+static void *get_dlsym(void *handle, const char *name,
+                       cphvb_component type, const char *fun)
+{
+    char tmp[1024];
+    char *stype;
+    void *ret;
+    if(type == CPHVB_BRIDGE)
+        stype = "bridge";
+    else if(type == CPHVB_VEM)
+        stype = "vem";
+    else if(type == CPHVB_VE)
+        stype = "ve";
+    else
+    {
+        fprintf(stderr, "get_dlsym - unknown componet type.\n");
+        return NULL;
+    }
+
+    sprintf(tmp, "cphvb_%s_%s_%s", stype, name, fun);
+    printf("%s\n", tmp);
+    dlerror();//Clear old errors.
+    ret = dlsym(handle, tmp);
+    char *err = dlerror();
+    if(err != NULL)
+    {
+        fprintf(stderr, "[%s:type]%s\n", name, err);
+        return NULL;
+    }
+    return ret;
+}
+
+
+cphvb_error cphvb_conf_children(const char *name, cphvb_interface *if_vem)
 {
     dictionary *dict = load_conf();
     iniparser_dump(dict,stdout);
@@ -42,6 +99,9 @@ cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem)
     char *child;
     sprintf(tmp, "%s:children",name);
     char *children = iniparser_getstring(dict, tmp, NULL);
+    if(children == NULL)
+        return CPHVB_ERROR;
+
 
     printf("My Children: %s\n",children);
 
@@ -50,6 +110,10 @@ cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem)
     while(child != NULL)
     {
         printf("Child: %s\n",child);
+
+        cphvb_component type = get_type(dict,child);
+        if(type == CPHVB_COMPONENT_ERROR)
+            return CPHVB_ERROR;
 
         if(!iniparser_find_entry(dict,child))
         {
@@ -72,50 +136,24 @@ cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem)
             return CPHVB_ERROR;
         }
 
-        sprintf(tmp, "cphvb_vem_%s_init", child);
-        dlerror();//Clear old errors.
-        if_vem->init = dlsym(handle, tmp);
-        char *err = dlerror();
-        if(err != NULL)
-        {
-            fprintf(stderr, "%s\n", err);
+        if_vem->init = get_dlsym(handle, child, type, "init");
+        if(if_vem->init == NULL)
             return CPHVB_ERROR;
-        }
-        sprintf(tmp, "cphvb_vem_%s_shutdown", child);
-        dlerror();//Clear old errors.
-        if_vem->shutdown = dlsym(handle, tmp);
-        err = dlerror();
-        if(err != NULL)
-        {
-            fprintf(stderr, "%s\n", err);
+        if_vem->shutdown = get_dlsym(handle, child, type, "shutdown");
+        if(if_vem->shutdown == NULL)
             return CPHVB_ERROR;
-        }
-        sprintf(tmp, "cphvb_vem_%s_execute", child);
-        dlerror();//Clear old errors.
-        if_vem->execute = dlsym(handle, tmp);
-        err = dlerror();
-        if(err != NULL)
-        {
-            fprintf(stderr, "%s\n", err);
+        if_vem->execute = get_dlsym(handle, child, type, "execute");
+        if(if_vem->execute == NULL)
             return CPHVB_ERROR;
-        }
-        sprintf(tmp, "cphvb_vem_%s_create_array", child);
-        dlerror();//Clear old errors.
-        if_vem->create_array = dlsym(handle, tmp);
-        err = dlerror();
-        if(err != NULL)
+
+        if(type == CPHVB_VEM)//VEM functions only.
         {
-            fprintf(stderr, "%s\n", err);
-            return CPHVB_ERROR;
-        }
-        sprintf(tmp, "cphvb_vem_%s_instruction_check", child);
-        dlerror();//Clear old errors.
-        if_vem->instruction_check = dlsym(handle, tmp);
-        err = dlerror();
-        if(err != NULL)
-        {
-            fprintf(stderr, "%s\n", err);
-            return CPHVB_ERROR;
+            if_vem->create_array = get_dlsym(handle, child, type, "create_array");
+            if(if_vem->create_array == NULL)
+                return CPHVB_ERROR;
+            if_vem->instruction_check = get_dlsym(handle, child, type, "instruction_check");
+            if(if_vem->instruction_check == NULL)
+                return CPHVB_ERROR;
         }
 
         child = strtok(NULL,",");

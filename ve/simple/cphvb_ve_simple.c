@@ -19,10 +19,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cphvb_ve_simple.h>
 #include <assert.h>
 #include <string.h>
-
+#include <cphvb.h>
 
 cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
                                  cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],

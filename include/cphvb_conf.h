@@ -25,20 +25,12 @@ extern "C" {
 #endif
 
 #include <cphvb.h>
-#include <cphvb_vem.h>
+#include <cphvb_interface.h>
 #include <iniparser.h>
-
-typedef struct
-{
-    cphvb_vem_init init;
-    cphvb_vem_shutdown shutdown;
-    cphvb_vem_execute execute;
-    cphvb_vem_create_array create_array;
-    cphvb_vem_instruction_check instruction_check;
-} cphvb_vem_interface;
+#include <cphvb_error.h>
 
 
-cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem);
+cphvb_error cphvb_conf_children(const char *name, cphvb_interface *if_vem);
 
 
 

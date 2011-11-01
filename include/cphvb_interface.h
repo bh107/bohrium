@@ -17,47 +17,41 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VEM_H
-#define __CPHVB_VEM_H
+#ifndef __CPHVB_INTERFACE_H
+#define __CPHVB_INTERFACE_H
 
 #include <cphvb_type.h>
 #include <cphvb_instruction.h>
 #include <cphvb_opcode.h>
 
 
-typedef struct
-{
-    cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
-    cphvb_bool type[CPHVB_NO_OPCODES];  //list of type support
-} cphvb_support;
-
-
-/* Codes for known components */
-enum /* cphvb_comp */
-{
-    CPHVB_PARENT,
-    CPHVB_SELF,
-    CPHVB_CHILD
-
-};
-typedef cphvb_intp cphvb_comp;
-
-
-/* Initialize the VEM
+/* Initialize the component
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_vem_init)(void);
+typedef cphvb_error (*cphvb_init)(cphvb_intp *opcode_count,
+                                  cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
+                                  cphvb_intp *datatype_count,
+                                  cphvb_type datatype_list[CPHVB_NO_TYPES]);
 
 
-/* Shutdown the VEM, which include a instruction flush
+/* Shutdown the component, which include a instruction flush
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_vem_shutdown)(void);
+typedef cphvb_error (*cphvb_shutdown)(void);
 
 
-/* Create an array, which are handled by the VEM.
+/* Execute a list of instructions (blocking, for the time being).
+ * It is required that the component supports all instructions in the list.
+ *
+ * @instruction A list of instructions to execute
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
+                                     cphvb_instruction inst_list[]);
+
+/* Create an array, which are handled by the component.
  *
  * @base Pointer to the base array. If NULL this is a base array
  * @type The type of data in the array
@@ -70,7 +64,7 @@ typedef cphvb_error (*cphvb_vem_shutdown)(void);
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-typedef cphvb_error (*cphvb_vem_create_array)(
+typedef cphvb_error (*cphvb_create_array)(
                                    cphvb_array*   base,
                                    cphvb_type     type,
                                    cphvb_intp     ndim,
@@ -82,20 +76,30 @@ typedef cphvb_error (*cphvb_vem_create_array)(
                                    cphvb_array**  new_array);
 
 
-/* Check whether the instruction is supported by the VEM or not
+/* Check whether the instruction is supported by the component or not
  *
  * @return non-zero when true and zero when false
  */
-typedef cphvb_intp (*cphvb_vem_instruction_check)(cphvb_instruction *inst);
+typedef cphvb_intp (*cphvb_instruction_check)(cphvb_instruction *inst);
 
-/* Execute a list of instructions (blocking, for the time being).
- * It is required that the VEM supports all instructions in the list.
- *
- * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
- */
-typedef cphvb_error (*cphvb_vem_execute)(cphvb_intp count,
-                                         cphvb_instruction inst_list[]);
 
+/* Codes for known components */
+typedef enum
+{
+    CPHVB_BRIDGE,
+    CPHVB_VEM,
+    CPHVB_VE,
+    CPHVB_COMPONENT_ERROR
+}cphvb_component;
+
+typedef struct
+{
+    cphvb_component type;
+    cphvb_init init;
+    cphvb_shutdown shutdown;
+    cphvb_execute execute;
+    cphvb_create_array create_array; //Only for VEMs
+    cphvb_instruction_check instruction_check; //Only for VEMs
+} cphvb_interface;
 
 #endif
