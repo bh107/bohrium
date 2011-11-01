@@ -38,7 +38,7 @@ typedef struct
 } cphvb_vem_interface;
 
 
-cphvb_error cphvb_conf_children(cphvb_vem_interface *if_vem);
+cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem);
 
 
 

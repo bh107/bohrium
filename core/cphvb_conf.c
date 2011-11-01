@@ -19,6 +19,9 @@
 
 #include <cphvb_conf.h>
 #include <iniparser.h>
+#include <string.h>
+#include <dlfcn.h>
+
 
 static dictionary *load_conf(void)
 {
@@ -31,10 +34,94 @@ static dictionary *load_conf(void)
 
 }
 
-cphvb_error cphvb_conf_children(cphvb_vem_interface *if_vem)
+cphvb_error cphvb_conf_children(char *name, cphvb_vem_interface *if_vem)
 {
     dictionary *dict = load_conf();
     iniparser_dump(dict,stdout);
+    char tmp[1024];
+    char *child;
+    sprintf(tmp, "%s:children",name);
+    char *children = iniparser_getstring(dict, tmp, NULL);
+
+    printf("My Children: %s\n",children);
+
+    //Handle one child at a time.
+    child = strtok(children,",");
+    while(child != NULL)
+    {
+        printf("Child: %s\n",child);
+
+        if(!iniparser_find_entry(dict,child))
+        {
+            fprintf(stderr,"Reference \"%s\" is not declared.\n",child);
+            return CPHVB_ERROR;
+        }
+
+        sprintf(tmp, "%s:impl", child);
+        char *impl = iniparser_getstring(dict, tmp, NULL);
+        if(impl == NULL)
+        {
+            fprintf(stderr,"In section \"%s\" impl is not set.\n",child);
+            return CPHVB_ERROR;
+        }
+
+        void *handle = dlopen(impl, RTLD_NOW);
+        if(handle == NULL)
+        {
+            fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
+            return CPHVB_ERROR;
+        }
+
+        sprintf(tmp, "cphvb_vem_%s_init", child);
+        dlerror();//Clear old errors.
+        if_vem->init = dlsym(handle, tmp);
+        char *err = dlerror();
+        if(err != NULL)
+        {
+            fprintf(stderr, "%s\n", err);
+            return CPHVB_ERROR;
+        }
+        sprintf(tmp, "cphvb_vem_%s_shutdown", child);
+        dlerror();//Clear old errors.
+        if_vem->shutdown = dlsym(handle, tmp);
+        err = dlerror();
+        if(err != NULL)
+        {
+            fprintf(stderr, "%s\n", err);
+            return CPHVB_ERROR;
+        }
+        sprintf(tmp, "cphvb_vem_%s_execute", child);
+        dlerror();//Clear old errors.
+        if_vem->execute = dlsym(handle, tmp);
+        err = dlerror();
+        if(err != NULL)
+        {
+            fprintf(stderr, "%s\n", err);
+            return CPHVB_ERROR;
+        }
+        sprintf(tmp, "cphvb_vem_%s_create_array", child);
+        dlerror();//Clear old errors.
+        if_vem->create_array = dlsym(handle, tmp);
+        err = dlerror();
+        if(err != NULL)
+        {
+            fprintf(stderr, "%s\n", err);
+            return CPHVB_ERROR;
+        }
+        sprintf(tmp, "cphvb_vem_%s_instruction_check", child);
+        dlerror();//Clear old errors.
+        if_vem->instruction_check = dlsym(handle, tmp);
+        err = dlerror();
+        if(err != NULL)
+        {
+            fprintf(stderr, "%s\n", err);
+            return CPHVB_ERROR;
+        }
+
+        child = strtok(NULL,",");
+    }
+
+
     return CPHVB_SUCCESS;
 }
 

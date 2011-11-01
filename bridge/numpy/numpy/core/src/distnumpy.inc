@@ -931,8 +931,13 @@ dnumpy_init(void)
 {
     int error;
     cphvb_vem_interface if_vem;
-    cphvb_conf_children(&if_vem);
+    if(cphvb_conf_children("bridge",&if_vem) != CPHVB_SUCCESS)
+    {
+        printf("Error in cphvb_conf_children()\n");
+        exit(-1);
+    }
 
+    /*
     //Find the VEM
     #ifdef CLUSTER
         vem_init = &cphvb_vem_cluster_init;
@@ -947,6 +952,14 @@ dnumpy_init(void)
         vem_create_array = &cphvb_vem_node_create_array;
         vem_instruction_check = &cphvb_vem_node_instruction_check;
     #endif
+    */
+
+    vem_init = if_vem.init;
+    vem_execute = if_vem.execute;
+    vem_shutdown = if_vem.shutdown;
+    vem_create_array = if_vem.create_array;
+    vem_instruction_check = if_vem.instruction_check;
+
 
     error = vem_init();
     if(error)
