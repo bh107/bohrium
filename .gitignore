@@ -8,4 +8,7 @@
 *.test
 *.swp
 core
+bridge/numpy/build/*
+ve/cuda/log
+ve/cuda/pytest
 *~
