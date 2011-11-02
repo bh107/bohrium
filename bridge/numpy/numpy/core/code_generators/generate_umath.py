@@ -332,12 +332,12 @@ defdict = {
           TD(O, f='npy_ObjectMin')
           ),
 'logaddexp' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_LOGADDEXP',2, 1, None,
           docstrings.get('numpy.core.umath.logaddexp'),
           TD(flts, f="logaddexp")
           ),
 'logaddexp2' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_LOGADDEXP2',2, 1, None,
           docstrings.get('numpy.core.umath.logaddexp2'),
           TD(flts, f="logaddexp2")
           ),
@@ -366,13 +366,13 @@ defdict = {
           TD(O, f='PyNumber_Invert'),
           ),
 'left_shift' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_LEFT_SHIFT',2, 1, None,
           docstrings.get('numpy.core.umath.left_shift'),
           TD(ints),
           TD(O, f='PyNumber_Lshift'),
           ),
 'right_shift' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_RIGHT_SHIFT',2, 1, None,
           docstrings.get('numpy.core.umath.right_shift'),
           TD(ints),
           TD(O, f='PyNumber_Rshift'),
@@ -383,7 +383,7 @@ defdict = {
           TD(fltsM, f='degrees'),
           ),
 'rad2deg' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_RAD2DEG',1, 1, None,
           docstrings.get('numpy.core.umath.rad2deg'),
           TD(fltsM, f='rad2deg'),
           ),
@@ -393,42 +393,42 @@ defdict = {
           TD(fltsM, f='radians'),
           ),
 'deg2rad' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_DEG2RAD',1, 1, None,
           docstrings.get('numpy.core.umath.deg2rad'),
           TD(fltsM, f='deg2rad'),
           ),
 'arccos' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCCOS',1, 1, None,
           docstrings.get('numpy.core.umath.arccos'),
           TD(inexact, f='acos'),
           TD(M, f='arccos'),
           ),
 'arccosh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCCOSH',1, 1, None,
           docstrings.get('numpy.core.umath.arccosh'),
           TD(inexact, f='acosh'),
           TD(M, f='arccosh'),
           ),
 'arcsin' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCSIN',1, 1, None,
           docstrings.get('numpy.core.umath.arcsin'),
           TD(inexact, f='asin'),
           TD(M, f='arcsin'),
           ),
 'arcsinh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCSINH',1, 1, None,
           docstrings.get('numpy.core.umath.arcsinh'),
           TD(inexact, f='asinh'),
           TD(M, f='arcsinh'),
           ),
 'arctan' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCTAN',1, 1, None,
           docstrings.get('numpy.core.umath.arctan'),
           TD(inexact, f='atan'),
           TD(M, f='arctan'),
           ),
 'arctanh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ARCTANH',1, 1, None,
           docstrings.get('numpy.core.umath.arctanh'),
           TD(inexact, f='atanh'),
           TD(M, f='arctanh'),
@@ -452,19 +452,19 @@ defdict = {
           TD(M, f='tan'),
           ),
 'cosh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_COSH',1, 1, None,
           docstrings.get('numpy.core.umath.cosh'),
           TD(inexact, f='cosh'),
           TD(M, f='cosh'),
           ),
 'sinh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_SINH',1, 1, None,
           docstrings.get('numpy.core.umath.sinh'),
           TD(inexact, f='sinh'),
           TD(M, f='sinh'),
           ),
 'tanh' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_TANH',1, 1, None,
           docstrings.get('numpy.core.umath.tanh'),
           TD(inexact, f='tanh'),
           TD(M, f='tanh'),
@@ -482,7 +482,7 @@ defdict = {
           TD(M, f='exp2'),
           ),
 'expm1' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_EXPM1',1, 1, None,
           docstrings.get('numpy.core.umath.expm1'),
           TD(inexact, f='expm1'),
           TD(M, f='expm1'),
@@ -506,7 +506,7 @@ defdict = {
           TD(M, f='log10'),
           ),
 'log1p' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_LOG1P',1, 1, None,
           docstrings.get('numpy.core.umath.log1p'),
           TD(inexact, f='log1p'),
           TD(M, f='log1p'),
@@ -518,13 +518,13 @@ defdict = {
           TD(M, f='sqrt'),
           ),
 'ceil' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_CEIL',1, 1, None,
           docstrings.get('numpy.core.umath.ceil'),
           TD(flts, f='ceil'),
           TD(M, f='ceil'),
           ),
 'trunc' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_TRUNC',1, 1, None,
           docstrings.get('numpy.core.umath.trunc'),
           TD(flts, f='trunc'),
           TD(M, f='trunc'),
@@ -536,60 +536,70 @@ defdict = {
           TD(M, f='fabs'),
        ),
 'floor' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_FLOOR',1, 1, None,
           docstrings.get('numpy.core.umath.floor'),
           TD(flts, f='floor'),
           TD(M, f='floor'),
           ),
 'rint' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_RINT',1, 1, None,
           docstrings.get('numpy.core.umath.rint'),
           TD(inexact, f='rint'),
           TD(M, f='rint'),
           ),
 'arctan2' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_ARCTAN2',2, 1, None,
           docstrings.get('numpy.core.umath.arctan2'),
           TD(flts, f='atan2'),
           TD(M, f='arctan2'),
           ),
 'remainder' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_REMAINDER',2, 1, None,
           docstrings.get('numpy.core.umath.remainder'),
           TD(intflt),
           TD(O, f='PyNumber_Remainder'),
           ),
 'hypot' :
-    Ufunc('CPHVB_NONE',2, 1, None,
+    Ufunc('CPHVB_HYPOT',2, 1, None,
           docstrings.get('numpy.core.umath.hypot'),
           TD(flts, f='hypot'),
           TD(M, f='hypot'),
           ),
 'isnan' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ISNAN',1, 1, None,
           docstrings.get('numpy.core.umath.isnan'),
           TD(inexact, out='?'),
           ),
 'isinf' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ISINF',1, 1, None,
           docstrings.get('numpy.core.umath.isinf'),
           TD(inexact, out='?'),
           ),
 'isfinite' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_ISFINITE',1, 1, None,
           docstrings.get('numpy.core.umath.isfinite'),
           TD(inexact, out='?'),
           ),
 'signbit' :
-    Ufunc('CPHVB_NONE',1, 1, None,
+    Ufunc('CPHVB_SIGNBIT',1, 1, None,
           docstrings.get('numpy.core.umath.signbit'),
           TD(flts, out='?'),
           ),
-'modf' :
-    Ufunc('CPHVB_NONE',1, 2, None,
-          docstrings.get('numpy.core.umath.modf'),
+'ldexp' :
+    Ufunc('CPHVB_LDEXP',2, 1, None,
+          docstrings.get('numpy.core.umath.ldexp'),
           TD(flts),
           ),
+'frexp' :
+    Ufunc('CPHVB_FREXP',1, 2, None,
+          docstrings.get('numpy.core.umath.frexp'),
+          TD(flts),
+          ),
+'modf' :
+    Ufunc('CPHVB_MODF',1, 2, None,
+          docstrings.get('numpy.core.umath.modf'),
+          TD(flts),
+          )
 }
 
 def indent(st,spaces):
@@ -724,6 +734,8 @@ def make_ufuncs(funcdict):
     for name in names:
         uf = funcdict[name]
         mlist = []
+        if not uf.docstring:
+            uf.docstring = "Undocumented..."
         docstring = textwrap.dedent(uf.docstring).strip()
         docstring = docstring.encode('string-escape').replace(r'"', r'\"')
         # Split the docstring because some compilers (like MS) do not like big

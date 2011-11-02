@@ -45,7 +45,7 @@
  */
 
 /* Less automated additions to the ufuncs */
-
+/*
 static PyUFuncGenericFunction frexp_functions[] = {
 #ifdef HAVE_FREXPF
     FLOAT_frexp,
@@ -87,6 +87,8 @@ static char ldexp_signatures[] = {
 #endif
 };
 
+*/
+
 /* DISTNUMPY a ufunc generating random numbers between 0 and 1 */
 static void
 dnumpy_urandom(char **args, npy_intp *dimensions, npy_intp *steps,
@@ -110,7 +112,7 @@ static PyUFuncGenericFunction dnumpy_urandom_functions[] = {
 };
 static char dnumpy_urandom_signatures[] = {PyArray_DOUBLE,
                                            PyArray_DOUBLE};
-
+/*
 static void
 InitOtherOperators(PyObject *dictionary) {
     PyObject *f;
@@ -156,6 +158,8 @@ InitOtherOperators(PyObject *dictionary) {
 
     return;
 }
+
+*/
 
 /* Setup the umath module */
 /* Remove for time being, it is declared in __ufunc_api.h */
@@ -210,7 +214,7 @@ PyMODINIT_FUNC initumath(void) {
     /* Load the ufunc operators into the array module's namespace */
     InitOperators(d);
 
-    InitOtherOperators(d);
+    //InitOtherOperators(d);
 
     PyDict_SetItemString(d, "pi", s = PyFloat_FromDouble(NPY_PI));
     Py_DECREF(s);
