@@ -5,4 +5,7 @@
 *.so
 *.so.0
 *.a
+*.test
+*.swp
+core
 *~
