@@ -8,7 +8,7 @@ cd `dirname "$0"`
 ROOT="../.."
 export CFLAGS="-I$ROOT/include -I$ROOT/iniparser/src"
 export LDFLAGS="-L$ROOT/core -lcphvb $LDFLAGS"
-PYTHON="/usr/bin/python"
+PYTHON=${PYTHON-"/usr/bin/python"}
 
 while getopts "M:E:C:D:" opt; do
   case $opt in

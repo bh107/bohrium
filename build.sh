@@ -6,7 +6,7 @@ set -e #Force bash script to exit on the first command error.
 #Change current directory to the root of cphVB and this script is located.
 cd `dirname "$0"`
 
-PYTHON="/usr/bin/python"
+PYTHON=${PYTHON-"/usr/bin/python"}
 CUDA=0
 CLUSTER=0
 BRIDGE=""
@@ -69,6 +69,11 @@ for arg in $@
 done
 
 #Change current directory to where numpy and this script is located.
+echo "***Building CORE***"
+cd core
+$preBUILD make $posBUILD
+cd ..
+
 if [ "$CLUSTER" -eq "1" ]
   then
     echo "***Building VEM-CLUSTER***"
@@ -99,10 +104,6 @@ $preBUILD make $posBUILD
 cd ../../
 echo "***Building INIPARSER***"
 cd iniparser
-$preBUILD make $posBUILD
-cd ..
-echo "***Building CORE***"
-cd core
 $preBUILD make $posBUILD
 cd ..
 echo "***Building NUMPY_BRIDGE***"

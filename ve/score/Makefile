@@ -3,12 +3,12 @@ LIB=libcphvb_ve_score.so
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
-LDFLAGS=-lcphvb -shared -Wl,-soname
+LDFLAGS=-L../../core -lcphvb -shared -Wl,-soname
 SRC=cphvb_ve_score.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR=/usr/local/lib
 
-all: libcphvb_ve_mcore.so libcphvb_ve_score.so 
+all: libcphvb_ve_mcore.so libcphvb_ve_score.so
 
 %.o: %.c $(ROOT)/include/*
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
