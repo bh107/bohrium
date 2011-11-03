@@ -46,7 +46,7 @@ typedef cphvb_error (*cphvb_shutdown)(void);
  * It is required that the component supports all instructions in the list.
  *
  * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (CPHVB_SUCCESS, CPHVB_PARTIAL_SUCCESS)
  */
 typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
                                      cphvb_instruction inst_list[]);

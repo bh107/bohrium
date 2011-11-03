@@ -29,9 +29,14 @@
 // Operand id used to indicate that the operand is a scalar constant
 #define CPHVB_CONSTANT (NULL)
 
+// Maximum number of operands in a instruction.
+#define CPHVB_MAX_NO_OPERANDS 3
+
 //Memory layout of the CPHVB instruction
 typedef struct
 {
+    //Instruction status
+    cphvb_error status;
     //Opcode: Identifies the operation
     cphvb_opcode   opcode;
     //Id of each operand

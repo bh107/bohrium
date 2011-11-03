@@ -44,12 +44,15 @@ cphvb_error cphvb_ve_simple_shutdown(void)
 
 
 cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
-                                    cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS])
+                                    cphvb_instruction instruction_list[])
 {
     cphvb_intp i;
     for(i=0; i<instruction_count; ++i)
     {
         cphvb_instruction *inst = &instruction_list[i];
+        if(inst->status != CPHVB_INST_UNDONE)
+            break;//We should only handle undone instructions.
+
         switch(inst->opcode)
         {
         case CPHVB_NONE:
@@ -70,20 +73,19 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 
             if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS)
             {
-                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
-                exit(CPHVB_OUT_OF_MEMORY);
+                inst->status = CPHVB_OUT_OF_MEMORY;
+                return CPHVB_PARTIAL_SUCCESS;
             }
             if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS)
             {
-                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
-                exit(CPHVB_OUT_OF_MEMORY);
+                inst->status = CPHVB_OUT_OF_MEMORY;
+                return CPHVB_PARTIAL_SUCCESS;
             }
             if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS)
             {
-                fprintf(stderr,"Out of memory applying CPHVB_ADD\n");
-                exit(CPHVB_OUT_OF_MEMORY);
+                inst->status = CPHVB_OUT_OF_MEMORY;
+                return CPHVB_PARTIAL_SUCCESS;
             }
-
             d0 = cphvb_base_array(inst->operand[0])->data;
             if(a1 == CPHVB_CONSTANT)
                 d1 = (cphvb_float32*) &inst->constant[1];
@@ -94,6 +96,15 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 d2 = (cphvb_float32*) &inst->constant[2];
             else
                 d2 = cphvb_base_array(inst->operand[2])->data;
+
+            //We only support float32
+            if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
+               cphvb_type_operand(inst, 1) != CPHVB_FLOAT32 ||
+               cphvb_type_operand(inst, 2) != CPHVB_FLOAT32)
+            {
+                inst->status = CPHVB_TYPE_NOT_SUPPORTED;
+                return CPHVB_PARTIAL_SUCCESS;
+            }
 
             while(notfinished)
             {
@@ -138,10 +149,8 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             break;
         }
         default:
-            fprintf(stderr, "cphvb_ve_simple_execute() encountered an "
-                            "unknown opcode: %s.",
-                            cphvb_opcode_text(inst->opcode));
-            exit(CPHVB_INST_NOT_SUPPORTED);
+            inst->status = CPHVB_INST_NOT_SUPPORTED;
+            return CPHVB_PARTIAL_SUCCESS;
         }
     }
 

@@ -102,19 +102,6 @@ void cphvb_dimbound(cphvb_intp ndim,
                     const cphvb_index shape[],
                     cphvb_index dimbound[CPHVB_MAXDIM]);
 
-/* Pretty print instruction
- *
- * Mainly for debugging purposes.
- *
- * @inst   Instruction to print.
- * @size   Write at most this many bytes to buffer.
- * @buf    Buffer to contain the string.
- * @return Number of characters printed.
- */
-int cphvb_snprint(const cphvb_instruction* inst,
-                  size_t size,
-                  char* buf);
-
 
 /* Number of operands for operation
  *
@@ -172,6 +159,15 @@ cphvb_array* cphvb_base_array(cphvb_array* view);
  */
 cphvb_error cphvb_malloc_array_data(cphvb_array* array);
 
+
+/* Retrive the operand type of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @operand_no Number of the operand in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
+                              cphvb_intp operand_no);
 
 #ifdef __cplusplus
 }
