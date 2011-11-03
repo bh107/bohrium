@@ -98,8 +98,12 @@ echo "***Building VE-SIMPLE***"
 cd ve/simple
 $preBUILD make $posBUILD
 cd ../../
-echo "***Building VE-SCORE/MCORE***"
+echo "***Building VE-SCORE***"
 cd ve/score
+$preBUILD make $posBUILD
+cd ../../
+echo "***Building VE-MCORE***"
+cd ve/mcore
 $preBUILD make $posBUILD
 cd ../../
 echo "***Building INIPARSER***"
