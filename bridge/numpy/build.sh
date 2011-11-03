@@ -8,8 +8,6 @@ cd `dirname "$0"`
 ROOT="../.."
 export CFLAGS="-I$ROOT/include -I$ROOT/iniparser/src"
 export LDFLAGS="-L$ROOT/core -lcphvb $LDFLAGS"
-export LDFLAGS="-L$ROOT/vem/node -lcphvb_vem_node $LDFLAGS"
-export LDFLAGS="-L$ROOT/ve/simple -lcphvb_ve_simple $LDFLAGS"
 PYTHON="/usr/bin/python"
 
 while getopts "M:E:C:D:" opt; do
