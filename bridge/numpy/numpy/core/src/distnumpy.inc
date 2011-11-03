@@ -125,6 +125,7 @@ util_schedule(cphvb_instruction *inst, int force_flush)
     cphvb_error error;
     if(inst != NULL)
     {
+        inst->status = CPHVB_INST_UNDONE;
         inst_scheduled[ninst_scheduled++] = *inst;
     }
     if(ninst_scheduled >= DNPY_MAX_NINST || force_flush)
@@ -132,13 +133,32 @@ util_schedule(cphvb_instruction *inst, int force_flush)
         if(ninst_scheduled > 0)
         {
             error = vem_execute(ninst_scheduled, inst_scheduled);
-            ninst_scheduled = 0;
-            if(error)
+            if(error == CPHVB_PARTIAL_SUCCESS)//Only partial success
             {
-                fprintf(stderr, "Unhandled error returned by "
-                                "vem_execute() in util_schedule()\n");
+                int i,j;
+                fprintf(stderr, "Error in scheduled batch of "
+                        "instructions: %s\n", cphvb_error_text(error));
+                for(i=0; i<ninst_scheduled; ++i)
+                {
+                    cphvb_instruction *ist = &inst_scheduled[i];
+                    fprintf(stderr,"\tOpcode: %s, Operand types:",
+                            cphvb_opcode_text(ist->opcode));
+                    for(j=0; j<cphvb_operands(ist->opcode); ++j)
+                        fprintf(stderr," %s", cphvb_type_text(
+                                              cphvb_type_operand(ist,j)));
+                    fprintf(stderr,", Status: %s\n",
+                            cphvb_error_text(ist->status));
+                }
                 exit(error);
             }
+            if(error != CPHVB_SUCCESS)
+            {
+                fprintf(stderr, "Unhandled error returned by "
+                                "vem_execute() in util_schedule(): %s\n",
+                                cphvb_error_text(error));
+                exit(error);
+            }
+            ninst_scheduled = 0;
         }
     }
 } /* util_schedule */

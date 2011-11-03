@@ -107,7 +107,7 @@ void cphvb_dimbound(cphvb_intp ndim,
                     const cphvb_index shape[],
                     cphvb_index* dimbound)
 {
-    dimbound[ndim -1] = shape[ndim -1]; 
+    dimbound[ndim -1] = shape[ndim -1];
     for (int i = ndim -2 ; i >= 0; --i)
     {
         dimbound[i] = dimbound[i+1] * shape[i];
@@ -129,14 +129,14 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
                               const cphvb_index element)
 {
     cphvb_index offset = 0;
-    cphvb_index dimIndex; 
+    cphvb_index dimIndex;
     cphvb_intp i;
     for (i = 0; i < ndim; ++i)
     {
         dimIndex = element % cphvb_nelements(ndim - i, &shape[i]);
         if (i != ndim - 1)
             dimIndex = dimIndex / cphvb_nelements(ndim - (i+1), &shape[i+1]);
-        offset += dimIndex * stride[i]; 
+        offset += dimIndex * stride[i];
     }
     return offset;
 }
@@ -192,4 +192,22 @@ cphvb_error cphvb_malloc_array_data(cphvb_array* array)
             memcpy(base->data+i*dtypesize, &base->init_value, dtypesize);
 
     return CPHVB_SUCCESS;
+}
+
+
+/* Retrive the operand type of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @operand_no Number of the operand in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
+                              cphvb_intp operand_no)
+{
+    cphvb_array *a = instruction->operand[operand_no];
+
+    if(a == CPHVB_CONSTANT)
+        return instruction->const_type[operand_no];
+    else
+        return a->type;
 }

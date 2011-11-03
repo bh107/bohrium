@@ -78,7 +78,6 @@ static void *get_dlsym(void *handle, const char *name,
     }
 
     sprintf(tmp, "cphvb_%s_%s_%s", stype, name, fun);
-    printf("%s\n", tmp);
     dlerror();//Clear old errors.
     ret = dlsym(handle, tmp);
     char *err = dlerror();
@@ -94,7 +93,6 @@ static void *get_dlsym(void *handle, const char *name,
 cphvb_error cphvb_conf_children(const char *name, cphvb_interface *if_vem)
 {
     dictionary *dict = load_conf();
-    iniparser_dump(dict,stdout);
     char tmp[1024];
     char *child;
     sprintf(tmp, "%s:children",name);
@@ -102,15 +100,10 @@ cphvb_error cphvb_conf_children(const char *name, cphvb_interface *if_vem)
     if(children == NULL)
         return CPHVB_ERROR;
 
-
-    printf("My Children: %s\n",children);
-
     //Handle one child at a time.
     child = strtok(children,",");
     while(child != NULL)
     {
-        printf("Child: %s\n",child);
-
         cphvb_component type = get_type(dict,child);
         if(type == CPHVB_COMPONENT_ERROR)
             return CPHVB_ERROR;
