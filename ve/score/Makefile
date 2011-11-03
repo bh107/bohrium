@@ -6,7 +6,7 @@ LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS=-L../../core -lcphvb -shared -Wl,-soname
 SRC=cphvb_ve_score.c
 OBJ=$(SRC:.c=.o)
-INSTALLDIR=/usr/local/lib
+INSTALLDIR?=/usr/local/lib
 
 all: libcphvb_ve_mcore.so libcphvb_ve_score.so
 
@@ -21,3 +21,6 @@ libcphvb_ve_score.so: cphvb_ve_score.o
 
 clean:
 		rm -rf *.o *~ *.so
+
+install: all
+		sudo cp $(LIB) $(INSTALLDIR)

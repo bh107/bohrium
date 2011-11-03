@@ -57,6 +57,8 @@ veryclean:
 
 docs:
 	@(cd doc ; $(MAKE))
-	
+
 check:
 	@(cd test ; $(MAKE))
+
+install: default

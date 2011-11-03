@@ -1,12 +1,12 @@
 ROOT=../..
 LIB=libcphvb_ve_simple.so
-CC=gcc
+CC?=gcc
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
 SRC=cphvb_ve_simple.c
 OBJ=$(SRC:.c=.o)
-INSTALLDIR=/usr/local/lib
+INSTALLDIR?=/usr/local/lib
 
 all: $(LIB)
 
