@@ -22,6 +22,11 @@
 
 #include "cphvb_opcode.h"
 #include "cphvb_array.h"
+#include "cphvb_error.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Maximum number of instructions in a batch.
 #define CPHVB_MAX_NO_INST (1)
@@ -46,5 +51,9 @@ typedef struct
     //The constant type
     cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 } cphvb_instruction;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

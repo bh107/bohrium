@@ -22,6 +22,10 @@
 
 #include "cphvb_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Codes for known oparations */
 enum /* cphvb_opcode */
 {
@@ -113,5 +117,9 @@ enum /* cphvb_opcode */
 #define CPHVB_NO_OPCODES CPHVB_NONE
 
 #define CPHVB_REDUCE (1<<15)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

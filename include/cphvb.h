@@ -25,6 +25,7 @@
 #include "cphvb_type.h"
 #include "cphvb_array.h"
 #include "cphvb_instruction.h"
+#include "cphvb_component.h"
 
 #ifdef __cplusplus
 /* C++ includes go here */

@@ -20,11 +20,7 @@
 #ifndef __CPHVB_VEM_NODE_H
 #define __CPHVB_VEM_NODE_H
 
-#include <cphvb_array.h>
-#include <cphvb_error.h>
-#include <cphvb_type.h>
-#include <cphvb_instruction.h>
-#include <cphvb_opcode.h>
+#include <cphvb.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +30,11 @@ extern "C" {
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(void);
+cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count,
+                                cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
+                                cphvb_intp *datatype_count,
+                                cphvb_type datatype_list[CPHVB_NO_TYPES],
+                                cphvb_com *self);
 
 
 /* Shutdown the VEM, which include a instruction flush

@@ -20,10 +20,22 @@
 #ifndef __CPHVB_INTERFACE_H
 #define __CPHVB_INTERFACE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <cphvb_type.h>
 #include <cphvb_instruction.h>
 #include <cphvb_opcode.h>
+#include <cphvb_error.h>
+#include <iniparser.h>
 
+//Maximum number of characters in the name of a component, a attribute or
+//a function.
+#define CPHVB_COM_NAME_SIZE (1024)
+
+//Prototype of the cphvb_com datatype.
+typedef struct cphvb_com_struct cphvb_com;
 
 /* Initialize the component
  *
@@ -32,7 +44,8 @@
 typedef cphvb_error (*cphvb_init)(cphvb_intp *opcode_count,
                                   cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
                                   cphvb_intp *datatype_count,
-                                  cphvb_type datatype_list[CPHVB_NO_TYPES]);
+                                  cphvb_type datatype_list[CPHVB_NO_TYPES],
+                                  cphvb_com *self);
 
 
 /* Shutdown the component, which include a instruction flush
@@ -83,23 +96,55 @@ typedef cphvb_error (*cphvb_create_array)(
 typedef cphvb_intp (*cphvb_instruction_check)(cphvb_instruction *inst);
 
 
-/* Codes for known components */
+/* Codes for known component types */
 typedef enum
 {
     CPHVB_BRIDGE,
     CPHVB_VEM,
     CPHVB_VE,
     CPHVB_COMPONENT_ERROR
-}cphvb_component;
+}cphvb_com_type;
 
-typedef struct
+struct cphvb_com_struct
 {
-    cphvb_component type;
+    char name[CPHVB_COM_NAME_SIZE];
+    dictionary *config;
+    cphvb_com_type type;
     cphvb_init init;
     cphvb_shutdown shutdown;
     cphvb_execute execute;
     cphvb_create_array create_array; //Only for VEMs
     cphvb_instruction_check instruction_check; //Only for VEMs
-} cphvb_interface;
+};
+
+
+/* Setup the root component, which normally is the bridge.
+ *
+ * @return A new component object.
+ */
+cphvb_com *cphvb_com_setup(void);
+
+
+/* Retrieves the children components of the parent.
+ *
+ * @parent The parent component (input).
+ * @count Number of children components(output).
+ * @children Array of children components (output).
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
+                               cphvb_com **children[]);
+
+
+/* Frees the component.
+ *
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_free(cphvb_com *component);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

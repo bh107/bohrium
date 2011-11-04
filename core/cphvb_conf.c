@@ -90,7 +90,7 @@ static void *get_dlsym(void *handle, const char *name,
 }
 
 
-cphvb_error cphvb_conf_children(const char *name, cphvb_interface *if_vem)
+cphvb_error cphvb_conf_children(const char *component_name, cphvb_interface *if_vem)
 {
     dictionary *dict = load_conf();
     char tmp[1024];

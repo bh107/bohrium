@@ -5,7 +5,6 @@
 #include <math.h>
 
 #include <cphvb.h>
-#include <cphvb_conf.h>
 
 #ifndef CBLAS_HEADER
 #define CBLAS_HEADER "../blasdot/cblas.h"
@@ -941,26 +940,36 @@ dnumpy_diagonal(intp uid, int offset, int axis1, int axis2)
 static void
 dnumpy_init(void)
 {
-    int error;
-    cphvb_interface f;
-    if(cphvb_conf_children("bridge",&f) != CPHVB_SUCCESS)
+    cphvb_error err;
+    cphvb_com **coms;
+    cphvb_com *self;
+    cphvb_intp children_count;
+
+    //We are the root in the configuration.
+    self = cphvb_com_setup();
+
+    cphvb_com_children(self, &children_count, &coms);
+
+    if(children_count != 1 || coms[0]->type != CPHVB_VEM)
     {
-        printf("Error in cphvb_conf_children()\n");
+        fprintf(stderr, "Error in the configuration: the bridge must "
+                        "have exactly one child of type VEM\n");
         exit(-1);
     }
 
-    vem_init = f.init;
-    vem_execute = f.execute;
-    vem_shutdown = f.shutdown;
-    vem_create_array = f.create_array;
-    vem_instruction_check = f.instruction_check;
+    vem_init = coms[0]->init;
+    vem_execute = coms[0]->execute;
+    vem_shutdown = coms[0]->shutdown;
+    vem_create_array = coms[0]->create_array;
+    vem_instruction_check = coms[0]->instruction_check;
 
-    error = vem_init(NULL, NULL, NULL, NULL);
-    if(error)
+    err = vem_init(NULL, NULL, NULL, NULL, coms[0]);
+    if(err)
     {
-        printf("Error in vem_init()\n");
+        fprintf(stderr, "Error in vem_init()\n");
         exit(-1);
     }
+    cphvb_com_free(self);
 
 } /* dnumpy_init */
 

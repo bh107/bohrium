@@ -22,6 +22,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Mapping of cphvb data types to C data types */
 typedef unsigned char cphvb_bool;
 typedef int8_t        cphvb_int8;
@@ -77,5 +81,9 @@ typedef cphvb_intp cphvb_index;
 typedef cphvb_intp cphvb_type;
 typedef cphvb_intp cphvb_opcode;
 typedef void*      cphvb_data_ptr;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

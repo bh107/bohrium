@@ -4,7 +4,7 @@
 
 # Compiler settings
 CC      = gcc
-CFLAGS  = -O2 -fPIC -Wall -ansi -pedantic
+CFLAGS  = -g -O2 -fPIC -Wall -ansi -pedantic
 
 # Ar settings to build the library
 AR	    = ar
@@ -36,8 +36,9 @@ SRCS = src/iniparser.c \
 
 OBJS = $(SRCS:.c=.o)
 
+all : default
 
-default:	libiniparser.a libiniparser.so
+default:	libiniparser.a
 
 libiniparser.a:	$(OBJS)
 	@($(AR) $(ARFLAGS) libiniparser.a $(OBJS))

@@ -20,6 +20,10 @@
 #ifndef __CPHVB_ARRAY_H
 #define __CPHVB_ARRAY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include "cphvb_type.h"
 
@@ -85,5 +89,8 @@ struct cphvb_array
     char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
 };
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

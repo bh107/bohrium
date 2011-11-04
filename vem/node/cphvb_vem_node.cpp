@@ -21,9 +21,6 @@
 #include <cstring>
 #include <iostream>
 #include <cphvb.h>
-#include <cphvb_interface.h>
-#include <cphvb_conf.h>
-#include <cphvb_error.h>
 
 #include "cphvb_vem_node.h"
 #include "ArrayManager.hpp"
@@ -32,6 +29,8 @@
 static cphvb_init ve_init;
 static cphvb_execute ve_execute;
 static cphvb_shutdown ve_shutdown;
+
+static cphvb_com *com_self;
 
 
 #define PLAININST (1)
@@ -46,27 +45,26 @@ cphvb_support ve_support;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(void)
+cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
+                                cphvb_opcode opcode_list1[CPHVB_MAX_NO_OPERANDS],
+                                cphvb_intp *datatype_count1,
+                                cphvb_type datatype_list1[CPHVB_NO_TYPES],
+                                cphvb_com *self)
 {
-    cphvb_intp opcode_count, type_count;
+    cphvb_intp opcode_count, type_count, children_count;
     cphvb_opcode opcode[CPHVB_NO_OPCODES*2];
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
+    cphvb_com **coms;
+    com_self = self;
 
-    cphvb_interface f;
-    err = cphvb_conf_children("node",&f);
-    if(err != CPHVB_SUCCESS)
-    {
-        printf("Error in cphvb_conf_children()\n");
-        return err;
-    }
-
-    ve_init = f.init;
-    ve_execute = f.execute;
-    ve_shutdown = f.shutdown;
+    cphvb_com_children(self, &children_count, &coms);
+    ve_init = coms[0]->init;
+    ve_execute = coms[0]->execute;
+    ve_shutdown = coms[0]->shutdown;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(&opcode_count, opcode, &type_count, type);
+    err = ve_init(&opcode_count, opcode, &type_count, type, self);
     if(err)
         return err;
 
@@ -114,6 +112,7 @@ cphvb_error cphvb_vem_node_init(void)
         std::cerr << e.what() << std::endl;
         return CPHVB_ERROR;
     }
+
     return CPHVB_SUCCESS;
 }
 
@@ -126,6 +125,7 @@ cphvb_error cphvb_vem_node_init(void)
  */
 cphvb_error cphvb_vem_node_shutdown(void)
 {
+    cphvb_com_free(com_self);
     return ve_shutdown();
 }
 

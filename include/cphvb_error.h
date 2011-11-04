@@ -20,6 +20,10 @@
 #ifndef __CPHVB_ERROR_H
 #define __CPHVB_ERROR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Error codes */
 typedef enum /* cphvb_error */
 {
@@ -40,5 +44,10 @@ typedef enum /* cphvb_error */
     CPHVB_INST_NOT_SUPPORTED,
     CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
 } cphvb_error ;
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

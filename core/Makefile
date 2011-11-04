@@ -2,9 +2,9 @@ ROOT=..
 LIB=libcphvb.so
 CC?=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_conf.c
+SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/usr/local/lib
 
