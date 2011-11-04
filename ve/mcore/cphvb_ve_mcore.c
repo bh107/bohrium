@@ -17,8 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
+#include <score_dispatch.cpp>
 #include "cphvb_ve_mcore.h"
-#include "score_dispatch.cpp"
 
 #include <queue>                                        //
 #include <pthread.h>                                    // MULTICORE stuff
