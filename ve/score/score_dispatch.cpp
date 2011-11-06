@@ -17,10 +17,19 @@ cphvb_error dispatch( cphvb_instruction *instr ) {
         case CPHVB_SYNC:
             break;
 
+        case CPHVB_ADD | CPHVB_REDUCE:
+            std::cout << "Got an add reduction" << std::endl;
+            break;
+
+        case CPHVB_SUBTRACT | CPHVB_REDUCE:
+            std::cout << "Got a sub reduction" << std::endl;
+            break;
+
         default:                // Element-wise functions + Memory Functions
 
             const long int poly = instr->opcode*100 + instr->operand[0]->type;
-
+            
+            //std::cout << "Instruction " << instr->opcode << ",\t" << cphvb_opcode_text( instr->opcode ) << "\n";
             switch(poly) {
                 
                 case CPHVB_ADD*100+CPHVB_BOOL:

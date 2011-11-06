@@ -22,7 +22,8 @@
 
 #include <queue>                                        //
 #include <pthread.h>                                    // MULTICORE stuff
-#include <semaphore.h>
+#include <semaphore.h>                                  //
+
 #define MCORE_WORKERS 4                                 //
 
 typedef struct worker_data {                            // Thread identity and control
@@ -39,10 +40,10 @@ typedef struct job {                                    // Job specification
 std::queue<job_t>   job_queue;                          // Job Queue, Lock, Barrier and Semaphore
 pthread_mutex_t     job_queue_l;
 
-sem_t               work;
+sem_t               work;                               // Work syncronization
 pthread_barrier_t   work_sync;
 
-pthread_t           workers[MCORE_WORKERS];             // Pool of workers
+pthread_t           workers[MCORE_WORKERS];             // Worker-pool
 worker_data_t       worker_data_array[MCORE_WORKERS];   // And their associated data
 
 static void * worker(void *worker_arg) {
@@ -162,16 +163,14 @@ cphvb_error cphvb_ve_mcore_execute(
 
     }
 
+    // TODO: i guess i should wait here to see if workers succeeded...
+
     return res;
 
 }
 
 cphvb_error cphvb_ve_mcore_shutdown(void) {
    
-                                                    //
-                                                    //  Multicore cleanup
-                                                    //
-
     cphvb_error res;
 
     printf("Sending shutdown signals to workers...\n");

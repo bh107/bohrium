@@ -13,47 +13,56 @@ cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*, T*, T*
     cphvb_index coord[CPHVB_MAXDIM];
     std::memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    std::cout << "Number of dimensions " << a0->ndim << " total noe " << cphvb_nelements(a0->ndim, a0->shape) << "\n" << std::endl;
-    for(cphvb_index k=0; k<= a0->ndim; k++) {
-        std::cout << "Dim " << k << " has " << a0->shape[k] << " elements.\n" << std::endl;
-    }
-    std::cout << ".\n" << std::endl;
-    
     cphvb_error res = CPHVB_SUCCESS;
-    
-    if (a0->data == NULL) {
+
+    //
+    // Determine and Verify operands
+    //
+    if (a0 == CPHVB_CONSTANT) {             // Constant operand
+        d0 = (T*)&instr->constant[1];
+
+    } else if (a0->data == NULL) {          // Unallocated array-operand
+
         if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
             fprintf(stderr,"Out of memory attempting to perform instruction.\n");
             return CPHVB_OUT_OF_MEMORY;
         }
+        d0 = (T*)cphvb_base_array(a0)->data;
+
+    } else {                                // Allocated array-operand
+        d0 = (T*)cphvb_base_array(a0)->data;
     }
-    if (a1->data == NULL) {
+
+    if (a1 == CPHVB_CONSTANT) {             // Constant operand
+        d1 = (T*)&instr->constant[1];
+
+    } else if (a1->data == NULL) {          // Unallocated array-operand
+
         if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
             fprintf(stderr,"Out of memory attempting to perform instruction.\n");
             return CPHVB_OUT_OF_MEMORY;
         }
+        d1 = (T*)cphvb_base_array(a1)->data;
+
+    } else {                                // Allocated array-operand
+        d1 = (T*)cphvb_base_array(a1)->data;
     }
-    if (a2->data == NULL) {
+
+    if (a2 == CPHVB_CONSTANT) {             // Constant operand
+        d2 = (T*)&instr->constant[1];
+
+    } else if (a2->data == NULL) {          // Unallocated array-operand
+
         if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
             fprintf(stderr,"Out of memory attempting to perform instruction.\n");
             return CPHVB_OUT_OF_MEMORY;
         }
+        d2 = (T*)cphvb_base_array(a2)->data;
+
+    } else {                                // Allocated array-operand
+        d2 = (T*)cphvb_base_array(a2)->data;
     }
-
-    d0 = (T*)cphvb_base_array(instr->operand[0])->data;
-
-    if (a1 == CPHVB_CONSTANT) {
-        d1 = (T*)&instr->constant[1];
-    } else {
-        d1 = (T*)cphvb_base_array(instr->operand[1])->data;
-    }
-
-    if(a2 == CPHVB_CONSTANT) {
-        d2 = (T*)&instr->constant[2];
-    } else {
-        d2 = (T*)cphvb_base_array(instr->operand[2])->data;
-    }
-
+ 
     while(notfinished) {
 
         cphvb_intp off0=0, off1=0, off2=0;
@@ -110,20 +119,37 @@ cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*, T*)) {
 
     cphvb_error res = CPHVB_SUCCESS;
 
-    if (cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
-        fprintf(stderr,"Out of memory applying something\n");
-        return CPHVB_OUT_OF_MEMORY;
-    }
-    if (cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
-        fprintf(stderr,"Out of memory applying something\n");
-        return CPHVB_OUT_OF_MEMORY;
-    }
-    d0 = (T*)cphvb_base_array(instr->operand[0])->data;
+    //
+    // Determine and Verify operands
+    //
+    if (a0 == CPHVB_CONSTANT) {             // Constant operand
+        d0 = (T*)&instr->constant[1];
 
-    if (a1 == CPHVB_CONSTANT) {
-        d1 = (T*) &instr->constant[1];
-    } else {
-        d1 = (T*) cphvb_base_array(instr->operand[1])->data;
+    } else if (a0->data == NULL) {          // Unallocated array-operand
+
+        if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
+            fprintf(stderr,"Out of memory attempting to perform instruction.\n");
+            return CPHVB_OUT_OF_MEMORY;
+        }
+        d0 = (T*)cphvb_base_array(a0)->data;
+
+    } else {                                // Allocated array-operand
+        d0 = (T*)cphvb_base_array(a0)->data;
+    }
+
+    if (a1 == CPHVB_CONSTANT) {             // Constant operand
+        d1 = (T*)&instr->constant[1];
+
+    } else if (a1->data == NULL) {          // Unallocated array-operand
+
+        if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
+            fprintf(stderr,"Out of memory attempting to perform instruction.\n");
+            return CPHVB_OUT_OF_MEMORY;
+        }
+        d1 = (T*)cphvb_base_array(a1)->data;
+
+    } else {                                // Allocated array-operand
+        d1 = (T*)cphvb_base_array(a1)->data;
     }
 
     while(notfinished) {
@@ -174,11 +200,23 @@ cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*)) {
     
     cphvb_error res = CPHVB_SUCCESS;
 
-    if (cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
-        fprintf(stderr,"Out of memory applying something\n");
-        return CPHVB_OUT_OF_MEMORY;
+    //
+    // Determine and Verify operands
+    //
+    if (a0 == CPHVB_CONSTANT) {             // Constant operand
+        d0 = (T*)&instr->constant[1];
+
+    } else if (a0->data == NULL) {          // Unallocated array-operand
+
+        if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
+            fprintf(stderr,"Out of memory attempting to perform instruction.\n");
+            return CPHVB_OUT_OF_MEMORY;
+        }
+        d0 = (T*)cphvb_base_array(a0)->data;
+
+    } else {                                // Allocated array-operand
+        d0 = (T*)cphvb_base_array(a0)->data;
     }
-    d0 = (T*)cphvb_base_array(instr->operand[0])->data;
 
     while(notfinished) {
 

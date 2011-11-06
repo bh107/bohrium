@@ -11,7 +11,7 @@ WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x
-LDFLAGS=-shared -Wl,-soname,$(LIB)
+LDFLAGS=-L../../core -lcuda -lcphvb -shared -Wl,-soname,$(LIB)
 CSRC=PTXopcode PTXsreg PTXtype PTXversion CUDAerrorCode
 CPPSRC=KernelSimple MemoryManagerSimple DataManagerSimple OffsetMapSimple \
 		DeviceManager DeviceManagerSimple PTXconstant \
@@ -33,7 +33,7 @@ all: $(LIB) htrand.ptx tbreduce.ptx
 %.o: %.c %.h
 		$(CC) -c $< -o $@ $(CCFLAGS)
 
-cphvb_ve_cuda.oo: cphvb_ve_cuda.cpp  $(CPHVB_INCLUDE)cphvb_ve_cuda.h
+cphvb_ve_cuda.oo: cphvb_ve_cuda.cpp
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.oo: %.cpp %.hpp

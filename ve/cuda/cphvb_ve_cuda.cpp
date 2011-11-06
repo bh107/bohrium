@@ -19,19 +19,20 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <cphvb.h>
 #include <cuda.h>
-#include <cphvb_ve_cuda.h>
+#include <cphvb.h>
+#include "cphvb_ve_cuda.h"
 #include "PTXopcode.h"
 #include "Configuration.hpp"
 
 InstructionScheduler* instructionScheduler;
 DeviceManager* deviceManager;
 
-cphvb_error cphvb_ve_cuda_init(cphvb_intp *opcode_count,
-                               cphvb_opcode opcode_list[],
-                               cphvb_intp *datatype_count,
-                               cphvb_type datatype_list[])
+cphvb_error cphvb_ve_cuda_init( cphvb_intp *opcode_count,
+                                cphvb_opcode opcode_list[],
+                                cphvb_intp *datatype_count,
+                                cphvb_type datatype_list[],
+                                cphvb_com *self)
 {
     *opcode_count = 0;
     for (cphvb_opcode oc = 0; oc < CPHVB_NO_OPCODES; ++oc)

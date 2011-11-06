@@ -94,6 +94,10 @@ if [ "$CUDA" -eq "1" ]
     cd ../../
     BRIDGE="$BRIDGE -ECUDA"
 fi
+echo "***Building VE-CUDA***"
+cd ve/cuda
+$preBUILD make $posBUILD
+cd ../../
 echo "***Building VE-SIMPLE***"
 cd ve/simple
 $preBUILD make $posBUILD

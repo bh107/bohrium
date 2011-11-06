@@ -40,6 +40,11 @@ cphvb_error cphvb_ve_score_init(
         ++*datatype_count;
     }
 
+    opcode_list[*opcode_count] = CPHVB_ADD | CPHVB_REDUCE;
+    ++*opcode_count;
+    opcode_list[*opcode_count] = CPHVB_SUBTRACT | CPHVB_REDUCE;
+    ++*opcode_count;
+
     return CPHVB_SUCCESS;
 }
 

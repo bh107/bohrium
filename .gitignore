@@ -1,5 +1,7 @@
 *.pyc
 *.o
+*.oo
+*.ptx
 .svn
 .hg
 *.so

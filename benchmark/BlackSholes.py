@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy as np
 import sys
 import time
@@ -42,18 +43,17 @@ if DIST:
 else:
     S = np.random.rand(N).astype(np.float32)
 
-S = S*4.0-2.0 + 60.0 #Price is 58-62
-
-X=65.0
-#T=0.25 Moved to loop
-r=0.08
-v=0.3
-
-
-day=1.0/365.0
-T=day
 
 np.core.multiarray.evalflush()
+S = S*4.0-2.0 + 60.0 #Price is 58-62
+#S = S + 60.0 #Price is 58-62
+print S
+day=1.0/365.0
+X=65.0
+r=0.08
+v=0.3
+T=day
+
 stime = time.time()
 while T < year:
     np.add.reduce(BlackSholes('c', S, X, T, r, v),out=R)
