@@ -104,9 +104,9 @@ enum /* cphvb_opcode */
     CPHVB_ISREAL,
     CPHVB_ISCOMPLEX,
     CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
-    CPHVB_SYNC,
-    CPHVB_DISCARD,
-    CPHVB_DESTROY, //Inform VEM to deallocate an array.
+    CPHVB_SYNC,    //Inform child to make data synchronized and available.
+    CPHVB_DISCARD, //Inform child to forget the array
+    CPHVB_DESTROY, //Inform child to deallocate the array.
     CPHVB_RANDOM,  //file out with random
     CPHVB_ARANGE, // out, start, step
     //Used by a brigde to mark untranslatable operations.
