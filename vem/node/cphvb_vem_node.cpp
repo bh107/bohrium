@@ -30,7 +30,7 @@ static cphvb_init ve_init;
 static cphvb_execute ve_execute;
 static cphvb_shutdown ve_shutdown;
 
-static cphvb_com *com_self;
+static cphvb_com **coms;
 
 
 #define PLAININST (1)
@@ -55,8 +55,6 @@ cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
     cphvb_opcode opcode[CPHVB_NO_OPCODES*2];
     cphvb_type type[CPHVB_NO_TYPES];
     cphvb_error err;
-    cphvb_com **coms;
-    com_self = self;
 
     cphvb_com_children(self, &children_count, &coms);
     ve_init = coms[0]->init;
@@ -125,7 +123,8 @@ cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
  */
 cphvb_error cphvb_vem_node_shutdown(void)
 {
-    cphvb_com_free(com_self);
+    cphvb_com_free(coms[0]);//Only got one child.
+    free(coms);
     return ve_shutdown();
 }
 
