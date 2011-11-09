@@ -130,6 +130,7 @@ cphvb_com *cphvb_com_setup(void);
  * @parent The parent component (input).
  * @count Number of children components(output).
  * @children Array of children components (output).
+ *           NB: the array should be free'd by the caller.
  * @return Error code (CPHVB_SUCCESS).
  */
 cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
