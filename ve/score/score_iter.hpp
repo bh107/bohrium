@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cphvb.h>
 
+cphvb_intp const_stride[CPHVB_MAXDIM] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
 void pp_array_data( ) {
 
 }
@@ -64,6 +66,112 @@ void pp_instr_meta( cphvb_instruction *instr ) {
 }
 
 template <typename T>
+cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*, T*, T*)) {
+
+    T *d0, *d1, *d2;
+    cphvb_array *a0 = instr->operand[0];
+    cphvb_array *a1 = instr->operand[1];
+    cphvb_array *a2 = instr->operand[2];
+    
+    cphvb_intp  j;
+    cphvb_intp  off0, off1, off2;               // Declare offset-pointers
+    cphvb_intp  start0, start1, start2;         // View-offset in elements.
+    cphvb_intp  *stride0, *stride1, *stride2;
+    cphvb_index coord[CPHVB_MAXDIM];
+
+    memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
+
+    if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
+    }
+    if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
+    }
+    if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
+    }
+    
+    if(a0 == CPHVB_CONSTANT) {
+        d0      = (T*) &instr->constant[0];
+        stride0 = const_stride;
+        start0  = 0;
+    } else {
+        d0      = (T*)cphvb_base_array(instr->operand[0])->data;
+        stride0 = a0->stride;
+        start0  = a0->start;
+    }
+
+    if(a1 == CPHVB_CONSTANT) {
+        d1 = (T*) &instr->constant[1];
+        stride1 = const_stride;
+        start1  = 0;
+    } else {
+        d1 = (T*) cphvb_base_array(instr->operand[1])->data;
+        stride1 = a1->stride;
+        start1  = a1->start;
+    }
+
+    if(a2 == CPHVB_CONSTANT) {
+        d2 = (T*) &instr->constant[2];
+        stride2 = const_stride;
+        start2  = 0;
+    } else {
+        d2 = (T*) cphvb_base_array(instr->operand[2])->data;
+        stride2 = a2->stride;
+        start2  = a2->start;
+    }
+
+    cphvb_index nelements = cphvb_nelements( a0->ndim, a0->shape );
+
+    for(cphvb_index cur_element=0; cur_element < nelements; cur_element++) {
+    
+                                                // Calculate offset
+        for(                                    // init
+            off0 = start0,
+            off1 = start1,
+            off2 = start2,
+            j=0;
+
+            j<a0->ndim;                         // conditition
+
+            ++j) {                              // increment
+
+            off0 += coord[j] * stride0[j];      // body
+            off1 += coord[j] * stride1[j];
+            off2 += coord[j] * stride2[j];
+
+        }
+
+                                                // Call element-wise operation
+        (*opcode_func)( (off0+d0), (off1+d1), (off2+d2) );
+        //*(off0+d0) = *(off1+d1) + *(off2+d2);
+
+        for(j = a0->ndim-1; j >= 0; --j ) {     // Iterate coord one element.
+            
+            if(++coord[j] < a0->shape[j]) {     // We still have move elements in this dimension
+                break;
+            } else {
+                
+                if(j == 0) {                    // We are finished, if wrapping around.
+                    break;
+                }
+                coord[j] = 0;                   // Reset coordinate for this dimension
+                                                // Then iterate once more to increment next dimension
+            }
+        }
+
+    }
+    
+    return CPHVB_SUCCESS;
+
+}
+
+
+/*
+template <typename T>
 inline cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*, T*, T*)) {
 
     
@@ -78,10 +186,8 @@ inline cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*,
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    /*
-    cphvb_intp ct, cd;                      // Count total number of elements
-                                            // Count elements in current dimension
-*/    
+    //cphvb_intp ct, cd;                      // Count total number of elements
+    //                                        // Count elements in current dimension
 
 
     cphvb_intp const_stride[CPHVB_MAXDIM] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -201,7 +307,6 @@ inline cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*,
     // const, array => array
     //
 
-    /*
     pp_instr_meta( instr );
 
     cphvb_intp undim = 0;
@@ -235,8 +340,6 @@ inline cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*,
         }
 
     }
-    */
-    /*
     for( cphvb_intp dim=0; dim < a0->ndim; dim++ ) {
 
         for(                                // Init
@@ -256,11 +359,11 @@ inline cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*,
 
         }
     }
-    */
-
     return CPHVB_SUCCESS;
 
 }
+*/
+
 
 template <typename T>
 cphvb_error iter(cphvb_instruction *instr, cphvb_error (*opcode_func)(T*, T*)) {

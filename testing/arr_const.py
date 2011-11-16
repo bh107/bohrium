@@ -13,6 +13,7 @@ def arr_const():
     print 2 + x
     print x + 2
     print x + x
+    print x * x
 
 if __name__ == "__main__":
-    main()
+    arr_const()
