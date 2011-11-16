@@ -5,7 +5,7 @@
 #include "score_iter.hpp"
 #include "score_funcs.hpp"
 
-cphvb_error dispatch( cphvb_instruction *instr ) {
+inline cphvb_error dispatch( cphvb_instruction *instr ) {
 
     cphvb_error res = CPHVB_SUCCESS;
 
@@ -18,11 +18,11 @@ cphvb_error dispatch( cphvb_instruction *instr ) {
             break;
 
         case CPHVB_ADD | CPHVB_REDUCE:
-            std::cout << "Got an add reduction" << std::endl;
+            //std::cout << "Got an add reduction" << std::endl;
             break;
 
         case CPHVB_SUBTRACT | CPHVB_REDUCE:
-            std::cout << "Got a sub reduction" << std::endl;
+            //std::cout << "Got a sub reduction" << std::endl;
             break;
 
         default:                // Element-wise functions + Memory Functions
@@ -2544,7 +2544,7 @@ cphvb_error dispatch( cphvb_instruction *instr ) {
                 default:                // Unsupported instruction
                     fprintf(
                         stderr, 
-                        "cphvb_ve_score_execute() encountered an unknown opcode: %s \
+                        "cphvb_ve_[s/m]core_execute() encountered an unknown opcode: %s \
                         in combination with argument types.",
                         cphvb_opcode_text( instr->opcode )
                     );

@@ -3,6 +3,7 @@ LIB=libcphvb_ve_score.so
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O3 -fPIC -I$(ROOT)/include
+#LCFLAGS= $(WARNOPTS) -g -fPIC -I$(ROOT)/include
 LDFLAGS=-L../../core -lcphvb -shared -Wl,-soname
 SRC=cphvb_ve_score.c
 OBJ=$(SRC:.c=.o)

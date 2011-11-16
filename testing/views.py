@@ -9,25 +9,14 @@ size = 1024
 
 def main():
 
-    stuff = \
-    [
-        [
-            [4]*1024,
-            [2]*1024,
-            [8]*1024,
-        ],
-        [
-            [4]*1024,
-            [2]*1024,
-            [8]*1024,
-        ],
-    ]
+    x = np.array([x % 2 for x in range(0,size)], dtype=np.float32, dist=CPHVB)
+    r = np.empty( size / 2, dtype=np.float32, dist=CPHVB )
 
-    x = np.array(stuff, dtype=np.float32, dist=CPHVB)
+    odd     = x[0::2]
+    even    = x[1::2]
 
-    y = x[0]
-    z = x[1]
-    print np.add( y, z )
+    print x, odd, even
+    print np.add( odd, even )
 
 if __name__ == "__main__":
     main()

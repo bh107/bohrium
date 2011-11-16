@@ -445,8 +445,6 @@ inline cphvb_error score_trunc( T *op1, T *op2 ) {
 template <typename T>
 inline cphvb_error score_modf( T *op1, T *op2, T *op3 ) {
     *op1 = *op2;
-    //*op1 = modf( *op3, &op2 );
-    //*op3 = modf( *op2, &op1 );
     return CPHVB_SUCCESS;
 }
 template <>
@@ -514,6 +512,13 @@ inline cphvb_error score_arange( T *op1 ) {
 }
 
 template <typename T>
+inline cphvb_error score_ones_like( T *op1, T *op2 ) {
+    // TODO: implement    
+    *op1 = 1;
+    return CPHVB_ERROR;
+}
+
+template <typename T>
 inline cphvb_error score_conj( T *op1, T *op2 ) {
     // TODO: implement    
     *op1 = 100;
@@ -521,16 +526,8 @@ inline cphvb_error score_conj( T *op1, T *op2 ) {
 }
 
 template <typename T>
-inline cphvb_error score_ones_like( T *op1, T *op2 ) {
-    // TODO: implement    
-    *op1 = 100;
-    return CPHVB_ERROR;
-}
-
-template <typename T>
-inline cphvb_error score_arctan2( T *op1, T *op2 ) {
-    // TODO: implement    
-    *op1 = 100;
+inline cphvb_error score_arctan2( T *op1, T *op2, T *op3 ) {
+    *op1 = atan2( *op2, *op3 );
     return CPHVB_ERROR;
 }
 
@@ -554,7 +551,6 @@ inline cphvb_error score_isnan( T *op1, T *op2 ) {
     *op1 = 100;
     return CPHVB_ERROR;
 }
-
 
 template <typename T>
 inline cphvb_error score_isreal( T *op1, T *op2 ) {
