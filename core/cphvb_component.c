@@ -214,6 +214,8 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
  */
 cphvb_error cphvb_com_free(cphvb_com *component)
 {
+    if(component->type == CPHVB_BRIDGE)
+        iniparser_freedict(component->config);
     free(component);
     return CPHVB_SUCCESS;
 }
