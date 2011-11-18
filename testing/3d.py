@@ -15,8 +15,11 @@ except:
 
 def main():
 
+    y = 3
     x = np.array([[range(1,size+1)]*size]*size, dtype=np.float32, dist=CPHVB)
-    print np.add( x, 3 )
+    print "x: \n", x
+    print "y: ", y
+    print np.add( x, y )
 
 if __name__ == "__main__":
     main()

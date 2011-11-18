@@ -18,7 +18,7 @@
  */
 #include "cphvb.h"
 #include "cphvb_ve_score.h"
-#include "score_dispatch.cpp"
+#include "dispatch.cpp"
 
 cphvb_error cphvb_ve_score_init(
 

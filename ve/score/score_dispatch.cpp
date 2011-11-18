@@ -33,38 +33,41 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
             switch(poly) {
                 
                 case CPHVB_ADD*100+CPHVB_BOOL:
-                    iter<cphvb_bool>( instr, &score_add );
+                    traverse<cphvb_bool, add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT8:
-                    iter<cphvb_int8>( instr, &score_add );
+                    traverse<cphvb_int8, add_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT16:
-                    iter<cphvb_int16>( instr, &score_add );
+                    traverse<cphvb_int16, add_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT32:
-                    iter<cphvb_int32>( instr, &score_add );
+                    traverse<cphvb_int32, add_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT64:
-                    iter<cphvb_int64>( instr, &score_add );
+                    traverse<cphvb_int64, add_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
+
                 case CPHVB_ADD*100+CPHVB_UINT8:
-                    iter<cphvb_uint8>( instr, &score_add );
+                    traverse<cphvb_uint8, add_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT16:
-                    iter<cphvb_uint16>( instr, &score_add );
+                    traverse<cphvb_uint16, add_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT32:
-                    iter<cphvb_uint32>( instr, &score_add );
+                    traverse<cphvb_uint32, add_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT64:
-                    iter<cphvb_uint64>( instr, &score_add );
+                    traverse<cphvb_uint64, add_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
+
                 case CPHVB_ADD*100+CPHVB_FLOAT32:
-                    iter<cphvb_float32>( instr, &score_add );
+                    traverse<cphvb_float32, add_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_FLOAT64:
-                    iter<cphvb_float64>( instr, &score_add );
+                    traverse<cphvb_float64, add_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
+
                 case CPHVB_SUBTRACT*100+CPHVB_BOOL:
                     iter<cphvb_bool>( instr, &score_subtract );
                     break;

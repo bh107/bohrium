@@ -115,7 +115,9 @@ cd iniparser
 $preBUILD make $posBUILD
 cd ..
 echo "***Building NUMPY_BRIDGE***"
-bridge/numpy/build.sh -C$PYTHON $BRIDGE $posBUILD
+cd bridge/numpy
+./build.sh -C$PYTHON $BRIDGE $posBUILD
+cd ../../
 
 if [ "$INSTALL" -eq "1" ]
   then
