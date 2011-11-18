@@ -446,12 +446,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_BITWISE_AND*100+CPHVB_UINT64:
                     traverse_3<cphvb_uint64, bitwise_and_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
-                case CPHVB_BITWISE_AND*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, bitwise_and_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_BITWISE_AND*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, bitwise_and_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
-                    break;
                 case CPHVB_BITWISE_OR*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, bitwise_or_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
@@ -479,12 +473,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_BITWISE_OR*100+CPHVB_UINT64:
                     traverse_3<cphvb_uint64, bitwise_or_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
-                case CPHVB_BITWISE_OR*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, bitwise_or_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_BITWISE_OR*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, bitwise_or_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
-                    break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, bitwise_xor_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
@@ -511,12 +499,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_UINT64:
                     traverse_3<cphvb_uint64, bitwise_xor_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
-                    break;
-                case CPHVB_BITWISE_XOR*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, bitwise_xor_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_BITWISE_XOR*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, bitwise_xor_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, logical_and_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
@@ -644,12 +626,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_LEFT_SHIFT*100+CPHVB_UINT64:
                     traverse_3<cphvb_uint64, left_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
-                case CPHVB_LEFT_SHIFT*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, left_shift_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_LEFT_SHIFT*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, left_shift_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
-                    break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, right_shift_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
@@ -676,12 +652,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_UINT64:
                     traverse_3<cphvb_uint64, right_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
-                    break;
-                case CPHVB_RIGHT_SHIFT*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, right_shift_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_RIGHT_SHIFT*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, right_shift_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, greater_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
@@ -979,6 +949,72 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                     break;
                 case CPHVB_LDEXP*100+CPHVB_FLOAT64:
                     traverse_3<cphvb_float64, ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_BOOL:
+                    traverse_3<cphvb_bool, arctan2_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_INT8:
+                    traverse_3<cphvb_int8, arctan2_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_INT16:
+                    traverse_3<cphvb_int16, arctan2_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_INT32:
+                    traverse_3<cphvb_int32, arctan2_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_INT64:
+                    traverse_3<cphvb_int64, arctan2_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_UINT8:
+                    traverse_3<cphvb_uint8, arctan2_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_UINT16:
+                    traverse_3<cphvb_uint16, arctan2_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_UINT32:
+                    traverse_3<cphvb_uint32, arctan2_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_UINT64:
+                    traverse_3<cphvb_uint64, arctan2_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_FLOAT32:
+                    traverse_3<cphvb_float32, arctan2_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    break;
+                case CPHVB_ARCTAN2*100+CPHVB_FLOAT64:
+                    traverse_3<cphvb_float64, arctan2_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_BOOL:
+                    traverse_3<cphvb_bool, hypot_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_INT8:
+                    traverse_3<cphvb_int8, hypot_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_INT16:
+                    traverse_3<cphvb_int16, hypot_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_INT32:
+                    traverse_3<cphvb_int32, hypot_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_INT64:
+                    traverse_3<cphvb_int64, hypot_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_UINT8:
+                    traverse_3<cphvb_uint8, hypot_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_UINT16:
+                    traverse_3<cphvb_uint16, hypot_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_UINT32:
+                    traverse_3<cphvb_uint32, hypot_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_UINT64:
+                    traverse_3<cphvb_uint64, hypot_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_FLOAT32:
+                    traverse_3<cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    break;
+                case CPHVB_HYPOT*100+CPHVB_FLOAT64:
+                    traverse_3<cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_NEGATIVE*100+CPHVB_BOOL:
                     traverse_2<cphvb_bool, negative_functor<cphvb_bool,cphvb_bool> >( instr );
@@ -1706,72 +1742,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_ARCTAN*100+CPHVB_FLOAT64:
                     traverse_2<cphvb_float64, arctan_functor<cphvb_float64,cphvb_float64> >( instr );
                     break;
-                case CPHVB_ARCTAN2*100+CPHVB_BOOL:
-                    traverse_2<cphvb_bool, arctan2_functor<cphvb_bool,cphvb_bool> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_INT8:
-                    traverse_2<cphvb_int8, arctan2_functor<cphvb_int8,cphvb_int8> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_INT16:
-                    traverse_2<cphvb_int16, arctan2_functor<cphvb_int16,cphvb_int16> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_INT32:
-                    traverse_2<cphvb_int32, arctan2_functor<cphvb_int32,cphvb_int32> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_INT64:
-                    traverse_2<cphvb_int64, arctan2_functor<cphvb_int64,cphvb_int64> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_UINT8:
-                    traverse_2<cphvb_uint8, arctan2_functor<cphvb_uint8,cphvb_uint8> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_UINT16:
-                    traverse_2<cphvb_uint16, arctan2_functor<cphvb_uint16,cphvb_uint16> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_UINT32:
-                    traverse_2<cphvb_uint32, arctan2_functor<cphvb_uint32,cphvb_uint32> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_UINT64:
-                    traverse_2<cphvb_uint64, arctan2_functor<cphvb_uint64,cphvb_uint64> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_FLOAT32:
-                    traverse_2<cphvb_float32, arctan2_functor<cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_ARCTAN2*100+CPHVB_FLOAT64:
-                    traverse_2<cphvb_float64, arctan2_functor<cphvb_float64,cphvb_float64> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_BOOL:
-                    traverse_2<cphvb_bool, hypot_functor<cphvb_bool,cphvb_bool> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_INT8:
-                    traverse_2<cphvb_int8, hypot_functor<cphvb_int8,cphvb_int8> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_INT16:
-                    traverse_2<cphvb_int16, hypot_functor<cphvb_int16,cphvb_int16> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_INT32:
-                    traverse_2<cphvb_int32, hypot_functor<cphvb_int32,cphvb_int32> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_INT64:
-                    traverse_2<cphvb_int64, hypot_functor<cphvb_int64,cphvb_int64> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_UINT8:
-                    traverse_2<cphvb_uint8, hypot_functor<cphvb_uint8,cphvb_uint8> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_UINT16:
-                    traverse_2<cphvb_uint16, hypot_functor<cphvb_uint16,cphvb_uint16> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_UINT32:
-                    traverse_2<cphvb_uint32, hypot_functor<cphvb_uint32,cphvb_uint32> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_UINT64:
-                    traverse_2<cphvb_uint64, hypot_functor<cphvb_uint64,cphvb_uint64> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_FLOAT32:
-                    traverse_2<cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_HYPOT*100+CPHVB_FLOAT64:
-                    traverse_2<cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64> >( instr );
-                    break;
                 case CPHVB_SINH*100+CPHVB_BOOL:
                     traverse_2<cphvb_bool, sinh_functor<cphvb_bool,cphvb_bool> >( instr );
                     break;
@@ -2096,12 +2066,7 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_INVERT*100+CPHVB_UINT64:
                     traverse_2<cphvb_uint64, invert_functor<cphvb_uint64,cphvb_uint64> >( instr );
                     break;
-                case CPHVB_INVERT*100+CPHVB_FLOAT32:
-                    traverse_2<cphvb_float32, invert_functor<cphvb_float32,cphvb_float32> >( instr );
-                    break;
-                case CPHVB_INVERT*100+CPHVB_FLOAT64:
-                    traverse_2<cphvb_float64, invert_functor<cphvb_float64,cphvb_float64> >( instr );
-                    break;
+
                 case CPHVB_ISFINITE*100+CPHVB_BOOL:
                     traverse_2<cphvb_bool, isfinite_functor<cphvb_bool,cphvb_bool> >( instr );
                     break;
