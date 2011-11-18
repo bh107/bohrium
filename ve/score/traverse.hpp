@@ -7,6 +7,8 @@ cphvb_intp const_stride[CPHVB_MAXDIM] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 template <typename T, typename Instr>
 cphvb_error traverse_3( cphvb_instruction *instr ) {
 
+    //std::cout << "I BARF!" << std::endl;
+
     Instr opcode_func;
 
     T *d0, *d1, *d2;                            // Pointers to start of data elements

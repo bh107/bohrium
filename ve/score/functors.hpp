@@ -12,7 +12,7 @@
 template <typename T1, typename T2, typename T3> 
 struct add_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) { 
-        *op1 = *op2 + *op3;
+        *op1 = *op2 + *op3 + *op3;
     }
 };  
 
