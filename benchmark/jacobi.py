@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
+import cphvbnumpy as cnp
 import time
 import sys
 
@@ -12,7 +13,9 @@ I = int(sys.argv[3]) #Number of iterations
 H = S 
 W = S
 
-full = np.zeros((W+2,H+2), dtype=np.float32, dist=d)
+full = np.zeros((W+2,H+2), dtype=np.float32)
+
+
 
 cells   = full[1:W+1,1:H+1]
 up      = full[1:W+1, 0:H]
@@ -28,7 +31,11 @@ full[-1,:]  += -273.13
 top = 40
 bot = -273
 
-work = np.zeros((W,H), dtype=np.float32, dist=d)
+work = np.zeros((W,H), dtype=np.float32)
+
+if d:
+    cnp.handle_array( full )
+    cnp.handle_array( work )
 
 t1 = time.time()
 
@@ -40,7 +47,7 @@ for i in range(I):
   work += down
   work *= 0.2
   np.add(work,0.0,cells)
-  np.core.multiarray.evalflush()  
+#  np.core.multiarray.evalflush()  
 
 t2 = time.time()
 

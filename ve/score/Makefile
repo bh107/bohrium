@@ -4,7 +4,7 @@ CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O3 -fPIC -I$(ROOT)/include
 #LCFLAGS= $(WARNOPTS) -g -fPIC -I$(ROOT)/include
-LDFLAGS=-L../../core -lcphvb -shared -Wl,-soname
+LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
 SRC=cphvb_ve_score.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/usr/local/lib

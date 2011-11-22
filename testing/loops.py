@@ -5,7 +5,7 @@ import time
 import sys
 
 CPHVB=True
-size = 1024
+size = 3
 
 def main():
 

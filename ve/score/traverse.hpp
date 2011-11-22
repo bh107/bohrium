@@ -81,7 +81,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
             off2 += coord[j] * stride2[j];
 
         }
-
+       
         for(    coord[last_dim]=0;                      // Loop over last dimension
                 coord[last_dim] < a0->shape[last_dim];
 
@@ -92,11 +92,11 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
 
                 ) {
                                                     // Call element-wise operation
-            //(*opcode_func)( (off0+d0), (off1+d1), (off2+d2) );
+
             opcode_func( (off0+d0), (off1+d1), (off2+d2) );
-            //*(off0+d0) = *(off1+d1) + *(off2+d2);
 
         }
+
         ec += a0->shape[last_dim];
 
         for(j=a0->ndim-2; j >= 0; j--) {
@@ -123,9 +123,9 @@ cphvb_error traverse_2( cphvb_instruction *instr ) {
     cphvb_array *a0 = instr->operand[0],        // Operands
                 *a1 = instr->operand[1];
     
-    cphvb_intp  j, off0, off1,            // Index and stride offset pointers
-                start0, start1,         // View offset in elements.
-                *stride0, *stride1;   // Pointers to operand strides
+    cphvb_intp  j, off0, off1,              // Index and stride offset pointers
+                start0, start1,             // View offset in elements.
+                *stride0, *stride1;         // Pointers to operand strides
 
     cphvb_index coord[CPHVB_MAXDIM],            // Coordinate map, for traversing arrays
                 nelements = cphvb_nelements( a0->ndim, a0->shape ), // elements
@@ -183,9 +183,7 @@ cphvb_error traverse_2( cphvb_instruction *instr ) {
 
                 ) {
                                                     // Call element-wise operation
-            //(*opcode_func)( (off0+d0), (off1+d1), (off2+d2) );
             opcode_func( (off0+d0), (off1+d1) );
-            //*(off0+d0) = *(off1+d1) + *(off2+d2);
 
         }
         ec += a0->shape[last_dim];
@@ -255,9 +253,7 @@ cphvb_error traverse_1( cphvb_instruction *instr ) {
 
                 ) {
                                                     // Call element-wise operation
-            //(*opcode_func)( (off0+d0), (off1+d1), (off2+d2) );
             opcode_func( (off0+d0) );
-            //*(off0+d0) = *(off1+d1) + *(off2+d2);
 
         }
         ec += a0->shape[last_dim];

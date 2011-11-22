@@ -5,7 +5,7 @@ import time
 import sys
 
 CPHVB   = True
-size    = 3
+size    = 1024
 
 try:
     CPHVB   = int(sys.argv[1])
@@ -15,11 +15,11 @@ except:
 
 def main():
 
-    y = 3
-    x = np.array([[range(1,size+1)]*size]*size, dtype=np.float32, dist=CPHVB)
-    print "x: \n", x
-    print "y: ", y
-    print np.add( x, y )
+    x = np.array([1]*size*size*80, dtype=np.float64, dist=CPHVB)
+    y = 1
+    z = np.empty((size*size*80), dtype=np.float64, dist=CPHVB)
+
+    np.add( x, y, z )
 
 if __name__ == "__main__":
     main()

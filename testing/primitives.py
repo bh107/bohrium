@@ -9,12 +9,20 @@ if len(sys.argv) > 1:
     CPHVB=int(sys.argv[1])
 print "CPHVB state: %d" % CPHVB
 
+#bools   = [ np.bool ]
+#ints    = [ np.int,     np.int8,    np.int16,   np.int32,   np.int64    ]
+#uints   = [             np.uint8,   np.uint16,  np.uint32,  np.uint64   ]
+#floats  = [ np.float,                           np.float32, np.float64  ]
+#complx  = [ np.complex,                                     np.complex64, np.complex128 ]
+#np_types = bools + ints + uints + floats + complx
+
 bools   = [ np.bool ]
-ints    = [ np.int,     np.int8,    np.int16,   np.int32,   np.int64    ]
-uints   = [             np.uint8,   np.uint16,  np.uint32,  np.uint64   ]
-floats  = [ np.float,                           np.float32, np.float64  ]
+ints    = [ np.int32,   np.int64    ]
+uints   = [ np.uint32,  np.uint64   ]
+floats  = [ np.float32, np.float64  ]
 complx  = [ np.complex,                                     np.complex64, np.complex128 ]
-np_types = bools + ints + uints + floats + complx
+#np_types = bools + ints + uints + floats + complx
+np_types = ints + uints + floats
 
 ufuncs  = [
     (np.add,            ints+uints+floats),
@@ -123,17 +131,17 @@ def main():
             )
         elif 'int' in typename:
              operands[ typename ] = (
-                np.array([ 3  ] * 1024*1024,    dtype=np_type, dist=CPHVB),
-                np.array([ 2 ] * 1024*1024,    dtype=np_type, dist=CPHVB),
-                np.empty([1024*1024], dtype=np_type, dist=CPHVB),
-                np.empty([1024*1024], dtype=np_type, dist=CPHVB),
+                np.array([ 3  ] * 1024*1024*10,    dtype=np_type, dist=CPHVB),
+                np.array([ 2 ] * 1024*1024*10,    dtype=np_type, dist=CPHVB),
+                np.empty([1024*1024*10], dtype=np_type, dist=CPHVB),
+                np.empty([1024*1024*10], dtype=np_type, dist=CPHVB),
             )       
         elif 'float' in typename:
              operands[ typename ] = (
-                np.array([ 3.75  ] * 1024*1024,    dtype=np_type, dist=CPHVB),
-                np.array([ 2 ] * 1024*1024,    dtype=np_type, dist=CPHVB),
-                np.empty([1024*1024], dtype=np_type, dist=CPHVB),
-                np.empty([1024*1024], dtype=np_type, dist=CPHVB),
+                np.array([ 3.75  ] * 1024*1024*10,    dtype=np_type, dist=CPHVB),
+                np.array([ 2 ] * 1024*1024*10,    dtype=np_type, dist=CPHVB),
+                np.empty([1024*1024*10], dtype=np_type, dist=CPHVB),
+                np.empty([1024*1024*10], dtype=np_type, dist=CPHVB),
             )       
     print ""
     print "Executing %d ufuncs" % len(ufuncs)

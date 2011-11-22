@@ -19,7 +19,11 @@ def main():
     y = np.array([range(1,size+1)]*size, dtype=np.float32, dist=CPHVB)
     z = np.empty((size,size), dtype=np.float32, dist=CPHVB)
 
-    print np.add( x, y, z )
+    np.add( x, y, z )
+
+    print "x:\n", x
+    print "y:\n", y
+    print "x + y = \n", z
 
 if __name__ == "__main__":
     main()
