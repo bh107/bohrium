@@ -21,7 +21,7 @@
 #include <cassert>
 #include "ArrayManager.hpp"
 ArrayManager::ArrayManager() :
-    arrayStore(new StaticStore<cphvb_array>(4096)) {}
+    arrayStore(new StaticStore<cphvb_array>(4096*10)) {}
 
 cphvb_array* ArrayManager::create(cphvb_array* base,
                                   cphvb_type type,
@@ -33,7 +33,6 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
                                   cphvb_constant init_value)
 {
     cphvb_array* array = arrayStore->c_next();
-
     array->owner          = CPHVB_PARENT;
     array->base           = base;
     array->type           = type;
