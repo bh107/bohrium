@@ -22,16 +22,12 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include <cphvb.h>
 
 cphvb_error cphvb_ve_score_init(
 
-    cphvb_intp      *opcode_count,
-    cphvb_opcode    opcode_list[CPHVB_MAX_NO_OPERANDS],
-    cphvb_intp      *datatype_count,
-    cphvb_type      datatype_list[CPHVB_NO_TYPES],
     cphvb_com       *self
 
 );
@@ -43,6 +39,6 @@ cphvb_error cphvb_ve_score_shutdown(void);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif

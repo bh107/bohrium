@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Simon A. F. Lund <safl@safl.dk> 
+ * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
  *
  * This file is part of cphVB.
  *
@@ -22,29 +22,9 @@
 
 cphvb_error cphvb_ve_score_init(
 
-    cphvb_intp      *opcode_count,
-    cphvb_opcode    opcode_list[CPHVB_MAX_NO_OPERANDS],
-    cphvb_intp      *datatype_count,
-    cphvb_type      datatype_list[CPHVB_NO_TYPES],
     cphvb_com       *self
 
 ) {
-
-    *opcode_count = 0;
-    for (cphvb_opcode oc = 0; oc <CPHVB_NO_OPCODES; ++oc) {
-        opcode_list[*opcode_count] = oc;
-        ++*opcode_count;
-    }
-    *datatype_count = 0;
-    for(cphvb_type ot = 0; ot <= CPHVB_FLOAT64; ++ot) {
-        datatype_list[*datatype_count] = ot;
-        ++*datatype_count;
-    }
-
-    opcode_list[*opcode_count] = CPHVB_ADD | CPHVB_REDUCE;
-    ++*opcode_count;
-    opcode_list[*opcode_count] = CPHVB_SUBTRACT | CPHVB_REDUCE;
-    ++*opcode_count;
 
     return CPHVB_SUCCESS;
 }
@@ -55,7 +35,7 @@ cphvb_error cphvb_ve_score_execute(
     cphvb_instruction   instruction_list[]
 
 ) {
-   
+
     cphvb_error res = CPHVB_SUCCESS;
 
     for(cphvb_intp i=0; i<instruction_count; ++i) {
@@ -63,7 +43,7 @@ cphvb_error cphvb_ve_score_execute(
         res = dispatch( &instruction_list[i] );
         if (res != CPHVB_SUCCESS) {
             fprintf(
-                stderr, 
+                stderr,
                 "cphvb_ve_score_execute() encountered an error while executing: %s \
                 in combination with argument types.",
                 cphvb_opcode_text( instruction_list[i].opcode )
@@ -80,5 +60,5 @@ cphvb_error cphvb_ve_score_execute(
 cphvb_error cphvb_ve_score_shutdown( void ) {
 
     return CPHVB_SUCCESS;
-    
+
 }

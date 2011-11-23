@@ -23,17 +23,8 @@
 #include <string.h>
 #include <cphvb.h>
 
-cphvb_error cphvb_ve_simple_init(cphvb_intp *opcode_count,
-                                 cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
-                                 cphvb_intp *datatype_count,
-                                 cphvb_type datatype_list[CPHVB_NO_TYPES],
-                                 cphvb_com *self)
+cphvb_error cphvb_ve_simple_init(cphvb_com *self)
 {
-    opcode_list[0] = CPHVB_ADD;
-    *opcode_count = 1;
-
-    datatype_list[0] = CPHVB_FLOAT32;
-    *datatype_count = 1;
     return CPHVB_SUCCESS;
 }
 

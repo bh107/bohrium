@@ -30,11 +30,7 @@ extern "C" {
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count,
-                                cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
-                                cphvb_intp *datatype_count,
-                                cphvb_type datatype_list[CPHVB_NO_TYPES],
-                                cphvb_com *self);
+cphvb_error cphvb_vem_node_init(cphvb_com *self);
 
 
 /* Shutdown the VEM, which include a instruction flush

@@ -42,15 +42,9 @@ ArrayManager* arrayManager;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
-                                cphvb_opcode opcode_list1[CPHVB_MAX_NO_OPERANDS],
-                                cphvb_intp *datatype_count1,
-                                cphvb_type datatype_list1[CPHVB_NO_TYPES],
-                                cphvb_com *self)
+cphvb_error cphvb_vem_node_init(cphvb_com *self)
 {
-    cphvb_intp opcode_count, type_count, children_count;
-    cphvb_opcode opcode[CPHVB_NO_OPCODES*2];
-    cphvb_type type[CPHVB_NO_TYPES];
+    cphvb_intp children_count;
     cphvb_error err;
 
     cphvb_com_children(self, &children_count, &coms);
@@ -59,7 +53,7 @@ cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
     ve_shutdown = coms[0]->shutdown;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(&opcode_count, opcode, &type_count, type, self);
+    err = ve_init(self);
     if(err)
         return err;
 

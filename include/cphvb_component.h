@@ -41,11 +41,7 @@ typedef struct cphvb_com_struct cphvb_com;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_init)(cphvb_intp *opcode_count,
-                                  cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
-                                  cphvb_intp *datatype_count,
-                                  cphvb_type datatype_list[CPHVB_NO_TYPES],
-                                  cphvb_com *self);
+typedef cphvb_error (*cphvb_init)(cphvb_com *self);
 
 
 /* Shutdown the component, which include a instruction flush
