@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from pprint import pprint as pp
 import numpy as np
+import cphvbnumpy as cnp
 import time
 import sys
 
 CPHVB   = True
-size    = 1024
+size    = 1024*1024*40
 
 try:
     CPHVB   = int(sys.argv[1])
@@ -15,9 +15,9 @@ except:
 
 def main():
 
-    x = np.array([1]*size*size*80, dtype=np.float64, dist=CPHVB)
+    x = np.array([1]*size, dtype=np.float64, dist=CPHVB)
     y = 1
-    z = np.empty((size*size*80), dtype=np.float64, dist=CPHVB)
+    z = np.empty((size), dtype=np.float64, dist=CPHVB)
 
     np.add( x, y, z )
 

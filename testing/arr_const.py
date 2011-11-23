@@ -7,7 +7,7 @@ import sys
 CPHVB=True
 size = 1024
 
-def arr_const():
+def arr_const(size):
 
     x = np.array([1]*size, dtype=np.float32, dist=CPHVB)
     print 2 + x
