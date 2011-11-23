@@ -64,14 +64,6 @@ def install(name, dir, fatal=False):
         if err != 0:
             print "An build error in %s is not fatal. Continuing."%name
 
-def uninstall(name, dir):
-    print "***Uninstalling %s***"%name
-    try:
-        p = subprocess.Popen(["make", "uninstall"], cwd=join(install_dir, dir))
-        err = p.wait()
-    except KeyboardInterrupt:
-        p.terminate()
-
 def ldconfig():
     print "***Configure ldconfig***"
     print "sudo ldconfig"
@@ -134,12 +126,5 @@ if __name__ == "__main__":
         install("VEM-NODE", "vem/node", True)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
         ldconfig()
-    elif cmd == "uninstall":
-        uninstall("INIPARSER", "iniparser")
-        uninstall("CORE", "core")
-        uninstall("VE-CUDA", "ve/cuda")
-        uninstall("VE-SIMPLE", "ve/simple")
-        uninstall("VE-SCORE", "ve/score")
-        uninstall("VE-MCORE", "ve/mcore")
-        uninstall("VEM-NODE", "vem/node")
-        uninstall("BRIDGE-NUMPY", "bridge/numpy")
+    else:
+        print "Unknown command: '%s'."%cmd
