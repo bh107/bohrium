@@ -38,9 +38,6 @@ static cphvb_com **coms;
 
 ArrayManager* arrayManager;
 
-//The VE info.
-cphvb_support ve_support;
-
 /* Initialize the VEM
  *
  * @return Error codes (CPHVB_SUCCESS)
@@ -65,41 +62,6 @@ cphvb_error cphvb_vem_node_init(cphvb_intp *opcode_count1,
     err = ve_init(&opcode_count, opcode, &type_count, type, self);
     if(err)
         return err;
-
-    //Init to False.
-    std::memset(ve_support.opcode, 0, CPHVB_NO_OPCODES*sizeof(cphvb_bool));
-    std::memset(ve_support.type, 0, CPHVB_NO_TYPES*sizeof(cphvb_bool));
-
-#ifdef DEBUG
-    std::cout << "[VEM node] Supported opcodes:" << opcode_count << std::endl;
-#endif
-    while(--opcode_count >= 0)
-    {
-        if (opcode[opcode_count] & CPHVB_REDUCE)
-        {
-            ve_support.opcode[~CPHVB_REDUCE & opcode[opcode_count]] |=
-                REDUCEINST;
-        }
-        else
-        {
-            ve_support.opcode[opcode[opcode_count]] |= PLAININST;
-        }
-#ifdef DEBUG
-        std::cout << "\t" << cphvb_opcode_text(opcode[opcode_count]) <<
-            std::endl;
-#endif
-    }
-
-#ifdef DEBUG
-    std::cout << "[VEM node] Supported types:" << std::endl;
-#endif
-    while(--type_count >= 0)
-    {
-        ve_support.type[type[type_count]] = 1;//Set True
-#ifdef DEBUG
-        std::cout << "\t" << cphvb_type_text(type[type_count]) << std::endl;
-#endif
-    }
 
     try
     {
@@ -163,45 +125,6 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
         return CPHVB_OUT_OF_MEMORY;
     }
     return CPHVB_SUCCESS;
-}
-
-
-/* Check whether the instruction is supported by the VEM or not
- *
- * @return non-zero when true and zero when false
- */
-cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst)
-{
-    switch(inst->opcode)
-    {
-    case CPHVB_DESTROY:
-        return 1;
-    case CPHVB_RELEASE:
-        return 1;
-    default:
-        if( //it's a reduce instruction and we support it
-            (inst->opcode & CPHVB_REDUCE &&
-             ve_support.opcode[~CPHVB_REDUCE & inst->opcode] & REDUCEINST) ||
-            //it's a "normal" instuction and we support it
-            ve_support.opcode[inst->opcode] & PLAININST)
-        {
-            cphvb_intp i;
-            cphvb_intp nop = cphvb_operands(inst->opcode);
-            for(i=0; i<nop; ++i)
-            {
-                cphvb_type t;
-                if(inst->operand[i] == CPHVB_CONSTANT)
-                    t = inst->const_type[i];
-                else
-                    t = inst->operand[i]->type;
-                if(!ve_support.type[t] && t != CPHVB_INDEX)
-                    return 0;
-            }
-            return 1;
-        }
-        else
-            return 0;
-    }
 }
 
 

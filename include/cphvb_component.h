@@ -88,14 +88,6 @@ typedef cphvb_error (*cphvb_create_array)(
                                    cphvb_constant init_value,
                                    cphvb_array**  new_array);
 
-
-/* Check whether the instruction is supported by the component or not
- *
- * @return non-zero when true and zero when false
- */
-typedef cphvb_intp (*cphvb_instruction_check)(cphvb_instruction *inst);
-
-
 /* Codes for known component types */
 typedef enum
 {
@@ -114,7 +106,6 @@ struct cphvb_com_struct
     cphvb_shutdown shutdown;
     cphvb_execute execute;
     cphvb_create_array create_array; //Only for VEMs
-    cphvb_instruction_check instruction_check; //Only for VEMs
 };
 
 

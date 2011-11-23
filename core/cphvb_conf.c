@@ -144,9 +144,6 @@ cphvb_error cphvb_conf_children(const char *component_name, cphvb_interface *if_
             if_vem->create_array = get_dlsym(handle, child, type, "create_array");
             if(if_vem->create_array == NULL)
                 return CPHVB_ERROR;
-            if_vem->instruction_check = get_dlsym(handle, child, type, "instruction_check");
-            if(if_vem->instruction_check == NULL)
-                return CPHVB_ERROR;
         }
 
         child = strtok(NULL,",");

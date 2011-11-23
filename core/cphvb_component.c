@@ -192,10 +192,6 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
                                           "create_array");
             if(com->create_array == NULL)
                 exit(CPHVB_ERROR);
-            com->instruction_check = get_dlsym(handle, child, com->type,
-                                               "instruction_check");
-            if(com->instruction_check == NULL)
-                exit(CPHVB_ERROR);
         }
         child = strtok(NULL,",");
         ++(*count);

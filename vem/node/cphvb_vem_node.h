@@ -68,13 +68,6 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_array**  new_array);
 
 
-/* Check whether the instruction is supported by the VEM or not
- *
- * @return non-zero when true and zero when false
- */
-cphvb_intp cphvb_vem_node_instruction_check(cphvb_instruction *inst);
-
-
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
  *
