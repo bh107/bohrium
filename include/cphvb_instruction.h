@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 // Maximum number of instructions in a batch.
-#define CPHVB_MAX_NO_INST (1)
+#define CPHVB_MAX_NO_INST (100)
 
 // Operand id used to indicate that the operand is a scalar constant
 #define CPHVB_CONSTANT (NULL)
