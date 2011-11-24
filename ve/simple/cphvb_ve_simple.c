@@ -79,15 +79,8 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 return CPHVB_PARTIAL_SUCCESS;
             }
             d0 = cphvb_base_array(inst->operand[0])->data;
-            if(a1 == CPHVB_CONSTANT)
-                d1 = (cphvb_float32*) &inst->constant[1];
-            else
-                d1 = cphvb_base_array(inst->operand[1])->data;
-
-            if(a2 == CPHVB_CONSTANT)
-                d2 = (cphvb_float32*) &inst->constant[2];
-            else
-                d2 = cphvb_base_array(inst->operand[2])->data;
+            d1 = cphvb_base_array(inst->operand[1])->data;
+            d2 = cphvb_base_array(inst->operand[2])->data;
 
             //We only support float32
             if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
@@ -105,18 +98,12 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 for(j=0; j<a0->ndim; ++j)
                     off0 += coord[j] * a0->stride[j];
                 off0 += a0->start;
-                if(a1 != CPHVB_CONSTANT)
-                {
-                    for(j=0; j<a0->ndim; ++j)
-                        off1 += coord[j] * a1->stride[j];
-                    off1 += a1->start;
-                }
-                if(a2 != CPHVB_CONSTANT)
-                {
-                    for(j=0; j<a0->ndim; ++j)
-                        off2 += coord[j] * a2->stride[j];
-                    off2 += a2->start;
-                }
+                for(j=0; j<a0->ndim; ++j)
+                    off1 += coord[j] * a1->stride[j];
+                off1 += a1->start;
+                for(j=0; j<a0->ndim; ++j)
+                    off2 += coord[j] * a2->stride[j];
+                off2 += a2->start;
 
                 //Compute the element.
                 *(d0 + off0) = *(d1 + off1) + *(d2 + off2);
