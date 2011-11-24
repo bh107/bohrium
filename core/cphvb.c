@@ -205,9 +205,5 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
     cphvb_array *a = instruction->operand[operand_no];
-
-    if(a == CPHVB_CONSTANT)
-        return instruction->const_type[operand_no];
-    else
-        return a->type;
+    return a->type;
 }

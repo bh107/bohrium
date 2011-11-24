@@ -13,7 +13,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     cphvb_array *a0 = instr->operand[0],        // Operands
                 *a1 = instr->operand[1],
                 *a2 = instr->operand[2];
-    
+
     cphvb_intp  j, off0, off1, off2,            // Index and stride offset pointers
                 start0, start1, start2,         // View offset in elements.
                 *stride0, *stride1, *stride2;   // Pointers to operand strides
@@ -21,7 +21,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     cphvb_index coord[CPHVB_MAXDIM],            // Coordinate map, for traversing arrays
                 nelements = cphvb_nelements( a0->ndim, a0->shape ), // elements
                 ec = 0,                         // elements counted
-                last_dim = a0->ndim-1;          // 
+                last_dim = a0->ndim-1;          //
 
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
@@ -35,35 +35,23 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     stride0 = a0->stride;
     start0  = a0->start;
 
-    if(a1 == CPHVB_CONSTANT) {
-        d1 = (T*) &instr->constant[1];
-        stride1 = const_stride;
-        start1  = 0;
-    } else {
-        if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
-            instr->status = CPHVB_OUT_OF_MEMORY;
-            return CPHVB_PARTIAL_SUCCESS;
-        }
-
-        d1 = (T*) cphvb_base_array(instr->operand[1])->data;
-        stride1 = a1->stride;
-        start1  = a1->start;
+    if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
     }
 
-    if(a2 == CPHVB_CONSTANT) {
-        d2 = (T*) &instr->constant[2];
-        stride2 = const_stride;
-        start2  = 0;
-    } else {
-        if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
-            instr->status = CPHVB_OUT_OF_MEMORY;
-            return CPHVB_PARTIAL_SUCCESS;
-        }
+    d1 = (T*) cphvb_base_array(instr->operand[1])->data;
+    stride1 = a1->stride;
+    start1  = a1->start;
 
-        d2 = (T*) cphvb_base_array(instr->operand[2])->data;
-        stride2 = a2->stride;
-        start2  = a2->start;
+    if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
     }
+
+    d2 = (T*) cphvb_base_array(instr->operand[2])->data;
+    stride2 = a2->stride;
+    start2  = a2->start;
 
     while( ec < nelements ) {
 
@@ -81,7 +69,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
             off2 += coord[j] * stride2[j];
 
         }
-       
+
         for(    coord[last_dim]=0;                      // Loop over last dimension
                 coord[last_dim] < a0->shape[last_dim];
 
@@ -109,7 +97,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
         }
 
     }
-    
+
     return CPHVB_SUCCESS;
 
 }
@@ -144,20 +132,14 @@ cphvb_error traverse_2( cphvb_instruction *instr ) {
     stride0 = a0->stride;
     start0  = a0->start;
 
-    if(a1 == CPHVB_CONSTANT) {
-        d1 = (T*) &instr->constant[1];
-        stride1 = const_stride;
-        start1  = 0;
-    } else {
-        if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
-            instr->status = CPHVB_OUT_OF_MEMORY;
-            return CPHVB_PARTIAL_SUCCESS;
-        }
-
-        d1 = (T*) cphvb_base_array(instr->operand[1])->data;
-        stride1 = a1->stride;
-        start1  = a1->start;
+    if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
+        instr->status = CPHVB_OUT_OF_MEMORY;
+        return CPHVB_PARTIAL_SUCCESS;
     }
+
+    d1 = (T*) cphvb_base_array(instr->operand[1])->data;
+    stride1 = a1->stride;
+    start1  = a1->start;
 
     while( ec < nelements ) {
 
@@ -198,7 +180,7 @@ cphvb_error traverse_2( cphvb_instruction *instr ) {
         }
 
     }
-    
+
     return CPHVB_SUCCESS;
 
 }
@@ -268,7 +250,7 @@ cphvb_error traverse_1( cphvb_instruction *instr ) {
         }
 
     }
-    
+
     return CPHVB_SUCCESS;
 
 }

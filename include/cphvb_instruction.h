@@ -31,9 +31,6 @@ extern "C" {
 // Maximum number of instructions in a batch.
 #define CPHVB_MAX_NO_INST (100)
 
-// Operand id used to indicate that the operand is a scalar constant
-#define CPHVB_CONSTANT (NULL)
-
 // Maximum number of operands in a instruction.
 #define CPHVB_MAX_NO_OPERANDS 3
 
@@ -46,10 +43,6 @@ typedef struct
     cphvb_opcode   opcode;
     //Id of each operand
     cphvb_array*   operand[CPHVB_MAX_NO_OPERANDS];
-    //Constants included in the instruction
-    cphvb_constant constant[CPHVB_MAX_NO_OPERANDS];
-    //The constant type
-    cphvb_type const_type[CPHVB_MAX_NO_OPERANDS];
 } cphvb_instruction;
 
 #ifdef __cplusplus

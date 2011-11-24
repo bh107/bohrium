@@ -209,8 +209,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             base->owner = CPHVB_CHILD;
             for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
             {
-                if (inst->operand[i] != CPHVB_CONSTANT &&
-                    cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
                 {
                     cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
                 }
