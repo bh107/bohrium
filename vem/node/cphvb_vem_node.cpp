@@ -29,6 +29,7 @@
 static cphvb_init ve_init;
 static cphvb_execute ve_execute;
 static cphvb_shutdown ve_shutdown;
+static cphvb_reg_func ve_reg_func;
 
 static cphvb_com **coms;
 
@@ -51,6 +52,7 @@ cphvb_error cphvb_vem_node_init(cphvb_com *self)
     ve_init = coms[0]->init;
     ve_execute = coms[0]->execute;
     ve_shutdown = coms[0]->shutdown;
+    ve_reg_func = coms[0]->reg_func;
 
     //Let us initiate the simple VE and register what it supports.
     err = ve_init(self);
@@ -119,6 +121,12 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
         return CPHVB_OUT_OF_MEMORY;
     }
     return CPHVB_SUCCESS;
+}
+
+
+cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
+{
+    return ve_reg_func(lib, fun, id);
 }
 
 

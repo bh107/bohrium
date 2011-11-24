@@ -70,7 +70,7 @@ typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
  * @stride[CPHVB_MAXDIM] The stride for each dimention
  * @has_init_value Does the array have an initial value
  * @init_value The initial value
- * @new_array The handler for the newly created array
+ * @new_array The handler for the newly created array (output)
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
 typedef cphvb_error (*cphvb_create_array)(
@@ -84,6 +84,18 @@ typedef cphvb_error (*cphvb_create_array)(
                                    cphvb_constant init_value,
                                    cphvb_array**  new_array);
 
+/* Registre a new user-defined function.
+ *
+ * @lib Name of the shared library e.g. libmyfunc.so
+ * @fun Name of the function e.g. myfunc
+ * @id Identifier for the new function. The bridge should set the
+ *     initial value to NULL. (in/out-put)
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+typedef cphvb_error (*cphvb_reg_func)(char *lib, char *fun,
+                                      cphvb_intp *id);
+
+
 /* Codes for known component types */
 typedef enum
 {
@@ -93,6 +105,8 @@ typedef enum
     CPHVB_COMPONENT_ERROR
 }cphvb_com_type;
 
+
+/* Data struct for the cphvb_com data type */
 struct cphvb_com_struct
 {
     char name[CPHVB_COM_NAME_SIZE];
@@ -101,6 +115,7 @@ struct cphvb_com_struct
     cphvb_init init;
     cphvb_shutdown shutdown;
     cphvb_execute execute;
+    cphvb_reg_func reg_func;
     cphvb_create_array create_array; //Only for VEMs
 };
 

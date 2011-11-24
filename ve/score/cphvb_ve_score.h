@@ -37,6 +37,8 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count,
 
 cphvb_error cphvb_ve_score_shutdown(void);
 
+cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+
 #ifdef __cplusplus
 }
 #endif

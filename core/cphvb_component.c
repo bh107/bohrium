@@ -185,6 +185,9 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
         com->execute = get_dlsym(handle, child, com->type, "execute");
         if(com->execute == NULL)
             exit(CPHVB_ERROR);
+        com->reg_func = get_dlsym(handle, child, com->type, "reg_func");
+        if(com->reg_func == NULL)
+            exit(CPHVB_ERROR);
 
         if(com->type == CPHVB_VEM)//VEM functions only.
         {

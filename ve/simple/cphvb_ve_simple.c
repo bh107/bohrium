@@ -35,6 +35,11 @@ cphvb_error cphvb_ve_simple_shutdown(void)
 }
 
 
+cphvb_error cphvb_ve_simple_reg_func(void)
+{
+    return CPHVB_SUCCESS;
+}
+
 cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                                     cphvb_instruction instruction_list[])
 {

@@ -62,3 +62,9 @@ cphvb_error cphvb_ve_score_shutdown( void ) {
     return CPHVB_SUCCESS;
 
 }
+
+cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
+
+    return CPHVB_SUCCESS;
+
+}
