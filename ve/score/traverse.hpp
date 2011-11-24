@@ -13,8 +13,8 @@ void pp_instr( cphvb_instruction *instr ) {
     for(int j=0; j<3; j++) {
 
         std::cout << "Op" << j << " {" << std::endl;
-        std::cout << "\tDims:\t" << op[j]->ndim << std::endl;
-
+        std::cout << "\tDims:\t"    << op[j]->ndim << std::endl;
+        std::cout << "\tStart:\t"   << op[j]->start << std::endl;
         std::cout << "\tShape:\t";
         for(int i=0; i< op[j]->ndim; i++) {
             std::cout << op[j]->shape[i];
@@ -26,7 +26,7 @@ void pp_instr( cphvb_instruction *instr ) {
 
         std::cout << "\tStride:\t";
         for(int i=0; i< op[j]->ndim; i++) {
-            std::cout << op[j]->shape[i];
+            std::cout << op[j]->stride[i];
             if (i<op[j]->ndim-1) {
                 std::cout << ",";
             }
@@ -49,7 +49,8 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
                 *a1 = instr->operand[1],
                 *a2 = instr->operand[2];
 
-    cphvb_intp  j, off0, off1, off2;            // Index and stride offset pointers
+    //cphvb_intp  j, off0, off1, off2;            // Index and stride offset pointers
+    cphvb_intp j, off0, off1, off2;            // Index and stride offset pointers
 
     cphvb_index nelements = cphvb_nelements( a0->ndim, a0->shape ), // elements
                 ec = 0,                         // elements counted
@@ -58,14 +59,12 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     cphvb_index coord[CPHVB_MAXDIM];            // Coordinate map, for traversing arrays
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-
-
                                                 // Assuming that the first operand is an array.
     if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
     }
-    d0      = (T*)cphvb_base_array(instr->operand[0])->data;
+    d0 = (T*)cphvb_base_array(instr->operand[0])->data;
 
     if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
@@ -79,14 +78,15 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     }
     d2 = (T*) cphvb_base_array(instr->operand[2])->data;
 
-    pp_instr( instr );
+    //pp_instr( instr );
 
     while( ec < nelements ) {
-
-        for(    off0 = a0->start,               // Calculate offset based on coordinates
+        
+        for( j=0,
+                off0 = a0->start,               // Calculate offset based on coordinates
                 off1 = a1->start,               // INIT
-                off2 = a2->start,                //
-                j=0;                            //
+                off2 = a2->start                //
+                ;                            //
 
             j<last_dim;                         // COND
 
@@ -108,14 +108,13 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
 
                 ) {
                                                     // Call element-wise operation
-
             opcode_func( (off0+d0), (off1+d1), (off2+d2) );
 
         }
 
         ec += a0->shape[last_dim];
 
-        for(j=a0->ndim-2; j >= 0; j--) {
+        for(j = a0->ndim-2; j >= 0; j--) {
             coord[j]++;
             if (coord[j] < a0->shape[j]) {
                 break;

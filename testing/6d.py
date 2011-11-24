@@ -15,9 +15,9 @@ except:
 
 def main():
 
-    x = np.array([[[[[[3]*size]*size]*size]*size]*size]*size, dtype=np.float64)
-    y = np.array([[[[[[6]*size]*size]*size]*size]*size]*size, dtype=np.float64)
-    z = np.empty((size,size,size,size,size,size), dtype=np.float64)
+    x = np.array([[[[[[3]*size]*size]*size]*size]*size]*size, dtype=np.float32)
+    y = np.array([[[[[[6]*size]*size]*size]*size]*size]*size, dtype=np.float32)
+    z = np.empty((size,size,size,size,size,size), dtype=np.float32)
 
     if CPHVB:
         cnp.handle_array( x ) 
@@ -27,7 +27,7 @@ def main():
     start = time.time() 
     np.add( x, y, z )
     print time.time()-start
-#    print z
+    print z
 
 if __name__ == "__main__":
     main()
