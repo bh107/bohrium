@@ -89,7 +89,7 @@ typedef cphvb_error (*cphvb_create_array)(
  * @lib Name of the shared library e.g. libmyfunc.so
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
- *     initial value to NULL. (in/out-put)
+ *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
 typedef cphvb_error (*cphvb_reg_func)(char *lib, char *fun,

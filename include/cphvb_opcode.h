@@ -103,6 +103,7 @@ enum /* cphvb_opcode */
     CPHVB_LOG2,
     CPHVB_ISREAL,
     CPHVB_ISCOMPLEX,
+    CPHVB_USERFUNC,//It is an user-defined function
     CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
     CPHVB_SYNC,    //Inform child to make data synchronized and available.
     CPHVB_DISCARD, //Inform child to forget the array
@@ -115,8 +116,6 @@ enum /* cphvb_opcode */
 };
 
 #define CPHVB_NO_OPCODES CPHVB_NONE
-
-#define CPHVB_REDUCE (1<<15)
 
 #ifdef __cplusplus
 }

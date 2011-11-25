@@ -31,8 +31,11 @@ static cphvb_execute ve_execute;
 static cphvb_shutdown ve_shutdown;
 static cphvb_reg_func ve_reg_func;
 
+//The VE components
 static cphvb_com **coms;
 
+//Number of user-defined functions registered.
+static cphvb_intp userfunc_count = 0;
 
 #define PLAININST (1)
 #define REDUCEINST (2)
@@ -123,9 +126,19 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
     return CPHVB_SUCCESS;
 }
 
-
+/* Registre a new user-defined function.
+ *
+ * @lib Name of the shared library e.g. libmyfunc.so
+ * @fun Name of the function e.g. myfunc
+ * @id Identifier for the new function. The bridge should set the
+ *     initial value to Zero. (in/out-put)
+ * @return Error codes (CPHVB_SUCCESS)
+ */
 cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
 {
+    if(*id == 0)//Only if parent didn't set the ID.
+        *id = ++userfunc_count;
+
     return ve_reg_func(lib, fun, id);
 }
 
@@ -144,10 +157,11 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     for(i=0; i<count; ++i)
     {
         cphvb_instruction* inst = &inst_list[i];
-        cphvb_array* base = cphvb_base_array(inst->operand[0]);
         switch(inst->opcode)
         {
         case CPHVB_DESTROY:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
             if (inst->operand[0]->base != NULL)
             {   // It's a view and we can mark it for deletion
                 arrayManager->erasePending(inst->operand[0]);
@@ -175,7 +189,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
             }
             break;
+        }
         case CPHVB_RELEASE:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
             switch (base->owner)
             {
             case CPHVB_PARENT:
@@ -196,7 +213,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
             }
             break;
+        }
         case CPHVB_SYNC:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
             switch (base->owner)
             {
             case CPHVB_PARENT:
@@ -212,9 +232,33 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 arrayManager->changeOwnerPending(base,CPHVB_SELF);
             }
             break;
+        }
+        case CPHVB_USERFUNC:
+        {
+            printf("CPHVB_USERFUNC: nin: %ld, nout: %ld\n", inst->userfunc->nin, inst->userfunc->nout);
+            cphvb_userfunc *uf = inst->userfunc;
+            //The children should own the output arrays.
+            for(int i = 0; i < uf->nout; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                base->owner = CPHVB_CHILD;
+            }
+            //We should own the input arrays.
+            for(int i = uf->nout; i < uf->nout + uf->nin; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                if(base->owner == CPHVB_PARENT)
+                {
+                    base->owner = CPHVB_SELF;
+                }
+            }
+            break;
+        }
         default:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
             // "Regular" operation: set ownership and send down stream
-            base->owner = CPHVB_CHILD;
+            base->owner = CPHVB_CHILD;//The child owns the output ary.
             for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
             {
                 if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
@@ -222,6 +266,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                     cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
                 }
             }
+        }
         }
     }
     if (valid_instruction_count > 0)

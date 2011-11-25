@@ -34,16 +34,51 @@ extern "C" {
 // Maximum number of operands in a instruction.
 #define CPHVB_MAX_NO_OPERANDS 3
 
+// Datatype header for user-defined functions
+/*
+    The identifier for the function.
+    cphvb_intp     id;
+
+    Number of output operands
+    cphvb_intp     nout;
+
+    Number of input operands
+    cphvb_intp     nin;
+
+    Total size of the data struct
+    cphvb_intp     struct_size;
+
+    Array of operands (outputs before inputs)
+    The macro argument 'nop' specifies the total number of operands
+    cphvb_array*   operand[nop];
+*/
+#define CPHVB_USER_FUNC_HEADER(nop) \
+    cphvb_intp     id;              \
+    cphvb_intp     nout;            \
+    cphvb_intp     nin;             \
+    cphvb_intp     struct_size;     \
+    cphvb_array*   operand[nop];    \
+
+//The base type for user-defined functions.
+typedef struct
+{
+    CPHVB_USER_FUNC_HEADER(1)
+} cphvb_userfunc;
+
 //Memory layout of the CPHVB instruction
 typedef struct
 {
     //Instruction status
-    cphvb_error status;
+    cphvb_error   status;
     //Opcode: Identifies the operation
-    cphvb_opcode   opcode;
+    cphvb_opcode  opcode;
     //Id of each operand
-    cphvb_array*   operand[CPHVB_MAX_NO_OPERANDS];
+    cphvb_array*  operand[CPHVB_MAX_NO_OPERANDS];
+    //Points to the user-defined function when the opcode is
+    //CPHVB_USERFUNC.
+    cphvb_userfunc *userfunc;
 } cphvb_instruction;
+
 
 #ifdef __cplusplus
 }
