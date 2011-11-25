@@ -1,6 +1,6 @@
-#!/usr/bin/env python
 from pprint import pprint as pp
 import numpy as np
+import cphvbnumpy as cnp
 import time
 import sys
 
@@ -21,9 +21,9 @@ def main():
 
     np.add( x, y, z )
 
-    print "x:\n", x
-    print "y:\n", y
-    print "x + y = \n", z
+#    print "x:\n", x
+#    print "y:\n", y
+#    print "x + y = \n", z
 
 if __name__ == "__main__":
     main()
