@@ -105,6 +105,7 @@ const int _operands[] =
     [CPHVB_DESTROY] = 1,
     [CPHVB_RANDOM] = 1,
     [CPHVB_ARANGE] = 3,
+    [CPHVB_USERFUNC] = 0,
     [CPHVB_NONE] = 0
 };
 
@@ -203,6 +204,7 @@ const char* const _opcode_text[] =
     [CPHVB_DESTROY] = "CPHVB_DESTROY",
     [CPHVB_RANDOM] = "CPHVB_RANDOM",
     [CPHVB_ARANGE] = "CPHVB_ARANGE",
+    [CPHVB_USERFUNC] = "CPHVB_USERFUNC",
     [CPHVB_NONE] = "CPHVB_NONE"
 };
 
