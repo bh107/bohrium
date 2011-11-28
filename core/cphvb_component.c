@@ -169,30 +169,33 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
             exit(CPHVB_ERROR);
         }
 
-        void *handle = dlopen(impl, RTLD_NOW);
-        if(handle == NULL)
+        com->lib_handle = dlopen(impl, RTLD_NOW);
+        if(com->lib_handle == NULL)
         {
             fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
             exit(CPHVB_ERROR);
         }
 
-        com->init = get_dlsym(handle, child, com->type, "init");
+        com->init = get_dlsym(com->lib_handle, child, com->type, "init");
         if(com->init == NULL)
             exit(CPHVB_ERROR);
-        com->shutdown = get_dlsym(handle, child, com->type, "shutdown");
+        com->shutdown = get_dlsym(com->lib_handle, child, com->type,
+                                  "shutdown");
         if(com->shutdown == NULL)
             exit(CPHVB_ERROR);
-        com->execute = get_dlsym(handle, child, com->type, "execute");
+        com->execute = get_dlsym(com->lib_handle, child, com->type,
+                                 "execute");
         if(com->execute == NULL)
             exit(CPHVB_ERROR);
-        com->reg_func = get_dlsym(handle, child, com->type, "reg_func");
+        com->reg_func = get_dlsym(com->lib_handle, child, com->type,
+                                  "reg_func");
         if(com->reg_func == NULL)
             exit(CPHVB_ERROR);
 
         if(com->type == CPHVB_VEM)//VEM functions only.
         {
-            com->create_array = get_dlsym(handle, child, com->type,
-                                          "create_array");
+            com->create_array = get_dlsym(com->lib_handle, child,
+                                          com->type, "create_array");
             if(com->create_array == NULL)
                 exit(CPHVB_ERROR);
         }
@@ -215,6 +218,8 @@ cphvb_error cphvb_com_free(cphvb_com *component)
 {
     if(component->type == CPHVB_BRIDGE)
         iniparser_freedict(component->config);
+    else
+        dlclose(component->lib_handle);
     free(component);
     return CPHVB_SUCCESS;
 }

@@ -111,6 +111,7 @@ struct cphvb_com_struct
 {
     char name[CPHVB_COM_NAME_SIZE];
     dictionary *config;
+    void *lib_handle;//Handle for the dynamic linked library.
     cphvb_com_type type;
     cphvb_init init;
     cphvb_shutdown shutdown;

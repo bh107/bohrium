@@ -84,9 +84,11 @@ cphvb_error cphvb_vem_node_init(cphvb_com *self)
  */
 cphvb_error cphvb_vem_node_shutdown(void)
 {
+    cphvb_error err;
+    err = ve_shutdown();
     cphvb_com_free(coms[0]);//Only got one child.
     free(coms);
-    return ve_shutdown();
+    return err;
 }
 
 
