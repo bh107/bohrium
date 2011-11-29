@@ -58,7 +58,7 @@ cphvb_error cphvb_vem_node_init(cphvb_com *self)
     ve_reg_func = coms[0]->reg_func;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(self);
+    err = ve_init(coms[0]);
     if(err)
         return err;
 
@@ -76,8 +76,6 @@ cphvb_error cphvb_vem_node_init(cphvb_com *self)
 }
 
 
-
-
 /* Shutdown the VEM, which include a instruction flush
  *
  * @return Error codes (CPHVB_SUCCESS)
@@ -88,6 +86,7 @@ cphvb_error cphvb_vem_node_shutdown(void)
     err = ve_shutdown();
     cphvb_com_free(coms[0]);//Only got one child.
     free(coms);
+    delete arrayManager;
     return err;
 }
 
@@ -131,6 +130,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
 /* Registre a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
+ *      When NULL the default library is used.
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
@@ -237,7 +237,6 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         }
         case CPHVB_USERFUNC:
         {
-            printf("CPHVB_USERFUNC: nin: %ld, nout: %ld\n", inst->userfunc->nin, inst->userfunc->nout);
             cphvb_userfunc *uf = inst->userfunc;
             //The children should own the output arrays.
             for(int i = 0; i < uf->nout; ++i)

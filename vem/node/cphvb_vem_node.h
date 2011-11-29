@@ -73,6 +73,15 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
 cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                    cphvb_instruction inst_list[]);
 
+/* Registre a new user-defined function.
+ *
+ * @lib Name of the shared library e.g. libmyfunc.so
+ *      When NULL the default library is used.
+ * @fun Name of the function e.g. myfunc
+ * @id Identifier for the new function. The bridge should set the
+ *     initial value to Zero. (in/out-put)
+ * @return Error codes (CPHVB_SUCCESS)
+ */
 cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus

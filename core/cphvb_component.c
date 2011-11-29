@@ -209,6 +209,39 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
     return CPHVB_SUCCESS;
 }
 
+/* Retrieves an user-defined function.
+ *
+ * @self The component.
+ * @lib Name of the shared library e.g. libmyfunc.so
+*       When NULL the default library is used.
+ * @fun Name of the function e.g. myfunc
+ * @ret_func Pointer to the function (output)
+ *           Is NULL if the function doesn't exist
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
+                               cphvb_userfunc_impl **ret_func)
+{
+    if(lib != NULL)
+    {
+        fprintf(stderr, "cphvb_com_get_func() does'nt support the "
+                        "specification of library name. At the moment "
+                        "we only support the default library.\n");
+        exit(-1);
+    }
+
+    dlerror();//Clear old errors.
+    *ret_func = dlsym(self->lib_handle, func);
+    char *err = dlerror();
+    if(err != NULL)
+        *ret_func = NULL;//Make sure it is NULL on error.
+
+    if(*ret_func == NULL)
+        printf("Warning - the user-defined function (%s, %s) was not "
+               "found.\n", lib, func);
+
+    return CPHVB_SUCCESS;
+}
 
 /* Frees the component.
  *
