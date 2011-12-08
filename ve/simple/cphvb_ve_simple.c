@@ -160,9 +160,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 //follows the function signature defined by cphvb_userfunc_impl.
 cphvb_error cphvb_reduce(cphvb_userfunc *arg)
 {
-    cphvb_reduce_type test;
     printf("cphvb_reduce\n");
-
 }
 
 

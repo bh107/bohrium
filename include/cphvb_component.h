@@ -167,7 +167,7 @@ cphvb_error cphvb_com_free(cphvb_com *component);
  * @return Error codes (CPHVB_SUCCESS)
  */
 cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
-                               cphvb_userfunc_impl **ret_func);
+                               cphvb_userfunc_impl *ret_func);
 
 #ifdef __cplusplus
 }
