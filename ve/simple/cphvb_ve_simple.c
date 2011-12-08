@@ -23,20 +23,28 @@
 #include <string.h>
 #include <cphvb.h>
 
-cphvb_error cphvb_ve_simple_init(cphvb_com *self)
+static cphvb_com *self = NULL;
+static cphvb_userfunc_impl reduce_impl = NULL;
+static cphvb_intp reduce_impl_id = 0;
+
+cphvb_error cphvb_ve_simple_init(cphvb_com *new_self)
 {
+    self = new_self;
     return CPHVB_SUCCESS;
 }
-
 
 cphvb_error cphvb_ve_simple_shutdown(void)
 {
     return CPHVB_SUCCESS;
 }
 
-
-cphvb_error cphvb_ve_simple_reg_func(void)
+cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
 {
+    if(reduce_impl == NULL)//We only support one user-defind function
+    {
+        cphvb_com_get_func(self, lib, fun, &reduce_impl);
+        reduce_impl_id = *id;
+    }
     return CPHVB_SUCCESS;
 }
 
@@ -132,6 +140,13 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             }
             break;
         }
+
+        case CPHVB_USERFUNC:
+            if(inst->userfunc->id == reduce_impl_id)
+            {
+                reduce_impl(inst->userfunc);
+                break;
+            }//Else we don't know it and go to default.
         default:
             inst->status = CPHVB_INST_NOT_SUPPORTED;
             return CPHVB_PARTIAL_SUCCESS;
@@ -140,3 +155,12 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 
     return CPHVB_SUCCESS;
 }
+
+//Implementation of the user-defined funtion "reduce". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_reduce(cphvb_userfunc *arg)
+{
+    printf("cphvb_reduce\n");
+}
+
+

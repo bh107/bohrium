@@ -87,6 +87,7 @@ typedef cphvb_error (*cphvb_create_array)(
 /* Registre a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
+ *      When NULL the default library is used.
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
@@ -94,6 +95,14 @@ typedef cphvb_error (*cphvb_create_array)(
  */
 typedef cphvb_error (*cphvb_reg_func)(char *lib, char *fun,
                                       cphvb_intp *id);
+
+
+/* User-defined function implementation.
+ *
+ * @arg Argument for the user-defined function implementation
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+typedef cphvb_error (*cphvb_userfunc_impl)(cphvb_userfunc *arg);
 
 
 /* Codes for known component types */
@@ -111,6 +120,7 @@ struct cphvb_com_struct
 {
     char name[CPHVB_COM_NAME_SIZE];
     dictionary *config;
+    void *lib_handle;//Handle for the dynamic linked library.
     cphvb_com_type type;
     cphvb_init init;
     cphvb_shutdown shutdown;
@@ -145,6 +155,19 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
  */
 cphvb_error cphvb_com_free(cphvb_com *component);
 
+
+/* Retrieves an user-defined function.
+ *
+ * @self The component.
+ * @lib Name of the shared library e.g. libmyfunc.so
+*       When NULL the default library is used.
+ * @fun Name of the function e.g. myfunc
+ * @ret_func Pointer to the function (output)
+ *           Is NULL if the function doesn't exist
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
+                               cphvb_userfunc_impl *ret_func);
 
 #ifdef __cplusplus
 }
