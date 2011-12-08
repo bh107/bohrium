@@ -10,9 +10,9 @@ SRC=cphvb_ve_score.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/usr/local/lib
 
-all: $(LIB) 
+all: $(LIB)
 
-%.o: %.c $(ROOT)/include/*
+%.o: %.c $(ROOT)/include/* ./*.h ./*.hpp
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): cphvb_ve_score.o
