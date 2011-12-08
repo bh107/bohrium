@@ -25,7 +25,7 @@ cphvb_error cphvb_ve_score_init(
     cphvb_com       *self
 
 ) {
-
+    myself = self;
     return CPHVB_SUCCESS;
 }
 
@@ -65,6 +65,18 @@ cphvb_error cphvb_ve_score_shutdown( void ) {
 
 cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
+    if(reduce_impl == NULL)//We only support one user-defind function
+    {
+        cphvb_com_get_func(myself, lib, fun, &reduce_impl);
+        reduce_impl_id = *id;
+    }
     return CPHVB_SUCCESS;
+}
 
+//Implementation of the user-defined funtion "reduce". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_reduce(cphvb_userfunc *arg)
+{
+    printf("cphvb_ve_score_reduce\n");
+    return CPHVB_SUCCESS;
 }

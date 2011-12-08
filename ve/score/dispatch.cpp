@@ -16,13 +16,20 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
         case CPHVB_SYNC:
             break;
 
+        case CPHVB_USERFUNC:
+            if(instr->userfunc->id == reduce_impl_id)
+            {
+                reduce_impl(instr->userfunc);
+                break;
+            }//Else we don't know it and go to default.
+
         default:                // Element-wise functions + Memory Functions
 
             const long int poly = instr->opcode*100 + instr->operand[0]->type;
 
             switch(poly) {
 
-                                
+
                 case CPHVB_ADD*100+CPHVB_BOOL:
                     traverse_3<cphvb_bool, add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;

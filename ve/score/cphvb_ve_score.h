@@ -20,6 +20,10 @@
 #ifndef __CPHVB_VE_SCORE_H
 #define __CPHVB_VE_SCORE_H
 
+cphvb_com *myself = NULL;
+cphvb_userfunc_impl reduce_impl = NULL;
+cphvb_intp reduce_impl_id = 0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +42,10 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count,
 cphvb_error cphvb_ve_score_shutdown(void);
 
 cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+
+//Implementation of the user-defined funtion "reduce". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_reduce(cphvb_userfunc *arg);
 
 #ifdef __cplusplus
 }
