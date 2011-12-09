@@ -34,6 +34,9 @@ static cphvb_reg_func ve_reg_func;
 //The VE components
 static cphvb_com **coms;
 
+//Our self
+static cphvb_com *myself;
+
 //Number of user-defined functions registered.
 static cphvb_intp userfunc_count = 0;
 
@@ -50,6 +53,7 @@ cphvb_error cphvb_vem_node_init(cphvb_com *self)
 {
     cphvb_intp children_count;
     cphvb_error err;
+    myself = self;
 
     cphvb_com_children(self, &children_count, &coms);
     ve_init = coms[0]->init;
@@ -124,6 +128,10 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
     {
         return CPHVB_OUT_OF_MEMORY;
     }
+    #ifdef CPHVB_TRACE
+        cphvb_com_trace_array(myself, *new_array);
+    #endif
+
     return CPHVB_SUCCESS;
 }
 
@@ -159,6 +167,9 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     for(i=0; i<count; ++i)
     {
         cphvb_instruction* inst = &inst_list[i];
+        #ifdef CPHVB_TRACE
+            cphvb_com_trace_inst(myself, inst);
+        #endif
         switch(inst->opcode)
         {
         case CPHVB_DESTROY:
@@ -278,7 +289,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     }
     else
     {
-        // No validf instructions in batch
+        // No valid instructions in batch
         return CPHVB_SUCCESS;
     }
 }

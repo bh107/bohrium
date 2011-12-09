@@ -17,7 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cphvb_component.h>
+#include <cphvb.h>
 #include <iniparser.h>
 #include <string.h>
 #include <dlfcn.h>
@@ -257,5 +257,61 @@ cphvb_error cphvb_com_free(cphvb_com *component)
     return CPHVB_SUCCESS;
 }
 
+/* Trace an array creation.
+ *
+ * @self The component.
+ * @ary  The array to trace.
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary)
+{
+    int i;
+    FILE *f = fopen("/tmp/cphvb_trace.ary", "a");
+    fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, ary->ndim);
+    for(i=0; i<ary->ndim; ++i)
+        fprintf(f," %ld", ary->shape[i]);
+    fprintf(f,";\t stride:");
+    for(i=0; i<ary->ndim; ++i)
+        fprintf(f," %ld", ary->stride[i]);
+    fprintf(f,";\t start: %ld;\t base: %p;\n",ary->start, ary->base);
 
+    fclose(f);
+    return CPHVB_SUCCESS;
+}
 
+/* Trace an instruction.
+ *
+ * @self The component.
+ * @inst  The instruction to trace.
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst)
+{
+    int i;
+    cphvb_intp nop;
+    cphvb_array *ops[CPHVB_MAX_NO_OPERANDS];
+
+    FILE *f = fopen("/tmp/cphvb_trace.inst", "a");
+
+    fprintf(f,"%s\t", cphvb_opcode_text(inst->opcode));
+
+    if(inst->opcode == CPHVB_USERFUNC)
+    {
+        nop = inst->userfunc->nout + inst->userfunc->nin;
+        for(i=0; i<nop; ++i)
+            ops[i] = inst->userfunc->operand[i];
+    }
+    else
+    {
+        nop = cphvb_operands(inst->opcode);
+        for(i=0; i<nop; ++i)
+            ops[i] = inst->operand[i];
+    }
+    for(i=0; i<nop; ++i)
+        fprintf(f," \t%p", ops[i]);
+
+    fprintf(f,"\n");
+
+    fclose(f);
+    return CPHVB_SUCCESS;
+}

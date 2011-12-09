@@ -169,6 +169,22 @@ cphvb_error cphvb_com_free(cphvb_com *component);
 cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
                                cphvb_userfunc_impl *ret_func);
 
+/* Trace an array creation.
+ *
+ * @self The component.
+ * @ary  The array to trace.
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
+
+/* Trace an instruction.
+ *
+ * @self The component.
+ * @inst  The instruction to trace.
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst);
+
 #ifdef __cplusplus
 }
 #endif
