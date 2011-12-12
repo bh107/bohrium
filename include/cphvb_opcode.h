@@ -103,6 +103,7 @@ enum /* cphvb_opcode */
     CPHVB_LOG2,
     CPHVB_ISREAL,
     CPHVB_ISCOMPLEX,
+    CPHVB_IDENTITY,
     CPHVB_USERFUNC,//It is an user-defined function
     CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
     CPHVB_SYNC,    //Inform child to make data synchronized and available.

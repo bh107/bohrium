@@ -2404,6 +2404,39 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 case CPHVB_ARANGE*100+CPHVB_FLOAT64:
                     traverse_1<cphvb_float64, arange_functor<cphvb_float64> >( instr );
                     break;
+                case CPHVB_IDENTITY*100+CPHVB_BOOL:
+                    traverse_2<cphvb_bool, identity_functor<cphvb_bool,cphvb_bool> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_INT8:
+                    traverse_2<cphvb_int8, identity_functor<cphvb_int8,cphvb_int8> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_INT16:
+                    traverse_2<cphvb_int16, identity_functor<cphvb_int16,cphvb_int16> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_INT32:
+                    traverse_2<cphvb_int32, identity_functor<cphvb_int32,cphvb_int32> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_INT64:
+                    traverse_2<cphvb_int64, identity_functor<cphvb_int64,cphvb_int64> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_UINT8:
+                    traverse_2<cphvb_uint8, identity_functor<cphvb_uint8,cphvb_uint8> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_UINT16:
+                    traverse_2<cphvb_uint16, identity_functor<cphvb_uint16,cphvb_uint16> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_UINT32:
+                    traverse_2<cphvb_uint32, identity_functor<cphvb_uint32,cphvb_uint32> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_UINT64:
+                    traverse_2<cphvb_uint64, identity_functor<cphvb_uint64,cphvb_uint64> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_FLOAT32:
+                    traverse_2<cphvb_float32, identity_functor<cphvb_float32,cphvb_float32> >( instr );
+                    break;
+                case CPHVB_IDENTITY*100+CPHVB_FLOAT64:
+                    traverse_2<cphvb_float64, identity_functor<cphvb_float64,cphvb_float64> >( instr );
+                    break;
 
                 default:                // Unsupported instruction
                     instr->status = CPHVB_TYPE_NOT_SUPPORTED;
