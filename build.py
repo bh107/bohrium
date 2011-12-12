@@ -104,7 +104,7 @@ if __name__ == "__main__":
         build("VE-CUDA", "ve/cuda", False)
         build("VE-SIMPLE", "ve/simple", False)
         build("VE-SCORE", "ve/score", True)
-        build("VE-MCORE", "ve/mcore", False)
+        build("VE-OMP", "ve/omp", False)
         build("VEM-NODE", "vem/node", True)
         build("BRIDGE-NUMPY", "bridge/numpy", True)
     elif cmd == "clean":
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         clean("VE-CUDA", "ve/cuda")
         clean("VE-SIMPLE", "ve/simple")
         clean("VE-SCORE", "ve/score")
-        clean("VE-MCORE", "ve/mcore")
+        clean("VE-OMP", "ve/omp")
         clean("VEM-NODE", "vem/node")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         install("VE-CUDA", "ve/cuda", False)
         install("VE-SIMPLE", "ve/simple", True)
         install("VE-SCORE", "ve/score",True)
-        install("VE-MCORE", "ve/mcore",False)
+        install("VE-OMP", "ve/omp",False)
         install("VEM-NODE", "vem/node", True)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
         ldconfig()

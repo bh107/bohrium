@@ -17,27 +17,38 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
+#ifndef __CPHVB_VE_OMP_H
+#define __CPHVB_VE_OMP_H
+
+cphvb_com *myself = NULL;
+cphvb_userfunc_impl reduce_impl = NULL;
+cphvb_intp reduce_impl_id = 0;
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include <cphvb.h>
 
-cphvb_error cphvb_ve_mcore_init(cphvb_intp *opcode_count,
-                                cphvb_opcode opcode_list[CPHVB_MAX_NO_OPERANDS],
-                                cphvb_intp *datatype_count,
-                                cphvb_type datatype_list[CPHVB_NO_TYPES]);
+cphvb_error cphvb_ve_omp_init(
 
-cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count,
+    cphvb_com       *self
+
+);
+
+cphvb_error cphvb_ve_omp_execute( cphvb_intp instruction_count,
                                     cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS]);
 
-cphvb_error cphvb_ve_mcore_shutdown(void);
+cphvb_error cphvb_ve_omp_shutdown(void);
+
+cphvb_error cphvb_ve_omp_reg_func(char *lib, char *fun, cphvb_intp *id);
+
+//Implementation of the user-defined funtion "reduce". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_reduce(cphvb_userfunc *arg);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif
