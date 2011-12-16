@@ -61,6 +61,7 @@ private:
 
 public:
     ArrayManager();
+    ~ArrayManager();
     cphvb_array* create(cphvb_array* base,
                         cphvb_type type,
                         cphvb_intp ndim,

@@ -55,6 +55,11 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
     return array;
 }
 
+ArrayManager::~ArrayManager()
+{
+    delete arrayStore;
+}
+
 void ArrayManager::erasePending(cphvb_array* array)
 {
     eraseQueue.push_back(array);
@@ -95,7 +100,9 @@ void ArrayManager::flush()
     for (; eit != eraseQueue.end(); ++eit)
     {
         if ((*eit)->base == NULL)
-        {   //Its a base array so we can delete it
+        {   //We have to deallocate the base array because of the
+            //triggering opcode CPHVB_DESTROY.
+            free((*eit)->data);
             arrayStore->erase(*eit);
         }
         else if ((*eit)->base->owner == CPHVB_PARENT)
