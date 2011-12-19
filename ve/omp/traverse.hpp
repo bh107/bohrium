@@ -46,8 +46,6 @@ void pp_instr( cphvb_instruction *instr ) {
 template <typename T, typename Instr>
 cphvb_error traverse_3( cphvb_instruction *instr ) {
 
-    Instr opcode_func;
-
     T *d0, *d1, *d2;                            // Pointers to start of data elements
     cphvb_array *a0 = instr->operand[0],        // Operands
                 *a1 = instr->operand[1],
@@ -83,9 +81,10 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
             if(nthds > a0->shape[0])
                 nthds = a0->shape[0];//Minimum one element per thread.
         }
-        #pragma omp parallel num_threads(nthds) default(none) shared(nthds,a0,a1,a2,d0,d1,d2,opcode_func)
+        #pragma omp parallel num_threads(nthds) default(none) shared(nthds,a0,a1,a2,d0,d1,d2)
     #endif
     {
+        Instr opcode_func;
         #ifdef _OPENMP
             int myid = omp_get_thread_num();
         #else
@@ -126,12 +125,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
                 opcode_func( (off0+d0), (off1+d1), (off2+d2) );
 
             }
-/*
-            printf("length: %ld, myid: %d, thd_offset: %ld, coord: ", length, myid, thd_offset);
-            for(j=0; j<a0->ndim; ++j)
-                printf(" %ld", coord[j]);
-            printf("\n");
-*/
+
             for(j = last_dim; j >= 0; --j) {
                 coord[j]++;
                 if(j==0 && coord[j] >= length)
