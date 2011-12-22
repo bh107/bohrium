@@ -19,6 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_omp.h"
 #include "dispatch.cpp"
+#include "random.c"
 
 cphvb_error cphvb_ve_omp_init(
 
@@ -143,21 +144,6 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
             return err;
         tmp.start += step;
     }
-
-    return CPHVB_SUCCESS;
-}
-
-//Implementation of the user-defined funtion "random". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_random(cphvb_userfunc *arg)
-{
-    cphvb_random_type *a = (cphvb_random_type *) arg;
-
-    //Make sure that the array memory is allocated.
-    if(cphvb_malloc_array_data(a->operand[0]) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
-
-    printf("cphvb_random - not implemented sorry\n");
 
     return CPHVB_SUCCESS;
 }
