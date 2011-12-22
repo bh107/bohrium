@@ -13,7 +13,7 @@ all: $(LIB)
 %.o: %.c $(ROOT)/include/* ./*.h ./*.hpp
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
-$(LIB): cphvb_ve_omp.o
+$(LIB): $(OBJ)
 		$(CXX) $< -o $@ $(LDFLAGS),$(LIB) $(CFLAGS)
 
 clean:
