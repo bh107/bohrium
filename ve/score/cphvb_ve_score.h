@@ -23,6 +23,8 @@
 cphvb_com *myself = NULL;
 cphvb_userfunc_impl reduce_impl = NULL;
 cphvb_intp reduce_impl_id = 0;
+cphvb_userfunc_impl random_impl = NULL;
+cphvb_intp random_impl_id = 0;
 
 #ifdef __cplusplus
 extern "C" {

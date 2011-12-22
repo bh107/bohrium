@@ -63,13 +63,19 @@ cphvb_error cphvb_ve_omp_shutdown( void ) {
 
 }
 
-cphvb_error cphvb_ve_omp_reg_func(char *lib, char *fun, cphvb_intp *id) {
-
-    if(reduce_impl == NULL)//We only support one user-defind function
+cphvb_error cphvb_ve_omp_reg_func(char *lib, char *fun, cphvb_intp *id)
+{
+    if(strcmp("cphvb_reduce", fun) && reduce_impl == NULL)
     {
         cphvb_com_get_func(myself, lib, fun, &reduce_impl);
         reduce_impl_id = *id;
     }
+    else if(strcmp("cphvb_random", fun) && random_impl == NULL)
+    {
+        cphvb_com_get_func(myself, lib, fun, &random_impl);
+        random_impl_id = *id;
+    }
+
     return CPHVB_SUCCESS;
 }
 
@@ -137,6 +143,21 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
             return err;
         tmp.start += step;
     }
+
+    return CPHVB_SUCCESS;
+}
+
+//Implementation of the user-defined funtion "random". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_random(cphvb_userfunc *arg)
+{
+    cphvb_random_type *a = (cphvb_random_type *) arg;
+
+    //Make sure that the array memory is allocated.
+    if(cphvb_malloc_array_data(a->operand[0]) != CPHVB_SUCCESS)
+        return CPHVB_OUT_OF_MEMORY;
+
+    printf("cphvb_random - not implemented sorry\n");
 
     return CPHVB_SUCCESS;
 }

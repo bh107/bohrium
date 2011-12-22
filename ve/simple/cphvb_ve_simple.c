@@ -161,6 +161,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 cphvb_error cphvb_reduce(cphvb_userfunc *arg)
 {
     printf("cphvb_reduce\n");
+    return 0;
 }
 
 

@@ -5,7 +5,6 @@
 #include "functors.hpp"
 
 inline cphvb_error dispatch( cphvb_instruction *instr ) {
-
     cphvb_error res = CPHVB_SUCCESS;
 
     switch(instr->opcode) {
@@ -21,7 +20,18 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
             {
                 reduce_impl(instr->userfunc);
                 break;
-            }//Else we don't know it and go to default.
+            }
+            else if(instr->userfunc->id == random_impl_id)
+            {
+                random_impl(instr->userfunc);
+                break;
+            }
+            else
+            {
+                // Unsupported instruction
+                instr->status = CPHVB_TYPE_NOT_SUPPORTED;
+                return CPHVB_PARTIAL_SUCCESS;
+            }
 
         default:                // Element-wise functions + Memory Functions
 
