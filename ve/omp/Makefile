@@ -10,7 +10,7 @@ INSTALLDIR?=/usr/local/lib
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/include/* ./*.h ./*.hpp
+%.o: %.c $(ROOT)/include/* ./*.h ../score/*.cpp ../score/*.hpp
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)

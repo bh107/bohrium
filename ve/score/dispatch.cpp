@@ -41,997 +41,997 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
 
 
                 case CPHVB_ADD*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, add_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,add_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, add_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,add_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, add_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,add_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, add_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,add_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, add_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,add_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, add_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,add_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, add_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,add_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, add_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,add_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, add_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,add_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_ADD*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, add_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,add_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, subtract_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,subtract_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, subtract_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,subtract_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, subtract_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,subtract_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, subtract_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,subtract_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, subtract_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,subtract_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, subtract_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,subtract_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, subtract_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,subtract_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, subtract_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,subtract_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, subtract_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,subtract_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, subtract_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,subtract_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_SUBTRACT*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, subtract_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,subtract_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, multiply_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,multiply_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, multiply_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,multiply_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, multiply_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,multiply_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, multiply_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,multiply_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, multiply_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,multiply_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, multiply_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,multiply_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, multiply_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,multiply_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, multiply_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,multiply_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, multiply_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,multiply_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, multiply_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,multiply_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_MULTIPLY*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, multiply_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,multiply_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_DIVIDE*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, logaddexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,logaddexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, logaddexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,logaddexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, logaddexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,logaddexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, logaddexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,logaddexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, logaddexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,logaddexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, logaddexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,logaddexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, logaddexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,logaddexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, logaddexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,logaddexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, logaddexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,logaddexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, logaddexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,logaddexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, logaddexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,logaddexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, logaddexp2_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,logaddexp2_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, logaddexp2_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,logaddexp2_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, logaddexp2_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,logaddexp2_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, logaddexp2_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,logaddexp2_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, logaddexp2_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,logaddexp2_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, logaddexp2_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,logaddexp2_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, logaddexp2_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,logaddexp2_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, logaddexp2_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,logaddexp2_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, logaddexp2_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,logaddexp2_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, logaddexp2_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,logaddexp2_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LOGADDEXP2*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, logaddexp2_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,logaddexp2_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, true_divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,true_divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, true_divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,true_divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, true_divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,true_divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, true_divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,true_divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, true_divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,true_divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, true_divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,true_divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, true_divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,true_divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, true_divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,true_divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, true_divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,true_divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, true_divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,true_divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_TRUE_DIVIDE*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, true_divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,true_divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, floor_divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,floor_divide_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, floor_divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,floor_divide_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, floor_divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,floor_divide_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, floor_divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,floor_divide_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, floor_divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,floor_divide_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, floor_divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,floor_divide_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, floor_divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,floor_divide_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, floor_divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,floor_divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, floor_divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,floor_divide_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, floor_divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,floor_divide_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_FLOOR_DIVIDE*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, floor_divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,floor_divide_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, power_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,power_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, power_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,power_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, power_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,power_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, power_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,power_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, power_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,power_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, power_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,power_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, power_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,power_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, power_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,power_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, power_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,power_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, power_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,power_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_POWER*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, power_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,power_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, remainder_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,remainder_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, remainder_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,remainder_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, remainder_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,remainder_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, remainder_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,remainder_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, remainder_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,remainder_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, remainder_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,remainder_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, remainder_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,remainder_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, remainder_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,remainder_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, remainder_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,remainder_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, remainder_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,remainder_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_REMAINDER*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, remainder_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,remainder_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, mod_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,mod_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, mod_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,mod_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, mod_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,mod_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, mod_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,mod_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, mod_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,mod_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, mod_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,mod_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, mod_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,mod_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, mod_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,mod_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, mod_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,mod_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, mod_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,mod_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_MOD*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, mod_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,mod_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, fmod_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,fmod_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, fmod_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,fmod_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, fmod_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,fmod_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, fmod_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,fmod_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, fmod_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,fmod_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, fmod_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,fmod_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, fmod_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,fmod_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, fmod_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,fmod_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, fmod_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,fmod_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, fmod_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,fmod_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_FMOD*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, fmod_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,fmod_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, bitwise_and_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,bitwise_and_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, bitwise_and_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,bitwise_and_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, bitwise_and_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,bitwise_and_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, bitwise_and_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,bitwise_and_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, bitwise_and_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,bitwise_and_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, bitwise_and_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,bitwise_and_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, bitwise_and_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,bitwise_and_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, bitwise_and_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,bitwise_and_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_BITWISE_AND*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, bitwise_and_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,bitwise_and_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, bitwise_or_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,bitwise_or_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, bitwise_or_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,bitwise_or_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, bitwise_or_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,bitwise_or_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, bitwise_or_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,bitwise_or_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, bitwise_or_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,bitwise_or_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, bitwise_or_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,bitwise_or_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, bitwise_or_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,bitwise_or_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, bitwise_or_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,bitwise_or_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_BITWISE_OR*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, bitwise_or_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,bitwise_or_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, bitwise_xor_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,bitwise_xor_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, bitwise_xor_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,bitwise_xor_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, bitwise_xor_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,bitwise_xor_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, bitwise_xor_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,bitwise_xor_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, bitwise_xor_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,bitwise_xor_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, bitwise_xor_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,bitwise_xor_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, bitwise_xor_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,bitwise_xor_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, bitwise_xor_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,bitwise_xor_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_BITWISE_XOR*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, bitwise_xor_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,bitwise_xor_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, logical_and_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,logical_and_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, logical_and_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,logical_and_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, logical_and_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,logical_and_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, logical_and_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,logical_and_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, logical_and_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,logical_and_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, logical_and_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,logical_and_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, logical_and_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,logical_and_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, logical_and_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,logical_and_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, logical_and_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,logical_and_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, logical_and_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,logical_and_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LOGICAL_AND*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, logical_and_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,logical_and_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, logical_or_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,logical_or_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, logical_or_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,logical_or_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, logical_or_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,logical_or_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, logical_or_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,logical_or_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, logical_or_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,logical_or_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, logical_or_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,logical_or_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, logical_or_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,logical_or_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, logical_or_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,logical_or_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, logical_or_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,logical_or_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, logical_or_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,logical_or_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LOGICAL_OR*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, logical_or_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,logical_or_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, logical_xor_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,logical_xor_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, logical_xor_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,logical_xor_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, logical_xor_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,logical_xor_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, logical_xor_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,logical_xor_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, logical_xor_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,logical_xor_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, logical_xor_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,logical_xor_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, logical_xor_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,logical_xor_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, logical_xor_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,logical_xor_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, logical_xor_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,logical_xor_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, logical_xor_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,logical_xor_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LOGICAL_XOR*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, logical_xor_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,logical_xor_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, left_shift_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,left_shift_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, left_shift_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,left_shift_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, left_shift_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,left_shift_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, left_shift_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,left_shift_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, left_shift_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,left_shift_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, left_shift_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,left_shift_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, left_shift_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,left_shift_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, left_shift_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,left_shift_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LEFT_SHIFT*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, left_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,left_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, right_shift_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,right_shift_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, right_shift_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,right_shift_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, right_shift_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,right_shift_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, right_shift_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,right_shift_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, right_shift_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,right_shift_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, right_shift_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,right_shift_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, right_shift_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,right_shift_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, right_shift_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,right_shift_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_RIGHT_SHIFT*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, right_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,right_shift_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, greater_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,greater_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, greater_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,greater_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, greater_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,greater_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, greater_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,greater_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, greater_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,greater_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, greater_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,greater_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, greater_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,greater_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, greater_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,greater_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, greater_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,greater_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, greater_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,greater_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, greater_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,greater_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, greater_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,greater_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, greater_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,greater_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, greater_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,greater_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, greater_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,greater_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, greater_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,greater_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, greater_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,greater_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, greater_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,greater_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, greater_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,greater_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, greater_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,greater_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, greater_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,greater_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, greater_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,greater_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, less_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,less_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, less_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,less_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, less_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,less_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, less_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,less_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, less_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,less_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, less_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,less_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, less_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,less_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, less_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,less_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, less_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,less_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, less_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,less_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, less_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,less_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, less_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,less_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, less_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,less_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, less_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,less_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, less_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,less_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, less_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,less_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, less_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,less_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, less_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,less_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, less_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,less_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, less_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,less_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, less_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,less_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, less_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,less_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, not_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,not_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, not_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,not_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, not_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,not_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, not_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,not_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, not_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,not_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, not_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,not_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, not_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,not_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, not_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,not_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, not_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,not_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, not_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,not_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, not_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,not_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, maximum_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,maximum_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, maximum_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,maximum_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, maximum_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,maximum_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, maximum_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,maximum_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, maximum_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,maximum_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, maximum_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,maximum_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, maximum_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,maximum_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, maximum_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,maximum_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, maximum_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,maximum_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, maximum_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,maximum_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, maximum_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,maximum_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, minimum_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,minimum_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, minimum_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,minimum_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, minimum_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,minimum_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, minimum_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,minimum_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, minimum_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,minimum_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, minimum_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,minimum_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, minimum_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,minimum_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, minimum_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,minimum_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, minimum_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,minimum_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, minimum_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,minimum_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_MINIMUM*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, minimum_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,minimum_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, ldexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,ldexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, ldexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,ldexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, ldexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,ldexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, ldexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,ldexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, ldexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,ldexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, ldexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,ldexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, ldexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,ldexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, ldexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,ldexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, ldexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,ldexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, ldexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,ldexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LDEXP*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, arctan2_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,arctan2_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, arctan2_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,arctan2_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, arctan2_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,arctan2_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, arctan2_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,arctan2_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, arctan2_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,arctan2_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, arctan2_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,arctan2_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, arctan2_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,arctan2_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, arctan2_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,arctan2_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, arctan2_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,arctan2_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, arctan2_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,arctan2_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_ARCTAN2*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, arctan2_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,arctan2_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, hypot_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,hypot_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, hypot_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,hypot_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, hypot_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,hypot_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, hypot_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,hypot_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, hypot_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,hypot_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, hypot_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,hypot_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, hypot_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,hypot_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, hypot_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,hypot_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, hypot_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,hypot_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_HYPOT*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_NEGATIVE*100+CPHVB_BOOL:
                     traverse_2<cphvb_bool, negative_functor<cphvb_bool,cphvb_bool> >( instr );
@@ -2283,70 +2283,70 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                     traverse_2<cphvb_float64, iscomplex_functor<cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, modf_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,modf_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, modf_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,modf_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, modf_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,modf_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, modf_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,modf_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, modf_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,modf_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, modf_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,modf_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, modf_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,modf_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, modf_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,modf_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, modf_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,modf_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, modf_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,modf_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_MODF*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, modf_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,modf_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_BOOL:
-                    traverse_3<cphvb_bool, frexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
+                    traverse_3<cphvb_bool,cphvb_bool,frexp_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_INT8:
-                    traverse_3<cphvb_int8, frexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    traverse_3<cphvb_int8,cphvb_int8,frexp_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_INT16:
-                    traverse_3<cphvb_int16, frexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    traverse_3<cphvb_int16,cphvb_int16,frexp_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_INT32:
-                    traverse_3<cphvb_int32, frexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    traverse_3<cphvb_int32,cphvb_int32,frexp_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_INT64:
-                    traverse_3<cphvb_int64, frexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    traverse_3<cphvb_int64,cphvb_int64,frexp_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_UINT8:
-                    traverse_3<cphvb_uint8, frexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    traverse_3<cphvb_uint8,cphvb_uint8,frexp_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_UINT16:
-                    traverse_3<cphvb_uint16, frexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    traverse_3<cphvb_uint16,cphvb_uint16,frexp_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_UINT32:
-                    traverse_3<cphvb_uint32, frexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    traverse_3<cphvb_uint32,cphvb_uint32,frexp_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_UINT64:
-                    traverse_3<cphvb_uint64, frexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    traverse_3<cphvb_uint64,cphvb_uint64,frexp_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_FLOAT32:
-                    traverse_3<cphvb_float32, frexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    traverse_3<cphvb_float32,cphvb_float32,frexp_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_FREXP*100+CPHVB_FLOAT64:
-                    traverse_3<cphvb_float64, frexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    traverse_3<cphvb_float64,cphvb_float64,frexp_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_RANDOM*100+CPHVB_BOOL:
                     traverse_1<cphvb_bool, random_functor<cphvb_bool> >( instr );

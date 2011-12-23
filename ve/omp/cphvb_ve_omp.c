@@ -18,7 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_omp.h"
-#include "dispatch.cpp"
+#include "../score/dispatch.cpp"
 #include "random.c"
 
 cphvb_error cphvb_ve_omp_init(
