@@ -61,6 +61,7 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
 
 case_tmpl="""
 case __OPCODE__*100+__ETYPE__:
+    __TYPE_CHECK__
     traverse___OPCOUNT__<__TYPES__, __FUNC___functor<__TYPES__> >( instr );
     break;"""
 
@@ -97,13 +98,22 @@ def main():
         for x in (x for x in opcodes.split('\n') if x):
             for t in (x for x in types.split('\n') if x and x not in ignore):
                 if not (t in types_float and x in opcode_no_float_support):
+                    typelist_u = [t.upper() for i in xrange(1,count+1)]
+                    typelist_l = [t.lower() for i in xrange(1,count+1)]
+
+                    type_check = 'if(instr->operand[0]->type != %s'%typelist_u[0]
+                    for i in xrange(1,count):
+                        type_check += ' || instr->operand[%d]->type != %s'%(i,typelist_u[i])
+                    type_check += '){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}'
+
                     case  += case_tmpl\
                             .replace('__OPCOUNT__', str(count))\
                             .replace('__OPCODE__', x)\
                             .replace('__ETYPE__', t)\
                             .replace('__FUNC__', x.lower().replace('cphvb_', ''))\
                             .replace('__TYPE__', t.lower())\
-                            .replace('__TYPES__', ','.join([t.lower() for i in xrange(1,count+1)]))
+                            .replace('__TYPES__', ','.join(typelist_l))\
+                            .replace('__TYPE_CHECK__', type_check)
             func += functor_tmpl\
                     .replace('__FUNC__', x.lower().replace('cphvb_', ''))\
                     .replace('__PARAMS__',      ', '.join(["T%d *op%d" % (i, i)        for i in xrange(1,count+1)]))\
