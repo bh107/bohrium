@@ -34,13 +34,15 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 return CPHVB_PARTIAL_SUCCESS;
             }
 
-        default:                // Element-wise functions + Memory Functions
+        default:
 
-            const long int poly = instr->opcode*100 + instr->operand[0]->type;
+            //poly is a unique identifier for the opcode and the data type of the last operand.
+            const long int poly = instr->opcode*100 +
+                                  instr->operand[cphvb_operands(instr->opcode)-1]->type;
 
             switch(poly) {
 
-                                
+
                 case CPHVB_ADD*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
