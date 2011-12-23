@@ -34,14 +34,13 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                 return CPHVB_PARTIAL_SUCCESS;
             }
 
-        default:
-            //poly is a unique identifier for the opcode and the data type of the last operand.
-            const long int poly = instr->opcode*100 +
-                                  instr->operand[cphvb_operands(instr->opcode)-1]->type;
+        default:                // Element-wise functions + Memory Functions
+
+            const long int poly = instr->opcode*100 + instr->operand[0]->type;
 
             switch(poly) {
 
-
+                                
                 case CPHVB_ADD*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, add_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
@@ -863,264 +862,264 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, greater_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, greater_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, greater_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, greater_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, greater_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, greater_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, greater_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, greater_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, greater_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, greater_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, greater_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, greater_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, greater_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, greater_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, greater_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, greater_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, greater_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, greater_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, greater_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_GREATER*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, greater_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, greater_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, greater_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, greater_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, greater_equal_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, greater_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, greater_equal_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, greater_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, greater_equal_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, greater_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, greater_equal_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, greater_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, greater_equal_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, greater_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, greater_equal_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, greater_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, greater_equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, greater_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, greater_equal_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, greater_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, greater_equal_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_GREATER_EQUAL*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, greater_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, greater_equal_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, less_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, less_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, less_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, less_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, less_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, less_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, less_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, less_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, less_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, less_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, less_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, less_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, less_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, less_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, less_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, less_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, less_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, less_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, less_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LESS*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, less_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, less_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, less_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, less_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, less_equal_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, less_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, less_equal_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, less_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, less_equal_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, less_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, less_equal_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, less_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, less_equal_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, less_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, less_equal_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, less_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, less_equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, less_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, less_equal_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, less_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, less_equal_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_LESS_EQUAL*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, less_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, less_equal_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, not_equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, not_equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, not_equal_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, not_equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, not_equal_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, not_equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, not_equal_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, not_equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, not_equal_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, not_equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, not_equal_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, not_equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, not_equal_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, not_equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, not_equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, not_equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, not_equal_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, not_equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, not_equal_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_NOT_EQUAL*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, not_equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, not_equal_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
                     traverse_3<cphvb_bool,cphvb_bool,cphvb_bool, equal_functor<cphvb_bool,cphvb_bool,cphvb_bool> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT8:
-                    if(instr->operand[0]->type != CPHVB_INT8 || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int8,cphvb_int8,cphvb_int8, equal_functor<cphvb_int8,cphvb_int8,cphvb_int8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT8 || instr->operand[2]->type != CPHVB_INT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int8,cphvb_int8, equal_functor<cphvb_bool,cphvb_int8,cphvb_int8> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT16:
-                    if(instr->operand[0]->type != CPHVB_INT16 || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int16,cphvb_int16,cphvb_int16, equal_functor<cphvb_int16,cphvb_int16,cphvb_int16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT16 || instr->operand[2]->type != CPHVB_INT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int16,cphvb_int16, equal_functor<cphvb_bool,cphvb_int16,cphvb_int16> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT32:
-                    if(instr->operand[0]->type != CPHVB_INT32 || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int32,cphvb_int32,cphvb_int32, equal_functor<cphvb_int32,cphvb_int32,cphvb_int32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT32 || instr->operand[2]->type != CPHVB_INT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int32,cphvb_int32, equal_functor<cphvb_bool,cphvb_int32,cphvb_int32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_INT64:
-                    if(instr->operand[0]->type != CPHVB_INT64 || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_int64,cphvb_int64,cphvb_int64, equal_functor<cphvb_int64,cphvb_int64,cphvb_int64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_INT64 || instr->operand[2]->type != CPHVB_INT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_int64,cphvb_int64, equal_functor<cphvb_bool,cphvb_int64,cphvb_int64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT8:
-                    if(instr->operand[0]->type != CPHVB_UINT8 || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint8,cphvb_uint8,cphvb_uint8, equal_functor<cphvb_uint8,cphvb_uint8,cphvb_uint8> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT8 || instr->operand[2]->type != CPHVB_UINT8){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint8,cphvb_uint8, equal_functor<cphvb_bool,cphvb_uint8,cphvb_uint8> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT16:
-                    if(instr->operand[0]->type != CPHVB_UINT16 || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint16,cphvb_uint16,cphvb_uint16, equal_functor<cphvb_uint16,cphvb_uint16,cphvb_uint16> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT16 || instr->operand[2]->type != CPHVB_UINT16){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint16,cphvb_uint16, equal_functor<cphvb_bool,cphvb_uint16,cphvb_uint16> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT32:
-                    if(instr->operand[0]->type != CPHVB_UINT32 || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint32,cphvb_uint32,cphvb_uint32, equal_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT32 || instr->operand[2]->type != CPHVB_UINT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint32,cphvb_uint32, equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_UINT64:
-                    if(instr->operand[0]->type != CPHVB_UINT64 || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_uint64,cphvb_uint64,cphvb_uint64, equal_functor<cphvb_uint64,cphvb_uint64,cphvb_uint64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_UINT64 || instr->operand[2]->type != CPHVB_UINT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_uint64,cphvb_uint64, equal_functor<cphvb_bool,cphvb_uint64,cphvb_uint64> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_FLOAT32:
-                    if(instr->operand[0]->type != CPHVB_FLOAT32 || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float32,cphvb_float32,cphvb_float32, equal_functor<cphvb_float32,cphvb_float32,cphvb_float32> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT32 || instr->operand[2]->type != CPHVB_FLOAT32){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float32,cphvb_float32, equal_functor<cphvb_bool,cphvb_float32,cphvb_float32> >( instr );
                     break;
                 case CPHVB_EQUAL*100+CPHVB_FLOAT64:
-                    if(instr->operand[0]->type != CPHVB_FLOAT64 || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
-                    traverse_3<cphvb_float64,cphvb_float64,cphvb_float64, equal_functor<cphvb_float64,cphvb_float64,cphvb_float64> >( instr );
+                    if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_FLOAT64 || instr->operand[2]->type != CPHVB_FLOAT64){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}
+                    traverse_3<cphvb_bool,cphvb_float64,cphvb_float64, equal_functor<cphvb_bool,cphvb_float64,cphvb_float64> >( instr );
                     break;
                 case CPHVB_MAXIMUM*100+CPHVB_BOOL:
                     if(instr->operand[0]->type != CPHVB_BOOL || instr->operand[1]->type != CPHVB_BOOL || instr->operand[2]->type != CPHVB_BOOL){instr->status = CPHVB_TYPE_NOT_SUPPORTED; return CPHVB_PARTIAL_SUCCESS;}

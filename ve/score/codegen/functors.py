@@ -101,6 +101,10 @@ def main():
                     typelist_u = [t.upper() for i in xrange(1,count+1)]
                     typelist_l = [t.lower() for i in xrange(1,count+1)]
 
+                    if x in opcode_bool_out:
+                        typelist_u[0] = "CPHVB_BOOL"
+                        typelist_l[0] = typelist_u[0].lower()
+
                     type_check = 'if(instr->operand[0]->type != %s'%typelist_u[0]
                     for i in xrange(1,count):
                         type_check += ' || instr->operand[%d]->type != %s'%(i,typelist_u[i])

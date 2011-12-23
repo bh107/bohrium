@@ -12,7 +12,7 @@ INSTALLDIR?=/usr/local/lib
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/include/* ./*.h ./*.hpp
+%.o: %.c $(ROOT)/include/* ./*.h ./*.hpp ./*.cpp
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): cphvb_ve_score.o

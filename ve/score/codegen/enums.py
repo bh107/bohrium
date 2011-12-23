@@ -134,4 +134,13 @@ opcode_no_float_support = [
 "CPHVB_INVERT"
 ]
 
+opcode_bool_out = [
+"CPHVB_GREATER",
+"CPHVB_GREATER_EQUAL",
+"CPHVB_LESS",
+"CPHVB_LESS_EQUAL",
+"CPHVB_NOT_EQUAL",
+"CPHVB_EQUAL"
+]
+
 ignore = ['CPHVB_UNKNOWN', 'CPHVB_INDEX','CPHVB_FLOAT16']
