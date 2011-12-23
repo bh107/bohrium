@@ -19,6 +19,24 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
         case CPHVB_SYNC:
             break;
 
+        case CPHVB_USERFUNC:
+            if(instr->userfunc->id == reduce_impl_id)
+            {
+                reduce_impl(instr->userfunc);
+                break;
+            }
+            else if(instr->userfunc->id == random_impl_id)
+            {
+                random_impl(instr->userfunc);
+                break;
+            }
+            else
+            {
+                // Unsupported instruction
+                instr->status = CPHVB_TYPE_NOT_SUPPORTED;
+                return CPHVB_PARTIAL_SUCCESS;
+            }
+
         default:                // Element-wise functions + Memory Functions
 
             const long int poly = instr->opcode*100 + instr->operand[0]->type;
@@ -43,7 +61,7 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
 
 case_tmpl="""
 case __OPCODE__*100+__ETYPE__:
-    traverse___OPCOUNT__<__TYPE__, __FUNC___functor<__TYPES__> >( instr );
+    traverse___OPCOUNT__<__TYPES__, __FUNC___functor<__TYPES__> >( instr );
     break;"""
 
 functor_prefix_tmpl="""
@@ -51,20 +69,20 @@ functor_prefix_tmpl="""
 #include <cstdlib>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846  
+#define M_PI 3.14159265358979323846
 #endif
- 
+
 #define DEG_CIR 360.0
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 """
 
 functor_tmpl="""
-template <__TYPE_PARAMS__> 
+template <__TYPE_PARAMS__>
 struct __FUNC___functor {
-    void operator()(__PARAMS__) { 
+    void operator()(__PARAMS__) {
     }
-};  
+};
 """
 
 def indent( text, c=1):
@@ -72,24 +90,25 @@ def indent( text, c=1):
 
 def main():
 
-    func = ''    
+    func = ''
     case = ''
 
     for (count, opcodes) in opcode_map:
         for x in (x for x in opcodes.split('\n') if x):
             for t in (x for x in types.split('\n') if x and x not in ignore):
-                case  += case_tmpl\
-                        .replace('__OPCOUNT__', str(count))\
-                        .replace('__OPCODE__', x)\
-                        .replace('__ETYPE__', t)\
-                        .replace('__FUNC__', x.lower().replace('cphvb_', ''))\
-                        .replace('__TYPE__', t.lower())\
-                        .replace('__TYPES__', ','.join([t.lower() for i in xrange(1,count+1)]))
+                if not (t in types_float and x in opcode_no_float_support):
+                    case  += case_tmpl\
+                            .replace('__OPCOUNT__', str(count))\
+                            .replace('__OPCODE__', x)\
+                            .replace('__ETYPE__', t)\
+                            .replace('__FUNC__', x.lower().replace('cphvb_', ''))\
+                            .replace('__TYPE__', t.lower())\
+                            .replace('__TYPES__', ','.join([t.lower() for i in xrange(1,count+1)]))
             func += functor_tmpl\
                     .replace('__FUNC__', x.lower().replace('cphvb_', ''))\
                     .replace('__PARAMS__',      ', '.join(["T%d *op%d" % (i, i)        for i in xrange(1,count+1)]))\
                     .replace('__TYPE_PARAMS__', ', '.join(["typename T%d" % i    for i in xrange(1,count+1)]))
- 
+
     dispatch = dispatch_tmpl.replace('__CASES__', indent(case, 4))
 
     with open('functors.gen.hpp','w') as fd:

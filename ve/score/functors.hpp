@@ -530,20 +530,6 @@ struct frexp_functor {
     }
 };
 
-template <typename T1>
-struct random_functor {
-    void operator()(T1 *op1) {
-        *op1 = (T1)std::rand();
-    }
-};
-
-template <typename T1>
-struct arange_functor {
-    void operator()(T1 *op1) {
-        *op1 = 0;   // TODO: implement
-    }
-};
-
 template <typename T1, typename T2>
 struct identity_functor {
     void operator()(T1 *op1, T2 *op2) {
