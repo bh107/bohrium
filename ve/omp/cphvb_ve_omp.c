@@ -33,7 +33,7 @@ cphvb_error cphvb_ve_omp_init(
 cphvb_error cphvb_ve_omp_execute(
 
     cphvb_intp          instruction_count,
-    cphvb_instruction   instruction_list[]
+    cphvb_instruction*  instruction_list
 
 ) {
 

@@ -38,8 +38,8 @@ cphvb_error cphvb_ve_score_init(
 
 );
 
-cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count,
-                                    cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS]);
+cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count,
+                                   cphvb_instruction* instruction_list);
 
 cphvb_error cphvb_ve_score_shutdown(void);
 

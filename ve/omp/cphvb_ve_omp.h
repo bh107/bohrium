@@ -34,8 +34,8 @@ extern "C" {
 
 cphvb_error cphvb_ve_omp_init(cphvb_com *self);
 
-cphvb_error cphvb_ve_omp_execute( cphvb_intp instruction_count,
-                                    cphvb_instruction instruction_list[CPHVB_MAX_NO_OPERANDS]);
+cphvb_error cphvb_ve_omp_execute(cphvb_intp instruction_count,
+                                 cphvb_instruction* instruction_list);
 
 cphvb_error cphvb_ve_omp_shutdown(void);
 
