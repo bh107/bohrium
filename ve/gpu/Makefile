@@ -22,7 +22,7 @@ all: $(LIB)
 %.o: %.c %.h
 		$(CC) -c $< -o $@ $(CCFLAGS)
 
-cphvb_ve_gpu.oo: cphvb_ve_gpu.cpp  $(CPHVB_INCLUDE)cphvb_ve_gpu.h
+cphvb_ve_gpu.oo: cphvb_ve_gpu.cpp cphvb_ve_gpu.h
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.oo: %.cpp %.hpp

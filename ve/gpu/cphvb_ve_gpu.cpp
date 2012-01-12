@@ -20,23 +20,19 @@
 #include <iostream>
 #include <stdexcept>
 #include <cphvb.h>
-#include <cphvb_ve_gpu.h>
+#include "cphvb_ve_gpu.h"
+#include "InstructionScheduler.hpp"
+#include "ResourceManager.hpp"
+#include "MemoryManager.hpp"
+#include "DataManager.hpp"
 
 InstructionScheduler* instructionScheduler;
-recourceManager* ResourceManager;
+ResourceManager* resourceManager;
 
-cphvb_error cphvb_ve_gpu_init(cphvb_intp *opcode_count,
-                               cphvb_opcode opcode_list[],
-                               cphvb_intp *datatype_count,
-                               cphvb_type datatype_list[])
+
+cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
 {
-    // TODO build list of supported instructions
-    *opcode_count = 0;
-
-    
-    // TODO build list of supported data types
-    *datatype_count = 0;
-
+    component = _component;
     try {
         resourceManager = new ResourceManager();
         MemoryManager* memoryManager = createMemoryManager();

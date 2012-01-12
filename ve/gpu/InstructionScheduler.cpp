@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <stdexcept>
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
 
@@ -47,6 +48,9 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
         break;
     case CPHVB_DISCARD:
         discard(inst->operand[0]);
+        break;
+    case CPHVB_USERFUNC:
+        throw std::runtime_error("User defined functiones not supported.");
         break;
     default:
         int nops = cphvb_operands(inst->opcode);
