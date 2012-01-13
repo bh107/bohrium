@@ -50,49 +50,10 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
         discard(inst->operand[0]);
         break;
     case CPHVB_USERFUNC:
-        throw std::runtime_error("User defined functiones not supported.");
+        userdeffunc(inst->userfunc)
         break;
     default:
-        int nops = cphvb_operands(inst->opcode);
-        assert(nops > 0);
-        std::vector<BaseArray*> operandBase(CPHVB_MAX_NO_OPERANDS);
-        for (int i = 0; i < nops; ++i)
-        {
-            cphvb_array* operand = inst->operand[i];
-            // Is it a new base array we haven't heard of before?
-            if (operand != CPHVB_CONSTANT)
-            {
-                cphvb_array* base = cphvb_base_array(operand);
-                ArrayMap::iterator it = arrayMap.find(base);
-                if (it == arrayMap.end())
-                {
-                    // Then create it
-                    operandBase[i] = new BaseArray(base, resourceManager);
-                    arrayMap[base] = operandBase[i];
-                }
-                else
-                {
-                    operandBase[i] = it->second;
-                }
-            }
-        }
-        unsigned long instWorkItems = cphvb_nelements(inst->operand[0]->ndim, 
-                                                      inst->operand[0]->shape);
-        assert(instWorkItems > 0);
-        if (instWorkItems != workItems)
-        {
-            executeBatch();
-            activeBatch = new InstructionBatch(inst, operandBase);
-        }
-        try 
-        {
-            activeBatch->add(inst, operandBase);
-        } 
-        catch (BatchException& be)
-        {
-            executeBatch();
-            activeBatch = new InstructionBatch(inst, operandBase);
-        }
+        ufunc(inst);
     }
 }
 
@@ -110,11 +71,23 @@ void InstructionScheduler::schedule(cphvb_intp instructionCount,
 #endif
     for (cphvb_intp i = 0; i < instructionCount; ++i)
     {
+        //TODO check instructionList->status
         schedule(instructionList++);
     }
     
     /* End of batch cleanup */
     executeBatch();
+}
+
+void InstructionScheduler::executeBatch()
+{
+    if (activeBatch)
+    {
+        //TODO compile and execute activeBatch
+        delete activeBatch;
+    }
+    activeBatch = 0;
+    workItems = 0;
 }
 
 void InstructionScheduler::sync(cphvb_array* base)
@@ -150,13 +123,51 @@ void InstructionScheduler::discard(cphvb_array* base)
     arrayMap.erase(it);
 }
 
-void InstructionScheduler::executeBatch()
+void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
 {
-    if (activeBatch)
+    throw std::runtime_error("User defined functiones not supported.");
+}
+
+void InstructionScheduler::ufunc(cphvb_instruction* inst)
+{
+    int nops = cphvb_operands(inst->opcode);
+    assert(nops > 0);
+    std::vector<BaseArray*> operandBase(CPHVB_MAX_NO_OPERANDS);
+    for (int i = 0; i < nops; ++i)
     {
-        //TODO compile and execute activeBatch
-        delete activeBatch;
+        cphvb_array* operand = inst->operand[i];
+        // Is it a new base array we haven't heard of before?
+        if (operand->ndim != 0) // Not a scalar
+        {
+            cphvb_array* base = cphvb_base_array(operand);
+            ArrayMap::iterator it = arrayMap.find(base);
+            if (it == arrayMap.end())
+            {
+                // Then create it
+                operandBase[i] = new BaseArray(base, resourceManager);
+                arrayMap[base] = operandBase[i];
+            }
+            else
+            {
+                operandBase[i] = it->second;
+            }
+        }
     }
-    activeBatch = 0;
-    workItems = 0;
+    unsigned long instWorkItems = cphvb_nelements(inst->operand[0]->ndim, 
+                                                  inst->operand[0]->shape);
+    assert(instWorkItems > 0);
+    if (instWorkItems != workItems)
+    {
+        executeBatch();
+        activeBatch = new InstructionBatch(inst, operandBase);
+    }
+    try 
+    {
+        activeBatch->add(inst, operandBase);
+    } 
+    catch (BatchException& be)
+    {
+        executeBatch();
+        activeBatch = new InstructionBatch(inst, operandBase);
+    }
 }
