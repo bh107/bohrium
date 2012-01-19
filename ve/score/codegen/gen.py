@@ -62,7 +62,7 @@ def main():
         unsupported = []
 
         for sin, sout in signatures:
-            type_sig    = [mapped[t] for t in sin+sout if t in mapped]
+            type_sig    = [mapped[t] for t in sin+sout if t in mapped][::-1]
             u_sig       = [t for t in sin+sout if t not in mapped]
     
             if u_sig:

@@ -35,13 +35,13 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
             // All in one nicely switchable value.
             const long int poly = (cphvb_operands(instr->opcode) == 3) ? 
                                     instr->opcode +
-                                    (instr->operand[0]->type    << 4)
-                                    +(instr->operand[1]->type   << 8)
+                                    (instr->operand[0]->type    << 8)
+                                    +(instr->operand[1]->type   << 12)
                                     +(instr->operand[2]->type   << 16):
 
                                     instr->opcode +
-                                    (instr->operand[0]->type    << 4)
-                                    +(instr->operand[1]->type   << 8);
+                                    (instr->operand[0]->type    << 8)
+                                    +(instr->operand[1]->type   << 12);
 
             switch(poly) {
 
