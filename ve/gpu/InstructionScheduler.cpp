@@ -99,7 +99,7 @@ void InstructionScheduler::sync(cphvb_array* base)
     {
         return;
     }
-    if (activeBatch && activeBatch->use(it->second))
+    if (batch && batch->use(it->second))
     {
         executeBatch();
     }
@@ -130,6 +130,8 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
 
 void InstructionScheduler::ufunc(cphvb_instruction* inst)
 {
+    //TODO Find out if we support the operation before copying data to device
+
     int nops = cphvb_operands(inst->opcode);
     assert(nops > 0);
     std::vector<BaseArray*> operandBase(CPHVB_MAX_NO_OPERANDS);
@@ -153,21 +155,23 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
             }
         }
     }
-    unsigned long instWorkItems = cphvb_nelements(inst->operand[0]->ndim, 
-                                                  inst->operand[0]->shape);
-    assert(instWorkItems > 0);
-    if (instWorkItems != workItems)
+
+    
+    if (batch.match(inst->operand[0]->ndim, inst->operand[0]->shape))
+    {
+        try 
+        {
+            batch->add(inst, operandBase);
+        } 
+        catch (BatchException& be)
+        {
+            executeBatch();
+            activeBatch = new InstructionBatch(inst, operandBase);
+        } 
+   } 
+    else 
     {
         executeBatch();
-        activeBatch = new InstructionBatch(inst, operandBase);
-    }
-    try 
-    {
-        activeBatch->add(inst, operandBase);
-    } 
-    catch (BatchException& be)
-    {
-        executeBatch();
-        activeBatch = new InstructionBatch(inst, operandBase);
+        batch = InstructionBatch(inst, operandBase);
     }
 }

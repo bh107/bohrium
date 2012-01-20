@@ -32,7 +32,7 @@ class InstructionScheduler
 {
 private:
     ResourceManager* resourceManager;
-    InstructionBatch* activeBatch;
+    InstructionBatch* batch;
     unsigned long workItems; // number of work items in the active batch
     ArrayMap arrayMap;
     void schedule(cphvb_instruction* inst);

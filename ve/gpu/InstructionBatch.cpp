@@ -22,8 +22,38 @@
 #include <cphvb.h>
 #include "InstructionBatch.hpp"
 
+bool InstructionBatch::match(cphvb_intp ndim,const cphvb_index dims[])
+{
+    if (ndim == shape.size())
+    {
+        for (int i = 0; i < ndim; ++i)
+        {
+            if (dims[i] != shape[i])
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
+{
+    //assumes the the views shape are the same and they have the same base
+    if (a == b)
+        return true;
+    if (a->start != b->start)
+        return false;
+    for (int i = 0; i < shape.size(); ++i)
+    {
+        if (a->stride[i] != b->stride[i])
+            return false;
+    }
+    return true;
+}
+
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
+    shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
     accept(inst, operandBase);
 }
 

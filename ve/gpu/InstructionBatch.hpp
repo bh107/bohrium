@@ -23,31 +23,19 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <cphvb.h>
 #include "BaseArray.hpp"
-
-typedef std::map<BaseArray*, cphvb_array*> Output;
-
-class BatchException 
-{
-private:
-    int code;
-public:
-    BatchException(int code_) : code(code_) {}
-};
-
 
 class InstructionBatch
 {
 private:
+    std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
-    Output output;
-    std::set<BaseArray*> input;
-    void accept(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    std::map<BaseArray*, cphvb_array*> output;
+    std::multimap<BaseArray*, cphvb_array*> input;
 public:
-    InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
-    void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
-    bool use(BaseArray* baseArray);
-    //KernelSource generateKernel();
+    bool match(cphvb_intp ndim, const cphvb_index dims[]);
+    bool sameView(const cphvb_array* a, const cphvb_array* b);
 };
 
 #endif
