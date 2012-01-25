@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from string import Template
 import json
+from Cheetah.Template import Template
 
 nonmapped = {        # The following types does not have an equivalent in CPHVB
 
@@ -39,26 +39,21 @@ mapped = {          # Datatype mapping from numpy to CPHVB
     'd': 'CPHVB_FLOAT64',
 }
 
-def indent( text, w=4, c=1):
-    return '\n'.join([(' '*w)*c+line for line in text.split('\n')])
-
 def main():
 
-    functions   = json.load(open('functions.json'))         # Read the function definitions.
-    ignore      = json.load(open('functions.ignore.json'))  # Read list of functions to ignore.
-                                
-    dispatch    = open('dispatch.tmpl.cpp').read()          # Read the templates.
-    case2       = open('dispatch.case.2.tmpl.cpp').read()
-    case3       = open('dispatch.case.3.tmpl.cpp').read()
-    functor     = open('functor.tmpl.cpp').read()
-    functors    = open('functors.tmpl.cpp').read()
-    cases = ''
-                                                            # Generate the cpp code.
+    functions   = json.load(open('functions.json'))                 # Read the function definitions.
+    ignore      = json.load(open('functions.ignore.json'))          # Read list of functions to ignore.
+
+    cases       = []
+    functors    = []
+    log         = []
+                                                                    # Generate the cpp code.
     for (opcode, nin, nout, signatures) in [f for f in functions if f[0] not in ignore]:
 
+        fname   = opcode.replace('CPHVB_','').lower()
         opcount = nin+nout
 
-        sigs        = []                                    # Filter signatures
+        sigs        = []                                            # Filter signatures
         unsupported = []
 
         for sin, sout in signatures:
@@ -71,41 +66,40 @@ def main():
             if type_sig not in sigs and len(type_sig) > 1:
                 sigs.append( type_sig )
 
-        for signature in sigs:                              # Generate case
+        for signature in [s for s in sigs if len(s) == opcount]:    # case for each signature
 
-            types_l = len(signature)
+            case = {
+                'opcode':     opcode,
+                'op1':        signature[0].upper(),
+                'op2':        signature[1].upper(),
+                'opcount':    opcount,
+                'ftypes':     ','.join(signature).lower(),
+                'fname':      fname
+            }
 
-            if types_l == 2 and types_l == opcount:
+            if opcount == 3:
+                case['op3'] = signature[2].upper()
+            cases.append( case )
 
-                cases   += Template(case2).substitute(
-                    opcode  = opcode,
-                    op1     = signature[0].upper(),
-                    op2     = signature[1].upper(),
-                    opcount = opcount,
-                    ftypes  = ','.join(signature).lower(),
-                    fname   = opcode.replace('CPHVB_','').lower()
-                )
+        functor = {                                                 # Abstract functor for "function"
+            'fname':        fname,
+            'type_params':  ', '.join(['typename T%d'%t for t in xrange(1, opcount+1)]),
+            'fparams':      ', '.join(['T%d *op%d'% (t, t) for t in xrange(1, opcount+1)])
+        }
 
-            elif types_l == 3 and types_l == opcount:
+        functors.append( functor )
 
-                cases   += Template(case3).substitute(
-                    opcode  = opcode,
-                    op1     = signature[0].upper(),
-                    op2     = signature[1].upper(),
-                    op3     = signature[2].upper(),
-                    opcount = opcount,
-                    ftypes  = ','.join(signature).lower(),
-                    fname   = opcode.replace('CPHVB_','').lower()
-                )
-            
         if unsupported:
-            print "%s\t\tUnsupported signatures\t%s" %(opcode, ' | '.join([','.join(s) for s in unsupported]))
+            log.append("%s\t\tUnsupported signatures\t%s" %(opcode, ' | '.join([','.join(s) for s in unsupported])))
 
-    with open('functors.gen.hpp','w') as fd:            # Store the cpp code.
-        fd.write( functors )
-
-    with open('dispatch.gen.cpp','w') as fd:
-        fd.write( Template(dispatch).substitute( cases=indent("\n"+cases,4,4) ))
+                                                                    # Generate the cpp code.
+    f_tmpl  = Template(file='functors.ctpl', searchList=[{'functors': functors}])
+    d_tmpl  = Template(file='dispatch.ctpl', searchList=[{'cases': cases}])
+    
+                                                                    # Write them to file
+    open('functors.gen','w').write(str(f_tmpl))
+    open('dispatch.gen','w').write(str(d_tmpl))
+    open('gen.log','w+').write('\n'.join(log))
 
 if __name__ == "__main__":
     main()
