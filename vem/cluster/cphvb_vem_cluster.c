@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include <math.h>
+#include <assert.h>
 #include "cphvb_vem_cluster.h"
 #include "process_grid.h"
 
@@ -64,17 +65,128 @@ cphvb_error cphvb_vem_cluster_init(cphvb_com *self)
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp instruction_count,
                                       cphvb_instruction* instruction_list)
 {
-    cphvb_error res = CPHVB_SUCCESS;
+    cphvb_intp i;
+    for(i=0; i<instruction_count; ++i)
+    {
+        cphvb_instruction* inst = &instruction_list[i];
+        printf("cphvb_vem_cluster_execute: %s\n", cphvb_opcode_text(inst->opcode));
 
 
-    return res;
+        switch(inst->opcode)
+        {
+        case CPHVB_DESTROY:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            --base->ref_count; //decrease refcount
+            assert(inst->operand[0]->base == NULL);
+            if(base->ref_count <= 0)
+            {
+                dndarray *tmp = (dndarray*)inst->operand[0];
+                inst->operand[0] = tmp->child_ary;
+                cphvb_error e = vem_execute(1, inst);
+                if(e != CPHVB_SUCCESS)
+                    return e;
+                if(tmp->data != NULL)
+                    free(tmp->data);
+                free(tmp);
+            }
 
+            break;
+        }
+/*
+        case CPHVB_RELEASE:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            switch (base->owner)
+            {
+            case CPHVB_PARENT:
+                //The owner is upstream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            case CPHVB_SELF:
+                //We own the date: Send discards down stream
+                //and change owner to upstream
+                inst->operand[0] = base;
+                inst->opcode = CPHVB_DISCARD;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+                break;
+            default:
+                //The owner is downsteam so send the release down
+                inst->operand[0] = base;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+            }
+            break;
+        }
+        case CPHVB_SYNC:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            switch (base->owner)
+            {
+            case CPHVB_PARENT:
+            case CPHVB_SELF:
+                //The owner is not down stream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            default:
+                //The owner is downsteam so send the sync down
+                //and take ownership
+                inst->operand[0] = base;
+                arrayManager->changeOwnerPending(base,CPHVB_SELF);
+            }
+            break;
+        }
+        case CPHVB_USERFUNC:
+        {
+            cphvb_userfunc *uf = inst->userfunc;
+            //The children should own the output arrays.
+            for(int i = 0; i < uf->nout; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                base->owner = CPHVB_CHILD;
+            }
+            //We should own the input arrays.
+            for(int i = uf->nout; i < uf->nout + uf->nin; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                if(base->owner == CPHVB_PARENT)
+                {
+                    base->owner = CPHVB_SELF;
+                }
+            }
+            break;
+        }
+*/
+        default:
+        {
+/*
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            // "Regular" operation: set ownership and send down stream
+            base->owner = CPHVB_CHILD;//The child owns the output ary.
+            for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
+            {
+                if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                {
+                    cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
+                }
+            }
+*/
+        }
+        }
+    }
+
+    return CPHVB_SUCCESS;
 }
 
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
+    cphvb_error err;
     pgrid_finalize();
-    return CPHVB_SUCCESS;
+    err = vem_shutdown();
+    cphvb_com_free(coms[0]);//Only got one child.
+    free(coms);
+    return err;
 }
 
 /* Registre a new user-defined function.
