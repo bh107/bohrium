@@ -51,6 +51,9 @@ extern "C" {
 //Easy retrieval of dnduid
 #define PyArray_DNDUID(obj) (((PyArrayObject *)(obj))->dnduid)
 
+
+cphvb_intp blocksize = 2;
+
 //dndnode prototype.
 typedef struct dndnode_struct dndnode;
 typedef struct dndarray_struct dndarray;
@@ -69,28 +72,19 @@ struct dndmem_struct
 
 struct dndarray_struct
 {
-    //Unique identification.
-    cphvb_intp uid;
-    //Reference count.
-    int refcount;
-    //Number of dimensions.
-    int ndims;
-    //Size of dimensions.
-    cphvb_intp dims[CPHVB_MAXDIM];
+    CPHVB_ARRAY_HEAD
+    //The array that propagates down to the cphVB child component.
+    cphvb_array *child_ary;
     //Size of block-dimensions.
     cphvb_intp blockdims[CPHVB_MAXDIM];
     //Number of blocks (global).
     cphvb_intp nblocks;
-    //Data type of elements in array.
-    cphvb_type dtype;
-    //Size of an element in bytes.
-    int elsize;
-    //Pointer to local data.
-    char *data;
     //Number of local elements (local to the MPI-process).
     cphvb_intp localsize;
     //Size of local dimensions (local to the MPI-process).
     cphvb_intp localdims[CPHVB_MAXDIM];
+    //Stride of local dimensions (local to the MPI-process).
+    cphvb_intp localstride[CPHVB_MAXDIM];
     //Size of local block-dimensions (local to the MPI-process).
     cphvb_intp localblockdims[CPHVB_MAXDIM];
     //MPI-datatype that correspond to an array element.

@@ -91,7 +91,7 @@ void pgrid_finalize(void)
  * From Fortran source: http://www.cs.umu.se/~dacke/ngssc/numroc.f
  * Private
 */
-cphvb_intp dnumroc(cphvb_intp nelem_in_dim, cphvb_intp block_size,
+cphvb_intp pgrid_numroc(cphvb_intp nelem_in_dim, cphvb_intp block_size,
                         int proc_dim_rank, int nproc_in_dim,
                         int first_process)
 {
@@ -121,10 +121,9 @@ cphvb_intp dnumroc(cphvb_intp nelem_in_dim, cphvb_intp block_size,
 
 /*===================================================================
  *
- * Process cartesian coords <-> MPI rank.
- * Private.
+ * Process grid coords <-> MPI rank.
  */
-int cart2rank(int ndims, const int coords[CPHVB_MAXDIM])
+int pgrid2rank(int ndims, const int coords[CPHVB_MAXDIM])
 {
     int *strides = pgrid_dim_strides[ndims-1];
     int rank = 0;
@@ -134,7 +133,7 @@ int cart2rank(int ndims, const int coords[CPHVB_MAXDIM])
     assert(rank < worldsize);
     return rank;
 }
-void rank2cart(int ndims, int rank, int coords[CPHVB_MAXDIM])
+void rank2pgrid(int ndims, int rank, int coords[CPHVB_MAXDIM])
 {
     int i;
     int *strides = pgrid_dim_strides[ndims-1];
@@ -144,4 +143,16 @@ void rank2cart(int ndims, int rank, int coords[CPHVB_MAXDIM])
         coords[i] = rank / strides[i];
         rank = rank % strides[i];
     }
-} /* cart2rank & rank2cart */
+} /* pgrid2rank & rank2pgrid */
+
+/*===================================================================
+ *
+ * Returns the dimension sizes for a given dimension-order 'ndims'
+ *
+*/
+int *pgrid_dim_size(int ndims)
+{
+    return pgrid_dim_sizes[ndims-1];
+}
+
+

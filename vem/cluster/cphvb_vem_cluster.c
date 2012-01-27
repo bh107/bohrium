@@ -17,6 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
+#include <math.h>
 #include "cphvb_vem_cluster.h"
 #include "process_grid.h"
 
@@ -118,14 +119,64 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
                                            cphvb_constant init_value,
                                            cphvb_array**  new_array)
 {
-
     printf("cphvb_vem_cluster_create_array\n");
 
-    //We will only tell the NODE-VEM about base arrays at this time.
     if(base == NULL)
     {
+        int *cdims = pgrid_dim_size(ndim);
+        cphvb_intp i;
+        int cartcoord[CPHVB_MAXDIM];
+        dndarray *ary = malloc(sizeof(dndarray));
 
-        vem_create_array(base, type, ndim, start, shape, stride, has_init_value, init_value, new_array);
+        if(ary == NULL)
+            return CPHVB_OUT_OF_MEMORY;
+
+        ary->base           = base;
+        ary->type           = type;
+        ary->ndim           = ndim;
+        ary->start          = start;
+        ary->has_init_value = has_init_value;
+        ary->init_value     = init_value;
+        ary->data           = NULL;
+        ary->ref_count      = 1;
+        memcpy(ary->shape, shape, ndim * sizeof(cphvb_index));
+        memcpy(ary->stride, stride, ndim * sizeof(cphvb_index));
+
+        //Get process grid coords.
+        rank2pgrid(ndim, myrank, cartcoord);
+
+        //Accumulate the total number of local sizes and save it.
+        cphvb_intp localsize = 1;
+        ary->nblocks = 1;
+        for(i=0; i < ndim; i++)
+        {
+            ary->localdims[i] = pgrid_numroc(ary->shape[i], blocksize, cartcoord[i], cdims[i], 0);
+
+            localsize *= ary->localdims[i];
+            ary->localblockdims[i] = ceil(ary->localdims[i] / (double) blocksize);
+            ary->blockdims[i] = ceil(ary->shape[i] / (double) blocksize);
+            ary->nblocks *= ary->blockdims[i];
+        }
+        ary->localsize = localsize;
+        if(ary->localsize == 0)
+        {
+            memset(ary->localdims, 0, ary->ndim * sizeof(cphvb_intp));
+            memset(ary->localblockdims, 0, ary->ndim * sizeof(cphvb_intp));
+        }
+        if(ary->nblocks == 0)
+            memset(ary->blockdims, 0, ary->ndim * sizeof(cphvb_intp));
+
+        //Compute local stride stride.
+        cphvb_intp s = 1;
+        for(i=ndim; i >= 0; --i)
+        {
+            ary->localstride[i] = s;
+            s *= ary->localdims[i];
+        }
+
+        vem_create_array(base, type, ndim, start, ary->localdims, ary->localstride, has_init_value, init_value, &ary->child_ary);
+
+        *new_array = (cphvb_array*) ary;
     }
 
     return CPHVB_SUCCESS;
