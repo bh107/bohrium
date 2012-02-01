@@ -56,23 +56,19 @@ bool InstructionBatch::accept(cphvb_instruction* inst, const std::vector<BaseArr
     if (!sameShape(inst->operands[0]->ndim, inst->operands[0]->shape))
         return false;
     std::map<BaseArray*, cphvb_array*>::iterator oit;
-    std::multimap<BaseArray*, cphvb_array*>::iterator iit;
-    std::pair<std::multimap<BaseArray*, cphvb_array*>::iterator, 
-              std::multimap<BaseArray*, cphvb_array*>::iterator> irange;
     for (int op = 0; op < operandBase.size(); op++)
     {
-        oit = output.find(operandBase[op]);
-        if (oit != output.end())
+        if (inst->operand[op]->ndim != 0)
         {
-            if ()
-        }
-
-        irange = input.equal_range(operandBase[op]);
-        for (iit = irange.first; iit != irange.second; ++iit)
-        {
-            
+            oit = output.find(operandBase[op]);
+            if (oit != output.end())
+            {
+                if (!sameView(oit.second(), inst->operand[op]))
+                    return false;
+            }
         }
     }
+    return true;
 }
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
@@ -81,21 +77,6 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ba
     accept(inst, operandBase);
 }
 
-void InstructionBatch::accept(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
-{
-    int nops = cphvb_operands(inst->opcode);
-    assert(nops > 0);
-    output[operandBase[0]] = inst->operand[0];
-    for (int i = 1; i < nops; ++i)
-    {
-        cphvb_array* operand = inst->operand[i];
-        if (operand != CPHVB_CONSTANT)
-        {
-            input.insert(operandBase[i]);
-        }
-    }
-    instructions.push_back(inst);
-}
 
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
