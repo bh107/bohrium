@@ -1,18 +1,17 @@
 ROOT=../..
-INCLUDE=include
 LIB=libcphvb_vem_cluster.so
 CC=mpicc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/$(INCLUDE)
-LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb_vem_cluster.c handle.c
-HEADER=private.h handle.h message.h
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
+SRC=cphvb_vem_cluster.c process_grid.c
+HEADER=cphvb_vem_cluster.h process_grid.h
 OBJ=$(SRC:.c=.o)
-INSTALLDIR=/usr/local/lib
+INSTALLDIR?=/usr/local/lib
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/$(INCLUDE)/* $(HEADER)
+%.o: %.c $(HEADER)
 		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)

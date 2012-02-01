@@ -64,10 +64,14 @@ extern "C" {
     The initial value
     cphvb_constant   init_value;
 
-    //Ref Count
+    Ref Count
     cphvb_intp       ref_count;
+
+    Space reserved for extra meta data.
+    (Not persistent at ownership change)
+    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
 */
-#define CPHVB_ARRAY_BASE                   \
+#define CPHVB_ARRAY_HEAD                   \
     cphvb_intp       owner;                \
     cphvb_array*     base;                 \
     cphvb_type       type;                 \
@@ -79,14 +83,12 @@ extern "C" {
     cphvb_intp       has_init_value;       \
     cphvb_constant   init_value;           \
     cphvb_intp       ref_count;            \
+    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];\
 
 typedef struct cphvb_array cphvb_array;
 struct cphvb_array
 {
-    CPHVB_ARRAY_BASE
-    //Space reserved for extra meta data.
-    //Not persistent at ownership change
-    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
+    CPHVB_ARRAY_HEAD
 };
 
 #ifdef __cplusplus

@@ -180,7 +180,6 @@ cphvb_error cphvb_malloc_array_data(cphvb_array* array)
     if(base->data != NULL)
         return CPHVB_SUCCESS;
 
-    assert(base->data == NULL);
     nelem = cphvb_nelements(base->ndim, base->shape);
     dtypesize = cphvb_type_size(base->type);
     base->data = malloc(nelem * dtypesize);

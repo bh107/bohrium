@@ -106,6 +106,7 @@ if __name__ == "__main__":
         build("VE-SCORE", "ve/score", True)
         build("VE-OMP", "ve/omp", False)
         build("VEM-NODE", "vem/node", True)
+        build("VEM-CLUSTER", "vem/cluster", False)
         build("BRIDGE-NUMPY", "bridge/numpy", True)
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
@@ -115,6 +116,7 @@ if __name__ == "__main__":
         clean("VE-SCORE", "ve/score")
         clean("VE-OMP", "ve/omp")
         clean("VEM-NODE", "vem/node")
+        clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
         install("INIPARSER", "iniparser", True)
@@ -124,6 +126,7 @@ if __name__ == "__main__":
         install("VE-SCORE", "ve/score",True)
         install("VE-OMP", "ve/omp",False)
         install("VEM-NODE", "vem/node", True)
+        install("VEM-CLUSTER", "vem/cluster", False)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
         ldconfig()
     else:

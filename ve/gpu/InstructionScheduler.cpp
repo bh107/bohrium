@@ -92,6 +92,7 @@ void InstructionScheduler::executeBatch()
 
 void InstructionScheduler::sync(cphvb_array* base)
 {
+    //TODO postpone sync
     assert(base->base == NULL);
     // We may recieve sync for arrays I don't own
     ArrayMap::iterator it = arrayMap.find(base);
@@ -108,6 +109,7 @@ void InstructionScheduler::sync(cphvb_array* base)
 
 void InstructionScheduler::discard(cphvb_array* base)
 {
+    //TODO postpone discard
     assert(base->base == NULL);
     // We may recieve sync for arrays I don't own
     ArrayMap::iterator it = arrayMap.find(base);
