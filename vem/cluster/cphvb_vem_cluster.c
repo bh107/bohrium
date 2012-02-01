@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
+ * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
  *
  * This file is part of cphVB.
  *
@@ -16,204 +16,196 @@
  * You should have received a copy of the GNU General Public License
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <cphvb.h>
+#include <math.h>
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "cphvb_vem_cluster.h"
+#include "process_grid.h"
 
-#include "private.h"
-#include "message.h"
-#include "handle.h"
-#include <cphvb_vem.h>
-#include <cphvb_vem_cluster.h>
+//The VEM components
+static cphvb_com **coms;
 
-//Temporary memory used for the communication message.
-char message_tmp_mem[CLUSTER_MSG_SIZE];
-void *msg_mem = message_tmp_mem;
+//Our self
+static cphvb_com *myself;
 
-//The VE info.
-cphvb_support ve_support;
+//Function pointers to the NODE-VEM.
+static cphvb_init vem_init;
+static cphvb_execute vem_execute;
+static cphvb_shutdown vem_shutdown;
+static cphvb_reg_func vem_reg_func;
+static cphvb_create_array vem_create_array;
 
-/* Initialize the VEM.
- * This is a collective operation.
- *
- * @return Error codes (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-cphvb_error cphvb_vem_cluster_init(void)
+//Number of user-defined functions registered.
+static cphvb_intp userfunc_count = 0;
+
+cphvb_error cphvb_vem_cluster_init(cphvb_com *self)
 {
-    int provided;
+    cphvb_intp children_count;
+    cphvb_error err;
+    myself = self;
 
-    //We make use of MPI_Init_thread even though we only ask for
-    //a MPI_THREAD_SINGLE level thread-safety because MPICH2 only
-    //supports MPICH_ASYNC_PROGRESS when MPI_Init_thread is used.
-    //Note that when MPICH_ASYNC_PROGRESS is defined the thread-safety
-    //level will automatically be set to MPI_THREAD_MULTIPLE.
-    MPI_Init_thread(NULL, NULL, MPI_THREAD_SINGLE, &provided);
+    //Initiate the process grid (incl. MPI)
+    pgrid_init();
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
+    cphvb_com_children(self, &children_count, &coms);
+    vem_init = coms[0]->init;
+    vem_execute = coms[0]->execute;
+    vem_shutdown = coms[0]->shutdown;
+    vem_reg_func = coms[0]->reg_func;
+    vem_create_array = coms[0]->create_array;
 
-    printf("cphvb_vem_cluster_init -- rank %d of %d\n", myrank, worldsize);
-/*
-    //Allocate buffers.
-    workbuf = malloc(DNPY_WORK_BUFFER_MAXSIZE);
-    workbuf_nextfree = workbuf;
-    assert(workbuf != NULL);
-*/
+    //Let us initiate the simple VE and register what it supports.
+    err = vem_init(coms[0]);
+    if(err)
+        return err;
+
     return CPHVB_SUCCESS;
 }
 
-/* From this point on the master will continue with the pyton code
- * and the slaves will stay in C.
- * This only makes sense when combined with VEM_CLUSTER.
- * And this is a collective operation.
- * @return Zero when this is a master.
- */
-cphvb_intp cphvb_vem_cluster_master_slave_split(void)
+cphvb_error cphvb_vem_cluster_execute(cphvb_intp instruction_count,
+                                      cphvb_instruction* instruction_list)
 {
-    if(myrank == 0)
+    cphvb_intp i;
+    for(i=0; i<instruction_count; ++i)
     {
-/*
-        int tmpsizes[CPHVB_MAXDIM*CPHVB_MAXDIM];
-        cluster_msg msg;
-        //Check for user-defined block size.
-        char *env = getenv("CLUSTER_BLOCKSIZE");
-        if(env == NULL)
-            blocksize = CLUSTER_BLOCKSIZE;
-        else
-            blocksize = atoi(env);
+        cphvb_instruction* inst = &instruction_list[i];
+        printf("cphvb_vem_cluster_execute: %s\n", cphvb_opcode_text(inst->opcode));
 
-        if(blocksize <= 0)
+
+        switch(inst->opcode)
         {
-            fprintf(stderr, "User-defined blocksize must be greater "
-                            "than zero\n");
-            MPI_Abort(MPI_COMM_WORLD, -1);
-        }
-        //Send block size to clients.
-
-        msg->type = CLUSTER_INIT_BLOCKSIZE;
-        msg[1] = blocksize;
-        msg[2] = CLUSTER_MSG_END;
-//        msg2slaves(msg, 3 * sizeof(cphvb_intp));
-        #ifdef DEBUG
-            printf("Rank 0 received msg: ");
-        #endif
-//        do_INIT_BLOCKSIZE(msg[1]);
-
-        //Check for user-defined process grid.
-        //The syntax used is: ndims:dim:size;
-        //E.g. DNPY_PROC_SIZE="2:2:4;3:3:2" which means that array
-        //with two dimensions should, at its second dimension, have
-        //a size of four etc.
-        memset(tmpsizes, 0, CPHVB_MAXDIM*CPHVB_MAXDIM*sizeof(int));
-        env = getenv("CLUSTER_PROC_GRID");
-        if(env != NULL)
+        case CPHVB_DESTROY:
         {
-            char *res = strtok(env, ";");
-            while(res != NULL)
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            --base->ref_count; //decrease refcount
+            assert(inst->operand[0]->base == NULL);
+            if(base->ref_count <= 0)
             {
-                char *size_ptr;
-                int dsize = 0;
-                int dim = 0;
-                int ndims = strtol(res, &size_ptr, 10);
-                if(size_ptr != '\0')
-                    dim = strtol(size_ptr+1, &size_ptr, 10);
-                if(size_ptr != '\0')
-                    dsize = strtol(size_ptr+1, NULL, 10);
-                //Make sure the input is valid.
-                if(dsize <= 0 || dim <= 0 || dim > ndims ||
-                   ndims <= 0 || ndims > CPHVB_MAXDIM)
-                {
-                    fprintf(stderr, "DNPY_PROC_GRID, invalid syntax or"
-                                    " value at \"%s\"\n", res);
-                    MPI_Abort(MPI_COMM_WORLD, -1);
-                }
-                tmpsizes[(ndims-1)*CPHVB_MAXDIM+(dim-1)] = dsize;
-                //Go to next token.
-                res = strtok(NULL, ";");
+                dndarray *tmp = (dndarray*)inst->operand[0];
+                inst->operand[0] = tmp->child_ary;
+                cphvb_error e = vem_execute(1, inst);
+                if(e != CPHVB_SUCCESS)
+                    return e;
+                if(tmp->data != NULL)
+                    free(tmp->data);
+                free(tmp);
             }
-        }
-        //Initilization of cart_dim_strides.
-        for(i=0; i<CPHVB_MAXDIM; i++)
-        {
-            int ndims = i+1;
-            int t[CPHVB_MAXDIM];
-            int d = 0;
-            //Need to reverse the order to match MPI_Dims_create
-            for(j=i; j>=0; j--)
-                t[d++] = tmpsizes[i*CPHVB_MAXDIM+j];
 
-            //Find a balanced distributioin of processes per direction
-            //and use the restrictions specified by the user.
-            MPI_Dims_create(worldsize, ndims, t);
-            d = ndims;
-            for(j=0; j<ndims; j++)
-                msg[1+i*CPHVB_MAXDIM+j] = t[--d];
+            break;
         }
-        //Process grid to clients.
-        msg[0] = CLUSTER_INIT_PROC_GRID;
-        msg[CPHVB_MAXDIM*CPHVB_MAXDIM+1] = CLUSTER_MSG_END;
-//        msg2slaves(msg, (CPHVB_MAXDIM*CPHVB_MAXDIM+2)*sizeof(cphvb_intp));
-        #ifdef DEBUG
-            printf("Rank 0 received msg: ");
-        #endif
-//        do_INIT_PROC_GRID(&msg[1]);
+/*
+        case CPHVB_RELEASE:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            switch (base->owner)
+            {
+            case CPHVB_PARENT:
+                //The owner is upstream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            case CPHVB_SELF:
+                //We own the date: Send discards down stream
+                //and change owner to upstream
+                inst->operand[0] = base;
+                inst->opcode = CPHVB_DISCARD;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+                break;
+            default:
+                //The owner is downsteam so send the release down
+                inst->operand[0] = base;
+                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
+            }
+            break;
+        }
+        case CPHVB_SYNC:
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            switch (base->owner)
+            {
+            case CPHVB_PARENT:
+            case CPHVB_SELF:
+                //The owner is not down stream so we do nothing
+                inst->opcode = CPHVB_NONE;
+                --valid_instruction_count;
+                break;
+            default:
+                //The owner is downsteam so send the sync down
+                //and take ownership
+                inst->operand[0] = base;
+                arrayManager->changeOwnerPending(base,CPHVB_SELF);
+            }
+            break;
+        }
+        case CPHVB_USERFUNC:
+        {
+            cphvb_userfunc *uf = inst->userfunc;
+            //The children should own the output arrays.
+            for(int i = 0; i < uf->nout; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                base->owner = CPHVB_CHILD;
+            }
+            //We should own the input arrays.
+            for(int i = uf->nout; i < uf->nout + uf->nin; ++i)
+            {
+                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                if(base->owner == CPHVB_PARENT)
+                {
+                    base->owner = CPHVB_SELF;
+                }
+            }
+            break;
+        }
 */
-        return 0;
-    }
-
-    while(1)
-    {
-        cluster_msg *msg = msg_mem;
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
-
-        if(msg->type == CLUSTER_SHUTDOWN)
+        default:
         {
-            #ifdef DEBUG
-                printf("[VEM cluster] Rank %d SHUTDOWN\n", myrank);
-            #endif
-            break;
+/*
+            cphvb_array* base = cphvb_base_array(inst->operand[0]);
+            // "Regular" operation: set ownership and send down stream
+            base->owner = CPHVB_CHILD;//The child owns the output ary.
+            for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
+            {
+                if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                {
+                    cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
+                }
+            }
+*/
         }
-        else if(msg->type == CLUSTER_ARRAY)
-        {
-            #ifdef DEBUG
-                printf("[VEM cluster] Rank %d CLUSTER_ARRAY\n", myrank);
-            #endif
-
-
-
-            break;
-        }
-        else
-        {
-            assert(msg->type == CLUSTER_INST);
-            assert(1==2);
         }
     }
-    return 1;
+
+    return CPHVB_SUCCESS;
 }
 
-/* Shutdown the VEM, which include a instruction flush.
- * This is a collective operation.
- *
- * @return Error codes (CPHVB_SUCCESS)
- */
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
-    if(myrank == 0)
-    {
-        cluster_msg *msg = msg_mem;
-    #ifdef DEBUG
-        printf("[VEM cluster] Rank %d SHUTDOWN\n", myrank);
-    #endif
-        msg->type = CLUSTER_SHUTDOWN;
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
-    }
-    MPI_Finalize();
-    return CPHVB_SUCCESS;
+    cphvb_error err;
+    pgrid_finalize();
+    err = vem_shutdown();
+    cphvb_com_free(coms[0]);//Only got one child.
+    free(coms);
+    return err;
 }
+
+/* Registre a new user-defined function.
+ *
+ * @lib Name of the shared library e.g. libmyfunc.so
+ *      When NULL the default library is used.
+ * @fun Name of the function e.g. myfunc
+ * @id Identifier for the new function. The bridge should set the
+ *     initial value to Zero. (in/out-put)
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error cphvb_vem_cluster_reg_func(char *lib, char *fun, cphvb_intp *id)
+{
+    if(*id == 0)//Only if parent didn't set the ID.
+        *id = ++userfunc_count;
+
+    return vem_reg_func(lib, fun, id);
+}
+
 
 
 /* Create an array, which are handled by the VEM.
@@ -239,130 +231,65 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
                                            cphvb_constant init_value,
                                            cphvb_array**  new_array)
 {
-    cluster_msg_array *msg= msg_mem;
-    cphvb_array *array    = &msg->array;
-    array->owner          = CPHVB_PARENT;
-    array->base           = base;
-    array->type           = type;
-    array->ndim           = ndim;
-    array->start          = start;
-    array->has_init_value = has_init_value;
-    array->init_value     = init_value;
-    array->data           = NULL;
-    array->ref_count      = 1;
-    memcpy(array->shape, shape, ndim * sizeof(cphvb_index));
-    memcpy(array->stride, stride, ndim * sizeof(cphvb_index));
+    printf("cphvb_vem_cluster_create_array\n");
 
-    msg->type = CLUSTER_ARRAY;
-    MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Bcast(msg, CLUSTER_MSG_SIZE, MPI_BYTE, 0, MPI_COMM_WORLD);
-
-
-/*
-    if(array->base != NULL)
+    if(base == NULL)
     {
-        assert(array->base->base == NULL);
-        assert(!has_init_value);
-        ++array->base->ref_count;
-        array->data = array->base->data;
+        int *cdims = pgrid_dim_size(ndim);
+        cphvb_intp i;
+        int cartcoord[CPHVB_MAXDIM];
+        dndarray *ary = malloc(sizeof(dndarray));
+
+        if(ary == NULL)
+            return CPHVB_OUT_OF_MEMORY;
+
+        ary->base           = base;
+        ary->type           = type;
+        ary->ndim           = ndim;
+        ary->start          = start;
+        ary->has_init_value = has_init_value;
+        ary->init_value     = init_value;
+        ary->data           = NULL;
+        ary->ref_count      = 1;
+        memcpy(ary->shape, shape, ndim * sizeof(cphvb_index));
+        memcpy(ary->stride, stride, ndim * sizeof(cphvb_index));
+
+        //Get process grid coords.
+        rank2pgrid(ndim, myrank, cartcoord);
+
+        //Accumulate the total number of local sizes and save it.
+        cphvb_intp localsize = 1;
+        ary->nblocks = 1;
+        for(i=0; i < ndim; i++)
+        {
+            ary->localdims[i] = pgrid_numroc(ary->shape[i], blocksize, cartcoord[i], cdims[i], 0);
+
+            localsize *= ary->localdims[i];
+            ary->localblockdims[i] = ceil(ary->localdims[i] / (double) blocksize);
+            ary->blockdims[i] = ceil(ary->shape[i] / (double) blocksize);
+            ary->nblocks *= ary->blockdims[i];
+        }
+        ary->localsize = localsize;
+        if(ary->localsize == 0)
+        {
+            memset(ary->localdims, 0, ary->ndim * sizeof(cphvb_intp));
+            memset(ary->localblockdims, 0, ary->ndim * sizeof(cphvb_intp));
+        }
+        if(ary->nblocks == 0)
+            memset(ary->blockdims, 0, ary->ndim * sizeof(cphvb_intp));
+
+        //Compute local stride stride.
+        cphvb_intp s = 1;
+        for(i=ndim; i >= 0; --i)
+        {
+            ary->localstride[i] = s;
+            s *= ary->localdims[i];
+        }
+
+        vem_create_array(base, type, ndim, start, ary->localdims, ary->localstride, has_init_value, init_value, &ary->child_ary);
+
+        *new_array = (cphvb_array*) ary;
     }
-*/
-    *new_array = array;
+
     return CPHVB_SUCCESS;
 }
-
-
-/* Check whether the instruction is supported by the VEM or not
- *
- * @return non-zero when true and zero when false
- */
-cphvb_intp cphvb_vem_cluster_instruction_check(cphvb_instruction *inst)
-{
-    switch(inst->opcode)
-    {
-    case CPHVB_DESTROY:
-        return 1;
-    case CPHVB_RELEASE:
-        return 1;
-    default:
-        if(ve_support.opcode[inst->opcode])
-        {
-            cphvb_intp i;
-            cphvb_intp nop = cphvb_operands(inst->opcode);
-            for(i=0; i<nop; ++i)
-            {
-                cphvb_type t;
-                if(inst->operand[i] == CPHVB_CONSTANT)
-                    t = inst->const_type[i];
-                else
-                    t = inst->operand[i]->type;
-                if(!ve_support.type[t])
-                    return 0;
-            }
-            return 1;
-        }
-        else
-            return 0;
-    }
-}
-
-
-/* Execute a list of instructions (blocking, for the time being).
- * It is required that the VEM supports all instructions in the list.
- *
- * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
- */
-cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
-                                      cphvb_instruction inst_list[])
-{
-    cphvb_intp i;
-    for(i=0; i<count; ++i)
-    {
-        cphvb_instruction *inst = &inst_list[i];
-        switch(inst->opcode)
-        {
-        case CPHVB_DESTROY:
-        {
-            cphvb_array *base = cphvb_base_array(inst->operand[0]);
-            if(--base->ref_count <= 0)
-            {
-                if(base->data != NULL)
-                    free(base->data);
-
-                if(inst->operand[0]->base != NULL)
-                    free(base);
-            }
-            free(inst->operand[0]);
-            break;
-        }
-        case CPHVB_RELEASE:
-        {
-            //Get the base
-            cphvb_array *base = cphvb_base_array(inst->operand[0]);
-            //Check the owner of the array
-            if(base->owner != CPHVB_PARENT)
-            {
-                fprintf(stderr, "VEM could not perform release\n");
-                exit(CPHVB_INST_ERROR);
-            }
-            break;
-        }
-        default:
-        {
-            cphvb_error error=1;// = cphvb_ve_simple_execute(1, inst);
-            if(error)
-            {
-                fprintf(stderr, "cphvb_vem_execute() encountered an "
-                                "error (%s) when executing %s.",
-                                cphvb_error_text(error),
-                                cphvb_opcode_text(inst->opcode));
-                exit(error);
-            }
-        }
-        }
-    }
-    return CPHVB_SUCCESS;
-}
-
-
