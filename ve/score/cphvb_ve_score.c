@@ -16,9 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "cphvb.h"
+#include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include "dispatch.cpp"
+#include "dispatch.hpp"
+
+
+cphvb_com *myself = NULL;
+cphvb_userfunc_impl reduce_impl = NULL;
+cphvb_intp reduce_impl_id = 0;
+cphvb_userfunc_impl random_impl = NULL;
+cphvb_intp random_impl_id = 0;
 
 cphvb_error cphvb_ve_score_init(
 
@@ -35,25 +42,70 @@ cphvb_error cphvb_ve_score_execute(
     cphvb_instruction*   instruction_list
 
 ) {
+    cphvb_intp count=0;
+    cphvb_instruction* regular_inst[CPHVB_MAX_NO_INST];
 
-    cphvb_error res = CPHVB_SUCCESS;
-
-    for(cphvb_intp i=0; i<instruction_count; ++i) {
-
-        res = dispatch( &instruction_list[i] );
-        if (res != CPHVB_SUCCESS) {
-            fprintf(
-                stderr,
-                "cphvb_ve_score_execute() encountered an error while executing: %s \
-                in combination with argument types.",
-                cphvb_opcode_text( instruction_list[i].opcode )
-            );
-            break;
+    while(count < instruction_count)
+    {
+        cphvb_instruction* inst = &instruction_list[count];
+        //Handle user-defined operations.
+        if(inst->opcode == CPHVB_USERFUNC)
+        {
+            if(inst->userfunc->id == reduce_impl_id)
+            {
+                inst->status = reduce_impl(inst->userfunc);
+            }
+            else if(inst->userfunc->id == random_impl_id)
+            {
+                inst->status = random_impl(inst->userfunc);
+            }
+            else// Unsupported instruction
+            {
+                inst->status = CPHVB_TYPE_NOT_SUPPORTED;
+            }
+            ++count;
         }
 
+        //Gather regular operations.
+        cphvb_intp regular_count=0;
+        while(count < instruction_count)
+        {
+            inst = &instruction_list[count];
+            if(inst->opcode == CPHVB_USERFUNC)
+                break;
+
+            switch(inst->opcode)
+            {
+                case CPHVB_NONE:
+                case CPHVB_DISCARD:
+                case CPHVB_RELEASE:
+                case CPHVB_SYNC:
+                    break;
+                default://This is a regular operation.
+                    if(inst->status == CPHVB_INST_UNDONE)
+                        regular_inst[regular_count++] = inst;
+            }
+            ++count;
+        }
+        //Dispatch regular operations.
+        for(cphvb_intp i=0; i<regular_count; ++i)
+        {
+            regular_inst[i]->status = dispatch(regular_inst[i]);
+            if (regular_inst[i]->status != CPHVB_SUCCESS)
+                return CPHVB_PARTIAL_SUCCESS;
+        }
     }
 
-    return res;
+
+    //while inst < instruction_count:
+    //  while not regular:
+    //      call dispatch(inst++);
+    //  size = make-mini-batch(inst)
+    //  (block all views in mini-batch.)
+    //  for inst in mini-batch:
+    //    call dispatch(inst)
+
+    return CPHVB_SUCCESS;
 
 }
 

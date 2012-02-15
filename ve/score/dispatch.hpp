@@ -17,30 +17,12 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
+#ifndef __CPHVB_DISPATCH_H
+#define __CPHVB_DISPATCH_H
 
-#include <cphvb.h>
+//Dispatch the instruction.
+//NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
+cphvb_error dispatch(cphvb_instruction *instr);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-cphvb_error cphvb_ve_score_init(cphvb_com *self);
-
-cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count,
-                                   cphvb_instruction* instruction_list);
-
-cphvb_error cphvb_ve_score_shutdown(void);
-
-cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
-
-//Implementation of the user-defined funtion "reduce". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

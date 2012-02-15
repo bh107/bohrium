@@ -4,8 +4,8 @@ CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
-SRC=cphvb_ve_score.c bundler.cpp
-HEADER=cphvb_ve_score.h bundler.hpp traverse.hpp $(ROOT)/include/*
+HEADER=./*.hpp ./*.h $(ROOT)/include/*
+SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/usr/local/lib
