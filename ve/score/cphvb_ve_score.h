@@ -20,17 +20,17 @@
 #ifndef __CPHVB_VE_SCORE_H
 #define __CPHVB_VE_SCORE_H
 
-cphvb_com *myself = NULL;
-cphvb_userfunc_impl reduce_impl = NULL;
-cphvb_intp reduce_impl_id = 0;
-cphvb_userfunc_impl random_impl = NULL;
-cphvb_intp random_impl_id = 0;
+#include <cphvb.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <cphvb.h>
+cphvb_com *myself = NULL;
+cphvb_userfunc_impl reduce_impl = NULL;
+cphvb_intp reduce_impl_id = 0;
+cphvb_userfunc_impl random_impl = NULL;
+cphvb_intp random_impl_id = 0;
 
 cphvb_error cphvb_ve_score_init(
 
