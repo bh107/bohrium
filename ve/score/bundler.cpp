@@ -18,6 +18,7 @@
  */
 
 #include "bundler.hpp"
+#include <set>
 
 /* Calculates the bundleable instructions.
  *
@@ -25,7 +26,23 @@
  * @size Size of the instruction list
  * @return Number of consecutive bundeable instruction
  */
-cphvb_intp bundle(cphvb_instruction insts[], cphvb_intp size)
+cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
-    return 1;
+
+    cphvb_intp res = 1;                                             // Number of cons. bundl. instr.
+    
+    std::set<cphvb_data_ptr> in, out;                               // Sets for classifying operands.
+    std::set<cphvb_data_ptr>::iterator in_it;                       // NOTE: Use boost::set? It is O( k )!
+    std::set<cphvb_data_ptr>::iterator out_it;
+    std::pair<std::set<cphvb_data_ptr>::iterator, bool> ins_res;
+
+    for(cphvb_intp i=0; i<size; i++)
+    {
+
+        // determine bundlability...
+        // res++
+
+    }
+
+    return res;
 }

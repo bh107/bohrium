@@ -25,4 +25,4 @@
  * @size Size of the instruction list
  * @return Number of consecutive bundeable instruction
  */
-cphvb_intp bundle(cphvb_instruction insts[], cphvb_intp size);
+cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size);
