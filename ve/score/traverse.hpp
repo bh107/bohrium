@@ -6,43 +6,6 @@
 #include <omp.h>
 #endif
 
-void pp_instr( cphvb_instruction *instr ) {
-
-    cphvb_array * op[3];
-
-    op[0] = instr->operand[0];
-    op[1] = instr->operand[1];
-    op[2] = instr->operand[2];
-
-    for(int j=0; j<3; j++) {
-
-        std::cout << "Op" << j << " {" << std::endl;
-        std::cout << "\tDims:\t"    << op[j]->ndim << std::endl;
-        std::cout << "\tStart:\t"   << op[j]->start << std::endl;
-        std::cout << "\tShape:\t";
-        for(int i=0; i< op[j]->ndim; i++) {
-            std::cout << op[j]->shape[i];
-            if (i<op[j]->ndim-1) {
-                std::cout << ",";
-            }
-        }
-        std::cout << "." << std::endl;
-
-        std::cout << "\tStride:\t";
-        for(int i=0; i< op[j]->ndim; i++) {
-            std::cout << op[j]->stride[i];
-            if (i<op[j]->ndim-1) {
-                std::cout << ",";
-            }
-        }
-        std::cout << "." << std::endl;
-
-        std::cout << "};" << std::endl;
-
-    }
-
-}
-
 template <typename T0, typename T1, typename T2, typename Instr>
 cphvb_error traverse_3( cphvb_instruction *instr ) {
 
@@ -52,19 +15,21 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
                 *a2 = instr->operand[2];
 
     cphvb_intp nthds = 1;
+
                                                 // Assuming that the first operand is an array.
     if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
     }
+    
     d0 = (T0*)cphvb_base_array(instr->operand[0])->data;
-
+    
     if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
     }
     d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
-
+    
     if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;

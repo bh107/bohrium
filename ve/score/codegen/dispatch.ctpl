@@ -1,3 +1,8 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
 #include <cphvb.h>
 #include "dispatch.h"
 #include "traverse.hpp"
@@ -45,7 +50,17 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
 
             switch(poly) {
 
-                ${cases}
+                %for $case in $cases
+                %if $case.opcount == 2
+                case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
+                    traverse_${case.opcount}<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >( instr );
+                    break;
+                %else
+                case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
+                    traverse_${case.opcount}<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >( instr );
+                    break;
+                %end if
+                %end for
 
                 default:        // Unsupported instruction / type
                     instr->status = CPHVB_TYPE_NOT_SUPPORTED;

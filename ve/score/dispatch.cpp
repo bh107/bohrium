@@ -44,7 +44,6 @@ inline cphvb_error dispatch( cphvb_instruction *instr ) {
                                     +(instr->operand[1]->type   << 12);
 
             switch(poly) {
-
                                 
                 case CPHVB_IDENTITY + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
                     traverse_2<cphvb_int8,cphvb_int8, identity_functor<cphvb_int8,cphvb_int8> >( instr );
