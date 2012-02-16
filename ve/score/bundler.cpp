@@ -39,13 +39,6 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     std::set<cphvb_array_ptr>::iterator in_it;                       // NOTE: Use boost::set? It is O( k )!
     std::set<cphvb_array_ptr>::iterator out_it;
     std::pair<std::set<cphvb_array_ptr>::iterator, bool> ins_res;
-
-/*   
-    std::set<cphvb_data_ptr> in, out;                               // Sets for classifying operands.
-    std::set<cphvb_data_ptr>::iterator in_it;                       // NOTE: Use boost::set? It is O( k )!
-    std::set<cphvb_data_ptr>::iterator out_it;
-    std::pair<std::set<cphvb_data_ptr>::iterator, bool> ins_res;
-*/
                                                                     // Used as "iterator": 
     cphvb_instruction*  instr;                                      // - pointing to current instruction
     int op_count;                                                   // - opcount of the current instruction 
