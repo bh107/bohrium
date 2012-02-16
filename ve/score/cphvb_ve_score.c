@@ -19,6 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include "dispatch.hpp"
+#include "bundler.hpp"
 
 
 cphvb_com *myself = NULL;
@@ -67,7 +68,7 @@ cphvb_error cphvb_ve_score_execute(
         }
 
         //Gather regular operations.
-        cphvb_intp regular_count=0;
+        cphvb_intp regular_size=0;
         while(count < instruction_count)
         {
             inst = &instruction_list[count];
@@ -83,16 +84,26 @@ cphvb_error cphvb_ve_score_execute(
                     break;
                 default://This is a regular operation.
                     if(inst->status == CPHVB_INST_UNDONE)
-                        regular_inst[regular_count++] = inst;
+                        regular_inst[regular_size++] = inst;
             }
             ++count;
         }
-        //Dispatch regular operations.
-        for(cphvb_intp i=0; i<regular_count; ++i)
+        //Dispatch the regular operations.
+        cphvb_instruction** i = regular_inst;
+        while(regular_size > 0)
         {
-            regular_inst[i]->status = dispatch(regular_inst[i]);
-            if (regular_inst[i]->status != CPHVB_SUCCESS)
-                return CPHVB_PARTIAL_SUCCESS;
+            //Get number of consecutive bundeable instruction.
+            cphvb_intp bundle_size = bundle(i, regular_size);
+            regular_size -= bundle_size;
+
+            //Dispatch the bundle of instructions.
+            while(bundle_size-- > 0)
+            {
+                (*i)->status = dispatch(*i);
+                if((*i)->status != CPHVB_SUCCESS)
+                    return CPHVB_PARTIAL_SUCCESS;
+                ++i;
+            }
         }
     }
 

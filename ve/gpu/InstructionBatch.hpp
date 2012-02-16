@@ -33,6 +33,8 @@ private:
     std::vector<cphvb_instruction*> instructions;
     std::map<BaseArray*, cphvb_array*> output;
     std::multimap<BaseArray*, cphvb_array*> input;
+    std::set<BaseArray*> 
+    static int kernel = 0;
 public:
     bool match(cphvb_intp ndim, const cphvb_index dims[]);
     bool sameView(const cphvb_array* a, const cphvb_array* b);
