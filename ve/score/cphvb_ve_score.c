@@ -40,7 +40,7 @@ cphvb_error cphvb_ve_score_init(
     return CPHVB_SUCCESS;
 }
 
-#define CPHVB_SCORE_NBLOCKS 3
+#define CPHVB_SCORE_NBLOCKS 1
 
 //Dispatch the bundle of instructions.
 cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
