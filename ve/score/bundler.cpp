@@ -43,10 +43,10 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
     bool do_fuse = true;
 
-    //std::cout << "BUNDLING " << size << " {" << std::endl;
+    std::cout << "BUNDLING " << size << " {" << std::endl;
     for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
-        //pp_instr( insts[i] );
+        pp_instr( insts[i] );
 
         op = insts[i]->operand[0];
 
@@ -54,19 +54,19 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
                                                                     // All good just continue
             bundle_len++;
 
-        } else if (op->base == NULL) {                              // "New" base array
+        } else if (op->base == NULL) {                              // Base - first sighting
 
             out.insert( op );
             bundle_len++;
 
-        } else if (out.empty()) {                                   // "New" view
+        } else if (out.empty()) {                                   // View - no clashes possible
 
             out.insert( op );
             bundle_len++;
 
-        } else {                                                    // "New" view    
-                                                                    // Determine splicability
-            for(it=out.begin(); it != out.end(); it++) {
+        } else {                                                    // View - clashes possible 
+                                                                    
+            for(it = out.begin(); it != out.end(); it++) {          // Determine splicability
 
                 if ( op->base == (*it)->base ) {                    // Same base
 
@@ -92,22 +92,22 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
             }
 
-            out.insert( op );
-            bundle_len++;
+            if (do_fuse) {
+                out.insert( op );
+                bundle_len++;
+            }
 
         }
 
     }
 
-    /*
     std::cout << "} out {" << std::endl << "  ";
     for(it = out.begin(); it != out.end(); it++)
     {
         std::cout << *it << ",";
     }
     std::cout << std::endl;
-    */
-    //std::cout << "} " << bundle_len  << std::endl;
+    std::cout << "} " << bundle_len  << std::endl;
     
     return bundle_len;
 
