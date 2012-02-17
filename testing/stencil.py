@@ -36,11 +36,11 @@ def main():
  
     start = time.time()
 
-    np.add( o1, o2, o3 )
-    np.subtract( o2, o2, o3 )
-    np.add( e1, e2, e3 )
-    np.subtract( e1, e2, e3 )
-    np.add( e3, e1, e2 )
+    np.add( o2, o3, o1 )
+    np.subtract( e2, e3, o1 )
+    np.subtract( o1, o1, o1 )
+
+    print o1
 
     print time.time()-start
 

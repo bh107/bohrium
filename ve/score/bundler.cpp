@@ -33,7 +33,6 @@ typedef cphvb_array* cphvb_array_ptr;
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
 
-    cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
 
     std::set<cphvb_array_ptr> out;                                  // Sets for classifying operands.
     std::set<cphvb_array_ptr>::iterator it;
@@ -42,11 +41,16 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     cphvb_array_ptr op;
 
     bool do_fuse = true;
+    cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
 
-    //std::cout << "BUNDLING " << size << " {" << std::endl;
+    #ifdef DEBUG_BNDL
+    std::cout << "BUNDLING " << size << " {" << std::endl;
+    #endif
     for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
-        //pp_instr( insts[i] );
+        #ifdef DEBUG_BNDL
+        pp_instr( insts[i] );
+        #endif
 
         op = insts[i]->operand[0];
 
@@ -101,7 +105,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
     }
 
-    /*
+    #ifdef DEBUG_BNDL
     std::cout << "} out {" << std::endl << "  ";
     for(it = out.begin(); it != out.end(); it++)
     {
@@ -109,7 +113,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     }
     std::cout << std::endl;
     std::cout << "} " << bundle_len  << std::endl;
-    */
+    #endif
     
     return bundle_len;
 
