@@ -15,15 +15,18 @@ except:
 
 def main():
 
-    x = np.array([1]*size, dtype=np.float64)
-    y = np.array([1]*size, dtype=np.float64)
+    a = np.array([1]*size, dtype=np.float64)
+    b = np.array([1]*size, dtype=np.float64)
+
+    x = a[1:-1]
+    y = b[0:-2]
 
     if CPHVB:
         cnp.handle_array( x ) 
         cnp.handle_array( y ) 
  
     start = time.time() 
-    np.add( x, y )
+    print np.add( x, y )
     print time.time()-start
 
 if __name__ == "__main__":

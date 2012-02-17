@@ -82,13 +82,13 @@ extern "C" {
     cphvb_data_ptr   data;                 \
     cphvb_intp       has_init_value;       \
     cphvb_constant   init_value;           \
-    cphvb_intp       ref_count;            \
-    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];\
+    cphvb_intp       ref_count;
 
 typedef struct cphvb_array cphvb_array;
 struct cphvb_array
 {
     CPHVB_ARRAY_HEAD
+    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
 };
 
 #ifdef __cplusplus
