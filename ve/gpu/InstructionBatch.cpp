@@ -57,39 +57,20 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ba
     accept(inst, operandBase);
 }
 
-bool InstructionBatch::accept(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
-{
-    if (!shapeMatch(inst->operands[0]->ndim, inst->operands[0]->shape))
-        return false;
-    std::map<BaseArray*, cphvb_array*>::iterator oit;
-    for (int op = 0; op < operandBase.size(); op++)
-    {
-        if (inst->operand[op]->ndim != 0)
-        {
-            oit = output.find(operandBase[op]);
-            if (oit != output.end())
-            {
-                if (!sameView(oit.second(), inst->operand[op]))
-                    return false;
-            }
-        }
-    }
-    return true;
-}
-
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
+    assert(inst->operand[0]->ndim > 0);
+
     // Check that the shape matches
     if (!shapeMatch(inst->operands[0]->ndim, inst->operands[0]->shape))
         throw BatchException(0);
 
     // If any operand's base is already used as output, it has to be alligned.
-    std::map<BaseArray*, cphvb_array*>::iterator oit;
-    for (int op = 0; op < operandBase.size(); op++)
+    for (int op = 0; op < operandBase.size(); ++op)
     {
         if (inst->operand[op]->ndim != 0)
         {
-            oit = output.find(operandBase[op]);
+            std::map<BaseArray*, cphvb_array*>::iterator oit = output.find(operandBase[op]);
             if (oit != output.end())
             {
                 if (!sameView(oit.second(), inst->operand[op]))
@@ -97,14 +78,34 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
             }
         }
     }
-    
-    // 
-}
 
+    // OK so we can accept the instruction
+    output[operandBase[0]] = inst->operand[0];
+    
+    for (int op = 0; op < operandBase.size(); ++op)
+    {
+        cphvb_array* base = cphvb_base_array(inst->operand[op]);
+        if (inst->operand[op]->ndim != 0 && kernelParameters.find(base) == kernelParameters.end()))
+        {
+            std::stringstream ss;
+            ss << "a" << arraynum++;
+            kernelParameters[base] = std::make_pair(operandBase[op],ss.str()); 
+        }
+    }    
+}
 
 std::string InstructionBatch::generateCode()
 {
-    std::ostream os;
-    os << "__kernel void kernel" << kernel++ << "(\n";
+    std::stringstream source;
+    source << "__kernel void kernel" << kernel++ << "(";
+    ParamMap::iterator kpit = kernelParameters.start();
+    source << "__global " << oclTypeStr(kpit.second().first->bufferType) << "* " << kpit.second().second;
+    for (++kpit; kpit != kernelParameters.end(); ++kpit)
+    {
+        source << "\n                       __global " << 
+            oclTypeStr(kpit.second().first->bufferType) << "* " << kpit.second().second; 
+    }
+    source << ")\n{\n";
+    
     
 }

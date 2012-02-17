@@ -33,7 +33,6 @@ typedef cphvb_array* cphvb_array_ptr;
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
 
-    cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
 
     std::set<cphvb_array_ptr> out;                                  // Sets for classifying operands.
     std::set<cphvb_array_ptr>::iterator it;
@@ -42,11 +41,16 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     cphvb_array_ptr op;
 
     bool do_fuse = true;
+    cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
 
-    //std::cout << "BUNDLER {" << std::endl;
-    for(cphvb_intp i=0; do_fuse && (i<size); i++) {
+    #ifdef DEBUG_BNDL
+    std::cout << "BUNDLING " << size << " {" << std::endl;
+    #endif
+    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
-        //pp_instr( insts[i] );
+        #ifdef DEBUG_BNDL
+        pp_instr( insts[i] );
+        #endif
 
         op = insts[i]->operand[0];
 
@@ -54,19 +58,19 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
                                                                     // All good just continue
             bundle_len++;
 
-        } else if (op->base == NULL) {                              // "New" base array
+        } else if (op->base == NULL) {                              // Base - first sighting
 
             out.insert( op );
             bundle_len++;
 
-        } else if (out.empty()) {                                   // "New" view
+        } else if (out.empty()) {                                   // View - no clashes possible
 
             out.insert( op );
             bundle_len++;
 
-        } else {                                                    // "New" view    
-                                                                    // Determine splicability
-            for(it=out.begin(); it != out.end(); it++) {
+        } else {                                                    // View - clashes possible 
+                                                                    
+            for(it = out.begin(); it != out.end(); it++) {          // Determine splicability
 
                 if ( op->base == (*it)->base ) {                    // Same base
 
@@ -78,13 +82,8 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
                                 (op->shape[j] != (*it)->shape[j])) {
                                 do_fuse = false;                    // Incompatible shape or stride
                                 break;
-
                             }
-
                         }
-
-                        out.insert( op );                           // Same shape and stride
-                        bundle_len++;
 
                     } else {                                        // Incompatible dim or start
 
@@ -93,18 +92,20 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
                     }
 
-                } else {                                            // Different base => all good
-                    out.insert( op );
-                    bundle_len++;
-                }
+                } // Different base => all is good.
+
             }
 
+            if (do_fuse) {
+                out.insert( op );
+                bundle_len++;
+            }
 
         }
 
     }
 
-    /*
+    #ifdef DEBUG_BNDL
     std::cout << "} out {" << std::endl << "  ";
     for(it = out.begin(); it != out.end(); it++)
     {
@@ -112,7 +113,8 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     }
     std::cout << std::endl;
     std::cout << "} " << bundle_len  << std::endl;
-    */
+    #endif
+    
     return bundle_len;
 
 }
