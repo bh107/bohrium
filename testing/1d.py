@@ -26,7 +26,7 @@ def main():
         cnp.handle_array( y ) 
  
     start = time.time() 
-    np.add( x, y )
+    print np.add( x, y )
     print time.time()-start
 
 if __name__ == "__main__":
