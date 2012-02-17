@@ -1,29 +1,34 @@
 from pprint import pprint as pp
 import numpy as np
 import cphvbnumpy as cnp
-import time
+
+from time import time
 import sys
 
 CPHVB   = True
-size    = 4
+dim = [3, 3]
 
 try:
     CPHVB   = int(sys.argv[1])
-    size    = int(sys.argv[2])
 except:
     pass
 
 def main():
 
-    x = np.array([range(1,size+1)]*size, dtype=np.float32, dist=CPHVB)
-    y = np.array([range(1,size+1)]*size, dtype=np.float32, dist=CPHVB)
-    z = np.empty((size,size), dtype=np.float32, dist=CPHVB)
+    (w, h) = dim
 
-    np.add( x, y, z )
+    x = np.array([range(1, w+1)]*h, dtype=np.float32)
+    y = np.array([range(1, w+1)]*h, dtype=np.float32)
+    z = np.empty((h, w), dtype=np.float32)
 
-#    print "x:\n", x
-#    print "y:\n", y
-#    print "x + y = \n", z
+    if CPHVB:
+        cnp.handle_array( x )
+        cnp.handle_array( y )
+        cnp.handle_array( z )
+
+    start = time() 
+    np.add(x,y,z)
+    print time() - start
 
 if __name__ == "__main__":
     main()

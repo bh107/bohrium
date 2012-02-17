@@ -158,7 +158,7 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
         }
     }
 
-    
+    // TODO Redo ... or rethink 
     if (batch.match(inst->operand[0]->ndim, inst->operand[0]->shape))
     {
         try 
