@@ -72,7 +72,7 @@ struct dndmem_struct
 
 struct dndarray_struct
 {
-    CPHVB_ARRAY_HEAD
+    CPHVB_ARRAY_HEAD__DET_MAA_JEG_IKKE_BRUG_array_database.h
     //The array that propagates down to the cphVB child component.
     cphvb_array *child_ary;
     //Size of block-dimensions.

@@ -37,6 +37,23 @@ cphvb_error cphvb_ve_score_init(
     return CPHVB_SUCCESS;
 }
 
+
+//Dispatch the bundle of instructions.
+cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
+{
+
+    for(cphvb_intp j=0; j<size; ++j)
+    {
+        (*inst_bundle)->status = dispatch(*inst_bundle);
+        if((*inst_bundle)->status != CPHVB_SUCCESS)
+            return CPHVB_PARTIAL_SUCCESS;
+        ++inst_bundle;
+    }
+    return CPHVB_SUCCESS;
+}
+
+
+
 cphvb_error cphvb_ve_score_execute(
 
     cphvb_intp          instruction_count,
@@ -89,21 +106,14 @@ cphvb_error cphvb_ve_score_execute(
             ++count;
         }
         //Dispatch the regular operations.
-        cphvb_instruction** i = regular_inst;
+        cphvb_instruction** cur_bundle = regular_inst;
         while(regular_size > 0)
         {
             //Get number of consecutive bundeable instruction.
-            cphvb_intp bundle_size = bundle(i, regular_size);
+            cphvb_intp bundle_size = bundle(cur_bundle, regular_size);
             regular_size -= bundle_size;
 
-            //Dispatch the bundle of instructions.
-            while(bundle_size-- > 0)
-            {
-                (*i)->status = dispatch(*i);
-                if((*i)->status != CPHVB_SUCCESS)
-                    return CPHVB_PARTIAL_SUCCESS;
-                ++i;
-            }
+            dispatch_bundle(cur_bundle, bundle_size);
         }
     }
 
