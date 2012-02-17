@@ -43,8 +43,8 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
     bool do_fuse = true;
 
-    //std::cout << "BUNDLER {" << std::endl;
-    for(cphvb_intp i=0; do_fuse && (i<size); i++) {
+    //std::cout << "BUNDLING " << size << " {" << std::endl;
+    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
         //pp_instr( insts[i] );
 
@@ -78,13 +78,8 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
                                 (op->shape[j] != (*it)->shape[j])) {
                                 do_fuse = false;                    // Incompatible shape or stride
                                 break;
-
                             }
-
                         }
-
-                        out.insert( op );                           // Same shape and stride
-                        bundle_len++;
 
                     } else {                                        // Incompatible dim or start
 
@@ -93,12 +88,12 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
                     }
 
-                } else {                                            // Different base => all good
-                    out.insert( op );
-                    bundle_len++;
-                }
+                } // Different base => all is good.
+
             }
 
+            out.insert( op );
+            bundle_len++;
 
         }
 
@@ -111,8 +106,9 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
         std::cout << *it << ",";
     }
     std::cout << std::endl;
-    std::cout << "} " << bundle_len  << std::endl;
     */
+    //std::cout << "} " << bundle_len  << std::endl;
+    
     return bundle_len;
 
 }
