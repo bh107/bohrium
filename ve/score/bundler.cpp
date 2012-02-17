@@ -43,10 +43,10 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
     bool do_fuse = true;
 
-    std::cout << "BUNDLING " << size << " {" << std::endl;
+    //std::cout << "BUNDLING " << size << " {" << std::endl;
     for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
-        pp_instr( insts[i] );
+        //pp_instr( insts[i] );
 
         op = insts[i]->operand[0];
 
@@ -101,6 +101,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
     }
 
+    /*
     std::cout << "} out {" << std::endl << "  ";
     for(it = out.begin(); it != out.end(); it++)
     {
@@ -108,6 +109,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     }
     std::cout << std::endl;
     std::cout << "} " << bundle_len  << std::endl;
+    */
     
     return bundle_len;
 
