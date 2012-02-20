@@ -95,10 +95,12 @@ def main():
                                                                     # Generate the cpp code.
     f_tmpl  = Template(file='functors.ctpl', searchList=[{'functors': functors}])
     d_tmpl  = Template(file='dispatch.ctpl', searchList=[{'cases': cases}])
+    t_tmpl  = Template(file='get_traverse.ctpl', searchList=[{'cases': cases}])
     
                                                                     # Write them to file
     open('functors.gen','w').write(str(f_tmpl))
     open('dispatch.gen','w').write(str(d_tmpl))
+    open('get_traverse.gen','w').write(str(t_tmpl))
     open('gen.log','w+').write('\n'.join(log))
 
 if __name__ == "__main__":
