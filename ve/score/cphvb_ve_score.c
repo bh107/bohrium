@@ -18,10 +18,10 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include "dispatch.hpp"
 #include "bundler.hpp"
 #include "private.h"
-#include "assert.h"
+#include <assert.h>
+#include "get_traverse.hpp"
 
 
 static cphvb_com *myself = NULL;
@@ -51,6 +51,18 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
     cphvb_intp offsets[CPHVB_MAX_NO_INST];
     memset(offsets, 0, size * sizeof(cphvb_intp));
 
+    //Get all traverser function -- one per instruction.
+    traverse_ptr traverses[CPHVB_MAX_NO_INST];
+    for(cphvb_intp j=0; j<size; ++j)
+    {
+        traverses[j] = get_traverse( inst_bundle[j] );
+        if(traverses[j] == NULL)
+        {
+            inst_bundle[j]->status = CPHVB_OUT_OF_MEMORY;
+            ret = CPHVB_INST_NOT_SUPPORTED;
+            goto finish;
+        }
+    }
     //Save the original array information.
     for(cphvb_intp j=0; j<size; ++j)
     {
@@ -93,7 +105,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
     for(cphvb_intp j=0; j<size; ++j)
     {
         cphvb_instruction *inst = inst_bundle[j];
-        inst->status = dispatch(inst);
+        inst->status = traverses[j](inst);
         if(inst->status != CPHVB_SUCCESS)
         {
             ret = CPHVB_PARTIAL_SUCCESS;
@@ -121,7 +133,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
             cphvb_instruction *inst = inst_bundle[j];
             if(inst->operand[0]->shape[0] > 0)
             {
-                inst->status = dispatch(inst);
+                inst->status = traverses[j](inst);
                 if(inst->status != CPHVB_SUCCESS)
                 {
                     ret = CPHVB_PARTIAL_SUCCESS;
@@ -226,15 +238,6 @@ cphvb_error cphvb_ve_score_execute(
         }
     }
 
-
-    //while inst < instruction_count:
-    //  while not regular:
-    //      call dispatch(inst++);
-    //  size = make-mini-batch(inst)
-    //  (block all views in mini-batch.)
-    //  for inst in mini-batch:
-    //    call dispatch(inst)
-
     return CPHVB_SUCCESS;
 
 }
@@ -299,7 +302,10 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.opcode = CPHVB_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
-    cphvb_error err = dispatch(&inst);
+    traverse_ptr trav = get_traverse(&inst);
+    if(trav == NULL)
+        return CPHVB_ERROR;
+    cphvb_error err = trav(&inst);
     if(err != CPHVB_SUCCESS)
         return err;
     tmp.start += step;
@@ -312,9 +318,12 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.operand[1] = out;
     inst.operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
+    trav = get_traverse(&inst);
+    if(trav == NULL)
+        return CPHVB_ERROR;
     for(i=1; i<axis_size; ++i)
     {
-        cphvb_error err = dispatch(&inst);
+        err = trav(&inst);
         if(err != CPHVB_SUCCESS)
             return err;
         tmp.start += step;

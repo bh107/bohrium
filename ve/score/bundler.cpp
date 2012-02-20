@@ -20,7 +20,7 @@
 #include "bundler.hpp"
 #include <iostream>
 #include <set>
-#include "pp.h"
+
 
 typedef cphvb_array* cphvb_array_ptr;
 
@@ -49,7 +49,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
 
         #ifdef DEBUG_BNDL
-        pp_instr( insts[i] );
+        cphvb_instr_pprint( insts[i] );
         #endif
 
         op = insts[i]->operand[0];
@@ -68,15 +68,15 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
             out.insert( op );
             bundle_len++;
 
-        } else {                                                    // View - clashes possible 
-                                                                    
+        } else {                                                    // View - clashes possible
+
             for(it = out.begin(); it != out.end(); it++) {          // Determine splicability
 
                 if ( op->base == (*it)->base ) {                    // Same base
 
                     if ((op->ndim == (*it)->ndim) &&                // Same dim and start
                         (op->start == (*it)->start)) {
-                        
+
                         for(cphvb_intp j =0; i<op->ndim; i++) {
                             if ((op->stride[j] != (*it)->stride[j]) ||
                                 (op->shape[j] != (*it)->shape[j])) {
@@ -114,7 +114,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     std::cout << std::endl;
     std::cout << "} " << bundle_len  << std::endl;
     #endif
-    
+    bundle_len = 1;
     return bundle_len;
 
 }
