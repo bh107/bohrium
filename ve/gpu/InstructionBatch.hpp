@@ -26,15 +26,18 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 
-typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string> ParamMap;
+typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ParamMap;
+typedef std::map<BaseArray*, cphvb_array*> OutputMap;
+typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
+
 
 class InstructionBatch
 {
 private:
     std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
-    std::map<BaseArray*, cphvb_array*> output;
-    std::multimap<BaseArray*, cphvb_array*> input;
+    OutputMap output;
+    InputMap input;
     ParamMap kernelParameters; 
     int arraynum = 0;
     static int kernel = 0;

@@ -70,8 +70,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     {
         if (inst->operand[op]->ndim != 0)
         {
-            std::map<BaseArray*, cphvb_array*>::iterator oit = output.find(operandBase[op]);
-            if (oit != output.end())
+            if (output.find(operandBase[op]) != output.end())
             {
                 if (!sameView(oit.second(), inst->operand[op]))
                     throw BatchException(0);
@@ -79,9 +78,21 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         }
     }
 
+    // If the output operans is allready used as input it has to be alligned 
+    std::pair<inputMap::iterator, inputMap::iterator> irange = input.equal_range(operandBase[0]);
+    InputMap::Iterator iit = irange.first;
+    for (; iit != irange.second; ++iit)
+    {
+        if (!sameView(iit.second(), inst->operand[0]))
+            throw BatchException(0);
+    }
+
+    
     // OK so we can accept the instruction
     output[operandBase[0]] = inst->operand[0];
     
+    // HERE: also inser into input and stuff
+
     for (int op = 0; op < operandBase.size(); ++op)
     {
         cphvb_array* base = cphvb_base_array(inst->operand[op]);
@@ -106,6 +117,39 @@ std::string InstructionBatch::generateCode()
             oclTypeStr(kpit.second().first->bufferType) << "* " << kpit.second().second; 
     }
     source << ")\n{\n";
+    
+    for (std::vector<cphvb_instruction*>::iterator iit = instructions.start(), iit != instructions.end(); ++iit)
+    {
+        generateInstructionSource(*iit, source);
+    }
+    source << "}\n";
+}
+
+void InstructionBatch::generateInstructionSource(cphvb_instruction* inst, std::ostream& source)
+{
+    switch(inst->opcode)
+    {
+    case CPHVB_ADD:
+        source << kernelParameters[inst->operand[0]]->second << " = " <<
+            kernelParameters[inst->operand[1]]->second << " + " <<
+            kernelParameters[inst->operand[2]]->second << ";\n";
+        break;
+    default:
+        throw std::runtime_error("Instruction not supported.");
+    }
+}
+
+void InstructionBatch::generateOffsetSource(cphvb_array* operand, std::ostream& source)
+{
+    if (operand->ndim > 2)
+    {
+        source << "get_global_id(2)*" << operand->stride[2] << " + ";
+    }
+    if (operand->ndim > 1)
+    {
+        source << "get_global_id(1)*" << operand->stride[1] << " + ";
+    }
+    source << "get_global_id(0)*" << operand->stride[0] << " + " << operand->start;
     
     
 }
