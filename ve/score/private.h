@@ -33,8 +33,6 @@ typedef struct
     //Saved original values
     cphvb_index      org_start;
     cphvb_index      org_shape[CPHVB_MAXDIM];
-    //Current block offset
-    cphvb_index      offset;
 }score_ary;
 
 

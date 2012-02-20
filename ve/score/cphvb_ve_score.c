@@ -22,30 +22,34 @@
 #include "bundler.hpp"
 #include "private.h"
 #include "assert.h"
-#include "pp.h"
 
 
-cphvb_com *myself = NULL;
-cphvb_userfunc_impl reduce_impl = NULL;
-cphvb_intp reduce_impl_id = 0;
-cphvb_userfunc_impl random_impl = NULL;
-cphvb_intp random_impl_id = 0;
+static cphvb_com *myself = NULL;
+static cphvb_userfunc_impl reduce_impl = NULL;
+static cphvb_intp reduce_impl_id = 0;
+static cphvb_userfunc_impl random_impl = NULL;
+static cphvb_intp random_impl_id = 0;
+static cphvb_intp nblocks = 16;
 
-cphvb_error cphvb_ve_score_init(
 
-    cphvb_com       *self
-
-) {
+cphvb_error cphvb_ve_score_init(cphvb_com *self)
+{
     myself = self;
+
+    char *env = getenv("CPHVB_SCORE_NBLOCKS");
+    if(env != NULL)
+        nblocks = atoi(env);
+
     return CPHVB_SUCCESS;
 }
-
-#define CPHVB_SCORE_NBLOCKS 1
 
 //Dispatch the bundle of instructions.
 cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
 {
     cphvb_error ret = CPHVB_SUCCESS;
+    //Current offset of each instruction.
+    cphvb_intp offsets[CPHVB_MAX_NO_INST];
+    memset(offsets, 0, size * sizeof(cphvb_intp));
 
     //Save the original array information.
     for(cphvb_intp j=0; j<size; ++j)
@@ -79,11 +83,10 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
         for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
         {
             score_ary *ary = (score_ary*) inst->operand[i];
-            ary->offset = 0;
             //We block over the most significant dimension.
             //NB: the first block gets the reminder.
-            ary->shape[0] = ary->org_shape[0] / CPHVB_SCORE_NBLOCKS;
-            ary->shape[0] += ary->org_shape[0] % CPHVB_SCORE_NBLOCKS;
+            ary->shape[0] = ary->org_shape[0] / nblocks;
+            ary->shape[0] += ary->org_shape[0] % nblocks;
         }
     }
     //Dispatch the first block.
@@ -101,16 +104,16 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
     for(cphvb_intp j=0; j<size; ++j)
     {
         cphvb_instruction *inst = inst_bundle[j];
+        offsets[j] += inst->operand[0]->shape[0];
         for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
         {
             score_ary *ary = (score_ary*) inst->operand[i];
-            ary->offset += ary->shape[0];
-            ary->shape[0] = ary->org_shape[0] / CPHVB_SCORE_NBLOCKS;
-            ary->start = ary->org_start + ary->stride[0] * ary->offset;
+            ary->shape[0] = ary->org_shape[0] / nblocks;
+            ary->start = ary->org_start + ary->stride[0] * offsets[j];
         }
     }
     //Handle the rest of the blocks.
-    for(cphvb_intp b=1; b<CPHVB_SCORE_NBLOCKS; ++b)
+    for(cphvb_intp b=1; b<nblocks; ++b)
     {
         //Dispatch a block.
         for(cphvb_intp j=0; j<size; ++j)
@@ -130,11 +133,11 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
         for(cphvb_intp j=0; j<size; ++j)
         {
             cphvb_instruction *inst = inst_bundle[j];
+            offsets[j] += inst->operand[0]->shape[0];
             for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
             {
                 score_ary *ary = (score_ary*) inst->operand[i];
-                ary->offset += ary->shape[0];
-                ary->start = ary->org_start + ary->stride[0] * ary->offset;
+                ary->start = ary->org_start + ary->stride[0] * offsets[j];
             }
         }
     }
