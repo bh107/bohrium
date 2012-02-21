@@ -26,9 +26,11 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 
-typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ParamMap;
+typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ArrayMap;
+typedef std::map<cphvb_array*, std::string> ScalarMap;
 typedef std::map<BaseArray*, cphvb_array*> OutputMap;
 typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
+
 
 
 class InstructionBatch
@@ -38,12 +40,25 @@ private:
     std::vector<cphvb_instruction*> instructions;
     OutputMap output;
     InputMap input;
-    ParamMap kernelParameters; 
-    int arraynum = 0;
-    static int kernel = 0;
-public:
-    bool match(cphvb_intp ndim, const cphvb_index dims[]);
+    ArrayMap arrayParameters;
+    ScalarMap scalarParameters;
+    ScalarMap kernelVariables;
+    int arraynum;
+    int scalarnum;
+    int variablenum;
+    static int kernel;
+    bool shapeMatch(cphvb_intp ndim, const cphvb_index dims[]);
     bool sameView(const cphvb_array* a, const cphvb_array* b);
+    void generateInstructionSource(cphvb_opcode opcode, 
+                                   std::vector<std::string>& parameters, 
+                                   std::ostream& source);
+    void generateOffsetSource(cphvb_array* operand, std::ostream& source);
+public:
+    InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    std::string generateCode();
+    void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
 };
+
+int InstructionBatch::kernel = 0;
 
 #endif
