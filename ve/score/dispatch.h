@@ -17,24 +17,22 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PRIVATE_H
-#define __PRIVATE_H
-
-#include <cphvb.h>
+#ifndef __CPHVB_DISPATCH_H
+#define __CPHVB_DISPATCH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//The data type of cphvb_array extended with temporary info.
-typedef struct
-{
-    CPHVB_ARRAY_HEAD
-    //Saved original values
-    cphvb_index      org_start;
-    cphvb_index      org_shape[CPHVB_MAXDIM];
-}score_ary;
+//Dispatch the instruction.
+//NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
+cphvb_error dispatch(cphvb_instruction *instr);
 
+//Dispatch the bundle of instructions.
+//NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
+cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
+                            cphvb_intp size,
+                            cphvb_intp nblocks);
 
 #ifdef __cplusplus
 }

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cphvb.h>
 
-#ifdef _OPENMP
+#ifdef _OPENMP_OLD
 #include <omp.h>
 #endif
 
@@ -21,15 +21,15 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
     }
-    
+
     d0 = (T0*)cphvb_base_array(instr->operand[0])->data;
-    
+
     if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
     }
     d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
-    
+
     if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
         instr->status = CPHVB_OUT_OF_MEMORY;
         return CPHVB_PARTIAL_SUCCESS;
@@ -39,7 +39,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     //We will use OpenMP to parallelize of the computation.
     //We divide the work over the first dimension, i.e. the most
     //significant dimension.
-    #ifdef _OPENMP
+    #ifdef _OPENMP_OLD
         if(a0->ndim > 1) //Find number of threads to use.
         {
             nthds = omp_get_max_threads();
@@ -50,7 +50,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     #endif
     {
         Instr opcode_func;
-        #ifdef _OPENMP
+        #ifdef _OPENMP_OLD
             int myid = omp_get_thread_num();
         #else
             int myid = 0;
