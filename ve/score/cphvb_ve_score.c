@@ -35,11 +35,15 @@ static cphvb_intp nblocks = 16;
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
     myself = self;
-
     char *env = getenv("CPHVB_SCORE_NBLOCKS");
     if(env != NULL)
         nblocks = atoi(env);
-
+    if(nblocks <= 0)
+    {
+        fprintf(stderr, "CPHVB_SCORE_NBLOCKS should be greater than"
+                        " zero!\n");
+        return CPHVB_ERROR;
+    }
     return CPHVB_SUCCESS;
 }
 
