@@ -18,144 +18,34 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include "dispatch.hpp"
 #include "bundler.hpp"
-#include "private.h"
-#include "assert.h"
-#include "pp.h"
+#include "dispatch.h"
+#include <assert.h>
+#include "get_traverse.hpp"
 
 
-cphvb_com *myself = NULL;
-cphvb_userfunc_impl reduce_impl = NULL;
-cphvb_intp reduce_impl_id = 0;
-cphvb_userfunc_impl random_impl = NULL;
-cphvb_intp random_impl_id = 0;
+static cphvb_com *myself = NULL;
+static cphvb_userfunc_impl reduce_impl = NULL;
+static cphvb_intp reduce_impl_id = 0;
+static cphvb_userfunc_impl random_impl = NULL;
+static cphvb_intp random_impl_id = 0;
+static cphvb_intp nblocks = 16;
 
-cphvb_error cphvb_ve_score_init(
 
-    cphvb_com       *self
-
-) {
+cphvb_error cphvb_ve_score_init(cphvb_com *self)
+{
     myself = self;
+    char *env = getenv("CPHVB_SCORE_NBLOCKS");
+    if(env != NULL)
+        nblocks = atoi(env);
+    if(nblocks <= 0)
+    {
+        fprintf(stderr, "CPHVB_SCORE_NBLOCKS should be greater than"
+                        " zero!\n");
+        return CPHVB_ERROR;
+    }
     return CPHVB_SUCCESS;
 }
-
-#define CPHVB_SCORE_NBLOCKS 1
-
-//Dispatch the bundle of instructions.
-cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
-{
-    cphvb_error ret = CPHVB_SUCCESS;
-
-    //Save the original array information.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            score_ary *ary = (score_ary*) inst->operand[i];
-            ary->org_start = ary->start;
-            memcpy(ary->org_shape, ary->shape, ary->ndim * sizeof(cphvb_index));
-        }
-    }
-    //Make sure that all array-data is allocated.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            if(cphvb_malloc_array_data(inst->operand[i]) != CPHVB_SUCCESS)
-            {
-                inst->status = CPHVB_OUT_OF_MEMORY;
-                ret = CPHVB_PARTIAL_SUCCESS;
-                goto finish;
-            }
-        }
-    }
-    //Initiate the first block.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            score_ary *ary = (score_ary*) inst->operand[i];
-            ary->offset = 0;
-            //We block over the most significant dimension.
-            //NB: the first block gets the reminder.
-            ary->shape[0] = ary->org_shape[0] / CPHVB_SCORE_NBLOCKS;
-            ary->shape[0] += ary->org_shape[0] % CPHVB_SCORE_NBLOCKS;
-        }
-    }
-    //Dispatch the first block.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        inst->status = dispatch(inst);
-        if(inst->status != CPHVB_SUCCESS)
-        {
-            ret = CPHVB_PARTIAL_SUCCESS;
-            goto finish;
-        }
-    }
-    //Iterate to the second block.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            score_ary *ary = (score_ary*) inst->operand[i];
-            ary->offset += ary->shape[0];
-            ary->shape[0] = ary->org_shape[0] / CPHVB_SCORE_NBLOCKS;
-            ary->start = ary->org_start + ary->stride[0] * ary->offset;
-        }
-    }
-    //Handle the rest of the blocks.
-    for(cphvb_intp b=1; b<CPHVB_SCORE_NBLOCKS; ++b)
-    {
-        //Dispatch a block.
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            cphvb_instruction *inst = inst_bundle[j];
-            if(inst->operand[0]->shape[0] > 0)
-            {
-                inst->status = dispatch(inst);
-                if(inst->status != CPHVB_SUCCESS)
-                {
-                    ret = CPHVB_PARTIAL_SUCCESS;
-                    goto finish;
-                }
-            }
-        }
-        //Iterate to the next block.
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            cphvb_instruction *inst = inst_bundle[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-            {
-                score_ary *ary = (score_ary*) inst->operand[i];
-                ary->offset += ary->shape[0];
-                ary->start = ary->org_start + ary->stride[0] * ary->offset;
-            }
-        }
-    }
-
-finish:
-    //Restore the original arrays.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            score_ary *ary = (score_ary*) inst->operand[i];
-            ary->start = ary->org_start;
-            memcpy(ary->shape, ary->org_shape, ary->ndim * sizeof(cphvb_index));
-        }
-    }
-
-    return ret;
-}
-
-
 
 cphvb_error cphvb_ve_score_execute(
 
@@ -215,22 +105,13 @@ cphvb_error cphvb_ve_score_execute(
             //Get number of consecutive bundeable instruction.
             cphvb_intp bundle_size = bundle(cur_bundle, regular_size);
             //Dispatch the bundle
-            dispatch_bundle(cur_bundle, bundle_size);
+            dispatch_bundle(cur_bundle, bundle_size, nblocks);
             //Iterate to next bundle.
             regular_size -= bundle_size;
             cur_bundle += bundle_size;
             assert(regular_size >= 0);
         }
     }
-
-
-    //while inst < instruction_count:
-    //  while not regular:
-    //      call dispatch(inst++);
-    //  size = make-mini-batch(inst)
-    //  (block all views in mini-batch.)
-    //  for inst in mini-batch:
-    //    call dispatch(inst)
 
     return CPHVB_SUCCESS;
 
@@ -296,7 +177,10 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.opcode = CPHVB_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
-    cphvb_error err = dispatch(&inst);
+    traverse_ptr trav = get_traverse(&inst);
+    if(trav == NULL)
+        return CPHVB_ERROR;
+    cphvb_error err = trav(&inst);
     if(err != CPHVB_SUCCESS)
         return err;
     tmp.start += step;
@@ -309,9 +193,12 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.operand[1] = out;
     inst.operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
+    trav = get_traverse(&inst);
+    if(trav == NULL)
+        return CPHVB_ERROR;
     for(i=1; i<axis_size; ++i)
     {
-        cphvb_error err = dispatch(&inst);
+        err = trav(&inst);
         if(err != CPHVB_SUCCESS)
             return err;
         tmp.start += step;

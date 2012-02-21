@@ -19,13 +19,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <cphvb.h>
-#include "pp.h"
+#include <cphvb_instruction.h>
 
 void operand_to_str( cphvb_array *op, char buf[] ) {
 
-    char    stride[60]  = "",
-            shape[60]   = "",
-            tmp[11]     = "";
+    char    stride[1024]  = "",
+            shape[1024]   = "",
+            tmp[1024]    = "";
 
     for(int i=0; i< op->ndim; i++)
     {
@@ -50,8 +50,8 @@ void operand_to_str( cphvb_array *op, char buf[] ) {
 void instr_to_str( cphvb_instruction *instr, char buf[] ) {
 
     int op_count = cphvb_operands(instr->opcode);
-    char op_str[128];
-    char tmp[128];
+    char op_str[1024];
+    char tmp[1024];
 
     sprintf(buf, "%s {\n", cphvb_opcode_text( instr->opcode) );
     for(int i=0; i < op_count; i++) {
@@ -60,12 +60,16 @@ void instr_to_str( cphvb_instruction *instr, char buf[] ) {
         strcat(buf, tmp);
     }
     strcat(buf, "}");
-    
+
 }
 
-void pp_instr( cphvb_instruction *instr ) {
+/* Pretty print an instruction.
+ *
+ * @instr  The instruction in question
+ */
+void cphvb_instr_pprint( cphvb_instruction *instr ) {
 
-    char buf[512];
+    char buf[1024];
     instr_to_str( instr, buf );
     puts( buf );
 

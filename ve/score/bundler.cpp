@@ -20,7 +20,6 @@
 #include "bundler.hpp"
 #include <iostream>
 #include <set>
-#include "pp.h"
 
 typedef cphvb_array* cphvb_array_ptr;
 
@@ -33,88 +32,87 @@ typedef cphvb_array* cphvb_array_ptr;
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
 
-
-    std::set<cphvb_array_ptr> out;                                  // Sets for classifying operands.
-    std::set<cphvb_array_ptr>::iterator it;
+    std::set<cphvb_array_ptr> ops, out;                             // out = output operands in kernel
+    std::set<cphvb_array_ptr>::iterator it;                         // ops = all operands in kernel (out+in)
     std::pair<std::set<cphvb_array_ptr>::iterator, bool> ins_res;
 
-    cphvb_array_ptr op;
-
-    bool do_fuse = true;
+    bool do_fuse = true;                                            // Loop invariant
     cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
+                                                                    // incremented on each iteration
 
-    #ifdef DEBUG_BNDL
-    std::cout << "BUNDLING " << size << " {" << std::endl;
-    #endif
-    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {
+    int opcount = 0;                                                // Per-instruction variables
+    cphvb_array_ptr op;                                             // re-assigned on each iteration.
 
-        #ifdef DEBUG_BNDL
-        pp_instr( insts[i] );
-        #endif
+    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
 
-        op = insts[i]->operand[0];
+        opcount = cphvb_operands(insts[i]->opcode);
 
-        if ( out.count(op) > 0 ) {                                  // Exactly the same array
-                                                                    // All good just continue
-            bundle_len++;
+        for(int j=0; j<opcount; j++) {                              // Go through each operand.
+            ops.insert( insts[i]->operand[j] );
+        }
+        for(int j=0; ((do_fuse) && (j<opcount)); j++) {             // Go through each operand.
 
-        } else if (op->base == NULL) {                              // Base - first sighting
+            op = insts[i]->operand[j];
+                                                                    // Determine splicability
+            for(it = ops.begin(); ((do_fuse) && (it != ops.end())); it++) {
 
-            out.insert( op );
-            bundle_len++;
+                if (op->base != NULL) {
+                    do_fuse = false;
+                
+                } else {
 
-        } else if (out.empty()) {                                   // View - no clashes possible
-
-            out.insert( op );
-            bundle_len++;
-
-        } else {                                                    // View - clashes possible 
-                                                                    
-            for(it = out.begin(); it != out.end(); it++) {          // Determine splicability
-
-                if ( op->base == (*it)->base ) {                    // Same base
-
-                    if ((op->ndim == (*it)->ndim) &&                // Same dim and start
-                        (op->start == (*it)->start)) {
-                        
-                        for(cphvb_intp j =0; i<op->ndim; i++) {
-                            if ((op->stride[j] != (*it)->stride[j]) ||
-                                (op->shape[j] != (*it)->shape[j])) {
-                                do_fuse = false;                    // Incompatible shape or stride
-                                break;
+                    if ( (op == (*it)->base) || (op->base == *it) || (op->base == (*it)->base )) {                    // Same base
+                        if ((op->ndim == (*it)->ndim) &&                // Same dim and start
+                            (op->start == (*it)->start)) {
+                            
+                            for(cphvb_intp k =0; k<op->ndim; k++) {
+                                if ((op->stride[k] != (*it)->stride[k]) ||
+                                    (op->shape[k] != (*it)->shape[k])) {
+                                    do_fuse = false;                    // Incompatible shape or stride
+                                    break;
+                                }
                             }
+
+                        } else {                                        // Incompatible dim or start
+
+                            do_fuse = false;
+                            break;
+
                         }
 
-                    } else {                                        // Incompatible dim or start
+                    } // Different base => all is good.
 
-                        do_fuse = false;
-                        break;
-
-                    }
-
-                } // Different base => all is good.
+                }
 
             }
 
-            if (do_fuse) {
-                out.insert( op );
-                bundle_len++;
-            }
+        }
 
+        if (do_fuse) {
+            bundle_len++;
         }
 
     }
 
     #ifdef DEBUG_BNDL
-    std::cout << "} out {" << std::endl << "  ";
-    for(it = out.begin(); it != out.end(); it++)
-    {
-        std::cout << *it << ",";
+    if (bundle_len > 1) {
+
+        std::cout << "BUNDLING " << size << " {" << std::endl;
+        for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
+            cphvb_instr_pprint( insts[i] );
+        }
+        std::cout << "} ops {" << std::endl << "  ";
+        for(it = ops.begin(); it != ops.end(); it++)
+        {
+            std::cout << *it << ",";
+        }
+        std::cout << std::endl;
+        std::cout << "} bundle len = [" << bundle_len << "]" << std::endl;
     }
-    std::cout << std::endl;
-    std::cout << "} " << bundle_len  << std::endl;
     #endif
-    
+    if(bundle_len<1) {
+        bundle_len = 1;
+    }
     return bundle_len;
 
 }
