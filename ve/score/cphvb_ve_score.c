@@ -111,12 +111,13 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
             ret = CPHVB_PARTIAL_SUCCESS;
             goto finish;
         }
+        //Update the offsets to the next block.
+        offsets[j] += inst->operand[0]->shape[0];
     }
     //Iterate to the second block.
     for(cphvb_intp j=0; j<size; ++j)
     {
         cphvb_instruction *inst = inst_bundle[j];
-        offsets[j] += inst->operand[0]->shape[0];
         for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
         {
             score_ary *ary = (score_ary*) inst->operand[i];
@@ -127,25 +128,27 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle, cphvb_intp size)
     //Handle the rest of the blocks.
     for(cphvb_intp b=1; b<nblocks; ++b)
     {
+        if(inst_bundle[0]->operand[0]->shape[0] <= 0)
+            break;//We a finished.
+
         //Dispatch a block.
         for(cphvb_intp j=0; j<size; ++j)
         {
             cphvb_instruction *inst = inst_bundle[j];
-            if(inst->operand[0]->shape[0] > 0)
+            assert(inst->operand[0]->shape[0] > 0);
+            inst->status = traverses[j](inst);
+            if(inst->status != CPHVB_SUCCESS)
             {
-                inst->status = traverses[j](inst);
-                if(inst->status != CPHVB_SUCCESS)
-                {
-                    ret = CPHVB_PARTIAL_SUCCESS;
-                    goto finish;
-                }
+                ret = CPHVB_PARTIAL_SUCCESS;
+                goto finish;
             }
+            //Update the offsets to the next block.
+            offsets[j] += inst->operand[0]->shape[0];
         }
         //Iterate to the next block.
         for(cphvb_intp j=0; j<size; ++j)
         {
             cphvb_instruction *inst = inst_bundle[j];
-            offsets[j] += inst->operand[0]->shape[0];
             for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
             {
                 score_ary *ary = (score_ary*) inst->operand[i];
