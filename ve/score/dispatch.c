@@ -25,15 +25,45 @@ cphvb_error dispatch( cphvb_instruction *instr ) {
 
 }
 
+//Returns the offset based on the current block.
+cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
+                      cphvb_intp nblocks)
+{
+    if(block == 0)
+        return 0;
+
+    //We compute the offset based on the output operand.
+    dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
+
+    return ary->org_shape[0] / nblocks * block + //Whole blocks
+           ary->org_shape[0] % nblocks;//The reminder.
+}
+
+//Returns the shape based on the current block.
+cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
+                     cphvb_intp nblocks)
+{
+    dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
+
+    //We block over the most significant dimension
+    //and the first block gets the reminder.
+    if(block == 0)
+    {
+        return ary->org_shape[0] / nblocks +
+               ary->org_shape[0] % nblocks;
+    }
+    else
+    {
+        return ary->org_shape[0] / nblocks;
+    }
+}
+
 //Dispatch the bundle of instructions.
 cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                             cphvb_intp size,
                             cphvb_intp nblocks)
 {
     cphvb_error ret = CPHVB_SUCCESS;
-    //Current offset of each instruction.
-    cphvb_intp offsets[CPHVB_MAX_NO_INST];
-    memset(offsets, 0, size * sizeof(cphvb_intp));
 
     //Get all traverser function -- one per instruction.
     traverse_ptr traverses[CPHVB_MAX_NO_INST];
@@ -72,46 +102,22 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
             }
         }
     }
-    //Initiate the first block.
-    for(cphvb_intp j=0; j<size; ++j)
+    //Handle the the blocks.
+    for(cphvb_intp b=0; b<nblocks; ++b)
     {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+        //Update the operands to match the current block.
+        for(cphvb_intp j=0; j<size; ++j)
         {
-            dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-            //We block over the most significant dimension.
-            //NB: the first block gets the reminder.
-            ary->shape[0] = ary->org_shape[0] / nblocks;
-            ary->shape[0] += ary->org_shape[0] % nblocks;
+            cphvb_instruction *inst = inst_bundle[j];
+            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+            {
+                dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
+                ary->start = ary->org_start + ary->stride[0] *
+                             get_offset(b, inst, nblocks);
+                ary->shape[0] = get_shape(b, inst, nblocks);
+            }
         }
-    }
-    //Dispatch the first block.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        inst->status = traverses[j](inst);
-        if(inst->status != CPHVB_SUCCESS)
-        {
-            ret = CPHVB_PARTIAL_SUCCESS;
-            goto finish;
-        }
-        //Update the offsets to the next block.
-        offsets[j] += inst->operand[0]->shape[0];
-    }
-    //Iterate to the second block.
-    for(cphvb_intp j=0; j<size; ++j)
-    {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-        {
-            dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-            ary->shape[0] = ary->org_shape[0] / nblocks;
-            ary->start = ary->org_start + ary->stride[0] * offsets[j];
-        }
-    }
-    //Handle the rest of the blocks.
-    for(cphvb_intp b=1; b<nblocks; ++b)
-    {
+
         if(inst_bundle[0]->operand[0]->shape[0] <= 0)
             break;//We a finished.
 
@@ -125,18 +131,6 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
             {
                 ret = CPHVB_PARTIAL_SUCCESS;
                 goto finish;
-            }
-            //Update the offsets to the next block.
-            offsets[j] += inst->operand[0]->shape[0];
-        }
-        //Iterate to the next block.
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            cphvb_instruction *inst = inst_bundle[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-            {
-                dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-                ary->start = ary->org_start + ary->stride[0] * offsets[j];
             }
         }
     }
