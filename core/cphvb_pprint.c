@@ -19,13 +19,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <cphvb.h>
-#include <cphvb_instruction.h>
+#include <cphvb_pprint.h>
 
-void operand_to_str( cphvb_array *op, char buf[] ) {
+#define PPRINT_BUFSIZE 1024
 
-    char    stride[1024]  = "",
-            shape[1024]   = "",
-            tmp[1024]    = "";
+static void operand_to_str( cphvb_array *op, char buf[] ) {
+
+    char    stride[PPRINT_BUFSIZE]  = "",
+            shape[PPRINT_BUFSIZE]   = "",
+            tmp[PPRINT_BUFSIZE]    = "";
 
     for(int i=0; i< op->ndim; i++)
     {
@@ -47,11 +49,11 @@ void operand_to_str( cphvb_array *op, char buf[] ) {
 
 }
 
-void instr_to_str( cphvb_instruction *instr, char buf[] ) {
+static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
 
     int op_count = cphvb_operands(instr->opcode);
-    char op_str[1024];
-    char tmp[1024];
+    char op_str[PPRINT_BUFSIZE];
+    char tmp[PPRINT_BUFSIZE];
 
     sprintf(buf, "%s {\n", cphvb_opcode_text( instr->opcode) );
     for(int i=0; i < op_count; i++) {
@@ -67,10 +69,20 @@ void instr_to_str( cphvb_instruction *instr, char buf[] ) {
  *
  * @instr  The instruction in question
  */
-void cphvb_instr_pprint( cphvb_instruction *instr ) {
+void cphvb_pprint_instr( cphvb_instruction *instr ) {
 
-    char buf[1024];
+    char buf[PPRINT_BUFSIZE];
     instr_to_str( instr, buf );
     puts( buf );
+}
 
+/* Pretty print an array.
+ *
+ * @instr  The array in question
+ */
+void cphvb_pprint_array( cphvb_array *array ) {
+
+    char buf[PPRINT_BUFSIZE];
+    operand_to_str( array, buf );
+    puts( buf );
 }

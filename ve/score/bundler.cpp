@@ -58,13 +58,13 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
                 if (op->base != NULL) {
                     do_fuse = false;
-                
+
                 } else {
 
                     if ( (op == (*it)->base) || (op->base == *it) || (op->base == (*it)->base )) {                    // Same base
                         if ((op->ndim == (*it)->ndim) &&                // Same dim and start
                             (op->start == (*it)->start)) {
-                            
+
                             for(cphvb_intp k =0; k<op->ndim; k++) {
                                 if ((op->stride[k] != (*it)->stride[k]) ||
                                     (op->shape[k] != (*it)->shape[k])) {
@@ -99,7 +99,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
         std::cout << "BUNDLING " << size << " {" << std::endl;
         for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
-            cphvb_instr_pprint( insts[i] );
+            cphvb_pprint_instr( insts[i] );
         }
         std::cout << "} ops {" << std::endl << "  ";
         for(it = ops.begin(); it != ops.end(); it++)

@@ -28,6 +28,7 @@
 #include "cphvb_component.h"
 #include "cphvb_reduce.h"
 #include "cphvb_random.h"
+#include "cphvb_pprint.h"
 
 #ifdef __cplusplus
 /* C++ includes go here */

@@ -79,12 +79,6 @@ typedef struct
     cphvb_userfunc *userfunc;
 } cphvb_instruction;
 
-/* Pretty print an instruction.
- *
- * @instr  The instruction in question
- */
-void cphvb_instr_pprint(cphvb_instruction *instr);
-
 #ifdef __cplusplus
 }
 #endif
