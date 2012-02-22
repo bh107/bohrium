@@ -9,8 +9,8 @@ LCFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
-LDFLAGS = -shared -Wl,-soname,$(LIB)
-CSRC = oclType
+LDFLAGS = -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
+CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch ArrayOperand BaseArray View InstructionScheduler
 
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)

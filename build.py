@@ -101,7 +101,8 @@ if __name__ == "__main__":
     if cmd == "build":
         build("INIPARSER", "iniparser", True)
         build("CORE", "core", True)
-        build("VE-CUDA", "ve/cuda", False)
+        #build("VE-CUDA", "ve/cuda", False)
+        build("VE-GPU", "ve/gpu", False)
         build("VE-SIMPLE", "ve/simple", False)
         build("VE-SCORE", "ve/score", True)
         #build("VE-OMP", "ve/omp", False)
@@ -111,7 +112,8 @@ if __name__ == "__main__":
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
         clean("CORE", "core")
-        clean("VE-CUDA", "ve/cuda")
+        #clean("VE-CUDA", "ve/cuda")
+        clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
         clean("VE-SCORE", "ve/score")
         clean("VE-OMP", "ve/omp")
@@ -121,7 +123,8 @@ if __name__ == "__main__":
     elif cmd == "install":
         install("INIPARSER", "iniparser", True)
         install("CORE", "core", True)
-        install("VE-CUDA", "ve/cuda", False)
+        #install("VE-CUDA", "ve/cuda", False)
+        install("VE-GPU", "ve/gpu", False)
         install("VE-SIMPLE", "ve/simple", True)
         install("VE-SCORE", "ve/score",True)
         #install("VE-OMP", "ve/omp",False)

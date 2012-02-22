@@ -26,15 +26,12 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 
-typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ArrayMap;
-typedef std::map<cphvb_array*, std::string> ScalarMap;
-typedef std::map<BaseArray*, cphvb_array*> OutputMap;
-typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
-
-
-
 class InstructionBatch
 {
+    typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ArrayMap;
+    typedef std::map<cphvb_array*, std::string> ScalarMap;
+    typedef std::map<BaseArray*, cphvb_array*> OutputMap;
+    typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
 private:
     std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
@@ -57,8 +54,18 @@ public:
     InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
     std::string generateCode();
     void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    bool read(BaseArray*);
+    bool write(BaseArray*);    
+    bool access(BaseArray*);
 };
 
-int InstructionBatch::kernel = 0;
+class BatchException 
+{
+private:
+    int code;
+public:
+    BatchException(int code_) : code(code_) {}
+};
+
 
 #endif

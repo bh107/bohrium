@@ -39,7 +39,7 @@ public:
     cphVBarray(cphvb_array* arraySpec, cphVBarray baseArray);
     void allocate();
     bool allocated();
-    boot initialized();
+    bool initialized();
     friend std::ostream& operator<< (std::ostream& os, 
                               cphVBarray const& array);
 };

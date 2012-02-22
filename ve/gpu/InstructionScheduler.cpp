@@ -25,8 +25,7 @@
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 
-    , activeBatch(0)
-    , workItems(0)
+    , batch(0)
 {}
 
 inline void InstructionScheduler::schedule(cphvb_instruction* inst)
@@ -50,7 +49,7 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
         discard(inst->operand[0]);
         break;
     case CPHVB_USERFUNC:
-        userdeffunc(inst->userfunc)
+        userdeffunc(inst->userfunc);
         break;
     default:
         ufunc(inst);
@@ -59,7 +58,7 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
 
 void InstructionScheduler::forceFlush()
 {
-    executeBatch();
+    //TODO 
 }
 
 void InstructionScheduler::schedule(cphvb_intp instructionCount,
@@ -81,13 +80,13 @@ void InstructionScheduler::schedule(cphvb_intp instructionCount,
 
 void InstructionScheduler::executeBatch()
 {
-    if (activeBatch)
+    if (batch)
     {
-        //TODO compile and execute activeBatch
-        delete activeBatch;
+        std::cout << batch->generateCode();
+        //TODO compile and execute batch
+        delete batch;
     }
-    activeBatch = 0;
-    workItems = 0;
+    batch = 0;
 }
 
 void InstructionScheduler::sync(cphvb_array* base)
@@ -100,7 +99,7 @@ void InstructionScheduler::sync(cphvb_array* base)
     {
         return;
     }
-    if (batch && batch->use(it->second))
+    if (batch && batch->write(it->second))
     {
         executeBatch();
     }
@@ -117,7 +116,7 @@ void InstructionScheduler::discard(cphvb_array* base)
     {
         return;
     }
-    if (activeBatch && activeBatch->use(it->second))
+    if (batch && batch->access(it->second))
     {
         executeBatch();
     }
@@ -158,22 +157,13 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
         }
     }
 
-    // TODO Redo ... or rethink 
-    if (batch.match(inst->operand[0]->ndim, inst->operand[0]->shape))
+    try 
     {
-        try 
-        {
-            batch->add(inst, operandBase);
-        } 
-        catch (BatchException& be)
-        {
-            executeBatch();
-            activeBatch = new InstructionBatch(inst, operandBase);
-        } 
-   } 
-    else 
+        batch->add(inst, operandBase);
+    } 
+    catch (BatchException& be)
     {
         executeBatch();
-        batch = InstructionBatch(inst, operandBase);
-    }
+        batch = new InstructionBatch(inst, operandBase);
+    } 
 }

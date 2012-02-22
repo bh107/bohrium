@@ -17,14 +17,18 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
+#include <sstream>
 #include <cassert>
+#include <stdexcept>
 #include <cphvb.h>
 #include "InstructionBatch.hpp"
 
+int InstructionBatch::kernel = 0;
+
 bool InstructionBatch::shapeMatch(cphvb_intp ndim,const cphvb_index dims[])
 {
-    if (ndim == shape.size())
+    int size = shape.size();
+    if (ndim == size)
     {
         for (int i = 0; i < ndim; ++i)
         {
@@ -43,7 +47,7 @@ bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
         return true;
     if (a->start != b->start)
         return false;
-    for (int i = 0; i < shape.size(); ++i)
+    for (size_t i = 0; i < shape.size(); ++i)
     {
         if (a->stride[i] != b->stride[i])
             return false;
@@ -57,7 +61,7 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ba
     , variablenum(0)
 {
     shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
-    accept(inst, operandBase);
+    add(inst, operandBase);
 }
 
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
@@ -65,19 +69,20 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     assert(inst->operand[0]->ndim > 0);
 
     // Check that the shape matches
-    if (!shapeMatch(inst->operands[0]->ndim, inst->operands[0]->shape))
+    if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
         throw BatchException(0);
 
     // If any operand's base is already used as output, it has to be alligned.
-    for (int op = 0; op < operandBase.size(); ++op)
+    for (size_t op = 0; op < operandBase.size(); ++op)
     {
         if (inst->operand[op]->ndim != 0)
         {
-            if (output.find(operandBase[op]) != output.end())
+            OutputMap::iterator oit = output.find(operandBase[op]);
+            if (oit != output.end())
             {
-                if (sameView(oit.second(), inst->operand[op]))
+                if (sameView(oit->second, inst->operand[op]))
                 {
-                    inst->operand[op] = oit.second();
+                    inst->operand[op] = oit->second;
                 } 
                 else 
                 { 
@@ -88,12 +93,12 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     }
 
     // If the output operans is allready used as input it has to be alligned 
-    std::pair<inputMap::iterator, inputMap::iterator> irange = input.equal_range(operandBase[0]);
-    for (InputMap::Iterator iit = irange.first ; iit != irange.second; ++iit)
+    std::pair<InputMap::iterator, InputMap::iterator> irange = input.equal_range(operandBase[0]);
+    for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
     {
-        if (sameView(iit.second(), inst->operand[0]))
+        if (sameView(iit->second, inst->operand[0]))
         {
-            inst->operand[0] = iit.second();
+            inst->operand[0] = iit->second;
         } 
         else 
         {
@@ -102,34 +107,35 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     }
 
     // OK so we can accept the instruction
+    instructions.push_back(inst);
     // Register output
     output[operandBase[0]] = inst->operand[0];
     // Are some of the input parameters allready know? Otherwise register them
-    for (int op = 1; op < operandBase.size(); ++op)
+    for (size_t op = 1; op < operandBase.size(); ++op)
     {
         irange = input.equal_range(operandBase[op]);
-        for (InputMap::Iterator iit = irange.first ; iit != irange.second; ++iit)
+        for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
         {
             if (inst->operand[op]->ndim != 0)
             {
-                if (sameView(iit.second(), inst->operand[op]))
+                if (sameView(iit->second, inst->operand[op]))
                 {
-                    inst->operand[op] = iit.second();
+                    inst->operand[op] = iit->second;
                 } 
                 else
                 {
-                    input.insert(pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
+                    input.insert(std::pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
                 }
             }
         }
     }
 
     // Register Kernel parameters
-    for (int op = 0; op < operandBase.size(); ++op)
+    for (size_t op = 0; op < operandBase.size(); ++op)
     {
         if (inst->operand[op]->ndim == 0)
         {
-            if (scalarParameters.find(operand[op]) == scalarParameters.end())
+            if (scalarParameters.find(inst->operand[op]) == scalarParameters.end())
             {
                 std::stringstream ss;
                 ss << "s" << scalarnum++;
@@ -146,7 +152,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
                 arrayParameters[base] = std::make_pair(operandBase[op],ss.str()); 
             }
         }
-    }    
+    }
 }
 
 std::string InstructionBatch::generateCode()
@@ -156,18 +162,18 @@ std::string InstructionBatch::generateCode()
 
     // Add Array kernel parameters
     ArrayMap::iterator apit = arrayParameters.begin();
-    source << "__global " << oclTypeStr(apit.second().first->bufferType) << "* " << apit.second().second;
+    source << "__global " << oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
     for (++apit; apit != arrayParameters.end(); ++apit)
     {
         source << "\n                       , __global " << 
-            oclTypeStr(apit.second().first->bufferType) << "* " << apit.second().second; 
+            oclTypeStr(apit->second.first->type()) << "* " << apit->second.second; 
     }
 
     // Add Scalar kernel parameters
     for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
     {
         source << "\n                       , const " << 
-            oclTypeStr(oclType(spit->first()->type)) << " " << spit->second(); 
+            oclTypeStr(oclType(spit->first->type)) << " " << spit->second; 
     }
     source << ")\n{\n";
     
@@ -182,52 +188,68 @@ std::string InstructionBatch::generateCode()
     {
         std::stringstream ss;
         ss << "v" << variablenum++;
-        kernelVariables[iit->second()] = ss.str();
-        source << "\t" << oclTypeStr(iit->first()->bufferType) << " " << ss.str() << " = " <<
-            arrayParameters[iit->second()]->second << "[";
-        generateOffsetSource(iit->second(), source);
-        source << "];\n"
+        kernelVariables[iit->second] = ss.str();
+        source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
+            arrayParameters[iit->second].second << "[";
+        generateOffsetSource(iit->second, source);
+        source << "];\n";
     }
 
     // Generate code for instructions
-    for (std::vector<cphvb_instruction*>::iterator iit = instructions.begin(), iit != instructions.end(); ++iit)
+    for (std::vector<cphvb_instruction*>::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
     {
-        std::vector<std::string>& parameters;
-        // Has the output paremeter been assigned a variable name?
-        ScalarMap::iterator kvit = kernelVariables.find(iit->operand[0]);
+        std::vector<std::string> parameters;
+        // Has the output parameter been assigned a variable name?
+        ScalarMap::iterator kvit = kernelVariables.find((*iit)->operand[0]);
         if (kvit == kernelVariables.end())
         {
             std::stringstream ss;
             ss << "v" << variablenum++;
-            kernelVariables[iit->operand[0]] = ss.str();
+            kernelVariables[(*iit)->operand[0]] = ss.str();
             parameters.push_back(ss.str());
         }
         else
         {
-            parameters.push_back(kvit->first);
+            parameters.push_back(kvit->second);
         }
         // find variable names for input parameters
-        for (int op = 1; op < cphvb_operands(iit->opcode); ++op)
+        for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if (iit->operand[op]->ndim == 0)
-                parameters.push_back(*(scalarParameters[iit->operand[op]]));  
+            if ((*iit)->operand[op]->ndim == 0)
+                parameters.push_back(scalarParameters[(*iit)->operand[op]]);  
             else
-                parameters.push_back(*(kernelVariables[iit->operand[op]]));  
+                parameters.push_back(kernelVariables[(*iit)->operand[op]]);  
         }
 
         // generate source code for the instruction
-        generateInstructionSource(iit->opcode, parameters, source);
+        generateInstructionSource((*iit)->opcode, parameters, source);
     }
 
     // Save output parameters
     for (OutputMap::iterator oit = output.begin(); oit != output.end(); ++oit)
     {
-        source << "\t" << arrayParameters[cphvb_base_array(oit.second())]->second << "[";
-        generateOffsetSource(oit.second(), source);
-        source << "] = " <<  kernelVariables[oit->second] << ";\n"
+        source << "\t" << arrayParameters[cphvb_base_array(oit->second)].second << "[";
+        generateOffsetSource(oit->second, source);
+        source << "] = " <<  kernelVariables[oit->second] << ";\n";
     }
 
     source << "}\n";
+    return source.str();
+}
+
+void InstructionBatch::generateOffsetSource(cphvb_array* operand, std::ostream& source)
+{
+    if (operand->ndim > 2)
+    {
+        source << "gidz*" << operand->stride[2] << " + ";
+    }
+    if (operand->ndim > 1)
+    {
+        source << "gidy*" << operand->stride[1] << " + ";
+    }
+    source << "gidx*" << operand->stride[0] << " + " << operand->start;
+    
+    
 }
 
 void InstructionBatch::generateInstructionSource(cphvb_opcode opcode, 
@@ -244,17 +266,21 @@ void InstructionBatch::generateInstructionSource(cphvb_opcode opcode,
     }
 }
 
-void InstructionBatch::generateOffsetSource(cphvb_array* operand, std::ostream& source)
+bool InstructionBatch::read(BaseArray* array)
 {
-    if (operand->ndim > 2)
-    {
-        source << "gidz*" << operand->stride[2] << " + ";
-    }
-    if (operand->ndim > 1)
-    {
-        source << "gidy*" << operand->stride[1] << " + ";
-    }
-    source << "gidx*" << operand->stride[0] << " + " << operand->start;
-    
-    
+    if (input.find(array) == input.end())
+        return false;
+    return true;
+}
+
+bool InstructionBatch::write(BaseArray* array)
+{
+    if (output.find(array) == output.end())
+        return false;
+    return true;
+}
+
+bool InstructionBatch::access(BaseArray* array)
+{
+    return (read(array) || write(array));
 }

@@ -23,8 +23,6 @@
 #include "cphvb_ve_gpu.h"
 #include "InstructionScheduler.hpp"
 #include "ResourceManager.hpp"
-#include "MemoryManager.hpp"
-#include "DataManager.hpp"
 
 InstructionScheduler* instructionScheduler;
 ResourceManager* resourceManager;
@@ -35,11 +33,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
     component = _component;
     try {
         resourceManager = new ResourceManager();
-        MemoryManager* memoryManager = createMemoryManager();
-        DataManager* dataManager = createDataManager(memoryManager);
-        KernelGenerator* kernelGenerator = createKernelGenerator();
-        instructionScheduler = createInstructionScheduler(dataManager,
-                                                          kernelGenerator);
+        instructionScheduler = new InstructionScheduler(resourceManager);
     } 
     catch (std::exception& e)
     {
@@ -68,7 +62,7 @@ cphvb_error cphvb_ve_gpu_shutdown()
 {
     try 
     {
-        instructionScheduler->flushAll();
+        instructionScheduler->forceFlush();
     }
     catch (std::exception& e)
     {

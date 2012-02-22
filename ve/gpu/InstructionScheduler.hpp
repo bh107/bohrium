@@ -26,19 +26,19 @@
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 
-typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
-
 class InstructionScheduler
 {
+    typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
 private:
     ResourceManager* resourceManager;
     InstructionBatch* batch;
-    unsigned long workItems; // number of work items in the active batch
     ArrayMap arrayMap;
     void schedule(cphvb_instruction* inst);
     void sync(cphvb_array* base);
     void discard(cphvb_array* base);
     void executeBatch();
+    void ufunc(cphvb_instruction* inst);
+    void userdeffunc(cphvb_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);
     void schedule(cphvb_intp instructionCount,
