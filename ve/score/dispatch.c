@@ -3,6 +3,10 @@
 #include "dispatch.h"
 #include <assert.h>
 
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
+
 //The data type of cphvb_array extended with temporary info.
 typedef struct
 {
@@ -26,8 +30,8 @@ cphvb_error dispatch( cphvb_instruction *instr ) {
 }
 
 //Returns the offset based on the current block.
-cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
-                      cphvb_intp nblocks)
+inline cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
+                             cphvb_intp nblocks)
 {
     if(block == 0)
         return 0;
@@ -40,8 +44,8 @@ cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
 }
 
 //Returns the shape based on the current block.
-cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
-                     cphvb_intp nblocks)
+inline cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
+                            cphvb_intp nblocks)
 {
     dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
 
@@ -64,6 +68,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                             cphvb_intp nblocks)
 {
     cphvb_error ret = CPHVB_SUCCESS;
+    cphvb_intp nthds = 1;
 
     //Get all traverser function -- one per instruction.
     traverse_ptr traverses[CPHVB_MAX_NO_INST];
@@ -102,35 +107,94 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
             }
         }
     }
-    //Handle the the blocks.
-    for(cphvb_intp b=0; b<nblocks; ++b)
+
+    //Handle the blocks.
+    //We will use OpenMP to parallelize the computation.
+    //We divide the blocks between the threads.
+    #ifdef _OPENMP
+        if(nblocks > 1) //Find number of threads to use.
+        {
+            nthds = omp_get_max_threads();
+            if(nthds > nblocks)
+                nthds = nblocks;//Minimum one block per thread.
+        }
+        #pragma omp parallel num_threads(nthds) default(none) \
+                shared(nthds,inst_bundle,size,nblocks,traverses,ret)
+    #endif
     {
-        //Update the operands to match the current block.
+        #ifdef _OPENMP
+            int myid = omp_get_thread_num();
+        #else
+            int myid = 0;
+        #endif
+        cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
+        cphvb_intp start = myid * length;    // Find this thread's start block.
+        if(myid == nthds-1)
+            length += nblocks % nthds;       // The last thread gets the reminder.
+
+        //Clone the instruction and make new views of all operands.
+        cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
         for(cphvb_intp j=0; j<size; ++j)
         {
-            cphvb_instruction *inst = inst_bundle[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+            thd_inst[j] = *inst_bundle[j];
+            for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
             {
-                dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-                ary->start = ary->org_start + ary->stride[0] *
-                             get_offset(b, inst, nblocks);
-                ary->shape[0] = get_shape(b, inst, nblocks);
+                cphvb_array *ary_org = inst_bundle[j]->operand[i];
+                cphvb_array *ary = (cphvb_array*) malloc(sizeof(cphvb_array));
+                memcpy(ary, ary_org, sizeof(cphvb_array));
+
+                if(ary_org->base == NULL)//base array
+                {
+                    ary->base = ary_org;
+                }
+
+                thd_inst[j].operand[i] = ary;//Save the operand.
             }
         }
 
-        if(inst_bundle[0]->operand[0]->shape[0] <= 0)
-            break;//We a finished.
+        //Handle one block at a time.
+        for(cphvb_intp b=start; b<start+length; ++b)
+        {
+            //Update the operands to match the current block.
+            for(cphvb_intp j=0; j<size; ++j)
+            {
+                cphvb_instruction *inst = &thd_inst[j];
+                for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+                {
+                    dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
+                    ary->start = ary->org_start + ary->stride[0] *
+                                 get_offset(b, inst, nblocks);
+                    ary->shape[0] = get_shape(b, inst, nblocks);
+                }
+            }
 
-        //Dispatch a block.
+            if(thd_inst[0].operand[0]->shape[0] <= 0)
+                break;//We a finished.
+
+            //Dispatch a block.
+            for(cphvb_intp j=0; j<size; ++j)
+            {
+                cphvb_instruction *inst = &thd_inst[j];
+//                cphvb_instr_pprint( inst );
+                inst->status = traverses[j](inst);
+                if(inst->status != CPHVB_SUCCESS)
+                {
+                    #ifdef _OPENMP
+                        #pragma omp critical
+                    #endif
+                    ret = CPHVB_PARTIAL_SUCCESS;
+                    start = length;//Force a complete exit.
+                    break;
+                }
+            }
+        }
+        //De-allocated the array views.
         for(cphvb_intp j=0; j<size; ++j)
         {
-            cphvb_instruction *inst = inst_bundle[j];
-            assert(inst->operand[0]->shape[0] > 0);
-            inst->status = traverses[j](inst);
-            if(inst->status != CPHVB_SUCCESS)
+            cphvb_instruction *inst = &thd_inst[j];
+            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
             {
-                ret = CPHVB_PARTIAL_SUCCESS;
-                goto finish;
+                free(inst->operand[i]);
             }
         }
     }
