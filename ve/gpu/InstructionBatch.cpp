@@ -52,6 +52,9 @@ bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
 }
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
+    : arraynum(0)
+    , scalarnum(0)
+    , variablenum(0)
 {
     shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
     accept(inst, operandBase);
@@ -72,35 +75,76 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         {
             if (output.find(operandBase[op]) != output.end())
             {
-                if (!sameView(oit.second(), inst->operand[op]))
+                if (sameView(oit.second(), inst->operand[op]))
+                {
+                    inst->operand[op] = oit.second();
+                } 
+                else 
+                { 
                     throw BatchException(0);
+                }
             }
         }
     }
 
     // If the output operans is allready used as input it has to be alligned 
     std::pair<inputMap::iterator, inputMap::iterator> irange = input.equal_range(operandBase[0]);
-    InputMap::Iterator iit = irange.first;
-    for (; iit != irange.second; ++iit)
+    for (InputMap::Iterator iit = irange.first ; iit != irange.second; ++iit)
     {
-        if (!sameView(iit.second(), inst->operand[0]))
+        if (sameView(iit.second(), inst->operand[0]))
+        {
+            inst->operand[0] = iit.second();
+        } 
+        else 
+        {
             throw BatchException(0);
+        }
     }
 
-    
     // OK so we can accept the instruction
+    // Register output
     output[operandBase[0]] = inst->operand[0];
-    
-    // HERE: also inser into input and stuff
+    // Are some of the input parameters allready know? Otherwise register them
+    for (int op = 1; op < operandBase.size(); ++op)
+    {
+        irange = input.equal_range(operandBase[op]);
+        for (InputMap::Iterator iit = irange.first ; iit != irange.second; ++iit)
+        {
+            if (inst->operand[op]->ndim != 0)
+            {
+                if (sameView(iit.second(), inst->operand[op]))
+                {
+                    inst->operand[op] = iit.second();
+                } 
+                else
+                {
+                    input.insert(pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
+                }
+            }
+        }
+    }
 
+    // Register Kernel parameters
     for (int op = 0; op < operandBase.size(); ++op)
     {
-        cphvb_array* base = cphvb_base_array(inst->operand[op]);
-        if (inst->operand[op]->ndim != 0 && kernelParameters.find(base) == kernelParameters.end()))
+        if (inst->operand[op]->ndim == 0)
         {
-            std::stringstream ss;
-            ss << "a" << arraynum++;
-            kernelParameters[base] = std::make_pair(operandBase[op],ss.str()); 
+            if (scalarParameters.find(operand[op]) == scalarParameters.end())
+            {
+                std::stringstream ss;
+                ss << "s" << scalarnum++;
+                scalarParameters[inst->operand[op]] = ss.str();
+            } 
+        }
+        else
+        {
+            cphvb_array* base = cphvb_base_array(inst->operand[op]);
+            if (arrayParameters.find(base) == arrayParameters.end())
+            {
+                std::stringstream ss;
+                ss << "a" << arraynum++;
+                arrayParameters[base] = std::make_pair(operandBase[op],ss.str()); 
+            }
         }
     }    
 }
@@ -109,30 +153,91 @@ std::string InstructionBatch::generateCode()
 {
     std::stringstream source;
     source << "__kernel void kernel" << kernel++ << "(";
-    ParamMap::iterator kpit = kernelParameters.start();
-    source << "__global " << oclTypeStr(kpit.second().first->bufferType) << "* " << kpit.second().second;
-    for (++kpit; kpit != kernelParameters.end(); ++kpit)
+
+    // Add Array kernel parameters
+    ArrayMap::iterator apit = arrayParameters.begin();
+    source << "__global " << oclTypeStr(apit.second().first->bufferType) << "* " << apit.second().second;
+    for (++apit; apit != arrayParameters.end(); ++apit)
     {
-        source << "\n                       __global " << 
-            oclTypeStr(kpit.second().first->bufferType) << "* " << kpit.second().second; 
+        source << "\n                       , __global " << 
+            oclTypeStr(apit.second().first->bufferType) << "* " << apit.second().second; 
+    }
+
+    // Add Scalar kernel parameters
+    for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
+    {
+        source << "\n                       , const " << 
+            oclTypeStr(oclType(spit->first()->type)) << " " << spit->second(); 
     }
     source << ")\n{\n";
     
-    for (std::vector<cphvb_instruction*>::iterator iit = instructions.start(), iit != instructions.end(); ++iit)
+    if (shape.size() > 2)
+        source << "\tconst size_t gidz = get_global_id(2);\n";
+    if (shape.size() > 1)
+        source << "\tconst size_t gidy = get_global_id(1);\n";
+    source << "\tconst size_t gidx = get_global_id(0);\n";
+    
+    // Load input parameters
+    for (InputMap::iterator iit = input.begin(); iit != input.end(); ++iit)
     {
-        generateInstructionSource(*iit, source);
+        std::stringstream ss;
+        ss << "v" << variablenum++;
+        kernelVariables[iit->second()] = ss.str();
+        source << "\t" << oclTypeStr(iit->first()->bufferType) << " " << ss.str() << " = " <<
+            arrayParameters[iit->second()]->second << "[";
+        generateOffsetSource(iit->second(), source);
+        source << "];\n"
     }
+
+    // Generate code for instructions
+    for (std::vector<cphvb_instruction*>::iterator iit = instructions.begin(), iit != instructions.end(); ++iit)
+    {
+        std::vector<std::string>& parameters;
+        // Has the output paremeter been assigned a variable name?
+        ScalarMap::iterator kvit = kernelVariables.find(iit->operand[0]);
+        if (kvit == kernelVariables.end())
+        {
+            std::stringstream ss;
+            ss << "v" << variablenum++;
+            kernelVariables[iit->operand[0]] = ss.str();
+            parameters.push_back(ss.str());
+        }
+        else
+        {
+            parameters.push_back(kvit->first);
+        }
+        // find variable names for input parameters
+        for (int op = 1; op < cphvb_operands(iit->opcode); ++op)
+        {
+            if (iit->operand[op]->ndim == 0)
+                parameters.push_back(*(scalarParameters[iit->operand[op]]));  
+            else
+                parameters.push_back(*(kernelVariables[iit->operand[op]]));  
+        }
+
+        // generate source code for the instruction
+        generateInstructionSource(iit->opcode, parameters, source);
+    }
+
+    // Save output parameters
+    for (OutputMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+    {
+        source << "\t" << arrayParameters[cphvb_base_array(oit.second())]->second << "[";
+        generateOffsetSource(oit.second(), source);
+        source << "] = " <<  kernelVariables[oit->second] << ";\n"
+    }
+
     source << "}\n";
 }
 
-void InstructionBatch::generateInstructionSource(cphvb_instruction* inst, std::ostream& source)
+void InstructionBatch::generateInstructionSource(cphvb_opcode opcode, 
+                                                 std::vector<std::string>& parameters, 
+                                                 std::ostream& source)
 {
-    switch(inst->opcode)
+    switch(opcode)
     {
     case CPHVB_ADD:
-        source << kernelParameters[inst->operand[0]]->second << " = " <<
-            kernelParameters[inst->operand[1]]->second << " + " <<
-            kernelParameters[inst->operand[2]]->second << ";\n";
+        source << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
         break;
     default:
         throw std::runtime_error("Instruction not supported.");
@@ -143,13 +248,13 @@ void InstructionBatch::generateOffsetSource(cphvb_array* operand, std::ostream& 
 {
     if (operand->ndim > 2)
     {
-        source << "get_global_id(2)*" << operand->stride[2] << " + ";
+        source << "gidz*" << operand->stride[2] << " + ";
     }
     if (operand->ndim > 1)
     {
-        source << "get_global_id(1)*" << operand->stride[1] << " + ";
+        source << "gidy*" << operand->stride[1] << " + ";
     }
-    source << "get_global_id(0)*" << operand->stride[0] << " + " << operand->start;
+    source << "gidx*" << operand->stride[0] << " + " << operand->start;
     
     
 }

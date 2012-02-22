@@ -32,63 +32,32 @@ typedef cphvb_array* cphvb_array_ptr;
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
 
-    std::set<cphvb_array_ptr> ops, out;                             // out = output operands in kernel
-    std::set<cphvb_array_ptr>::iterator it;                         // ops = all operands in kernel (out+in)
-    std::pair<std::set<cphvb_array_ptr>::iterator, bool> ins_res;
-
     bool do_fuse = true;                                            // Loop invariant
     cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
                                                                     // incremented on each iteration
 
     int opcount = 0;                                                // Per-instruction variables
-    cphvb_array_ptr op;                                             // re-assigned on each iteration.
+    cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
 
     for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
 
         opcount = cphvb_operands(insts[i]->opcode);
 
-        for(int j=0; j<opcount; j++) {                              // Go through each operand.
-            ops.insert( insts[i]->operand[j] );
-        }
         for(int j=0; ((do_fuse) && (j<opcount)); j++) {             // Go through each operand.
 
-            op = insts[i]->operand[j];
-                                                                    // Determine splicability
-            for(it = ops.begin(); ((do_fuse) && (it != ops.end())); it++) {
+            op      = insts[i]->operand[j];
+            base    = op->base == NULL ? op : op->base;
 
-                if (op->base != NULL) {
-                    do_fuse = false;
+            // Check alignment
+            // i == 0:  - output operand => check against kernel input and output
+            // i > 0:   - input operand  => check against kernel-output
 
-                } else {
-
-                    if ( (op == (*it)->base) || (op->base == *it) || (op->base == (*it)->base )) {                    // Same base
-                        if ((op->ndim == (*it)->ndim) &&                // Same dim and start
-                            (op->start == (*it)->start)) {
-
-                            for(cphvb_intp k =0; k<op->ndim; k++) {
-                                if ((op->stride[k] != (*it)->stride[k]) ||
-                                    (op->shape[k] != (*it)->shape[k])) {
-                                    do_fuse = false;                    // Incompatible shape or stride
-                                    break;
-                                }
-                            }
-
-                        } else {                                        // Incompatible dim or start
-
-                            do_fuse = false;
-                            break;
-
-                        }
-
-                    } // Different base => all is good.
-
-                }
-
-            }
+            // perhaps this should be aided by two multisets, one containing output operands
+            // another containing input operands.
 
         }
 
-        if (do_fuse) {
+        if (do_fuse) {                                                  // Instruction is allowed
             bundle_len++;
         }
 
@@ -113,6 +82,8 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     if(bundle_len<1) {
         bundle_len = 1;
     }
+
+    bundle_len = 1; // This is just here until bundling is done...
     return bundle_len;
 
 }
