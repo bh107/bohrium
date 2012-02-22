@@ -16,12 +16,53 @@
  * You should have received a copy of the GNU General Public License
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "bundler.hpp"
 #include <iostream>
-#include <set>
+#include <map>
 
 typedef cphvb_array* cphvb_array_ptr;
+
+/**
+ * Determines whether two operands are aligned.
+ * Specifically whether the following meta-data is equal to one another:
+ *
+ * ndim, start, shape, and stride.
+ *
+ * NOTE: base is not checked for equality.
+ *
+ * @param op_l Some operand
+ * @param op_r Some other operand to compare with
+ *
+ * @return True when aligned, false when they are not.
+ *
+ */
+inline bool ops_aligned( cphvb_array_ptr op_l, cphvb_array_ptr op_r) {
+
+    bool aligned = true;
+
+    if ((op_l->ndim != op_r->ndim) || (op_l->start != op_r->start)) // Check dim and start
+    {
+        aligned = false;                                            // Incompatible dim or start
+
+    } else {
+                                                                    
+        for(cphvb_intp i=0; i < op_l->ndim; i++)                    // Check shape and stride
+        {
+            if ((op_l->stride[i] != op_r->stride[i]) || (op_l->shape[i] != op_r->shape[i]))
+            {                                                       
+                aligned = false;                                    // Incompatible shape or stride
+                break;                                              // Stop checking
+            }
+        }
+
+        // Reaching this point means that the operands are aligned aka they have equal:
+        // ndim, start, shape and stride.
+
+    }
+
+    return aligned;
+
+}
 
 /* Calculates the bundleable instructions.
  *
@@ -31,6 +72,14 @@ typedef cphvb_array* cphvb_array_ptr;
  */
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
+
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops;
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops_out;
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator it;
+    std::pair< 
+        std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator, 
+        std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator
+    > ret;
 
     bool do_fuse = true;                                            // Loop invariant
     cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
@@ -43,17 +92,45 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
         opcount = cphvb_operands(insts[i]->opcode);
 
-        for(int j=0; ((do_fuse) && (j<opcount)); j++) {             // Go through each operand.
+                                                                    // Add operands to "kernel"
+        op      = insts[i]->operand[0];
+        base    = op->base == NULL ? op : op->base;
+                                                                    // Add output operand
+        ops.insert(     std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
+        ops_out.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
+
+        for(int j=1; j < opcount; j++) {                            // Add input operand(s)
+            op      = insts[i]->operand[j];
+            base    = op->base == NULL ? op : op->base;
+            ops.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
+        }
+                                                                    //
+                                                                    // Now check for collisions.
+                                                                    //
+
+        op      = insts[i]->operand[0];                             // Look at the output-operand
+        base    = op->base == NULL ? op : op->base;
+
+        ret = ops.equal_range( base );                              // Compare to kernel-operands.
+        for(it = ret.first; it != ret.second; ++it) {
+            if (!ops_aligned( op, (*it).second )) {
+                do_fuse = false;
+                break;
+            }
+        }
+                                                                    
+        for(int j=1; ((do_fuse) && (j<opcount)); j++) {             // Look at the input-operands
 
             op      = insts[i]->operand[j];
             base    = op->base == NULL ? op : op->base;
 
-            // Check alignment
-            // i == 0:  - output operand => check against kernel input and output
-            // i > 0:   - input operand  => check against kernel-output
-
-            // perhaps this should be aided by two multisets, one containing output operands
-            // another containing input operands.
+            ret = ops_out.equal_range( base );                      // Compare to kernel-output-operands
+            for(it = ret.first; it != ret.second; ++it) {
+                if (!ops_aligned( op, (*it).second )) {
+                    do_fuse = false;
+                    break;
+                }
+            }
 
         }
 
@@ -68,7 +145,7 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
         std::cout << "BUNDLING " << size << " {" << std::endl;
         for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
-            cphvb_pprint_instr( insts[i] );
+            cphvb_instr_pprint( insts[i] );
         }
         std::cout << "} ops {" << std::endl << "  ";
         for(it = ops.begin(); it != ops.end(); it++)
@@ -79,11 +156,12 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
         std::cout << "} bundle len = [" << bundle_len << "]" << std::endl;
     }
     #endif
+
     if(bundle_len<1) {
         bundle_len = 1;
     }
 
-    bundle_len = 1; // This is just here until bundling is done...
+    //bundle_len = 1; // This is just here until bundling is done...
     return bundle_len;
 
 }
