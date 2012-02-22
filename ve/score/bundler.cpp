@@ -64,18 +64,20 @@ inline bool ops_aligned( cphvb_array_ptr op_l, cphvb_array_ptr op_r) {
 
 }
 
-/* Calculates the bundleable instructions.
+/**
+ * Calculates the bundleable instructions.
  *
- * @inst The instruction list
- * @size Size of the instruction list
- * @return Number of consecutive bundable instructions.
+ * @param inst The instruction list
+ * @param size Size of the instruction list
+ * @return Number of consecutive bundleable instructions.
+ *
  */
 cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 {
 
-    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops;
-    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops_out;
-    std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator it;
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops;            // Operands in kernel
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops_out;        // Output-operands in kernel
+    std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator it;   // it / ret = Iterators
     std::pair< 
         std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator, 
         std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator
@@ -88,45 +90,47 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     int opcount = 0;                                                // Per-instruction variables
     cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
 
-    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
+    for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++)               // Go through the instructions...
+    {
 
         opcount = cphvb_operands(insts[i]->opcode);
-
-                                                                    // Add operands to "kernel"
-        op      = insts[i]->operand[0];
-        base    = op->base == NULL ? op : op->base;
-                                                                    // Add output operand
+                                                                    //
+        op      = insts[i]->operand[0];                             // Add operands to "kernel"
+        base    = op->base == NULL ? op : op->base;                 //
+                                                                    // - output operand
         ops.insert(     std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
         ops_out.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
 
-        for(int j=1; j < opcount; j++) {                            // Add input operand(s)
+        for(int j=1; j < opcount; j++)                              // - input operand(s)
+        {
             op      = insts[i]->operand[j];
             base    = op->base == NULL ? op : op->base;
             ops.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
         }
-                                                                    //
-                                                                    // Now check for collisions.
-                                                                    //
-
+                                                                    // Check for collisions
         op      = insts[i]->operand[0];                             // Look at the output-operand
         base    = op->base == NULL ? op : op->base;
 
-        ret = ops.equal_range( base );                              // Compare to kernel-operands.
-        for(it = ret.first; it != ret.second; ++it) {
-            if (!ops_aligned( op, (*it).second )) {
+        ret = ops.equal_range( base );                              // Compare to all kernel operands.
+        for(it = ret.first; it != ret.second; ++it)
+        {
+            if (!ops_aligned( op, (*it).second ))
+            {
                 do_fuse = false;
                 break;
             }
         }
                                                                     
-        for(int j=1; ((do_fuse) && (j<opcount)); j++) {             // Look at the input-operands
-
+        for(int j=1; ((do_fuse) && (j<opcount)); j++)               // Look at the input-operands
+        {
             op      = insts[i]->operand[j];
             base    = op->base == NULL ? op : op->base;
 
             ret = ops_out.equal_range( base );                      // Compare to kernel-output-operands
-            for(it = ret.first; it != ret.second; ++it) {
-                if (!ops_aligned( op, (*it).second )) {
+            for(it = ret.first; it != ret.second; ++it)
+            {
+                if (!ops_aligned( op, (*it).second ))
+                {
                     do_fuse = false;
                     break;
                 }
@@ -134,17 +138,20 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
         }
 
-        if (do_fuse) {                                                  // Instruction is allowed
+        if (do_fuse)                                                // Instruction is allowed
+        {
             bundle_len++;
         }
 
     }
 
     #ifdef DEBUG_BNDL
-    if (bundle_len > 1) {
+    if (bundle_len > 1)
+    {
 
         std::cout << "BUNDLING " << size << " {" << std::endl;
-        for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++) {             // Go through the instructions...
+        for(cphvb_intp i=0; ((do_fuse) && (i<size)); i++)           // Go through the instructions...
+        {
             cphvb_instr_pprint( insts[i] );
         }
         std::cout << "} ops {" << std::endl << "  ";
@@ -157,11 +164,11 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
     }
     #endif
 
-    if(bundle_len<1) {
+    if(bundle_len<1)
+    {
         bundle_len = 1;
     }
 
-    //bundle_len = 1; // This is just here until bundling is done...
     return bundle_len;
 
 }
