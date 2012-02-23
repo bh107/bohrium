@@ -5,7 +5,8 @@ import time
 import sys
 
 CPHVB   = True
-size    = 1024
+#size    = 1024
+size    = 4
 
 try:
     CPHVB   = int(sys.argv[1])
@@ -37,10 +38,9 @@ def main():
     start = time.time()
 
     np.add( o2, o3, o1 )
-    np.subtract( e2, e3, o1 )
-    np.subtract( o1, o1, o1 )
+    np.subtract( o2, e1, e1 )
 
-    print o1
+    print o1, e1
 
     print time.time()-start
 
