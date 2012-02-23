@@ -71,3 +71,10 @@ cphvb_error cphvb_ve_gpu_shutdown()
     }
     return CPHVB_SUCCESS;
 }
+
+cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
+                                  char *fun, 
+                                  cphvb_intp *id)
+{
+    return CPHVB_SUCCESS;
+}

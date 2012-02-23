@@ -27,12 +27,10 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     : resourceManager(resourceManager_) 
     , batch(0)
 {}
-
 inline void InstructionScheduler::schedule(cphvb_instruction* inst)
 {
 #ifdef DEBUG
-    std::cout << "[VE GPU] InstructionScheduler::schedule(" << 
-        *inst << ")" << std::endl;
+    cphvb_pprint_instr(inst);
 #endif
     switch (inst->opcode)
     {
@@ -156,14 +154,20 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
             }
         }
     }
-
-    try 
+    if (batch)
     {
-        batch->add(inst, operandBase);
-    } 
-    catch (BatchException& be)
+        try 
+        {
+            batch->add(inst, operandBase);
+        } 
+        catch (BatchException& be)
+        {
+            executeBatch();
+            batch = new InstructionBatch(inst, operandBase);
+        } 
+    }
+    else
     {
-        executeBatch();
         batch = new InstructionBatch(inst, operandBase);
-    } 
+    }
 }

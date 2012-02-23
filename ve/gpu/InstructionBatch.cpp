@@ -17,6 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
@@ -113,10 +114,14 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     // Are some of the input parameters allready know? Otherwise register them
     for (size_t op = 1; op < operandBase.size(); ++op)
     {
-        irange = input.equal_range(operandBase[op]);
-        for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+        if (inst->operand[op]->ndim != 0)
         {
-            if (inst->operand[op]->ndim != 0)
+            irange = input.equal_range(operandBase[op]);
+            if (irange.first == irange.second) //first time we encounter this basearray
+            {
+                input.insert(std::pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
+            }
+            for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
                 if (sameView(iit->second, inst->operand[op]))
                 {
@@ -129,7 +134,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
             }
         }
     }
-
+    
     // Register Kernel parameters
     for (size_t op = 0; op < operandBase.size(); ++op)
     {
@@ -162,10 +167,10 @@ std::string InstructionBatch::generateCode()
 
     // Add Array kernel parameters
     ArrayMap::iterator apit = arrayParameters.begin();
-    source << "__global " << oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
+    source << " __global " << oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
     for (++apit; apit != arrayParameters.end(); ++apit)
     {
-        source << "\n                       , __global " << 
+        source << "\n                     , __global " << 
             oclTypeStr(apit->second.first->type()) << "* " << apit->second.second; 
     }
 
@@ -207,6 +212,7 @@ std::string InstructionBatch::generateCode()
             ss << "v" << variablenum++;
             kernelVariables[(*iit)->operand[0]] = ss.str();
             parameters.push_back(ss.str());
+            source << "\t" << oclTypeStr(oclType((*iit)->operand[0]->type)) << " " << ss.str() << ";\n";
         }
         else
         {
@@ -259,7 +265,7 @@ void InstructionBatch::generateInstructionSource(cphvb_opcode opcode,
     switch(opcode)
     {
     case CPHVB_ADD:
-        source << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+        source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
         break;
     default:
         throw std::runtime_error("Instruction not supported.");
