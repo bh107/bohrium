@@ -20,7 +20,8 @@
 
 import sys
 import os
-from os.path import join
+from os.path import join, expanduser, exists
+import shutil
 import getopt
 import subprocess
 
@@ -73,9 +74,19 @@ def ldconfig():
     except KeyboardInterrupt:
         p.terminate()
 
+def install_config():
+    HOME_CONFIG = join(join(expanduser("~"),".cphvb"))
+    if not exists(HOME_CONFIG):
+        os.mkdir(HOME_CONFIG)
+        dst = join(HOME_CONFIG, "config.ini")
+        src = join(install_dir,"config.ini.example")
+        shutil.copy(src,dst)
+        print "cp %s %s"%(src,dst)
+
+
 if __name__ == "__main__":
     debug = False
-    prefix = "/usr/local/lib"
+    prefix = "/opt/cphvb"
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))
     except NameError:
@@ -101,36 +112,31 @@ if __name__ == "__main__":
     if cmd == "build":
         build("INIPARSER", "iniparser", True)
         build("CORE", "core", True)
-        #build("VE-CUDA", "ve/cuda", False)
         build("VE-GPU", "ve/gpu", False)
         build("VE-SIMPLE", "ve/simple", False)
         build("VE-SCORE", "ve/score", True)
-        #build("VE-OMP", "ve/omp", False)
         build("VEM-NODE", "vem/node", True)
         build("VEM-CLUSTER", "vem/cluster", False)
         build("BRIDGE-NUMPY", "bridge/numpy", True)
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
         clean("CORE", "core")
-        #clean("VE-CUDA", "ve/cuda")
         clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
         clean("VE-SCORE", "ve/score")
-        clean("VE-OMP", "ve/omp")
         clean("VEM-NODE", "vem/node")
         clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
         install("INIPARSER", "iniparser", True)
         install("CORE", "core", True)
-        #install("VE-CUDA", "ve/cuda", False)
         install("VE-GPU", "ve/gpu", False)
         install("VE-SIMPLE", "ve/simple", True)
         install("VE-SCORE", "ve/score",True)
-        #install("VE-OMP", "ve/omp",False)
         install("VEM-NODE", "vem/node", True)
         install("VEM-CLUSTER", "vem/cluster", False)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
-        ldconfig()
+        install_config();
+        #ldconfig()
     else:
         print "Unknown command: '%s'."%cmd
