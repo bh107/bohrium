@@ -8,7 +8,7 @@ HEADER=./*.hpp ./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
-INSTALLDIR?=/usr/local/lib
+INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 

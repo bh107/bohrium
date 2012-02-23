@@ -7,7 +7,7 @@ LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
 SRC=cphvb_vem_cluster.c process_grid.c
 HEADER=cphvb_vem_cluster.h process_grid.h
 OBJ=$(SRC:.c=.o)
-INSTALLDIR?=/usr/local/lib
+INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 

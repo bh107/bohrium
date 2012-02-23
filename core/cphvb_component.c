@@ -93,9 +93,40 @@ cphvb_com *cphvb_com_setup(void)
     }
     strcpy(com->name, "bridge"); //The config root keyword.
 
+    //The environment variable has precedence.
     env = getenv("CPHVB_CONFIG");
+    //Then the home directory.
     if(env == NULL)
-        env = "config.ini";
+    {
+        env = getenv("HOME");
+        if(env != NULL)
+        {
+            strcat(env, "/.cphvb/config.ini");
+            FILE *fp = fopen(env,"r");
+            if( fp )
+                fclose(fp);
+            else
+                env = NULL;//Did not exist.
+        }
+    }
+    //And finally system-wide.
+    if(env == NULL)
+    {
+        FILE *fp = fopen("/opt/cphvb/config.ini","r");
+        if( fp ) {
+            env = "/opt/cphvb/config.ini";
+            fclose(fp);
+        }
+    }
+    if(env == NULL)
+    {
+        fprintf(stderr, "Error: cphVB could not find the config file"
+            "found. The search is:\n"
+            "\t* The environment variable CPHVB_CONFIG.\n"
+            "\t* The home directory \"~/.cphvb/config.ini\".\n"
+            "\t* And system-wide \"/opt/cphvb/config.ini\".\n");
+        exit(-1);
+    }
 
     com->config = iniparser_load(env);
     if(com->config == NULL)

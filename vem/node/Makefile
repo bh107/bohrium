@@ -8,7 +8,7 @@ LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
 SRC=cphvb_vem_node.cpp ArrayManager.cpp
 HEADER=ArrayManager.hpp cphvb_vem_node.h
 OBJ=$(SRC:.cpp=.o)
-INSTALLDIR?=/usr/local/lib
+INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 

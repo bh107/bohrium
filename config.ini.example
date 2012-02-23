@@ -12,23 +12,19 @@ type = bridge
 children = node
 
 [node]
-impl = libcphvb_vem_node.so
-children = gpu
+impl = /opt/cphvb/libcphvb_vem_node.so
+children = score
 type = vem
 
 [simple]
-impl = libcphvb_ve_simple.so
+impl = /opt/cphvb/libcphvb_ve_simple.so
 type = ve
 
 [score]
-impl = libcphvb_ve_score.so
-type = ve
-
-[omp]
-impl = libcphvb_ve_omp.so
+impl = /opt/cphvb/libcphvb_ve_score.so
 type = ve
 
 [gpu]
-impl = libcphvb_ve_gpu.so
+impl = /opt/cphvb/libcphvb_ve_gpu.so
 type = ve
 
