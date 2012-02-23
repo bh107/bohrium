@@ -128,6 +128,8 @@ if __name__ == "__main__":
         clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
+        if not exists("/opt/cphvb"):
+            os.mkdir("/opt/cphvb")
         install("INIPARSER", "iniparser", True)
         install("CORE", "core", True)
         install("VE-GPU", "ve/gpu", False)
