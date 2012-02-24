@@ -26,6 +26,17 @@
 
 int InstructionBatch::kernel = 0;
 
+InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
+    : arraynum(0)
+    , scalarnum(0)
+    , variablenum(0)
+{
+    if (inst->operand[0]->ndim > 3)
+        throw std::runtime_error("More than 3 dimensions not supported.");        
+    shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
+    add(inst, operandBase);
+}
+
 bool InstructionBatch::shapeMatch(cphvb_intp ndim,const cphvb_index dims[])
 {
     int size = shape.size();
@@ -54,15 +65,6 @@ bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
             return false;
     }
     return true;
-}
-
-InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
-    : arraynum(0)
-    , scalarnum(0)
-    , variablenum(0)
-{
-    shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
-    add(inst, operandBase);
 }
 
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
@@ -160,10 +162,23 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     }
 }
 
-std::string InstructionBatch::generateCode()
+Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
+{
+    std::stringstream ss;
+    ss << "kernel" << kernel++;
+    std::string code = generateCode(ss.str());
+    std::vector<OCLtype> signature;
+    for (ArrayMap::iterator apit = arrayParameters.begin(); apit != arrayParameters.end(); ++apit)
+        signature.push_back(OCL_BUFFER);
+    for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
+        signature.push_back(oclType(spit->first->type)); 
+    return Kernel(resourceManager, shape.size(), signature, code, ss.str());
+}
+
+std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
     std::stringstream source;
-    source << "__kernel void kernel" << kernel++ << "(";
+    source << "__kernel void " << kernelName << "(";
 
     // Add Array kernel parameters
     ArrayMap::iterator apit = arrayParameters.begin();
