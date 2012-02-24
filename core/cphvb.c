@@ -206,3 +206,34 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
     cphvb_array *a = instruction->operand[operand_no];
     return a->type;
 }
+
+
+/* Determines whether two arrays conflicts.
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+int cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
+{
+    cphvb_intp i;
+    if(a == b)
+        return 0;
+    if(cphvb_base_array(a) != cphvb_base_array(b))
+        return 0;
+
+    if(a->ndim != b->ndim)
+        return 1;
+
+    if(a->start != b->start)
+        return 1;
+
+    for(i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return 1;
+        if(a->stride[i] != b->stride[i])
+            return 1;
+    }
+    return 0;
+}

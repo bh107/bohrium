@@ -173,6 +173,15 @@ cphvb_error cphvb_malloc_array_data(cphvb_array* array);
 cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no);
 
+/* Determines whether two arrays conflicts.
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+int cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+
+
 #ifdef __cplusplus
 }
 #endif
