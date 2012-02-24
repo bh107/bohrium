@@ -2,6 +2,7 @@
 #This is collection of help functions for the DistNumPy benchmarks.
 
 import numpy as np
+import cphvbnumpy
 import getopt
 import sys
 import datetime
@@ -49,6 +50,7 @@ class Benchmark:
         self.totaltime = time.time()
 
     def stop(self):
+        cphvbnumpy.flush()
         self.totaltime = time.time() - self.totaltime
 
     def pprint(self):
