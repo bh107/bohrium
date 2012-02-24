@@ -134,14 +134,16 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
 
         //Clone the instruction and make new views of all operands.
         cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
+        cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
+        cphvb_intp ary_stack_count=0;
         for(cphvb_intp j=0; j<size; ++j)
         {
             thd_inst[j] = *inst_bundle[j];
             for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
             {
                 cphvb_array *ary_org = inst_bundle[j]->operand[i];
-                cphvb_array *ary = (cphvb_array*) malloc(sizeof(cphvb_array));
-                memcpy(ary, ary_org, sizeof(cphvb_array));
+                cphvb_array *ary = &ary_stack[ary_stack_count++];
+                *ary = *ary_org;
 
                 if(ary_org->base == NULL)//base array
                 {
@@ -149,7 +151,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                 }
 
                 thd_inst[j].operand[i] = ary;//Save the operand.
-            }
+             }
         }
 
         //Handle one block at a time.
@@ -188,18 +190,11 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                 }
             }
         }
-        //De-allocated the array views.
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            cphvb_instruction *inst = &thd_inst[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-            {
-                free(inst->operand[i]);
-            }
-        }
     }
 
 finish:
+/*
+    This is not needed anymore.
     //Restore the original arrays.
     for(cphvb_intp j=0; j<size; ++j)
     {
@@ -211,6 +206,6 @@ finish:
             memcpy(ary->shape, ary->org_shape, ary->ndim * sizeof(cphvb_index));
         }
     }
-
+*/
     return ret;
 }
