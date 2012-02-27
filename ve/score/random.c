@@ -20,6 +20,10 @@
 #include "cphvb_ve_score.h"
 #include <sys/time.h>
 
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
+
 // We use the same Mersenne Twister implementation as NumPy
 typedef struct
 {
@@ -116,19 +120,42 @@ cphvb_error cphvb_random(cphvb_userfunc *arg)
     cphvb_random_type *a = (cphvb_random_type *) arg;
     cphvb_array *ary = a->operand[0];
     cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
-    cphvb_intp i;
+    cphvb_intp nthds;
 
     //Make sure that the array memory is allocated.
     if(cphvb_malloc_array_data(ary) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
-
     double *data = (double *) ary->data;
 
-    rk_state state;
-    rk_initseed(&state);
+    if(ary->type != CPHVB_FLOAT64)
+        return CPHVB_TYPE_NOT_SUPPORTED;
 
-    for(i=0; i<size; ++i)
-        data[i] = rk_double(&state);
+    //Handle the blocks.
+    //We will use OpenMP to parallelize the computation.
+    //We divide the blocks between the threads.
+    #ifdef _OPENMP
+        nthds = omp_get_max_threads();
+        if(nthds > size)
+            nthds = size;
+        #pragma omp parallel num_threads(nthds) default(none) \
+                shared(nthds,size,data)
+    #endif
+    {
+        #ifdef _OPENMP
+            int myid = omp_get_thread_num();
+        #else
+            int myid = 0;
+        #endif
+        cphvb_intp length = size / nthds; // Find this thread's length of work.
+        cphvb_intp start = myid * length; // Find this thread's start block.
+        if(myid == nthds-1)
+            length += size % nthds;       // The last thread gets the reminder.
+
+        rk_state state;
+        rk_initseed(&state);
+        for(cphvb_intp i=start; i<start+length; ++i)
+            data[i] = rk_double(&state);
+    }
 
     return CPHVB_SUCCESS;
 }
