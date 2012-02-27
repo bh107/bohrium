@@ -23,7 +23,7 @@ Vz  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
 
 OnesCol = np.empty((n,1), dtype=float, dist=B.cphvb)
 OnesCol[:] = 1.0
-OnesRow = np.empty((1,n), dtype=float, dist=B.cphvb)+1.0
+OnesRow = np.empty((1,n), dtype=float, dist=B.cphvb)
 OnesRow[:] = 1.0
 Identity= np.array(np.diag([1]*n), dtype=float)
 cphvbnumpy.handle_array(Identity)
