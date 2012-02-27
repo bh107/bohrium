@@ -67,7 +67,6 @@ class Benchmark:
 
 
 if __name__ == "__main__":
-    cphvb = True
     nblocks = 16
     options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['file=','thd-min=', 'thd-max=', 'jobsize=','repeat=','seq', 'nblocks='])
     for opt, arg in options:
@@ -85,20 +84,26 @@ if __name__ == "__main__":
             nblocks = int(arg)
         if opt in ('--seq'):
             cphvb = False
+    cphvb = False
     nthd = minthd
     while nthd <= maxthd:
         try:
             env = os.environ
             env['OMP_NUM_THREADS'] = "%d"%nthd
             env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
-            p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=True", "--size",jobsize],env=env,stdout=subprocess.PIPE)
+            p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
             (stdoutdata, stderrdata) = p.communicate()
             info = pickle.loads(stdoutdata)
-            if nthd == minthd:#first iteration
+            if nthd == minthd and not cphvb:#First iteration
                 print "#%s"%info
-            print "%3.d;%10.4f\n"%(nthd,info['totaltime'])
+                print "#NumPy;%10.4f\n"%(info['totaltime'])
+            else:
+                print "%6.d;%10.4f\n"%(nthd,info['totaltime'])
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
 
-        nthd *= 2
+        if nthd == minthd and not cphvb:#First iteration
+            cphvb = True
+        else:
+            nthd *= 2
