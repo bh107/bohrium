@@ -39,6 +39,8 @@ typedef struct
 } cphvb_random_type;
 
 
+cphvb_error cphvb_random(cphvb_userfunc *arg);
+
 #ifdef __cplusplus
 }
 #endif

@@ -125,10 +125,15 @@ cphvb_error cphvb_ve_score_shutdown( void ) {
 
 cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
-    if(reduce_impl == NULL)//We only support one user-defind function
+    if(strcmp("cphvb_reduce", fun) && reduce_impl == NULL)
     {
         cphvb_com_get_func(myself, lib, fun, &reduce_impl);
         reduce_impl_id = *id;
+    }
+    else if(strcmp("cphvb_random", fun) && random_impl == NULL)
+    {
+        cphvb_com_get_func(myself, lib, fun, &random_impl);
+        random_impl_id = *id;
     }
     return CPHVB_SUCCESS;
 }
