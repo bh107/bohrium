@@ -29,23 +29,26 @@ private:
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
-    std::vector<cl::Event> readerWaitFor;
 public:
     ResourceManager();
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
-    void readBuffer(const cl::Buffer buffer,
+    void readBuffer(const cl::Buffer& buffer,
                     void* hostPtr, 
                     cl::Event waitFor,
                     unsigned int device);
     // We allways write asynchronous with NO events to wait for.
     // Because we just recieved the array from upstream
-    cl::Event enqueueWriteBuffer(const cl::Buffer buffer,
+    cl::Event enqueueWriteBuffer(const cl::Buffer& buffer,
                                  const void* hostPtr, 
                                  unsigned int device);
     cl::Event completeEvent();
     cl::Kernel createKernel(const char* source, const char* kernelName);
+    cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
+                                   const cl::NDRange& globalSize,
+                                   const std::vector<cl::Event>* waitFor,
+                                   unsigned int device);
 };
 
 #endif

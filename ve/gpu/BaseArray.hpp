@@ -40,6 +40,8 @@ public:
     OCLtype type();
     void sync();
     void setWriteEvent(cl::Event);
+    cl::Event getWriteEvent();
+    cl::Buffer getBuffer();
 };
 
 

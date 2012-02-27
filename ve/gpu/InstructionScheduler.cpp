@@ -80,8 +80,7 @@ void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        std::cout << batch->generateCode();
-        //TODO compile and execute batch
+        batch->run(resourceManager);
         delete batch;
     }
     batch = 0;
