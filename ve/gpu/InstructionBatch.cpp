@@ -175,6 +175,23 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     return Kernel(resourceManager, shape.size(), signature, code, ss.str());
 }
 
+void InstructionBatch::run(ResourceManager* resourceManager)
+{
+    Kernel kernel = generateKernel(resourceManager);
+    Kernel::ArrayArgs arrayArgs;
+    for (ArrayMap::iterator apit = arrayParameters.begin(); apit != arrayParameters.end(); ++apit)
+    {
+        if (output.find(apit->second.first) == output.end())
+            arrayArgs.push_back(std::pair<BaseArray*, bool>(apit->second.first, false));
+        else
+            arrayArgs.push_back(std::pair<BaseArray*, bool>(apit->second.first, true));
+    }
+    std::vector<Scalar> scalarArgs;
+    for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
+        scalarArgs.push_back(Scalar(spit->first));
+    kernel.call(arrayArgs, scalarArgs, shape);
+}
+
 std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
     std::stringstream source;

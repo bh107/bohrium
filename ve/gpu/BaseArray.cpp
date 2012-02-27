@@ -64,3 +64,13 @@ void BaseArray::setWriteEvent(cl::Event event)
 {
     writeEvent = event;
 }
+
+cl::Event BaseArray::getWriteEvent()
+{
+    return writeEvent;
+}
+
+cl::Buffer BaseArray::getBuffer()
+{
+    return buffer;
+}

@@ -55,17 +55,18 @@ cl::Buffer ResourceManager::createBuffer(size_t size)
     return cl::Buffer(context, CL_MEM_READ_WRITE, size, NULL);
 }
 
-void ResourceManager::readBuffer(const cl::Buffer buffer,
+void ResourceManager::readBuffer(const cl::Buffer& buffer,
                                  void* hostPtr, 
                                  cl::Event waitFor,
                                  unsigned int device)
 {
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    readerWaitFor[0] = waitFor;
+    std::vector<cl::Event> readerWaitFor;
+    readerWaitFor.push_back(waitFor);
     commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, NULL);
 }
 
-cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer buffer,
+cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
                                               const void* hostPtr, 
                                               unsigned int device)
 {
@@ -88,3 +89,14 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
     program.build(devices);
     return cl::Kernel(program, kernelName);
 }
+
+cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel, 
+                                                const cl::NDRange& globalSize,
+                                                const std::vector<cl::Event>* waitFor,
+                                                unsigned int device)
+{
+    cl::Event event;
+    commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, cl::NullRange, waitFor, &event);
+    return event;
+}
+                                                

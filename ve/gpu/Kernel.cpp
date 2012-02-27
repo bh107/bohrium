@@ -18,6 +18,7 @@
  */
 
 #include <cassert>
+#include <stdexcept>
 #include "Kernel.hpp"
 
 Kernel::Kernel(ResourceManager* resourceManager_, 
@@ -30,4 +31,42 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     , signature(signature_)
 {
     kernel = resourceManager->createKernel(source.c_str(), name.c_str());
+}
+
+void Kernel::call(ArrayArgs& arrayArgs,
+                  const std::vector<Scalar>& scalarArgs,
+                  const std::vector<cphvb_index>& shape)
+{
+    unsigned int device = 0;
+    cl::NDRange globalSize;
+    switch (shape.size())
+    {
+    case 1:
+        globalSize = cl::NDRange(shape[0]);
+        break;
+    case 2:    
+        globalSize = cl::NDRange(shape[0], shape[1]);
+        break;
+    case 3:    
+        globalSize = cl::NDRange(shape[0], shape[1], shape[2]);
+        break;
+    default:
+        throw std::runtime_error("More than 3 dimensions not supported.");
+    }
+    std::vector<cl::Event> waitFor;
+    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
+    {
+        waitFor.push_back(aait->first->getWriteEvent());
+    }
+    unsigned int argIndex = 0;
+    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
+        kernel.setArg(argIndex++, aait->first->getBuffer());
+    for (std::vector<Scalar>::const_iterator sait = scalarArgs.begin(); sait != scalarArgs.end(); ++sait)
+        sait->addToKernel(kernel, argIndex++);
+    cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, &waitFor ,device); 
+    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
+    {
+        if (aait->second)
+            aait->first->setWriteEvent(event);
+    }
 }

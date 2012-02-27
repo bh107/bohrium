@@ -17,9 +17,34 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "KernelArg.hpp"
+#ifndef __KERNELARG_HPP
+#define __KERNELARG_HPP
 
-KernelArg::KernelArg(value_t v, OCLtype t)
-    : value(v)
-    , type(t) {}
-    
+#include <CL/cl.hpp>
+#include "OCLtype.h" 
+#define OCL_BUFFER OCL_TYPES
+
+class Scalar
+{
+private:
+    union value_t 
+    {
+        cl_char c;
+        cl_short s;
+        cl_int i;
+        cl_long l;
+        cl_uchar uc;
+        cl_ushort us;
+        cl_uint ui;
+        cl_ulong ul;
+        cl_half h;
+        cl_float f;
+        cl_double d;
+    } value;
+    OCLtype type;
+public:
+    Scalar(cphvb_array*);
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
+};
+
+#endif

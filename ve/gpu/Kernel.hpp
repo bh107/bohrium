@@ -23,8 +23,9 @@
 #include <CL/cl.hpp>
 #include <vector>
 #include <cphvb.h>
-#include "KernelArg.hpp"
+#include "Scalar.hpp"
 #include "ResourceManager.hpp"
+#include "BaseArray.hpp"
 
 class Kernel
 {
@@ -34,12 +35,14 @@ private:
     std::vector<OCLtype> signature;
     cl::Kernel kernel;
 public:
+    typedef std::vector<std::pair<BaseArray*, bool>> ArrayArgs;
     Kernel(ResourceManager* resourceManager_, 
            cphvb_intp ndim_,
            const std::vector<OCLtype>& signature_,
            const std::string& source, 
            const std::string& name); 
-    void call(const std::vector<KernelArg>& args, 
+    void call(ArrayArgs& arrayArgs,
+              const std::vector<Scalar>& scalarArgs,
               const std::vector<cphvb_index>& shape);
 };
 
