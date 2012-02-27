@@ -96,9 +96,10 @@ if __name__ == "__main__":
             info = pickle.loads(stdoutdata)
             if nthd == minthd and not cphvb:#First iteration
                 print "#%s"%info
-                print "#NumPy;%10.4f\n"%(info['totaltime'])
+                print "CPU-cores; totaltime"%info
+                print "#NumPy   ;%10.4f"%(info['totaltime'])
             else:
-                print "%6.d;%10.4f\n"%(nthd,info['totaltime'])
+                print "%9.d;%10.4f"%(nthd,info['totaltime'])
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
