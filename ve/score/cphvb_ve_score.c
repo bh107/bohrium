@@ -23,6 +23,10 @@
 #include <assert.h>
 #include "get_traverse.hpp"
 
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
+
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -182,10 +186,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.opcode = CPHVB_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
-    traverse_ptr trav = get_traverse(&inst);
-    if(trav == NULL)
-        return CPHVB_ERROR;
-    cphvb_error err = trav(&inst);
+    cphvb_error err = dispatch(&inst);
     if(err != CPHVB_SUCCESS)
         return err;
     tmp.start += step;
@@ -198,12 +199,23 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     inst.operand[1] = out;
     inst.operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
-    trav = get_traverse(&inst);
-    if(trav == NULL)
-        return CPHVB_ERROR;
+    cphvb_instruction *tmp_inst[1] = {&inst};
+    #ifdef _OPENMP
+        cphvb_intp nthds = omp_get_max_threads();
+        //Minimum 1024 element per thread.
+        {
+            cphvb_intp min_size = cphvb_nelements(out->ndim, out->shape) / 1024 + 1;
+            if(nthds > min_size)
+                nthds = min_size;
+        }
+    #else
+        cphvb_intp nthds = 1;
+    #endif
     for(i=1; i<axis_size; ++i)
     {
-        err = trav(&inst);
+        //One block per thread.
+        dispatch_bundle(tmp_inst,1,nthds);
+
         if(err != CPHVB_SUCCESS)
             return err;
         tmp.start += step;
