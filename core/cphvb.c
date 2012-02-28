@@ -160,17 +160,16 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
 }
 
 /* Allocate data memory for the given array if not already allocated.
- * Initialize the memory if needed.
+ * NB: It does NOT initiate the memory.
  * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_malloc_array_data(cphvb_array* array)
+cphvb_error cphvb_data_malloc(cphvb_array* array)
 {
-    cphvb_intp i, nelem;
+    cphvb_intp nelem, bytes;
     cphvb_array* base;
-    int dtypesize;
 
     if(array == NULL)
         return CPHVB_SUCCESS;
@@ -181,14 +180,36 @@ cphvb_error cphvb_malloc_array_data(cphvb_array* array)
         return CPHVB_SUCCESS;
 
     nelem = cphvb_nelements(base->ndim, base->shape);
-    dtypesize = cphvb_type_size(base->type);
-    base->data = malloc(nelem * dtypesize);
+    bytes = nelem * cphvb_type_size(base->type);
+    base->data = malloc(bytes);
     if(base->data == NULL)
         return CPHVB_OUT_OF_MEMORY;
 
-    if(base->has_init_value)
-        for(i=0; i<nelem; ++i)
-            memcpy(base->data+i*dtypesize, &base->init_value, dtypesize);
+    return CPHVB_SUCCESS;
+}
+
+/* Frees data memory for the given array.
+ * For convenience array is allowed to be NULL.
+ *
+ * @array  The array in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_error cphvb_data_free(cphvb_array* array)
+{
+    cphvb_intp nelem, bytes;
+    cphvb_array* base;
+
+    if(array == NULL)
+        return CPHVB_SUCCESS;
+
+    base = cphvb_base_array(array);
+
+    if(base->data != NULL)
+        return CPHVB_SUCCESS;
+
+    nelem = cphvb_nelements(base->ndim, base->shape);
+    bytes = nelem * cphvb_type_size(base->type);
+    free(base->data);
 
     return CPHVB_SUCCESS;
 }

@@ -123,7 +123,7 @@ cphvb_error cphvb_random(cphvb_userfunc *arg)
     cphvb_intp nthds = 1;
 
     //Make sure that the array memory is allocated.
-    if(cphvb_malloc_array_data(ary) != CPHVB_SUCCESS)
+    if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
     double *data = (double *) ary->data;
 
