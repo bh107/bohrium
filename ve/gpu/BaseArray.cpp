@@ -46,8 +46,7 @@ void BaseArray::sync()
 {
     if (spec->data == NULL)
     {
-        spec->data = (cphvb_data_ptr)std::malloc(size() * oclSizeOf(bufferType));
-        if (spec->data == NULL)
+        if (cphvb_data_malloc(spec) != CPHVB_SUCCESS)
         {
             throw std::runtime_error("Could not allocate memory on host");
         }

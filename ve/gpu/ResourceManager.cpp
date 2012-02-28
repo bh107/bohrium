@@ -49,7 +49,6 @@ ResourceManager::ResourceManager()
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
-    cl_uint nd =  context.getInfo<CL_CONTEXT_NUM_DEVICES>();
 }
 
 cl::Buffer ResourceManager::createBuffer(size_t size)

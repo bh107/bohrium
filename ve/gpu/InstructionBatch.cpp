@@ -195,6 +195,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
 
 std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
+    std::cout << "[VE-GPU] generateCode(" << kernelName << ")" << std::endl; 
     std::stringstream source;
     source << "__kernel void " << kernelName << "(";
 
@@ -234,7 +235,7 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
         ss << "v" << variablenum++;
         kernelVariables[iit->second] = ss.str();
         source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
-            arrayParameters[iit->second].second << "[";
+            arrayParameters[cphvb_base_array(iit->second)].second << "[";
         generateOffsetSource(iit->second, source);
         source << "];\n";
     }

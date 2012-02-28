@@ -133,7 +133,7 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
 
     int nops = cphvb_operands(inst->opcode);
     assert(nops > 0);
-    std::vector<BaseArray*> operandBase(CPHVB_MAX_NO_OPERANDS);
+    std::vector<BaseArray*> operandBase(nops);
     for (int i = 0; i < nops; ++i)
     {
         cphvb_array* operand = inst->operand[i];
