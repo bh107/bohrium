@@ -2,10 +2,6 @@
 #include <iostream>
 #include <cphvb.h>
 
-#ifdef _OPENMP_OLD
-#include <omp.h>
-#endif
-
 template <typename T0, typename T1, typename T2, typename Instr>
 cphvb_error traverse_3( cphvb_instruction *instr ) {
 
@@ -13,96 +9,56 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     cphvb_array *a0 = instr->operand[0],        // Operands
                 *a1 = instr->operand[1],
                 *a2 = instr->operand[2];
+    Instr opcode_func;
 
-    cphvb_intp nthds = 1;
-
-                                                // Assuming that the first operand is an array.
-    if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
-        instr->status = CPHVB_OUT_OF_MEMORY;
-        return CPHVB_PARTIAL_SUCCESS;
-    }
-
-    d0 = (T0*)cphvb_base_array(instr->operand[0])->data;
-
-    if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
-        instr->status = CPHVB_OUT_OF_MEMORY;
-        return CPHVB_PARTIAL_SUCCESS;
-    }
+    //TODO:  handle scalars
+    d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
     d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
-
-    if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS) {
-        instr->status = CPHVB_OUT_OF_MEMORY;
-        return CPHVB_PARTIAL_SUCCESS;
-    }
     d2 = (T2*) cphvb_base_array(instr->operand[2])->data;
 
-    //We will use OpenMP to parallelize of the computation.
-    //We divide the work over the first dimension, i.e. the most
-    //significant dimension.
-    #ifdef _OPENMP_OLD
-        if(a0->ndim > 1) //Find number of threads to use.
-        {
-            nthds = omp_get_max_threads();
-            if(nthds > a0->shape[0])
-                nthds = a0->shape[0];//Minimum one element per thread.
+    cphvb_index last_dim = a0->ndim-1;
+    cphvb_intp j, off0, off1, off2;             // Index and stride offset pointers
+    cphvb_index coord[CPHVB_MAXDIM];
+    memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
+
+    int notfinished = 1;
+    while( notfinished ) {
+        off0 = a0->start + coord[0] * a0->stride[0];
+        off1 = a1->start + coord[0] * a1->stride[0];
+        off2 = a2->start + coord[0] * a2->stride[0];
+        for( j=1; j<last_dim; ++j) {
+
+            off0 += coord[j] * a0->stride[j];
+            off1 += coord[j] * a1->stride[j];
+            off2 += coord[j] * a2->stride[j];
+
         }
-        #pragma omp parallel num_threads(nthds) default(none) shared(nthds,a0,a1,a2,d0,d1,d2)
-    #endif
-    {
-        Instr opcode_func;
-        #ifdef _OPENMP_OLD
-            int myid = omp_get_thread_num();
-        #else
-            int myid = 0;
-        #endif
-        cphvb_index last_dim = a0->ndim-1;
-        cphvb_intp j, off0, off1, off2;             // Index and stride offset pointers
-        cphvb_index coord[CPHVB_MAXDIM];
-        memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-        cphvb_intp length = a0->shape[0] / nthds;   // Find this thread's length of work.
-        cphvb_intp thd_offset = myid * length;      // Find this thread's offset.
-        if(myid == nthds-1)
-            length += a0->shape[0] % nthds;         // The last thread get the rest.
 
-        int notfinished = 1;
-        while( notfinished ) {
-            off0 = thd_offset * a0->stride[0] + a0->start + coord[0] * a0->stride[0];
-            off1 = thd_offset * a1->stride[0] + a1->start + coord[0] * a1->stride[0];
-            off2 = thd_offset * a2->stride[0] + a2->start + coord[0] * a2->stride[0];
-            for( j=1; j<last_dim; ++j) {
+        for(    coord[last_dim]=0;              // Loop over last dimension
+                coord[last_dim] < a0->shape[last_dim];
 
-                off0 += coord[j] * a0->stride[j];
-                off1 += coord[j] * a1->stride[j];
-                off2 += coord[j] * a2->stride[j];
+                coord[last_dim]++,
+                off0 += a0->stride[last_dim],
+                off1 += a1->stride[last_dim],
+                off2 += a2->stride[last_dim]
 
+                ) {
+                                                // Call element-wise operation
+            opcode_func( (off0+d0), (off1+d1), (off2+d2) );
+
+        }
+
+        for(j = last_dim; j >= 0; --j) {
+            coord[j]++;
+            if(j==0 && coord[j] >= a0->shape[0])
+            {
+                notfinished = 0;
+                break;
             }
-
-            for(    coord[last_dim]=0;              // Loop over last dimension
-                    coord[last_dim] < a0->shape[last_dim];
-
-                    coord[last_dim]++,
-                    off0 += a0->stride[last_dim],
-                    off1 += a1->stride[last_dim],
-                    off2 += a2->stride[last_dim]
-
-                    ) {
-                                                    // Call element-wise operation
-                opcode_func( (off0+d0), (off1+d1), (off2+d2) );
-
-            }
-
-            for(j = last_dim; j >= 0; --j) {
-                coord[j]++;
-                if(j==0 && coord[j] >= length)
-                {
-                    notfinished = 0;
-                    break;
-                }
-                else if (coord[j] < a0->shape[j]) {
-                    break;
-                } else {
-                    coord[j] = 0;
-                }
+            else if (coord[j] < a0->shape[j]) {
+                break;
+            } else {
+                coord[j] = 0;
             }
         }
     }
@@ -129,17 +85,8 @@ cphvb_error traverse_2( cphvb_instruction *instr ) {
 
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-                                                // Assuming that the first operand is an array.
-    if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS) {
-        instr->status = CPHVB_OUT_OF_MEMORY;
-        return CPHVB_PARTIAL_SUCCESS;
-    }
-    d0 = (T0*)cphvb_base_array(instr->operand[0])->data;
-
-    if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS) {
-        instr->status = CPHVB_OUT_OF_MEMORY;
-        return CPHVB_PARTIAL_SUCCESS;
-    }
+    //TODO:  handle scalars
+    d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
     d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
 
     while( ec < nelements ) {

@@ -70,7 +70,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     cphvb_error ret = CPHVB_SUCCESS;
     cphvb_intp nthds = 1;
 
-    //Get all traverser function -- one per instruction.
+    //Get all traverse function -- one per instruction.
     traverse_ptr traverses[CPHVB_MAX_NO_INST];
     for(cphvb_intp j=0; j<size; ++j)
     {
@@ -177,7 +177,6 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
             for(cphvb_intp j=0; j<size; ++j)
             {
                 cphvb_instruction *inst = &thd_inst[j];
-//                cphvb_instr_pprint( inst );
                 inst->status = traverses[j](inst);
                 if(inst->status != CPHVB_SUCCESS)
                 {
