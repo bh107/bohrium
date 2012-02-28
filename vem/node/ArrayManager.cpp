@@ -102,7 +102,7 @@ void ArrayManager::flush()
         if ((*eit)->base == NULL)
         {   //We have to deallocate the base array because of the
             //triggering opcode CPHVB_DESTROY.
-            free((*eit)->data);
+            cphvb_data_free((*eit));
             arrayStore->erase(*eit);
         }
         else if ((*eit)->base->owner == CPHVB_PARENT)

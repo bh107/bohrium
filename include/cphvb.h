@@ -155,13 +155,23 @@ const char* cphvb_error_text(cphvb_error error);
 cphvb_array* cphvb_base_array(cphvb_array* view);
 
 
-/* Allocate data memory for the given array
- * Initialize the memory if needed
+/* Allocate data memory for the given array if not already allocated.
+ * NB: It does NOT initiate the memory.
+ * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_malloc_array_data(cphvb_array* array);
+cphvb_error cphvb_data_malloc(cphvb_array* array);
+
+
+/* Frees data memory for the given array.
+ * For convenience array is allowed to be NULL.
+ *
+ * @array  The array in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_error cphvb_data_free(cphvb_array* array);
 
 
 /* Retrive the operand type of a instruction.

@@ -23,6 +23,9 @@ for i in xrange(iterations):
   work += full[0:-2, 1:-1]
   work += full[2:  , 1:-1]
   work *= 0.2
+  diff = np.absolute(full[1:-1, 1:-1] - work)
+  delta = np.add.reduce(diff)
+  delta = np.add.reduce(delta)
   full[1:-1, 1:-1] = work
 B.stop()
 

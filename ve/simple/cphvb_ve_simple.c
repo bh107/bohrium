@@ -76,17 +76,17 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             cphvb_index coord[CPHVB_MAXDIM];
             memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-            if(cphvb_malloc_array_data(a0) != CPHVB_SUCCESS)
+            if(cphvb_data_malloc(a0) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 return CPHVB_PARTIAL_SUCCESS;
             }
-            if(cphvb_malloc_array_data(a1) != CPHVB_SUCCESS)
+            if(cphvb_data_malloc(a1) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 return CPHVB_PARTIAL_SUCCESS;
             }
-            if(cphvb_malloc_array_data(a2) != CPHVB_SUCCESS)
+            if(cphvb_data_malloc(a2) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 return CPHVB_PARTIAL_SUCCESS;

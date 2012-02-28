@@ -26,7 +26,8 @@ OnesCol[:] = 1.0
 OnesRow = np.empty((1,n), dtype=float, dist=B.cphvb)
 OnesRow[:] = 1.0
 Identity= np.array(np.diag([1]*n), dtype=float)
-cphvbnumpy.handle_array(Identity)
+if B.cphvb:
+    cphvbnumpy.handle_array(Identity)
 
 B.start()
 for i in xrange(k):
@@ -35,9 +36,10 @@ for i in xrange(k):
     Fx = np.dot(OnesCol, PxT) - np.dot(Px, OnesRow)
     Fy = np.dot(OnesCol, PyT) - np.dot(Py, OnesRow)
     Fz = np.dot(OnesCol, PzT) - np.dot(Pz, OnesRow)
-    cphvbnumpy.handle_array(Fx)
-    cphvbnumpy.handle_array(Fy)
-    cphvbnumpy.handle_array(Fz)
+    if B.cphvb:
+        cphvbnumpy.handle_array(Fx)
+        cphvbnumpy.handle_array(Fy)
+        cphvbnumpy.handle_array(Fz)
 
     Dsq = Fx * Fx
     Dsq += Fy * Fy

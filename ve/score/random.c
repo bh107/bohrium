@@ -120,10 +120,10 @@ cphvb_error cphvb_random(cphvb_userfunc *arg)
     cphvb_random_type *a = (cphvb_random_type *) arg;
     cphvb_array *ary = a->operand[0];
     cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
-    cphvb_intp nthds;
+    cphvb_intp nthds = 1;
 
     //Make sure that the array memory is allocated.
-    if(cphvb_malloc_array_data(ary) != CPHVB_SUCCESS)
+    if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
     double *data = (double *) ary->data;
 
