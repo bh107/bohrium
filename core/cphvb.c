@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/mman.h>
 
 /* Reduce nDarray info to a base shape
  *
@@ -181,9 +183,20 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
 
     nelem = cphvb_nelements(base->ndim, base->shape);
     bytes = nelem * cphvb_type_size(base->type);
-    base->data = malloc(bytes);
-    if(base->data == NULL)
+    if(bytes <= 0)
+        return CPHVB_SUCCESS;
+
+    //Allocate page-size aligned memory.
+    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+    base->data = mmap(0, bytes, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    if(base->data == MAP_FAILED)
+    {
+        int errsv = errno;//mmap() sets the errno.
+        printf("cphvb_data_malloc() could not mmap a data region. "
+               "Returned error code by mmap: %s.\n", strerror(errsv));
         return CPHVB_OUT_OF_MEMORY;
+    }
 
     return CPHVB_SUCCESS;
 }
@@ -204,13 +217,20 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 
     base = cphvb_base_array(array);
 
-    if(base->data != NULL)
+    if(base->data == NULL)
         return CPHVB_SUCCESS;
 
     nelem = cphvb_nelements(base->ndim, base->shape);
     bytes = nelem * cphvb_type_size(base->type);
-    free(base->data);
 
+    if(munmap(base->data, bytes) == -1)
+    {
+        int errsv = errno;//munmmap() sets the errno.
+        printf("cphvb_data_free() could not munmap a data region. "
+               "Returned error code by mmap: %s.\n", strerror(errsv));
+        return CPHVB_ERROR;
+    }
+    base->data = NULL;
     return CPHVB_SUCCESS;
 }
 
