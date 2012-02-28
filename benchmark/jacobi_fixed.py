@@ -3,12 +3,12 @@ import cphvbnumpy
 import util
 
 B = util.Benchmark()
-W = B.size[0]
-H = B.size[1]
+H = B.size[0]
+W = B.size[1]
 iterations = B.size[2]
 
-full = np.empty((W+2,H+2), dtype=np.double, dist=B.cphvb)
-work = np.empty((W,H), dtype=np.double, dist=B.cphvb)
+full = np.empty((H+2,W+2), dtype=np.double, dist=B.cphvb)
+work = np.empty((H,W), dtype=np.double, dist=B.cphvb)
 full[:]    = 0.0
 full[:,0]  = -273.15
 full[:,-1] = -273.15
