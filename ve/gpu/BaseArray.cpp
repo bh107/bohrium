@@ -31,9 +31,9 @@ BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager_)
     assert(spec->base == NULL);
     assert(spec->ndim > 0);
     buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
+    device = 0;
     if (spec->data != NULL)
     {
-        device = 0;
         writeEvent = resourceManager->enqueueWriteBuffer(buffer, spec->data, device);
     } 
     else 

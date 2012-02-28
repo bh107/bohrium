@@ -191,6 +191,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         scalarArgs.push_back(Scalar(spit->first));
     kernel.call(arrayArgs, scalarArgs, shape);
 }
+#define DEBUG
 
 std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
@@ -200,16 +201,22 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
     // Add Array kernel parameters
     ArrayMap::iterator apit = arrayParameters.begin();
     source << " __global " << oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
+#ifdef DEBUG
+    source << " /* " << apit->first << " */";
+#endif
     for (++apit; apit != arrayParameters.end(); ++apit)
     {
         source << "\n                     , __global " << 
-            oclTypeStr(apit->second.first->type()) << "* " << apit->second.second; 
+            oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
+#ifdef DEBUG
+        source << " /* " << apit->first << " */";
+#endif
     }
 
     // Add Scalar kernel parameters
     for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
     {
-        source << "\n                       , const " << 
+        source << "\n                     , const " << 
             oclTypeStr(oclType(spit->first->type)) << " " << spit->second; 
     }
     source << ")\n{\n";
@@ -298,6 +305,18 @@ void InstructionBatch::generateInstructionSource(cphvb_opcode opcode,
     {
     case CPHVB_ADD:
         source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+        break;
+    case CPHVB_BITWISE_OR:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
+        break;
+    case CPHVB_BITWISE_AND:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
+        break;
+    case CPHVB_NOT_EQUAL:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
+        break;
+    case CPHVB_INVERT:
+        source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
         break;
     default:
         throw std::runtime_error("Instruction not supported.");

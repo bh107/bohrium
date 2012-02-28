@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
+#define DEBUG
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 

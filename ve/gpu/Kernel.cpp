@@ -26,7 +26,7 @@ Kernel::Kernel(ResourceManager* resourceManager_,
                const std::vector<OCLtype>& signature_,
                const std::string& source, 
                const std::string& name)
-    : resourceManager(resourceManager)
+    : resourceManager(resourceManager_)
     , ndim(ndim_)
     , signature(signature_)
 {

@@ -19,6 +19,7 @@
 
 #include "ResourceManager.hpp"
 #include <stdexcept>
+#include <iostream>
 
 ResourceManager::ResourceManager()
 {
@@ -48,6 +49,7 @@ ResourceManager::ResourceManager()
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
+    cl_uint nd =  context.getInfo<CL_CONTEXT_NUM_DEVICES>();
 }
 
 cl::Buffer ResourceManager::createBuffer(size_t size)
@@ -63,7 +65,11 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     std::vector<cl::Event> readerWaitFor;
     readerWaitFor.push_back(waitFor);
-    commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, NULL);
+    try {
+        commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, NULL);
+    } catch (cl::Error e) {
+        std::cerr << "[VE-GPU] Could not enqueueReadBuffer: \"" << e.err() << "\"" << std::endl;
+    }
 }
 
 cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
@@ -72,7 +78,11 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
 {
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, NULL, &event);
+    try {
+        commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, NULL, &event);
+    } catch (cl::Error e) {
+        std::cerr << "[VE-GPU] Could not enqueueWriteBuffer: \"" << e.what() << "\"" << std::endl;
+    }
     return event;
 }
 
@@ -85,8 +95,23 @@ cl::Event ResourceManager::completeEvent()
 
 cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
 {
-    cl::Program program(context,cl::Program::Sources(1,std::make_pair(source,0)));
-    program.build(devices);
+    std::cerr << "Kernel build :\n";
+    std::cerr << "------------------- SOURCE -----------------------\n";
+    std::cerr << source;
+    std::cerr << "------------------ SOURCE END --------------------\n";
+    cl::Program::Sources sources(1,std::make_pair(source,0));
+    cl::Program program(context, sources);
+    try {
+        program.build(devices);
+    } catch (cl::Error) {
+        std::cerr << "Kernel build error:\n";
+        std::cerr << "------------------- SOURCE -----------------------\n";
+        std::cerr << source;
+        std::cerr << "------------------ SOURCE END --------------------\n";
+        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
+        throw std::runtime_error("Could not build Kernel.");
+    }
+    
     return cl::Kernel(program, kernelName);
 }
 
