@@ -2,20 +2,20 @@ CPHVB_BASE=../../
 CPHVB_INCLUDE=$(CPHVB_BASE)include/
 INCLUDE=-I$(CPHVB_BASE)include
 LIB=libcphvb_ve_gpu.so
-CXX=g++-4.6
+CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC $(INCLUDE) $(CFLAGS)
+LCFLAGS= $(WARNOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
-LDFLAGS = -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
+LDFLAGS = -L../../core -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch ArrayOperand BaseArray View InstructionScheduler \
          Scalar Kernel
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
-INSTALLDIR=/usr/local/lib/
+INSTALLDIR=/opt/cphvb/
 KERNELDIR=/usr/local/cphvb/
 
 all: $(LIB)
