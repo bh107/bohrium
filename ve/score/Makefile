@@ -2,8 +2,8 @@ ROOT=../..
 LIB=libcphvb_ve_score.so
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -fopenmp -I$(ROOT)/include
-LDFLAGS=-L../../core -lcphvb -lrt -lgomp -shared -Wl,-soname
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
+LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
 HEADER=./*.hpp ./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
