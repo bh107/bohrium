@@ -43,7 +43,7 @@ class Benchmark:
         self.info['nthd'] = multiprocessing.cpu_count()
         self.info['nblocks'] = 16
         try:
-            self.info['nthd'] = int(env['OMP_NUM_THREADS'])
+            self.info['nthd'] = int(env['CPHVB_NUM_THREADS'])
         except KeyError:
             pass
         try:
@@ -71,7 +71,7 @@ class Benchmark:
 def do(nthd, nblocks, jobsize, filename, cphvb):
     try:
         env = os.environ
-        env['OMP_NUM_THREADS'] = "%d"%nthd
+        env['CPHVB_NUM_THREADS'] = "%d"%nthd
         env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
         p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = p.communicate()
