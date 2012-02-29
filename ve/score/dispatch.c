@@ -2,6 +2,7 @@
 #include "get_traverse.hpp"
 #include "dispatch.h"
 #include <assert.h>
+#include <pthread.h>
 
 #ifdef _OPENMP
     #include <omp.h>
@@ -147,8 +148,6 @@ void *thd_do(void *msg)
 }
 
 
-
-
 //Dispatch the bundle of instructions.
 cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                             cphvb_intp size,
@@ -213,8 +212,9 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
         }
     }
 
-    //Compute thread ids.
+    //Start threads.
     thd_id ids[32];
+    pthread_t tid[32];
     for(cphvb_intp i=0; i<nthds; ++i)
     {
         ids[i].myid        = i;
@@ -223,18 +223,12 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
         ids[i].size        = size;
         ids[i].inst_bundle = inst_bundle;
         ids[i].traverses   = traverses;
+        pthread_create(&tid[i], NULL, thd_do, (void *) (&ids[i]));
     }
+    //Stop threads.
+    for(cphvb_intp i=0; i<nthds; ++i)
+        pthread_join(tid[i], NULL);
 
-    #ifdef _OPENMP
-        #pragma omp parallel num_threads(nthds) default(none) shared(ids)
-    #endif
-    {
-        int myid = 0;
-        #ifdef _OPENMP
-            myid = omp_get_thread_num();
-        #endif
-        thd_do((void *)&ids[myid]);
-    }
 
 finish:
 /*
