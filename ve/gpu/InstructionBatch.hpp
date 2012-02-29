@@ -57,9 +57,10 @@ public:
     Kernel generateKernel(ResourceManager* resourceManager);
     cl::Event run(ResourceManager* resourceManager);
     void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
-    bool read(BaseArray*);
-    bool write(BaseArray*);    
-    bool access(BaseArray*);
+    bool read(BaseArray* array);
+    bool write(BaseArray* array);    
+    bool access(BaseArray* array);
+    bool discard(BaseArray* array);
 };
 
 class BatchException 

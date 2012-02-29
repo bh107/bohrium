@@ -347,3 +347,14 @@ bool InstructionBatch::access(BaseArray* array)
 {
     return (read(array) || write(array));
 }
+
+bool InstructionBatch::discard(BaseArray* array)
+{
+    OutputMap::iterator oit = output.find(array);
+    if (oit != output.end())
+    {
+        output.erase(oit);
+        arrayParameters.erase(array->getSpec());
+    }
+    return read(array);
+}
