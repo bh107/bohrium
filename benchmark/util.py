@@ -20,7 +20,9 @@ class Benchmark:
     """
     def __init__(self):
         self.batch_mode = False
-        self.info = {'cphvb':False, 'date':datetime.datetime.now(),'file':os.path.basename(sys.argv[0])}
+        t = datetime.datetime.now()
+        date = "%d:%d:%d %d/%d/%d"%(t.hour,t.minute,t.second,t.day,t.month,t.year)
+        self.info = {'cphvb':False, 'date':date,'file':os.path.basename(sys.argv[0])}
         options, self.argv = getopt.gnu_getopt(sys.argv[1:], \
                 'p:n:c:s:',\
                 ['cphvb=','nnodes=','ncores=','size=','batch'])
@@ -66,9 +68,31 @@ class Benchmark:
             print "%s - cphvb: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['cphvb'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
 
 
+def do(nthd, nblocks, jobsize, filename, cphvb):
+    try:
+        env = os.environ
+        env['OMP_NUM_THREADS'] = "%d"%nthd
+        env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
+        p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
+        (stdoutdata, stderrdata) = p.communicate()
+        info = pickle.loads(stdoutdata)
+        err = p.wait()
+        if not cphvb:
+            print "#NumPy   ; N/A; %10.4f; %s"%(info['totaltime'],info)
+        else:
+            print "%9.d;%8.d;%10.4f; %s"%(nthd,nblocks, info['totaltime'],info)
+        if err:
+            raise Exception(err)
+        return info
+    except KeyboardInterrupt:
+        p.terminate()
+        raise KeyboardInterrupt
+
+
 if __name__ == "__main__":
-    nblocks = 16
-    options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['file=','thd-min=', 'thd-max=', 'jobsize=','repeat=','seq', 'nblocks='])
+    min_nblocks = 16
+    max_nblocks = 16
+    options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['file=','thd-min=', 'thd-max=', 'jobsize=','repeat=', 'nblocks=', 'min_nblocks=', 'max_nblocks='])
     for opt, arg in options:
         if opt in ('--file'):
             filename = arg
@@ -81,30 +105,22 @@ if __name__ == "__main__":
         if opt in ('--repeat'):
             repeat = int(arg)
         if opt in ('--nblocks'):
-            nblocks = int(arg)
-        if opt in ('--seq'):
-            cphvb = False
-    cphvb = False
+            min_nblocks = int(arg)
+            max_nblocks = int(arg)
+        if opt in ('--min_nblocks'):
+            min_nblocks = int(arg)
+        if opt in ('--max_nblocks'):
+            max_nblocks = int(arg)
+
+    print "CPU-cores; nblocks; totaltime; info"
+    if minthd == 0:#Lets do the NumPy run.
+        do(1, nblocks, jobsize, filename, False)
+
     nthd = minthd
     while nthd <= maxthd:
-        try:
-            env = os.environ
-            env['OMP_NUM_THREADS'] = "%d"%nthd
-            env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
-            p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
-            (stdoutdata, stderrdata) = p.communicate()
-            info = pickle.loads(stdoutdata)
-            if nthd == minthd and not cphvb:#First iteration
-                print "#%s"%info
-                print "CPU-cores; totaltime"%info
-                print "#NumPy   ;%10.4f"%(info['totaltime'])
-            else:
-                print "%9.d;%10.4f"%(nthd,info['totaltime'])
-            err = p.wait()
-        except KeyboardInterrupt:
-            p.terminate()
+        nblocks = min_nblocks
+        while nblocks <= max_nblocks:
+            do(nthd, nblocks, jobsize, filename, True)
+            nblocks *= 2
+        nthd *= 2
 
-        if nthd == minthd and not cphvb:#First iteration
-            cphvb = True
-        else:
-            nthd *= 2
