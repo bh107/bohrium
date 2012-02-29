@@ -117,7 +117,7 @@ void InstructionScheduler::discard(cphvb_array* base)
     {
         return;
     }
-    if (batch && batch->access(it->second))
+    if (batch && !batch->discard(it->second))
     {
         if (!discardSet)
             discardSet = new std::set<BaseArray*>();

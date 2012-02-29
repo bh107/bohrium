@@ -33,6 +33,7 @@ protected:
     ArrayOperand(cphvb_array* spec);
 public:
     size_t size();
+    cphvb_array* getSpec();
     friend std::ostream& operator<< (std::ostream& os, 
                                      ArrayOperand const& array);
     virtual OCLtype type() = 0;

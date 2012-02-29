@@ -71,3 +71,8 @@ std::ostream& operator<< (std::ostream& os,
     array.printOn(os);
     return os;
 }
+
+cphvb_array* ArrayOperand::getSpec()
+{
+    return spec;
+}
