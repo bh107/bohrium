@@ -60,6 +60,11 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
         operand_to_str( instr->operand[i], op_str );
         sprintf(tmp, "  OP%d %s\n", i, op_str);
         strcat(buf, tmp);
+        if (instr->operand[i]->base != NULL) {
+            operand_to_str( instr->operand[i]->base, op_str );
+            sprintf(tmp, "      %s\n", op_str);
+            strcat(buf, tmp);
+        }
     }
     strcat(buf, "}");
 
