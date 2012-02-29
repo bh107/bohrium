@@ -256,26 +256,37 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-int cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
+bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
 {
     cphvb_intp i;
     if(a == b)
-        return 0;
+        return false;
     if(cphvb_base_array(a) != cphvb_base_array(b))
-        return 0;
+        return false;
 
     if(a->ndim != b->ndim)
-        return 1;
+        return true;
 
     if(a->start != b->start)
-        return 1;
+        return true;
 
     for(i=0; i<a->ndim; ++i)
     {
         if(a->shape[i] != b->shape[i])
-            return 1;
+            return true;
         if(a->stride[i] != b->stride[i])
-            return 1;
+            return true;
     }
     return 0;
+}
+
+/* Determines whether the array is a scalar or a broadcast view of a scalar.
+ *
+ * @a The array
+ * @return The boolean answer
+ */
+bool cphvb_scalar(cphvb_array *array)
+{
+    return (cphvb_base_array(array)->ndim == 0) ||
+        (cphvb_base_array(array)->ndim == 1 && cphvb_base_array(array)->shape[0] == 1);
 }

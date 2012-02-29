@@ -190,7 +190,14 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-int cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+
+/* Determines whether the array is a scalar or a broadcast view of a scalar.
+ *
+ * @a The array
+ * @return The boolean answer
+ */
+bool cphvb_scalar(cphvb_array *array);
 
 
 #ifdef __cplusplus
