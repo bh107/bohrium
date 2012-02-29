@@ -324,6 +324,9 @@ void InstructionBatch::generateInstructionSource(cphvb_opcode opcode,
     case CPHVB_INVERT:
         source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
         break;
+    case CPHVB_IDENTITY:
+        source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
+        break;
     default:
         throw std::runtime_error("Instruction not supported.");
     }
