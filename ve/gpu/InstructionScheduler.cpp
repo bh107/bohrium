@@ -83,7 +83,8 @@ void InstructionScheduler::executeBatch()
     if (batch)
     {
         cl::Event event = batch->run(resourceManager);
-        event.setCallback(CL_COMPLETE, &baseArrayDeleter, discardSet);
+        if (discardSet)
+            event.setCallback(CL_COMPLETE, &baseArrayDeleter, discardSet);
         delete batch;
         batch = 0;
         discardSet = 0;
