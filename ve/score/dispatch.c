@@ -198,30 +198,42 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     //Handle the blocks.
     //We will use OpenMP to parallelize the computation.
     //We divide the blocks between the threads.
-    #ifdef _OPENMP
-        if(nblocks > 1) //Find number of threads to use.
+    if(nblocks > 1) //Find number of threads to use.
+    {
+        char *env = getenv("CPHVB_NUM_THREADS");
+        if(env != NULL)
+            nthds = atoi(env);
+
+        if(nthds > nblocks)
+            nthds = nblocks;//Minimum one block per thread.
+        if(nthds > 32)
         {
-            nthds = omp_get_max_threads();
-            if(nthds > nblocks)
-                nthds = nblocks;//Minimum one block per thread.
+            printf("CPHVB_NUM_THREADS greater than 32!\n");
+            nthds = 32;//MAX 32 thds.
         }
-        #pragma omp parallel num_threads(nthds) default(none) \
-                shared(nthds,inst_bundle,size,nblocks,traverses,ret)
+    }
+
+    //Compute thread ids.
+    thd_id ids[32];
+    for(cphvb_intp i=0; i<nthds; ++i)
+    {
+        ids[i].myid        = i;
+        ids[i].nblocks     = nblocks;
+        ids[i].nthds       = nthds;
+        ids[i].size        = size;
+        ids[i].inst_bundle = inst_bundle;
+        ids[i].traverses   = traverses;
+    }
+
+    #ifdef _OPENMP
+        #pragma omp parallel num_threads(nthds) default(none) shared(ids)
     #endif
     {
-        thd_id id;
-        id.myid        = 0;
-        id.nblocks     = nblocks;
-        id.nthds       = nthds;
-        id.size        = size;
-        id.inst_bundle = inst_bundle;
-        id.traverses   = traverses;
+        int myid = 0;
         #ifdef _OPENMP
-            id.myid = omp_get_thread_num();
+            myid = omp_get_thread_num();
         #endif
-
-
-        thd_do((void *)&id);
+        thd_do((void *)&ids[myid]);
     }
 
 finish:
