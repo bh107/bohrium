@@ -162,6 +162,7 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
 }
 
 /* Allocate data memory for the given array if not already allocated.
+ * If @array is a view, the data memory for the base array is allocated.
  * NB: It does NOT initiate the memory.
  * For convenience array is allowed to be NULL.
  *
