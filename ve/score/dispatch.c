@@ -194,8 +194,6 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
         }
     }
 
-    //Handle the blocks.
-    //We will use OpenMP to parallelize the computation.
     //We divide the blocks between the threads.
     if(nblocks > 1) //Find number of threads to use.
     {

@@ -19,10 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <sys/time.h>
-
-#ifdef _OPENMP
-    #include <omp.h>
-#endif
+#include <pthread.h>
 
 // We use the same Mersenne Twister implementation as NumPy
 typedef struct
@@ -112,7 +109,35 @@ rk_initseed(rk_state *state)
     return 0;
 }
 
+//Thread function and it's ID.
+typedef struct
+{
+    int myid;
+    cphvb_intp nthds;
+    cphvb_intp size;
+    double *data;
+}thd_id;
 
+void *thd_do_random(void *msg)
+{
+    thd_id *id = (thd_id *) msg;
+    int myid           = id->myid;
+    cphvb_intp size    = id->size;
+    cphvb_intp nthds   = id->nthds;
+    double *data       = id->data;
+
+    cphvb_intp length = size / nthds; // Find this thread's length of work.
+    cphvb_intp start = myid * length; // Find this thread's start block.
+    if(myid == nthds-1)
+        length += size % nthds;       // The last thread gets the reminder.
+
+    rk_state state;
+    rk_initseed(&state);
+    for(cphvb_intp i=start; i<start+length; ++i)
+        data[i] = rk_double(&state);
+
+    return NULL;
+}
 //Implementation of the user-defined funtion "random". Note that we
 //follows the function signature defined by cphvb_userfunc_impl.
 cphvb_error cphvb_random(cphvb_userfunc *arg)
@@ -130,32 +155,35 @@ cphvb_error cphvb_random(cphvb_userfunc *arg)
     if(ary->type != CPHVB_FLOAT64)
         return CPHVB_TYPE_NOT_SUPPORTED;
 
-    //Handle the blocks.
-    //We will use OpenMP to parallelize the computation.
     //We divide the blocks between the threads.
-    #ifdef _OPENMP
-        nthds = omp_get_max_threads();
-        if(nthds > size)
-            nthds = size;
-        #pragma omp parallel num_threads(nthds) default(none) \
-                shared(nthds,size,data)
-    #endif
-    {
-        #ifdef _OPENMP
-            int myid = omp_get_thread_num();
-        #else
-            int myid = 0;
-        #endif
-        cphvb_intp length = size / nthds; // Find this thread's length of work.
-        cphvb_intp start = myid * length; // Find this thread's start block.
-        if(myid == nthds-1)
-            length += size % nthds;       // The last thread gets the reminder.
+    {//Find number of threads to use.
+        char *env = getenv("CPHVB_NUM_THREADS");
+        if(env != NULL)
+            nthds = atoi(env);
 
-        rk_state state;
-        rk_initseed(&state);
-        for(cphvb_intp i=start; i<start+length; ++i)
-            data[i] = rk_double(&state);
+        if(nthds > size)
+            nthds = size;//Minimum one block per thread.
+        if(nthds > 32)
+        {
+            printf("CPHVB_NUM_THREADS greater than 32!\n");
+            nthds = 32;//MAX 32 thds.
+        }
     }
+
+    //Start threads.
+    thd_id ids[32];
+    pthread_t tid[32];
+    for(cphvb_intp i=0; i<nthds; ++i)
+    {
+        ids[i].myid        = i;
+        ids[i].nthds       = nthds;
+        ids[i].size        = size;
+        ids[i].data        = data;
+        pthread_create(&tid[i], NULL, thd_do_random, (void *) (&ids[i]));
+    }
+    //Stop threads.
+    for(cphvb_intp i=0; i<nthds; ++i)
+        pthread_join(tid[i], NULL);
 
     return CPHVB_SUCCESS;
 }
