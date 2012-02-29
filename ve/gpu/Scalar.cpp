@@ -23,7 +23,7 @@
 
 Scalar::Scalar(cphvb_array* sa)
 {
-    assert(sa->ndim == 0);
+    assert(cphvb_scalar(sa));
     assert(sa->base == NULL);
     assert(sa->data != NULL);
     type = oclType(sa->type);

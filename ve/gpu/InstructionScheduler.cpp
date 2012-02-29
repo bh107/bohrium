@@ -138,7 +138,7 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
     {
         cphvb_array* operand = inst->operand[i];
         // Is it a new base array we haven't heard of before?
-        if (operand->ndim != 0) // Not a scalar
+        if (!cphvb_scalar(operand)) // Not a scalar
         {
             cphvb_array* base = cphvb_base_array(operand);
             ArrayMap::iterator it = arrayMap.find(base);

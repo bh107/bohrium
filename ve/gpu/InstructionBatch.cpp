@@ -69,7 +69,7 @@ bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
 
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
-    assert(inst->operand[0]->ndim > 0);
+    assert(!cphvb_scalar(inst->operand[0]));
 
     // Check that the shape matches
     if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
@@ -78,7 +78,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     // If any operand's base is already used as output, it has to be alligned.
     for (size_t op = 0; op < operandBase.size(); ++op)
     {
-        if (inst->operand[op]->ndim != 0)
+        if (!cphvb_scalar(inst->operand[op]))
         {
             OutputMap::iterator oit = output.find(operandBase[op]);
             if (oit != output.end())
@@ -116,7 +116,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     // Are some of the input parameters allready know? Otherwise register them
     for (size_t op = 1; op < operandBase.size(); ++op)
     {
-        if (inst->operand[op]->ndim != 0)
+        if (!cphvb_scalar(inst->operand[op]))
         {
             OutputMap::iterator oit = output.find(operandBase[op]);
             irange = input.equal_range(operandBase[op]);
@@ -144,13 +144,14 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     // Register Kernel parameters
     for (size_t op = 0; op < operandBase.size(); ++op)
     {
-        if (inst->operand[op]->ndim == 0)
+        if (cphvb_scalar(inst->operand[op]))
         {
-            if (scalarParameters.find(inst->operand[op]) == scalarParameters.end())
+            cphvb_array* scalar = cphvb_base_array(inst->operand[op]);
+            if (scalarParameters.find(scalar) == scalarParameters.end())
             {
                 std::stringstream ss;
                 ss << "s" << scalarnum++;
-                scalarParameters[inst->operand[op]] = ss.str();
+                scalarParameters[scalar] = ss.str();
             } 
         }
         else
@@ -265,8 +266,8 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
         // find variable names for input parameters
         for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if ((*iit)->operand[op]->ndim == 0)
-                parameters.push_back(scalarParameters[(*iit)->operand[op]]);  
+            if (cphvb_scalar((*iit)->operand[op]))
+                parameters.push_back(scalarParameters[cphvb_base_array((*iit)->operand[op])]);  
             else
                 parameters.push_back(kernelVariables[(*iit)->operand[op]]);  
         }
