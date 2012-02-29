@@ -78,7 +78,7 @@ def do(nthd, nblocks, jobsize, filename, cphvb):
         info = pickle.loads(stdoutdata)
         err = p.wait()
         if not cphvb:
-            print "#NumPy   ; N/A; %10.4f; %s"%(info['totaltime'],info)
+            print "#NumPy   ;     N/A;%10.4f; %s"%(info['totaltime'],info)
         else:
             print "%9.d;%8.d;%10.4f; %s"%(nthd,nblocks, info['totaltime'],info)
         if err:
@@ -113,8 +113,8 @@ if __name__ == "__main__":
             max_nblocks = int(arg)
 
     print "CPU-cores; nblocks; totaltime; info"
-    if minthd == 0:#Lets do the NumPy run.
-        do(1, nblocks, jobsize, filename, False)
+    if minthd == 1:#Lets do the NumPy run.
+        do(1, 1, jobsize, filename, False)
 
     nthd = minthd
     while nthd <= maxthd:
