@@ -22,17 +22,20 @@
 #define __INSTRUCTIONSCHEDULER_HPP
 
 #include <map>
+#include <set>
 #include <cphvb_instruction.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 
 class InstructionScheduler
 {
-    typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
 private:
+    typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
+    std::set<BaseArray*>* discardSet;
+    static void CL_CALLBACK baseArrayDeleter(cl_event event, cl_int eventStatus, void* baseArraySet);
     void schedule(cphvb_instruction* inst);
     void sync(cphvb_array* base);
     void discard(cphvb_array* base);

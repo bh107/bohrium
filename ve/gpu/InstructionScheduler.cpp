@@ -27,6 +27,7 @@
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 
     , batch(0)
+    , discardSet(0)
 {}
 inline void InstructionScheduler::schedule(cphvb_instruction* inst)
 {
@@ -81,10 +82,12 @@ void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        batch->run(resourceManager);
+        cl::Event event = batch->run(resourceManager);
+        event.setCallback(CL_COMPLETE, &baseArrayDeleter, discardSet);
         delete batch;
+        batch = 0;
+        discardSet = 0;
     }
-    batch = 0;
 }
 
 void InstructionScheduler::sync(cphvb_array* base)
@@ -106,9 +109,8 @@ void InstructionScheduler::sync(cphvb_array* base)
 
 void InstructionScheduler::discard(cphvb_array* base)
 {
-    //TODO postpone discard
     assert(base->base == NULL);
-    // We may recieve sync for arrays I don't own
+    // We may recieve discard for arrays I don't own
     ArrayMap::iterator it = arrayMap.find(base);
     if  (it == arrayMap.end())
     {
@@ -116,9 +118,14 @@ void InstructionScheduler::discard(cphvb_array* base)
     }
     if (batch && batch->access(it->second))
     {
-        executeBatch();
+        if (!discardSet)
+            discardSet = new std::set<BaseArray*>();
+        discardSet->insert(it->second); 
+    } 
+    else
+    {
+        delete it->second;
     }
-    delete it->second;
     arrayMap.erase(it);
 }
 
@@ -170,4 +177,17 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
     {
         batch = new InstructionBatch(inst, operandBase);
     }
+}
+
+void CL_CALLBACK InstructionScheduler::baseArrayDeleter(cl_event event, 
+                                                               cl_int eventStatus, 
+                                                               void* baseArraySet)
+{
+    assert(eventStatus == CL_COMPLETE);
+    std::set<BaseArray*>* discardSet = (std::set<BaseArray*>*)baseArraySet;
+    for (std::set<BaseArray*>::iterator dsit = discardSet->begin(); dsit != discardSet->end(); ++dsit)
+    {
+        delete *dsit;
+    }
+    delete discardSet;
 }

@@ -55,7 +55,7 @@ private:
 public:
     InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
     Kernel generateKernel(ResourceManager* resourceManager);
-    void run(ResourceManager* resourceManager);
+    cl::Event run(ResourceManager* resourceManager);
     void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
     bool read(BaseArray*);
     bool write(BaseArray*);    

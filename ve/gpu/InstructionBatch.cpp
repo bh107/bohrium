@@ -120,22 +120,21 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         {
             OutputMap::iterator oit = output.find(operandBase[op]);
             irange = input.equal_range(operandBase[op]);
-            if (irange.first == irange.second && oit == output.end()) //first time we encounter this basearray
-            {
+            if (irange.first == irange.second && oit == output.end())
+            {  //first time we encounter this basearray
                 input.insert(std::make_pair(operandBase[op], inst->operand[op]));
             }
-            else if (sameView(oit->second, inst->operand[op])) //it is allready part of the output 
-            {
+            else if (oit != output.end() && sameView(oit->second, inst->operand[op])) 
+            {  //it is allready part of the output 
                     inst->operand[op] = oit->second;
-            } else {
-                for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+            } 
+            for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+            {
+                if (sameView(iit->second, inst->operand[op])) //it is allready part of the input
                 {
-                    if (sameView(iit->second, inst->operand[op])) //it is allready part of the input
-                    {
-                        inst->operand[op] = iit->second;
-                    } else { //it is a new view on a known base array
-                        input.insert(std::make_pair(operandBase[op], inst->operand[op]));
-                    }
+                    inst->operand[op] = iit->second;
+                } else { //it is a new view on a known base array
+                    input.insert(std::make_pair(operandBase[op], inst->operand[op]));
                 }
             }
         }
@@ -180,7 +179,7 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     return Kernel(resourceManager, shape.size(), signature, code, ss.str());
 }
 
-void InstructionBatch::run(ResourceManager* resourceManager)
+cl::Event InstructionBatch::run(ResourceManager* resourceManager)
 {
     Kernel kernel = generateKernel(resourceManager);
     Kernel::ArrayArgs arrayArgs;
@@ -194,7 +193,8 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     std::vector<Scalar> scalarArgs;
     for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
         scalarArgs.push_back(Scalar(spit->first));
-    kernel.call(arrayArgs, scalarArgs, shape);
+    cl::Event event = kernel.call(arrayArgs, scalarArgs, shape);
+    return event;
 }
 #define DEBUG
 

@@ -41,9 +41,9 @@ public:
            const std::vector<OCLtype>& signature_,
            const std::string& source, 
            const std::string& name); 
-    void call(ArrayArgs& arrayArgs,
-              const std::vector<Scalar>& scalarArgs,
-              const std::vector<cphvb_index>& shape);
+    cl::Event call(ArrayArgs& arrayArgs,
+                   const std::vector<Scalar>& scalarArgs,
+                   const std::vector<cphvb_index>& shape);
 };
 
 #endif

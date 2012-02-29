@@ -33,9 +33,9 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     kernel = resourceManager->createKernel(source.c_str(), name.c_str());
 }
 
-void Kernel::call(ArrayArgs& arrayArgs,
-                  const std::vector<Scalar>& scalarArgs,
-                  const std::vector<cphvb_index>& shape)
+cl::Event Kernel::call(ArrayArgs& arrayArgs,
+                       const std::vector<Scalar>& scalarArgs,
+                       const std::vector<cphvb_index>& shape)
 {
     unsigned int device = 0;
     cl::NDRange globalSize;
@@ -69,4 +69,5 @@ void Kernel::call(ArrayArgs& arrayArgs,
         if (aait->second)
             aait->first->setWriteEvent(event);
     }
+    return event;
 }
