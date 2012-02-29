@@ -62,6 +62,93 @@ inline cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
     }
 }
 
+//Thread function and it's ID.
+typedef struct
+{
+    int myid;
+    cphvb_intp nblocks;
+    cphvb_intp nthds;
+    cphvb_intp size;
+    cphvb_instruction** inst_bundle;
+    traverse_ptr *traverses;
+}thd_id;
+
+void *thd_do(void *msg)
+{
+    thd_id *id = (thd_id *) msg;
+    int myid = id->myid;
+    cphvb_intp size = id->size;
+    cphvb_intp nblocks = id->nblocks;
+    cphvb_intp nthds = id->nthds;
+    cphvb_instruction** inst_bundle = id->inst_bundle;
+    traverse_ptr *traverses = id->traverses;
+
+    cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
+    cphvb_intp start = myid * length;    // Find this thread's start block.
+    if(myid == nthds-1)
+        length += nblocks % nthds;       // The last thread gets the reminder.
+
+    //Clone the instruction and make new views of all operands.
+    cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
+    cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
+    cphvb_intp ary_stack_count=0;
+    for(cphvb_intp j=0; j<size; ++j)
+    {
+        thd_inst[j] = *inst_bundle[j];
+        for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
+        {
+            cphvb_array *ary_org = inst_bundle[j]->operand[i];
+            cphvb_array *ary = &ary_stack[ary_stack_count++];
+            *ary = *ary_org;
+
+            if(ary_org->base == NULL)//base array
+            {
+                ary->base = ary_org;
+            }
+
+            thd_inst[j].operand[i] = ary;//Save the operand.
+         }
+    }
+
+    //Handle one block at a time.
+    for(cphvb_intp b=start; b<start+length; ++b)
+    {
+        //Update the operands to match the current block.
+        for(cphvb_intp j=0; j<size; ++j)
+        {
+            cphvb_instruction *inst = &thd_inst[j];
+            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+            {
+                dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
+                ary->start = ary->org_start + ary->stride[0] *
+                             get_offset(b, inst, nblocks);
+                ary->shape[0] = get_shape(b, inst, nblocks);
+            }
+        }
+
+        if(thd_inst[0].operand[0]->shape[0] <= 0)
+            break;//We a finished.
+
+        //Dispatch a block.
+        for(cphvb_intp j=0; j<size; ++j)
+        {
+            cphvb_instruction *inst = &thd_inst[j];
+            inst->status = traverses[j](inst);
+            if(inst->status != CPHVB_SUCCESS)
+            {
+                //ret = CPHVB_PARTIAL_SUCCESS;
+                start = length;//Force a complete exit.
+                break;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+
+
 //Dispatch the bundle of instructions.
 cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                             cphvb_intp size,
@@ -122,73 +209,19 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                 shared(nthds,inst_bundle,size,nblocks,traverses,ret)
     #endif
     {
+        thd_id id;
+        id.myid        = 0;
+        id.nblocks     = nblocks;
+        id.nthds       = nthds;
+        id.size        = size;
+        id.inst_bundle = inst_bundle;
+        id.traverses   = traverses;
         #ifdef _OPENMP
-            int myid = omp_get_thread_num();
-        #else
-            int myid = 0;
+            id.myid = omp_get_thread_num();
         #endif
-        cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
-        cphvb_intp start = myid * length;    // Find this thread's start block.
-        if(myid == nthds-1)
-            length += nblocks % nthds;       // The last thread gets the reminder.
 
-        //Clone the instruction and make new views of all operands.
-        cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
-        cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
-        cphvb_intp ary_stack_count=0;
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            thd_inst[j] = *inst_bundle[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
-            {
-                cphvb_array *ary_org = inst_bundle[j]->operand[i];
-                cphvb_array *ary = &ary_stack[ary_stack_count++];
-                *ary = *ary_org;
 
-                if(ary_org->base == NULL)//base array
-                {
-                    ary->base = ary_org;
-                }
-
-                thd_inst[j].operand[i] = ary;//Save the operand.
-             }
-        }
-
-        //Handle one block at a time.
-        for(cphvb_intp b=start; b<start+length; ++b)
-        {
-            //Update the operands to match the current block.
-            for(cphvb_intp j=0; j<size; ++j)
-            {
-                cphvb_instruction *inst = &thd_inst[j];
-                for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
-                {
-                    dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-                    ary->start = ary->org_start + ary->stride[0] *
-                                 get_offset(b, inst, nblocks);
-                    ary->shape[0] = get_shape(b, inst, nblocks);
-                }
-            }
-
-            if(thd_inst[0].operand[0]->shape[0] <= 0)
-                break;//We a finished.
-
-            //Dispatch a block.
-            for(cphvb_intp j=0; j<size; ++j)
-            {
-                cphvb_instruction *inst = &thd_inst[j];
-                inst->status = traverses[j](inst);
-                if(inst->status != CPHVB_SUCCESS)
-                {
-                    #ifdef _OPENMP
-                        #pragma omp critical
-                    #endif
-                    ret = CPHVB_PARTIAL_SUCCESS;
-                    start = length;//Force a complete exit.
-                    break;
-                }
-            }
-        }
+        thd_do((void *)&id);
     }
 
 finish:
