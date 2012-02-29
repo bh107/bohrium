@@ -181,6 +181,8 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
 
 cl::Event InstructionBatch::run(ResourceManager* resourceManager)
 {
+    if (output.begin() == output.end())
+        return resourceManager->completeEvent();
     Kernel kernel = generateKernel(resourceManager);
     Kernel::ArrayArgs arrayArgs;
     for (ArrayMap::iterator apit = arrayParameters.begin(); apit != arrayParameters.end(); ++apit)
@@ -206,7 +208,8 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
 
     // Add Array kernel parameters
     ArrayMap::iterator apit = arrayParameters.begin();
-    source << " __global " << oclTypeStr(apit->second.first->type()) << "* " << apit->second.second;
+    source << " __global " << oclTypeStr(apit->second.first->type());
+    source << "* " << apit->second.second;
 #ifdef DEBUG
     source << " /* " << apit->first << " */";
 #endif
@@ -354,10 +357,12 @@ bool InstructionBatch::access(BaseArray* array)
 bool InstructionBatch::discard(BaseArray* array)
 {
     OutputMap::iterator oit = output.find(array);
+    bool r =  read(array);
     if (oit != output.end())
     {
         output.erase(oit);
-        arrayParameters.erase(array->getSpec());
+        if (!r)
+            arrayParameters.erase(array->getSpec());
     }
-    return read(array);
+    return !r;
 }
