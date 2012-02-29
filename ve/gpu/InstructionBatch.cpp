@@ -118,20 +118,24 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     {
         if (inst->operand[op]->ndim != 0)
         {
+            OutputMap::iterator oit = output.find(operandBase[op]);
             irange = input.equal_range(operandBase[op]);
-            if (irange.first == irange.second) //first time we encounter this basearray
+            if (irange.first == irange.second && oit == output.end()) //first time we encounter this basearray
             {
-                input.insert(std::pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
+                input.insert(std::make_pair(operandBase[op], inst->operand[op]));
             }
-            for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+            else if (sameView(oit->second, inst->operand[op])) //it is allready part of the output 
             {
-                if (sameView(iit->second, inst->operand[op]))
+                    inst->operand[op] = oit->second;
+            } else {
+                for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
                 {
-                    inst->operand[op] = iit->second;
-                } 
-                else
-                {
-                    input.insert(std::pair<BaseArray*, cphvb_array*>(operandBase[op], inst->operand[op]));
+                    if (sameView(iit->second, inst->operand[op])) //it is allready part of the input
+                    {
+                        inst->operand[op] = iit->second;
+                    } else { //it is a new view on a known base array
+                        input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+                    }
                 }
             }
         }
@@ -182,9 +186,9 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     for (ArrayMap::iterator apit = arrayParameters.begin(); apit != arrayParameters.end(); ++apit)
     {
         if (output.find(apit->second.first) == output.end())
-            arrayArgs.push_back(std::pair<BaseArray*, bool>(apit->second.first, false));
+            arrayArgs.push_back(std::make_pair(apit->second.first, false));
         else
-            arrayArgs.push_back(std::pair<BaseArray*, bool>(apit->second.first, true));
+            arrayArgs.push_back(std::make_pair(apit->second.first, true));
     }
     std::vector<Scalar> scalarArgs;
     for (ScalarMap::iterator spit = scalarParameters.begin(); spit != scalarParameters.end(); ++spit)
