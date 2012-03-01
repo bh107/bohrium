@@ -132,7 +132,12 @@ void InstructionScheduler::discard(cphvb_array* base)
 
 void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
 {
-    throw std::runtime_error("User defined functiones not supported.");
+    FunctionMap::iterator fit = functionMap.find(userfunc->id);
+    if (fit == functionMap.end())
+    {
+        throw std::runtime_error("User defined functiones not supported.");
+    }
+    fit->second(userfunc);
 }
 
 void InstructionScheduler::ufunc(cphvb_instruction* inst)
@@ -178,6 +183,11 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
     {
         batch = new InstructionBatch(inst, operandBase);
     }
+}
+
+void InstructionScheduler::registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc)
+{
+    functionMap[id] = userfunc;
 }
 
 void CL_CALLBACK InstructionScheduler::baseArrayDeleter(cl_event event, 

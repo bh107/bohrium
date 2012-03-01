@@ -31,9 +31,11 @@ class InstructionScheduler
 {
 private:
     typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
+    typedef std::map<cphvb_intp, cphvb_userfunc_impl> FunctionMap;
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
+    FunctionMap functionMap;
     std::set<BaseArray*>* discardSet;
     static void CL_CALLBACK baseArrayDeleter(cl_event event, cl_int eventStatus, void* baseArraySet);
     void schedule(cphvb_instruction* inst);
@@ -44,6 +46,7 @@ private:
     void userdeffunc(cphvb_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);
+    void registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc);
     void schedule(cphvb_intp instructionCount,
                   cphvb_instruction* instructionList);
     void forceFlush();

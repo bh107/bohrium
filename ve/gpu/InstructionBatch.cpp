@@ -315,17 +315,68 @@ void InstructionBatch::generateInstructionSource(cphvb_opcode opcode,
     case CPHVB_ADD:
         source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
         break;
-    case CPHVB_BITWISE_OR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
+    case CPHVB_SUBTRACT:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
+        break;
+    case CPHVB_MULTIPLY:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
+        break;
+    case CPHVB_DIVIDE:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
         break;
     case CPHVB_BITWISE_AND:
         source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
         break;
-    case CPHVB_NOT_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
+    case CPHVB_BITWISE_OR:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
+        break;
+    case CPHVB_BITWISE_XOR:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
+        break;
+    case CPHVB_LOGICAL_NOT:
+        source << "\t" << parameters[0] << " = !" << parameters[1] << ";\n";
+        break;
+    case CPHVB_LOGICAL_AND:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
+        break;
+    case CPHVB_LOGICAL_OR:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
+        break;
+    case CPHVB_LOGICAL_XOR:
+        source << "\t" << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
         break;
     case CPHVB_INVERT:
         source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
+        break;
+    case CPHVB_LEFT_SHIFT:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
+        break;
+    case CPHVB_RIGHT_SHIFT:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
+        break;
+    case CPHVB_GREATER:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
+        break;
+    case CPHVB_GREATER_EQUAL:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
+        break;
+    case CPHVB_LESS:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
+        break;
+    case CPHVB_LESS_EQUAL:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
+        break;
+    case CPHVB_NOT_EQUAL:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
+        break;
+    case CPHVB_EQUAL:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
+        break;
+    case CPHVB_MAXIMUM:
+        source << "\t" << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
+        break;
+    case CPHVB_MINIMUM:
+        source << "\t" << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
     case CPHVB_IDENTITY:
         source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
