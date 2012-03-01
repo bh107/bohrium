@@ -23,11 +23,6 @@
 #include <assert.h>
 #include "get_traverse.hpp"
 
-#ifdef _OPENMP
-    #include <omp.h>
-#endif
-
-
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
 static cphvb_intp reduce_impl_id = 0;
@@ -147,7 +142,9 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 cphvb_error cphvb_reduce(cphvb_userfunc *arg)
 {
     cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
-    cphvb_instruction inst;
+    cphvb_instruction tinst;
+    cphvb_instruction *inst[1] = {&tinst};
+    cphvb_error err;
     cphvb_intp i,j;
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, a->operand[1]->ndim * sizeof(cphvb_index));
@@ -169,6 +166,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     cphvb_array *out = a->operand[0];
     cphvb_array *in  = a->operand[1];
     cphvb_array tmp  = *in;
+    tmp.base = cphvb_base_array(in);
     cphvb_intp step = in->stride[a->axis];
     tmp.start = 0;
     j=0;
@@ -182,24 +180,25 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
     --tmp.ndim;
 
     //We copy the first element to the output.
-    inst.status = CPHVB_INST_UNDONE;
-    inst.opcode = CPHVB_IDENTITY;
-    inst.operand[0] = out;
-    inst.operand[1] = &tmp;
-    cphvb_error err = dispatch(&inst);
+    inst[0]->status = CPHVB_INST_UNDONE;
+    inst[0]->opcode = CPHVB_IDENTITY;
+    inst[0]->operand[0] = out;
+    inst[0]->operand[1] = &tmp;
+    err = dispatch_bundle(inst,1,1);
     if(err != CPHVB_SUCCESS)
         return err;
     tmp.start += step;
 
     //Reduce over the 'axis' dimension.
     //NB: the first element is already handled.
-    inst.status = CPHVB_INST_UNDONE;
-    inst.opcode = a->opcode;
-    inst.operand[0] = out;
-    inst.operand[1] = out;
-    inst.operand[2] = &tmp;
+    inst[0]->status = CPHVB_INST_UNDONE;
+    inst[0]->opcode = a->opcode;
+    inst[0]->operand[0] = out;
+    inst[0]->operand[1] = out;
+    inst[0]->operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
-    cphvb_instruction *tmp_inst[1] = {&inst};
+
+/*
     #ifdef _OPENMP
         cphvb_intp nthds = omp_get_max_threads();
         //Minimum 1024 element per thread.
@@ -208,14 +207,13 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg)
             if(nthds > min_size)
                 nthds = min_size;
         }
-    #else
-        cphvb_intp nthds = 1;
     #endif
+*/
+
     for(i=1; i<axis_size; ++i)
     {
         //One block per thread.
-        dispatch_bundle(tmp_inst,1,nthds);
-
+        err = dispatch_bundle(inst,1,1);
         if(err != CPHVB_SUCCESS)
             return err;
         tmp.start += step;
