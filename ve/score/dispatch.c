@@ -63,29 +63,26 @@ inline cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
     }
 }
 
-//Thread function and it's ID.
-typedef struct
-{
-    int myid;
-    cphvb_intp nblocks;
-    cphvb_intp nthds;
-    cphvb_intp size;
-    cphvb_instruction** inst_bundle;
-    traverse_ptr *traverses;
-}thd_id;
-
+//Shared thread variables.
+pthread_cond_t  thd_do_cond  = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t thd_do_mutex = PTHREAD_MUTEX_INITIALIZER;
+cphvb_intp thd_nblocks;
+cphvb_intp thd_nthds;
+cphvb_intp thd_size;
+cphvb_instruction** thd_inst_bundle;
+traverse_ptr *thd_traverses;
+//The thread function.
 void *thd_do(void *msg)
 {
-    thd_id *id = (thd_id *) msg;
-    int myid = id->myid;
-    cphvb_intp size = id->size;
-    cphvb_intp nblocks = id->nblocks;
-    cphvb_intp nthds = id->nthds;
-    cphvb_instruction** inst_bundle = id->inst_bundle;
-    traverse_ptr *traverses = id->traverses;
+    cphvb_intp myid = ((cphvb_intp)msg);
+    cphvb_intp size = thd_size;
+    cphvb_intp nblocks = thd_nblocks;
+    cphvb_intp nthds = thd_nthds;
+    cphvb_instruction** inst_bundle = thd_inst_bundle;
+    traverse_ptr *traverses = thd_traverses;
 
     //We will not block a single instruction.
-    if(size == 1)
+    if(thd_size == 1)
         nblocks = 1;
 
     cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
@@ -148,7 +145,7 @@ void *thd_do(void *msg)
         }
     }
 
-    return NULL;
+    pthread_exit(NULL);
 }
 
 
@@ -215,18 +212,16 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     }
 
     //Start threads.
-    thd_id ids[32];
     pthread_t tid[32];
+    thd_nblocks     = nblocks;
+    thd_nthds       = nthds;
+    thd_size        = size;
+    thd_inst_bundle = inst_bundle;
+    thd_traverses   = traverses;
+
     for(cphvb_intp i=0; i<nthds; ++i)
-    {
-        ids[i].myid        = i;
-        ids[i].nblocks     = nblocks;
-        ids[i].nthds       = nthds;
-        ids[i].size        = size;
-        ids[i].inst_bundle = inst_bundle;
-        ids[i].traverses   = traverses;
-        pthread_create(&tid[i], NULL, thd_do, (void *) (&ids[i]));
-    }
+        pthread_create(&tid[i], NULL, thd_do, (void *) (i));
+
     //Stop threads.
     for(cphvb_intp i=0; i<nthds; ++i)
         pthread_join(tid[i], NULL);
