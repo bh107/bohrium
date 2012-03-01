@@ -31,10 +31,10 @@
 extern "C" {
 #endif
 
-//The type of the user-defined reduce function.
+//The type of the user-defined random function.
 typedef struct
 {
-    //User-defined function header with two operands.
+    //User-defined function header with one operands.
     CPHVB_USER_FUNC_HEADER(1)
 } cphvb_random_type;
 

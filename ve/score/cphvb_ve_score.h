@@ -35,10 +35,6 @@ cphvb_error cphvb_ve_score_shutdown(void);
 
 cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
 
-//Implementation of the user-defined funtion "reduce". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg);
-
 #ifdef __cplusplus
 }
 #endif

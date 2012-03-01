@@ -37,11 +37,12 @@ typedef struct
     //User-defined function header with two operands.
     CPHVB_USER_FUNC_HEADER(2)
     //The Axis to reduce
-    cphvb_error   axis;
+    cphvb_index   axis;
     //The opcode to reduce with
     cphvb_opcode  opcode;
 } cphvb_reduce_type;
 
+cphvb_error cphvb_reduce(cphvb_userfunc *arg);
 
 #ifdef __cplusplus
 }
