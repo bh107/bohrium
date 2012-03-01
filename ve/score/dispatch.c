@@ -127,13 +127,13 @@ void *thd_do(void *msg)
             }
         }
 
-        if(thd_inst[0].operand[0]->shape[0] <= 0)
-            break;//We a finished.
-
         //Dispatch a block.
         for(cphvb_intp j=0; j<size; ++j)
         {
             cphvb_instruction *inst = &thd_inst[j];
+            if(inst->operand[0]->shape[0] <= 0)
+                break;//Nothing to do.
+
             inst->status = traverses[j](inst);
             if(inst->status != CPHVB_SUCCESS)
             {

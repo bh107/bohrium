@@ -1,6 +1,7 @@
 #include <cstring>
 #include <iostream>
 #include <cphvb.h>
+#include <assert.h>
 
 template <typename T0, typename T1, typename T2, typename Instr>
 cphvb_error traverse_3( cphvb_instruction *instr ) {
@@ -15,6 +16,10 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
     d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
     d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
     d2 = (T2*) cphvb_base_array(instr->operand[2])->data;
+
+    assert(d0 != NULL);
+    assert(d1 != NULL);
+    assert(d2 != NULL);
 
     cphvb_index last_dim = a0->ndim-1;
     cphvb_intp j, off0, off1, off2;             // Index and stride offset pointers
@@ -50,7 +55,7 @@ cphvb_error traverse_3( cphvb_instruction *instr ) {
 
         for(j = last_dim; j >= 0; --j) {
             coord[j]++;
-            if(j==0 && coord[j] >= a0->shape[0])
+            if(j==0 && coord[0] >= a0->shape[0])
             {
                 notfinished = 0;
                 break;
