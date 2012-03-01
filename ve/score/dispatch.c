@@ -84,6 +84,10 @@ void *thd_do(void *msg)
     cphvb_instruction** inst_bundle = id->inst_bundle;
     traverse_ptr *traverses = id->traverses;
 
+    //We will not block a single instruction.
+    if(size == 1)
+        nblocks = 1;
+
     cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
     cphvb_intp start = myid * length;    // Find this thread's start block.
     if(myid == nthds-1)
