@@ -144,7 +144,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
         case CPHVB_USERFUNC:
             if(inst->userfunc->id == reduce_impl_id)
             {
-                reduce_impl(inst->userfunc);
+                reduce_impl(inst->userfunc, NULL);
                 break;
             }//Else we don't know it and go to default.
         default:
@@ -158,7 +158,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 
 //Implementation of the user-defined funtion "reduce". Note that we
 //follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg)
+cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
 {
     printf("cphvb_reduce\n");
     return 0;

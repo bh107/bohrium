@@ -140,7 +140,7 @@ void *thd_do_random(void *msg)
 }
 //Implementation of the user-defined funtion "random". Note that we
 //follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_random(cphvb_userfunc *arg)
+cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
 {
     cphvb_random_type *a = (cphvb_random_type *) arg;
     cphvb_array *ary = a->operand[0];
