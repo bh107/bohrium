@@ -68,9 +68,10 @@ pthread_cond_t  thd_cond_wait     = PTHREAD_COND_INITIALIZER;
 pthread_cond_t  thd_cond_finished = PTHREAD_COND_INITIALIZER;
 pthread_cond_t  thd_cond_restart  = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t thd_mutex         = PTHREAD_MUTEX_INITIALIZER;
-int thd_wait;//0==start,1==wait
-int thd_restart;//0==restart,1==wait
-int thd_finish_count;//Whan it reaches nthd we are finished.
+int thd_wait         = 1;//0==start,1==wait
+int thd_restart      = 1;//0==restart,1==wait
+int thd_finish_count = 0;//Whan it reaches nthd we are finished.
+int thd_exit         = 0;//1==exit,0=running
 cphvb_intp thd_nblocks;
 cphvb_intp thd_nthds;
 cphvb_intp thd_size;
@@ -79,97 +80,102 @@ traverse_ptr *thd_traverses;
 //The thread function.
 void *thd_do(void *msg)
 {
-    //Wait for start signal.
-    pthread_mutex_lock(&thd_mutex);
-    while(thd_wait)
-        pthread_cond_wait(&thd_cond_wait,&thd_mutex);
-    pthread_mutex_unlock(&thd_mutex);
-
-    cphvb_intp myid = ((cphvb_intp)msg);
-    cphvb_intp size = thd_size;
-    cphvb_intp nblocks = thd_nblocks;
-    cphvb_intp nthds = thd_nthds;
-    cphvb_instruction** inst_bundle = thd_inst_bundle;
-    traverse_ptr *traverses = thd_traverses;
-
-    //We will not block a single instruction into more blocks
-    //than threads.
-    if(thd_size == 1)
-        if(nblocks > nthds)
-            nblocks = nthds;
-
-    cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
-    cphvb_intp start = myid * length;    // Find this thread's start block.
-    if(myid == nthds-1)
-        length += nblocks % nthds;       // The last thread gets the reminder.
-
-    //Clone the instruction and make new views of all operands.
-    cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
-    cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
-    cphvb_intp ary_stack_count=0;
-    for(cphvb_intp j=0; j<size; ++j)
+    while(1)
     {
-        thd_inst[j] = *inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
-        {
-            cphvb_array *ary_org = inst_bundle[j]->operand[i];
-            cphvb_array *ary = &ary_stack[ary_stack_count++];
-            *ary = *ary_org;
+        //Wait for start signal.
+        pthread_mutex_lock(&thd_mutex);
+        while(thd_wait)
+            pthread_cond_wait(&thd_cond_wait,&thd_mutex);
+        pthread_mutex_unlock(&thd_mutex);
 
-            if(ary_org->base == NULL)//base array
-            {
-                ary->base = ary_org;
-            }
+        if(thd_exit)
+            break;//We should exit.
 
-            thd_inst[j].operand[i] = ary;//Save the operand.
-         }
-    }
+        cphvb_intp myid = ((cphvb_intp)msg);
+        cphvb_intp size = thd_size;
+        cphvb_intp nblocks = thd_nblocks;
+        cphvb_intp nthds = thd_nthds;
+        cphvb_instruction** inst_bundle = thd_inst_bundle;
+        traverse_ptr *traverses = thd_traverses;
 
-    //Handle one block at a time.
-    for(cphvb_intp b=start; b<start+length; ++b)
-    {
-        //Update the operands to match the current block.
+        //We will not block a single instruction into more blocks
+        //than threads.
+        if(thd_size == 1)
+            if(nblocks > nthds)
+                nblocks = nthds;
+
+        cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
+        cphvb_intp start = myid * length;    // Find this thread's start block.
+        if(myid == nthds-1)
+            length += nblocks % nthds;       // The last thread gets the reminder.
+
+        //Clone the instruction and make new views of all operands.
+        cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
+        cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
+        cphvb_intp ary_stack_count=0;
         for(cphvb_intp j=0; j<size; ++j)
         {
-            cphvb_instruction *inst = &thd_inst[j];
-            for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+            thd_inst[j] = *inst_bundle[j];
+            for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
             {
-                dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
-                ary->start = ary->org_start + ary->stride[0] *
-                             get_offset(b, inst, nblocks);
-                ary->shape[0] = get_shape(b, inst, nblocks);
+                cphvb_array *ary_org = inst_bundle[j]->operand[i];
+                cphvb_array *ary = &ary_stack[ary_stack_count++];
+                *ary = *ary_org;
+
+                if(ary_org->base == NULL)//base array
+                {
+                    ary->base = ary_org;
+                }
+
+                thd_inst[j].operand[i] = ary;//Save the operand.
+             }
+        }
+
+        //Handle one block at a time.
+        for(cphvb_intp b=start; b<start+length; ++b)
+        {
+            //Update the operands to match the current block.
+            for(cphvb_intp j=0; j<size; ++j)
+            {
+                cphvb_instruction *inst = &thd_inst[j];
+                for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+                {
+                    dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
+                    ary->start = ary->org_start + ary->stride[0] *
+                                 get_offset(b, inst, nblocks);
+                    ary->shape[0] = get_shape(b, inst, nblocks);
+                }
+            }
+
+            //Dispatch a block.
+            for(cphvb_intp j=0; j<size; ++j)
+            {
+                cphvb_instruction *inst = &thd_inst[j];
+                if(inst->operand[0]->shape[0] <= 0)
+                    break;//Nothing to do.
+
+                inst->status = traverses[j](inst);
+                if(inst->status != CPHVB_SUCCESS)
+                {
+                    //ret = CPHVB_PARTIAL_SUCCESS;
+                    start = length;//Force a complete exit.
+                    break;
+                }
             }
         }
 
-        //Dispatch a block.
-        for(cphvb_intp j=0; j<size; ++j)
-        {
-            cphvb_instruction *inst = &thd_inst[j];
-            if(inst->operand[0]->shape[0] <= 0)
-                break;//Nothing to do.
+        //Signal that we are finished.
+        pthread_mutex_lock(&thd_mutex);
+        if(++thd_finish_count == thd_nthds)//We are the last to finish.
+            pthread_cond_signal(&thd_cond_finished);
+        pthread_mutex_unlock(&thd_mutex);
 
-            inst->status = traverses[j](inst);
-            if(inst->status != CPHVB_SUCCESS)
-            {
-                //ret = CPHVB_PARTIAL_SUCCESS;
-                start = length;//Force a complete exit.
-                break;
-            }
-        }
+        //Wait for restart signal.
+        pthread_mutex_lock(&thd_mutex);
+        while(thd_restart)
+            pthread_cond_wait(&thd_cond_restart,&thd_mutex);
+        pthread_mutex_unlock(&thd_mutex);
     }
-
-    //Signal that we are finished.
-    pthread_mutex_lock(&thd_mutex);
-    if(++thd_finish_count == thd_nthds)//We are the last to finish.
-        pthread_cond_signal(&thd_cond_finished);
-    pthread_mutex_unlock(&thd_mutex);
-
-    //Wait for restart signal.
-    pthread_mutex_lock(&thd_mutex);
-    while(thd_restart)
-        pthread_cond_wait(&thd_cond_restart,&thd_mutex);
-    pthread_mutex_unlock(&thd_mutex);
-
     pthread_exit(NULL);
 }
 
@@ -243,15 +249,16 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     thd_size         = size;
     thd_inst_bundle  = inst_bundle;
     thd_traverses    = traverses;
-    thd_wait         = 0;
-    thd_finish_count = 0;
 
+    //Create all threads.
     for(cphvb_intp i=0; i<nthds; ++i)
         pthread_create(&tid[i], NULL, thd_do, (void *) (i));
 
     //Start all threads.
     pthread_mutex_lock(&thd_mutex);
     thd_wait = 0;//False is the start signal.
+    thd_finish_count = 0;//Reset the finish count.
+    thd_restart = 1;//Reset the restart signal.
     pthread_cond_broadcast(&thd_cond_wait);
     pthread_mutex_unlock(&thd_mutex);
 
@@ -263,13 +270,27 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
 
     //Restart all threads (making sure they are ready for next time).
     pthread_mutex_lock(&thd_mutex);
+    thd_wait = 1;        //Reset the wait signal.
+    thd_restart = 0;     //Set the restart signal.
     pthread_cond_broadcast(&thd_cond_restart);
+    pthread_mutex_unlock(&thd_mutex);
+
+    //Kill all threads.
+    pthread_mutex_lock(&thd_mutex);
+    thd_wait = 0;//Set the start signal.
+    thd_exit = 1;//Set the exit signal.
+    pthread_cond_broadcast(&thd_cond_wait);
     pthread_mutex_unlock(&thd_mutex);
 
     //Stop threads.
     for(cphvb_intp i=0; i<nthds; ++i)
         pthread_join(tid[i], NULL);
 
+    //Reset signals.
+    thd_wait         = 1;//0==start,1==wait
+    thd_restart      = 1;//0==restart,1==wait
+    thd_finish_count = 0;//Whan it reaches nthd we are finished.
+    thd_exit         = 0;//1==exit,0=running
 
 finish:
 /*
