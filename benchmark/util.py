@@ -68,21 +68,35 @@ class Benchmark:
             print "%s - cphvb: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['cphvb'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
 
 
-def do(nthd, nblocks, jobsize, filename, cphvb):
+def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
     try:
         env = os.environ
         env['CPHVB_NUM_THREADS'] = "%d"%nthd
         env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
+
+        """
+        taskmask = '0'
+        for i in xrange(2,nthd,2):
+            taskmask += ",%d"%i
+        for i in xrange(1,nthd,2):
+            taskmask += ",%d"%i
+        """
         p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = p.communicate()
-        info = pickle.loads(stdoutdata)
         err = p.wait()
+        info = pickle.loads(stdoutdata)
         if not cphvb:
             print "#NumPy   ;     N/A;%10.4f; %s"%(info['totaltime'],info)
         else:
             print "%9.d;%8.d;%10.4f; %s"%(nthd,nblocks, info['totaltime'],info)
         if err:
             raise Exception(err)
+
+        if savedir:
+            savefile = os.path.join(savedir, "%s_%d.pkl"%(info['file'],uid))
+            f = open(savefile, 'w')
+            pickle.dump(info, f)
+
         return info
     except KeyboardInterrupt:
         p.terminate()
@@ -92,10 +106,14 @@ def do(nthd, nblocks, jobsize, filename, cphvb):
 if __name__ == "__main__":
     min_nblocks = 16
     max_nblocks = 16
-    options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['file=','thd-min=', 'thd-max=', 'jobsize=','repeat=', 'nblocks=', 'min_nblocks=', 'max_nblocks='])
+    savedir = ''
+    repeat = 1
+    options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['save=','file=','thd-min=', 'thd-max=', 'jobsize=','repeat=', 'nblocks=', 'nblocks-min=', 'nblocks-max='])
     for opt, arg in options:
         if opt in ('--file'):
             filename = arg
+        if opt in ('--save'):
+            savedir = arg
         if opt in ('--thd-min'):
             minthd = int(arg)
         if opt in ('--thd-max'):
@@ -107,20 +125,28 @@ if __name__ == "__main__":
         if opt in ('--nblocks'):
             min_nblocks = int(arg)
             max_nblocks = int(arg)
-        if opt in ('--min_nblocks'):
+        if opt in ('--nblocks-min'):
             min_nblocks = int(arg)
-        if opt in ('--max_nblocks'):
+        if opt in ('--nblocks-max'):
             max_nblocks = int(arg)
+
+    try:
+        os.mkdir(savedir)
+    except:
+        print "Warning the directory '%s' already exist"%savedir
 
     print "CPU-cores; nblocks; totaltime; info"
     if minthd == 1:#Lets do the NumPy run.
-        do(1, 1, jobsize, filename, False)
+        do(1, 1, jobsize, filename, False, savedir,0)
 
-    nthd = minthd
-    while nthd <= maxthd:
-        nblocks = min_nblocks
-        while nblocks <= max_nblocks:
-            do(nthd, nblocks, jobsize, filename, True)
-            nblocks *= 2
-        nthd *= 2
+    i = 1#Id
+    for r in xrange(repeat):
+        nthd = minthd
+        while nthd <= maxthd:
+            nblocks = min_nblocks
+            while nblocks <= max_nblocks:
+                do(nthd, nblocks, jobsize, filename, True, savedir, i)
+                nblocks *= 2
+                i += 1
+            nthd *= 2
 
