@@ -203,18 +203,6 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     inst[0]->operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
 
-/*
-    #ifdef _OPENMP
-        cphvb_intp nthds = omp_get_max_threads();
-        //Minimum 1024 element per thread.
-        {
-            cphvb_intp min_size = cphvb_nelements(out->ndim, out->shape) / 1024 + 1;
-            if(nthds > min_size)
-                nthds = min_size;
-        }
-    #endif
-*/
-
     for(i=1; i<axis_size; ++i)
     {
         //One block per thread.
