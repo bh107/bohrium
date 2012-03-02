@@ -90,15 +90,14 @@ static void *thd_do(void *msg)
         if(thd_exit)//Check if we should exit.
             break;
 
+        cphvb_intp nthds = thd_nthds;
         cphvb_intp size = thd_size;
         cphvb_intp nblocks = thd_nblocks;
         cphvb_instruction** inst_bundle = thd_inst_bundle;
         traverse_ptr *traverses = thd_traverses;
 
-        //We divide the blocks between the threads.
-        cphvb_intp nthds = thd_nthds;
         if(nthds > nblocks)
-            nthds = nblocks;//Minimum one block per thread.
+            nblocks = nthds;//Minimum one block per thread.
 
         //Check if this thread has any work to do.
         if(myid < nthds)
