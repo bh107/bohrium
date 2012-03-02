@@ -34,6 +34,12 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
                             cphvb_intp size,
                             cphvb_intp nblocks);
 
+//Initiate the dispather.
+cphvb_error dispatch_init(void);
+
+//Finalize the dispather.
+cphvb_error dispatch_finalize(void);
+
 #ifdef __cplusplus
 }
 #endif

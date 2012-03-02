@@ -43,6 +43,9 @@ cphvb_error cphvb_ve_score_init(cphvb_com *self)
                         " zero!\n");
         return CPHVB_ERROR;
     }
+    //Initiate the dispatcher.
+    dispatch_init();
+
     return CPHVB_SUCCESS;
 }
 
@@ -116,8 +119,10 @@ cphvb_error cphvb_ve_score_execute(
 
 }
 
-cphvb_error cphvb_ve_score_shutdown( void ) {
-
+cphvb_error cphvb_ve_score_shutdown( void )
+{
+    //Shutdown the dispatcher.
+    dispatch_finalize();
     return CPHVB_SUCCESS;
 
 }
