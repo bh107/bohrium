@@ -100,9 +100,11 @@ typedef cphvb_error (*cphvb_reg_func)(char *lib, char *fun,
 /* User-defined function implementation.
  *
  * @arg Argument for the user-defined function implementation
+ * @ve_arg Additional argument that can be added by the VE to accomidate 
+ *         the specific implementation
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_userfunc_impl)(cphvb_userfunc *arg);
+typedef cphvb_error (*cphvb_userfunc_impl)(cphvb_userfunc *arg, void* ve_arg);
 
 
 /* Codes for known component types */

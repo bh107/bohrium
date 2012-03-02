@@ -63,11 +63,11 @@ cphvb_error cphvb_ve_score_execute(
         {
             if(inst->userfunc->id == reduce_impl_id)
             {
-                inst->status = reduce_impl(inst->userfunc);
+                inst->status = reduce_impl(inst->userfunc, NULL);
             }
             else if(inst->userfunc->id == random_impl_id)
             {
-                inst->status = random_impl(inst->userfunc);
+                inst->status = random_impl(inst->userfunc, NULL);
             }
             else// Unsupported instruction
             {
@@ -139,7 +139,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
 //Implementation of the user-defined funtion "reduce". Note that we
 //follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg)
+cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
 {
     cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
     cphvb_instruction tinst;
