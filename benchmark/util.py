@@ -94,10 +94,13 @@ def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
 
         if savedir:
             savefile = os.path.join(savedir, "%s_%d.pkl"%(info['file'],uid))
+            while os.path.exists(savefile):
+                uid += 1;
+                print "file %s exist trying %s"%(savefile,uid)
+                savefile = os.path.join(savedir, "%s_%d.pkl"%(info['file'],uid))
             f = open(savefile, 'w')
             pickle.dump(info, f)
-
-        return info
+        return uid+1
     except KeyboardInterrupt:
         p.terminate()
         raise KeyboardInterrupt
@@ -136,17 +139,16 @@ if __name__ == "__main__":
         print "Warning the directory '%s' already exist"%savedir
 
     print "CPU-cores; nblocks; totaltime; info"
+    uid = 1#Id
     if minthd == 1:#Lets do the NumPy run.
-        do(1, 1, jobsize, filename, False, savedir,0)
+        uid = do(1, 1, jobsize, filename, False, savedir,uid)
 
-    i = 1#Id
     for r in xrange(repeat):
         nthd = minthd
         while nthd <= maxthd:
             nblocks = min_nblocks
             while nblocks <= max_nblocks:
-                do(nthd, nblocks, jobsize, filename, True, savedir, i)
+                uid = do(nthd, nblocks, jobsize, filename, True, savedir, uid)
                 nblocks *= 2
-                i += 1
             nthd *= 2
 
