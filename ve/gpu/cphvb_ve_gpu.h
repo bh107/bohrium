@@ -21,12 +21,17 @@
 #define __CPHVB_VE_GPU_H
 
 #include <cphvb.h>
-
-cphvb_com* component = NULL;
+#include "InstructionScheduler.hpp"
+#include "ResourceManager.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static cphvb_com* component = NULL;
+static InstructionScheduler* instructionScheduler;
+static ResourceManager* resourceManager;
+
 
 cphvb_error cphvb_ve_gpu_init(cphvb_com* _component);
     

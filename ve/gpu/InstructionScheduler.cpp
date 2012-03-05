@@ -137,34 +137,50 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     {
         throw std::runtime_error("User defined functiones not supported.");
     }
-    fit->second(userfunc);
+    cphvb_intp nops = userfunc->nout + userfunc->nin;
+    std::vector<BaseArray*> operandBase(nops);
+    for (int i = 0; i < nops; ++i)
+    {
+        cphvb_array* operand = userfunc->operand[i];
+        // Is it a new base array we haven't heard of before?
+        cphvb_array* base = cphvb_base_array(operand);
+        ArrayMap::iterator it = arrayMap.find(base);
+        if (it == arrayMap.end())
+        {
+            // Then create it
+            operandBase[i] = new BaseArray(base, resourceManager);
+            arrayMap[base] = operandBase[i];
+        }
+        else
+        {
+            operandBase[i] = it->second;
+        }
+    }
+    fit->second(userfunc, &operandBase);
 }
 
 void InstructionScheduler::ufunc(cphvb_instruction* inst)
 {
     //TODO Find out if we support the operation before copying data to device
 
-    int nops = cphvb_operands(inst->opcode);
+    cphvb_intp nops = cphvb_operands(inst->opcode);
     assert(nops > 0);
     std::vector<BaseArray*> operandBase(nops);
     for (int i = 0; i < nops; ++i)
     {
         cphvb_array* operand = inst->operand[i];
         // Is it a new base array we haven't heard of before?
-        if (!cphvb_scalar(operand)) // Not a scalar
+        cphvb_array* base = cphvb_base_array(operand);
+        ArrayMap::iterator it = arrayMap.find(base);
+        if (it == arrayMap.end())
         {
-            cphvb_array* base = cphvb_base_array(operand);
-            ArrayMap::iterator it = arrayMap.find(base);
-            if (it == arrayMap.end())
-            {
-                // Then create it
-                operandBase[i] = new BaseArray(base, resourceManager);
-                arrayMap[base] = operandBase[i];
-            }
-            else
-            {
-                operandBase[i] = it->second;
-            }
+            // Then create it
+            operandBase[i] = new BaseArray(base, resourceManager);
+            arrayMap[base] = operandBase[i];
+        }
+        else
+        {
+            operandBase[i] = it->second;
         }
     }
     if (batch)

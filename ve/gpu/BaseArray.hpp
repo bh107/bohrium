@@ -23,6 +23,8 @@
 #include "ArrayOperand.hpp"
 #include "ResourceManager.hpp"
 
+#define OCL_BUFFER OCL_TYPES
+
 class BaseArray : public ArrayOperand
 {
 private:
@@ -32,16 +34,21 @@ private:
     //and split the array into several buffers
     cl::Buffer buffer;
     unsigned int device;
+    bool scalar;
     cl::Event writeEvent;
     std::vector<cl::Event> readEvents;
 protected:
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     OCLtype type();
+    OCLtype parameterType();
     void sync();
     void setWriteEvent(cl::Event);
     cl::Event getWriteEvent();
     cl::Buffer getBuffer();
+    bool isScalar();
+    void printKernelParameterType(bool input, std::ostream& source);
+    void addToKernel(bool input, cl::Kernel& kernel, unsigned int argIndex) const;
 };
 
 

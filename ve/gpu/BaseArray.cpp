@@ -29,15 +29,23 @@ BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager_)
     , bufferType(oclType(spec_->type))
 {
     assert(spec->base == NULL);
-    assert(spec->ndim > 0);
-    buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
-    device = 0;
-    if (spec->data != NULL)
+    if (!cphvb_scalar(spec))
     {
-        writeEvent = resourceManager->enqueueWriteBuffer(buffer, spec->data, device);
-    } 
-    else 
+        scalar = false;
+        buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
+        device = 0;
+        if (spec->data != NULL)
+        {
+            writeEvent = resourceManager->enqueueWriteBuffer(buffer, spec->data, device);
+        } 
+        else 
+        {
+            writeEvent = resourceManager->completeEvent();
+        }
+    }
+    else
     {
+        scalar = true;
         writeEvent = resourceManager->completeEvent();
     }
 }
@@ -51,7 +59,8 @@ void BaseArray::sync()
             throw std::runtime_error("Could not allocate memory on host");
         }
     }
-    resourceManager->readBuffer(buffer, spec->data, writeEvent, device);
+    if (!scalar)
+        resourceManager->readBuffer(buffer, spec->data, writeEvent, device);
 }
 
 OCLtype BaseArray::type()
@@ -72,4 +81,75 @@ cl::Event BaseArray::getWriteEvent()
 cl::Buffer BaseArray::getBuffer()
 {
     return buffer;
+}
+
+bool BaseArray::isScalar()
+{
+    return scalar;
+}
+
+OCLtype BaseArray::parameterType()
+{
+    if (scalar)
+        return bufferType;
+    else
+        return OCL_BUFFER;
+}
+
+void BaseArray::printKernelParameterType(bool input, std::ostream& source)
+{
+    if (input && scalar)
+        source << "const " << oclTypeStr(bufferType);
+    else
+        source << "__global " << oclTypeStr(bufferType) << "*";
+}
+
+void BaseArray::addToKernel(bool input, cl::Kernel& kernel, unsigned int argIndex) const
+{
+    if (scalar && input)
+    {
+        assert(spec->data != NULL);
+        switch(bufferType)
+        {
+        case OCL_INT8:
+            kernel.setArg(argIndex, *(cl_char*)spec->data);
+            break;
+        case OCL_INT16:
+            kernel.setArg(argIndex, *(cl_short*)spec->data);
+            break;
+        case OCL_INT32:
+            kernel.setArg(argIndex, *(cl_int*)spec->data);
+            break;
+        case OCL_INT64:
+            kernel.setArg(argIndex, *(cl_long*)spec->data);
+            break;
+        case OCL_UINT8:
+            kernel.setArg(argIndex, *(cl_uchar*)spec->data);
+            break;
+        case OCL_UINT16:
+            kernel.setArg(argIndex, *(cl_ushort*)spec->data);
+            break;
+        case OCL_UINT32:
+            kernel.setArg(argIndex, *(cl_uint*)spec->data);
+            break;
+        case OCL_UINT64:
+            kernel.setArg(argIndex, *(cl_ulong*)spec->data);
+            break;
+        case OCL_FLOAT16:
+            kernel.setArg(argIndex, *(cl_half*)spec->data);
+            break;
+        case OCL_FLOAT32:
+            kernel.setArg(argIndex, *(cl_float*)spec->data);
+            break;
+        case OCL_FLOAT64:
+            kernel.setArg(argIndex, *(cl_double*)spec->data);
+            break;
+        default:
+            throw std::runtime_error("Scalar: Unknown type.");
+        }    
+    } 
+    else 
+    {
+        kernel.setArg(argIndex, buffer);
+    }
 }
