@@ -43,6 +43,9 @@ cphvb_error cphvb_ve_score_init(cphvb_com *self)
                         " zero!\n");
         return CPHVB_ERROR;
     }
+    //Initiate the dispatcher.
+    dispatch_init();
+
     return CPHVB_SUCCESS;
 }
 
@@ -116,8 +119,10 @@ cphvb_error cphvb_ve_score_execute(
 
 }
 
-cphvb_error cphvb_ve_score_shutdown( void ) {
-
+cphvb_error cphvb_ve_score_shutdown( void )
+{
+    //Shutdown the dispatcher.
+    dispatch_finalize();
     return CPHVB_SUCCESS;
 
 }
@@ -197,18 +202,6 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     inst[0]->operand[1] = out;
     inst[0]->operand[2] = &tmp;
     cphvb_intp axis_size = in->shape[a->axis];
-
-/*
-    #ifdef _OPENMP
-        cphvb_intp nthds = omp_get_max_threads();
-        //Minimum 1024 element per thread.
-        {
-            cphvb_intp min_size = cphvb_nelements(out->ndim, out->shape) / 1024 + 1;
-            if(nthds > min_size)
-                nthds = min_size;
-        }
-    #endif
-*/
 
     for(i=1; i<axis_size; ++i)
     {
