@@ -29,8 +29,8 @@
 
 class InstructionBatch
 {
-    typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ArrayMap;
-    typedef std::map<cphvb_array*, std::string> ScalarMap;
+    typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ParameterMap;
+    typedef std::map<cphvb_array*, std::string> VariableMap;
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
 private:
@@ -38,9 +38,8 @@ private:
     std::vector<cphvb_instruction*> instructions;
     OutputMap output;
     InputMap input;
-    ArrayMap arrayParameters;
-    ScalarMap scalarParameters;
-    ScalarMap kernelVariables;
+    ParameterMap parameters;
+    VariableMap kernelVariables;
     int arraynum;
     int scalarnum;
     int variablenum;

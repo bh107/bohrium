@@ -21,12 +21,6 @@
 #include <stdexcept>
 #include <cphvb.h>
 #include "cphvb_ve_gpu.h"
-#include "InstructionScheduler.hpp"
-#include "ResourceManager.hpp"
-
-InstructionScheduler* instructionScheduler;
-ResourceManager* resourceManager;
-
 
 cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
 {

@@ -33,8 +33,7 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     kernel = resourceManager->createKernel(source.c_str(), name.c_str());
 }
 
-cl::Event Kernel::call(ArrayArgs& arrayArgs,
-                       const std::vector<Scalar>& scalarArgs,
+cl::Event Kernel::call(Parameters& parameters,
                        const std::vector<cphvb_index>& shape)
 {
     unsigned int device = 0;
@@ -54,20 +53,19 @@ cl::Event Kernel::call(ArrayArgs& arrayArgs,
         throw std::runtime_error("More than 3 dimensions not supported.");
     }
     std::vector<cl::Event> waitFor;
-    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
+    for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
-        waitFor.push_back(aait->first->getWriteEvent());
+        if (pit->first->isScalar())
+            waitFor.push_back(pit->first->getWriteEvent());
     }
     unsigned int argIndex = 0;
-    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
-        kernel.setArg(argIndex++, aait->first->getBuffer());
-    for (std::vector<Scalar>::const_iterator sait = scalarArgs.begin(); sait != scalarArgs.end(); ++sait)
-        sait->addToKernel(kernel, argIndex++);
+    for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        pit->first->addToKernel(true, kernel, argIndex++);
     cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, &waitFor ,device); 
-    for (ArrayArgs::iterator aait = arrayArgs.begin(); aait != arrayArgs.end(); ++aait)
+    for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
-        if (aait->second)
-            aait->first->setWriteEvent(event);
+        if (pit->second)
+            pit->first->setWriteEvent(event);
     }
     return event;
 }
