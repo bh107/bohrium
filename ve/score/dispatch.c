@@ -120,7 +120,8 @@ static void *thd_do(void *msg)
             for(cphvb_intp j=0; j<size; ++j)
             {
                 thd_inst[j] = *inst_bundle[j];
-                for(cphvb_intp i=0; i<cphvb_operands(inst_bundle[j]->opcode); ++i)
+                cphvb_intp nops = cphvb_operands(inst_bundle[j]->opcode);
+                for(cphvb_intp i=0; i<nops; ++i)
                 {
                     cphvb_array *ary_org = inst_bundle[j]->operand[i];
                     cphvb_array *ary = &ary_stack[ary_stack_count++];
@@ -142,7 +143,8 @@ static void *thd_do(void *msg)
                 for(cphvb_intp j=0; j<size; ++j)
                 {
                     cphvb_instruction *inst = &thd_inst[j];
-                    for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+                    cphvb_intp nops = cphvb_operands(inst->opcode);
+                    for(cphvb_intp i=0; i<nops; ++i)
                     {
                         dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
                         ary->start = ary->org_start + ary->stride[0] *
@@ -248,7 +250,8 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     for(cphvb_intp j=0; j<size; ++j)
     {
         cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+        cphvb_intp nops = cphvb_operands(inst->opcode);
+        for(cphvb_intp i=0; i<nops; ++i)
         {
             dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
             ary->org_start = ary->start;
@@ -259,7 +262,8 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     for(cphvb_intp j=0; j<size; ++j)
     {
         cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+        cphvb_intp nops = cphvb_operands(inst->opcode);
+        for(cphvb_intp i=0; i<nops; ++i)
         {
             if(cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
             {
