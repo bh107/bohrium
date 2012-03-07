@@ -141,7 +141,8 @@ if __name__ == "__main__":
     print "CPU-cores; nblocks; totaltime; info"
     uid = 1#Id
     if minthd == 1:#Lets do the NumPy run.
-        uid = do(1, 1, jobsize, filename, False, savedir,uid)
+        for r in xrange(repeat):
+            uid = do(1, 1, jobsize, filename, False, savedir,uid)
 
     for r in xrange(repeat):
         nthd = minthd
