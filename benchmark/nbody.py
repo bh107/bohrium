@@ -1,117 +1,117 @@
-import numpy as np
-import util
-import cphvbnumpy
+"""NBody in N^2 complexity
+Note that we are using only Newtonian forces and do not consider relativity
+Neither do we consider collisions between stars
+Thus some of our stars will accelerate to speeds beyond c
+This is done to keep the simulation simple enough for teaching purposes
 
-B = util.Benchmark()
-n = B.size[0]
-k = B.size[1]
-
-G = 1     #Gravitational constant
-dT = 0.01 #Time increment
-
-M   = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis] + 0.1
-MT  = np.random.random(n, cphvb=B.cphvb)[np.newaxis,:] + 0.1
-Px  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-PxT = np.random.random(n, cphvb=B.cphvb)[np.newaxis,:]
-Py  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-PyT = np.random.random(n, cphvb=B.cphvb)[np.newaxis,:]
-Pz  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-PzT = np.random.random(n, cphvb=B.cphvb)[np.newaxis,:]
-Vx  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-Vy  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-Vz  = np.random.random(n, cphvb=B.cphvb)[:,np.newaxis]
-
-OnesCol = np.empty((n,1), dtype=float, dist=B.cphvb)
-OnesCol[:] = 1.0
-OnesRow = np.empty((1,n), dtype=float, dist=B.cphvb)
-OnesRow[:] = 1.0
-Identity= np.array(np.diag([1]*n), dtype=float)
-if B.cphvb:
-    cphvbnumpy.handle_array(Identity)
-
-B.start()
-for i in xrange(k):
-    print "np.dot is not supported in CPHVB "
-    #distance between all pairs of objects
-    Fx = np.dot(OnesCol, PxT) - np.dot(Px, OnesRow)
-    Fy = np.dot(OnesCol, PyT) - np.dot(Py, OnesRow)
-    Fz = np.dot(OnesCol, PzT) - np.dot(Pz, OnesRow)
-    if B.cphvb:
-        cphvbnumpy.handle_array(Fx)
-        cphvbnumpy.handle_array(Fy)
-        cphvbnumpy.handle_array(Fz)
-
-    Dsq = Fx * Fx
-    Dsq += Fy * Fy
-    Dsq += Fz * Fz
-    Dsq += Identity
-    D = np.sqrt(Dsq)
-
-    #mutual forces between all pairs of objects
-    F = np.dot(M, MT)
-    F *= G
-    F /= Dsq
-    #F = F - diag(diag(F))#set 'self attraction' to 0
-    Fx /= D
-    Fx *= F
-    Fy /= D
-    Fy *= F
-    Fz /= D
-    Fz *= F
-
-    #net force on each body
-    Fnet_x = np.add.reduce(Fx,1)
-    Fnet_y = np.add.reduce(Fy,1)
-    Fnet_z = np.add.reduce(Fz,1)
-
-    Fnet_x = Fnet_x[:,np.newaxis] * dT
-    Fnet_y = Fnet_y[:,np.newaxis] * dT
-    Fnet_z = Fnet_z[:,np.newaxis] * dT
-
-    #change in velocity:
-    Vx += Fnet_x / M
-    Vy += Fnet_y / M
-    Vz += Fnet_z / M
-
-    #change in position
-    Px += Vx * dT
-    Py += Vy * dT
-    Pz += Vz * dT
-B.stop()
-B.pprint()
-
-
-
-
-"""Paper version:
-    #distance between all pairs of objects
-    Fx = dot(OnesCol, PxT) - dot(Px, OnesRow)
-    Fy = dot(OnesCol, PyT) - dot(Py, OnesRow)
-    Fz = dot(OnesCol, PzT) - dot(Pz, OnesRow)
-
-    Dsq = Fx * Fx + Fy * Fy + Fx * Fz #+ Identity
-    D = sqrt(Dsq)
-
-    #mutual forces between all pairs of objects
-    F = G * dot(M, MT) / Dsq
-
-    #F = F - diag(diag(F))#set 'self attraction' to 0
-    Fx = (Fx / D) * F
-    Fy = (Fy / D) * F
-    Fz = (Fz / D) * F
-
-    #net force on each body
-    Fnet_x = add.reduce(Fx,1)
-    Fnet_x = add.reduce(Fy,1)
-    Fnet_x = add.reduce(Fz,1)
-
-    #change in velocity:
-    Vx += Fnet_x[:,newaxis] * dT / M
-    Vy += Fnet_y[:,newaxis] * dT / M
-    Vz += Fnet_z[:,newaxis] * dT / M
-
-    #change in position
-    Px += Vx * dT
-    Py += Vy * dT
-    Pz += Vz * dT
+All the work is done in the calc_force, move and random_galaxy functions.
+To vectorize the code these are the functions to transform.
 """
+import numpy
+import time
+
+# By using the solar-mass as the mass unit and years as the standard time-unit
+# the gravitational constant becomes 1
+
+G = 1.0
+
+def fill_diagonal(a, val):
+    d,_ = a.shape   #This only makes sense for square matrices
+    #a.shape=d*d     #Flatten a without making a copy
+    a.reshape((d*d))[::d+1]=val    #Assign the diagonal values
+    #a.shape = (d,d) #Return a to its original shape
+
+
+
+def calc_force(b):
+    """Calculate forces between bodies
+    F = ((G m_a m_b)/r^2)/((x_b-x_a)/r)
+    """
+
+    dx = b['x'] - b['x'][numpy.newaxis,:].T
+    fill_diagonal(dx,1.0)
+    dy = b['y'] - b['y'][numpy.newaxis,:].T
+    fill_diagonal(dy,1.0)
+    dz = b['z'] - b['z'][numpy.newaxis,:].T
+    fill_diagonal(dz,1.0)
+    pm = b['m'] * b['m'][numpy.newaxis,:].T
+    fill_diagonal(pm,0.0)
+
+    r = ( dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
+
+    #In the below calc of the the forces the force of a body upon itself
+    #becomes nan and thus destroys the data
+
+    Fx = G * pm / r ** 2 * (dx / r)
+    Fy = G * pm / r ** 2 * (dy / r)
+    Fz = G * pm / r ** 2 * (dz / r)
+
+    #The diagonal nan numbers must be removed so that the force from a body
+    #upon itself is zero
+
+    fill_diagonal(Fx,0)
+    fill_diagonal(Fy,0)
+    fill_diagonal(Fz,0)
+
+    b['vx'] += numpy.add.reduce(Fx, axis=1)/ b['m']
+    b['vy'] += numpy.add.reduce(Fy, axis=1)/ b['m']
+    b['vz'] += numpy.add.reduce(Fz, axis=1)/ b['m']
+
+
+def move(galaxy):
+    """Move the bodies
+    first find forces and change velocity and then move positions
+    """
+
+    calc_force(galaxy)
+
+    galaxy['x'] += galaxy['vx']
+    galaxy['y'] += galaxy['vy']
+    galaxy['z'] += galaxy['vz']
+
+
+def random_galaxy(
+    x_max,
+    y_max,
+    z_max,
+    n,
+    cphvb,
+    ):
+    """Generate a galaxy of random bodies"""
+
+    max_mass = 40.0  # Best guess of maximum known star
+
+    # We let all bodies stand still initially
+
+    return {
+        'm': numpy.random.random(n,cphvb=cphvb) * 10**6 / (4 * numpy.pi ** 2),
+        'x': numpy.random.random(n,cphvb=cphvb)*2*x_max-x_max,
+        'y': numpy.random.random(n,cphvb=cphvb)*2*x_max-x_max,
+        'z': numpy.random.random(n,cphvb=cphvb)*2*x_max-x_max,
+        'vx': numpy.empty(n,dtype=numpy.double,dist=cphvb) * 0.0,
+        'vy': numpy.empty(n,dtype=numpy.double,dist=cphvb) * 0.0,
+        'vz': numpy.empty(n,dtype=numpy.double,dist=cphvb) * 0.0,
+        }
+
+if __name__ == '__main__':
+    """Run benchmark simulation without visualization"""
+
+    import util
+    B = util.Benchmark()
+    bodies = B.size[0]
+    time_step = B.size[1]
+
+    x_max = 500
+    y_max = 500
+    z_max = 500
+
+    galaxy = random_galaxy(x_max, y_max, z_max, bodies, False)
+
+    B.start()
+    for _ in range(time_step):
+        move(galaxy)
+    B.stop()
+    B.pprint()
+
+
+
