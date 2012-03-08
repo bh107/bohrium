@@ -198,6 +198,8 @@ cphvb_error dispatch_init(void)
     char *env = getenv("CPHVB_NUM_THREADS");
     if(env != NULL)
         thd_nthds = atoi(env);
+    else
+        thd_nthds = 1;
 
     if(thd_nthds > 32)
     {
