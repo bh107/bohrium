@@ -11,7 +11,8 @@ X = np.random.random([N],   cphvb=B.cphvb)
 h = np.empty([N], dtype=np.double, dist=B.cphvb)
 h[:] = 0.001
 AD = np.diagonal(A).copy()
-cphvbnumpy.handle_array(AD)
+if B.cphvb:
+    cphvbnumpy.handle_array(AD)
 
 B.start()
 for i in xrange(iterations):
