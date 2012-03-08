@@ -105,7 +105,7 @@ if __name__ == '__main__':
     y_max = 500
     z_max = 500
 
-    galaxy = random_galaxy(x_max, y_max, z_max, bodies, False)
+    galaxy = random_galaxy(x_max, y_max, z_max, bodies, B.cphvb)
 
     B.start()
     for _ in range(time_step):
