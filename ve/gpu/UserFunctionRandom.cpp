@@ -18,6 +18,8 @@
  */
 
 #include <cphvb_random.h>
-#include <cphvb_reduce.h>
 
+cphvb_error cphvb_random(cphvb_userfunc *arg)
+{
 
+}
