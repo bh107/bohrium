@@ -68,8 +68,8 @@ bool cphvb_is_continuous(cphvb_intp ndim,
                          const cphvb_index stride[])
 {
     cphvb_intp my_ndim = 0;
-    cphvb_index my_shape[ndim];
-    cphvb_index my_stride[ndim];
+    cphvb_index my_shape[CPHVB_MAXDIM];
+    cphvb_index my_stride[CPHVB_MAXDIM];
     cphvb_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
     for (int i = 0; i < my_ndim - 1; ++i)
     {
