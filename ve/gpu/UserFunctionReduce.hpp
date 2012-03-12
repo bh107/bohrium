@@ -17,7 +17,15 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cphvb_random.h>
-#include <cphvb_reduce.h>
+#ifndef __USERFUNCTIONREDUCE_HPP
+#define __USERFUNCTIONREDUCE_HPP
 
+class UserFunctionReduce
+{
+private:
+    std::map<unsigned int, Kernel> kernels;
+public:
+    
+};
 
+#endif
