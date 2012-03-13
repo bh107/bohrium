@@ -78,6 +78,24 @@ cl::Event BaseArray::getWriteEvent()
     return writeEvent;
 }
 
+void BaseArray::cleanReadEvents()
+{
+    while (readEvents.front().getInfo<CL_EVENT_COMMAND_EXECUTION_STATUS>() == CL_COMPLETE)
+        readEvents.pop_front();
+}
+
+void BaseArray::addReadEvent(cl::Event event)
+{
+    cleanReadEvents();
+    readEvents.push_back(event);
+}
+
+std::deque<cl::Event> BaseArray::getReadEvents()
+{
+    cleanReadEvents();
+    return readEvents;
+}
+
 cl::Buffer BaseArray::getBuffer()
 {
     return buffer;
