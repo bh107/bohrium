@@ -41,9 +41,13 @@ char _expand_buffer2[MAX_PATH];
 #else
 
 #include <dlfcn.h>
+#include <limits.h>
 
 #define HOME_INI_PATH "~/.cphvb/config.ini"
 #define SYSTEM_INI_PATH "/opt/cphvb/config.ini"
+
+//We need a buffer for path expansion
+char _expand_buffer[PATH_MAX];
 
 #endif
 
@@ -146,6 +150,14 @@ cphvb_com *cphvb_com_setup(void)
 		if (result != 0) 
 		{
 			homepath = _expand_buffer1;
+		}
+#else
+		
+		char* h = getenv("HOME");
+		if (h != NULL) 
+		{
+			snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath+1);
+			homepath = _expand_buffer;
 		}
 #endif
 
