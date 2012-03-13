@@ -156,6 +156,25 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
             operandBase[i] = it->second;
         }
     }
+
+    // If the instruction batch accesses any of the output operands it need to be executed first
+    for (int i = 0; i < userfunc->nout; ++i)
+    {
+        if (batch->access(operandBase[i]))
+        {
+            executeBatch();
+        }
+    }
+    // If the instruction batch writes to any of the input operands it need to be executed first
+    for (int i = userfunc->nout; i < nops; ++i)
+    {
+        if (batch->write(operandBase[i]))
+        {
+            executeBatch();
+        }
+    }
+
+    // Execute the userdefined function
     fit->second(userfunc, &operandBase);
 }
 
