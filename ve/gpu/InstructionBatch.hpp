@@ -47,10 +47,6 @@ private:
     bool shapeMatch(cphvb_intp ndim, const cphvb_index dims[]);
     bool sameView(const cphvb_array* a, const cphvb_array* b);
     std::string generateCode(const std::string& kernelName);
-    void generateInstructionSource(cphvb_opcode opcode, 
-                                   std::vector<std::string>& parameters, 
-                                   std::ostream& source);
-    void generateOffsetSource(cphvb_array* operand, std::ostream& source);
 public:
     InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
     Kernel generateKernel(ResourceManager* resourceManager);
