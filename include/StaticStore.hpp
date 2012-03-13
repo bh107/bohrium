@@ -49,8 +49,10 @@ private:
     ~StaticStore();
     void clear();
     void erase(T* e);
+#ifndef _WIN32
     template <typename... As>
     T* next(As... as);
+#endif
     T* c_next();
 };
 
@@ -104,6 +106,7 @@ T* StaticStore<T>::c_next()
     }
 }
 
+#ifndef _WIN32
 template <typename T> 
 template <typename... As>
 T* StaticStore<T>::next(As... as)
@@ -123,6 +126,7 @@ T* StaticStore<T>::next(As... as)
         throw StaticStoreException();
     }
 }
+#endif
 
 template <typename T> 
 void StaticStore<T>::clear()

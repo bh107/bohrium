@@ -13,3 +13,9 @@ bridge/numpy/build/*
 ve/cuda/log
 ve/cuda/pytest
 *~
+
+*.obj
+.DS_Store
+*.dylib
+*.lib
+*.dll

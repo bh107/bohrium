@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/mman.h>
 
 /* Reduce nDarray info to a base shape
  *
@@ -68,8 +67,8 @@ bool cphvb_is_continuous(cphvb_intp ndim,
                          const cphvb_index stride[])
 {
     cphvb_intp my_ndim = 0;
-    cphvb_index my_shape[ndim];
-    cphvb_index my_stride[ndim];
+    cphvb_index my_shape[CPHVB_MAXDIM];
+    cphvb_index my_stride[CPHVB_MAXDIM];
     cphvb_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
     for (int i = 0; i < my_ndim - 1; ++i)
     {
@@ -187,15 +186,12 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     if(bytes <= 0)
         return CPHVB_SUCCESS;
 
-    //Allocate page-size aligned memory.
-    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    base->data = mmap(0, bytes, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    if(base->data == MAP_FAILED)
+    base->data = cphvb_memory_malloc(bytes);
+    if(base->data == NULL)
     {
         int errsv = errno;//mmap() sets the errno.
-        printf("cphvb_data_malloc() could not mmap a data region. "
-               "Returned error code by mmap: %s.\n", strerror(errsv));
+        printf("cphvb_data_malloc() could not allocate a data region. "
+               "Returned error code: %s.\n", strerror(errsv));
         return CPHVB_OUT_OF_MEMORY;
     }
 
@@ -224,11 +220,11 @@ cphvb_error cphvb_data_free(cphvb_array* array)
     nelem = cphvb_nelements(base->ndim, base->shape);
     bytes = nelem * cphvb_type_size(base->type);
 
-    if(munmap(base->data, bytes) == -1)
+    if(cphvb_memory_free(base->data, bytes) != 0)
     {
         int errsv = errno;//munmmap() sets the errno.
-        printf("cphvb_data_free() could not munmap a data region. "
-               "Returned error code by mmap: %s.\n", strerror(errsv));
+        printf("cphvb_data_free() could not free a data region. "
+               "Returned error code: %s.\n", strerror(errsv));
         return CPHVB_ERROR;
     }
     base->data = NULL;

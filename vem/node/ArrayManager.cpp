@@ -69,7 +69,14 @@ void ArrayManager::changeOwnerPending(cphvb_array* base,
                                       cphvb_comp owner)
 {
     assert(base->base == NULL);
+#ifdef _WIN32
+	OwnerTicket t;
+	t.array = base;
+	t.owner = owner;
+    ownerChangeQueue.push_back(t);
+#else
     ownerChangeQueue.push_back((OwnerTicket){base,owner});
+#endif
 }
 
 void ArrayManager::flush()

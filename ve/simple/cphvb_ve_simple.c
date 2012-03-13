@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <string.h>
 #include <cphvb.h>
+#include "cphvb_ve_simple.h"
 
 static cphvb_com *self = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -91,9 +92,9 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 return CPHVB_PARTIAL_SUCCESS;
             }
-            d0 = cphvb_base_array(inst->operand[0])->data;
-            d1 = cphvb_base_array(inst->operand[1])->data;
-            d2 = cphvb_base_array(inst->operand[2])->data;
+            d0 = (cphvb_float32*)cphvb_base_array(inst->operand[0])->data;
+            d1 = (cphvb_float32*)cphvb_base_array(inst->operand[1])->data;
+            d2 = (cphvb_float32*)cphvb_base_array(inst->operand[2])->data;
 
             //We only support float32
             if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
@@ -161,7 +162,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
 cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
 {
     printf("cphvb_reduce\n");
-    return 0;
+    return CPHVB_SUCCESS;
 }
 
 

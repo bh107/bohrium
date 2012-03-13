@@ -20,6 +20,7 @@
 #include "cphvb_ve_score.h"
 #include <sys/time.h>
 #include <pthread.h>
+#include <unistd.h>
 
 // We use the same Mersenne Twister implementation as NumPy
 typedef struct

@@ -30,14 +30,14 @@ extern "C" {
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(cphvb_com *self);
+DLLEXPORT cphvb_error cphvb_vem_node_init(cphvb_com *self);
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_shutdown(void);
+DLLEXPORT cphvb_error cphvb_vem_node_shutdown(void);
 
 
 /* Create an array, which are handled by the VEM.
@@ -53,7 +53,7 @@ cphvb_error cphvb_vem_node_shutdown(void);
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
+DLLEXPORT cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_type     type,
                                         cphvb_intp     ndim,
                                         cphvb_index    start,
@@ -70,7 +70,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_execute(cphvb_intp count,
+DLLEXPORT cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                    cphvb_instruction inst_list[]);
 
 /* Registre a new user-defined function.
@@ -82,7 +82,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id);
+DLLEXPORT cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus
 }

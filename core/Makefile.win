@@ -1,0 +1,30 @@
+ROOT=..
+LIBNAME=libcphvb.lib
+DLLNAME=libcphvb.dll
+CC=cl
+LIBTOOL=lib.exe
+LINKTOOL=link.exe
+
+LIBFLAGS=/nologo /out:$(LIBNAME)
+LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
+
+WARNOPTS=#-Wall
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
+LDFLAGS=/LD /MD /nologo
+SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c dlfcn-win32.c
+OBJ=$(SRC:.c=.obj)
+INSTALLDIR=/opt/cphvb/
+
+all: $(DLLNAME)
+
+%.obj: %.c $(ROOT)/include/*
+		$(CC) $(CFLAGS) $< /Fo$@
+
+$(LIBNAME): $(OBJ)
+		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+		
+$(DLLNAME): $(LIBNAME)		
+		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+
+clean:
+		del *.obj *~ *.lib *.dll
