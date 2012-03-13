@@ -17,13 +17,17 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERDEFINEDFUNCTION_HPP
-#define __USERDEFINEDFUNCTION_HPP
+#ifndef __USERFUNCARG_HPP
+#define __USERFUNCARG_HPP
 
-class UserDefinedFunction
+#include "ResourceManager.hpp"
+#include "BaseArray.hpp"
+
+struct UserFuncArg
 {
-private:
-public:
+    ResourceManager* resourceManager;
+    std::vector<BaseArray*> operandBase;
 };
+
 
 #endif
