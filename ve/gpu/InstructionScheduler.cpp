@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
+#include "UserFuncArg.hpp"
 #define DEBUG
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
@@ -138,6 +139,8 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
         throw std::runtime_error("User defined functiones not supported.");
     }
     cphvb_intp nops = userfunc->nout + userfunc->nin;
+    UserFuncArg userFuncArg;
+    userFuncArg.resourceManager = resourceManager;
     std::vector<BaseArray*> operandBase(nops);
     for (int i = 0; i < nops; ++i)
     {
@@ -148,19 +151,20 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
         if (it == arrayMap.end())
         {
             // Then create it
-            operandBase[i] = new BaseArray(base, resourceManager);
-            arrayMap[base] = operandBase[i];
+            BaseArray* ba =  new BaseArray(base, resourceManager);
+            userFuncArg.operandBase.push_back(ba);
+            arrayMap[base] = ba;
         }
         else
         {
-            operandBase[i] = it->second;
+            userFuncArg.operandBase.push_back(it->second);
         }
     }
 
     // If the instruction batch accesses any of the output operands it need to be executed first
     for (int i = 0; i < userfunc->nout; ++i)
     {
-        if (batch->access(operandBase[i]))
+        if (batch && batch->access(operandBase[i]))
         {
             executeBatch();
         }
@@ -168,14 +172,14 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     // If the instruction batch writes to any of the input operands it need to be executed first
     for (int i = userfunc->nout; i < nops; ++i)
     {
-        if (batch->write(operandBase[i]))
+        if (batch && batch->write(operandBase[i]))
         {
             executeBatch();
         }
     }
 
     // Execute the userdefined function
-    fit->second(userfunc, &operandBase);
+    fit->second(userfunc, &userFuncArg);
 }
 
 void InstructionScheduler::ufunc(cphvb_instruction* inst)
