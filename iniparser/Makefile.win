@@ -25,4 +25,4 @@ iniparser.lib: $(OBJS)
 	@(echo Done)
 
 clean:
-		del *.obj *~ *.lib *.dll
+		del src\*.obj src\*.lib src\*.dll
