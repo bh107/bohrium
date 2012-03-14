@@ -19,3 +19,4 @@ ve/cuda/pytest
 *.dylib
 *.lib
 *.dll
+*.exp
