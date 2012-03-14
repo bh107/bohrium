@@ -123,6 +123,10 @@ cphvb_com *cphvb_com_setup(void)
         fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
         exit(CPHVB_OUT_OF_MEMORY);
     }
+
+	//Clear memory so we do not have any random pointers
+	memset(com, 0, sizeof(cphvb_com));    
+
     strcpy(com->name, "bridge"); //The config root keyword.
 
     //The environment variable has precedence.
