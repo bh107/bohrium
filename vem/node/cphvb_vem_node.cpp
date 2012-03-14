@@ -99,7 +99,7 @@ cphvb_error cphvb_vem_node_shutdown(void)
  *
  * @base Pointer to the base array. If NULL this is a base array
  * @type The type of data in the array
- * @ndim Number of dimentions
+ * @ndim Number of dimensions
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
