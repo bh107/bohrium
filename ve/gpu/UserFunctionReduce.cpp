@@ -79,16 +79,16 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
         ")\n{\n";
     
     source << "\tsize_t element = ";
-    int a = 0;
     int i = 0;
+    int a = (reduceDef->axis)?0:1;
+    source << "get_global_id(" << i++ << ")*" << in->stride[a++];
     if (i == reduceDef->axis)
         ++a;
-    source << "get_global_id(" << i << ")*" << in->stride[a++];
-    for (++i; a < out->ndim; ++i)
+    while (a < in->ndim)
     {
+        source << " + get_global_id(" << i++ << ")*" << in->stride[a++];
         if (i == reduceDef->axis)
             ++a;
-        source << " + get_global_id(" << i << ")*" << in->stride[a++];
     }
     source << " + " << in->start << ";\n";
     source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
