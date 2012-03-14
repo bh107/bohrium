@@ -4,19 +4,16 @@
 
 # Compiler settings
 CC?=gcc
-CFLAGS  = -g -O2 -fPIC -Wall -ansi -pedantic
+ARCHOPTS=-m32
+CFLAGS  = $(ARCHOPTS) -g -O2 -fPIC -Wall -ansi -pedantic
 
 # Ar settings to build the library
-AR?=ar
-ARFLAGS = rcv
+LIBTOOL?=libtool
+LIBFLAGS = -static
 
 SHLD = ${CC} ${CFLAGS}
-LDSHFLAGS = -shared -Wl,-Bsymbolic  -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
-LDFLAGS = -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
-
-# Set RANLIB to ranlib on systems that require it (Sun OS < 4, Mac OSX)
-RANLIB  = ranlib
-#RANLIB = true
+LDSHFLAGS = -shared $(ARCHOPTS) -Wl,-Bsymbolic  -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
+LDFLAGS = $(ARCHOPTS) -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
 
 RM      = rm -f
 
@@ -41,8 +38,7 @@ all : default
 default:	libiniparser.a
 
 libiniparser.a:	$(OBJS)
-	@($(AR) $(ARFLAGS) libiniparser.a $(OBJS))
-	@($(RANLIB) libiniparser.a)
+	@($(LIBTOOL) $(LIBFLAGS) -o $@ $(OBJS))
 
 libiniparser.so:	$(OBJS)
 	@$(SHLD) $(LDSHFLAGS) -o $@.0 $(OBJS) $(LDFLAGS) \
