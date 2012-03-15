@@ -17,9 +17,15 @@ dx = 1.0
 dy = 1.0
 droploc = n/4
 
-H = numpy.ones((n+2,n+2));   U = numpy.zeros((n+2,n+2));  V = numpy.zeros((n+2,n+2));
-Hx = numpy.zeros((n+1,n+1)); Ux = numpy.zeros((n+1,n+1)); Vx = numpy.zeros((n+1,n+1));
-Hy = numpy.zeros((n+1,n+1)); Uy = numpy.zeros((n+1,n+1)); Vy = numpy.zeros((n+1,n+1));
+H = numpy.ones((n+2,n+2),dtype=B.dtype);   
+U = numpy.zeros((n+2,n+2),dtype=B.dtype);  
+V = numpy.zeros((n+2,n+2),dtype=B.dtype);
+Hx = numpy.zeros((n+1,n+1),dtype=B.dtype); 
+Ux = numpy.zeros((n+1,n+1),dtype=B.dtype); 
+Vx = numpy.zeros((n+1,n+1),dtype=B.dtype);
+Hy = numpy.zeros((n+1,n+1),dtype=B.dtype); 
+Uy = numpy.zeros((n+1,n+1),dtype=B.dtype); 
+Vy = numpy.zeros((n+1,n+1),dtype=B.dtype);
 
 if B.cphvb:
     cphvbnumpy.handle_array(H)
