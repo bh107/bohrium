@@ -214,14 +214,14 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
                 break;
             case CPHVB_SELF:
-                //We own the date: Send discards down stream
+                //We own the data: Send discards down stream
                 //and change owner to upstream
                 inst->operand[0] = base;
                 inst->opcode = CPHVB_DISCARD;
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
                 break;
             default:
-                //The owner is downsteam so send the release down
+                //The owner is downstream so send the release down
                 inst->operand[0] = base;
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
             }
@@ -239,7 +239,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
                 break;
             default:
-                //The owner is downsteam so send the sync down
+                //The owner is downstream so send the sync down
                 //and take ownership
                 inst->operand[0] = base;
                 arrayManager->changeOwnerPending(base,CPHVB_SELF);
