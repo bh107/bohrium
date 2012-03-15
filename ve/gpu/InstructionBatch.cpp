@@ -180,11 +180,12 @@ cl::Event InstructionBatch::run(ResourceManager* resourceManager)
     cl::Event event = kernel.call(kernelParameters, shape);
     return event;
 }
-#define DEBUG
 
 std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
+#ifdef DEBUG
     std::cout << "[VE-GPU] generateCode(" << kernelName << ")" << std::endl; 
+#endif
     std::stringstream source;
     source << "__kernel void " << kernelName << "( ";
 

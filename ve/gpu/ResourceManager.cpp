@@ -95,10 +95,10 @@ cl::Event ResourceManager::completeEvent()
 cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
 {
 #ifdef DEBUG
-    std::cerr << "Kernel build :\n";
-    std::cerr << "------------------- SOURCE -----------------------\n";
-    std::cerr << source;
-    std::cerr << "------------------ SOURCE END --------------------\n";
+    std::cout << "Kernel build :\n";
+    std::cout << "------------------- SOURCE -----------------------\n";
+    std::cout << source;
+    std::cout << "------------------ SOURCE END --------------------" << std::endl;
 #endif
     cl::Program::Sources sources(1,std::make_pair(source,0));
     cl::Program program(context, sources);
