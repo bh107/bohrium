@@ -95,8 +95,9 @@ void ArrayManager::flush()
             for (rit=range.first; rit!=range.second; ++rit)
             {   //If there are any we delete them
                 arrayStore->erase(rit->second);
-                staleView.erase(rit);
             }
+            
+            staleView.erase(range.first, range.second);
         }
     }
     // All ownerships are changed. So we clear the queue
