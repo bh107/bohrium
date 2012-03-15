@@ -27,13 +27,19 @@ Hy = numpy.zeros((n+1,n+1),dtype=B.dtype);
 Uy = numpy.zeros((n+1,n+1),dtype=B.dtype); 
 Vy = numpy.zeros((n+1,n+1),dtype=B.dtype);
 
+H[droploc,droploc] += 5.0
+
 if B.cphvb:
     cphvbnumpy.handle_array(H)
     cphvbnumpy.handle_array(Hx)
     cphvbnumpy.handle_array(Hy)
+    cphvbnumpy.handle_array(U)
+    cphvbnumpy.handle_array(Ux)
+    cphvbnumpy.handle_array(Uy)
+    cphvbnumpy.handle_array(V)
+    cphvbnumpy.handle_array(Vx)
+    cphvbnumpy.handle_array(Vy)
 
-
-H[droploc:droploc,droploc] += 5.0
 B.start()
 for i in xrange(timesteps):
     # Refelcting boundary conditions
