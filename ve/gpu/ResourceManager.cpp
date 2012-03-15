@@ -94,20 +94,24 @@ cl::Event ResourceManager::completeEvent()
 
 cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
 {
+#ifdef DEBUG
     std::cerr << "Kernel build :\n";
     std::cerr << "------------------- SOURCE -----------------------\n";
     std::cerr << source;
     std::cerr << "------------------ SOURCE END --------------------\n";
+#endif
     cl::Program::Sources sources(1,std::make_pair(source,0));
     cl::Program program(context, sources);
     try {
         program.build(devices);
     } catch (cl::Error) {
+#ifdef DEBUG
         std::cerr << "Kernel build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
+#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     

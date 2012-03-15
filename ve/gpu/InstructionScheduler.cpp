@@ -23,7 +23,6 @@
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
-#define DEBUG
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 

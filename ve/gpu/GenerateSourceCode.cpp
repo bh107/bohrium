@@ -21,7 +21,6 @@
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
 
-
 void generateGIDSource(size_t size, std::ostream& source)
 {
     if (size > 2)
@@ -62,6 +61,15 @@ void generateInstructionSource(cphvb_opcode opcode,
         break;
     case CPHVB_DIVIDE:
         source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
+        break;
+    case CPHVB_NEGATIVE:
+        source << "\t" << parameters[0] << " = -" << parameters[1] << ";\n";
+        break;
+    case CPHVB_SQRT:
+        source << "\t" << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
+        break;
+    case CPHVB_SQUARE:
+        source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
         break;
     case CPHVB_BITWISE_AND:
         source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
@@ -121,6 +129,9 @@ void generateInstructionSource(cphvb_opcode opcode,
         source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
         break;
     default:
+#ifdef DEBUG
+        std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
+#endif
         throw std::runtime_error("Instruction not supported.");
     }
 }
