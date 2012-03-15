@@ -90,7 +90,7 @@ void ArrayManager::flush()
     {
         (*oit).array->owner = (*oit).owner;
         if ((*oit).array->base == NULL)
-        {   //if it is a base array we chech to se if there are stale views
+        {   //if it is a base array we check to see if there are stale views
             range = staleView.equal_range((*oit).array);
             for (rit=range.first; rit!=range.second; ++rit)
             {   //If there are any we delete them
@@ -99,10 +99,10 @@ void ArrayManager::flush()
             }
         }
     }
-    // All ownerships have been changes. So we clear the queue
+    // All ownerships are changed. So we clear the queue
     ownerChangeQueue.clear();
 
-    //Then we delete those array specs marked for deletion
+    //Then we delete arrays marked for deletion
     std::deque<cphvb_array*>::iterator eit = eraseQueue.begin();
     for (; eit != eraseQueue.end(); ++eit)
     {
