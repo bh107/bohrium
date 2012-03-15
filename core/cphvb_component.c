@@ -20,8 +20,37 @@
 #include <cphvb.h>
 #include <iniparser.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <assert.h>
+
+#ifdef _WIN32
+
+#include <windows.h>
+#include <dlfcn-win32.h>
+
+#define HOME_INI_PATH "%APPDATA%\\cphvb\\config.ini"
+#define SYSTEM_INI_PATH "%PROGRAMFILES%\\cphvb\\config.ini"
+
+//We need a buffer for path expansion
+char _expand_buffer1[MAX_PATH];
+char _expand_buffer2[MAX_PATH];
+
+//Nasty function renaming
+#define snprintf _snprintf
+#define strcasecmp _stricmp
+
+#else
+
+#include <dlfcn.h>
+#include <limits.h>
+
+#define HOME_INI_PATH "~/.cphvb/config.ini"
+#define SYSTEM_INI_PATH "/opt/cphvb/config.ini"
+
+//We need a buffer for path expansion
+char _expand_buffer[PATH_MAX];
+
+#endif
+
 
 static cphvb_com_type get_type(dictionary *dict, const char *name)
 {
@@ -62,7 +91,7 @@ static void *get_dlsym(void *handle, const char *name,
         stype = "ve";
     else
     {
-        fprintf(stderr, "get_dlsym - unknown componet type.\n");
+        fprintf(stderr, "get_dlsym - unknown component type.\n");
         return NULL;
     }
 
@@ -84,47 +113,96 @@ static void *get_dlsym(void *handle, const char *name,
  */
 cphvb_com *cphvb_com_setup(void)
 {
-    cphvb_com *com = malloc(sizeof(cphvb_com));
-    char *env;
+	const char* homepath = HOME_INI_PATH;
+	const char* syspath = SYSTEM_INI_PATH;
+	
+    cphvb_com *com = (cphvb_com*)malloc(sizeof(cphvb_com));
+    const char *env;
     if(com == NULL)
     {
         fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
         exit(CPHVB_OUT_OF_MEMORY);
     }
+
+	//Clear memory so we do not have any random pointers
+	memset(com, 0, sizeof(cphvb_com));    
+
     strcpy(com->name, "bridge"); //The config root keyword.
 
     //The environment variable has precedence.
     env = getenv("CPHVB_CONFIG");
+    if (env != NULL)
+    {
+		FILE *fp = fopen(env,"r");
+		if( fp )
+			fclose(fp);
+		else
+			env = NULL;//Did not exist.
+    }
+    
     //Then the home directory.
     if(env == NULL)
-    {
-        env = getenv("HOME");
-        if(env != NULL)
-        {
-            strcat(env, "/.cphvb/config.ini");
-            FILE *fp = fopen(env,"r");
-            if( fp )
-                fclose(fp);
-            else
-                env = NULL;//Did not exist.
+    { 
+    	
+#if _WIN32
+		DWORD result = ExpandEnvironmentStrings(
+			homepath,
+			_expand_buffer1,
+			MAX_PATH-1
+		);
+		
+		if (result != 0) 
+		{
+			homepath = _expand_buffer1;
+		}
+#else
+		
+		char* h = getenv("HOME");
+		if (h != NULL) 
+		{
+			snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath+1);
+			homepath = _expand_buffer;
+		}
+#endif
+
+		FILE *fp = fopen(homepath,"r");
+        if( fp ) {
+            env = homepath;
+            fclose(fp);
         }
+    
     }
+        
     //And finally system-wide.
     if(env == NULL)
     {
-        FILE *fp = fopen("/opt/cphvb/config.ini","r");
+#if _WIN32
+		DWORD result = ExpandEnvironmentStrings(
+			syspath,
+			_expand_buffer2,
+			MAX_PATH-1
+		);
+		
+		if (result != 0) 
+		{
+			syspath = _expand_buffer2;
+		}
+#endif
+
+        FILE *fp = fopen(syspath,"r");
         if( fp ) {
-            env = "/opt/cphvb/config.ini";
+            env = syspath;
             fclose(fp);
         }
     }
+    
     if(env == NULL)
     {
-        fprintf(stderr, "Error: cphVB could not find the config file"
-            "found. The search is:\n"
+        fprintf(stderr, "Error: cphVB could not find the config file."
+            " The search is:\n"
             "\t* The environment variable CPHVB_CONFIG.\n"
-            "\t* The home directory \"~/.cphvb/config.ini\".\n"
-            "\t* And system-wide \"/opt/cphvb/config.ini\".\n");
+            "\t* The home directory \"%s\".\n"
+            "\t* And system-wide \"%s\".\n", homepath, syspath);
         exit(-1);
     }
 
@@ -161,7 +239,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
     if(tchildren == NULL)
         exit(CPHVB_ERROR);
 
-    *children = malloc(10 * sizeof(cphvb_com *));
+    *children = (cphvb_com**)malloc(10 * sizeof(cphvb_com *));
     if(*children == NULL)
     {
         fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
@@ -172,7 +250,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
     child = strtok(tchildren,",");
     while(child != NULL)
     {
-        (*children)[*count] = malloc(sizeof(cphvb_com));
+    	(*children)[*count] = (cphvb_com*)malloc(sizeof(cphvb_com));
         cphvb_com *com = (*children)[*count];
 
         //Save component name.
@@ -207,25 +285,28 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
             exit(CPHVB_ERROR);
         }
 
-        com->init = get_dlsym(com->lib_handle, child, com->type, "init");
+        com->init = (cphvb_init)get_dlsym(com->lib_handle, child, com->type, "init");
         if(com->init == NULL)
             exit(CPHVB_ERROR);
-        com->shutdown = get_dlsym(com->lib_handle, child, com->type,
+
+        com->shutdown = (cphvb_shutdown)get_dlsym(com->lib_handle, child, com->type,
                                   "shutdown");
         if(com->shutdown == NULL)
             exit(CPHVB_ERROR);
-        com->execute = get_dlsym(com->lib_handle, child, com->type,
+
+        com->execute = (cphvb_execute)get_dlsym(com->lib_handle, child, com->type,
                                  "execute");
         if(com->execute == NULL)
             exit(CPHVB_ERROR);
-        com->reg_func = get_dlsym(com->lib_handle, child, com->type,
+
+        com->reg_func = (cphvb_reg_func)get_dlsym(com->lib_handle, child, com->type,
                                   "reg_func");
         if(com->reg_func == NULL)
             exit(CPHVB_ERROR);
 
         if(com->type == CPHVB_VEM)//VEM functions only.
         {
-            com->create_array = get_dlsym(com->lib_handle, child,
+            com->create_array = (cphvb_create_array)get_dlsym(com->lib_handle, child,
                                           com->type, "create_array");
             if(com->create_array == NULL)
                 exit(CPHVB_ERROR);
@@ -262,7 +343,7 @@ cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
     }
 
     dlerror();//Clear old errors.
-    *ret_func = dlsym(self->lib_handle, func);
+    *ret_func = (cphvb_userfunc_impl)dlsym(self->lib_handle, func);
     char *err = dlerror();
     if(err != NULL)
         *ret_func = NULL;//Make sure it is NULL on error.
@@ -286,6 +367,16 @@ cphvb_error cphvb_com_free(cphvb_com *component)
         dlclose(component->lib_handle);
     free(component);
     return CPHVB_SUCCESS;
+}
+
+/* Frees allocated data.
+ *
+ * @return Error code (CPHVB_SUCCESS).
+ */
+cphvb_error cphvb_com_free_ptr(void* data)
+{
+	free(data);
+	return CPHVB_SUCCESS;
 }
 
 /* Trace an array creation.

@@ -29,6 +29,9 @@
 #include "cphvb_reduce.h"
 #include "cphvb_random.h"
 #include "cphvb_pprint.h"
+#include "cphvb_osx.h"
+#include "cphvb_win.h"
+#include "cphvb_memory.h"
 
 #ifdef __cplusplus
 /* C++ includes go here */
@@ -52,7 +55,7 @@ extern "C" {
  * @base_shape    Placeholder for base number of elements in each dimention.
  * @base_stride   Placeholder for base stride in each dimention.
  */
-void cphvb_base_shape(cphvb_intp ndim,
+DLLEXPORT void cphvb_base_shape(cphvb_intp ndim,
                       const cphvb_index shape[],
                       const cphvb_index stride[],
                       cphvb_intp* base_ndim,
@@ -67,7 +70,7 @@ void cphvb_base_shape(cphvb_intp ndim,
  * @stride[] Stride in each dimention.
  * @return   Truth value indicating continuousity.
  */
-bool cphvb_is_continuous(cphvb_intp ndim,
+DLLEXPORT bool cphvb_is_continuous(cphvb_intp ndim,
                          const cphvb_index shape[],
                          const cphvb_index stride[]);
 
@@ -78,7 +81,7 @@ bool cphvb_is_continuous(cphvb_intp ndim,
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-cphvb_index cphvb_nelements(cphvb_intp ndim,
+DLLEXPORT cphvb_index cphvb_nelements(cphvb_intp ndim,
                             const cphvb_index shape[]);
 
 
@@ -90,7 +93,7 @@ cphvb_index cphvb_nelements(cphvb_intp ndim,
  * @element  Index of element in question
  * @return   Truth value indicating continuousity.
  */
-cphvb_index cphvb_calc_offset(cphvb_intp ndim,
+DLLEXPORT cphvb_index cphvb_calc_offset(cphvb_intp ndim,
                               const cphvb_index shape[],
                               const cphvb_index stride[],
                               cphvb_index element);
@@ -102,7 +105,7 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
  * @shape[]   Number of elements in each dimention.
  * @dimbound  Placeholder for dimbound (return
  */
-void cphvb_dimbound(cphvb_intp ndim,
+DLLEXPORT void cphvb_dimbound(cphvb_intp ndim,
                     const cphvb_index shape[],
                     cphvb_index dimbound[CPHVB_MAXDIM]);
 
@@ -112,7 +115,7 @@ void cphvb_dimbound(cphvb_intp ndim,
  * @opcode Opcode for operation
  * @return Number of operands
  */
-int cphvb_operands(cphvb_opcode opcode);
+DLLEXPORT int cphvb_operands(cphvb_opcode opcode);
 
 
 /* Text string for operation
@@ -120,7 +123,7 @@ int cphvb_operands(cphvb_opcode opcode);
  * @opcode Opcode for operation
  * @return Text string.
  */
-const char* cphvb_opcode_text(cphvb_opcode opcode);
+DLLEXPORT const char* cphvb_opcode_text(cphvb_opcode opcode);
 
 
 /* Byte size for type
@@ -128,7 +131,7 @@ const char* cphvb_opcode_text(cphvb_opcode opcode);
  * @type   Type code
  * @return Byte size
  */
-int cphvb_type_size(cphvb_type type);
+DLLEXPORT int cphvb_type_size(cphvb_type type);
 
 
 /* Text string for type
@@ -136,7 +139,7 @@ int cphvb_type_size(cphvb_type type);
  * @type   Type code.
  * @return Text string.
  */
-const char* cphvb_type_text(cphvb_type type);
+DLLEXPORT const char* cphvb_type_text(cphvb_type type);
 
 
 /* Text string for error code
@@ -144,7 +147,7 @@ const char* cphvb_type_text(cphvb_type type);
  * @error  Error code.
  * @return Text string.
  */
-const char* cphvb_error_text(cphvb_error error);
+DLLEXPORT const char* cphvb_error_text(cphvb_error error);
 
 
 /* Find the base array for a given array/view
@@ -152,8 +155,16 @@ const char* cphvb_error_text(cphvb_error error);
  * @view   Array/view in question
  * @return The Base array
  */
-cphvb_array* cphvb_base_array(cphvb_array* view);
+DLLEXPORT cphvb_array* cphvb_base_array(cphvb_array* view);
 
+/* Set the data pointer for the array.
+ * Can only set to non-NULL if the data ptr is already NULL
+ *
+ * @array The array in question
+ * @data The new data pointer
+ * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ */
+DLLEXPORT cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data);
 
 /* Allocate data memory for the given array if not already allocated.
  * If @array is a view, the data memory for the base array is allocated.
@@ -163,7 +174,7 @@ cphvb_array* cphvb_base_array(cphvb_array* view);
  * @array  The array in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_data_malloc(cphvb_array* array);
+DLLEXPORT cphvb_error cphvb_data_malloc(cphvb_array* array);
 
 
 /* Frees data memory for the given array.
@@ -172,7 +183,7 @@ cphvb_error cphvb_data_malloc(cphvb_array* array);
  * @array  The array in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_data_free(cphvb_array* array);
+DLLEXPORT cphvb_error cphvb_data_free(cphvb_array* array);
 
 
 /* Retrive the operand type of a instruction.
@@ -181,7 +192,7 @@ cphvb_error cphvb_data_free(cphvb_array* array);
  * @operand_no Number of the operand in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
+DLLEXPORT cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no);
 
 /* Determines whether two arrays conflicts.
@@ -190,14 +201,14 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+DLLEXPORT bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
  * @a The array
  * @return The boolean answer
  */
-bool cphvb_scalar(cphvb_array *array);
+DLLEXPORT bool cphvb_scalar(cphvb_array *array);
 
 
 #ifdef __cplusplus

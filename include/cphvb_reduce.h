@@ -42,7 +42,7 @@ typedef struct
     cphvb_opcode  opcode;
 } cphvb_reduce_type;
 
-cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg);
+DLLEXPORT cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

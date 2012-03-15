@@ -32,7 +32,7 @@ extern "C" {
 #define CPHVB_MAX_NO_INST (100)
 
 // Maximum number of operands in a instruction.
-#define CPHVB_MAX_NO_OPERANDS 3
+#define CPHVB_MAX_NO_OPERANDS (3)
 
 // Datatype header for user-defined functions
 /*

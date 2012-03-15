@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/mman.h>
 
 /* Reduce nDarray info to a base shape
  *
@@ -161,6 +160,36 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
     }
 }
 
+/* Set the data pointer for the array.
+ * Can only set to non-NULL if the data ptr is already NULL
+ *
+ * @array The array in question
+ * @data The new data pointer
+ * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ */
+cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
+{
+	cphvb_array* base;
+
+    if(array == NULL) 
+    {
+    	fprintf(stderr, "Attempt to set data pointer for a null array\n");
+        return CPHVB_ERROR;
+    }
+
+    base = cphvb_base_array(array);
+
+    if(base->data != NULL && data != NULL)
+    {
+    	fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
+        return CPHVB_ERROR;
+	}
+
+	base->data = data;
+	
+	return CPHVB_SUCCESS;
+}
+
 /* Allocate data memory for the given array if not already allocated.
  * If @array is a view, the data memory for the base array is allocated.
  * NB: It does NOT initiate the memory.
@@ -187,15 +216,12 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     if(bytes <= 0)
         return CPHVB_SUCCESS;
 
-    //Allocate page-size aligned memory.
-    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    base->data = mmap(0, bytes, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    if(base->data == MAP_FAILED)
+    base->data = cphvb_memory_malloc(bytes);
+    if(base->data == NULL)
     {
         int errsv = errno;//mmap() sets the errno.
-        printf("cphvb_data_malloc() could not mmap a data region. "
-               "Returned error code by mmap: %s.\n", strerror(errsv));
+        printf("cphvb_data_malloc() could not allocate a data region. "
+               "Returned error code: %s.\n", strerror(errsv));
         return CPHVB_OUT_OF_MEMORY;
     }
 
@@ -224,11 +250,11 @@ cphvb_error cphvb_data_free(cphvb_array* array)
     nelem = cphvb_nelements(base->ndim, base->shape);
     bytes = nelem * cphvb_type_size(base->type);
 
-    if(munmap(base->data, bytes) == -1)
+    if(cphvb_memory_free(base->data, bytes) != 0)
     {
         int errsv = errno;//munmmap() sets the errno.
-        printf("cphvb_data_free() could not munmap a data region. "
-               "Returned error code by mmap: %s.\n", strerror(errsv));
+        printf("cphvb_data_free() could not free a data region. "
+               "Returned error code: %s.\n", strerror(errsv));
         return CPHVB_ERROR;
     }
     base->data = NULL;

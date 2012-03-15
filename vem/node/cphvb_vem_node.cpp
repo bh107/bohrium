@@ -99,7 +99,7 @@ cphvb_error cphvb_vem_node_shutdown(void)
  *
  * @base Pointer to the base array. If NULL this is a base array
  * @type The type of data in the array
- * @ndim Number of dimentions
+ * @ndim Number of dimensions
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
@@ -214,14 +214,14 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
                 break;
             case CPHVB_SELF:
-                //We own the date: Send discards down stream
+                //We own the data: Send discards down stream
                 //and change owner to upstream
                 inst->operand[0] = base;
                 inst->opcode = CPHVB_DISCARD;
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
                 break;
             default:
-                //The owner is downsteam so send the release down
+                //The owner is downstream so send the release down
                 inst->operand[0] = base;
                 arrayManager->changeOwnerPending(base,CPHVB_PARENT);
             }
@@ -239,7 +239,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                 --valid_instruction_count;
                 break;
             default:
-                //The owner is downsteam so send the sync down
+                //The owner is downstream so send the sync down
                 //and take ownership
                 inst->operand[0] = base;
                 arrayManager->changeOwnerPending(base,CPHVB_SELF);

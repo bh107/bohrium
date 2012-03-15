@@ -1,9 +1,10 @@
 ROOT=..
-LIB=libcphvb.so
+LIB=libcphvb.dylib
 CC?=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
-LDFLAGS=-shared -Wl,-soname,$(LIB)
+ARCHOPTS=-m32
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
+LDFLAGS= $(ARCHOPTS) -shared  -Wl,-dylib_install_name,$(LIB)
 SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/opt/cphvb/

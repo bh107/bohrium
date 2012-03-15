@@ -526,7 +526,7 @@ static line_status iniparser_line(
   The returned dictionary must be freed using iniparser_freedict().
  */
 /*--------------------------------------------------------------------------*/
-dictionary * iniparser_load(char * ininame)
+dictionary * iniparser_load(const char * ininame)
 {
     FILE * in ;
 

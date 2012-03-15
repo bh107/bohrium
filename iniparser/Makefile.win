@@ -1,0 +1,28 @@
+CC=cl
+CFLAGS=/c /EHsc /O2 /nologo -Fosrc\\
+LIBNAME=iniparser.lib
+LIB=lib
+LDARGS=/nologo /out:$(LIBNAME)
+
+SRCS = src\iniparser.c \
+	   src\dictionary.c
+OBJS = $(SRCS:.c=.obj)
+
+default: iniparser.lib
+
+all: staticlib
+
+COMPILE=$(CC) $(CFLAGS)
+LINK=$(LIB) $(LDARGS)
+
+.c.obj:
+#	$(COMPILE) $<
+	@($(COMPILE) $<)
+
+iniparser.lib: $(OBJS)
+	@(echo Building $(LIBNAME))
+	@($(LINK) $(OBJS))
+	@(echo Done)
+
+clean:
+		del src\*.obj src\*.lib src\*.dll

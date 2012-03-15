@@ -29,6 +29,7 @@ extern "C" {
 #include <cphvb_opcode.h>
 #include <cphvb_error.h>
 #include <iniparser.h>
+#include <cphvb_win.h>
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.
@@ -136,7 +137,7 @@ struct cphvb_com_struct
  *
  * @return A new component object.
  */
-cphvb_com *cphvb_com_setup(void);
+DLLEXPORT cphvb_com *cphvb_com_setup(void);
 
 
 /* Retrieves the children components of the parent.
@@ -147,7 +148,7 @@ cphvb_com *cphvb_com_setup(void);
  * NB: the array and all the children should be free'd by the caller.
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
+DLLEXPORT cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
                                cphvb_com **children[]);
 
 
@@ -155,8 +156,13 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
  *
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_free(cphvb_com *component);
+DLLEXPORT cphvb_error cphvb_com_free(cphvb_com *component);
 
+/* Frees allocated data.
+ *
+ * @return Error code (CPHVB_SUCCESS).
+ */
+DLLEXPORT cphvb_error cphvb_com_free_ptr(void* data);
 
 /* Retrieves an user-defined function.
  *
@@ -168,7 +174,7 @@ cphvb_error cphvb_com_free(cphvb_com *component);
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
+DLLEXPORT cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
                                cphvb_userfunc_impl *ret_func);
 
 /* Trace an array creation.
@@ -177,7 +183,7 @@ cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
  * @ary  The array to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
+DLLEXPORT cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
 
 /* Trace an instruction.
  *
@@ -185,7 +191,7 @@ cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
  * @inst  The instruction to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst);
+DLLEXPORT cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst);
 
 #ifdef __cplusplus
 }

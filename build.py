@@ -25,26 +25,29 @@ import shutil
 import getopt
 import subprocess
 
+makecommand = "make"
+makefilename = "Makefile"
+
 def build(name, dir, fatal=False):
     print "***Building %s***"%name
     try:
-        p = subprocess.Popen(["make"], cwd=join(install_dir, dir))
+        p = subprocess.Popen([makecommand, "-f", makefilename], cwd=join(install_dir, dir))
         err = p.wait()
     except KeyboardInterrupt:
         p.terminate()
 
     if fatal:
         if err != 0:
-            print "An build error in %s is fatal. Exiting."%name
+            print "A build error in %s is fatal. Exiting."%name
             sys.exit(-1)
     else:
         if err != 0:
-            print "An build error in %s is not fatal. Continuing."%name
+            print "A build error in %s is not fatal. Continuing."%name
 
 def clean(name, dir):
     print "***Cleaning %s***"%name
     try:
-        p = subprocess.Popen(["make", "clean"], cwd=join(install_dir, dir))
+        p = subprocess.Popen([makecommand, "-f", makefilename, "clean"], cwd=join(install_dir, dir))
         err = p.wait()
     except KeyboardInterrupt:
         p.terminate()
@@ -52,18 +55,18 @@ def clean(name, dir):
 def install(name, dir, fatal=False):
     print "***Installing %s***"%name
     try:
-        p = subprocess.Popen(["make", "install"], cwd=join(install_dir, dir))
+        p = subprocess.Popen([makecommand, "-f", makefilename, "install"], cwd=join(install_dir, dir))
         err = p.wait()
     except KeyboardInterrupt:
         p.terminate()
 
     if fatal:
         if err != 0:
-            print "An build error in %s is fatal. Exiting."%name
+            print "A build error in %s is fatal. Exiting."%name
             sys.exit(-1)
     else:
         if err != 0:
-            print "An build error in %s is not fatal. Continuing."%name
+            print "A build error in %s is not fatal. Continuing."%name
 
 def ldconfig():
     print "***Configure ldconfig***"
@@ -103,10 +106,19 @@ if __name__ == "__main__":
             debug = True
         else:
             assert False, "unhandled option"
+    
+    if sys.platform.startswith('win32'):
+    	makecommand="nmake"
+    	makefilename="Makefile.win"
+    elif sys.platform.startswith('darwin'):
+    	makefilename="Makefile.osx"
+    
     try:
         cmd = args[0]
     except IndexError:
         print "No command given"
+        print ""
+        print "Known commands: build, clean, install"
         sys.exit(-1)
 
     if cmd == "build":
@@ -142,3 +154,5 @@ if __name__ == "__main__":
         #ldconfig()
     else:
         print "Unknown command: '%s'."%cmd
+        print ""
+        print "Known commands: build, clean, install"
