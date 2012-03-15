@@ -160,6 +160,36 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
     }
 }
 
+/* Set the data pointer for the array.
+ * Can only set to non-NULL if the data ptr is already NULL
+ *
+ * @array The array in question
+ * @data The new data pointer
+ * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ */
+cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
+{
+	cphvb_array* base;
+
+    if(array == NULL) 
+    {
+    	fprintf(stderr, "Attempt to set data pointer for a null array\n");
+        return CPHVB_ERROR;
+    }
+
+    base = cphvb_base_array(array);
+
+    if(base->data != NULL && data != NULL)
+    {
+    	fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
+        return CPHVB_ERROR;
+	}
+
+	base->data = data;
+	
+	return CPHVB_SUCCESS;
+}
+
 /* Allocate data memory for the given array if not already allocated.
  * If @array is a view, the data memory for the base array is allocated.
  * NB: It does NOT initiate the memory.
