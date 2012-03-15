@@ -17,7 +17,17 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cphvb_random.h>
-#include <cphvb_reduce.h>
+#ifndef __USERFUNCARG_HPP
+#define __USERFUNCARG_HPP
+
+#include "ResourceManager.hpp"
+#include "BaseArray.hpp"
+
+struct UserFuncArg
+{
+    ResourceManager* resourceManager;
+    std::vector<BaseArray*> operandBase;
+};
 
 
+#endif

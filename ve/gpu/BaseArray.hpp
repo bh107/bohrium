@@ -22,6 +22,7 @@
 
 #include "ArrayOperand.hpp"
 #include "ResourceManager.hpp"
+#include <deque>
 
 #define OCL_BUFFER OCL_TYPES
 
@@ -36,7 +37,8 @@ private:
     unsigned int device;
     bool scalar;
     cl::Event writeEvent;
-    std::vector<cl::Event> readEvents;
+    std::deque<cl::Event> readEvents;
+    void cleanReadEvents();
 protected:
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
@@ -45,6 +47,8 @@ public:
     void sync();
     void setWriteEvent(cl::Event);
     cl::Event getWriteEvent();
+    void addReadEvent(cl::Event);
+    std::deque<cl::Event> getReadEvents();
     cl::Buffer getBuffer();
     bool isScalar();
     void printKernelParameterType(bool input, std::ostream& source);

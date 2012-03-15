@@ -20,12 +20,19 @@
 #ifndef __USERFUNCTIONREDUCE_HPP
 #define __USERFUNCTIONREDUCE_HPP
 
-class UserFunctionReduce
+#include <string>
+#include <cphvb_reduce.h>
+#include "UserFuncArg.hpp"
+#include "Kernel.hpp"
+
+namespace UserFunctionReduce
 {
-private:
-    std::map<unsigned int, Kernel> kernels;
-public:
-    
-};
+    static int kernel = 0;
+    void run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+    Kernel generateKernel(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+    std::string generateCode(cphvb_reduce_type* reduceDef, 
+                             const std::vector<BaseArray*>& operandBase,
+                             const std::string& kernelName);
+}
 
 #endif

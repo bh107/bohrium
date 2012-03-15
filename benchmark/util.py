@@ -23,9 +23,10 @@ class Benchmark:
         t = datetime.datetime.now()
         date = "%d:%d:%d %d/%d/%d"%(t.hour,t.minute,t.second,t.day,t.month,t.year)
         self.info = {'cphvb':False, 'date':date,'file':os.path.basename(sys.argv[0])}
+        self.info['dtype'] = "float64"
         options, self.argv = getopt.gnu_getopt(sys.argv[1:], \
                 'p:n:c:s:',\
-                ['cphvb=','nnodes=','ncores=','size=','batch'])
+                ['cphvb=','nnodes=','ncores=','size=','batch','dtype='])
 
         for opt, arg in options:
             if opt in ('-p', '--cphvb'):
@@ -39,6 +40,8 @@ class Benchmark:
             if opt in ('--size'):
                 #Jobsize use the syntax: dim_size*dim_size fx. 10*20
                 self.info['size'] = [int(i) for i in arg.split("*") if len(i)]
+            if opt in ('--dtype'):
+                self.info['dtype'] = arg
 
         self.info['nthd'] = multiprocessing.cpu_count()
         self.info['nblocks'] = 16
@@ -53,6 +56,7 @@ class Benchmark:
         #Expose variables to the user.
         self.size  = self.info['size']
         self.cphvb = self.info['cphvb']
+        self.dtype = eval("np.%s"%self.info['dtype'])
 
     def start(self):
         self.info['totaltime'] = time.time()
