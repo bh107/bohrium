@@ -110,6 +110,15 @@ void ArrayManager::flush()
         if ((*eit)->base == NULL)
         {   //We have to deallocate the base array because of the
             //triggering opcode CPHVB_DESTROY.
+            
+            range = staleView.equal_range((*eit));
+            for (rit=range.first; rit!=range.second; ++rit)
+            {   //If there are any we delete them
+                arrayStore->erase(rit->second);
+            }
+            
+            staleView.erase(range.first, range.second);
+            
             cphvb_data_free((*eit));
             arrayStore->erase(*eit);
         }
