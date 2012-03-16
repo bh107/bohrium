@@ -112,8 +112,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
 
     // OK so we can accept the instruction
     instructions.push_back(inst);
-    // Register output
-    output[operandBase[0]] = inst->operand[0];
     // Are some of the input parameters allready know? Otherwise register them
     for (size_t op = 1; op < operandBase.size(); ++op)
     {
@@ -137,6 +135,9 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
             }
         }
     }
+
+    // Register output
+    output[operandBase[0]] = inst->operand[0];
     
     // Register Kernel parameters
     for (size_t op = 0; op < operandBase.size(); ++op)
