@@ -6,14 +6,14 @@ LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
 WARNOPTS=#-Wall
-CFLAGS=$(WARNOPTS) /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
+CFLAGS=$(WARNOPTS) /Z7 /Fd /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
 LDFLAGS=/LD /MD /nologo
 SRC=cphvb_vem_node.cpp ArrayManager.cpp
 OBJ=$(SRC:.cpp=.obj)
 INSTALLDIR=/opt/cphvb/
 
 LIBFLAGS=/nologo /out:$(LIBNAME)
-LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
+LINKFLAGS=/nologo /DLL /DEBUG /out:$(DLLNAME)
 
 all: $(DLLNAME)
 
@@ -30,4 +30,4 @@ $(DLLNAME): $(LIBNAME)
 		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib
 
 clean:
-		del *.obj *~ $(LIBNAME)
+		del *.obj *.lib *.dll *.exp *.pdb *.ilk

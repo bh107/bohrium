@@ -190,6 +190,9 @@ static void *thd_do(void *msg)
         pthread_mutex_unlock(&thd_mutex);
     }
     pthread_exit(NULL);
+    
+    //Fix compiler warning/error with VC
+    return NULL;
 }
 
 //Initiate the dispather.

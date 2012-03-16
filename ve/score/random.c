@@ -18,9 +18,13 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/time.h>
-#include <pthread.h>
 #include <unistd.h>
+#endif
+#include <pthread.h>
 
 // We use the same Mersenne Twister implementation as NumPy
 typedef struct
@@ -104,9 +108,16 @@ rk_hash(unsigned long key)
 int
 rk_initseed(rk_state *state)
 {
+#ifdef _WIN32
+	time_t ltime;
+	time(&ltime);
+	//Essentially time_t is a int64
+	rk_seed(rk_hash(GetCurrentProcessId()) ^ rk_hash(ltime), state);
+#else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     rk_seed(rk_hash(getpid()) ^ rk_hash(tv.tv_sec) ^ rk_hash(tv.tv_usec), state);
+#endif
     return 0;
 }
 
