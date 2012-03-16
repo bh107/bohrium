@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <cphvb.h>
 #include "InstructionBatch.hpp"
+#include "GenerateSourceCode.hpp"
 
 int InstructionBatch::kernel = 0;
 
@@ -179,11 +180,12 @@ cl::Event InstructionBatch::run(ResourceManager* resourceManager)
     cl::Event event = kernel.call(kernelParameters, shape);
     return event;
 }
-#define DEBUG
 
 std::string InstructionBatch::generateCode(const std::string& kernelName)
 {
+#ifdef DEBUG
     std::cout << "[VE-GPU] generateCode(" << kernelName << ")" << std::endl; 
+#endif
     std::stringstream source;
     source << "__kernel void " << kernelName << "( ";
 
@@ -206,11 +208,7 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
 
     source << ")\n{\n";
     
-    if (shape.size() > 2)
-        source << "\tconst size_t gidz = get_global_id(2);\n";
-    if (shape.size() > 1)
-        source << "\tconst size_t gidy = get_global_id(1);\n";
-    source << "\tconst size_t gidx = get_global_id(0);\n";
+    generateGIDSource(shape.size(), source);
     
     // Load input parameters
     for (InputMap::iterator iit = input.begin(); iit != input.end(); ++iit)
@@ -268,101 +266,6 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
 
     source << "}\n";
     return source.str();
-}
-
-void InstructionBatch::generateOffsetSource(cphvb_array* operand, std::ostream& source)
-{
-    if (operand->ndim > 2)
-    {
-        source << "gidz*" << operand->stride[2] << " + ";
-    }
-    if (operand->ndim > 1)
-    {
-        source << "gidy*" << operand->stride[1] << " + ";
-    }
-    source << "gidx*" << operand->stride[0] << " + " << operand->start;
-    
-    
-}
-
-void InstructionBatch::generateInstructionSource(cphvb_opcode opcode, 
-                                                 std::vector<std::string>& parameters, 
-                                                 std::ostream& source)
-{
-    switch(opcode)
-    {
-    case CPHVB_ADD:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
-        break;
-    case CPHVB_SUBTRACT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
-        break;
-    case CPHVB_MULTIPLY:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
-        break;
-    case CPHVB_DIVIDE:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
-        break;
-    case CPHVB_BITWISE_AND:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
-        break;
-    case CPHVB_BITWISE_OR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
-        break;
-    case CPHVB_BITWISE_XOR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_NOT:
-        source << "\t" << parameters[0] << " = !" << parameters[1] << ";\n";
-        break;
-    case CPHVB_LOGICAL_AND:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_OR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_XOR:
-        source << "\t" << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
-        break;
-    case CPHVB_INVERT:
-        source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
-        break;
-    case CPHVB_LEFT_SHIFT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
-        break;
-    case CPHVB_RIGHT_SHIFT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
-        break;
-    case CPHVB_GREATER:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
-        break;
-    case CPHVB_GREATER_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LESS:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LESS_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
-        break;
-    case CPHVB_NOT_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
-        break;
-    case CPHVB_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
-        break;
-    case CPHVB_MAXIMUM:
-        source << "\t" << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_MINIMUM:
-        source << "\t" << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_IDENTITY:
-        source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
-        break;
-    default:
-        throw std::runtime_error("Instruction not supported.");
-    }
 }
 
 bool InstructionBatch::read(BaseArray* array)

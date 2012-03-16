@@ -17,13 +17,13 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERDEFINEDFUNCTION_HPP
-#define __USERDEFINEDFUNCTION_HPP
+#include <vector>
+#include <iostream>
+#include <cphvb.h>
 
-class UserDefinedFunction
-{
-private:
-public:
-};
+void generateGIDSource(size_t size, std::ostream& source);
+void generateOffsetSource(const cphvb_array* operand, std::ostream& source);
+void generateInstructionSource(cphvb_opcode opcode, 
+                               std::vector<std::string>& parameters, 
+                               std::ostream& source);
 
-#endif
