@@ -27,4 +27,4 @@ $(DLLNAME): $(LIBNAME)
 		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib
 
 clean:
-		del *.obj *~ *.lib *.dll
+		del *.obj *.lib *.dll *.exp *.pdb *.ilk
