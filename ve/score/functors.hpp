@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdlib>
+#include <cphvb_win_math.hpp>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -75,7 +76,12 @@ struct power_functor {
 template <typename T1, typename T2, typename T3>
 struct remainder_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
+#ifdef _WIN32
+		//We need a typecast here so VC can pick the right version
+        *op1 = *op2 - floor((T1)(*op2 / *op3)) * *op3;
+#else
         *op1 = *op2 - floor(*op2 / *op3) * *op3;
+#endif
     }
 };
 
