@@ -26,14 +26,14 @@
 extern "C" {
 #endif
 
-cphvb_error cphvb_ve_score_init(cphvb_com *self);
+DLLEXPORT cphvb_error cphvb_ve_score_init(cphvb_com *self);
 
-cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count,
+DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count,
                                    cphvb_instruction* instruction_list);
 
-cphvb_error cphvb_ve_score_shutdown(void);
+DLLEXPORT cphvb_error cphvb_ve_score_shutdown(void);
 
-cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+DLLEXPORT cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus
 }
