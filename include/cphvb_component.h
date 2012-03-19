@@ -35,6 +35,9 @@ extern "C" {
 //a function.
 #define CPHVB_COM_NAME_SIZE (1024)
 
+//Maximum number of support childs for a component
+#define CPHVB_COM_MAX_CHILDS (10)
+
 //Prototype of the cphvb_com datatype.
 typedef struct cphvb_com_struct cphvb_com;
 
