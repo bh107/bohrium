@@ -33,8 +33,8 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     kernel = resourceManager->createKernel(source.c_str(), name.c_str());
 }
 
-cl::Event Kernel::call(Parameters& parameters,
-                       const std::vector<cphvb_index>& shape)
+void Kernel::call(Parameters& parameters,
+                  const std::vector<cphvb_index>& shape)
 {
     unsigned int device = 0;
     cl::NDRange globalSize;
@@ -77,5 +77,4 @@ cl::Event Kernel::call(Parameters& parameters,
         else
             pit->first->addReadEvent(event);
     }
-    return event;
 }

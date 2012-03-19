@@ -85,7 +85,7 @@ bool InstructionBatch::disjointView(const cphvb_array* a, const cphvb_array* b)
     //assumes the the views shape are the same and they have the same base
     int astart = a->start;
     int bstart = b->start;
-    int stride;
+    int stride = 1;
     for (int i = 0; i < a->ndim; ++i)
     {
         stride = gcd(a->stride[i], b->stride[i]);
@@ -208,21 +208,21 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     return Kernel(resourceManager, shape.size(), signature, code, ss.str());
 }
 
-cl::Event InstructionBatch::run(ResourceManager* resourceManager)
+void InstructionBatch::run(ResourceManager* resourceManager)
 {
-    if (output.begin() == output.end())
-        return resourceManager->completeEvent();
-    Kernel kernel = generateKernel(resourceManager);
-    Kernel::Parameters kernelParameters;
-    for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+    if (output.begin() != output.end())
     {
-        if (output.find(pit->second.first) == output.end())
-            kernelParameters.push_back(std::make_pair(pit->second.first, false));
-        else
-            kernelParameters.push_back(std::make_pair(pit->second.first, true));
+        Kernel kernel = generateKernel(resourceManager);
+        Kernel::Parameters kernelParameters;
+        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        {
+            if (output.find(pit->second.first) == output.end())
+                kernelParameters.push_back(std::make_pair(pit->second.first, false));
+            else
+                kernelParameters.push_back(std::make_pair(pit->second.first, true));
+        }
+        kernel.call(kernelParameters, shape);
     }
-    cl::Event event = kernel.call(kernelParameters, shape);
-    return event;
 }
 
 std::string InstructionBatch::generateCode(const std::string& kernelName)

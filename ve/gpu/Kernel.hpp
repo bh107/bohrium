@@ -40,8 +40,8 @@ public:
            const std::vector<OCLtype>& signature_,
            const std::string& source, 
            const std::string& name); 
-    cl::Event call(Parameters& parameters,
-                   const std::vector<cphvb_index>& shape);
+    void call(Parameters& parameters,
+              const std::vector<cphvb_index>& shape);
 };
 
 #endif
