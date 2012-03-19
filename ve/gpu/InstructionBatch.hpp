@@ -46,6 +46,7 @@ private:
     static int kernel;
     bool shapeMatch(cphvb_intp ndim, const cphvb_index dims[]);
     bool sameView(const cphvb_array* a, const cphvb_array* b);
+    bool disjointView(const cphvb_array* a, const cphvb_array* b);
     std::string generateCode(const std::string& kernelName);
 public:
     InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);

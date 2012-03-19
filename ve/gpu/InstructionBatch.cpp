@@ -68,6 +68,41 @@ bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
     return true;
 }
 
+inline int gcd(int a, int b)
+{
+    int c = a % b;
+    while(c != 0)
+    {
+        a = b;
+        b = c;
+        c = a % b;
+    }
+    return b;
+}
+
+bool InstructionBatch::disjointView(const cphvb_array* a, const cphvb_array* b)
+{
+    //assumes the the views shape are the same and they have the same base
+    int astart = a->start;
+    int bstart = b->start;
+    int stride;
+    for (int i = 0; i < a->ndim; ++i)
+    {
+        stride = gcd(a->stride[i], b->stride[i]);
+        int as = astart / stride;
+        int bs = bstart / stride;
+        int ae = as + a->shape[i] * (a->stride[i]/stride);
+        int be = bs + b->shape[i] * (b->stride[i]/stride);
+        if (ae <= bs || be <= as)
+            return true;
+        astart %= stride;
+        bstart %= stride;
+    }
+    if (stride > 1 && a->start % stride != b->start % stride)
+        return true;
+    return false;
+}
+
 void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
 {
     assert(!operandBase[0]->isScalar());
@@ -76,7 +111,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
         throw BatchException(0);
 
-    // If any operand's base is already used as output, it has to be alligned.
+    // If any operand's base is already used as output, it has to be alligned or disjoint
     for (size_t op = 0; op < operandBase.size(); ++op)
     {
         if (!cphvb_scalar(inst->operand[op]))
@@ -88,15 +123,19 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
                 {
                     inst->operand[op] = oit->second;
                 } 
-                else 
+                else if (!disjointView(oit->second, inst->operand[op])) 
                 { 
+#ifdef DEBUG
+                    std::cout << "FAIL: disjointView("<< oit->second << ", " << 
+                        inst->operand[op] << ")" << std::endl;
+#endif
                     throw BatchException(0);
                 }
             }
         }
     }
 
-    // If the output operans is allready used as input it has to be alligned 
+    // If the output operans is allready used as input it has to be alligned or disjoint
     std::pair<InputMap::iterator, InputMap::iterator> irange = input.equal_range(operandBase[0]);
     for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
     {
@@ -104,8 +143,12 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         {
             inst->operand[0] = iit->second;
         } 
-        else 
+        else if (!disjointView(iit->second, inst->operand[0]))
         {
+#ifdef DEBUG
+            std::cout << "FAIL: disjointView("<< iit->second << ", " << 
+                inst->operand[0] << ")" << std::endl;
+#endif
             throw BatchException(0);
         }
     }
