@@ -82,9 +82,15 @@ void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        cl::Event event = batch->run(resourceManager);
+        batch->run(resourceManager);
         if (discardSet)
-            event.setCallback(CL_COMPLETE, &baseArrayDeleter, discardSet);
+        {
+            for (std::set<BaseArray*>::iterator dsit = discardSet->begin(); dsit != discardSet->end(); ++dsit)
+            {
+                delete *dsit;
+            }
+            delete discardSet;
+        }
         delete batch;
         batch = 0;
         discardSet = 0;
@@ -226,17 +232,4 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
 void InstructionScheduler::registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc)
 {
     functionMap[id] = userfunc;
-}
-
-void CL_CALLBACK InstructionScheduler::baseArrayDeleter(cl_event event, 
-                                                               cl_int eventStatus, 
-                                                               void* baseArraySet)
-{
-    assert(eventStatus == CL_COMPLETE);
-    std::set<BaseArray*>* discardSet = (std::set<BaseArray*>*)baseArraySet;
-    for (std::set<BaseArray*>::iterator dsit = discardSet->begin(); dsit != discardSet->end(); ++dsit)
-    {
-        delete *dsit;
-    }
-    delete discardSet;
 }
