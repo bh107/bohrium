@@ -228,6 +228,73 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     return CPHVB_SUCCESS;
 }
 
+/* Allocate data memory for the given array if not already allocated.
+ * If @array is a view, the data memory for the base array is allocated.
+ * If the array has an initial value, it is initialized with this value,
+ * otherwise it is returned uninitialized.
+ *
+ * For convenience array is allowed to be NULL.
+ *
+ * @array  The array in question
+ * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ */
+cphvb_error cphvb_data_malloc_and_init(cphvb_array* array)
+{
+    cphvb_intp nelem, bytes;
+    cphvb_array* base;
+
+    if(array == NULL)
+        return CPHVB_SUCCESS;
+
+    base = cphvb_base_array(array);
+
+    if(base->data != NULL)
+        return CPHVB_SUCCESS;
+
+    nelem = cphvb_nelements(base->ndim, base->shape);
+    bytes = nelem * cphvb_type_size(base->type);
+    if(bytes <= 0)
+        return CPHVB_SUCCESS;
+
+    base->data = cphvb_memory_malloc(bytes);
+    if(base->data == NULL)
+    {
+        int errsv = errno;//mmap() sets the errno.
+        printf("cphvb_data_malloc() could not allocate a data region. "
+               "Returned error code: %s.\n", strerror(errsv));
+        return CPHVB_OUT_OF_MEMORY;
+    }
+
+	if (base->has_init_value)
+	{
+		switch(cphvb_type_size(base->type))
+		{
+			case 1:
+				memset(base->data, base->init_value.uint8, nelem);
+				break;
+			case 2:
+				for(int i = 0; i < nelem; i++)
+					((cphvb_uint16*)base->data)[i] = base->init_value.uint16;
+				break;
+			case 4:
+				for(int i = 0; i < nelem; i++)
+					((cphvb_uint32*)base->data)[i] = base->init_value.uint32;
+				break;
+			case 8:
+				for(int i = 0; i < nelem; i++)
+					((cphvb_uint64*)base->data)[i] = base->init_value.uint64;
+				break;
+			default:
+				cphvb_memory_free(base->data, bytes);
+				base->data = NULL;
+				printf("cphvb_data_malloc() could not initialize the data region\n");
+				return CPHVB_OUT_OF_MEMORY;
+		}
+	}
+
+    return CPHVB_SUCCESS;
+}
+
 /* Frees data memory for the given array.
  * For convenience array is allowed to be NULL.
  *
