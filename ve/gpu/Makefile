@@ -5,7 +5,7 @@ LIB=libcphvb_ve_gpu.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
+LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99 -DDBUG
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS -DDEBUG
 
@@ -20,13 +20,13 @@ KERNELDIR=/usr/local/cphvb/
 
 all: $(LIB)
 
-%.o: %.c %.h
+%.o: %.c %.h Makefile
 		$(CC) -c $< -o $@ $(CCFLAGS)
 
-cphvb_ve_gpu.oo: cphvb_ve_gpu.cpp cphvb_ve_gpu.h
+cphvb_ve_gpu.oo: cphvb_ve_gpu.cpp cphvb_ve_gpu.h Makefile
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-%.oo: %.cpp %.hpp
+%.oo: %.cpp %.hpp Makefile
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 $(LIB): $(OBJECTS)
