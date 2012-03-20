@@ -159,25 +159,28 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     for (size_t op = 1; op < operandBase.size(); ++op)
     {
         OutputMap::iterator oit = output.find(operandBase[op]);
-        irange = input.equal_range(operandBase[op]);
-        if (irange.first == irange.second && oit == output.end())
-        {  //first time we encounter this basearray
-            input.insert(std::make_pair(operandBase[op], inst->operand[op]));
-        }
-        else if (oit != output.end() && sameView(oit->second, inst->operand[op])) 
-        {  //it is allready part of the output 
+        if (oit != output.end() && sameView(oit->second, inst->operand[op]))
+        {  //it is allready part of the output
             inst->operand[op] = oit->second;
-        } 
+            continue;
+        }
+        bool found = false;
+        irange = input.equal_range(operandBase[op]);
         for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
         {
-            if (sameView(iit->second, inst->operand[op])) //it is allready part of the input
-            {
+            if (sameView(iit->second, inst->operand[op]))
+            { //it is allready part of the input
                 inst->operand[op] = iit->second;
-            } else { //it is a new view on a known base array
-                input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+                found = true;
+                break;
             }
         }
+        if (!found)
+        { //it is a new array or view
+            input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+        }
     }
+    
 
     // Register output
     output[operandBase[0]] = inst->operand[0];
