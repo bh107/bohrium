@@ -270,7 +270,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
         cphvb_intp nops = cphvb_operands(inst->opcode);
         for(cphvb_intp i=0; i<nops; ++i)
         {
-            if(cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+            if(cphvb_data_malloc_and_init(inst->operand[i]) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 ret = CPHVB_PARTIAL_SUCCESS;

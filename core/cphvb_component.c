@@ -239,7 +239,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
     if(tchildren == NULL)
         exit(CPHVB_ERROR);
 
-    *children = (cphvb_com**)malloc(10 * sizeof(cphvb_com *));
+    *children = (cphvb_com**)malloc(CPHVB_COM_MAX_CHILDS * sizeof(cphvb_com *));
     if(*children == NULL)
     {
         fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
@@ -248,7 +248,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
 
     //Handle one child at a time.
     child = strtok(tchildren,",");
-    while(child != NULL)
+    while(child != NULL && *count < CPHVB_COM_MAX_CHILDS)
     {
     	(*children)[*count] = (cphvb_com*)malloc(sizeof(cphvb_com));
         cphvb_com *com = (*children)[*count];

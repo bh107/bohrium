@@ -161,8 +161,8 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     }
 
     //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
+    if(cphvb_data_malloc_and_init(a->operand[0]) != CPHVB_SUCCESS ||
+       cphvb_data_malloc_and_init(a->operand[1]) != CPHVB_SUCCESS)
     {
         return CPHVB_OUT_OF_MEMORY;
     }
