@@ -94,7 +94,6 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
     source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
     source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
-    cphvb_instruction inst;
     generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
     source << "\t}\n\tout[";
     i = 0;
