@@ -20,10 +20,12 @@
 #include <vector>
 #include <iostream>
 #include <cphvb.h>
+#include "OCLtype.h"
 
 void generateGIDSource(size_t size, std::ostream& source);
 void generateOffsetSource(const cphvb_array* operand, std::ostream& source);
-void generateInstructionSource(cphvb_opcode opcode, 
+void generateInstructionSource(cphvb_opcode opcode,
+                               OCLtype returnType, 
                                std::vector<std::string>& parameters, 
                                std::ostream& source);
 

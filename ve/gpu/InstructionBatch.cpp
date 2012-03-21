@@ -300,7 +300,7 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
         }
 
         // generate source code for the instruction
-        generateInstructionSource((*iit)->opcode, operands, source);
+        generateInstructionSource((*iit)->opcode, oclType((*iit)->operand[0]->type), operands, source);
     }
 
     // Save output parameters

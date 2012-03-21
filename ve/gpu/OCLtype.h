@@ -45,6 +45,7 @@ typedef enum
 OCLtype oclType(cphvb_type vbtype);
 const char* oclTypeStr(OCLtype type);
 size_t oclSizeOf(OCLtype type);
+bool isFloat(OCLtype type);
 
 #ifdef __cplusplus
 }
