@@ -113,6 +113,8 @@ for i in xrange(timesteps):
                                       g/2*Hy[:-1,1:]**2) - \
                                      (Vy[:-1,:-1]**2/Hy[:-1,:-1] + \
                                       g/2*Hy[:-1,:-1]**2))
+if B.cphvb:
+    cphvbnumpy.unhandle_array(H)
 
 B.stop()
 B.pprint()
