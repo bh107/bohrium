@@ -21,26 +21,37 @@
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
 
-void generateGIDSource(size_t size, std::ostream& source)
+void generateGIDSource(std::vector<cphvb_index> shape, std::ostream& source)
 {
-    if (size > 2)
+    size_t ndim = shape.size();
+    assert(ndim > 0);    
+    if (ndim > 2)
+    {
         source << "\tconst size_t gidz = get_global_id(2);\n";
-    if (size > 1)
+        source << "\tif (gidz >= " << shape[ndim-3] << ")\n\t\treturn;\n";
+    }
+    if (ndim > 1)
+    {
         source << "\tconst size_t gidy = get_global_id(1);\n";
+        source << "\tif (gidy >= " << shape[ndim-2] << ")\n\t\treturn;\n";
+    }
     source << "\tconst size_t gidx = get_global_id(0);\n";
+    source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
 }
 
 void generateOffsetSource(const cphvb_array* operand, std::ostream& source)
 {
-    if (operand->ndim > 2)
+    cphvb_index ndim = operand->ndim;
+    assert(ndim > 0);
+    if (ndim > 2)
     {
-        source << "gidz*" << operand->stride[2] << " + ";
+        source << "gidz*" << operand->stride[ndim-3] << " + ";
     }
-    if (operand->ndim > 1)
+    if (ndim > 1)
     {
-        source << "gidy*" << operand->stride[1] << " + ";
+        source << "gidy*" << operand->stride[ndim-2] << " + ";
     }
-    source << "gidx*" << operand->stride[0] << " + " << operand->start;
+    source << "gidx*" << operand->stride[ndim-1] << " + " << operand->start;
 }
 
 void generateInstructionSource(cphvb_opcode opcode,

@@ -18,6 +18,7 @@
  */
 
 #include "ResourceManager.hpp"
+#include <cassert>
 #include <stdexcept>
 #include <iostream>
 
@@ -42,13 +43,17 @@ ResourceManager::ResourceManager()
     if (foundPlatform)
     {
         devices = context.getInfo<CL_CONTEXT_DEVICES>();
+        maxWorkGroupSize = 1 << 16;
         for(cl::Device& device: devices)        
         {
             commandQueues.push_back(cl::CommandQueue(context,device,0));
+            size_t mwgs = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+            maxWorkGroupSize = maxWorkGroupSize>mwgs?mwgs:maxWorkGroupSize; 
         }
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
+    
 #ifdef STATS
     batchBuild = 0.0;
     batchSource = 0.0;
@@ -147,11 +152,11 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
 
 cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                                 const cl::NDRange& globalSize,
+                                                const cl::NDRange& localSize,
                                                 const std::vector<cl::Event>* waitFor,
                                                 unsigned int device)
 {
     cl::Event event;
-    commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, cl::NullRange, waitFor, &event);
+    commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, localSize, waitFor, &event);
     return event;
 }
-                                                

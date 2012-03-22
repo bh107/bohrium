@@ -32,6 +32,7 @@ private:
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
+    size_t maxWorkGroupSize;
 public:
 #ifdef STATS
     float batchBuild;
@@ -56,6 +57,7 @@ public:
     cl::Kernel createKernel(const char* source, const char* kernelName);
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                    const cl::NDRange& globalSize,
+                                   const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
 };

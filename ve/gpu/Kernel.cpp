@@ -35,17 +35,23 @@ void Kernel::call(Parameters& parameters,
                   const std::vector<cphvb_index>& shape)
 {
     unsigned int device = 0;
-    cl::NDRange globalSize;
+    cl::NDRange globalSize, localSize;
     switch (shape.size())
     {
     case 1:
-        globalSize = cl::NDRange(shape[0]);
+        localSize = cl::NDRange(256);
+        globalSize = cl::NDRange(shape[0] + ((shape[0] % 256)==0?0:256-(shape[0] % 256)));
         break;
     case 2:    
-        globalSize = cl::NDRange(shape[0], shape[1]);
+        localSize = cl::NDRange(32,16);
+        globalSize = cl::NDRange(shape[0] + ((shape[0] % 32)==0?0:32-(shape[0] % 32)), 
+                                 shape[1] + ((shape[1] % 16)==0?0:16-(shape[1] % 16)));
         break;
     case 3:    
-        globalSize = cl::NDRange(shape[0], shape[1], shape[2]);
+        localSize = cl::NDRange(32,4,4);
+        globalSize = cl::NDRange(shape[0] + ((shape[0] % 32)==0?0:32-(shape[0] % 32)), 
+                                 shape[1] + ((shape[1] % 4)==0?0:4-(shape[1] % 4)),
+                                 shape[2] + ((shape[2] % 4)==0?0:4-(shape[2] % 4)));
         break;
     default:
         throw std::runtime_error("More than 3 dimensions not supported.");
@@ -67,7 +73,7 @@ void Kernel::call(Parameters& parameters,
     unsigned int argIndex = 0;
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
         pit->first->addToKernel(true, kernel, argIndex++);
-    cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, &waitFor ,device); 
+    cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, localSize, &waitFor ,device); 
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
         if (pit->second)

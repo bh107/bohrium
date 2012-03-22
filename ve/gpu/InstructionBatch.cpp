@@ -268,7 +268,7 @@ std::string InstructionBatch::generateCode()
 
     source << ")\n{\n";
     
-    generateGIDSource(shape.size(), source);
+    generateGIDSource(shape, source);
     
     // Load input parameters
     for (InputMap::iterator iit = input.begin(); iit != input.end(); ++iit)
