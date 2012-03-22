@@ -54,15 +54,8 @@ cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
 
 cphvb_error cphvb_ve_gpu_shutdown()
 {
-    try 
-    {
-        instructionScheduler->forceFlush();
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        return CPHVB_ERROR;
-    }
+    delete instructionScheduler;
+    delete resourceManager;
     return CPHVB_SUCCESS;
 }
 

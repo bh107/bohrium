@@ -31,13 +31,11 @@ class Kernel
 private:
     ResourceManager* resourceManager;
     cphvb_intp ndim;
-    std::vector<OCLtype> signature;
     cl::Kernel kernel;
 public:
     typedef std::vector<std::pair<BaseArray*, bool>> Parameters;
     Kernel(ResourceManager* resourceManager_, 
            cphvb_intp ndim_,
-           const std::vector<OCLtype>& signature_,
            const std::string& source, 
            const std::string& name); 
     void call(Parameters& parameters,
