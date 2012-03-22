@@ -46,7 +46,12 @@ ResourceManager::ResourceManager()
         maxWorkGroupSize = 1 << 16;
         for(cl::Device& device: devices)        
         {
-            commandQueues.push_back(cl::CommandQueue(context,device,0));
+            commandQueues.push_back(cl::CommandQueue(context,device,
+                                                     CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE
+#ifdef STATS
+                                                     || CL_QUEUE_PROFILING_ENABLE
+#endif
+                                        ));
             size_t mwgs = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
             maxWorkGroupSize = maxWorkGroupSize>mwgs?mwgs:maxWorkGroupSize; 
         }
@@ -120,7 +125,6 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
     timeval start, end;
     gettimeofday(&start,NULL);
 #endif
-#define DEBUG
 #ifdef DEBUG
     std::cout << "Kernel build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";

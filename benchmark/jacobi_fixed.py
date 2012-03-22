@@ -28,6 +28,7 @@ for i in xrange(iterations):
   work += full[2:  , 1:-1]
   work *= 0.2
   full[1:-1, 1:-1] = work
+#  full[1:-1, 1:-1] = (full[1:-1, 1:-1] + full[1:-1, 0:-2] + full[1:-1, 2:  ] +  full[0:-2, 1:-1] + full[2:  , 1:-1]) / 5.0
 if B.cphvb:
   cphvbnumpy.unhandle_array(full)
 
