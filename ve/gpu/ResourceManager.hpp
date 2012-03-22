@@ -22,6 +22,9 @@
 
 #include <CL/cl.hpp>
 #include <vector>
+#ifdef STATS
+#include <sys/time.h>
+#endif
 
 class ResourceManager
 {
@@ -30,6 +33,12 @@ private:
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
 public:
+#ifdef STATS
+    float batchBuild;
+    float batchSource;
+    float resourceCreateKernel;
+    ~ResourceManager();
+#endif
     ResourceManager();
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.

@@ -49,7 +49,22 @@ ResourceManager::ResourceManager()
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
+#ifdef STATS
+    batchBuild = 0.0;
+    batchSource = 0.0;
+    resourceCreateKernel = 0.0;
+#endif
 }
+
+#ifdef STATS
+ResourceManager::~ResourceManager()
+{
+    std::cout << "------------------ STATS ------------------------" << std::endl;
+    std::cout << "Batch building:           " << batchBuild / 1000000 << std::endl;
+    std::cout << "Source generation:        " << batchSource / 1000000 << std::endl;
+    std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000 << std::endl;
+}
+#endif
 
 cl::Buffer ResourceManager::createBuffer(size_t size)
 {
@@ -61,6 +76,7 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
                                  cl::Event waitFor,
                                  unsigned int device)
 {
+    std::cout << "readBuffer()" << std::endl;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     std::vector<cl::Event> readerWaitFor;
     readerWaitFor.push_back(waitFor);
@@ -75,6 +91,7 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
                                               const void* hostPtr, 
                                               unsigned int device)
 {
+    std::cout << "enqueueWriteBuffer()" << std::endl;
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     try {
@@ -94,6 +111,11 @@ cl::Event ResourceManager::completeEvent()
 
 cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
 {
+#ifdef STATS
+    timeval start, end;
+    gettimeofday(&start,NULL);
+#endif
+#define DEBUG
 #ifdef DEBUG
     std::cout << "Kernel build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
@@ -115,7 +137,12 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
         throw std::runtime_error("Could not build Kernel.");
     }
     
-    return cl::Kernel(program, kernelName);
+    cl::Kernel kernel(program, kernelName);
+#ifdef STATS
+    gettimeofday(&end,NULL);
+    resourceCreateKernel += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
+#endif
+    return kernel;
 }
 
 cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel, 

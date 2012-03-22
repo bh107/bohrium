@@ -54,10 +54,7 @@ Kernel UserFunctionReduce::generateKernel(cphvb_reduce_type* reduceDef, UserFunc
     std::stringstream ss;
     ss << "reduce" << kernel++;
     std::string code = UserFunctionReduce::generateCode(reduceDef, userFuncArg->operandBase, ss.str());
-    std::vector<OCLtype> signature;
-    signature.push_back(OCL_BUFFER);
-    signature.push_back(OCL_BUFFER);
-    return Kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim , signature, code, ss.str());
+    return Kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim , code, ss.str());
 }
 
 
@@ -94,7 +91,6 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
     source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
     source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
-    cphvb_instruction inst;
     generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
     source << "\t}\n\tout[";
     i = 0;

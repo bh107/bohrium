@@ -23,12 +23,10 @@
 
 Kernel::Kernel(ResourceManager* resourceManager_, 
                cphvb_intp ndim_,
-               const std::vector<OCLtype>& signature_,
                const std::string& source, 
                const std::string& name)
     : resourceManager(resourceManager_)
     , ndim(ndim_)
-    , signature(signature_)
 {
     kernel = resourceManager->createKernel(source.c_str(), name.c_str());
 }
