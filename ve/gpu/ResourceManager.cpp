@@ -194,12 +194,13 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
 }
 
 #ifdef STATS
-void CL_CALLBACK ResourceManager::eventProfiler(cl_event event, cl_int eventStatus, void* total)
+void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus, void* total)
 {
     assert(eventStatus == CL_COMPLETE);
+    cl::Event event(ev);
     cl_ulong start, end;
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+    start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    end =  event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
     *(double*)total += (double)(end - start) / 1000.0;
 }
 #endif
