@@ -1541,6 +1541,8 @@ public:
 
     Event(const Event& event) : detail::Wrapper<cl_type>(event) { }
 
+    Event(cl_event event) { object_ = event; }
+
     Event& operator = (const Event& rhs)
     {
         if (this != &rhs) {
