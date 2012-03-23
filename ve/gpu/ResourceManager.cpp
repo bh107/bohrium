@@ -27,10 +27,10 @@ ResourceManager::ResourceManager()
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     bool foundPlatform = false;
-    for (cl::Platform platform: platforms)
+    for(std::vector<cl::Platform>::iterator pit = platforms.begin(); pit != platforms.end(); ++pit)        
     {
         try {
-            cl_context_properties props[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform(),0};
+            cl_context_properties props[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(*pit)(),0};
             context = cl::Context(CL_DEVICE_TYPE_GPU, props);
             foundPlatform = true;
             break;
