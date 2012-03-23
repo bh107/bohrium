@@ -35,10 +35,14 @@ private:
     size_t maxWorkGroupSize;
 public:
 #ifdef STATS
-    float batchBuild;
-    float batchSource;
-    float resourceCreateKernel;
+    double batchBuild;
+    double batchSource;
+    double resourceCreateKernel;
+    double resourceBufferWrite;
+    double resourceBufferRead;
+    double resourceKernelExecute;
     ~ResourceManager();
+    static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
     ResourceManager();
     cl::Buffer createBuffer(size_t size);

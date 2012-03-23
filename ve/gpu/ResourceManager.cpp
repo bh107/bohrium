@@ -44,10 +44,15 @@ ResourceManager::ResourceManager()
     {
         devices = context.getInfo<CL_CONTEXT_DEVICES>();
         maxWorkGroupSize = 1 << 16;
-        for(cl::Device& device: devices)        
+        for(std::vector<cl::Device>::iterator dit = devices.begin(); dit != devices.end(); ++dit)        
         {
-            commandQueues.push_back(cl::CommandQueue(context,device,0));
-            size_t mwgs = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+            commandQueues.push_back(cl::CommandQueue(context,*dit,
+                                                     CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE
+#ifdef STATS
+                                                     | CL_QUEUE_PROFILING_ENABLE
+#endif
+                                        ));
+            size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
             maxWorkGroupSize = maxWorkGroupSize>mwgs?mwgs:maxWorkGroupSize; 
         }
     } else {
@@ -58,6 +63,9 @@ ResourceManager::ResourceManager()
     batchBuild = 0.0;
     batchSource = 0.0;
     resourceCreateKernel = 0.0;
+    resourceBufferWrite = 0.0;
+    resourceBufferRead = 0.0;
+    resourceKernelExecute = 0.0;
 #endif
 }
 
@@ -65,9 +73,12 @@ ResourceManager::ResourceManager()
 ResourceManager::~ResourceManager()
 {
     std::cout << "------------------ STATS ------------------------" << std::endl;
-    std::cout << "Batch building:           " << batchBuild / 1000000 << std::endl;
-    std::cout << "Source generation:        " << batchSource / 1000000 << std::endl;
-    std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000 << std::endl;
+    std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
+    std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;
+    std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000.0 << std::endl;
+    std::cout << "Writing buffers:          " << resourceBufferWrite / 1000000.0 << std::endl;
+    std::cout << "Reading buffers:          " << resourceBufferRead / 1000000.0 << std::endl;
+    std::cout << "Executing kernels:        " << resourceKernelExecute / 1000000.0 << std::endl;
 }
 #endif
 
@@ -81,22 +92,38 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
                                  cl::Event waitFor,
                                  unsigned int device)
 {
-    std::cout << "readBuffer()" << std::endl;
+#ifdef DEBUG
+    std::cout << "readBuffer(" << hostPtr << ")" << std::endl;
+#endif
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     std::vector<cl::Event> readerWaitFor;
+#ifdef STATS
+    cl::Event event;
+#endif
     readerWaitFor.push_back(waitFor);
     try {
-        commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, NULL);
+        commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, 
+#ifdef STATS
+                                                &event
+#else
+                                                NULL
+#endif
+            );
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueReadBuffer: \"" << e.err() << "\"" << std::endl;
     }
+#ifdef STATS
+    event.setCallback(CL_COMPLETE, &eventProfiler, &resourceBufferRead);
+#endif
 }
 
 cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
                                               const void* hostPtr, 
                                               unsigned int device)
 {
-    std::cout << "enqueueWriteBuffer()" << std::endl;
+#ifdef DEBUG
+    std::cout << "enqueueWriteBuffer(" << hostPtr << ")" << std::endl;
+#endif
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     try {
@@ -104,6 +131,9 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueWriteBuffer: \"" << e.what() << "\"" << std::endl;
     }
+#ifdef STATS
+    event.setCallback(CL_COMPLETE, &eventProfiler, &resourceBufferWrite);
+#endif
     return event;
 }
 
@@ -120,7 +150,6 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
     timeval start, end;
     gettimeofday(&start,NULL);
 #endif
-#define DEBUG
 #ifdef DEBUG
     std::cout << "Kernel build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
@@ -158,5 +187,19 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
 {
     cl::Event event;
     commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, localSize, waitFor, &event);
+#ifdef STATS
+    event.setCallback(CL_COMPLETE, &eventProfiler, &resourceKernelExecute);
+#endif
     return event;
 }
+
+#ifdef STATS
+void CL_CALLBACK ResourceManager::eventProfiler(cl_event event, cl_int eventStatus, void* total)
+{
+    assert(eventStatus == CL_COMPLETE);
+    cl_ulong start, end;
+    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+    *(double*)total += (double)(end - start) / 1000.0;
+}
+#endif
