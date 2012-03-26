@@ -21,18 +21,24 @@
 #define __USERFUNCTIONREDUCE_HPP
 
 #include <string>
+#include <map>
 #include <cphvb_reduce.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 
 namespace UserFunctionReduce
 {
-    static int kernel = 0;
+    typedef std::map<std::string, Kernel> KernelMap;
+    static int kernelNo = 0;
+    static KernelMap kernelMap = KernelMap();
+
     void run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
-    Kernel generateKernel(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+    Kernel generateKernel(cphvb_reduce_type* reduceDef, 
+                          UserFuncArg* userFuncArg,
+                          const std::vector<cphvb_index>& shape);
     std::string generateCode(cphvb_reduce_type* reduceDef, 
                              const std::vector<BaseArray*>& operandBase,
-                             const std::string& kernelName);
+                             const std::vector<cphvb_index>& shape);
 }
 
 #endif
