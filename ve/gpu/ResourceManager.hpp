@@ -64,6 +64,7 @@ public:
                                    const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
+    std::vector<size_t> localShape(size_t ndim);
 };
 
 #endif

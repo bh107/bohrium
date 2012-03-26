@@ -39,7 +39,10 @@ public:
            const std::string& source, 
            const std::string& name); 
     void call(Parameters& parameters,
-              const std::vector<cphvb_index>& shape);
+              const std::vector<cphvb_index>& globalShape);
+    void call(Parameters& parameters,
+              const std::vector<cphvb_index>& globalShape,
+              const std::vector<size_t>& localShape);
 };
 
 #endif

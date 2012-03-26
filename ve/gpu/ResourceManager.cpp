@@ -150,6 +150,7 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
     timeval start, end;
     gettimeofday(&start,NULL);
 #endif
+
 #ifdef DEBUG
     std::cout << "Kernel build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
@@ -191,6 +192,29 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
     event.setCallback(CL_COMPLETE, &eventProfiler, &resourceKernelExecute);
 #endif
     return event;
+}
+
+std::vector<size_t> ResourceManager::localShape(size_t ndim)
+{
+    std::vector<size_t> res;
+    switch (ndim)
+    {
+    case 1:
+        res.push_back(256);
+        break;
+    case 2:
+        res.push_back(32);
+        res.push_back(16);
+        break;
+    case 3:
+        res.push_back(32);
+        res.push_back(4);
+        res.push_back(4);
+        break;
+    default:
+        assert (false);
+    }
+    return res;
 }
 
 #ifdef STATS

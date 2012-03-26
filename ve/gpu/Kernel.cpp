@@ -32,26 +32,41 @@ Kernel::Kernel(ResourceManager* resourceManager_,
 }
 
 void Kernel::call(Parameters& parameters,
-                  const std::vector<cphvb_index>& shape)
+                  const std::vector<cphvb_index>& globalShape)
 {
+    call(parameters, globalShape, resourceManager->localShape(globalShape.size()));
+}
+
+void Kernel::call(Parameters& parameters,
+                  const std::vector<cphvb_index>& globalShape,
+                  const std::vector<size_t>& localShape)
+{
+    assert(globalShape.size() == localShape.size());
     unsigned int device = 0;
     cl::NDRange globalSize, localSize;
-    switch (shape.size())
+    int rem0, rem1, rem2;
+    switch (globalShape.size())
     {
     case 1:
-        localSize = cl::NDRange(256);
-        globalSize = cl::NDRange(shape[0] + ((shape[0] % 256)==0?0:256-(shape[0] % 256)));
+        localSize = cl::NDRange(localShape[0]);
+        rem0 = globalShape[0] % localShape[0];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)));
         break;
     case 2:    
-        localSize = cl::NDRange(32,16);
-        globalSize = cl::NDRange(shape[0] + ((shape[0] % 32)==0?0:32-(shape[0] % 32)), 
-                                 shape[1] + ((shape[1] % 16)==0?0:16-(shape[1] % 16)));
+        localSize = cl::NDRange(localShape[0], localShape[1]);
+        rem0 = globalShape[0] % localShape[0];
+        rem1 = globalShape[1] % localShape[1];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)),
+                                 globalShape[1] + (rem1==0?0:(localShape[1]-rem1)));
         break;
     case 3:    
-        localSize = cl::NDRange(32,4,4);
-        globalSize = cl::NDRange(shape[0] + ((shape[0] % 32)==0?0:32-(shape[0] % 32)), 
-                                 shape[1] + ((shape[1] % 4)==0?0:4-(shape[1] % 4)),
-                                 shape[2] + ((shape[2] % 4)==0?0:4-(shape[2] % 4)));
+        localSize = cl::NDRange(localShape[0], localShape[1], localShape[2]);
+        rem0 = globalShape[0] % localShape[0];
+        rem1 = globalShape[1] % localShape[1];
+        rem2 = globalShape[2] % localShape[2];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)),
+                                 globalShape[1] + (rem1==0?0:(localShape[1]-rem1)),
+                                 globalShape[2] + (rem2==0?0:(localShape[2]-rem2)));
         break;
     default:
         throw std::runtime_error("More than 3 dimensions not supported.");
