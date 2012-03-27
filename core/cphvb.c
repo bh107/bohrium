@@ -190,6 +190,29 @@ cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
 	return CPHVB_SUCCESS;
 }
 
+/* Get the data pointer for the array.
+ *
+ * @array The array in question
+ * @result Output area
+ * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ */
+cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result)
+{
+	cphvb_array* base;
+
+    if(array == NULL) 
+    {
+    	fprintf(stderr, "Attempt to get data pointer for a null array\n");
+        return CPHVB_ERROR;
+    }
+
+    base = cphvb_base_array(array);
+
+	*result = base->data;
+	
+	return CPHVB_SUCCESS;
+}
+
 /* Allocate data memory for the given array if not already allocated.
  * If @array is a view, the data memory for the base array is allocated.
  * NB: It does NOT initiate the memory.
