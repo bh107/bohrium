@@ -115,3 +115,31 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
     source << "] = accu;\n}\n";
     return source.str();
 }
+
+std::string UserFunctionReduce::generateCode1D(cphvb_reduce_type* reduceDef, 
+                                               const std::vector<BaseArray*>& operandBase,
+                                               const std::vector<cphvb_index>& shape)
+{
+    cphvb_array* out = reduceDef->operand[0];
+    cphvb_array* in = reduceDef->operand[1];
+    std::stringstream source;
+    std::vector<std::string> operands(3);
+    operands[0] = "accu";
+    operands[1] = "accu";
+    operands[2] = "in[element]";
+    source << "( __global " << oclTypeStr(operandBase[0]->type()) << "* out\n" 
+        "                     , __global " << oclTypeStr(operandBase[1]->type()) << "* in)\n{\n";
+    source << "\tconst size_t gidx = get_global_id(0);\n";
+    source << "\tsize_t element = gidx + " << in->start << ";\n";
+    source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
+    source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis]/shape[0] << "; ++i)\n\t{\n";
+    source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
+    generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
+    source << "\t}\n\telement += " << in->stride[reduceDef->axis] << ";\n\t";
+    source << "\tif (element < " << in->start +  in->shape[reduceDef->axis] * in->stride[reduceDef->axis] << ")\n\t{\n";
+    source << generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
+    source << "\t}\n\tout[";
+    generateOffsetSource(out, source);
+    source << "] = accu;\n}\n";
+    return source.str();
+}
