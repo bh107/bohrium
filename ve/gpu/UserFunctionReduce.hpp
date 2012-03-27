@@ -39,6 +39,9 @@ namespace UserFunctionReduce
     std::string generateCode(cphvb_reduce_type* reduceDef, 
                              const std::vector<BaseArray*>& operandBase,
                              const std::vector<cphvb_index>& shape);
+    void reduce1Dfinnish(cphvb_opcode opcode, 
+                         BaseArray* tmpArray, 
+                         BaseArray* outArray);
 }
 
 #endif
