@@ -19,7 +19,65 @@
 
 #include <cphvb_random.h>
 
-cphvb_error cphvb_random(cphvb_userfunc *arg)
+cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
 {
+    if (arg == NULL)
+        UserFunctionRandom::finalize();
+    cphvb_random_type* randomDef = (cphvb_random_type*)arg;
+    UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
+    assert (reduceDef->nout = 1);
+    assert (reduceDef->nin = 0);
+    assert (userFuncArg->operandBase.size() == 1);
+    if (UserFunctionRandom::resourceManager == NULL)
+    {
+        UserFunctionRandom::resourceManager = userFuncArg->resourceManager;
+        UserFunctionRandom::initialize();
+    }
+    assert (UserFunctionRandom::resourceManager == userFuncArg->resourceManager);
+    UserFunctionRandom:run(randomDef, userFuncArg);
+    return CPHVB_SUCCESS;
+}
 
+#define TPB 128
+#define BPG 128
+
+void UserFunctionReduce::initialize()
+{
+    cl_uint4* init_data = new cl_uint4[BPG*TPB];
+    srandom((unsigned int)std::time(NULL));
+    for (int i = 0; i < BPG*TPB; ++i)
+    {
+        while ((init_data[i].s0 = random())<129);
+        while ((init_data[i].s1 = random())<129);
+        while ((init_data[i].s2 = random())<129);
+        while ((init_data[i].s3 = random())<129);
+    }
+    
+    init_array.base = NULL;
+    init_array.type = CPHVB_UINT32;
+    init_array.ndim = 1;
+    init_array.start = 0;
+    init_array.shape[0] = BPG*TPB;
+    init_array.stride[0] = 1;
+    init_array.data = init_data;
+    state = new BaseArray(&init_array, resourceManager);
+    cl::Event event = state->getWriteEvent();
+    event.setCallback(CL_COMPLETE, &hostDataDelete, init_data);
+}
+
+void CL_CALLBACK UserFunctionReduce::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
+{
+    assert(eventStatus == CL_COMPLETE);
+    delete data;
+}
+
+
+void UserFunctionRandom::finalize()
+{
+    delete state;
+}
+
+void UserFunctionReduce::run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg)
+{
+    
 }
