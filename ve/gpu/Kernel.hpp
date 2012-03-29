@@ -36,6 +36,9 @@ public:
     typedef std::vector<std::pair<BaseArray*, bool>> Parameters;
     Kernel(ResourceManager* resourceManager_, 
            cphvb_intp ndim_,
+           cl::Kernel kernel_);
+    Kernel(ResourceManager* resourceManager_, 
+           cphvb_intp ndim_,
            const std::string& source, 
            const std::string& name); 
     void call(Parameters& parameters,
@@ -43,6 +46,14 @@ public:
     void call(Parameters& parameters,
               const std::vector<cphvb_index>& globalShape,
               const std::vector<size_t>& localShape);
+    static std::vector<Kernel> createKernels(ResourceManager* resourceManager_, 
+                                             const std::vector<cphvb_intp> ndims,
+                                             const std::string& source, 
+                                             const std::vector<std::string>& kernelNames); 
+    static  std::vector<Kernel> createKernelsFromFile(ResourceManager* resourceManager_, 
+                                                      const std::vector<cphvb_intp> ndims,
+                                                      const std::string& fileName, 
+                                                      const std::vector<std::string>& kernelNames); 
 };
 
 #endif

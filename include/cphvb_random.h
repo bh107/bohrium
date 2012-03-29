@@ -26,6 +26,7 @@
  * by specifying an alternative library in the config.ini.
  */
 
+#include "cphvb_instruction.h"
 
 #ifdef __cplusplus
 extern "C" {
