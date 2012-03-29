@@ -58,7 +58,10 @@ public:
                                  const void* hostPtr, 
                                  unsigned int device);
     cl::Event completeEvent();
-    cl::Kernel createKernel(const char* source, const char* kernelName);
+    cl::Kernel createKernel(const std::string& source, 
+                            const std::string& kernelName);
+    std::vector<cl::Kernel> createKernels(const std::string& source, 
+                                          const std::vector<std::string>& kernelNames);
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                    const cl::NDRange& globalSize,
                                    const cl::NDRange& localSize,

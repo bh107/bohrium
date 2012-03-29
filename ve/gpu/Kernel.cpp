@@ -28,7 +28,7 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     : resourceManager(resourceManager_)
     , ndim(ndim_)
 {
-    kernel = resourceManager->createKernel(source.c_str(), name.c_str());
+    kernel = resourceManager->createKernel(source , name);
 }
 
 void Kernel::call(Parameters& parameters,

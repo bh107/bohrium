@@ -84,7 +84,7 @@ ResourceManager::~ResourceManager()
 
 cl::Buffer ResourceManager::createBuffer(size_t size)
 {
-    return cl::Buffer(context, CL_MEM_READ_WRITE, size, NULL);
+    return cl::Buffer(context, CL_MEM_READ_WRITE, size);
 }
 
 void ResourceManager::readBuffer(const cl::Buffer& buffer,
@@ -144,7 +144,14 @@ cl::Event ResourceManager::completeEvent()
     return event;
 }
 
-cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelName)
+cl::Kernel ResourceManager::createKernel(const std::string& source, 
+                                          const std::string& kernelName)
+{
+    return createKernels(source, std::vector<std::string>(1,kernelName)).front();
+}
+
+std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source, 
+                                                       const std::vector<std::string>& kernelNames)
 {
 #ifdef STATS
     timeval start, end;
@@ -152,18 +159,18 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
 #endif
 
 #ifdef DEBUG
-    std::cout << "Kernel build :\n";
+    std::cout << "Program build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
 #endif
-    cl::Program::Sources sources(1,std::make_pair(source,0));
+    cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
         program.build(devices);
     } catch (cl::Error) {
 #ifdef DEBUG
-        std::cerr << "Kernel build error:\n";
+        std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
@@ -172,12 +179,16 @@ cl::Kernel ResourceManager::createKernel(const char* source, const char* kernelN
         throw std::runtime_error("Could not build Kernel.");
     }
     
-    cl::Kernel kernel(program, kernelName);
+    std::vector<cl::Kernel> kernels;
+    for (std::vector<std::string>::const_iterator knit = kernelNames.begin(); knit != kernelNames.end(); ++knit)
+    {
+        kernels.push_back(cl::Kernel(program, knit->c_str()));
+    }
 #ifdef STATS
     gettimeofday(&end,NULL);
     resourceCreateKernel += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
 #endif
-    return kernel;
+    return kernels;
 }
 
 cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel, 
