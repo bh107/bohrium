@@ -76,9 +76,18 @@ void UserFunctionRandom::initialize()
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       "/opt/cphvb/lib/ocl_source/HybridTaus.cl", kernelNames);
-    kernelMap[OCL_INT32] = kernels[0];
-    kernelMap[OCL_UINT32] = kernels[1];
-    kernelMap[OCL_FLOAT32] = kernels[2];
+    kernelMap.insert(std::make_pair(OCL_INT32, kernels[0]));
+    kernelMap.insert(std::make_pair(OCL_UINT32, kernels[1]));
+    kernelMap.insert(std::make_pair(OCL_FLOAT32, kernels[2]));
+    size_array.base = NULL;
+    size_array.type = CPHVB_INT64;
+    size_array.ndim = 0;
+    size_array.start = 0;
+    size_array.shape[0] = 0;
+    size_array.stride[0] = 0;
+    size_array.data = &size_array_data;
+    size = new BaseArray(&size_array, resourceManager);
+    
 }
 
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
@@ -99,7 +108,13 @@ void UserFunctionRandom::run(UserFuncArg* userFuncArg)
     KernelMap::iterator kit = kernelMap.find(array->type());
     if (kit == kernelMap.end())
         throw std::runtime_error("Data type not supported for random number generation.");
-    Kernel::Parameters parameters(1, std::make_pair(array, true));
-    std::vector<cphvb_index> shape(1,BPG*TPB);
-    kit->second.call(parameters, shape);
+    size_array_data = array->size();    
+    Kernel::Parameters parameters;
+    parameters.push_back(std::make_pair(array, true));
+    parameters.push_back(std::make_pair(size, false));
+    parameters.push_back(std::make_pair(state, false));
+    
+    std::vector<size_t> localShape(1,BPG*TPB);
+    std::vector<cphvb_index> globalShape(1,array->size());
+    kit->second.call(parameters, globalShape, localShape);
 }

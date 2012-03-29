@@ -86,8 +86,11 @@ void BaseArray::cleanReadEvents()
 
 void BaseArray::addReadEvent(cl::Event event)
 {
-    cleanReadEvents();
-    readEvents.push_back(event);
+    if (!scalar)
+    {
+        cleanReadEvents();
+        readEvents.push_back(event);
+    }
 }
 
 std::deque<cl::Event> BaseArray::getReadEvents()

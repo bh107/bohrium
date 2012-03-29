@@ -37,5 +37,5 @@ clean:
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)
-		sudo cp -r ocl_source $(INSTALLDIR)
+		sudo cp -r ocl_source $(INSTALLDIR)/lib/
 
