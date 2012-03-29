@@ -18,6 +18,7 @@
  */
 
 #include <cassert>
+#include <stdexcept>
 #include <cstdlib>
 #include <ctime>
 #include "UserFunctionRandom.hpp"
@@ -73,16 +74,17 @@ void UserFunctionRandom::initialize()
     kernelNames.push_back("htrand_float32");
     std::vector<cphvb_intp> ndims(3,1);
     std::vector<Kernel> kernels = 
-        Kernel::createKernelsFromFile("/opt/cphvb/lib/ocl_source/HybridTaus.cl", kernelNames);
-    kernelMap[OCL_INT32] = kernel[0];
-    kernelMap[OCL_UINT32] = kernel[1];
-    kernelMap[OCL_FLOAT32] = kernel[2];
+        Kernel::createKernelsFromFile(resourceManager, ndims, 
+                                      "/opt/cphvb/lib/ocl_source/HybridTaus.cl", kernelNames);
+    kernelMap[OCL_INT32] = kernels[0];
+    kernelMap[OCL_UINT32] = kernels[1];
+    kernelMap[OCL_FLOAT32] = kernels[2];
 }
 
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
 {
     assert(eventStatus == CL_COMPLETE);
-    delete data;
+    delete (cl_uint4*)data;
 }
 
 
@@ -91,7 +93,7 @@ void UserFunctionRandom::finalize()
     delete state;
 }
 
-void UserFunctionRandom::run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg)
+void UserFunctionRandom::run(UserFuncArg* userFuncArg)
 {
     BaseArray* array = userFuncArg->operandBase[0];
     KernelMap::iterator kit = kernelMap.find(array->type());
@@ -99,5 +101,5 @@ void UserFunctionRandom::run(cphvb_reduce_type* reduceDef, UserFuncArg* userFunc
         throw std::runtime_error("Data type not supported for random number generation.");
     Kernel::Parameters parameters(1, std::make_pair(array, true));
     std::vector<cphvb_index> shape(1,BPG*TPB);
-    kit->call(parameters, shape);
+    kit->second.call(parameters, shape);
 }
