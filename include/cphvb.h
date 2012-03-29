@@ -166,6 +166,14 @@ DLLEXPORT cphvb_array* cphvb_base_array(cphvb_array* view);
  */
 DLLEXPORT cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data);
 
+/* Get the data pointer for the array.
+ *
+ * @array The array in question
+ * @result Output area
+ * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ */
+DLLEXPORT cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result);
+
 /* Allocate data memory for the given array if not already allocated.
  * If @array is a view, the data memory for the base array is allocated.
  * NB: It does NOT initiate the memory.

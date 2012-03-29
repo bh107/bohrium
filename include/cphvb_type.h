@@ -76,10 +76,11 @@ typedef union /* cphvb_constant */
     cphvb_float64  float64;
 } cphvb_constant;
 
-typedef long int   cphvb_intp;
+typedef int64_t    cphvb_intp;
 typedef cphvb_intp cphvb_index;
 typedef cphvb_intp cphvb_type;
 typedef cphvb_intp cphvb_opcode;
+typedef cphvb_intp cphvb_error;
 typedef void*      cphvb_data_ptr;
 
 #ifdef __cplusplus

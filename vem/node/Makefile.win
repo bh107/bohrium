@@ -6,7 +6,7 @@ LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
 WARNOPTS=#-Wall
-CFLAGS=$(WARNOPTS) /Z7 /Fd /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
+CFLAGS=$(WARNOPTS) /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
 LDFLAGS=/LD /MD /nologo
 SRC=cphvb_vem_node.cpp ArrayManager.cpp
 OBJ=$(SRC:.cpp=.obj)
