@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <stdexcept>
 #include "GenerateSourceCode.hpp"
 #include "UserFunctionReduce.hpp"
 
@@ -30,40 +31,85 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert(reduceDef->nout = 1);
     assert(reduceDef->nin = 1);
-    assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim);
+    assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim || cphvb_scalar(reduceDef->operand[0]));
     assert(reduceDef->operand[0]->type == reduceDef->operand[1]->type);
     assert(userFuncArg->operandBase.size() == 2);
     UserFunctionReduce::run(reduceDef, userFuncArg);
     return CPHVB_SUCCESS;
 }
 
+#define TPB 128
+#define BPG 128
+
 void UserFunctionReduce::run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg)
 {
-    Kernel kernel = UserFunctionReduce::generateKernel(reduceDef, userFuncArg);
+    cphvb_array* out = reduceDef->operand[0];
+    std::vector<cphvb_index> shape;
+    if (cphvb_scalar(out))
+        shape.push_back(BPG*TPB);
+    else
+        shape = std::vector<cphvb_index>(out->shape, out->shape + out->ndim);
+    Kernel kernel = generateKernel(reduceDef, userFuncArg, shape);
     Kernel::Parameters kernelParameters;
-    kernelParameters.push_back(std::make_pair(userFuncArg->operandBase[0], true));
+    BaseArray* outArray;
+    if (cphvb_scalar(out))
+    {
+        cphvb_array out_temp;
+        out_temp.base = NULL;
+        out_temp.type = out->type;
+        out_temp.ndim = 1;
+        out_temp.start = 0;
+        out_temp.shape[0] = BPG*TPB;
+        out_temp.stride[0] = 1;
+        out_temp.data = NULL;
+        outArray = new BaseArray(&out_temp, userFuncArg->resourceManager);
+    }
+    else 
+        outArray = userFuncArg->operandBase[0];
+    kernelParameters.push_back(std::make_pair(outArray, true));
     kernelParameters.push_back(std::make_pair(userFuncArg->operandBase[1], false));
-    std::vector<cphvb_index> shape = 
-        std::vector<cphvb_index>(reduceDef->operand[0]->shape, 
-                                 reduceDef->operand[0]->shape + reduceDef->operand[0]->ndim);
-    kernel.call(kernelParameters, shape);
+    if (cphvb_scalar(out))
+    {
+        std::vector<size_t> localShape;
+        localShape.push_back(TPB);
+        kernel.call(kernelParameters, shape, localShape);
+        reduce1Dfinnish(reduceDef->opcode, outArray, userFuncArg->operandBase[0]);
+    } else
+        kernel.call(kernelParameters, shape);
 }
 
-Kernel UserFunctionReduce::generateKernel(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg)
+Kernel UserFunctionReduce::generateKernel(cphvb_reduce_type* reduceDef, 
+                                          UserFuncArg* userFuncArg,
+                                          const std::vector<cphvb_index>& shape)
 {
-    std::stringstream ss;
-    ss << "reduce" << kernel++;
-    std::string code = UserFunctionReduce::generateCode(reduceDef, userFuncArg->operandBase, ss.str());
-    std::vector<OCLtype> signature;
-    signature.push_back(OCL_BUFFER);
-    signature.push_back(OCL_BUFFER);
-    return Kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim , signature, code, ss.str());
+#ifdef STATS
+    timeval start, end;
+    gettimeofday(&start,NULL);
+#endif
+    std::string code = generateCode(reduceDef, userFuncArg->operandBase, shape);
+#ifdef STATS
+    gettimeofday(&end,NULL);
+    userFuncArg->resourceManager->batchSource += 
+        (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
+#endif
+    KernelMap::iterator kit = kernelMap.find(code);
+    if (kit == kernelMap.end())
+    {
+        std::stringstream source, kname;
+        kname << "reduce" << kernelNo++;
+        source << "__kernel void " << kname.str() << code;
+        Kernel kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim, source.str(), kname.str());
+        kernelMap.insert(std::make_pair(code, kernel));
+        return kernel;
+    } else {
+        return kit->second;
+    }
 }
 
 
 std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef, 
                                              const std::vector<BaseArray*>& operandBase,
-                                             const std::string& kernelName)
+                                             const std::vector<cphvb_index>& shape)
 {
     cphvb_array* out = reduceDef->operand[0];
     cphvb_array* in = reduceDef->operand[1];
@@ -72,36 +118,94 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
     operands[0] = "accu";
     operands[1] = "accu";
     operands[2] = "in[element]";
-    source << "__kernel void " << kernelName << "(" <<
-        " __global " << oclTypeStr(operandBase[0]->type()) << "* out\n" 
-        "                     , __global " << oclTypeStr(operandBase[1]->type()) << "* in"
-        //", __local  " << oclTypeStr(oclType(CPHVB_INDEX)) << " axis" 
-        ")\n{\n";
-    
-    source << "\tsize_t element = ";
-    int i = 0;
-    int a = (reduceDef->axis)?0:1;
-    source << "get_global_id(" << i++ << ")*" << in->stride[a++];
-    if (i == reduceDef->axis)
-        ++a;
-    while (a < in->ndim)
+    source << "( __global " << oclTypeStr(operandBase[0]->type()) << "* out\n" 
+        "                     , __global " << oclTypeStr(operandBase[1]->type()) << "* in)\n{\n";
+    if (cphvb_scalar(out))
     {
-        source << " + get_global_id(" << i++ << ")*" << in->stride[a++];
-        if (i == reduceDef->axis)
-            ++a;
+        source << "\tconst size_t gidx = get_global_id(0);\n";
+        source << "\tsize_t element = gidx*" << in->stride[reduceDef->axis] << " + " << in->start << ";\n";
+        source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = 0;\n";
+        source << "\tfor (int i = 0; i < " << in->shape[reduceDef->axis]/shape[0] << "; ++i)\n\t{\n\t";
+        generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
+        source << "\t\telement += " << in->stride[reduceDef->axis] * BPG*TPB << ";\n\t}\n";
+        source << "\tif (element < " << in->start +  in->shape[reduceDef->axis] * in->stride[reduceDef->axis] 
+               << ")\n\t{\n\t";
+        generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
+    } else {
+        cphvb_array inn(*in);
+        inn.ndim = in->ndim - 1;
+        int i = 0;
+        int a = (reduceDef->axis)?0:1;
+        while (a < in->ndim)
+        {
+            inn.shape[i] = in->shape[a];
+            inn.stride[i++] = in->stride[a++];
+            if (i == reduceDef->axis)
+                ++a;
+        }
+        generateGIDSource(shape, source);
+        source << "\tsize_t element = ";
+        generateOffsetSource(&inn, source);
+        source << ";\n";
+        source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
+        source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis] << "; ++i)\n\t{\n";
+        source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
+        generateInstructionSource(reduceDef->opcode, operandBase[0]->type(), operands, source);
     }
-    source << " + " << in->start << ";\n";
-    source << "\t" << oclTypeStr(operandBase[0]->type()) << " accu = in[element];\n";
-    source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis] << "; ++i)\n\t{\n";
-    source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
-    generateInstructionSource(reduceDef->opcode, operands, source);
     source << "\t}\n\tout[";
-    i = 0;
-    source << "get_global_id(" << i << ")*" << out->stride[i];
-    for (++i; i < out->ndim; ++i)
-    {
-        source << " + get_global_id(" << i << ")*" << out->stride[i];
-    }
-    source << " + " << out->start << "] = accu;\n}\n";
+    generateOffsetSource(out, source);
+    source << "] = accu;\n}\n";
     return source.str();
 }
+
+void UserFunctionReduce::reduce1Dfinnish(cphvb_opcode opcode, BaseArray* tmpArray, BaseArray* outArray)
+{
+    if (opcode != CPHVB_ADD)
+        throw std::runtime_error("Opcode not supported for 1D reduce");
+    tmpArray->sync();
+    cphvb_array* temp = tmpArray->getSpec();
+    cphvb_array* out = outArray->getSpec();
+    cphvb_data_malloc(out);
+    switch(temp->type)
+    {
+    case CPHVB_INT32:
+    {
+        cphvb_int32* in = (cphvb_int32*)temp->data;
+        cphvb_int32 accu = in[0];
+        for (int i = 1; i < BPG*TPB; ++i)
+            accu += in[i];
+        *(cphvb_int32*)out->data = accu;
+        break;
+    }
+    case CPHVB_INT64:
+    {
+        cphvb_int64* in = (cphvb_int64*)temp->data;
+        cphvb_int64 accu = in[0];
+        for (int i = 1; i < BPG*TPB; ++i)
+            accu += in[i];
+        *(cphvb_int64*)out->data = accu;
+        break;
+    }
+    case CPHVB_FLOAT32:
+    {
+        cphvb_float32* in = (cphvb_float32*)temp->data;
+        cphvb_float32 accu = in[0];
+        for (int i = 1; i < BPG*TPB; ++i)
+            accu += in[i];
+        *(cphvb_float32*)out->data = accu;
+        break;
+    }
+    case CPHVB_FLOAT64:
+    {
+        cphvb_float64* in = (cphvb_float64*)temp->data;
+        cphvb_float64 accu = in[0];
+        for (int i = 1; i < BPG*TPB; ++i)
+            accu += in[i];
+        *(cphvb_float64*)out->data = accu;
+        break;
+    }
+    default:
+        throw std::runtime_error("Data type not supported for 1D reduce");
+    }
+}
+

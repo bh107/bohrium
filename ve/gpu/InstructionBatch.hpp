@@ -26,13 +26,16 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
-
+#ifdef STATS
+#include <sys/time.h>
+#endif
 class InstructionBatch
 {
     typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ParameterMap;
     typedef std::map<cphvb_array*, std::string> VariableMap;
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
+    typedef std::map<std::string, Kernel> KernelMap;
 private:
     std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
@@ -43,11 +46,15 @@ private:
     int arraynum;
     int scalarnum;
     int variablenum;
-    static int kernel;
+    static int kernelNo;
+    static KernelMap kernelMap;
+#ifdef STATS
+    timeval createTime;
+#endif
     bool shapeMatch(cphvb_intp ndim, const cphvb_index dims[]);
     bool sameView(const cphvb_array* a, const cphvb_array* b);
     bool disjointView(const cphvb_array* a, const cphvb_array* b);
-    std::string generateCode(const std::string& kernelName);
+    std::string generateCode();
 public:
     InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
     Kernel generateKernel(ResourceManager* resourceManager);

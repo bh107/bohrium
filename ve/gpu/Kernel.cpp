@@ -23,31 +23,50 @@
 
 Kernel::Kernel(ResourceManager* resourceManager_, 
                cphvb_intp ndim_,
-               const std::vector<OCLtype>& signature_,
                const std::string& source, 
                const std::string& name)
     : resourceManager(resourceManager_)
     , ndim(ndim_)
-    , signature(signature_)
 {
-    kernel = resourceManager->createKernel(source.c_str(), name.c_str());
+    kernel = resourceManager->createKernel(source , name);
 }
 
 void Kernel::call(Parameters& parameters,
-                  const std::vector<cphvb_index>& shape)
+                  const std::vector<cphvb_index>& globalShape)
 {
+    call(parameters, globalShape, resourceManager->localShape(globalShape.size()));
+}
+
+void Kernel::call(Parameters& parameters,
+                  const std::vector<cphvb_index>& globalShape,
+                  const std::vector<size_t>& localShape)
+{
+    assert(globalShape.size() == localShape.size());
     unsigned int device = 0;
-    cl::NDRange globalSize;
-    switch (shape.size())
+    cl::NDRange globalSize, localSize;
+    int rem0, rem1, rem2;
+    switch (globalShape.size())
     {
     case 1:
-        globalSize = cl::NDRange(shape[0]);
+        localSize = cl::NDRange(localShape[0]);
+        rem0 = globalShape[0] % localShape[0];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)));
         break;
     case 2:    
-        globalSize = cl::NDRange(shape[0], shape[1]);
+        localSize = cl::NDRange(localShape[0], localShape[1]);
+        rem0 = globalShape[0] % localShape[0];
+        rem1 = globalShape[1] % localShape[1];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)),
+                                 globalShape[1] + (rem1==0?0:(localShape[1]-rem1)));
         break;
     case 3:    
-        globalSize = cl::NDRange(shape[0], shape[1], shape[2]);
+        localSize = cl::NDRange(localShape[0], localShape[1], localShape[2]);
+        rem0 = globalShape[0] % localShape[0];
+        rem1 = globalShape[1] % localShape[1];
+        rem2 = globalShape[2] % localShape[2];
+        globalSize = cl::NDRange(globalShape[0] + (rem0==0?0:(localShape[0]-rem0)),
+                                 globalShape[1] + (rem1==0?0:(localShape[1]-rem1)),
+                                 globalShape[2] + (rem2==0?0:(localShape[2]-rem2)));
         break;
     default:
         throw std::runtime_error("More than 3 dimensions not supported.");
@@ -69,7 +88,7 @@ void Kernel::call(Parameters& parameters,
     unsigned int argIndex = 0;
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
         pit->first->addToKernel(true, kernel, argIndex++);
-    cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, &waitFor ,device); 
+    cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, localSize, &waitFor ,device); 
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
         if (pit->second)

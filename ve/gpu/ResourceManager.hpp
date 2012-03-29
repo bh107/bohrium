@@ -22,6 +22,9 @@
 
 #include <CL/cl.hpp>
 #include <vector>
+#ifdef STATS
+#include <sys/time.h>
+#endif
 
 class ResourceManager
 {
@@ -29,7 +32,18 @@ private:
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
+    size_t maxWorkGroupSize;
 public:
+#ifdef STATS
+    double batchBuild;
+    double batchSource;
+    double resourceCreateKernel;
+    double resourceBufferWrite;
+    double resourceBufferRead;
+    double resourceKernelExecute;
+    ~ResourceManager();
+    static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
+#endif
     ResourceManager();
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
@@ -44,11 +58,16 @@ public:
                                  const void* hostPtr, 
                                  unsigned int device);
     cl::Event completeEvent();
-    cl::Kernel createKernel(const char* source, const char* kernelName);
+    cl::Kernel createKernel(const std::string& source, 
+                            const std::string& kernelName);
+    std::vector<cl::Kernel> createKernels(const std::string& source, 
+                                          const std::vector<std::string>& kernelNames);
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                    const cl::NDRange& globalSize,
+                                   const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
+    std::vector<size_t> localShape(size_t ndim);
 };
 
 #endif

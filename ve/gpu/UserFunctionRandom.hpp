@@ -17,21 +17,21 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERFUNCTIONREDUCE_HPP
-#define __USERFUNCTIONREDUCE_HPP
+#ifndef __USERFUNCTIONRANDOM_HPP
+#define __USERFUNCTIONRANDOM_HPP
 
-#include <string>
-#include <map>
-#include <cphvb_reduce.h>
-#include "UserFuncArg.hpp"
-#include "Kernel.hpp"
+#include <cphvb_random.h>
 
-namespace UserFunctionReduce
+
+namespace UserFunctionRandom
 {
-    typedef std::map<std::string, Kernel> KernelMap;
-    static int kernelNo = 0;
-    static KernelMap kernelMap = KernelMap();
+    static ResourceManager* resourceManager = NULL;
+    static BaseArray* state;
+    static cphvb_array init_array;
 
+    void initialize();
+    void finalize();
+    void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
     void run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
     Kernel generateKernel(cphvb_reduce_type* reduceDef, 
                           UserFuncArg* userFuncArg,
@@ -39,9 +39,4 @@ namespace UserFunctionReduce
     std::string generateCode(cphvb_reduce_type* reduceDef, 
                              const std::vector<BaseArray*>& operandBase,
                              const std::vector<cphvb_index>& shape);
-    void reduce1Dfinnish(cphvb_opcode opcode, 
-                         BaseArray* tmpArray, 
-                         BaseArray* outArray);
 }
-
-#endif

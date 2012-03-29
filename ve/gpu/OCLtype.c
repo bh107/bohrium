@@ -133,3 +133,15 @@ size_t oclSizeOf(OCLtype type)
     }
 }
 
+bool isFloat(OCLtype type)
+{
+    switch (type)
+    {
+    case OCL_FLOAT16:
+    case OCL_FLOAT32:
+    case OCL_FLOAT64:
+        return true;
+    default:
+        return false;
+    }
+}

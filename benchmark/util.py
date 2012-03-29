@@ -59,6 +59,7 @@ class Benchmark:
         self.dtype = eval("np.%s"%self.info['dtype'])
 
     def start(self):
+        cphvbnumpy.flush()
         self.info['totaltime'] = time.time()
 
     def stop(self):

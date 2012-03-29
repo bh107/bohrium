@@ -41,9 +41,10 @@ static void operand_to_str( cphvb_array *op, char buf[] ) {
         if (i< op->ndim-1)
             strcat(stride, ",");
 
-        sprintf(buf, "%p { Base: %p Dims: %d Start: %d Shape: %s Stride: %s Data: %p }",
-            op, op->base, (int)op->ndim, (int)op->start, shape, stride, op->data
-        );
+        sprintf(buf, "%p { Base: %p Dims: %d Start: %d Shape: %s Stride: %s Type: %s Data: %p }",
+                op, op->base, (int)op->ndim, (int)op->start, shape, stride, 
+                cphvb_type_text(op->type), op->data
+            );
 
     }
 

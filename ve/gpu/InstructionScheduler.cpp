@@ -56,11 +56,6 @@ inline void InstructionScheduler::schedule(cphvb_instruction* inst)
     }
 }
 
-void InstructionScheduler::forceFlush()
-{
-    //TODO 
-}
-
 void InstructionScheduler::schedule(cphvb_intp instructionCount,
                                     cphvb_instruction* instructionList)
 {

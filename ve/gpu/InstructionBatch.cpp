@@ -25,13 +25,17 @@
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 
-int InstructionBatch::kernel = 0;
+int InstructionBatch::kernelNo = 0;
+InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
     : arraynum(0)
     , scalarnum(0)
     , variablenum(0)
 {
+#ifdef STATS
+    gettimeofday(&createTime,NULL);
+#endif
     if (inst->operand[0]->ndim > 3)
         throw std::runtime_error("More than 3 dimensions not supported.");        
     shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
@@ -159,25 +163,28 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     for (size_t op = 1; op < operandBase.size(); ++op)
     {
         OutputMap::iterator oit = output.find(operandBase[op]);
-        irange = input.equal_range(operandBase[op]);
-        if (irange.first == irange.second && oit == output.end())
-        {  //first time we encounter this basearray
-            input.insert(std::make_pair(operandBase[op], inst->operand[op]));
-        }
-        else if (oit != output.end() && sameView(oit->second, inst->operand[op])) 
-        {  //it is allready part of the output 
+        if (oit != output.end() && sameView(oit->second, inst->operand[op]))
+        {  //it is allready part of the output
             inst->operand[op] = oit->second;
-        } 
+            continue;
+        }
+        bool found = false;
+        irange = input.equal_range(operandBase[op]);
         for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
         {
-            if (sameView(iit->second, inst->operand[op])) //it is allready part of the input
-            {
+            if (sameView(iit->second, inst->operand[op]))
+            { //it is allready part of the input
                 inst->operand[op] = iit->second;
-            } else { //it is a new view on a known base array
-                input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+                found = true;
+                break;
             }
         }
+        if (!found)
+        { //it is a new array or view
+            input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+        }
     }
+    
 
     // Register output
     output[operandBase[0]] = inst->operand[0];
@@ -197,19 +204,38 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
 
 Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
 {
-    std::stringstream ss;
-    ss << "kernel" << kernel++;
-    std::string code = generateCode(ss.str());
-    std::vector<OCLtype> signature;
-    for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+#ifdef STATS
+    timeval start, end;
+    gettimeofday(&start,NULL);
+#endif
+    std::string code = generateCode();
+#ifdef STATS
+    gettimeofday(&end,NULL);
+    resourceManager->batchSource += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
+#endif
+
+    KernelMap::iterator kit = kernelMap.find(code);
+    if (kit == kernelMap.end())
     {
-        signature.push_back(pit->second.first->parameterType());
+        std::stringstream source, kname;
+        kname << "kernel" << kernelNo++;
+        source << "__kernel void " << kname.str() << code;
+        Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
+        kernelMap.insert(std::make_pair(code, kernel));
+        return kernel;
+    } else {
+        return kit->second;
     }
-    return Kernel(resourceManager, shape.size(), signature, code, ss.str());
 }
 
 void InstructionBatch::run(ResourceManager* resourceManager)
 {
+#ifdef STATS
+    timeval now;
+    gettimeofday(&now,NULL);
+    resourceManager->batchBuild += (now.tv_sec - createTime.tv_sec)*1000000.0 + (now.tv_usec - createTime.tv_usec);
+#endif
+
     if (output.begin() != output.end())
     {
         Kernel kernel = generateKernel(resourceManager);
@@ -225,34 +251,24 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     }
 }
 
-std::string InstructionBatch::generateCode(const std::string& kernelName)
+std::string InstructionBatch::generateCode()
 {
-#ifdef DEBUG
-    std::cout << "[VE-GPU] generateCode(" << kernelName << ")" << std::endl; 
-#endif
     std::stringstream source;
-    source << "__kernel void " << kernelName << "( ";
-
+    source << "( ";
     // Add Array kernel parameters
     ParameterMap::iterator pit = parameters.begin();
     pit->second.first->printKernelParameterType(true, source);
     source << " " << pit->second.second;
-#ifdef DEBUG
-    source << " /* " << pit->first << " */";
-#endif
     for (++pit; pit != parameters.end(); ++pit)
     {
         source << "\n                     , ";
         pit->second.first->printKernelParameterType(true, source);
         source << " " << pit->second.second;
-#ifdef DEBUG
-        source << " /* " << pit->first << " */";
-#endif
     }
 
     source << ")\n{\n";
     
-    generateGIDSource(shape.size(), source);
+    generateGIDSource(shape, source);
     
     // Load input parameters
     for (InputMap::iterator iit = input.begin(); iit != input.end(); ++iit)
@@ -297,7 +313,7 @@ std::string InstructionBatch::generateCode(const std::string& kernelName)
         }
 
         // generate source code for the instruction
-        generateInstructionSource((*iit)->opcode, operands, source);
+        generateInstructionSource((*iit)->opcode, oclType((*iit)->operand[0]->type), operands, source);
     }
 
     // Save output parameters
