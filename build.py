@@ -118,10 +118,20 @@ if __name__ == "__main__":
     except IndexError:
         print "No command given"
         print ""
-        print "Known commands: build, clean, install"
+        print "Known commands: build, clean, install, rebuild"
         sys.exit(-1)
 
-    if cmd == "build":
+    if cmd == "rebuild":
+        clean("INIPARSER", "iniparser")
+        clean("CORE", "core")
+        clean("VE-GPU", "ve/gpu")
+        clean("VE-SIMPLE", "ve/simple")
+        clean("VE-SCORE", "ve/score")
+        clean("VEM-NODE", "vem/node")
+        clean("VEM-CLUSTER", "vem/cluster")
+        clean("BRIDGE-NUMPY", "bridge/numpy")
+
+    if cmd == "build" or cmd == "rebuild":
         build("INIPARSER", "iniparser", True)
         build("CORE", "core", True)
         build("VE-GPU", "ve/gpu", False)
