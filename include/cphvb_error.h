@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 /* Error codes */
-typedef enum /* cphvb_error */
+enum /* cphvb_error */
 {
     CPHVB_SUCCESS,
     CPHVB_ERROR,
