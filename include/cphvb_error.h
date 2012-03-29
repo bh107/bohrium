@@ -43,7 +43,7 @@ typedef enum /* cphvb_error */
     CPHVB_INST_UNDONE,
     CPHVB_INST_NOT_SUPPORTED,
     CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-} cphvb_error ;
+};
 
 
 #ifdef __cplusplus
