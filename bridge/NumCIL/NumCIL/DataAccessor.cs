@@ -44,6 +44,11 @@ namespace NumCIL.Generic
         /// The number of already executed operations
         /// </summary>
         long PendignOperationOffset { get; set; }
+
+        /// <summary>
+        /// Flushes all pending operations on this element
+        /// </summary>
+        void Flush();
     }
 
     /// <summary>
@@ -215,6 +220,13 @@ namespace NumCIL.Generic
             PendingOperations.Clear();
         }
 
+        /// <summary>
+        /// Flushes all instructions queued on this element
+        /// </summary>
+        public void Flush()
+        {
+            ExecutePendingOperations();
+        }
 
         /// <summary>
         /// Function that builds a serialized list of operations to execute to obtain the target output

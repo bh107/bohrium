@@ -421,6 +421,15 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
+        /// Flushes all pending operations on this array
+        /// </summary>
+        public void Flush()
+        {
+            if (m_data is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)m_data).Flush();
+        }
+
+        /// <summary>
         /// Extension to support unmanaged mapping
         /// </summary>
         public object Tag;
