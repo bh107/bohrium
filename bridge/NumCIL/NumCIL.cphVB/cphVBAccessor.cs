@@ -173,7 +173,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A pointer to internally allocated data which is pinned
         /// </summary>
-        protected GCHandle? m_handle = null;
+        protected GCHandle m_handle;
 
         /// <summary>
         /// The default value to fill the array with
@@ -241,10 +241,10 @@ namespace NumCIL.cphVB
             else if (m_externalData == PInvoke.cphvb_array_ptr.Null)
             {
                 //Internally allocated data, we need to pin it
-                if (m_handle == null)
+                if (!m_handle.IsAllocated)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
 
-                m_externalData = CreateBaseView(m_size, m_handle.Value.AddrOfPinnedObject());
+                m_externalData = CreateBaseView(m_size, m_handle.AddrOfPinnedObject());
                 m_ownsData = true;
             }
             else if (m_ownsData && m_externalData.Data == IntPtr.Zero)
@@ -252,7 +252,7 @@ namespace NumCIL.cphVB
                 //Internally allocated data, we need to pin it
                 if (m_handle == null)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                m_externalData.Data = m_handle.Value.AddrOfPinnedObject();
+                m_externalData.Data = m_handle.AddrOfPinnedObject();
             }
 
             return m_externalData;
@@ -266,10 +266,9 @@ namespace NumCIL.cphVB
             if (m_externalData != PInvoke.cphvb_array_ptr.Null)
                 VEM.Execute(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_SYNC, m_externalData));
 
-            if (m_handle != null)
+            if (m_handle.IsAllocated)
             {
-                m_handle.Value.Free();
-                m_handle = null;
+                m_handle.Free();
 
                 m_externalData.Data = IntPtr.Zero;
             }
@@ -466,7 +465,6 @@ namespace NumCIL.cphVB
                     {
                         if (supported.Count > 0)
                         {
-                            Console.WriteLine("Executing {0} instructions", supported.Count);
                             VEM.Execute(supported);
                             supported.Clear();
                         }
@@ -504,10 +502,9 @@ namespace NumCIL.cphVB
         {
             if (m_size > 0)
             {
-                if (m_handle != null)
+                if (m_handle.IsAllocated)
                 {
-                    m_handle.Value.Free();
-                    m_handle = null;
+                    m_handle.Free();
 
                     if (m_externalData != PInvoke.cphvb_array_ptr.Null)
                         PInvoke.cphvb_data_set(m_externalData, IntPtr.Zero);
