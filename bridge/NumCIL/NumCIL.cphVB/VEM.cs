@@ -39,12 +39,23 @@ namespace NumCIL.cphVB
             }
         }
 
-        
+        /// <summary>
+        /// A reference to the cphVB component for "self" aka the bridge
+        /// </summary>
         private PInvoke.cphvb_com m_component;
+        /// <summary>
+        /// A reference to the chpVB VEM
+        /// </summary>
         private PInvoke.cphvb_com[] m_childs;
 
+        /// <summary>
+        /// A list of cleanups not yet performed
+        /// </summary>
         private List<PInvoke.cphvb_instruction> m_cleanups = new List<PInvoke.cphvb_instruction>();
 
+        /// <summary>
+        /// Constructs a new VEM
+        /// </summary>
         public VEM()
         {
             m_component = PInvoke.cphvb_com_setup();
@@ -60,32 +71,52 @@ namespace NumCIL.cphVB
                 throw new cphVBException(e);
 		}
 
+        /// <summary>
+        /// Invokes garbage collection and flushes all pending cleanup messages
+        /// </summary>
         public void Flush()
         {
             GC.Collect();
             ExecuteCleanups();
         }
 
+        /// <summary>
+        /// Executes a list of instructions
+        /// </summary>
+        /// <param name="insts"></param>
         public void Execute(params PInvoke.cphvb_instruction[] insts)
         {
             Execute((IEnumerable<PInvoke.cphvb_instruction>)insts);
         }
 
-        public void SyncAndDestroy(PInvoke.cphvb_array_ptr ptr)
-        {
-            ExecuteRelease(
-                new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_SYNC, ptr),
-                new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DESTROY, ptr)
-            );
-        }
-
+        /// <summary>
+        /// Registers instructions for later execution, usually destroy calls
+        /// </summary>
+        /// <param name="insts">The instructions to queue</param>
         public void ExecuteRelease(params PInvoke.cphvb_instruction[] insts)
         {
-            //Lock is not really required as the GC is single threaded
+            //Lock is not really required as the GC is single threaded,
+            // but user code could also call this
             lock(m_releaselock)
                 m_cleanups.AddRange(insts);
         }
 
+        /// <summary>
+        /// Registers an instruction for later execution, usually destroy calls
+        /// </summary>
+        /// <param name="inst">The instruction to queue</param>
+        public void ExecuteRelease(PInvoke.cphvb_instruction inst)
+        {
+            //Lock is not really required as the GC is single threaded,
+            // but user code could also call this
+            lock (m_releaselock)
+                m_cleanups.Add(inst);
+        }
+
+        /// <summary>
+        /// Executes a list of instructions
+        /// </summary>
+        /// <param name="inst_list">The list of instructions to execute</param>
         public void Execute(IEnumerable<PInvoke.cphvb_instruction> inst_list)
         {
             lock (m_executelock)
@@ -94,6 +125,9 @@ namespace NumCIL.cphVB
             ExecuteCleanups();
         }
 
+        /// <summary>
+        /// Executes all pending cleanup instructions
+        /// </summary>
         private void ExecuteCleanups()
         {
             if (m_cleanups.Count > 0)
@@ -107,6 +141,10 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// Internal execution handler, runs without locking of any kind
+        /// </summary>
+        /// <param name="inst_list">The list of instructions to execute</param>
         private void UnprotectedExecute(IEnumerable<PInvoke.cphvb_instruction> inst_list)
         {
             //We need to execute multiple times if we have more than CPHVB_MAX_NO_INST instructions
@@ -133,7 +171,6 @@ namespace NumCIL.cphVB
                 if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                     throw new cphVBException(e);
             }
-            
 
         }
 
@@ -249,7 +286,6 @@ namespace NumCIL.cphVB
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
             {
                 //If we get this, it can be because some of the unmanaged views are still kept in memory
-                Console.WriteLine("Ouch, forcing GC");
                 GC.Collect();
                 ExecuteCleanups();
 
@@ -260,29 +296,19 @@ namespace NumCIL.cphVB
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
 
+            System.Threading.Interlocked.Increment(ref m_allocatedviews);
+
             return res;
         }
 
-        public void FreeArray(PInvoke.cphvb_array_ptr a)
-        {
-            PInvoke.cphvb_error e;
-
-            lock (m_executelock)
-            {
-                e = m_childs[0].execute(1, new PInvoke.cphvb_instruction[] {
-                    new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DISCARD,a)
-                });
-            }
-            if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                throw new cphVBException(e);
-
-            a.Free();
-        }
-
+        /// <summary>
+        /// Releases all resources held
+        /// </summary>
         public void Dispose()
         {
-            //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed
+            ExecuteCleanups();
 
+            //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed
             lock (m_executelock)
             {
                 if (m_childs != null)
