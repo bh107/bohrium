@@ -21,3 +21,8 @@ ve/cuda/pytest
 *.exp
 *.ilk
 *.pdb
+*.suo
+*/NumCIL/*/obj/*
+*/NumCIL/*/bin/*
+*/CIL/*/bin/*
+*/CIL/*/obj/*
