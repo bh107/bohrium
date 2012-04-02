@@ -20,23 +20,28 @@
 #ifndef __USERFUNCTIONRANDOM_HPP
 #define __USERFUNCTIONRANDOM_HPP
 
+#include <map>
 #include <cphvb_random.h>
-
+#include <CL/cl.hpp>
+#include "UserFuncArg.hpp"
+#include "Kernel.hpp"
 
 namespace UserFunctionRandom
 {
+    typedef std::map<cphvb_type, Kernel> KernelMap;
+    static KernelMap kernelMap = KernelMap();
+
     static ResourceManager* resourceManager = NULL;
     static BaseArray* state;
     static cphvb_array init_array;
+    static BaseArray* size;
+    static cphvb_array size_array;
+    static cphvb_int64 size_array_data;    
 
     void initialize();
     void finalize();
-    void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
-    void run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
-    Kernel generateKernel(cphvb_reduce_type* reduceDef, 
-                          UserFuncArg* userFuncArg,
-                          const std::vector<cphvb_index>& shape);
-    std::string generateCode(cphvb_reduce_type* reduceDef, 
-                             const std::vector<BaseArray*>& operandBase,
-                             const std::vector<cphvb_index>& shape);
+    void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
+    void run(UserFuncArg* userFuncArg);
 }
+
+#endif

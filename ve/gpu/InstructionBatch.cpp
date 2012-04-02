@@ -181,14 +181,21 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         }
         if (!found)
         { //it is a new array or view
+#ifdef DEBUG
+            std::cout << "Adding input array to batch: (" << operandBase[op] << ", " 
+                      <<  inst->operand[op] << ")" << std::endl;
+#endif
             input.insert(std::make_pair(operandBase[op], inst->operand[op]));
         }
     }
     
 
     // Register output
+#ifdef DEBUG
+    std::cout << "Adding output array to batch: (" << operandBase[0] << ", " 
+              <<  inst->operand[0] << ")" << std::endl;
+#endif    
     output[operandBase[0]] = inst->operand[0];
-    
     // Register Kernel parameters
     for (size_t op = 0; op < operandBase.size(); ++op)
     {

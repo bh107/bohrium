@@ -32,7 +32,6 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     assert(reduceDef->nout = 1);
     assert(reduceDef->nin = 1);
     assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim || cphvb_scalar(reduceDef->operand[0]));
-    assert(reduceDef->operand[0]->type == reduceDef->operand[1]->type);
     assert(userFuncArg->operandBase.size() == 2);
     UserFunctionReduce::run(reduceDef, userFuncArg);
     return CPHVB_SUCCESS;

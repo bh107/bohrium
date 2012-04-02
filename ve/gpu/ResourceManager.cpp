@@ -21,6 +21,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 ResourceManager::ResourceManager()
 {
@@ -148,6 +150,19 @@ cl::Kernel ResourceManager::createKernel(const std::string& source,
                                           const std::string& kernelName)
 {
     return createKernels(source, std::vector<std::string>(1,kernelName)).front();
+}
+
+std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 
+                                                               const std::vector<std::string>& kernelNames)
+{
+    std::ifstream file(fileName.c_str(), std::ios::in);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Could not open source file.");
+    }
+    std::ostringstream source;
+    source << file.rdbuf();
+    return createKernels(source.str(), kernelNames);
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source, 

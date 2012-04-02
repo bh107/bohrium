@@ -60,6 +60,8 @@ public:
     cl::Event completeEvent();
     cl::Kernel createKernel(const std::string& source, 
                             const std::string& kernelName);
+    std::vector<cl::Kernel> createKernelsFromFile(const std::string& fileName, 
+                                                  const std::vector<std::string>& kernelNames);
     std::vector<cl::Kernel> createKernels(const std::string& source, 
                                           const std::vector<std::string>& kernelNames);
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 

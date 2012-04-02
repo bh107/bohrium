@@ -141,7 +141,6 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     cphvb_intp nops = userfunc->nout + userfunc->nin;
     UserFuncArg userFuncArg;
     userFuncArg.resourceManager = resourceManager;
-    std::vector<BaseArray*> operandBase(nops);
     for (int i = 0; i < nops; ++i)
     {
         cphvb_array* operand = userfunc->operand[i];
@@ -164,7 +163,7 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     // If the instruction batch accesses any of the output operands it need to be executed first
     for (int i = 0; i < userfunc->nout; ++i)
     {
-        if (batch && batch->access(operandBase[i]))
+        if (batch && batch->access(userFuncArg.operandBase[i]))
         {
             executeBatch();
         }
@@ -172,7 +171,7 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     // If the instruction batch writes to any of the input operands it need to be executed first
     for (int i = userfunc->nout; i < nops; ++i)
     {
-        if (batch && batch->write(operandBase[i]))
+        if (batch && batch->write(userFuncArg.operandBase[i]))
         {
             executeBatch();
         }
