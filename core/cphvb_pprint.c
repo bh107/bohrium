@@ -67,6 +67,30 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
             strcat(buf, tmp);
         }
     }
+    if (instr->opcode == CPHVB_USERFUNC)
+    {
+        cphvb_userfunc* userfunc = instr->userfunc;
+        for(int i=0; i < userfunc->nout; i++) {
+            operand_to_str( userfunc->operand[i], op_str );
+            sprintf(tmp, "  OUT%d %s\n", i, op_str);
+            strcat(buf, tmp);
+            if (userfunc->operand[i]->base != NULL) {
+                operand_to_str( userfunc->operand[i]->base, op_str );
+                sprintf(tmp, "      %s\n", op_str);
+                strcat(buf, tmp);
+            }
+        }
+        for(int i=userfunc->nout; i < userfunc->nout + userfunc->nin; i++) {
+            operand_to_str( userfunc->operand[i], op_str );
+            sprintf(tmp, "  IN%d %s\n", i, op_str);
+            strcat(buf, tmp);
+            if (userfunc->operand[i]->base != NULL) {
+                operand_to_str( userfunc->operand[i]->base, op_str );
+                sprintf(tmp, "      %s\n", op_str);
+                strcat(buf, tmp);
+            }
+        }
+    }
     strcat(buf, "}");
 
 }
