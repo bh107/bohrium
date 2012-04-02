@@ -26,6 +26,16 @@ namespace NumCIL.cphVB
         private object m_releaselock = new object();
 
         /// <summary>
+        /// A counter for all allocated views
+        /// </summary>
+        private static long m_allocatedviews = 0;
+
+        /// <summary>
+        /// Gets the number of allocated views
+        /// </summary>
+        public static long AllocatedViews { get { return m_allocatedviews; } }
+
+        /// <summary>
         /// Accessor for singleton VEM instance
         /// </summary>
         public static VEM Instance
@@ -150,10 +160,15 @@ namespace NumCIL.cphVB
             //We need to execute multiple times if we have more than CPHVB_MAX_NO_INST instructions
             PInvoke.cphvb_instruction[] buf = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
 
+            long destroys = 0;
+
             int i = 0;
             foreach (PInvoke.cphvb_instruction inst in inst_list)
             {
                 buf[i++] = inst;
+                if (inst.opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
+                    destroys++;
+
                 if (i >= buf.Length)
                 {
                     PInvoke.cphvb_error e = m_childs[0].execute(buf.LongLength, buf);
@@ -172,6 +187,8 @@ namespace NumCIL.cphVB
                     throw new cphVBException(e);
             }
 
+            if (destroys > 0)
+                System.Threading.Interlocked.Add(ref m_allocatedviews, -destroys);
         }
 
         /// <summary>
@@ -286,6 +303,7 @@ namespace NumCIL.cphVB
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
             {
                 //If we get this, it can be because some of the unmanaged views are still kept in memory
+                Console.WriteLine("Ouch, forcing GC, allocated views: {0}", m_allocatedviews);
                 GC.Collect();
                 ExecuteCleanups();
 
