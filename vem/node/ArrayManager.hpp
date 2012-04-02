@@ -25,8 +25,6 @@
 #include <cphvb.h>
 #include <StaticStore.hpp>
 
-typedef std::multimap<cphvb_array*, cphvb_array*> BaseToViewMMap;
-
 typedef struct
 {
     cphvb_bool opcode[CPHVB_NO_OPCODES];//list of opcode support
@@ -54,8 +52,6 @@ class ArrayManager
 {
 private:
     StaticStore<cphvb_array>* arrayStore;
-    //Views no longer used upstream, but base is owned downstream
-    BaseToViewMMap staleView;
     std::deque<cphvb_array*> eraseQueue;
     std::deque<OwnerTicket> ownerChangeQueue;
 
