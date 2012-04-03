@@ -37,6 +37,7 @@ namespace NumCIL.cphVB
         public const int CPHVB_MAX_NO_OPERANDS = 3;
 
         public static readonly bool Is64Bit = IntPtr.Size == 8;
+        public static readonly int INTP_SIZE = Marshal.SizeOf(typeof(cphvb_intp));
 
         public enum cphvb_com_type : long
         {
@@ -342,19 +343,9 @@ namespace NumCIL.cphVB
                         throw new ArgumentNullException();
                     
                     return new cphvb_array_ptr() { 
-                        m_ptr = Marshal.ReadIntPtr(m_ptr, Marshal.SizeOf(typeof(cphvb_intp))) 
+                        m_ptr = Marshal.ReadIntPtr(m_ptr, INTP_SIZE)
                     };
                 }
-                /*set
-                {
-                    if (m_ptr == IntPtr.Zero)
-                        throw new ArgumentNullException();
-
-                    IntPtr p = Marshal.ReadIntPtr(m_ptr, Marshal.SizeOf(typeof(cphvb_intp)));
-                    if (p != IntPtr.Zero)
-                        throw new cphVBException("Unable to set base array on view with non-null base array");
-                    Marshal.WriteIntPtr(m_ptr, Marshal.SizeOf(typeof(cphvb_intp)), value.m_ptr);
-                }*/
             }
 
             /// <summary>
@@ -549,8 +540,6 @@ namespace NumCIL.cphVB
         /// <returns>A new component object</returns>
         public static cphvb_com cphvb_com_setup()
         {
-            int x = Marshal.SizeOf(typeof(IntPtr));
-            int y = Marshal.SizeOf(typeof(cphvb_com));
             IntPtr p = cphvb_com_setup_masked();
             cphvb_com r = (cphvb_com)Marshal.PtrToStructure(p, typeof(cphvb_com));
             cphvb_com_free_ptr(p);

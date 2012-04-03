@@ -28,8 +28,6 @@ namespace NumCIL.cphVB
         public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
         public ViewPtrKeeper(PInvoke.cphvb_array_ptr p)
         {
-            if (p.BaseArray == PInvoke.cphvb_array_ptr.Null)
-                throw new Exception("Pointer is not a view pointer?");
             m_ptr = p;
         }
 
@@ -214,16 +212,68 @@ namespace NumCIL.cphVB
         /// <returns>A new view</returns>
         protected PInvoke.cphvb_array_ptr CreateView(Shape shape, PInvoke.cphvb_array_ptr baseArray)
         {
-            return VEM.CreateArray(
-                baseArray,
-                VEM.MapType(typeof(T)),
-                shape.Dimensions.Length,
-                (int)shape.Offset,
-                shape.Dimensions.Select(x => x.Length).ToArray(),
-                shape.Dimensions.Select(x => x.Stride).ToArray(),
-                false,
-                new PInvoke.cphvb_constant()
-            );
+            //Unroll, to avoid creating a Linq query for basic 3d shapes
+            if (shape.Dimensions.Length == 1)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length },
+                    new long[] { shape.Dimensions[0].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 2)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 3)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else
+            {
+                long[] lengths = new long[shape.Dimensions.LongLength];
+                long[] strides = new long[shape.Dimensions.LongLength];
+                for (int i = 0; i < lengths.LongLength; i++)
+                {
+                    var d = shape.Dimensions[i];
+                    lengths[i] = d.Length;
+                    strides[i] = d.Stride;
+                }
+
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    lengths,
+                    strides,
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
         }
 
         /// <summary>
@@ -250,7 +300,7 @@ namespace NumCIL.cphVB
             else if (m_ownsData && m_externalData.Data == IntPtr.Zero)
             {
                 //Internally allocated data, we need to pin it
-                if (m_handle == null)
+                if (!m_handle.IsAllocated)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
                 m_externalData.Data = m_handle.AddrOfPinnedObject();
             }
@@ -447,7 +497,7 @@ namespace NumCIL.cphVB
                                     CreateViewPtr(op.Operands[0], createdBaseViews),
                                     CreateViewPtr(op.Operands[1], createdBaseViews)
                                 ));
-                            else if (op.Operands.Length == 2)
+                            else if (op.Operands.Length == 3)
                                 supported.Add(new PInvoke.cphvb_instruction(
                                     opcode,
                                     CreateViewPtr(op.Operands[0], createdBaseViews),
