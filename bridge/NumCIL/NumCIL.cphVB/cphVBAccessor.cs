@@ -28,8 +28,6 @@ namespace NumCIL.cphVB
         public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
         public ViewPtrKeeper(PInvoke.cphvb_array_ptr p)
         {
-            if (p.BaseArray == PInvoke.cphvb_array_ptr.Null)
-                throw new Exception("Pointer is not a view pointer?");
             m_ptr = p;
         }
 
@@ -127,6 +125,41 @@ namespace NumCIL.cphVB
         }
     }
 
+    public class PendingOpCounter<T> : PendingOperation<T>, IDisposable
+    {
+        private static long _pendingOpCount = 0;
+        public static long PendingOpCount { get { return _pendingOpCount; } }
+        private bool m_isDisposed = false;
+
+        public PendingOpCounter(IOp<T> operation, params NdArray<T>[] operands)
+            : base(operation, operands)
+        {
+            System.Threading.Interlocked.Increment(ref _pendingOpCount);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!m_isDisposed)
+            {
+                System.Threading.Interlocked.Decrement(ref _pendingOpCount);
+                m_isDisposed = true;
+
+                if (disposing)
+                    GC.SuppressFinalize(this);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        ~PendingOpCounter()
+        {
+            Dispose(false);
+        }
+    }
+
     /// <summary>
     /// Basic accessor for a cphVB array
     /// </summary>
@@ -137,7 +170,12 @@ namespace NumCIL.cphVB
         /// Instance of the VEM that is used
         /// </summary>
         protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
-         
+
+        /// <summary>
+        /// The maximum number of instructions to queue
+        /// </summary>
+        protected static readonly long HIGH_WATER_MARK = 2000;
+
         /// <summary>
         /// A lookup table that maps NumCIL operation types to cphVB opcodes
         /// </summary>
@@ -192,6 +230,17 @@ namespace NumCIL.cphVB
             }
         }
 
+        public override void AddOperation(IOp<T> operation, params NdArray<T>[] operands)
+        {
+            lock (Lock)
+                PendingOperations.Add(new PendingOpCounter<T>(operation, operands));
+
+            if (PendingOpCounter<T>.PendingOpCount > HIGH_WATER_MARK)
+            {
+                this.Flush();
+            }
+        }
+
         /// <summary>
         /// Creates a base array (a view of an array)
         /// </summary>
@@ -214,16 +263,68 @@ namespace NumCIL.cphVB
         /// <returns>A new view</returns>
         protected PInvoke.cphvb_array_ptr CreateView(Shape shape, PInvoke.cphvb_array_ptr baseArray)
         {
-            return VEM.CreateArray(
-                baseArray,
-                VEM.MapType(typeof(T)),
-                shape.Dimensions.Length,
-                (int)shape.Offset,
-                shape.Dimensions.Select(x => x.Length).ToArray(),
-                shape.Dimensions.Select(x => x.Stride).ToArray(),
-                false,
-                new PInvoke.cphvb_constant()
-            );
+            //Unroll, to avoid creating a Linq query for basic 3d shapes
+            if (shape.Dimensions.Length == 1)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length },
+                    new long[] { shape.Dimensions[0].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 2)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 3)
+            {
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else
+            {
+                long[] lengths = new long[shape.Dimensions.LongLength];
+                long[] strides = new long[shape.Dimensions.LongLength];
+                for (int i = 0; i < lengths.LongLength; i++)
+                {
+                    var d = shape.Dimensions[i];
+                    lengths[i] = d.Length;
+                    strides[i] = d.Stride;
+                }
+
+                return VEM.CreateArray(
+                    baseArray,
+                    VEM.MapType(typeof(T)),
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    lengths,
+                    strides,
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
         }
 
         /// <summary>
@@ -250,7 +351,7 @@ namespace NumCIL.cphVB
             else if (m_ownsData && m_externalData.Data == IntPtr.Zero)
             {
                 //Internally allocated data, we need to pin it
-                if (m_handle == null)
+                if (!m_handle.IsAllocated)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
                 m_externalData.Data = m_handle.AddrOfPinnedObject();
             }
@@ -356,9 +457,100 @@ namespace NumCIL.cphVB
                         Marshal.Copy(actualData, (float[])(object)data, 0, (int)m_size);
                     else if (typeof(T) == typeof(double))
                         Marshal.Copy(actualData, (double[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(sbyte))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        sbyte[] xref = (sbyte[])(object)data;
+                        int sbytesize = Marshal.SizeOf(typeof(sbyte));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (sbyte)Marshal.ReadByte(xptr);
+                                xptr = IntPtr.Add(xptr, sbytesize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (sbyte)Marshal.ReadByte(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(short))
+                        Marshal.Copy(actualData, (short[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(int))
+                        Marshal.Copy(actualData, (int[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(long))
+                        Marshal.Copy(actualData, (long[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(byte))
+                        Marshal.Copy(actualData, (byte[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(ushort))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        ushort[] xref = (ushort[])(object)data;
+                        int ushortsize = Marshal.SizeOf(typeof(ushort));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (ushort)Marshal.ReadInt16(xptr);
+                                xptr = IntPtr.Add(xptr, ushortsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (ushort)Marshal.ReadInt16(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(uint))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        uint[] xref = (uint[])(object)data;
+                        int uintsize = Marshal.SizeOf(typeof(uint));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (uint)Marshal.ReadInt32(xptr);
+                                xptr = IntPtr.Add(xptr, uintsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (uint)Marshal.ReadInt32(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(ulong))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        ulong[] xref = (ulong[])(object)data;
+                        int ulongsize = Marshal.SizeOf(typeof(ulong));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (ulong)Marshal.ReadInt64(xptr);
+                                xptr = IntPtr.Add(xptr, ulongsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (ulong)Marshal.ReadInt64(actualData);
+                        }
+                    }
                     else
                         throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
-                    //TODO: Support all the cphVB types
                 }
 
 
@@ -429,8 +621,8 @@ namespace NumCIL.cphVB
                             supported.Add(new PInvoke.cphvb_instruction(
                                 opcode,
                                 CreateViewPtr(op.Operands[0], createdBaseViews),
-                                CreateViewPtr(scalarOp, createdBaseViews),
-                                CreateViewPtr(op.Operands[1], createdBaseViews)
+                                CreateViewPtr(op.Operands[1], createdBaseViews),
+                                CreateViewPtr(scalarOp, createdBaseViews)
                             ));
 
                         }
@@ -447,7 +639,7 @@ namespace NumCIL.cphVB
                                     CreateViewPtr(op.Operands[0], createdBaseViews),
                                     CreateViewPtr(op.Operands[1], createdBaseViews)
                                 ));
-                            else if (op.Operands.Length == 2)
+                            else if (op.Operands.Length == 3)
                                 supported.Add(new PInvoke.cphvb_instruction(
                                     opcode,
                                     CreateViewPtr(op.Operands[0], createdBaseViews),
@@ -472,6 +664,8 @@ namespace NumCIL.cphVB
                         unsupported.Add(op);
                     }
 
+                    if (op is IDisposable)
+                        ((IDisposable)op).Dispose();
                 }
 
                 if (supported.Count > 0 && unsupported.Count > 0)

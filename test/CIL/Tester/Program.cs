@@ -32,9 +32,10 @@ namespace Tester
 
             try
             {
-                //NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
-                //NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.cphVB.cphVBAccessorFactory<float>();
-                NumCIL.cphVB.Utility.Activate<float>();
+                TimeJacobi();
+                //TimeScholes();
+                
+                NumCIL.cphVB.Utility.Activate();
 
                 TimeJacobi();
                 //TimeScholes();
@@ -52,6 +53,16 @@ namespace Tester
             long size = 100;
             long count;
             using (new DispTimer(string.Format("JacobiSolver {0}x{0}", size)))
+                count = JacobiSolver.Solve(size, size);
+
+            Console.WriteLine("Count: " + count.ToString());
+        }
+
+        private static void TimeJacobiFixed()
+        {
+            long size = 100;
+            long count;
+            using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
                 count = JacobiSolver.Solve(size, size, 8349);
 
             Console.WriteLine("Count: " + count.ToString());
@@ -60,7 +71,7 @@ namespace Tester
         private static void TimeScholes()
         {
             long size = 320000;
-            long years = 360;
+            long years = 36;
             double result;
 
             using (new DispTimer(string.Format("BlackSholes {0}x{1}", size, years)))

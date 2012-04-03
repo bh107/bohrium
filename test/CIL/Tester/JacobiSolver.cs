@@ -42,9 +42,6 @@ namespace Tester
 
             while (fixedIterations.HasValue ? (i < fixedIterations.Value) : epsilon < delta)
             {
-                //If we are on GPU, this will make a kernel for a loop
-                //NumCIL.cphVB.Utility.Flush();
-
                 i++;
                 work[R.All] = cells;
                 work += up;
