@@ -136,12 +136,17 @@ namespace NumCIL.Float
         {
             return this.value.ToString();
         }
+
+        /// <summary>
+        /// Flushes pending operations on the array
+        /// </summary>
+        public void Flush() { this.value.Flush(); }
         #endregion
 
         /// <summary>
         /// The only data member of the struct is a reference to the underlying view
         /// </summary>
-        public readonly InArray value;
+        private readonly InArray value;
         /// <summary>
         /// Constructs a new typed array from a basic one
         /// </summary>

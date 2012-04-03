@@ -45,6 +45,11 @@ namespace NumCIL.UInt32
         /// <returns>A flattened copy</returns>
         public OutArray Flatten() { return this.value.Flatten(); }
         /// <summary>
+        /// Returns a copy of the underlying data, shaped as this view
+        /// </summary>
+        /// <returns>A copy of the view data</returns>
+        public OutArray Clone() { return this.value.Clone(); }
+        /// <summary>
         /// Generates a new view based on this array
         /// </summary>
         /// <param name="newshape">The new shape</param>
@@ -76,6 +81,11 @@ namespace NumCIL.UInt32
         /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return this.value.GetEnumerator(); }
+        /// <summary>
+        /// A debug tag used for naming a view
+        /// </summary>
+        public string Name { get { return this.value.Name; } set { this.value.Name = value; } }
+
         /// <summary>
         /// Constructs a NdArray that is a scalar wrapper,
         /// allows simple scalar operations on arbitrary
@@ -126,6 +136,11 @@ namespace NumCIL.UInt32
         {
             return this.value.ToString();
         }
+
+        /// <summary>
+        /// Flushes pending operations on the array
+        /// </summary>
+        public void Flush() { this.value.Flush(); }
         #endregion
 
         /// <summary>
@@ -207,7 +222,13 @@ namespace NumCIL.UInt32
         public OutArray Negate() { return UFunc.Apply<T, Negate>(this); }
         public OutArray Log() { return UFunc.Apply<T, Log>(this); }
         public OutArray Log10() { return UFunc.Apply<T, Log10>(this); }
-        public OutArray Pow(T value) { return UFunc.Apply<T, Pow>(this, value, null); }
+        public OutArray Pow(T value)
+        {
+            if (value == 2)
+                return UFunc.Apply<T, Mul>(this, this, null);
+            else
+                return UFunc.Apply<T, Pow>(this, value, null);
+        }
         #endregion
 
 
