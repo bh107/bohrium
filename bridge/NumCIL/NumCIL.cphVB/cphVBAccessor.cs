@@ -125,6 +125,41 @@ namespace NumCIL.cphVB
         }
     }
 
+    public class PendingOpCounter<T> : PendingOperation<T>, IDisposable
+    {
+        private static long _pendingOpCount = 0;
+        public static long PendingOpCount { get { return _pendingOpCount; } }
+        private bool m_isDisposed = false;
+
+        public PendingOpCounter(IOp<T> operation, params NdArray<T>[] operands)
+            : base(operation, operands)
+        {
+            System.Threading.Interlocked.Increment(ref _pendingOpCount);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!m_isDisposed)
+            {
+                System.Threading.Interlocked.Decrement(ref _pendingOpCount);
+                m_isDisposed = true;
+
+                if (disposing)
+                    GC.SuppressFinalize(this);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        ~PendingOpCounter()
+        {
+            Dispose(false);
+        }
+    }
+
     /// <summary>
     /// Basic accessor for a cphVB array
     /// </summary>
@@ -135,7 +170,12 @@ namespace NumCIL.cphVB
         /// Instance of the VEM that is used
         /// </summary>
         protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
-         
+
+        /// <summary>
+        /// The maximum number of instructions to queue
+        /// </summary>
+        protected static readonly long HIGH_WATER_MARK = 2000;
+
         /// <summary>
         /// A lookup table that maps NumCIL operation types to cphVB opcodes
         /// </summary>
@@ -187,6 +227,17 @@ namespace NumCIL.cphVB
             {
                 MakeDataManaged();
                 return base.Data;
+            }
+        }
+
+        public override void AddOperation(IOp<T> operation, params NdArray<T>[] operands)
+        {
+            lock (Lock)
+                PendingOperations.Add(new PendingOpCounter<T>(operation, operands));
+
+            if (PendingOpCounter<T>.PendingOpCount > HIGH_WATER_MARK)
+            {
+                this.Flush();
             }
         }
 
@@ -522,6 +573,8 @@ namespace NumCIL.cphVB
                         unsupported.Add(op);
                     }
 
+                    if (op is IDisposable)
+                        ((IDisposable)op).Dispose();
                 }
 
                 if (supported.Count > 0 && unsupported.Count > 0)
