@@ -457,9 +457,100 @@ namespace NumCIL.cphVB
                         Marshal.Copy(actualData, (float[])(object)data, 0, (int)m_size);
                     else if (typeof(T) == typeof(double))
                         Marshal.Copy(actualData, (double[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(sbyte))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        sbyte[] xref = (sbyte[])(object)data;
+                        int sbytesize = Marshal.SizeOf(typeof(sbyte));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (sbyte)Marshal.ReadByte(xptr);
+                                xptr = IntPtr.Add(xptr, sbytesize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (sbyte)Marshal.ReadByte(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(short))
+                        Marshal.Copy(actualData, (short[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(int))
+                        Marshal.Copy(actualData, (int[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(long))
+                        Marshal.Copy(actualData, (long[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(byte))
+                        Marshal.Copy(actualData, (byte[])(object)data, 0, (int)m_size);
+                    else if (typeof(T) == typeof(ushort))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        ushort[] xref = (ushort[])(object)data;
+                        int ushortsize = Marshal.SizeOf(typeof(ushort));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (ushort)Marshal.ReadInt16(xptr);
+                                xptr = IntPtr.Add(xptr, ushortsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (ushort)Marshal.ReadInt16(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(uint))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        uint[] xref = (uint[])(object)data;
+                        int uintsize = Marshal.SizeOf(typeof(uint));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (uint)Marshal.ReadInt32(xptr);
+                                xptr = IntPtr.Add(xptr, uintsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (uint)Marshal.ReadInt32(actualData);
+                        }
+                    }
+                    else if (typeof(T) == typeof(ulong))
+                    {
+                        //TODO: Probably faster to just call memcpy in native code
+                        ulong[] xref = (ulong[])(object)data;
+                        int ulongsize = Marshal.SizeOf(typeof(ulong));
+
+                        if (m_size > int.MaxValue)
+                        {
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                xref[i] = (ulong)Marshal.ReadInt64(xptr);
+                                xptr = IntPtr.Add(xptr, ulongsize);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < m_size; i++)
+                                xref[i] = (ulong)Marshal.ReadInt64(actualData);
+                        }
+                    }
                     else
                         throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
-                    //TODO: Support all the cphVB types
                 }
 
 
