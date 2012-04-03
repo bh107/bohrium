@@ -621,8 +621,8 @@ namespace NumCIL.cphVB
                             supported.Add(new PInvoke.cphvb_instruction(
                                 opcode,
                                 CreateViewPtr(op.Operands[0], createdBaseViews),
-                                CreateViewPtr(scalarOp, createdBaseViews),
-                                CreateViewPtr(op.Operands[1], createdBaseViews)
+                                CreateViewPtr(op.Operands[1], createdBaseViews),
+                                CreateViewPtr(scalarOp, createdBaseViews)
                             ));
 
                         }
