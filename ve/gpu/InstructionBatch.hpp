@@ -31,7 +31,7 @@
 #endif
 class InstructionBatch
 {
-    typedef std::map<cphvb_array*, std::pair<BaseArray*,std::string>> ParameterMap;
+    typedef std::map<BaseArray*, std::string> ParameterMap;
     typedef std::map<cphvb_array*, std::string> VariableMap;
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
