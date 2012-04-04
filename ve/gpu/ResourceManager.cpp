@@ -60,7 +60,7 @@ ResourceManager::ResourceManager()
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
-    
+
 #ifdef STATS
     batchBuild = 0.0;
     batchSource = 0.0;
@@ -213,7 +213,14 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
                                                 unsigned int device)
 {
     cl::Event event;
-    commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, localSize, waitFor, &event);
+    try 
+    {
+        commandQueues[device].enqueueNDRangeKernel(kernel, cl::NullRange, globalSize, localSize, waitFor, &event);
+    } catch (cl::Error err)
+    {
+        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        throw err;
+    }
 #ifdef STATS
     event.setCallback(CL_COMPLETE, &eventProfiler, &resourceKernelExecute);
 #endif
@@ -230,12 +237,12 @@ std::vector<size_t> ResourceManager::localShape(size_t ndim)
         break;
     case 2:
         res.push_back(32);
-        res.push_back(16);
+        res.push_back(8);
         break;
     case 3:
         res.push_back(32);
         res.push_back(4);
-        res.push_back(4);
+        res.push_back(2);
         break;
     default:
         assert (false);

@@ -30,11 +30,11 @@ inline uint LCGStep(uint z, uint A, uint C)
 
 inline uint HybridTaus(uint4* z)
 {
-    z->s0 = TausStep(z->s0, 13, 19, 12, 4294967294U);
-    z->s1 = TausStep(z->s1, 2, 25, 4, 4294967288U);
-    z->s2 = TausStep(z->s2, 3, 11, 17, 4294967280U);
-    z->s3 = LCGStep(z->s3, 1664525, 1013904223U);
-    return (z->s0 ^ z->s1 ^ z->s2 ^ z->s3);
+    (*z).s0 = TausStep((*z).s0, 13, 19, 12, 4294967294U);
+    (*z).s1 = TausStep((*z).s1, 2, 25, 4, 4294967288U);
+    (*z).s2 = TausStep((*z).s2, 3, 11, 17, 4294967280U);
+    (*z).s3 = LCGStep((*z).s3, 1664525, 1013904223U);
+    return ((*z).s0 ^ (*z).s1 ^ (*z).s2 ^ (*z).s3);
 }
 
 __kernel void htrand_uint32(__global uint* res, long size, __global uint4* state)
