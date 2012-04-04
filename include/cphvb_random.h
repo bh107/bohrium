@@ -27,6 +27,7 @@
  */
 
 #include "cphvb_instruction.h"
+#include "cphvb_win.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +41,7 @@ typedef struct
 } cphvb_random_type;
 
 
-cphvb_error cphvb_random(cphvb_userfunc* arg, void* ve_arg);
+DLLEXPORT cphvb_error cphvb_random(cphvb_userfunc* arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

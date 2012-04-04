@@ -27,6 +27,7 @@
  */
 
 #include "cphvb_instruction.h"
+#include "cphvb_win.h"
 
 #ifdef __cplusplus
 extern "C" {
