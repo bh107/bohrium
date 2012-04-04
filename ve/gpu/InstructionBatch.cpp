@@ -186,16 +186,21 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
                       <<  inst->operand[op] << ")" << std::endl;
 #endif
             input.insert(std::make_pair(operandBase[op], inst->operand[op]));
+            inputList.push_back(std::make_pair(operandBase[op], inst->operand[op]));
         }
     }
     
 
     // Register output
+    if (output.find(operandBase[0]) == output.end())
+    {
 #ifdef DEBUG
-    std::cout << "Adding output array to batch: (" << operandBase[0] << ", " 
-              <<  inst->operand[0] << ")" << std::endl;
+        std::cout << "Adding output array to batch: (" << operandBase[0] << ", " 
+                  <<  inst->operand[0] << ")" << std::endl;
 #endif    
-    output[operandBase[0]] = inst->operand[0];
+        output.insert(std::make_pair(operandBase[0], inst->operand[0]));
+        outputList.push_back(operandBase[0]);
+    }
     // Register Kernel parameters
     for (size_t op = 0; op < operandBase.size(); ++op)
     {
@@ -210,7 +215,8 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
             } else {
                 ss << "p" << arraynum++;
             }
-            parameters[baseArray] = ss.str(); 
+            parameters[baseArray] = ss.str();
+            parameterList.push_back(baseArray);
         }
     }
 }
@@ -253,12 +259,12 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     {
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
-        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
         {
-            if (output.find(pit->first) == output.end())
-                kernelParameters.push_back(std::make_pair(pit->first, false));
+            if (output.find(*pit) == output.end())
+                kernelParameters.push_back(std::make_pair(*pit, false));
             else
-                kernelParameters.push_back(std::make_pair(pit->first, true));
+                kernelParameters.push_back(std::make_pair(*pit, true));
         }
         kernel.call(kernelParameters, shape);
     }
@@ -269,14 +275,14 @@ std::string InstructionBatch::generateCode()
     std::stringstream source;
     source << "( ";
     // Add Array kernel parameters
-    ParameterMap::iterator pit = parameters.begin();
-    pit->first->printKernelParameterType(true, source);
-    source << " " << pit->second;
-    for (++pit; pit != parameters.end(); ++pit)
+    ParameterList::iterator pit = parameterList.begin();
+    (*pit)->printKernelParameterType(true, source);
+    source << " " << parameters[*pit];
+    for (++pit; pit != parameterList.end(); ++pit)
     {
         source << "\n                     , ";
-        pit->first->printKernelParameterType(true, source);
-        source << " " << pit->second;
+        (*pit)->printKernelParameterType(true, source);
+        source << " " << parameters[*pit];
     }
 
     source << ")\n{\n";
@@ -284,7 +290,7 @@ std::string InstructionBatch::generateCode()
     generateGIDSource(shape, source);
     
     // Load input parameters
-    for (InputMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+    for (InputList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
         if (!iit->first->isScalar())
         {
@@ -330,11 +336,11 @@ std::string InstructionBatch::generateCode()
     }
 
     // Save output parameters
-    for (OutputMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+    for (OutputList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
-        source << "\t" << parameters[oit->first] << "[";
-        generateOffsetSource(oit->second, source);
-        source << "] = " <<  kernelVariables[oit->second] << ";\n";
+        source << "\t" << parameters[*oit] << "[";
+        generateOffsetSource(output[*oit], source);
+        source << "] = " <<  kernelVariables[output[*oit]] << ";\n";
     }
 
     source << "}\n";
@@ -367,8 +373,12 @@ bool InstructionBatch::discard(BaseArray* array)
     if (oit != output.end())
     {
         output.erase(oit);
+        outputList.remove(array);
         if (!r)
+        {
             parameters.erase(array);
+            parameterList.remove(array);
+        }
     }
     return !r;
 }

@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <map>
-#include <set>
+#include <list>
 #include <cphvb.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
@@ -36,12 +36,18 @@ class InstructionBatch
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
     typedef std::map<std::string, Kernel> KernelMap;
+    typedef std::list<BaseArray*> ParameterList;
+    typedef std::list<BaseArray*> OutputList;
+    typedef std::list<std::pair<BaseArray*, cphvb_array*>> InputList;
 private:
     std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
     OutputMap output;
     InputMap input;
     ParameterMap parameters;
+    ParameterList parameterList;
+    OutputList outputList;
+    InputList inputList;
     VariableMap kernelVariables;
     int arraynum;
     int scalarnum;
