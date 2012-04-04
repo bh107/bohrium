@@ -266,7 +266,6 @@ namespace NumCIL.UInt32
     public struct Log : IUnaryOp<T> { public T Op(T a) { return (T)Math.Log(a); } }
     public struct Log10 : IUnaryOp<T> { public T Op(T a) { return (T)Math.Log10(a); } }
     public struct Pow : IBinaryOp<T> { public T Op(T a, T b) { return (T)Math.Pow(a, b); } }
-    public struct Random : IUnaryOp<T> { public T Op(T a) { return (T)NumCIL.Generic.Generator<T>.Rand.NextDouble(); } }
     #endregion
 
     #region Generate mimics
@@ -279,14 +278,14 @@ namespace NumCIL.UInt32
         public static OutArray Zeroes(Shape shape) { return Generator.Zeroes(shape); }
         public static OutArray Empty(Shape shape) { return Generator.Empty(shape); }
         public static OutArray Same(T value, Shape shape) { return Generator.Same(value, shape); }
-        public static OutArray Random(Shape shape) { var op = Generator.Empty(shape); UFunc.Apply<T, Random>(op, op); return op; }
+        public static OutArray Random(Shape shape) { return Generator.Random(shape); }
 
         public static OutArray Arange(params long[] dimensions) { return Generator.Arange(dimensions); }
         public static OutArray Ones(params long[] dimensions) { return Generator.Ones(dimensions); }
         public static OutArray Zeroes(params long[] dimensions) { return Generator.Zeroes(dimensions); }
         public static OutArray Empty(params long[] dimensions) { return Generator.Empty(dimensions); }
         public static OutArray Same(T value, params long[] dimensions) { return Generator.Same(value, dimensions); }
-        public static OutArray Random(params long[] dimensions) { var op = Generator.Empty(dimensions); UFunc.Apply<T, Random>(op, op); return op; }
+        public static OutArray Random(params long[] dimensions) { return Generator.Random(dimensions); }
     }
     #endregion
 }
