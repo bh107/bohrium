@@ -177,6 +177,11 @@ namespace NumCIL.cphVB
         protected static readonly long HIGH_WATER_MARK = 2000;
 
         /// <summary>
+        /// Local copy of the type, to avoid lookups in the VEM dictionary
+        /// </summary>
+        protected static readonly PInvoke.cphvb_type CPHVB_TYPE = VEM.MapType(typeof(T));
+
+        /// <summary>
         /// A lookup table that maps NumCIL operation types to cphVB opcodes
         /// </summary>
         protected static Dictionary<Type, PInvoke.cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
@@ -268,7 +273,7 @@ namespace NumCIL.cphVB
             {
                 return VEM.CreateArray(
                     baseArray,
-                    VEM.MapType(typeof(T)),
+                    CPHVB_TYPE,
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length },
@@ -281,7 +286,7 @@ namespace NumCIL.cphVB
             {
                 return VEM.CreateArray(
                     baseArray,
-                    VEM.MapType(typeof(T)),
+                    CPHVB_TYPE,
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
@@ -294,7 +299,7 @@ namespace NumCIL.cphVB
             {
                 return VEM.CreateArray(
                     baseArray,
-                    VEM.MapType(typeof(T)),
+                    CPHVB_TYPE,
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
@@ -316,7 +321,7 @@ namespace NumCIL.cphVB
 
                 return VEM.CreateArray(
                     baseArray,
-                    VEM.MapType(typeof(T)),
+                    CPHVB_TYPE,
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     lengths,
