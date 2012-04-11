@@ -98,11 +98,10 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
     std::cout << "readBuffer(" << hostPtr << ")" << std::endl;
 #endif
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
-    std::vector<cl::Event> readerWaitFor;
+    std::vector<cl::Event> readerWaitFor(1,waitFor);
 #ifdef STATS
     cl::Event event;
 #endif
-    readerWaitFor.push_back(waitFor);
     try {
         commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, 
 #ifdef STATS
@@ -121,6 +120,7 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
 
 cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
                                               const void* hostPtr, 
+                                              std::vector<cl::Event> waitFor, 
                                               unsigned int device)
 {
 #ifdef DEBUG
@@ -129,7 +129,7 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
     cl::Event event;
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     try {
-        commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, NULL, &event);
+        commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, &waitFor, &event);
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueWriteBuffer: \"" << e.what() << "\"" << std::endl;
     }

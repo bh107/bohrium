@@ -5,13 +5,13 @@ LIB=libcphvb_ve_gpu.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS) -DSTATS -DDEBUG
+LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS) -DSTATS #-DDEBUG
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
-CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch ArrayOperand BaseArray View InstructionScheduler \
+CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer ArrayOperand BaseArray View InstructionScheduler \
          Kernel GenerateSourceCode UserFunctionReduce UserFunctionRandom
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
