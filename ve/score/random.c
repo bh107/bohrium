@@ -25,6 +25,7 @@
 #include <unistd.h>
 #endif
 #include <pthread.h>
+#include <limits.h>
 
 // We use the same Mersenne Twister implementation as NumPy
 typedef struct
@@ -73,6 +74,64 @@ rk_random(rk_state *state)
 
     return y;
 }
+int8_t
+rk_int8(rk_state *state)
+{
+    return (int8_t)(rk_random(state) & 0x7f);
+}
+
+int16_t
+rk_int16(rk_state *state)
+{
+    return (int16_t)(rk_random(state) & 0x7fff);
+}
+
+int32_t
+rk_int32(rk_state *state)
+{
+    return rk_random(state) & 0x7fffffff;
+}
+
+int64_t
+rk_int64(rk_state *state)
+{
+    int64_t res = rk_random(state) & 0x7fffffff;
+    res = (res << 32) | rk_random(state);
+    return res;
+}
+
+uint8_t
+rk_uint8(rk_state *state)
+{
+    return (uint8_t)(rk_random(state) & 0xff);
+}
+
+uint16_t
+rk_uint16(rk_state *state)
+{
+    return (uint16_t)(rk_random(state) & 0xffff);
+}
+
+uint32_t
+rk_uint32(rk_state *state)
+{
+    return rk_random(state);
+}
+
+uint64_t
+rk_uint64(rk_state *state)
+{
+    uint64_t res = rk_random(state); 
+    res = (res << 32) | rk_random(state);
+    return res;
+}
+
+float
+rk_float(rk_state *state)
+{
+    return rk_random(state) * 2.3283064365387e-10;
+}
+
 double
 rk_double(rk_state *state)
 {
@@ -127,7 +186,8 @@ typedef struct
     int myid;
     cphvb_intp nthds;
     cphvb_intp size;
-    double *data;
+    cphvb_type type;
+    void *data;
 }thd_id;
 
 void *thd_do_random(void *msg)
@@ -136,18 +196,99 @@ void *thd_do_random(void *msg)
     int myid           = id->myid;
     cphvb_intp size    = id->size;
     cphvb_intp nthds   = id->nthds;
-    double *data       = id->data;
 
     cphvb_intp length = size / nthds; // Find this thread's length of work.
     cphvb_intp start = myid * length; // Find this thread's start block.
     if(myid == nthds-1)
-        length += size % nthds;       // The last thread gets the reminder.
+        length += size % nthds;       // The last thread gets the remainder.
 
     rk_state state;
     rk_initseed(&state);
-    for(cphvb_intp i=start; i<start+length; ++i)
-        data[i] = rk_double(&state);
+    
+    switch (id->type)
+    {
+    	case CPHVB_INT8:
+		{
+			cphvb_int8* data = (cphvb_int8*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_int8(&state);
+		}
+		break;
 
+    	case CPHVB_INT16:
+		{
+			cphvb_int16* data = (cphvb_int16*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_int16(&state);
+		}
+		break;
+
+    	case CPHVB_INT32:
+		{
+			cphvb_int32* data = (cphvb_int32*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_int32(&state);
+		}
+		break;
+
+    	case CPHVB_INT64:
+		{
+			cphvb_int64* data = (cphvb_int64*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_int64(&state);
+		}
+		break;
+		
+		case CPHVB_UINT8:
+		{
+			cphvb_uint8* data = (cphvb_uint8*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_uint8(&state);
+		}
+		break;
+
+    	case CPHVB_UINT16:
+		{
+			cphvb_uint16* data = (cphvb_uint16*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_uint16(&state);
+		}
+		break;
+
+    	case CPHVB_UINT32:
+		{
+			cphvb_uint32* data = (cphvb_uint32*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_uint32(&state);
+		}
+		break;
+
+    	case CPHVB_UINT64:
+		{
+			cphvb_uint64* data = (cphvb_uint64*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_uint64(&state);
+		}
+		break;
+
+    	case CPHVB_FLOAT32:
+		{
+			cphvb_float32* data = (cphvb_float32*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_float(&state);
+		}
+		break;
+
+    	case CPHVB_FLOAT64:
+		{
+			cphvb_float64* data = (cphvb_float64*)id->data;
+			for(cphvb_intp i=start; i<start+length; ++i)
+				data[i] = rk_double(&state);
+		}
+		break;
+
+	}		
+	
     return NULL;
 }
 //Implementation of the user-defined funtion "random". Note that we
@@ -162,10 +303,24 @@ cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
     //Make sure that the array memory is allocated.
     if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
-    double *data = (double *) ary->data;
-
-    if(ary->type != CPHVB_FLOAT64)
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        
+    switch(ary->type)
+    {
+    	case CPHVB_INT8:
+    	case CPHVB_INT16:
+    	case CPHVB_INT32:
+    	case CPHVB_INT64:
+    	case CPHVB_UINT8:
+    	case CPHVB_UINT16:
+    	case CPHVB_UINT32:
+    	case CPHVB_UINT64:
+    	case CPHVB_FLOAT32:
+    	case CPHVB_FLOAT64:
+    		break;
+    	
+    	default:
+	        return CPHVB_TYPE_NOT_SUPPORTED;
+    }
 
     //We divide the blocks between the threads.
     {//Find number of threads to use.
@@ -190,10 +345,11 @@ cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
         ids[i].myid        = i;
         ids[i].nthds       = nthds;
         ids[i].size        = size;
-        ids[i].data        = data;
+        ids[i].data        = ary->data;
+        ids[i].type        = ary->type;
         pthread_create(&tid[i], NULL, thd_do_random, (void *) (&ids[i]));
     }
-    //Stop threads.
+    //Wait for threads to complete
     for(cphvb_intp i=0; i<nthds; ++i)
         pthread_join(tid[i], NULL);
 
