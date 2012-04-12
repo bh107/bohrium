@@ -250,15 +250,15 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         {
             cphvb_userfunc *uf = inst->userfunc;
             //The children should own the output arrays.
-            for(int i = 0; i < uf->nout; ++i)
+            for(int j = 0; j < uf->nout; ++j)
             {
-                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                cphvb_array* base = cphvb_base_array(uf->operand[j]);
                 base->owner = CPHVB_CHILD;
             }
             //We should own the input arrays.
-            for(int i = uf->nout; i < uf->nout + uf->nin; ++i)
+            for(int j = uf->nout; j < uf->nout + uf->nin; ++j)
             {
-                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                cphvb_array* base = cphvb_base_array(uf->operand[j]);
                 if(base->owner == CPHVB_PARENT)
                 {
                     base->owner = CPHVB_SELF;
@@ -271,11 +271,11 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             cphvb_array* base = cphvb_base_array(inst->operand[0]);
             // "Regular" operation: set ownership and send down stream
             base->owner = CPHVB_CHILD;//The child owns the output ary.
-            for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
+            for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
             {
-                if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                if(cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
                 {
-                    cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
+                    cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
                 }
             }
         }
