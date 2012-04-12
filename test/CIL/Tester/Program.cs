@@ -22,23 +22,25 @@ namespace Tester
 			}
 			else
 			{
-				string p = Environment.GetEnvironmentVariable("PATH");
-	            Environment.SetEnvironmentVariable("PATH", p + @";Z:\Udvikler\cphvb\core;Z:\Udvikler\cphvb\vem\node;Z:\Udvikler\cphvb\pthread_win32");
+				string path = Environment.GetEnvironmentVariable("PATH");
+	            Environment.SetEnvironmentVariable("PATH", path + @";Z:\Udvikler\cphvb\core;Z:\Udvikler\cphvb\vem\node;Z:\Udvikler\cphvb\pthread_win32");
 	            Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"Z:\Udvikler\cphvb\config.win.ini");
                 //Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"config.ini");
-                //Environment.SetEnvironmentVariable("PATH", p + @";" + System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+                //Environment.SetEnvironmentVariable("PATH", path + @";" + System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
 			}
 
 
             try
             {
-                TimeJacobi();
+                //TimeJacobi();
                 //TimeScholes();
-                
+                //TimeJacobiFixed();
+
                 NumCIL.cphVB.Utility.Activate();
 
                 TimeJacobi();
                 //TimeScholes();
+                //TimeJacobiFixed();
                 return;
             }
             catch (Exception ex)
@@ -60,10 +62,10 @@ namespace Tester
 
         private static void TimeJacobiFixed()
         {
-            long size = 100;
+            long size = 5000;
             long count;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, 8349);
+                count = JacobiSolver.Solve(size, size, 10);
 
             Console.WriteLine("Count: " + count.ToString());
         }

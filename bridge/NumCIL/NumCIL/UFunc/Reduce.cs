@@ -8,6 +8,22 @@ namespace NumCIL
 {
     public partial class UFunc
     {
+        public struct LazyReduceOperation<T> : IBinaryOp<T>
+        {
+            public readonly long Axis;
+            public readonly IBinaryOp<T> Operation;
+            public LazyReduceOperation(IBinaryOp<T> operation, long axis) 
+            {
+                Operation = operation;
+                Axis = axis; 
+            }
+
+            public T Op(T a, T b)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public static NdArray<T> SetupReduceHelper<T>(NdArray<T> in1, long axis, NdArray<T> @out)
         {
             long j = 0;
@@ -38,19 +54,30 @@ namespace NumCIL
         {
             NdArray<T> v = SetupReduceHelper<T>(in1, axis, @out);
 
+            if (v.m_data is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)v.m_data).AddOperation(new LazyReduceOperation<T>(new C(), axis), v, in1);
+            else
+                return UFunc_Reduce_Inner_Flush<T, C>(new C(), axis, in1, v);
+
+            return v;
+        }
+
+        public static NdArray<T> UFunc_Reduce_Inner_Flush<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+            where C : struct, IBinaryOp<T>
+        {
+
             //Basic case, just return a reduced array
             if (in1.Shape.Dimensions[axis].Length == 1)
             {
                 //TODO: If both in and out use the same array, just return a reshaped in
                 long j = 0;
                 var sizes = in1.Shape.Dimensions.Where(x => j++ != axis).ToArray();
-                UFunc_Op_Inner<T, CopyOp<T>>(new NdArray<T>(in1, new Shape(sizes, in1.Shape.Offset)), ref v);
+                UFunc_Op_Inner<T, CopyOp<T>>(new NdArray<T>(in1, new Shape(sizes, in1.Shape.Offset)), ref @out);
             }
             else
             {
-                C op = new C();
                 T[] d = in1.Data;
-                T[] vd = v.Data;
+                T[] vd = @out.Data;
 
                 long size = in1.Shape.Dimensions[axis].Length;
 
@@ -71,8 +98,8 @@ namespace NumCIL
                     long ix = in1.Shape.Offset;
                     long limitInner = strideInner * in1.Shape.Dimensions[1].Length;
 
-                    long ox = v.Shape.Offset;
-                    long strideRes = v.Shape.Dimensions[0].Stride;
+                    long ox = @out.Shape.Offset;
+                    long strideRes = @out.Shape.Dimensions[0].Stride;
 
                     for (long i = 0; i < in1.Shape.Dimensions[0].Length; i++)
                     {
@@ -100,7 +127,7 @@ namespace NumCIL
                     for (long i = ix + (stride * 2); i < ix + limit; i += stride)
                         value = op.Op(value, d[i]);
 
-                    vd[v.Shape.Offset] = value;
+                    vd[@out.Shape.Offset] = value;
                 }
                 else
                 {
@@ -108,7 +135,7 @@ namespace NumCIL
 
                     for (long i = 0; i < totalOps; i++)
                     {
-                        NdArray<T> vl = v[counters];
+                        NdArray<T> vl = @out[counters];
 
                         NdArray<T> in1V = in1[counters];
 
@@ -146,7 +173,7 @@ namespace NumCIL
                 }
                 
             }
-            return v;
+            return @out;
         }
 
     }

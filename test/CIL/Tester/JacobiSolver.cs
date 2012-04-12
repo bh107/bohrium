@@ -23,6 +23,7 @@ namespace Tester
             work.Name = "work";
             diff.Name = "diff";
             tmpdelta.Name = "tmpdelta";
+            work.Data[0] = 0;
 
             var cells = full[R.Slice(1, -1),        R.Slice(1, -1)       ];
             var up =    full[R.Slice(1, -1),        R.Slice(0, -2)       ];
@@ -44,11 +45,17 @@ namespace Tester
             {
                 i++;
                 work[R.All] = cells;
-                work += up;
+                UFunc.Apply<T, Add>(work, up, work);
+                UFunc.Apply<T, Add>(work, left, work);
+                UFunc.Apply<T, Add>(work, right, work);
+                UFunc.Apply<T, Add>(work, down, work);
+                UFunc.Apply<T, Mul>(work, 0.2f, work);
+                
+                /*work += up;
                 work += left;
                 work += right;
                 work += down;
-                work *= 0.2f;
+                work *= 0.2f;*/
 
                 if (!fixedIterations.HasValue)
                 {

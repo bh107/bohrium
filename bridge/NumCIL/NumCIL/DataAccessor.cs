@@ -20,6 +20,11 @@ namespace NumCIL.Generic
         /// Gets the .Net representation of the data
         /// </summary>
         T[] Data { get; }
+
+        /// <summary>
+        /// An extra component that can be used to tag data to the accessor
+        /// </summary>
+        object Tag { get; set; }
     }
 
     /// <summary>
@@ -90,6 +95,11 @@ namespace NumCIL.Generic
         protected long m_size;
 
         /// <summary>
+        /// An accessor tag
+        /// </summary>
+        public object Tag { get; set; }
+
+        /// <summary>
         /// Constructs a wrapper around an existing arrray
         /// </summary>
         /// <param name="data">The data the accessor represents</param>
@@ -152,6 +162,10 @@ namespace NumCIL.Generic
         /// Cache of the generic template method
         /// </summary>
         protected static readonly System.Reflection.MethodInfo nullaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary_Flush");
+        /// <summary>
+        /// Cache of the generic template method
+        /// </summary>
+        protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc).GetMethod("UFunc_Reduce_Inner_Flush");
         /// <summary>
         /// Cache of instantiated template methods
         /// </summary>
@@ -305,7 +319,21 @@ namespace NumCIL.Generic
         {
             foreach (var n in work)
             {
-                if (n.Operation is IBinaryOp<T>)
+                if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
+                {
+                    NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)n.Operation;
+
+                    System.Reflection.MethodInfo genericVersion;
+                    if (!specializedMethods.TryGetValue(lzop.Operation.GetType(), out genericVersion))
+                    {
+                        genericVersion = reduceBaseMethodType.MakeGenericMethod(typeof(T), lzop.Operation.GetType());
+                        specializedMethods[lzop.Operation.GetType()] = genericVersion;
+                    }
+
+                    genericVersion.Invoke(null, new object[] { lzop.Operation, lzop.Axis, n.Operands[1], n.Operands[0] });
+                    
+                }
+                else if (n.Operation is IBinaryOp<T>)
                 {
                     System.Reflection.MethodInfo genericVersion;
                     if (!specializedMethods.TryGetValue(n.Operation, out genericVersion))
