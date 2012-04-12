@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,20 +17,19 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VIEW_HPP
-#define __VIEW_HPP
+#include <cphvb.h>
+#include "KernelParameter.hpp"
 
-#include "ArrayOperand.hpp"
-#include "BaseArray.hpp"
-
-class View : public ArrayOperand 
+std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
 {
-private:
-    BaseArray* baseArray;
-public:
-    View(cphvb_array* spec, BaseArray* base);
-    OCLtype type();
-};
+    kp.printOn(os);
+    return os;
+}
 
-
-#endif
+KernelParameter KernelParameter::create(cphvb_array* spec, ResourceManager* resourceManager)
+{
+    if (cphvb_scalar(spec))
+        return Scalar(spec);
+    else
+        return BaseArray(spec, resourceManager);
+}

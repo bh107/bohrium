@@ -36,6 +36,7 @@ typedef uint8_t       cphvb_uint8;
 typedef uint16_t      cphvb_uint16;
 typedef uint32_t      cphvb_uint32;
 typedef uint64_t      cphvb_uint64;
+typedef uint16_t      cphvb_float16;
 typedef float         cphvb_float32;
 typedef double        cphvb_float64;
 

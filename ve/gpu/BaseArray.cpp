@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -18,36 +18,21 @@
  */
 
 #include <cassert>
-#include <iostream>
 #include <stdexcept>
 #include <cphvb.h>
 #include "BaseArray.hpp"
 
 BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager_) 
-    : ArrayOperand(spec_)
-    , resourceManager(resourceManager_)
+    : spec(spec_)
     , bufferType(oclType(spec_->type))
+    , buffer(Buffer(size() * oclSizeOf(bufferType), resourceManager_))
 {
     assert(spec->base == NULL);
-    if (!cphvb_scalar(spec))
+    if (spec->data != NULL)
     {
-        scalar = false;
-        buffer = resourceManager->createBuffer(size() * oclSizeOf(bufferType));
-        device = 0;
-        if (spec->data != NULL)
-        {
-            writeEvent = resourceManager->enqueueWriteBuffer(buffer, spec->data, device);
-        } 
-        else 
-        {
-            writeEvent = resourceManager->completeEvent();
-        }
-    }
-    else
-    {
-        scalar = true;
-        writeEvent = resourceManager->completeEvent();
-    }
+        buffer.write(spec->data);
+    } 
+
 }
 
 void BaseArray::sync()
@@ -59,8 +44,7 @@ void BaseArray::sync()
             throw std::runtime_error("Could not allocate memory on host");
         }
     }
-    if (!scalar)
-        resourceManager->readBuffer(buffer, spec->data, writeEvent, device);
+    buffer.read(spec->data);
 }
 
 OCLtype BaseArray::type()
@@ -68,109 +52,12 @@ OCLtype BaseArray::type()
     return bufferType;
 }
 
-void BaseArray::setWriteEvent(cl::Event event)
+void BaseArray::printOn(std::ostream& os)
 {
-    writeEvent = event;
+    os << "__global " << oclTypeStr(bufferType) << "*";
 }
 
-cl::Event BaseArray::getWriteEvent()
+void BaseArray::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
 {
-    return writeEvent;
-}
-
-void BaseArray::cleanReadEvents()
-{
-    while (!readEvents.empty() && readEvents.front().getInfo<CL_EVENT_COMMAND_EXECUTION_STATUS>() == CL_COMPLETE)
-        readEvents.pop_front();
-}
-
-void BaseArray::addReadEvent(cl::Event event)
-{
-    if (!scalar)
-    {
-        cleanReadEvents();
-        readEvents.push_back(event);
-    }
-}
-
-std::deque<cl::Event> BaseArray::getReadEvents()
-{
-    cleanReadEvents();
-    return readEvents;
-}
-
-cl::Buffer BaseArray::getBuffer()
-{
-    return buffer;
-}
-
-bool BaseArray::isScalar()
-{
-    return scalar;
-}
-
-OCLtype BaseArray::parameterType()
-{
-    if (scalar)
-        return bufferType;
-    else
-        return OCL_BUFFER;
-}
-
-void BaseArray::printKernelParameterType(bool input, std::ostream& source)
-{
-    if (input && scalar)
-        source << "const " << oclTypeStr(bufferType);
-    else
-        source << "__global " << oclTypeStr(bufferType) << "*";
-}
-
-void BaseArray::addToKernel(bool input, cl::Kernel& kernel, unsigned int argIndex) const
-{
-    if (scalar && input)
-    {
-        assert(spec->data != NULL);
-        switch(bufferType)
-        {
-        case OCL_INT8:
-            kernel.setArg(argIndex, *(cl_char*)spec->data);
-            break;
-        case OCL_INT16:
-            kernel.setArg(argIndex, *(cl_short*)spec->data);
-            break;
-        case OCL_INT32:
-            kernel.setArg(argIndex, *(cl_int*)spec->data);
-            break;
-        case OCL_INT64:
-            kernel.setArg(argIndex, *(cl_long*)spec->data);
-            break;
-        case OCL_UINT8:
-            kernel.setArg(argIndex, *(cl_uchar*)spec->data);
-            break;
-        case OCL_UINT16:
-            kernel.setArg(argIndex, *(cl_ushort*)spec->data);
-            break;
-        case OCL_UINT32:
-            kernel.setArg(argIndex, *(cl_uint*)spec->data);
-            break;
-        case OCL_UINT64:
-            kernel.setArg(argIndex, *(cl_ulong*)spec->data);
-            break;
-        case OCL_FLOAT16:
-            kernel.setArg(argIndex, *(cl_half*)spec->data);
-            break;
-        case OCL_FLOAT32:
-            kernel.setArg(argIndex, *(cl_float*)spec->data);
-            break;
-        case OCL_FLOAT64:
-            kernel.setArg(argIndex, *(cl_double*)spec->data);
-            break;
-        default:
-            throw std::runtime_error("Scalar: Unknown type.");
-        }    
-    } 
-    else 
-    {
-        kernel.setArg(argIndex, buffer);
-    }
+    kernel.setArg(argIndex, buffer);
 }

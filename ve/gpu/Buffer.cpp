@@ -27,12 +27,12 @@ Buffer::Buffer(size_t size, ResourceManager* resourceManager_)
     , buffer(resourceManager_->createBuffer(size))
 {}
 
-void Buffer::readBuffer(void* hostPtr)
+void Buffer::read(void* hostPtr)
 {
     resourceManager->readBuffer(buffer, hostPtr, writeEvent, device);
 }
 
-void Buffer::writeBuffer(void* hostPtr)
+void Buffer::write(void* hostPtr)
 {
     writeEvent = resourceManager->enqueueWriteBuffer(buffer, hostPtr, allEvents(), device);
 }

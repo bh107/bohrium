@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,14 +17,37 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "View.hpp"
+#ifndef __SCALAR_HPP
+#define __SCALAR_HPP
 
-View::View(cphvb_array* spec, BaseArray* base)
-    : ArrayOperand(spec)
-    , baseArray(base)
-{}
+#include "KernelParameter.hpp"
 
-OCLtype View::type()
+class Scalar : public KernelParameter
 {
-    return baseArray->type();
-}
+private:
+    OCLtype type;
+    union value_t {
+        cl_char c;
+        cl_short s;
+        cl_int i;
+        cl_long l;
+        cl_uchar uc;
+        cl_ushort us;
+        cl_uint ui;
+        cl_ulong ul;
+        cl_half h;
+        cl_float f;
+        cl_double d;
+    } value;
+
+protected:
+    void printOn(std::ostream& os) const;
+public:
+    Scalar(cphvb_array* spec);
+    OCLtype type();
+    void printOn(std::ostream& source) const;
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
+};
+
+
+#endif

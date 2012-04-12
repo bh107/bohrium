@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -20,39 +20,22 @@
 #ifndef __BASEARRAY_HPP
 #define __BASEARRAY_HPP
 
-#include "ArrayOperand.hpp"
-#include "ResourceManager.hpp"
-#include <deque>
+#include "Buffer.hpp"
 
-#define OCL_BUFFER OCL_TYPES
-
-class BaseArray : public ArrayOperand
+class BaseArray : public KernelParameter
 {
 private:
-    ResourceManager* resourceManager;
+    cphvb_array* spec;
     OCLtype bufferType;
-    //TODO have a map<buffer, device> 
-    //and split the array into several buffers
-    cl::Buffer buffer;
-    unsigned int device;
-    bool scalar;
-    cl::Event writeEvent;
-    std::deque<cl::Event> readEvents;
-    void cleanReadEvents();
+    Buffer buffer;
 protected:
+    void printOn(std::ostream& os) const;
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     OCLtype type();
-    OCLtype parameterType();
     void sync();
-    void setWriteEvent(cl::Event);
-    cl::Event getWriteEvent();
-    void addReadEvent(cl::Event);
-    std::deque<cl::Event> getReadEvents();
-    cl::Buffer getBuffer();
-    bool isScalar();
-    void printKernelParameterType(bool input, std::ostream& source);
-    void addToKernel(bool input, cl::Kernel& kernel, unsigned int argIndex) const;
+    void printOn(std::ostream& source) const;
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
 };
 
 

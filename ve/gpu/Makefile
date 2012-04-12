@@ -11,8 +11,8 @@ CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
-CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer ArrayOperand BaseArray View InstructionScheduler \
-         Kernel GenerateSourceCode UserFunctionReduce UserFunctionRandom
+CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
+		InstructionScheduler Kernel GenerateSourceCode UserFunctionReduce UserFunctionRandom
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/opt/cphvb/

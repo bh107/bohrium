@@ -35,8 +35,8 @@ private:
     void cleanReadEvents();
 public:
     Buffer(size_t size, ResourceManager* resourceManager);
-    void readBuffer(void* hostPtr);
-    void writeBuffer(void* hostPtr);
+    void read(void* hostPtr);
+    void write(void* hostPtr);
     void setWriteEvent(cl::Event);
     cl::Event getWriteEvent();
     void addReadEvent(cl::Event);
