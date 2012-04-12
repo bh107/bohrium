@@ -21,6 +21,7 @@
 #define __BASEARRAY_HPP
 
 #include "Buffer.hpp"
+#include "KernelParameter.hpp"
 
 class BaseArray : public KernelParameter
 {
@@ -32,9 +33,8 @@ protected:
     void printOn(std::ostream& os) const;
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
-    OCLtype type();
+    OCLtype type() const;
     void sync();
-    void printOn(std::ostream& source) const;
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
 };
 

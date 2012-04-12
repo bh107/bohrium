@@ -23,65 +23,65 @@
 #include "Scalar.hpp"
 
 Scalar::Scalar(cphvb_array* spec)
-  : type(oclType(spec->type))
+  : mytype(oclType(spec->type))
 {
     assert(cphvb_scalar(spec));
     switch (spec->type)
     {
     case CPHVB_BOOL:
-        value.uc = *(*cphvb_bool)spec->data;
+        value.uc = *(cphvb_bool*)spec->data;
         break;
     case CPHVB_INT8:
-        value.c = *(*cphvb_int8)spec->data;
+        value.c = *(cphvb_int8*)spec->data;
         break;
     case CPHVB_INT16:
-        value.s = *(*cphvb_int16)spec->data;
+        value.s = *(cphvb_int16*)spec->data;
         break;
     case CPHVB_INT32:
-        value.i = *(*cphvb_int32)spec->data;
+        value.i = *(cphvb_int32*)spec->data;
         break;
     case CPHVB_INT64:
-        value.l = *(*cphvb_int64)spec->data;
+        value.l = *(cphvb_int64*)spec->data;
         break;
     case CPHVB_UINT8:
-        value.uc = *(*cphvb_uint8)spec->data;
+        value.uc = *(cphvb_uint8*)spec->data;
         break;
     case CPHVB_UINT16:
-        value.us = *(*cphvb_uint16)spec->data;
+        value.us = *(cphvb_uint16*)spec->data;
         break;
     case CPHVB_UINT32:
-        value.ui = *(*cphvb_uint32)spec->data;
+        value.ui = *(cphvb_uint32*)spec->data;
         break;
     case CPHVB_UINT64:
-        value.ul = *(*cphvb_uint64)spec->data;
+        value.ul = *(cphvb_uint64*)spec->data;
         break;
     case CPHVB_FLOAT16:
-        value.us = *(*cphvb_float16)spec->data;
+        value.h = *(cphvb_float16*)spec->data;
         break;
     case CPHVB_FLOAT32:
-        value.f = *(*cphvb_float32)spec->data;
+        value.f = *(cphvb_float32*)spec->data;
         break;
-    case CPHVB_FLOAT64
-        value.d = *(*cphvb_float64)spec->data;
+    case CPHVB_FLOAT64:
+        value.d = *(cphvb_float64*)spec->data;
         break;
     default:
         throw std::runtime_error("Scalar: Unknown type.");
     }
 }
 
-OCLtype Scalar::type()
+OCLtype Scalar::type() const
 {
-    return type;
+    return mytype;
 }
 
 void Scalar::printOn(std::ostream& os) const
 {
-    source << "const " << oclTypeStr(type);
+    os << "const " << oclTypeStr(mytype);
 }
 
 void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
 {
-    switch(type)
+    switch(mytype)
     {
     case OCL_INT8:
         kernel.setArg(argIndex, value.c);

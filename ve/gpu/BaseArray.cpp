@@ -22,17 +22,16 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 
-BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager_) 
+BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager) 
     : spec(spec_)
-    , bufferType(oclType(spec_->type))
-    , buffer(Buffer(size() * oclSizeOf(bufferType), resourceManager_))
+    , bufferType(oclType(spec->type))
+    , buffer(Buffer(cphvb_nelements(spec->ndim, spec->shape) * oclSizeOf(bufferType), resourceManager))
 {
     assert(spec->base == NULL);
     if (spec->data != NULL)
     {
         buffer.write(spec->data);
     } 
-
 }
 
 void BaseArray::sync()
@@ -47,12 +46,12 @@ void BaseArray::sync()
     buffer.read(spec->data);
 }
 
-OCLtype BaseArray::type()
+OCLtype BaseArray::type() const
 {
     return bufferType;
 }
 
-void BaseArray::printOn(std::ostream& os)
+void BaseArray::printOn(std::ostream& os) const
 {
     os << "__global " << oclTypeStr(bufferType) << "*";
 }

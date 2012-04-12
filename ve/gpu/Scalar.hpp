@@ -25,7 +25,7 @@
 class Scalar : public KernelParameter
 {
 private:
-    OCLtype type;
+    OCLtype mytype;
     union value_t {
         cl_char c;
         cl_short s;
@@ -44,8 +44,7 @@ protected:
     void printOn(std::ostream& os) const;
 public:
     Scalar(cphvb_array* spec);
-    OCLtype type();
-    void printOn(std::ostream& source) const;
+    OCLtype type() const;
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
 };
 

@@ -19,6 +19,8 @@
 
 #include <cphvb.h>
 #include "KernelParameter.hpp"
+#include "Scalar.hpp"
+#include "BaseArray.hpp"
 
 std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
 {
@@ -26,10 +28,10 @@ std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
     return os;
 }
 
-KernelParameter KernelParameter::create(cphvb_array* spec, ResourceManager* resourceManager)
+KernelParameter* KernelParameter::create(cphvb_array* spec, ResourceManager* resourceManager)
 {
     if (cphvb_scalar(spec))
-        return Scalar(spec);
+        return new Scalar(spec);
     else
-        return BaseArray(spec, resourceManager);
+        return new BaseArray(spec, resourceManager);
 }
