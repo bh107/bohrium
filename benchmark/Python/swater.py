@@ -1,4 +1,4 @@
-#Adaptet from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
+#Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 #Saved images may be converted into an animated gif with:
 #convert   -delay 20   -loop 0   swater*.png   swater.gif
 
@@ -42,7 +42,7 @@ if B.cphvb:
 
 B.start()
 for i in xrange(timesteps):
-    # Refelcting boundary conditions
+    # Reflecting boundary conditions
     H[:,0] = H[:,1]   ; U[:,0] = U[:,1]     ; V[:,0] = -V[:,1]
     H[:,n+1] = H[:,n] ; U[:,n+1] = U[:,n]   ; V[:,n+1] = -V[:,n]
     H[0,:] = H[1,:]   ; U[0,:] = -U[1,:]    ; V[0,:] = V[1,:]
