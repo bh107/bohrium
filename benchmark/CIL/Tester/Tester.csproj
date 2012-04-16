@@ -100,6 +100,7 @@
     <Compile Include="kNN.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShallowWaterSolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.cphVB\NumCIL.cphVB.csproj">

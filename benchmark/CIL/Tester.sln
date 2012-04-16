@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL", "..\..\bridge\NumC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.cphVB", "..\..\bridge\NumCIL\NumCIL.cphVB\NumCIL.cphVB.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{7D530680-CB09-40F5-8BCC-84B4709546C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "..\..\test\CIL\UnitTest\UnitTest.csproj", "{7D530680-CB09-40F5-8BCC-84B4709546C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
