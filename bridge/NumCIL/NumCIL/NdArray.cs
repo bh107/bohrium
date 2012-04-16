@@ -245,7 +245,7 @@ namespace NumCIL.Generic
                 else if (range.SingleElement)
                     last = first;
                 else
-                    last = range.Last < 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
+                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
 
                 stride = range.Stride;
             }
