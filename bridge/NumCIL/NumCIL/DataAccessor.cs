@@ -153,19 +153,19 @@ namespace NumCIL.Generic
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo binaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Binary_Flush");
+        protected static readonly System.Reflection.MethodInfo binaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Binary_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo unaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Unary_Flush");
+        protected static readonly System.Reflection.MethodInfo unaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Unary_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo nullaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary_Flush");
+        protected static readonly System.Reflection.MethodInfo nullaryBaseMethodType = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc).GetMethod("UFunc_Reduce_Inner_Flush");
+        protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc).GetMethod("UFunc_Reduce_Inner_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of instantiated template methods
         /// </summary>
