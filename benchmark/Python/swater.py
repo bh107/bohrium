@@ -116,6 +116,8 @@ for i in xrange(timesteps):
 if B.cphvb:
     cphvbnumpy.unhandle_array(H)
 
+#print(numpy.add.reduce(numpy.add.reduce(H / n)))
+
 B.stop()
 B.pprint()
 
