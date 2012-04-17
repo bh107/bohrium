@@ -105,8 +105,11 @@ namespace Tester
         {
             long size = 1000;
             long timesteps = 10;
+            float r;
             using (new DispTimer(string.Format("ShallowWaterSolver {0}x{0} with {1} rounds", size, timesteps)))
-                ShallowWaterSolver.Solve(size, timesteps);
+                r = ShallowWaterSolver.Solve(size, timesteps);
+
+            Console.WriteLine("Result: {0}", r);
         }
 
 

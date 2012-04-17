@@ -7,6 +7,7 @@ using System.Text;
 using NumCIL.Float;
 using T = System.Single;
 using R = NumCIL.Range;
+using NumCIL;
 
 namespace Tester
 {
@@ -151,8 +152,8 @@ namespace Tester
                                                   g / 2 * Hy[ZM1, ZM1].Pow(2)));
             }
 
-            //Make sure we have the actual data
-            return H.Data[0];
+            //Make sure we have the actual data and use it as a checksum
+            return UFunc.Reduce<T, Add>(UFunc.Reduce<T, Add>(H / n)).Data[0];
         }
     }
 }
