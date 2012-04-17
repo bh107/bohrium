@@ -13,9 +13,24 @@ namespace UnitTest
             using (new DispTimer("Basic tests"))
                 BasicTests.RunTests();
 
-            Console.WriteLine("Running profiling tests");
+            Console.WriteLine("Running Lookup tests");
+            using (new DispTimer("Lookup tests"))
+                TypeLookupTests.RunTests();
+
+
+            NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
+
+            Console.WriteLine("Running basic tests - Lazy");
+            using (new DispTimer("Basic tests"))
+                BasicTests.RunTests();
+
+            Console.WriteLine("Running Lookup tests - Lazy");
+            using (new DispTimer("Lookup tests"))
+                TypeLookupTests.RunTests();
+
+            /*Console.WriteLine("Running profiling tests");
             using (new DispTimer("Profiling tests"))
-                Profiling.RunProfiling();
+                Profiling.RunProfiling();*/
         }
     }
 }
