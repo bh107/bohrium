@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.cphVB", "..\..\bridg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "..\..\test\CIL\UnitTest\UnitTest.csproj", "{7D530680-CB09-40F5-8BCC-84B4709546C7}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TesterFSharp", "TesterFSharp\TesterFSharp.fsproj", "{D4EBB113-C458-4244-ABC9-78DAF0422069}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,18 @@ Global
 		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Release|x64.Build.0 = Release|x64
 		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Release|x86.ActiveCfg = Release|x86
 		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Release|x86.Build.0 = Release|x86
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|x64.ActiveCfg = Debug|x64
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|x64.Build.0 = Debug|x64
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|x86.ActiveCfg = Debug|x86
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|x86.Build.0 = Debug|x86
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x64.ActiveCfg = Release|x64
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x64.Build.0 = Release|x64
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x86.ActiveCfg = Release|x86
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
