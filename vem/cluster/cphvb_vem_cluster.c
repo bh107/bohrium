@@ -94,30 +94,6 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp instruction_count,
             break;
         }
 /*
-        case CPHVB_RELEASE:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            switch (base->owner)
-            {
-            case CPHVB_PARENT:
-                //The owner is upstream so we do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
-                break;
-            case CPHVB_SELF:
-                //We own the date: Send discards down stream
-                //and change owner to upstream
-                inst->operand[0] = base;
-                inst->opcode = CPHVB_DISCARD;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-                break;
-            default:
-                //The owner is downsteam so send the release down
-                inst->operand[0] = base;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-            }
-            break;
-        }
         case CPHVB_SYNC:
         {
             cphvb_array* base = cphvb_base_array(inst->operand[0]);

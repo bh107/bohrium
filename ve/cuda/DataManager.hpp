@@ -29,7 +29,6 @@ public:
     virtual void lock(cphVBarray* operands[], 
                       int nops, 
                       InstructionBatch* batch) = 0;
-    virtual void release(cphVBarray* array) = 0;
     virtual void sync(cphVBarray* array) = 0;
     virtual void flush(cphVBarray* array) = 0;
     virtual void discard(cphVBarray* baseArray) = 0;

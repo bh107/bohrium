@@ -137,7 +137,6 @@ const int _ptxOpcodeMap[] =
     [CPHVB_LOG2] = PTX_LOG2,
     [CPHVB_ISREAL] = -1,
     [CPHVB_ISCOMPLEX] = -1,
-    [CPHVB_RELEASE] = PTX_NONE,
     [CPHVB_SYNC] = PTX_NONE,
     [CPHVB_DISCARD] = PTX_NONE,
     [CPHVB_DESTROY] = -1,

@@ -40,9 +40,6 @@ inline void InstructionSchedulerSimple::schedule(cphVBinstruction* inst)
     {
     case CPHVB_NONE:
         break;
-    case CPHVB_RELEASE:
-        dataManager->release(inst->operand[0]);
-        break;
     case CPHVB_SYNC:
         dataManager->sync(inst->operand[0]);
         break;

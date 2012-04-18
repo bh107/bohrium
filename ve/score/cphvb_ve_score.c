@@ -91,7 +91,6 @@ cphvb_error cphvb_ve_score_execute(
             {
                 case CPHVB_NONE:
                 case CPHVB_DISCARD:
-                case CPHVB_RELEASE:
                 case CPHVB_SYNC:
                     break;
                 default://This is a regular operation.

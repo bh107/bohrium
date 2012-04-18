@@ -233,7 +233,6 @@ namespace NumCIL.cphVB
             CPHVB_ISCOMPLEX,
             CPHVB_IDENTITY,
             CPHVB_USERFUNC,//It is an user-defined function
-            CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
             CPHVB_SYNC,    //Inform child to make data synchronized and available.
             CPHVB_DISCARD, //Inform child to forget the array
             CPHVB_DESTROY, //Inform child to deallocate the array.

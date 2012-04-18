@@ -191,12 +191,6 @@ void DataManagerSimple::lock(cphVBarray* operands[],
     writeLockTable[baseArray] = operands[0];
 }
 
-void DataManagerSimple::release(cphVBarray* baseArray)
-{
-    sync(baseArray);
-    discard(baseArray);
-}
-
 void DataManagerSimple::sync(cphVBarray* baseArray)
 {
     assert(baseArray->base == NULL);

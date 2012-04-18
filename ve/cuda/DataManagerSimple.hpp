@@ -47,7 +47,6 @@ public:
     void lock(cphVBarray* operands[], 
               int nops, 
               InstructionBatch* batch);
-    void release(cphVBarray* baseArray);
     void sync(cphVBarray* baseArray);
     void flush(cphVBarray* view);
     void discard(cphVBarray* baseArray);

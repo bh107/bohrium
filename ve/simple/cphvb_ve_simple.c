@@ -63,7 +63,6 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
         {
         case CPHVB_NONE:
         case CPHVB_DISCARD:
-        case CPHVB_RELEASE:
         case CPHVB_SYNC:
             //Nothing to do since we only use main memory.
             break;

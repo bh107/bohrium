@@ -172,11 +172,14 @@ util_schedule(cphvb_instruction *inst, int force_flush)
 static void
 util_release(cphvb_array *ary)
 {
-    cphvb_instruction inst;
+    cphvb_instruction sync, disc;
     //Tell the VEM to release the data to us.
-    inst.opcode = CPHVB_RELEASE;
-    inst.operand[0] = ary;
-    util_schedule(&inst, 1);//Force a flush.
+    sync.opcode = CPHVB_SYNC;
+    sync.operand[0] = ary;
+    disc.opcode = CPHVB_DISCARD;
+    disc.operand[0] = ary;
+    util_schedule(&sync, 0);
+    util_schedule(&disc, 1);//Force a flush.
 } /* util_release */
 
 

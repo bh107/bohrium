@@ -113,7 +113,6 @@ int cphvb_operands(cphvb_opcode opcode)
 		_operands[CPHVB_LOG2] = 2;
 		_operands[CPHVB_ISREAL] = 2;
 		_operands[CPHVB_ISCOMPLEX] = 2;
-		_operands[CPHVB_RELEASE] = 1;
 		_operands[CPHVB_SYNC] = 1;
 		_operands[CPHVB_DISCARD] = 1;
 		_operands[CPHVB_DESTROY] = 1;
@@ -214,7 +213,6 @@ const char* cphvb_opcode_text(cphvb_opcode opcode)
 		_opcode_text[CPHVB_LOG2] = "CPHVB_LOG2";
 		_opcode_text[CPHVB_ISREAL] = "CPHVB_ISREAL";
 		_opcode_text[CPHVB_ISCOMPLEX] = "CPHVB_ISCOMPLEX";
-		_opcode_text[CPHVB_RELEASE] = "CPHVB_RELEASE";
 		_opcode_text[CPHVB_SYNC] = "CPHVB_SYNC";
 		_opcode_text[CPHVB_DISCARD] = "CPHVB_DISCARD";
 		_opcode_text[CPHVB_DESTROY] = "CPHVB_DESTROY";
