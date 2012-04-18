@@ -22,7 +22,13 @@ namespace UnitTest
             a.Apply(new GenerateOp());
             a += 1;
             a = a.Apply(Ops.Add, new NdArray(1));
-            a = a.Apply(Ops.Abs);
+            a = a.Add(1);
+            a = a.Sub(new NdArray(1));
+            a = Add.Apply(a, 1);
+            a = a.Negate();
+            a = Inc.Apply(a);
+            a = Abs.Apply(a);
+
             a = a.Reduce(Ops.Add);
             a = Add.Reduce(a);
 
