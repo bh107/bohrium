@@ -43,7 +43,7 @@ namespace NumCIL.Float
         /// Returns a flattened (1-d copy) of the current data view
         /// </summary>
         /// <returns>A flattened copy</returns>
-        public OutArray Flatten() { return this.value.Flatten(); } 
+        public OutArray Flatten() { return this.value.Flatten(); }
         /// <summary>
         /// Returns a copy of the underlying data, shaped as this view
         /// </summary>
@@ -64,7 +64,8 @@ namespace NumCIL.Float
         /// <summary>
         /// Returns a view that is a view of a range of elements
         /// </summary>
-        /// <param name="element">The range to view</param>
+        /// <param name="range">The range to view</param>
+        /// <param name="dimension">The dimension to view</param>
         /// <returns>The subview</returns>
         public OutArray Subview(Range range, long dimension) { return this.value.Subview(range, dimension); }
         /// <summary>
@@ -93,16 +94,16 @@ namespace NumCIL.Float
         /// </summary>
         /// <param name="value">The scalar value</param>
         public NdArray(T value)
-            : this(new T[] { value }, new long[] { 1 })
+            : this(Generate.Same(value, 1))
         {
         }
 
         /// <summary>
         /// Constructs a new NdArray over a pre-allocated array
         /// </summary>
-        /// <param name="data">The data to wrap in a NdArray</param>
+        /// <param name="shape">The shape of the new NdArray</param>
         public NdArray(Shape shape)
-            : this(new T[shape.Length], shape)
+            : this(Generate.Empty(shape))
         {
         }
 
@@ -120,7 +121,7 @@ namespace NumCIL.Float
         /// Constructs a new NdArray over a pre-allocated array and shapes it
         /// </summary>
         /// <param name="source">An existing array that will be re-shaped</param>
-        /// <param name="shape">The shape to view the array in</param>
+        /// <param name="newshape">The shape to view the array in</param>
         public NdArray(InArray source, Shape newshape)
             : this(new InArray(source, newshape))
         {
@@ -465,12 +466,12 @@ namespace NumCIL.Float
         /// <param name="value">The power-of value</param>
         /// <param name="out">Optional target for the pow operation, use to perform in-place power-of calculation</param>
         /// <returns>An NdArray which is the values of this NdArray raised to the power of the scalar value</returns>
-        public OutArray Pow(T value, OutArray @out = null) 
-        { 
+        public OutArray Pow(T value, OutArray @out = null)
+        {
             if (value == 2)
-                return UFunc.Apply<T, Mul>(this, this, null); 
+                return UFunc.Apply<T, Mul>(this, this, null);
             else
-                return UFunc.Apply<T, Pow>(this, value, null); 
+                return UFunc.Apply<T, Pow>(this, value, null);
         }
         #endregion
 
@@ -494,14 +495,14 @@ namespace NumCIL.Float
         /// <summary>
         /// Applies a unary function to each element in this NdArray
         /// </summary>
-        /// <typeparam name="C">The function to apply</param>
+        /// <typeparam name="C">The function to apply</typeparam>
         /// <param name="out">An optional output array, use this to perform the function in-place</param>
         /// <returns>An NdArray that is the result of applying the function to each element</returns>
         public OutArray Apply<C>(OutArray @out = null) where C : struct, IUnaryOp<T> { return UFunc.Apply<T, C>(this, @out); }
         /// <summary>
         /// Applies a binary function to each element in this NdArray
         /// </summary>
-        /// <typeparam name="C">The function to apply</param>
+        /// <typeparam name="C">The function to apply</typeparam>
         /// <param name="b">An input operand</param>
         /// <param name="out">An optional output array, use this to perform the function in-place</param>
         /// <returns>An NdArray that is the result of applying the function to each element</returns>
@@ -558,6 +559,9 @@ namespace NumCIL.Float
     }
 
     #region Struct instances for common operations
+    /// <summary>
+    /// Collection of instantiated operation structs
+    /// </summary>
     public struct Ops
     {
         /// <summary>
@@ -644,15 +648,15 @@ namespace NumCIL.Float
     /// <summary>
     /// The addition operator implementation
     /// </summary>
-    public struct Add : IBinaryOp<T> 
-    { 
+    public struct Add : IBinaryOp<T>
+    {
         /// <summary>
         /// Implementation of adding two numbers
         /// </summary>
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The result of adding the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)(a + b); }
 
         /// <summary>
@@ -662,7 +666,7 @@ namespace NumCIL.Float
         /// <param name="axis">The axis to reduce</param>
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>A reduced NdArray</returns>
-        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null) 
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
         { return UFunc.Reduce<T, Add>(arg, axis, @out); }
 
         /// <summary>
@@ -678,8 +682,8 @@ namespace NumCIL.Float
         /// <summary>
         /// Applies the addition operation to the input operands
         /// </summary>
-        /// <param name="in1">One input operand</param>
-        /// <param name="in2">Another input operand</param>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(InArray @in, T scalar, InArray @out = null)
@@ -688,7 +692,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The subtraction operator implementation
     /// </summary>
-    public struct Sub : IBinaryOp<T> 
+    public struct Sub : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of subtracting two numbers
@@ -696,7 +700,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The result of subtracting the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)(a - b); }
 
         /// <summary>
@@ -732,7 +736,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The multiplication operator implementation
     /// </summary>
-    public struct Mul : IBinaryOp<T> 
+    public struct Mul : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of multiplying two numbers
@@ -740,7 +744,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The result of multiplying the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)(a * b); }
 
         /// <summary>
@@ -776,7 +780,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The division operator implementation
     /// </summary>
-    public struct Div : IBinaryOp<T> 
+    public struct Div : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of dividing two numbers
@@ -784,7 +788,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The result of dividing the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)(a / b); }
 
         /// <summary>
@@ -820,7 +824,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The modulo operation implementation
     /// </summary>
-    public struct Mod : IBinaryOp<T> 
+    public struct Mod : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of the modulo operation on two numbers
@@ -828,7 +832,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The modulo result of dividing the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)(a % b); }
 
         /// <summary>
@@ -865,7 +869,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The maximum operation implementation
     /// </summary>
-    public struct Max : IBinaryOp<T> 
+    public struct Max : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of calculating the maximum of two numbers
@@ -873,7 +877,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The largest of the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)Math.Max(a, b); }
 
         /// <summary>
@@ -909,7 +913,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The minimum operation implementation
     /// </summary>
-    public struct Min : IBinaryOp<T> 
+    public struct Min : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of calculating the minimum of two numbers
@@ -917,7 +921,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The smallest of the two numbers</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)Math.Min(a, b); }
 
         /// <summary>
@@ -954,8 +958,8 @@ namespace NumCIL.Float
     /// <summary>
     /// The increment operation implementation
     /// </summary>
-    public struct Inc : IUnaryOp<T> 
-    { 
+    public struct Inc : IUnaryOp<T>
+    {
         /// <summary>
         /// Implementation of the increment operation
         /// </summary>
@@ -975,7 +979,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The decrement operation implementation
     /// </summary>
-    public struct Dec : IUnaryOp<T> 
+    public struct Dec : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the decrement operation
@@ -997,7 +1001,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The ceil operation implementation
     /// </summary>
-    public struct Ceiling : IUnaryOp<T> 
+    public struct Ceiling : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the ceiling operation
@@ -1018,7 +1022,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The floor operation implementation
     /// </summary>
-    public struct Floor : IUnaryOp<T> 
+    public struct Floor : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the floor operation
@@ -1039,7 +1043,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The round operation implementation
     /// </summary>
-    public struct Round : IUnaryOp<T> 
+    public struct Round : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the round operation
@@ -1060,7 +1064,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The absolute operation implementation
     /// </summary>
-    public struct Abs : IUnaryOp<T> 
+    public struct Abs : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the absolute operation
@@ -1081,7 +1085,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The square root operation implementation
     /// </summary>
-    public struct Sqrt : IUnaryOp<T> 
+    public struct Sqrt : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the square root operation
@@ -1102,7 +1106,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The exponential operation implementation
     /// </summary>
-    public struct Exp : IUnaryOp<T> 
+    public struct Exp : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the exponential operation
@@ -1123,7 +1127,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The negate operation implementation
     /// </summary>
-    public struct Negate : IUnaryOp<T> 
+    public struct Negate : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the negation operation
@@ -1144,7 +1148,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The logarithmic operation implementation
     /// </summary>
-    public struct Log : IUnaryOp<T> 
+    public struct Log : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the logarithmic operation
@@ -1165,7 +1169,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The logarithmic-10 operation implementation
     /// </summary>
-    public struct Log10 : IUnaryOp<T> 
+    public struct Log10 : IUnaryOp<T>
     {
         /// <summary>
         /// Implementation of the logarithmic-10 operation
@@ -1186,7 +1190,7 @@ namespace NumCIL.Float
     /// <summary>
     /// The power operation implementation
     /// </summary>
-    public struct Pow : IBinaryOp<T> 
+    public struct Pow : IBinaryOp<T>
     {
         /// <summary>
         /// Implementation of rasing a number to the power of another number
@@ -1194,7 +1198,7 @@ namespace NumCIL.Float
         /// <param name="a">One operand</param>
         /// <param name="b">Another operand</param>
         /// <returns>The result of rasing operand a to the power of operand b</returns>
-        public T Op(T a, T b) 
+        public T Op(T a, T b)
         { return (T)Math.Pow(a, b); }
 
         /// <summary>
@@ -1220,8 +1224,8 @@ namespace NumCIL.Float
         /// <summary>
         /// Applies the power operation to the input operands
         /// </summary>
-        /// <param name="in1">One input operand</param>
-        /// <param name="in2">Another input operand</param>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(InArray @in, T scalar, InArray @out = null)
@@ -1267,6 +1271,7 @@ namespace NumCIL.Float
         /// <summary>
         /// Creates an array filled with the given value
         /// </summary>
+        /// <param name="value">The value to fill the array with</param>
         /// <param name="shape">The shape of the NdArray</param>
         /// <returns>A shaped array with all values set to the given value</returns>
         public static OutArray Same(T value, Shape shape) { return Generator.Same(value, shape); }
@@ -1304,6 +1309,7 @@ namespace NumCIL.Float
         /// <summary>
         /// Creates an array filled with the given value
         /// </summary>
+        /// <param name="value">The value to set fill the array with</param>
         /// <param name="dimensions">The size of each dimension</param>
         /// <returns>A shaped array with all values set to the given value</returns>
         public static OutArray Same(T value, params long[] dimensions) { return Generator.Same(value, dimensions); }

@@ -64,7 +64,8 @@ namespace NumCIL.Int8
         /// <summary>
         /// Returns a view that is a view of a range of elements
         /// </summary>
-        /// <param name="element">The range to view</param>
+        /// <param name="range">The range to view</param>
+        /// <param name="dimension">The dimension to view</param>
         /// <returns>The subview</returns>
         public OutArray Subview(Range range, long dimension) { return this.value.Subview(range, dimension); }
         /// <summary>
@@ -93,16 +94,16 @@ namespace NumCIL.Int8
         /// </summary>
         /// <param name="value">The scalar value</param>
         public NdArray(T value)
-            : this(new T[] { value }, new long[] { 1 })
+            : this(Generate.Same(value, 1))
         {
         }
 
         /// <summary>
         /// Constructs a new NdArray over a pre-allocated array
         /// </summary>
-        /// <param name="data">The data to wrap in a NdArray</param>
+        /// <param name="shape">The shape of the new NdArray</param>
         public NdArray(Shape shape)
-            : this(new T[shape.Length], shape)
+            : this(Generate.Empty(shape))
         {
         }
 
@@ -120,7 +121,7 @@ namespace NumCIL.Int8
         /// Constructs a new NdArray over a pre-allocated array and shapes it
         /// </summary>
         /// <param name="source">An existing array that will be re-shaped</param>
-        /// <param name="shape">The shape to view the array in</param>
+        /// <param name="newshape">The shape to view the array in</param>
         public NdArray(InArray source, Shape newshape)
             : this(new InArray(source, newshape))
         {
@@ -494,14 +495,14 @@ namespace NumCIL.Int8
         /// <summary>
         /// Applies a unary function to each element in this NdArray
         /// </summary>
-        /// <typeparam name="C">The function to apply</param>
+        /// <typeparam name="C">The function to apply</typeparam>
         /// <param name="out">An optional output array, use this to perform the function in-place</param>
         /// <returns>An NdArray that is the result of applying the function to each element</returns>
         public OutArray Apply<C>(OutArray @out = null) where C : struct, IUnaryOp<T> { return UFunc.Apply<T, C>(this, @out); }
         /// <summary>
         /// Applies a binary function to each element in this NdArray
         /// </summary>
-        /// <typeparam name="C">The function to apply</param>
+        /// <typeparam name="C">The function to apply</typeparam>
         /// <param name="b">An input operand</param>
         /// <param name="out">An optional output array, use this to perform the function in-place</param>
         /// <returns>An NdArray that is the result of applying the function to each element</returns>
@@ -558,6 +559,9 @@ namespace NumCIL.Int8
     }
 
     #region Struct instances for common operations
+    /// <summary>
+    /// Collection of instantiated operation structs
+    /// </summary>
     public struct Ops
     {
         /// <summary>
@@ -678,8 +682,8 @@ namespace NumCIL.Int8
         /// <summary>
         /// Applies the addition operation to the input operands
         /// </summary>
-        /// <param name="in1">One input operand</param>
-        /// <param name="in2">Another input operand</param>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(InArray @in, T scalar, InArray @out = null)
@@ -1220,8 +1224,8 @@ namespace NumCIL.Int8
         /// <summary>
         /// Applies the power operation to the input operands
         /// </summary>
-        /// <param name="in1">One input operand</param>
-        /// <param name="in2">Another input operand</param>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(InArray @in, T scalar, InArray @out = null)
@@ -1267,6 +1271,7 @@ namespace NumCIL.Int8
         /// <summary>
         /// Creates an array filled with the given value
         /// </summary>
+        /// <param name="value">The value to fill the array with</param>
         /// <param name="shape">The shape of the NdArray</param>
         /// <returns>A shaped array with all values set to the given value</returns>
         public static OutArray Same(T value, Shape shape) { return Generator.Same(value, shape); }
@@ -1304,6 +1309,7 @@ namespace NumCIL.Int8
         /// <summary>
         /// Creates an array filled with the given value
         /// </summary>
+        /// <param name="value">The value to set fill the array with</param>
         /// <param name="dimensions">The size of each dimension</param>
         /// <returns>A shaped array with all values set to the given value</returns>
         public static OutArray Same(T value, params long[] dimensions) { return Generator.Same(value, dimensions); }
