@@ -48,8 +48,6 @@ DLLEXPORT cphvb_error cphvb_vem_node_shutdown(void);
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @has_init_value Does the array have an initial value
- * @init_value The initial value
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
@@ -59,8 +57,6 @@ DLLEXPORT cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_index    start,
                                         cphvb_index    shape[CPHVB_MAXDIM],
                                         cphvb_index    stride[CPHVB_MAXDIM],
-                                        cphvb_intp     has_init_value,
-                                        cphvb_constant init_value,
                                         cphvb_array**  new_array);
 
 

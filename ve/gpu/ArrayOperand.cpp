@@ -31,47 +31,6 @@ size_t ArrayOperand::size()
     return cphvb_nelements(spec->ndim, spec->shape);
 }
 
-void ArrayOperand::printOn(std::ostream& os) const
-{
-    os << "cphVBarray ID: " << spec << " {" << std::endl; 
-    os << "\towner: " << spec->owner << std::endl; 
-    os << "\tbase: " << spec->base << std::endl; 
-    os << "\ttype: " << cphvb_type_text(spec->type) << std::endl; 
-    os << "\tndim: " << spec->ndim << std::endl; 
-    os << "\tstart: " << spec->start << std::endl; 
-    for (int i = 0; i < spec->ndim; ++i)
-    {
-        os << "\tshape["<<i<<"]: " << spec->shape[i] << std::endl;
-    } 
-    for (int i = 0; i < spec->ndim; ++i)
-    {
-        os << "\tstride["<<i<<"]: " << spec->stride[i] << std::endl;
-    } 
-    os << "\tdata: " << spec->data << std::endl; 
-    os << "\thas_init_value: " << spec->has_init_value << std::endl;
-    switch(spec->type)
-    {
-    case CPHVB_INT32:
-        os << "\tinit_value: " << spec->init_value.int32 << std::endl;
-        break;
-    case CPHVB_UINT32:
-        os << "\tinit_value: " << spec->init_value.uint32 << std::endl;
-        break;
-    case CPHVB_FLOAT32:
-        os << "\tinit_value: " << spec->init_value.float32 << std::endl;
-        break;
-    }
-    os << "\tref_count: " << spec->ref_count << std::endl; 
-    os << "}"<< std::endl;
-}
-
-std::ostream& operator<< (std::ostream& os, 
-                          ArrayOperand const& array)
-{
-    array.printOn(os);
-    return os;
-}
-
 cphvb_array* ArrayOperand::getSpec()
 {
     return spec;

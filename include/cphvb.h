@@ -184,18 +184,6 @@ DLLEXPORT cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result)
  */
 DLLEXPORT cphvb_error cphvb_data_malloc(cphvb_array* array);
 
-/* Allocate data memory for the given array if not already allocated.
- * If @array is a view, the data memory for the base array is allocated.
- * If the array has an initial value, it is initialized with this value,
- * otherwise it is returned uninitialized.
- *
- * For convenience array is allowed to be NULL.
- *
- * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-DLLEXPORT cphvb_error cphvb_data_malloc_and_init(cphvb_array* array);
-
 /* Frees data memory for the given array.
  * For convenience array is allowed to be NULL.
  *

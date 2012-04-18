@@ -57,13 +57,6 @@ extern "C" {
     Pointer to the actual data. Ignored for views
     cphvb_data_ptr   data;
 
-    Does the array have an initial value (if not initialized)
-    Ignored for views
-    cphvb_intp       has_init_value;
-
-    The initial value
-    cphvb_constant   init_value;
-
     Ref Count
     cphvb_intp       ref_count;
 
@@ -80,8 +73,6 @@ extern "C" {
     cphvb_index      shape[CPHVB_MAXDIM];  \
     cphvb_index      stride[CPHVB_MAXDIM]; \
     cphvb_data_ptr   data;                 \
-    cphvb_intp       has_init_value;       \
-    cphvb_constant   init_value;           \
     cphvb_intp       ref_count;
 
 typedef struct cphvb_array cphvb_array;
