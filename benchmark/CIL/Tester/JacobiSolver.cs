@@ -45,12 +45,13 @@ namespace Tester
             {
                 i++;
                 work[R.All] = cells;
-                UFunc.Apply<T, Add>(work, up, work);
-                UFunc.Apply<T, Add>(work, left, work);
-                UFunc.Apply<T, Add>(work, right, work);
-                UFunc.Apply<T, Add>(work, down, work);
-                UFunc.Apply<T, Mul>(work, 0.2f, work);
+                Add.Apply(work, up, work);
+                Add.Apply(work, left, work);
+                Add.Apply(work, right, work);
+                Add.Apply(work, down, work);
+                Mul.Apply(work, 0.2f, work);
                 
+                //This will do the same but not in-place
                 /*work += up;
                 work += left;
                 work += right;
@@ -59,10 +60,10 @@ namespace Tester
 
                 if (!fixedIterations.HasValue)
                 {
-                    UFunc.Apply<T, Sub>(cells, work, diff);
-                    UFunc.Apply<T, Abs>(diff, diff);
-                    UFunc.Reduce<T, Add>(diff, 0, tmpdelta);
-                    delta = tmpdelta.Reduce<Add>().Value[0];
+                    Sub.Apply(cells, work, diff);
+                    Abs.Apply(diff, diff);
+                    Add.Reduce(diff, 0, tmpdelta);
+                    delta = Add.Reduce(tmpdelta).Value[0];
                 }
                 cells[R.All] = work;
             }

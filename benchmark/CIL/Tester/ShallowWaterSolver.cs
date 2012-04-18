@@ -153,7 +153,7 @@ namespace Tester
             }
 
             //Make sure we have the actual data and use it as a checksum
-            return UFunc.Reduce<T, Add>(UFunc.Reduce<T, Add>(H / n)).Data[0];
+            return Add.Reduce(Add.Reduce(H / n)).Data[0];
         }
     }
 }

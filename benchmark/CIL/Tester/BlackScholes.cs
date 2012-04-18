@@ -54,7 +54,7 @@ namespace Tester
 
             for (long i = 0; i < years; i++)
             {
-                total += BlackSholes(true, S, X, T, r, v).Reduce<Add>().Value[0] / size;
+                total += Add.Reduce(BlackSholes(true, S, X, T, r, v)).Value[0] / size;
                 T += day;
             }
 
