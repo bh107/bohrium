@@ -109,6 +109,10 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
             op      = insts[i]->operand[j];
             base    = cphvb_base_array( op );
 
+            if (!cphvb_is_constant( op )) {                         // Ignore constants
+                break;
+            }
+
             ret = ops_out.equal_range( base );                      // Compare to kernel-output-operands
             for(it = ret.first; it != ret.second; ++it)
             {
@@ -133,7 +137,11 @@ cphvb_intp bundle(cphvb_instruction *insts[], cphvb_intp size)
 
             for(int j=1; j < opcount; j++)                          // - input operand(s)
             {
+
                 op      = insts[i]->operand[j];
+                if (cphvb_is_constant(op)) {                        // Ignore constants
+                    break;
+                }
                 base    = cphvb_base_array( op );
                 ops.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
             }
