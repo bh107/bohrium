@@ -28,6 +28,90 @@ using cphvb_float64 = System.Double;
 
 namespace NumCIL.cphVB
 {
+    /*internal class InstructionMarshal : ICustomMarshaler
+    {
+        private static readonly int SIZE = Marshal.SizeOf(typeof(PInvoke.cphvb_instruction));
+        private static readonly InstructionMarshal Instance = new InstructionMarshal();
+
+        public static ICustomMarshaler GetInstance(string arg)
+        {
+            return Instance;
+        }
+
+        public void CleanUpManagedData(object ManagedObj)
+        {
+        }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            if (pNativeData == IntPtr.Zero)
+                return;
+            Marshal.FreeHGlobal(pNativeData);
+            
+        }
+
+        public int GetNativeDataSize()
+        {
+            return SIZE;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            System.Diagnostics.Debug.Assert(PInvoke.INTP_SIZE == 8);
+            System.Diagnostics.Debug.Assert(SIZE == 48);
+
+            PInvoke.cphvb_instruction[] arg = (PInvoke.cphvb_instruction[])ManagedObj;
+            int userfuncs = 0;
+            int instructions = 0;
+
+            foreach (var a in arg)
+                if (a.operand0 == PInvoke.cphvb_array_ptr.Null)
+                    break;
+                else
+                {
+                    instructions++;
+                    if (a.userfunc != null)
+                        userfuncs++;
+                }
+
+            //Allocate a single large chunck with all the data, including custom function descriptors
+            IntPtr chunck = Marshal.AllocHGlobal((instructions * SIZE) + (userfuncs * PInvoke.USERFUNC_SIZE));
+            IntPtr cur = chunck;
+            IntPtr curUser = IntPtr.Add(cur, (instructions * SIZE));
+
+            for(int i = 0; i < instructions; i++)
+            {
+                PInvoke.cphvb_instruction mo = arg[i];
+
+                Marshal.WriteInt64(cur, 0, (long)mo.status);
+                Marshal.WriteInt64(cur, 8, (long)mo.opcode);
+                Marshal.WriteIntPtr(cur, 16, mo.operand0.m_ptr);
+                Marshal.WriteIntPtr(cur, 24, mo.operand1.m_ptr);
+                Marshal.WriteIntPtr(cur, 32, mo.operand2.m_ptr);
+
+                if (mo.userfunc == null)
+                {
+                    Marshal.WriteIntPtr(cur, 40, IntPtr.Zero);
+                }
+                else
+                {
+                    Marshal.StructureToPtr(mo.userfunc, curUser, false);
+                    Marshal.WriteIntPtr(cur, 40, curUser);
+                    curUser = IntPtr.Add(curUser, PInvoke.USERFUNC_SIZE);
+                }
+
+                cur = IntPtr.Add(cur, SIZE);
+            }
+
+            return chunck;
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            throw new NotImplementedException();
+        }
+    }*/
+
     public static class PInvoke
     {
         public const int CPHVB_COM_NAME_SIZE = 1024;
@@ -38,6 +122,10 @@ namespace NumCIL.cphVB
 
         public static readonly bool Is64Bit = IntPtr.Size == 8;
         public static readonly int INTP_SIZE = Marshal.SizeOf(typeof(cphvb_intp));
+        public static readonly int USERFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_union));
+        public static readonly int RANDOMFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_random));
+        public static readonly int REDUCEFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_reduce));
+        public static readonly int PLAINFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_plain));
 
         public enum cphvb_com_type : long
         {
@@ -145,7 +233,6 @@ namespace NumCIL.cphVB
             CPHVB_ISCOMPLEX,
             CPHVB_IDENTITY,
             CPHVB_USERFUNC,//It is an user-defined function
-            CPHVB_RELEASE, // ==     CPHVB_SYNC + CPHVB_DISCARD
             CPHVB_SYNC,    //Inform child to make data synchronized and available.
             CPHVB_DISCARD, //Inform child to forget the array
             CPHVB_DESTROY, //Inform child to deallocate the array.
@@ -269,6 +356,15 @@ namespace NumCIL.cphVB
             public cphvb_data_array Set(object v) { throw new NotSupportedException(); }
         }
 
+        /*[StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi)]
+        public struct cphvb_execute_union
+        {
+            [FieldOffset(0)]
+            public cphvb_execute execute_normal;
+            [FieldOffset(0)]
+            public cphvb_execute_with_userfunc execute_with_userfunc;
+        }*/
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
         public struct cphvb_com
         {
@@ -301,7 +397,7 @@ namespace NumCIL.cphVB
             /// The actual IntPtr value
             /// </summary>
             [FieldOffset(0)]
-            private IntPtr m_ptr;
+            internal IntPtr m_ptr;
 
             /// <summary>
             /// Accessor methods to read/write the data pointer
@@ -419,7 +515,7 @@ namespace NumCIL.cphVB
         public struct cphvb_array
         {
             public cphvb_intp owner;
-            public cphvb_array[] basearray;
+            public cphvb_array_ptr basearray;
             public cphvb_type type;
             public cphvb_intp ndim;
             public cphvb_index start;
@@ -435,27 +531,133 @@ namespace NumCIL.cphVB
             public byte[] extra_meta_data;
         }
 
+        /// <summary>
+        /// This struct is used to allow us to pass a pointer to different struct types,
+        /// because we cannot use inheritance for the cphvb_userfunc structure to
+        /// support the reduce structure. Downside is that the size of the struct
+        /// will always be the size of the largest one
+        /// </summary>
+        [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi, Pack = 0)]
+        public struct cphvb_userfunc_union
+        {
+            [FieldOffset(0)]
+            public cphvb_userfunc_plain plain;
+
+            [FieldOffset(0)]
+            public cphvb_userfunc_random random;
+
+            [FieldOffset(0)]
+            public cphvb_userfunc_reduce reduce;
+
+            public cphvb_userfunc_union(cphvb_userfunc_plain arg) : this() { plain = arg; }
+            public cphvb_userfunc_union(cphvb_userfunc_reduce arg) : this() { reduce = arg; }
+            public cphvb_userfunc_union(cphvb_userfunc_random arg) : this() { random = arg; }
+
+            public static implicit operator cphvb_userfunc_union(cphvb_userfunc_plain arg) { return new cphvb_userfunc_union(arg); }
+            public static implicit operator cphvb_userfunc_union(cphvb_userfunc_reduce arg) { return new cphvb_userfunc_union(arg); }
+            public static implicit operator cphvb_userfunc_union(cphvb_userfunc_random arg) { return new cphvb_userfunc_union(arg); }
+        }
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
-        public struct cphvb_userfunc
+        public struct cphvb_userfunc_reduce
         {
             public cphvb_intp id;
             public cphvb_intp nout;
             public cphvb_intp nin;
             public cphvb_intp struct_size;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst=1)]
-            public cphvb_array[] operand;
+            public cphvb_array_ptr operand0;
+            public cphvb_array_ptr operand1;
+            public cphvb_index axis;
+            public cphvb_opcode opcode;
+
+            public cphvb_userfunc_reduce(cphvb_intp func, cphvb_opcode opcode, cphvb_intp axis, cphvb_array_ptr op1, cphvb_array_ptr op2)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 1;
+                this.struct_size = REDUCEFUNC_SIZE;
+                this.operand0 = op1;
+                this.operand1 = op2;
+                this.axis = axis;
+                this.opcode = opcode;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
-        public struct cphvb_instruction
+        public struct cphvb_userfunc_random
+        {
+            public cphvb_intp id;
+            public cphvb_intp nout;
+            public cphvb_intp nin;
+            public cphvb_intp struct_size;
+            public cphvb_array_ptr operand;
+
+            public cphvb_userfunc_random(cphvb_intp func, cphvb_array_ptr op)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 0;
+                this.struct_size = RANDOMFUNC_SIZE;
+                this.operand = op;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
+        public struct cphvb_userfunc_plain
+        {
+            public cphvb_intp id;
+            public cphvb_intp nout;
+            public cphvb_intp nin;
+            public cphvb_intp struct_size;
+            public cphvb_array_ptr operand0;
+            public cphvb_array_ptr operand1;
+            public cphvb_array_ptr operand2;
+
+            public cphvb_userfunc_plain(cphvb_intp func, cphvb_array_ptr op)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 0;
+                this.struct_size = PLAINFUNC_SIZE;
+                this.operand0 = op;
+                this.operand1 = cphvb_array_ptr.Null;
+                this.operand2 = cphvb_array_ptr.Null;
+            }
+
+            public cphvb_userfunc_plain(cphvb_intp func, cphvb_array_ptr op1, cphvb_array_ptr op2)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 0;
+                this.struct_size = PLAINFUNC_SIZE;
+                this.operand0 = op1;
+                this.operand1 = op2;
+                this.operand2 = cphvb_array_ptr.Null;
+            }
+
+            public cphvb_userfunc_plain(cphvb_intp func, cphvb_array_ptr op1, cphvb_array_ptr op2, cphvb_array_ptr op3)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 0;
+                this.struct_size = PLAINFUNC_SIZE;
+                this.operand0 = op1;
+                this.operand1 = op2;
+                this.operand2 = op3;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
+        public struct cphvb_instruction : IInstruction
         {
             //Instruction status
             public cphvb_error status;
             //Opcode: Identifies the operation
             public cphvb_opcode opcode;
-            //Id of each operand
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_MAX_NO_OPERANDS)]
-            public cphvb_array_ptr[] operand;
+            //Id of each operand, we have explicitly stated them here, instead of using the array style
+            public cphvb_array_ptr operand0;
+            public cphvb_array_ptr operand1;
+            public cphvb_array_ptr operand2;
             //Points to the user-defined function when the opcode is
             //CPHVB_USERFUNC.
             public IntPtr userfunc;
@@ -464,46 +666,81 @@ namespace NumCIL.cphVB
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
+                this.operand0 = operand;
+                this.operand1 = cphvb_array_ptr.Null;
+                this.operand2 = cphvb_array_ptr.Null;
                 this.userfunc = IntPtr.Zero;
-                this.operand = new cphvb_array_ptr[CPHVB_MAX_NO_OPERANDS];
-                this.operand[0] = operand;
             }
 
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2)
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
+                this.operand0 = operand1;
+                this.operand1 = operand2;
+                this.operand2 = cphvb_array_ptr.Null;
                 this.userfunc = IntPtr.Zero;
-                this.operand = new cphvb_array_ptr[CPHVB_MAX_NO_OPERANDS];
-                this.operand[0] = operand1;
-                this.operand[1] = operand2;
             }
 
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, cphvb_array_ptr operand3)
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
+                this.operand0 = operand1;
+                this.operand1 = operand2;
+                this.operand2 = operand3;
                 this.userfunc = IntPtr.Zero;
-                this.operand = new cphvb_array_ptr[CPHVB_MAX_NO_OPERANDS];
-                this.operand[0] = operand1;
-                this.operand[1] = operand2;
-                this.operand[2] = operand3;
             }
 
             public cphvb_instruction(cphvb_opcode opcode, IEnumerable<cphvb_array_ptr> operands)
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
+                var en = operands.GetEnumerator();
+                if (en.MoveNext())
+                {
+                    this.operand0 = en.Current;
+                    if (en.MoveNext())
+                    {
+                        this.operand1 = en.Current;
+                        if (en.MoveNext())
+                            this.operand2 = en.Current;
+                        else
+                            this.operand2 = cphvb_array_ptr.Null;
+                    }
+                    else
+                    {
+                        this.operand1 = cphvb_array_ptr.Null;
+                        this.operand2 = cphvb_array_ptr.Null;
+                    }
+                }
+                else
+                {
+                    this.operand0 = cphvb_array_ptr.Null;
+                    this.operand1 = cphvb_array_ptr.Null;
+                    this.operand2 = cphvb_array_ptr.Null;
+                }
                 this.userfunc = IntPtr.Zero;
-                this.operand = new cphvb_array_ptr[CPHVB_MAX_NO_OPERANDS];
-                int i = 0;
-                foreach(var o in operands)
-                    this.operand[i++] = o;
+            }
+
+            public cphvb_instruction(cphvb_opcode opcode, IntPtr userfunc)
+            {
+                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.opcode = opcode;
+                this.userfunc = userfunc;
+                this.operand0 = cphvb_array_ptr.Null;
+                this.operand1 = cphvb_array_ptr.Null;
+                this.operand2 = cphvb_array_ptr.Null;
             }
 
             public override string ToString()
             {
-                return string.Format("{0}({1}, {2}, {3})", this.opcode, operand[0], operand[1], operand[2]);
+                return string.Format("{0}({1}, {2}, {3})", this.opcode, operand0, operand1, operand2);
+            }
+
+            cphvb_opcode IInstruction.OpCode
+            {
+                get { return opcode; }
             }
         }
 
@@ -513,6 +750,8 @@ namespace NumCIL.cphVB
         public delegate cphvb_error cphvb_shutdown();
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_execute(cphvb_intp count, cphvb_instruction[] inst_list);
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        //public delegate cphvb_error cphvb_execute_with_userfunc(cphvb_intp count, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef=typeof(InstructionMarshal))] cphvb_instruction[] inst_list);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_reg_func(string lib, string fun, ref cphvb_intp id);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -622,7 +861,7 @@ namespace NumCIL.cphVB
         /// <returns>Error codes (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static cphvb_error cphvb_com_get_func([In] ref cphvb_com self, [In] string lib, [In] string func,
-                               [Out] out cphvb_userfunc ret_func);
+                               [Out] IntPtr ret_func);
 
         /// <summary>
         /// Trace an array creation

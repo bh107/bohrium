@@ -103,8 +103,6 @@ cphvb_error cphvb_vem_node_shutdown(void)
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @has_init_value Does the array have an initial value
- * @init_value The initial value
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
@@ -114,15 +112,12 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_index    start,
                                         cphvb_index    shape[CPHVB_MAXDIM],
                                         cphvb_index    stride[CPHVB_MAXDIM],
-                                        cphvb_intp     has_init_value,
-                                        cphvb_constant init_value,
                                         cphvb_array**  new_array)
 {
 
     try
     {
-        *new_array = arrayManager->create(base, type, ndim, start, shape,
-                                          stride, has_init_value, init_value);
+        *new_array = arrayManager->create(base, type, ndim, start, shape, stride);
     }
     catch(std::exception& e)
     {
@@ -203,30 +198,6 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             }
             break;
         }
-        case CPHVB_RELEASE:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            switch (base->owner)
-            {
-            case CPHVB_PARENT:
-                //The owner is upstream so we do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
-                break;
-            case CPHVB_SELF:
-                //We own the data: Send discards down stream
-                //and change owner to upstream
-                inst->operand[0] = base;
-                inst->opcode = CPHVB_DISCARD;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-                break;
-            default:
-                //The owner is downstream so send the release down
-                inst->operand[0] = base;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-            }
-            break;
-        }
         case CPHVB_SYNC:
         {
             cphvb_array* base = cphvb_base_array(inst->operand[0]);
@@ -250,15 +221,15 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         {
             cphvb_userfunc *uf = inst->userfunc;
             //The children should own the output arrays.
-            for(int i = 0; i < uf->nout; ++i)
+            for(int j = 0; j < uf->nout; ++j)
             {
-                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                cphvb_array* base = cphvb_base_array(uf->operand[j]);
                 base->owner = CPHVB_CHILD;
             }
             //We should own the input arrays.
-            for(int i = uf->nout; i < uf->nout + uf->nin; ++i)
+            for(int j = uf->nout; j < uf->nout + uf->nin; ++j)
             {
-                cphvb_array* base = cphvb_base_array(uf->operand[i]);
+                cphvb_array* base = cphvb_base_array(uf->operand[j]);
                 if(base->owner == CPHVB_PARENT)
                 {
                     base->owner = CPHVB_SELF;
@@ -271,11 +242,12 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             cphvb_array* base = cphvb_base_array(inst->operand[0]);
             // "Regular" operation: set ownership and send down stream
             base->owner = CPHVB_CHILD;//The child owns the output ary.
-            for (int i = 1; i < cphvb_operands(inst->opcode); ++i)
+            for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
             {
-                if(cphvb_base_array(inst->operand[i])->owner == CPHVB_PARENT)
+                if(!cphvb_is_constant(inst->operand[j]) &&
+                   cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
                 {
-                    cphvb_base_array(inst->operand[i])->owner = CPHVB_SELF;
+                    cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
                 }
             }
         }

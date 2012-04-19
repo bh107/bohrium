@@ -17,36 +17,6 @@ namespace NumCIL.cphVB
         public IDataAccessor<T> Create(T[] data) { return new cphVBAccessor<T>(data); }
     }
 
-    public class ViewPtrKeeper : IDisposable
-    {
-        /// <summary>
-        /// Instance of the VEM that is used
-        /// </summary>
-        protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
-
-        private PInvoke.cphvb_array_ptr m_ptr;
-        public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
-        public ViewPtrKeeper(PInvoke.cphvb_array_ptr p)
-        {
-            m_ptr = p;
-        }
-
-        public void Dispose(bool disposing)
-        {
-            if (m_ptr != PInvoke.cphvb_array_ptr.Null)
-            {
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DESTROY, m_ptr));
-                m_ptr = PInvoke.cphvb_array_ptr.Null;
-            }
-
-            if (disposing)
-                GC.SuppressFinalize(this);
-        }
-
-        public void Dispose() { Dispose(true); }
-        ~ViewPtrKeeper() { Dispose(false); }
-    }
-
     /// <summary>
     /// Code to map from NumCIL operations to cphVB operations
     /// </summary>
@@ -120,6 +90,10 @@ namespace NumCIL.cphVB
             }
 
             res[typeof(NumCIL.CopyOp<T>)] = PInvoke.cphvb_opcode.CPHVB_IDENTITY;
+            if (VEM.Instance.SupportsRandom)
+                res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
+            if (VEM.Instance.SupportsReduce)
+                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
 
             return res;
         }
@@ -187,11 +161,6 @@ namespace NumCIL.cphVB
         protected static Dictionary<Type, PInvoke.cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
 
         /// <summary>
-        /// The view cache used to prevent repeated creation of views
-        /// </summary>
-        //protected static ViewCache<T> ViewCache = new ViewCache<T>(VEM);
-
-        /// <summary>
         /// Constructs a new data accessor for the given size
         /// </summary>
         /// <param name="size">The size of the data</param>
@@ -247,101 +216,15 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Creates a base array (a view of an array)
-        /// </summary>
-        /// <param name="size">The number of elements in the array</param>
-        /// <param name="adr">An optional pointer to a pinned memory region</param>
-        /// <returns>A new base array</returns>
-        protected PInvoke.cphvb_array_ptr CreateBaseView(long size, IntPtr adr)
-        {
-            var v = VEM.CreateArray<T>(size);
-            if (adr != IntPtr.Zero)
-                v.Data = adr;
-            return v;
-        }
-
-        /// <summary>
-        /// Creates a new view of data
-        /// </summary>
-        /// <param name="shape">The shape to create the view for</param>
-        /// <param name="baseArray">The array to set as base array</param>
-        /// <returns>A new view</returns>
-        protected PInvoke.cphvb_array_ptr CreateView(Shape shape, PInvoke.cphvb_array_ptr baseArray)
-        {
-            //Unroll, to avoid creating a Linq query for basic 3d shapes
-            if (shape.Dimensions.Length == 1)
-            {
-                return VEM.CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length },
-                    new long[] { shape.Dimensions[0].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
-                );
-            }
-            else if (shape.Dimensions.Length == 2)
-            {
-                return VEM.CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
-                );
-            }
-            else if (shape.Dimensions.Length == 3)
-            {
-                return VEM.CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
-                );
-            }
-            else
-            {
-                long[] lengths = new long[shape.Dimensions.LongLength];
-                long[] strides = new long[shape.Dimensions.LongLength];
-                for (int i = 0; i < lengths.LongLength; i++)
-                {
-                    var d = shape.Dimensions[i];
-                    lengths[i] = d.Length;
-                    strides[i] = d.Stride;
-                }
-
-                return VEM.CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    lengths,
-                    strides,
-                    false,
-                    new PInvoke.cphvb_constant()
-                );
-            }
-        }
-
-        /// <summary>
         /// Pins the allocated data and returns the pinned pointer
         /// </summary>
         /// <returns>A pinned pointer</returns>
-        protected PInvoke.cphvb_array_ptr Pin()
+        internal virtual PInvoke.cphvb_array_ptr Pin()
         {
             if (m_data == null && m_externalData == PInvoke.cphvb_array_ptr.Null)
             {
                 //Data is not yet allocated, convert to external storage
-                m_externalData = CreateBaseView(m_size, IntPtr.Zero);
+                m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
                 m_ownsData = false;
             }
             else if (m_externalData == PInvoke.cphvb_array_ptr.Null)
@@ -350,7 +233,8 @@ namespace NumCIL.cphVB
                 if (!m_handle.IsAllocated)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
 
-                m_externalData = CreateBaseView(m_size, m_handle.AddrOfPinnedObject());
+                m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
+                m_externalData.Data = m_handle.AddrOfPinnedObject();
                 m_ownsData = true;
             }
             else if (m_ownsData && m_externalData.Data == IntPtr.Zero)
@@ -378,42 +262,6 @@ namespace NumCIL.cphVB
 
                 m_externalData.Data = IntPtr.Zero;
             }
-        }
-
-
-        /// <summary>
-        /// Generates an unmanaged view pointer for the NdArray
-        /// </summary>
-        /// <param name="view">The NdArray to create the pointer for</param>
-        /// <param name="createdViews">A list of already created views</param>
-        /// <param name="createdBaseViews">A list of already created base views</param>
-        /// <returns>An unmanaged view pointer</returns>
-        protected PInvoke.cphvb_array_ptr CreateViewPtr(NdArray<T> view, Dictionary<IDataAccessor<T>, Tuple<PInvoke.cphvb_array_ptr, GCHandle>> createdBaseViews)
-        {
-            PInvoke.cphvb_array_ptr basep;
-
-            if (view.m_data is cphVBAccessor<T>)
-            {
-                basep = ((cphVBAccessor<T>)view.m_data).Pin();
-            }
-            else
-            {
-                Tuple<PInvoke.cphvb_array_ptr, GCHandle> t;
-                if (!createdBaseViews.TryGetValue(view.m_data, out t))
-                {
-                    GCHandle h = GCHandle.Alloc(view.m_data.Data, GCHandleType.Pinned);
-                    t = new Tuple<PInvoke.cphvb_array_ptr,GCHandle>(CreateBaseView(view.m_data.Data.Length, h.AddrOfPinnedObject()), h);
-
-                    createdBaseViews.Add(view.m_data, t);
-                }
-
-                basep = t.Item1;
-            }
-
-            if (view.Tag == null || ((ViewPtrKeeper)view.Tag).Pointer != basep)
-                view.Tag = new ViewPtrKeeper(CreateView(view.Shape, basep));
-
-            return ((ViewPtrKeeper)view.Tag).Pointer;
         }
 
         /// <summary>
@@ -573,124 +421,124 @@ namespace NumCIL.cphVB
         /// <param name="work">The list of operations to execute</param>
         public override void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
         {
-            Dictionary<IDataAccessor<T>, Tuple<PInvoke.cphvb_array_ptr, GCHandle>> createdBaseViews = new Dictionary<IDataAccessor<T>, Tuple<PInvoke.cphvb_array_ptr, GCHandle>>();
+            List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
+            List<IInstruction> supported = new List<IInstruction>();
 
-            try
+            foreach (var op in work)
             {
-                List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
-                List<PInvoke.cphvb_instruction> supported = new List<PInvoke.cphvb_instruction>();
-
-                foreach (var op in work)
+                Type t;
+                bool isScalar;
+                if (op.Operation is ScalarAccess<T>)
                 {
-                    Type t;
-                    bool isScalar;
-                    if (op.Operation is ScalarAccess<T>)
-                    {
-                        t = ((ScalarAccess<T>)op.Operation).Operation.GetType();
-                        isScalar = true;
-                    }
-                    else if (op.Operation is GenerateOp<T>)
-                    {
-                        if (((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData != PInvoke.cphvb_array_ptr.Null || ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_ownsData)
-                            throw new InvalidOperationException("Unexpected generate operation on already allocated array?");
+                    t = ((ScalarAccess<T>)op.Operation).Operation.GetType();
+                    isScalar = true;
+                }
+                else if (op.Operation is GenerateOp<T>)
+                {
+                    if (((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData != PInvoke.cphvb_array_ptr.Null || ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_ownsData)
+                        throw new InvalidOperationException("Unexpected generate operation on already allocated array?");
 
-                        T value = ((GenerateOp<T>)op.Operation).Value;
-                        ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_defaultValue = value;
-                        ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData = VEM.CreateArray<T>(value, (int)op.Operands[0].m_data.Length);
-                        continue;
+                    T value = ((GenerateOp<T>)op.Operation).Value;
+                    ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_defaultValue = value;
+                    ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData = VEM.CreateArray<T>(value, (int)op.Operands[0].m_data.Length);
+                    continue;
+                }
+                else
+                {
+                    t = op.Operation.GetType();
+                    isScalar = false;
+                }
+
+                PInvoke.cphvb_opcode opcode;
+                if (OpcodeMap.TryGetValue(t, out opcode))
+                {
+                    if (unsupported.Count > 0)
+                    {
+                        base.ExecuteOperations(unsupported);
+                        unsupported.Clear();
+                    }
+
+                    if (isScalar)
+                    {
+                        var scalarAcc = new cphVBAccessor<T>(1);
+                        scalarAcc.m_defaultValue = ((ScalarAccess<T>)op.Operation).Value;
+                        scalarAcc.m_externalData = VEM.CreateArray<T>(scalarAcc.m_defaultValue, 1);
+                            
+                        Shape bShape = Shape.ToBroadcastShapes(op.Operands[1].Shape, new Shape(1)).Item2;
+                        var scalarOp = new NdArray<T>(scalarAcc, bShape);
+
+                        supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1], scalarOp));
                     }
                     else
                     {
-                        t = op.Operation.GetType();
-                        isScalar = false;
-                    }
+                        bool isSupported = true;
 
-                    PInvoke.cphvb_opcode opcode;
-                    if (OpcodeMap.TryGetValue(t, out opcode))
-                    {
-                        if (unsupported.Count > 0)
+                        if (opcode == PInvoke.cphvb_opcode.CPHVB_USERFUNC)
                         {
-                            base.ExecuteOperations(unsupported);
-                            unsupported.Clear();
-                        }
+                            if (VEM.SupportsRandom && op.Operation is NumCIL.Generic.RandomGeneratorOp<T>)
+                            {
+                                supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, op.Operands[0]));
+                                isSupported = true;
+                            }
+                            else if (VEM.SupportsReduce && op.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
+                            {
+                                NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
+                                PInvoke.cphvb_opcode rop;
+                                if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+                                {
+                                    supported.Add(VEM.CreateReduceInstruction<T>(CPHVB_TYPE, rop, lzop.Axis, op.Operands[0], op.Operands[1]));
+                                    isSupported = true;
+                                }
+                            }
 
-                        if (isScalar)
-                        {
-                            var scalarAcc = new cphVBAccessor<T>(1);
-                            scalarAcc.m_defaultValue = ((ScalarAccess<T>)op.Operation).Value;
-                            scalarAcc.m_externalData = VEM.CreateArray<T>(scalarAcc.m_defaultValue, 1);
-                            
-                            Shape bShape = Shape.ToBroadcastShapes(op.Operands[1].Shape, new Shape(1)).Item2;
-                            var scalarOp = new NdArray<T>(scalarAcc, bShape);
-                            
-                            supported.Add(new PInvoke.cphvb_instruction(
-                                opcode,
-                                CreateViewPtr(op.Operands[0], createdBaseViews),
-                                CreateViewPtr(op.Operands[1], createdBaseViews),
-                                CreateViewPtr(scalarOp, createdBaseViews)
-                            ));
 
+                            if (!isSupported)
+                            {
+                                if (supported.Count > 0)
+                                {
+                                    VEM.Execute(supported);
+                                    supported.Clear();
+                                }
+
+                                unsupported.Add(op);
+                            }
                         }
                         else
                         {
                             if (op.Operands.Length == 1)
-                                supported.Add(new PInvoke.cphvb_instruction(
-                                    opcode,
-                                    CreateViewPtr(op.Operands[0], createdBaseViews)
-                                ));
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0]));
                             else if (op.Operands.Length == 2)
-                                supported.Add(new PInvoke.cphvb_instruction(
-                                    opcode,
-                                    CreateViewPtr(op.Operands[0], createdBaseViews),
-                                    CreateViewPtr(op.Operands[1], createdBaseViews)
-                                ));
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1]));
                             else if (op.Operands.Length == 3)
-                                supported.Add(new PInvoke.cphvb_instruction(
-                                    opcode,
-                                    CreateViewPtr(op.Operands[0], createdBaseViews),
-                                    CreateViewPtr(op.Operands[1], createdBaseViews),
-                                    CreateViewPtr(op.Operands[2], createdBaseViews)
-                                ));
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1], op.Operands[2]));
                             else
-                                supported.Add(new PInvoke.cphvb_instruction(
-                                    opcode,
-                                    op.Operands.Select(x => CreateViewPtr(x, createdBaseViews))
-                                ));
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands));
                         }
                     }
-                    else
-                    {
-                        if (supported.Count > 0)
-                        {
-                            VEM.Execute(supported);
-                            supported.Clear();
-                        }
-
-                        unsupported.Add(op);
-                    }
-
-                    if (op is IDisposable)
-                        ((IDisposable)op).Dispose();
                 }
-
-                if (supported.Count > 0 && unsupported.Count > 0)
-                    throw new InvalidOperationException("Unexpected result, both supported and non-supported operations");
-
-                if (unsupported.Count > 0)
-                    base.ExecuteOperations(unsupported);
-
-                if (supported.Count > 0)
-                    VEM.Execute(supported);
-            }
-            finally
-            {
-                foreach (var kp in createdBaseViews)
+                else
                 {
-                    kp.Value.Item1.Data = IntPtr.Zero;
-                    kp.Value.Item2.Free();
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DESTROY, kp.Value.Item1));
+                    if (supported.Count > 0)
+                    {
+                        VEM.Execute(supported);
+                        supported.Clear();
+                    }
+
+                    unsupported.Add(op);
                 }
+
+                if (op is IDisposable)
+                    ((IDisposable)op).Dispose();
             }
+
+            if (supported.Count > 0 && unsupported.Count > 0)
+                throw new InvalidOperationException("Unexpected result, both supported and non-supported operations");
+
+            if (unsupported.Count > 0)
+                base.ExecuteOperations(unsupported);
+
+            if (supported.Count > 0)
+                VEM.Execute(supported);
         }
 
         /// <summary>

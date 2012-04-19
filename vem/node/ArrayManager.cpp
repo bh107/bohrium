@@ -28,9 +28,7 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
                                   cphvb_intp ndim,
                                   cphvb_index start,
                                   cphvb_index shape[CPHVB_MAXDIM],
-                                  cphvb_index stride[CPHVB_MAXDIM],
-                                  cphvb_intp has_init_value,
-                                  cphvb_constant init_value)
+                                  cphvb_index stride[CPHVB_MAXDIM])
 {
     cphvb_array* array = arrayStore->c_next();
     array->owner          = CPHVB_PARENT;
@@ -38,8 +36,6 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
     array->type           = type;
     array->ndim           = ndim;
     array->start          = start;
-    array->has_init_value = has_init_value;
-    array->init_value     = init_value;
     array->data           = NULL;
     array->ref_count      = 1;
     std::memcpy(array->shape, shape, ndim * sizeof(cphvb_index));
@@ -48,7 +44,6 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
     if(array->base != NULL)
     {
         assert(array->base->base == NULL);
-        assert(!has_init_value);
         ++array->base->ref_count;
         array->data = array->base->data;
     }
@@ -69,14 +64,10 @@ void ArrayManager::changeOwnerPending(cphvb_array* base,
                                       cphvb_comp owner)
 {
     assert(base->base == NULL);
-#ifdef _WIN32
 	OwnerTicket t;
 	t.array = base;
 	t.owner = owner;
     ownerChangeQueue.push_back(t);
-#else
-    ownerChangeQueue.push_back((OwnerTicket){base,owner});
-#endif
 }
 
 void ArrayManager::flush()

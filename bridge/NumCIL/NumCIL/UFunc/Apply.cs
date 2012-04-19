@@ -94,16 +94,28 @@ namespace NumCIL
             return @out;
         }
 
+        private static NdArray<T> Apply_Entry_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
+            where C : struct, IBinaryOp<T>
+        {
+            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
+            @out = v.Item3;
+
+            UFunc_Op_Inner_Binary<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
+
+            return @out;
+        }
+
         public static NdArray<T> Apply<T, C>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
-            
-            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
-            @out = v.Item3;
-            
-            UFunc_Op_Inner<T, C>(new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
+            return Apply_Entry_Binary<T, C>(new C(), in1, in2, @out);
+        }
 
-            return @out;
+        public static NdArray<T> Apply<T>(IBinaryOp<T> op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
+        {
+            var method = typeof(UFunc).GetMethod("Apply_Entry_Binary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
+            return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, in2, @out });
         }
 
         public static NdArray<T> Apply<T, C>(NdArray<T> in1, T scalar, NdArray<T> @out = null)
@@ -111,7 +123,7 @@ namespace NumCIL
         {
             @out = SetupApplyHelper<T>(in1, @out);
 
-            UFunc_Op_Inner<T, C>(in1, scalar, ref @out);
+            UFunc_Op_Inner<T, C>(new C(), in1, scalar, ref @out);
 
             return @out;
         }
@@ -119,10 +131,23 @@ namespace NumCIL
         public static NdArray<T> Apply<T, C>(NdArray<T> in1, NdArray<T> @out = null)
             where C : struct, IUnaryOp<T>
         {
+            return Apply_Entry_Unary<T, C>(new C(), in1, @out);
+        }
+
+        private static NdArray<T> Apply_Entry_Unary<T, C>(C op, NdArray<T> in1, NdArray<T> @out = null)
+            where C : struct, IUnaryOp<T>
+        {
             NdArray<T> v = SetupApplyHelper<T>(in1, @out);
-            UFunc_Op_Inner<T, C>(in1, ref v);
+            UFunc_Op_Inner_Unary<T, C>(op, in1, ref v);
 
             return v;
+        }
+
+        public static NdArray<T> Apply<T>(IUnaryOp<T> op, NdArray<T> in1, NdArray<T> @out = null)
+        {
+            var method = typeof(UFunc).GetMethod("Apply_Entry_Unary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
+            return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, @out });
         }
 
         public static NdArray<Tb> Apply<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Tb> @out = null)
@@ -139,7 +164,7 @@ namespace NumCIL
             Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
             @out = v.Item3;
 
-            UFunc_Op_Inner<T, BinaryLambdaOp<T>>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
+            UFunc_Op_Inner_Binary<T, BinaryLambdaOp<T>>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
 
             return v.Item3;
         }
@@ -148,7 +173,7 @@ namespace NumCIL
         {
             NdArray<T> v = SetupApplyHelper<T>(in1, @out);
 
-            UFunc_Op_Inner<T, UnaryLambdaOp<T>>(op, in1, ref @out);
+            UFunc_Op_Inner<T, UnaryLambdaOp<T>>(op, in1, ref v);
 
             return v;
         }
@@ -156,7 +181,14 @@ namespace NumCIL
         public static void Apply<T, C>(C op, NdArray<T> @out)
             where C : struct, INullaryOp<T>
         {
-            UFunc_Op_Inner<T, C>(op, @out);
+            UFunc_Op_Inner_Nullary<T, C>(op, @out);
+        }
+
+        public static void Apply<T>(INullaryOp<T> op, NdArray<T> @out)
+        {
+            var method = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
+            gm.Invoke(null, new object[] { op, @out });
         }
     }
 }

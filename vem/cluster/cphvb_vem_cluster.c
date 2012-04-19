@@ -94,30 +94,6 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp instruction_count,
             break;
         }
 /*
-        case CPHVB_RELEASE:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            switch (base->owner)
-            {
-            case CPHVB_PARENT:
-                //The owner is upstream so we do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
-                break;
-            case CPHVB_SELF:
-                //We own the date: Send discards down stream
-                //and change owner to upstream
-                inst->operand[0] = base;
-                inst->opcode = CPHVB_DISCARD;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-                break;
-            default:
-                //The owner is downsteam so send the release down
-                inst->operand[0] = base;
-                arrayManager->changeOwnerPending(base,CPHVB_PARENT);
-            }
-            break;
-        }
         case CPHVB_SYNC:
         {
             cphvb_array* base = cphvb_base_array(inst->operand[0]);
@@ -216,8 +192,6 @@ cphvb_error cphvb_vem_cluster_reg_func(char *lib, char *fun, cphvb_intp *id)
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @has_init_value Does the array have an initial value
- * @init_value The initial value
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
@@ -227,8 +201,6 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
                                            cphvb_index    start,
                                            cphvb_index    shape[CPHVB_MAXDIM],
                                            cphvb_index    stride[CPHVB_MAXDIM],
-                                           cphvb_intp     has_init_value,
-                                           cphvb_constant init_value,
                                            cphvb_array**  new_array)
 {
     printf("cphvb_vem_cluster_create_array\n");
@@ -247,8 +219,6 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
         ary->type           = type;
         ary->ndim           = ndim;
         ary->start          = start;
-        ary->has_init_value = has_init_value;
-        ary->init_value     = init_value;
         ary->data           = NULL;
         ary->ref_count      = 1;
         memcpy(ary->shape, shape, ndim * sizeof(cphvb_index));
@@ -286,7 +256,7 @@ cphvb_error cphvb_vem_cluster_create_array(cphvb_array*   base,
             s *= ary->localdims[i];
         }
 
-        vem_create_array(base, type, ndim, start, ary->localdims, ary->localstride, has_init_value, init_value, &ary->child_ary);
+        vem_create_array(base, type, ndim, start, ary->localdims, ary->localstride, &ary->child_ary);
 
         *new_array = (cphvb_array*) ary;
     }

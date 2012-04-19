@@ -226,7 +226,7 @@ namespace NumCIL.Generic
         public NdArray<T> Subview(Range range, long dim)
         {
             long first = range.First < 0 ? (this.Shape.Dimensions[dim].Length) + range.First : range.First;
-            long offset = this.Shape.Offset + first * this.Shape.Dimensions[dim].Stride;
+            long offset = dim == this.Shape.Dimensions.LongLength ? this.Shape.Length : this.Shape.Offset + first * this.Shape.Dimensions[dim].Stride;
             
             long last;
             long stride;
@@ -237,7 +237,7 @@ namespace NumCIL.Generic
                 {
                     Shape.ShapeDimension[] n = new Shape.ShapeDimension[this.Shape.Dimensions.LongLength + 1];
                     Array.Copy(this.Shape.Dimensions, 0, n, 0, dim);
-                    Array.Copy(this.Shape.Dimensions, dim, n, dim + 1, n.LongLength - 2);
+                    Array.Copy(this.Shape.Dimensions, dim, n, dim + 1, n.LongLength - (dim + 1));
                     n[dim] = new NumCIL.Shape.ShapeDimension(1, 0);
 
                     return new NdArray<T>(this, new Shape(n, this.Shape.Offset));
@@ -245,7 +245,7 @@ namespace NumCIL.Generic
                 else if (range.SingleElement)
                     last = first;
                 else
-                    last = range.Last < 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
+                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
 
                 stride = range.Stride;
             }
@@ -300,7 +300,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(value, ref lv);
+                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
             }
         }
 
@@ -340,7 +340,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(value, ref lv);
+                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
             }
         }
 

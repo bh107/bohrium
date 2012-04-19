@@ -72,21 +72,16 @@ typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
  * @start Index of the start element (always 0 for base-array)
  * @shape[CPHVB_MAXDIM] Number of elements in each dimention
  * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @has_init_value Does the array have an initial value
- * @init_value The initial value
  * @new_array The handler for the newly created array (output)
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-typedef cphvb_error (*cphvb_create_array)(
-                                   cphvb_array*   base,
-                                   cphvb_type     type,
-                                   cphvb_intp     ndim,
-                                   cphvb_index    start,
-                                   cphvb_index    shape[CPHVB_MAXDIM],
-                                   cphvb_index    stride[CPHVB_MAXDIM],
-                                   cphvb_intp     has_init_value,
-                                   cphvb_constant init_value,
-                                   cphvb_array**  new_array);
+typedef cphvb_error (*cphvb_create_array)(cphvb_array*   base,
+                                          cphvb_type     type,
+                                          cphvb_intp     ndim,
+                                          cphvb_index    start,
+                                          cphvb_index    shape[CPHVB_MAXDIM],
+                                          cphvb_index    stride[CPHVB_MAXDIM],
+                                          cphvb_array**  new_array);
 
 /* Registre a new user-defined function.
  *

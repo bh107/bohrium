@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NumCIL.Generic;
+using System.Runtime.InteropServices;
 
 namespace NumCIL.cphVB
 {
@@ -36,6 +38,21 @@ namespace NumCIL.cphVB
         public static long AllocatedViews { get { return m_allocatedviews; } }
 
         /// <summary>
+        /// ID for the user-defined reduce operation
+        /// </summary>
+        private long m_reduceFunctionId = 0;
+
+        /// <summary>
+        /// ID for the user-defined random operation
+        /// </summary>
+        private long m_randomFunctionId = 0;
+
+        /// <summary>
+        /// Lookup table for all created userfunc structures
+        /// </summary>
+        private Dictionary<IntPtr, GCHandle> m_allocatedUserfuncs = new Dictionary<IntPtr, GCHandle>();
+
+        /// <summary>
         /// Accessor for singleton VEM instance
         /// </summary>
         public static VEM Instance
@@ -61,7 +78,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A list of cleanups not yet performed
         /// </summary>
-        private List<PInvoke.cphvb_instruction> m_cleanups = new List<PInvoke.cphvb_instruction>();
+        private List<IInstruction> m_cleanups = new List<IInstruction>();
 
         /// <summary>
         /// Constructs a new VEM
@@ -79,7 +96,29 @@ namespace NumCIL.cphVB
             e = m_childs[0].init(ref m_childs[0]);
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
-		}
+
+            try
+            {
+                e = m_childs[0].reg_func(null, "cphvb_reduce", ref m_reduceFunctionId);
+                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                    throw new cphVBException(e);
+            }
+            catch
+            {
+                m_reduceFunctionId = 0;
+            }
+
+            try
+            {
+                e = m_childs[0].reg_func(null, "cphvb_random", ref m_randomFunctionId);
+                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                    throw new cphVBException(e);
+            }
+            catch
+            {
+                m_randomFunctionId = 0;
+            }
+        }
 
         /// <summary>
         /// Invokes garbage collection and flushes all pending cleanup messages
@@ -94,16 +133,16 @@ namespace NumCIL.cphVB
         /// Executes a list of instructions
         /// </summary>
         /// <param name="insts"></param>
-        public void Execute(params PInvoke.cphvb_instruction[] insts)
+        public void Execute(params IInstruction[] insts)
         {
-            Execute((IEnumerable<PInvoke.cphvb_instruction>)insts);
+            Execute((IEnumerable<IInstruction>)insts);
         }
 
         /// <summary>
         /// Registers instructions for later execution, usually destroy calls
         /// </summary>
         /// <param name="insts">The instructions to queue</param>
-        public void ExecuteRelease(params PInvoke.cphvb_instruction[] insts)
+        public void ExecuteRelease(params IInstruction[] insts)
         {
             //Lock is not really required as the GC is single threaded,
             // but user code could also call this
@@ -127,7 +166,7 @@ namespace NumCIL.cphVB
         /// Executes a list of instructions
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
-        public void Execute(IEnumerable<PInvoke.cphvb_instruction> inst_list)
+        public void Execute(IEnumerable<IInstruction> inst_list)
         {
             lock (m_executelock)
                 UnprotectedExecute(inst_list);
@@ -143,8 +182,8 @@ namespace NumCIL.cphVB
             if (m_cleanups.Count > 0)
             {
                 //Lock free swapping, ensures that we never block the garbage collector
-                List<PInvoke.cphvb_instruction> lst = m_cleanups;
-                m_cleanups = new List<PInvoke.cphvb_instruction>();
+                List<IInstruction> lst = m_cleanups;
+                m_cleanups = new List<IInstruction>();
 
                 lock (m_executelock)
                     UnprotectedExecute(lst);
@@ -155,40 +194,57 @@ namespace NumCIL.cphVB
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
-        private void UnprotectedExecute(IEnumerable<PInvoke.cphvb_instruction> inst_list)
+        private void UnprotectedExecute(IEnumerable<IInstruction> inst_list)
         {
-            //We need to execute multiple times if we have more than CPHVB_MAX_NO_INST instructions
-            PInvoke.cphvb_instruction[] buf = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
-
+            List<GCHandle> cleanups = new List<GCHandle>();
             long destroys = 0;
 
-            int i = 0;
-            foreach (PInvoke.cphvb_instruction inst in inst_list)
+            try
             {
-                buf[i++] = inst;
-                if (inst.opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
-                    destroys++;
+                //We need to execute multiple times if we have more than CPHVB_MAX_NO_INST instructions
+                PInvoke.cphvb_instruction[] buf = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
 
-                if (i >= buf.Length)
+                int i = 0;
+                foreach (var inst in inst_list)
                 {
-                    PInvoke.cphvb_error e = m_childs[0].execute(buf.LongLength, buf);
+                    buf[i] = (PInvoke.cphvb_instruction)inst;
+                    if (buf[i].opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
+                        destroys++;
+                    if (buf[i].userfunc != IntPtr.Zero)
+                    {
+                        cleanups.Add(m_allocatedUserfuncs[buf[i].userfunc]);
+                        m_allocatedUserfuncs.Remove(buf[i].userfunc);
+                    }
+                        
+
+                    i++;
+
+                    if (i >= buf.Length)
+                    {
+                        PInvoke.cphvb_error e = m_childs[0].execute(buf.LongLength, buf);
+
+                        if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                            throw new cphVBException(e);
+                        i = 0;
+                    }
+                }
+
+                if (i != 0)
+                {
+                    PInvoke.cphvb_error e = m_childs[0].execute(i, buf);
 
                     if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                         throw new cphVBException(e);
-                    i = 0;
                 }
             }
-
-            if (i != 0)
+            finally
             {
-                PInvoke.cphvb_error e = m_childs[0].execute(i, buf);
-
-                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                    throw new cphVBException(e);
+                if (destroys > 0)
+                    System.Threading.Interlocked.Add(ref m_allocatedviews, -destroys);
+                
+                foreach (var h in cleanups)
+                    h.Free();
             }
-
-            if (destroys > 0)
-                System.Threading.Interlocked.Add(ref m_allocatedviews, -destroys);
         }
 
         /// <summary>
@@ -234,14 +290,13 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Creates a base array with uninitialized memory
         /// </summary>
-        /// <typeparam name="T">The data type for the array</typeparam>
-        /// <param name="size">The size of the generated base array</param>
+       /// <param name="size">The size of the generated base array</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray<T>(long size)
+        public PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_type type, long size)
         {
             return CreateArray(
                 PInvoke.cphvb_array_ptr.Null,
-                MapType(typeof(T)),
+                type,
                 1,
                 0,
                 new long[] { size },
@@ -249,6 +304,17 @@ namespace NumCIL.cphVB
                 false,
                 new PInvoke.cphvb_constant()
                 );
+        }
+
+        /// <summary>
+        /// Creates a base array with uninitialized memory
+        /// </summary>
+        /// <typeparam name="T">The data type for the array</typeparam>
+        /// <param name="size">The size of the generated base array</param>
+        /// <returns>The pointer to the base array descriptor</returns>
+        public PInvoke.cphvb_array_ptr CreateArray<T>(long size)
+        {
+            return CreateArray(MapType(typeof(T)), size);
         }
 
         public static PInvoke.cphvb_type MapType(Type t)
@@ -344,5 +410,233 @@ namespace NumCIL.cphVB
                 }
             }
         }
+
+        /// <summary>
+        /// Generates an unmanaged view pointer for the NdArray
+        /// </summary>
+        /// <param name="view">The NdArray to create the pointer for</param>
+        /// <returns>An unmanaged view pointer</returns>
+        protected PInvoke.cphvb_array_ptr CreateViewPtr<T>(NdArray<T> view)
+        {
+            return CreateViewPtr<T>(MapType(typeof(T)), view);
+        }
+
+        /// <summary>
+        /// Generates an unmanaged view pointer for the NdArray
+        /// </summary>
+        /// <param name="type">The type of data</param>
+        /// <param name="view">The NdArray to create the pointer for</param>
+        /// <typeparam name="T">The datatype in the view</typeparam>
+        /// <returns>An unmanaged view pointer</returns>
+        protected PInvoke.cphvb_array_ptr CreateViewPtr<T>(PInvoke.cphvb_type type, NdArray<T> view)
+        {
+            PInvoke.cphvb_array_ptr basep;
+
+            if (view.m_data is cphVBAccessor<T>)
+            {
+                basep = ((cphVBAccessor<T>)view.m_data).Pin();
+            }
+            else
+            {
+                if (view.m_data.Tag is ViewPtrKeeper)
+                {
+                    basep = ((ViewPtrKeeper)view.m_data.Tag).Pointer;
+                }
+                else
+                {
+                    GCHandle h = GCHandle.Alloc(view.m_data.Data, GCHandleType.Pinned);
+                    basep = CreateArray<T>(view.m_data.Data.Length);
+                    basep.Data = h.AddrOfPinnedObject();
+                    view.m_data.Tag = new ViewPtrKeeper(basep, h);
+                }
+            }
+
+            if (view.Tag == null || ((ViewPtrKeeper)view.Tag).Pointer != basep)
+                view.Tag = new ViewPtrKeeper(CreateView(type, view.Shape, basep));
+
+            return ((ViewPtrKeeper)view.Tag).Pointer;
+        }
+
+        /// <summary>
+        /// Creates a new view of data
+        /// </summary>
+        /// <param name="shape">The shape to create the view for</param>
+        /// <param name="baseArray">The array to set as base array</param>
+        /// <typeparam name="T">The type of data in the view</typeparam>
+        /// <returns>A new view</returns>
+        public PInvoke.cphvb_array_ptr CreateView<T>(Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        {
+            return CreateView(MapType(typeof(T)), shape, baseArray);
+        }
+
+        /// <summary>
+        /// Creates a new view of data
+        /// </summary>
+        /// <param name="CPHVB_TYPE">The data type of the view</param>
+        /// <param name="shape">The shape to create the view for</param>
+        /// <param name="baseArray">The array to set as base array</param>
+        /// <returns>A new view</returns>
+        public PInvoke.cphvb_array_ptr CreateView(PInvoke.cphvb_type CPHVB_TYPE, Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        {
+            //Unroll, to avoid creating a Linq query for basic 3d shapes
+            if (shape.Dimensions.Length == 1)
+            {
+                return CreateArray(
+                    baseArray,
+                    CPHVB_TYPE,
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length },
+                    new long[] { shape.Dimensions[0].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 2)
+            {
+                return CreateArray(
+                    baseArray,
+                    CPHVB_TYPE,
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else if (shape.Dimensions.Length == 3)
+            {
+                return CreateArray(
+                    baseArray,
+                    CPHVB_TYPE,
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride },
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+            else
+            {
+                long[] lengths = new long[shape.Dimensions.LongLength];
+                long[] strides = new long[shape.Dimensions.LongLength];
+                for (int i = 0; i < lengths.LongLength; i++)
+                {
+                    var d = shape.Dimensions[i];
+                    lengths[i] = d.Length;
+                    strides[i] = d.Stride;
+                }
+
+                return CreateArray(
+                    baseArray,
+                    CPHVB_TYPE,
+                    shape.Dimensions.Length,
+                    (int)shape.Offset,
+                    lengths,
+                    strides,
+                    false,
+                    new PInvoke.cphvb_constant()
+                );
+            }
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> operand)
+        {
+            return CreateInstruction<T>(MapType(typeof(T)), opcode, operand);
+        }
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        {
+            return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2);
+        }
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        {
+            return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2, op3);
+        }
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
+        {
+            return CreateInstruction<T>(MapType(typeof(T)), opcode, operands);
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> operand)
+        {
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand));
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        {
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2));
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        {
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), CreateViewPtr<T>(type, op3));
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
+        {
+            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)));
+        }
+
+        public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)
+        {
+            if (!SupportsRandom)
+                throw new cphVBException("The VEM/VE setup does not support the random function");
+
+            GCHandle gh = GCHandle.Alloc(
+                new PInvoke.cphvb_userfunc_random(
+                    m_randomFunctionId,
+                    CreateViewPtr<T>(type, op1)
+                ), 
+                GCHandleType.Pinned
+            );
+
+            IntPtr adr = gh.AddrOfPinnedObject();
+
+            m_allocatedUserfuncs.Add(adr, gh);
+
+            return new PInvoke.cphvb_instruction(
+                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                adr                    
+            );
+        }
+
+        public IInstruction CreateReduceInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
+        {
+            if (!SupportsReduce)
+                throw new cphVBException("The VEM/VE setup does not support the reduce function");
+
+            GCHandle gh = GCHandle.Alloc(
+                new PInvoke.cphvb_userfunc_reduce(
+                    m_reduceFunctionId,
+                    opcode,
+                    axis,
+                    CreateViewPtr<T>(type, op1),
+                    CreateViewPtr<T>(type, op2)
+                ), 
+                GCHandleType.Pinned
+            );
+
+            IntPtr adr = gh.AddrOfPinnedObject();
+
+            m_allocatedUserfuncs.Add(adr, gh);
+
+            return new PInvoke.cphvb_instruction(
+                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                adr
+            );
+        }
+
+        /// <summary>
+        /// Gets a value indicating if the Reduce operation is supported
+        /// </summary>
+        public bool SupportsReduce { get { return m_reduceFunctionId > 0; } }
+        //public bool SupportsReduce { get { return false; } }
+
+        /// <summary>
+        /// Gets a value indicating if the Random operation is supported
+        /// </summary>
+        public bool SupportsRandom { get { return m_randomFunctionId > 0; } }
     }
 }

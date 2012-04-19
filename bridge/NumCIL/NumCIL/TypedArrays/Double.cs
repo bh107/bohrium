@@ -237,21 +237,100 @@ namespace NumCIL.Double
         public OutArray Apply(Func<T, T, T> op, InArray b) { return UFunc.Apply<T>(op, this, b); }
         public OutArray Apply<C>() where C : struct, IUnaryOp<T> { return UFunc.Apply<T, C>(this); }
         public OutArray Apply<C>(InArray b) where C : struct, IBinaryOp<T> { return UFunc.Apply<T, C>(this, b, null); }
+        public OutArray Apply(INullaryOp<T> op) { UFunc.Apply<T>(op, this); return this; }
+        public OutArray Apply(IUnaryOp<T> op) { return UFunc.Apply<T>(op, this); }
+        public OutArray Apply(IBinaryOp<T> op, InArray b) { return UFunc.Apply<T>(op, this, b, null); }
 
         public OutArray Reduce<C>(long axis = 0) where C : struct, IBinaryOp<T> { return UFunc.Reduce<T, C>(this, axis, null); }
-        #endregion
+        public OutArray Reduce(IBinaryOp<T> op, long axis = 0) { return UFunc.Reduce<T>(op, this, axis, null); }
 
+        #endregion
     }
 
-    #region Operator implementations
-    public struct Add : IBinaryOp<T> { public T Op(T a, T b) { return (T)(a + b); } }
-    public struct Sub : IBinaryOp<T> { public T Op(T a, T b) { return (T)(a - b); } }
-    public struct Mul : IBinaryOp<T> { public T Op(T a, T b) { return (T)(a * b); } }
-    public struct Div : IBinaryOp<T> { public T Op(T a, T b) { return (T)(a / b); } }
-    public struct Mod : IBinaryOp<T> { public T Op(T a, T b) { return (T)(a % b); } }
+    #region Struct instances for common reduce operations
+    public struct Ops
+    {
+        public static readonly Add Add;
+        public static readonly Sub Sub;
+        public static readonly Mul Mul;
+        public static readonly Div Div;
+        public static readonly Mod Mod;
+        public static readonly Max Max;
+        public static readonly Min Min;
 
-    public struct Max : IBinaryOp<T> { public T Op(T a, T b) { return (T)Math.Max(a, b); } }
-    public struct Min : IBinaryOp<T> { public T Op(T a, T b) { return (T)Math.Min(a, b); } }
+        public static readonly Inc Inc;
+        public static readonly Dec Dec;
+        public static readonly Floor Floor;
+        public static readonly Ceiling Ceiling;
+        public static readonly Round Round;
+        public static readonly Abs Abs;
+        public static readonly Sqrt Sqrt;
+        public static readonly Exp Exp;
+        public static readonly Negate Negate;
+        public static readonly Log Log;
+        public static readonly Log10 Log10;
+        public static readonly Pow Pow;
+    }
+    #endregion
+
+    #region Operator implementations
+    public struct Add : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)(a + b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Add>(arg, axis, @out); }
+    }
+    public struct Sub : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)(a - b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Sub>(arg, axis, @out); }
+    }
+    public struct Mul : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)(a * b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Mul>(arg, axis, @out); }
+    }
+    public struct Div : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)(a / b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Div>(arg, axis, @out); }
+    }
+    public struct Mod : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)(a % b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Mod>(arg, axis, @out); }
+    }
+
+    public struct Max : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)Math.Max(a, b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Max>(arg, axis, @out); }
+    }
+    public struct Min : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)Math.Min(a, b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Min>(arg, axis, @out); }
+    }
 
     public struct Inc : IUnaryOp<T> { public T Op(T a) { return (T)(a + (T)1); } }
     public struct Dec : IUnaryOp<T> { public T Op(T a) { return (T)(a + (T)1); } }
@@ -265,7 +344,14 @@ namespace NumCIL.Double
     public struct Negate : IUnaryOp<T> { public T Op(T a) { return (T)(-a); } }
     public struct Log : IUnaryOp<T> { public T Op(T a) { return (T)Math.Log(a); } }
     public struct Log10 : IUnaryOp<T> { public T Op(T a) { return (T)Math.Log10(a); } }
-    public struct Pow : IBinaryOp<T> { public T Op(T a, T b) { return (T)Math.Pow(a, b); } }
+    public struct Pow : IBinaryOp<T>
+    {
+        public T Op(T a, T b)
+        { return (T)Math.Pow(a, b); }
+
+        public static OutArray Reduce(InArray arg, long axis = 0, InArray @out = null)
+        { return UFunc.Reduce<T, Max>(arg, axis, @out); }
+    }
     #endregion
 
     #region Generate mimics

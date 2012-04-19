@@ -74,8 +74,11 @@ typedef struct
     cphvb_opcode  opcode;
     //Id of each operand
     cphvb_array*  operand[CPHVB_MAX_NO_OPERANDS];
-    //Points to the user-defined function when the opcode is
-    //CPHVB_USERFUNC.
+    //Constant included in the instruction (Used if one of the operands == NULL)
+    cphvb_constant constant;
+    //The constant type
+    cphvb_type constant_type;
+    //Points to the user-defined function when the opcode is CPHVB_USERFUNC.
     cphvb_userfunc *userfunc;
 } cphvb_instruction;
 
