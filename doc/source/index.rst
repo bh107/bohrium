@@ -1,19 +1,49 @@
-.. cphVB documentation master file, created by
-   sphinx-quickstart on Wed Mar 14 12:12:45 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. cphVB documentation master file
 
-Welcome to cphVB's documentation!
+Welcome!
 =================================
 
-Contents:
+cphVB provides a runtime environment for efficiently executing vectorized applications using your favorourite programming languange Python/NumPy, C#, F#, C, C++ on  Linux, Windows and MacOSX.
+
+Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes and locks to utilize your multi-core CPU and forget about MPI to program your cluster just cphVB!
+
+Features
+--------
+
++-----------+----------------+---------------+---------+-------+-----+----+----+
+|           | Architecture Support                     | Frontends             |
++-----------+----------------+---------------+---------+-------+-----+----+----+
+|           | Multi-Core CPU | Many-Core GPU | Cluster | NumPy | C++ | F# | C# |
++===========+================+===============+=========+=======+=====+====+====+
+| Linux     | X              | X             | -       | X     | x   | x  | x  |
++-----------+----------------+---------------+---------+-------+-----+----+----+
+| MacOSX    | X              | -             | -       | -     | x   | x  | x  |
++-----------+----------------+---------------+---------+-------+-----+----+----+
+| Windows   | X              | X             | -       | -     | x   | x  | x  |
++-----------+----------------+---------------+---------+-------+-----+----+----+
+
+Download
+--------
+
+cphvb is available from github
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
 
-    getting_started
-    tutorials
-    extending
+   getting_started
+   user_docs
+   developer_docs
+
+.. toctree::
+   :maxdepth: 1
+
+   faq
+   bugs
+   license
+
 
 Indices and tables
 ==================
