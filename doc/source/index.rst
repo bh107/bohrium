@@ -22,20 +22,15 @@ Features
 | Windows   | X              | X             | -       | -     | x   | x  | x  |
 +-----------+----------------+---------------+---------+-------+-----+----+----+
 
-Download
---------
-
-cphvb is available from github
-
-Contents
---------
+Get Started!
+------------
 
 .. toctree::
    :maxdepth: 2
 
-   getting_started
-   user_docs
-   developer_docs
+   quickstart
+   users/index
+   developers/index
 
 .. toctree::
    :maxdepth: 1
@@ -43,12 +38,4 @@ Contents
    faq
    bugs
    license
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 

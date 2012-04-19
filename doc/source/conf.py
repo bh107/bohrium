@@ -25,7 +25,15 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'breathe']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.pngmath',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'breathe'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -41,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'cphVB'
-copyright = u'2012, Troels Blum, Mads Ruben Burgdorff Kristensen, Kenneth Skovhede, Simon Andreas Frimann Lund, Brian Vinter'
+copyright = u'2012, eScience Group @ NBI'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -181,7 +189,7 @@ htmlhelp_basename = 'cphVBdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'cphVB.tex', u'cphVB Documentation',
-   u'Troels Blum, Mads Ruben Burgdorff Kristensen, Simon Andreas Frimann Lund', 'manual'),
+   u'eScience Group @ NBI', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,17 +222,17 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'cphvb', u'cphVB Documentation',
-     [u'Troels Blum, Mads Ruben Burgdorff Kristensen, Simon Andreas Frimann Lund'], 1)
+     [u'eScience Group @ NBI'], 1)
 ]
 
 
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'cphVB'
-epub_author = u'Troels Blum, Mads Ruben Burgdorff Kristensen, Simon Andreas Frimann Lund'
-epub_publisher = u'Troels Blum, Mads Ruben Burgdorff Kristensen, Simon Andreas Frimann Lund'
-epub_copyright = u'2012, Troels Blum, Mads Ruben Burgdorff Kristensen, Simon Andreas Frimann Lund'
+epub_title      = u'cphVB'
+epub_author     = u'eScience Group @ NBI'
+epub_publisher  = u'eScience Group @ NBI'
+epub_copyright  = u'2012, eScience Group @ NBI'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
