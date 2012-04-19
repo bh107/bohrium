@@ -6,24 +6,57 @@ using NumCIL.Generic;
 
 namespace NumCIL
 {
+    /// <summary>
+    /// Universal function implementations (elementwise operations)
+    /// </summary>
     public partial class UFunc
     {
+        /// <summary>
+        /// Wrapper class to represent a pending reduce operation in a list of pending operations
+        /// </summary>
+        /// <typeparam name="T">The type of data being processed</typeparam>
         public struct LazyReduceOperation<T> : IBinaryOp<T>
         {
+            /// <summary>
+            /// The axis to reduce
+            /// </summary>
             public readonly long Axis;
+            /// <summary>
+            /// The operation to use for reduction
+            /// </summary>
             public readonly IBinaryOp<T> Operation;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LazyReduceOperation&lt;T&gt;"/> struct.
+            /// </summary>
+            /// <param name="operation">The operation to reduce with</param>
+            /// <param name="axis">The axis to reduce over</param>
             public LazyReduceOperation(IBinaryOp<T> operation, long axis) 
             {
                 Operation = operation;
                 Axis = axis; 
             }
 
+            /// <summary>
+            /// Required interface member that is not used
+            /// </summary>
+            /// <param name="a">Unused</param>
+            /// <param name="b">Unused</param>
+            /// <returns>Throws exception</returns>
             public T Op(T a, T b)
             {
                 throw new NotImplementedException();
             }
         }
 
+        /// <summary>
+        /// Sets up the output array if it is null, or verifies it if it is supplied
+        /// </summary>
+        /// <typeparam name="T">The type of data to work with</typeparam>
+        /// <param name="in1">The array to reduce</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output array</param>
+        /// <returns>A correctly shaped output array or throws an exception</returns>
         public static NdArray<T> SetupReduceHelper<T>(NdArray<T> in1, long axis, NdArray<T> @out)
         {
             long j = 0;
@@ -49,12 +82,34 @@ namespace NumCIL
             return @out;
         }
 
+        /// <summary>
+        /// Reduces the input argument on the specified axis
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to reduce with</typeparam>
+        /// <param name="in1">The input argument</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output target</returns>
         public static NdArray<T> Reduce<T, C>(NdArray<T> in1, long axis = 0, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
             return Reduce_Entry<T, C>(new C(), in1, axis, @out);
         }
 
+        /// <summary>
+        /// The entry function for a reduction.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution by wrapping it in a <see cref="T:NumCIL.UFunc.LazyReduceOperation{0}"/>. 
+        /// Otherwise the reduce flush function is called
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to reduce with</typeparam>
+        /// <param name="op">The instance of the operation to reduce with</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output target</returns>
         private static NdArray<T> Reduce_Entry<T, C>(C op, NdArray<T> in1, long axis = 0, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
@@ -68,6 +123,15 @@ namespace NumCIL
             return v;
         }
 
+        /// <summary>
+        /// Reduces the input argument on the specified axis
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <param name="op">The operation to reduce with</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output target</returns>
         public static NdArray<T> Reduce<T>(IBinaryOp<T> op, NdArray<T> in1, long axis = 0, NdArray<T> @out = null)
         {
             var method = typeof(UFunc).GetMethod("Reduce_Entry", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
@@ -75,6 +139,18 @@ namespace NumCIL
             return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, axis, @out });
         }
 
+        /// <summary>
+        /// Actually executes a reduce operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element in the given dimension.
+        /// This implementation is optimized for use with up to 2 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to reduce with</typeparam>
+        /// <param name="op">The instance of the operation to reduce with</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output target</returns>
         private static NdArray<T> UFunc_Reduce_Inner_Flush<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
             where C : struct, IBinaryOp<T>
         {

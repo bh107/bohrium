@@ -72,7 +72,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Creates a new data accessor for an allocated array
         /// </summary>
-        /// <param name="shape">The array to create an accessor for</param>
+        /// <param name="data">The array to create an accessor for</param>
         /// <returns>A new accessor</returns>
         IDataAccessor<T> Create(T[] data);
     }
@@ -245,7 +245,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Function that builds a serialized list of operations to execute to obtain the target output
         /// </summary>
-        /// <param name="work">The target output</param>
+        /// <param name="target">The target output</param>
         /// <returns>A list of operations to perform</returns>
         public virtual IEnumerable<PendingOperation<T>> UnrollWorkList(ILazyAccessor<T> target)
         {
@@ -469,7 +469,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Creates a new data accessor for an allocated array
         /// </summary>
-        /// <param name="size">The array to create an accessor for</param>
+        /// <param name="data">The array to create an accessor for</param>
         /// <returns>A new accessor</returns>
         public IDataAccessor<T> Create(T[] data) { return new DefaultAccessor<T>(data); }
     }
@@ -489,7 +489,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Creates a new data accessor for an allocated array
         /// </summary>
-        /// <param name="size">The array to create an accessor for</param>
+        /// <param name="data">The array to create an accessor for</param>
         /// <returns>A new accessor</returns>
         public IDataAccessor<T> Create(T[] data) { return new LazyAccessor<T>(data); }
     }

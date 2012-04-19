@@ -134,7 +134,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Constructs a new NdArray over a pre-allocated array
         /// </summary>
-        /// <param name="data">The data to wrap in a NdArray</param>
+        /// <param name="shape">The shape of the NdArray</param>
         public NdArray(Shape shape)
             : this(AccessorFactory.Create(shape.Length), shape)
         {
@@ -170,7 +170,7 @@ namespace NumCIL.Generic
         /// Constructs a new NdArray over a pre-allocated array and shapes it
         /// </summary>
         /// <param name="source">An existing array that will be re-shaped</param>
-        /// <param name="shape">The shape to view the array in</param>
+        /// <param name="newshape">The shape to view the array in</param>
         public NdArray(NdArray<T> source, Shape newshape = null)
             : this(source.m_data, newshape)
         {
@@ -221,7 +221,8 @@ namespace NumCIL.Generic
         /// <summary>
         /// Returns a view that is a view of a range of elements
         /// </summary>
-        /// <param name="element">The range to view</param>
+        /// <param name="range">The range to view</param>
+        /// <param name="dim">The dimension to apply the range to</param>
         /// <returns>The subview</returns>
         public NdArray<T> Subview(Range range, long dim)
         {
@@ -300,7 +301,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
+                UFunc.UFunc_Op_Inner_Unary<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
             }
         }
 
@@ -340,7 +341,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
+                UFunc.UFunc_Op_Inner_Unary<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
             }
         }
 
@@ -403,11 +404,20 @@ namespace NumCIL.Generic
 
         #endregion
 
+        /// <summary>
+        /// Returns a string representation of the data viewed by this NdArray
+        /// </summary>
+        /// <returns>A string representation of the data viewed by this NdArray</returns>
         public override string ToString()
         {
             return string.Format("NdArray<{0}>({1}): {2}", typeof(T).FullName, string.Join(", ", this.Shape.Dimensions.Select(x => x.Length.ToString()).ToArray()), this.AsString());
         }
 
+        /// <summary>
+        /// Returns the contents of this NdArray as a parseable string
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <returns></returns>
         public string AsString(StringBuilder sb = null)
         {
             sb = sb ?? new StringBuilder();

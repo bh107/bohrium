@@ -11,26 +11,191 @@ namespace NumCIL.Float
 
     public partial class NdArray 
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float> 
+    { 
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; } 
+    }
 }
 
 namespace NumCIL.Double
@@ -40,26 +205,191 @@ namespace NumCIL.Double
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.Int8
@@ -69,26 +399,191 @@ namespace NumCIL.Int8
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.Int16
@@ -98,26 +593,191 @@ namespace NumCIL.Int16
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
-        public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
+        public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.Int32
@@ -127,26 +787,191 @@ namespace NumCIL.Int32
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.Int64
@@ -156,26 +981,191 @@ namespace NumCIL.Int64
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.UInt8
@@ -185,26 +1175,191 @@ namespace NumCIL.UInt8
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.UInt16
@@ -214,26 +1369,191 @@ namespace NumCIL.UInt16
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.UInt32
@@ -243,26 +1563,191 @@ namespace NumCIL.UInt32
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> { public ulong Op(T a) { return (ulong)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }
 
 namespace NumCIL.UInt64
@@ -272,24 +1757,189 @@ namespace NumCIL.UInt64
 
     public partial class NdArray
     {
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
         public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
         public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
         public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
         public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
         public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
         public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
         public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
         public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
         public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
     }
 
-    public struct ToFloat : IUnaryConvOp<T, float> { public float Op(T a) { return (float)a; } }
-    public struct ToDouble : IUnaryConvOp<T, double> { public double Op(T a) { return (double)a; } }
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> { public sbyte Op(T a) { return (sbyte)a; } }
-    public struct ToInt16 : IUnaryConvOp<T, short> { public short Op(T a) { return (short)a; } }
-    public struct ToInt32 : IUnaryConvOp<T, int> { public int Op(T a) { return (int)a; } }
-    public struct ToInt64 : IUnaryConvOp<T, long> { public long Op(T a) { return (long)a; } }
-    public struct ToUInt8 : IUnaryConvOp<T, byte> { public byte Op(T a) { return (byte)a; } }
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> { public ushort Op(T a) { return (ushort)a; } }
-    public struct ToUInt32 : IUnaryConvOp<T, uint> { public uint Op(T a) { return (uint)a; } }
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; }
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; }
+    }
 }

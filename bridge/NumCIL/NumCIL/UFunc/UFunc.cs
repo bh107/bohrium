@@ -16,7 +16,16 @@ namespace NumCIL
     /// Describes an operation that takes two arguments and produce an output
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
-    public interface IBinaryOp<T> : IOp<T> { T Op(T a, T b); }
+    public interface IBinaryOp<T> : IOp<T> 
+    { 
+        /// <summary>
+        /// Performs the operation
+        /// </summary>
+        /// <param name="a">Left-hand-side input value</param>
+        /// <param name="b">Right-hand-side input value</param>
+        /// <returns>The result of applying the operation</returns>
+        T Op(T a, T b); 
+    }
     
     /// <summary>
     /// Describes an operation that takes an input argument and produce an ouput
@@ -28,12 +37,28 @@ namespace NumCIL
     /// </summary>
     /// <typeparam name="Ta">The input data type</typeparam>
     /// <typeparam name="Tb">The output data type</typeparam>
-    public interface IUnaryConvOp<Ta, Tb> : IOp<Ta> { Tb Op(Ta a); }
+    public interface IUnaryConvOp<Ta, Tb> : IOp<Ta> 
+    { 
+        /// <summary>
+        /// Performs the operation
+        /// </summary>
+        /// <param name="a">The input argument</param>
+        /// <returns>The converted value</returns>
+        Tb Op(Ta a); 
+    }
+
     /// <summary>
     /// Describes an operation that takes no inputs but produces an output
     /// </summary>
     /// <typeparam name="T">The type of data to produce</typeparam>
-    public interface INullaryOp<T>: IOp<T> { T Op(); }
+    public interface INullaryOp<T>: IOp<T> 
+    {
+        /// <summary>
+        /// Performs an operation
+        /// </summary>
+        /// <returns>The result of the operation</returns>
+        T Op(); 
+    }
 
     /// <summary>
     /// An operation that outputs the same value for each input
@@ -61,7 +86,15 @@ namespace NumCIL
     /// An operation that copies data from one element to another, aka the identity operation
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
-    public struct CopyOp<T> : IUnaryOp<T> { public T Op(T a) { return a; } }
+    public struct CopyOp<T> : IUnaryOp<T> 
+    {
+        /// <summary>
+        /// Returns the input value
+        /// </summary>
+        /// <param name="a">The value to return</param>
+        /// <returns>The input value</returns>
+        public T Op(T a) { return a; } 
+    }
 
     /// <summary>
     /// An operation that is implemented with a lambda function.
@@ -220,25 +253,17 @@ namespace NumCIL
 
     public static partial class UFunc
     {
-
-        private static void UFunc_Op_Inner<T, C>(NdArray<T> in1, T scalar, ref NdArray<T> @out)
-            where C : struct, IBinaryOp<T>
-        {
-            UFunc_Op_Inner<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, new C()), in1, ref @out);
-        }
-
-        private static void UFunc_Op_Inner<T, C>(C op, NdArray<T> in1, T scalar, ref NdArray<T> @out)
-            where C : IBinaryOp<T>
-        {
-            UFunc_Op_Inner<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, op), in1, ref @out);
-        }
-
-        private static void UFunc_Op_Inner<T, C>(NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
-            where C : struct, IBinaryOp<T>
-        {
-            UFunc_Op_Inner_Binary<T, C>(new C(), in1, in2, ref @out);
-        }
-
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.IBinaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the binary flush operation is called
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="in2">The right-hand-side input argument</param>
+        /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
             where C : IBinaryOp<T>
         {
@@ -249,6 +274,17 @@ namespace NumCIL
         }
 
 
+        /// <summary>
+        /// Actually executes a binary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="in2">The right-hand-side input argument</param>
+        /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Binary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
             where C : IBinaryOp<T>
         {
@@ -457,8 +493,33 @@ namespace NumCIL
             }
         }
 
-        public static void UFunc_Op_Inner<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
-            where C : IUnaryOp<T>
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryOp{0}"/>.
+        /// This will just call the UnaryConv flush operation with Ta and Tb set to T
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
+            where C : struct, IUnaryOp<T>
+        {
+            UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
+        }
+
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the unary flush operation is called
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        public static void UFunc_Op_Inner_Unary<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
+            where C : struct, IUnaryOp<T>
         {
             if (@out.m_data is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1);
@@ -466,24 +527,32 @@ namespace NumCIL
                 UFunc_Op_Inner_Unary_Flush<T, C>(op, in1, ref @out);
         }
 
-        private static void UFunc_Op_Inner_Unary_Flush<B, A>(A op, NdArray<B> in1, ref NdArray<B> @out)
-            where A : IUnaryOp<B>
-        {
-            UFunc_Op_Inner_UnaryConv_Flush<B, B, A>(op, in1, ref @out);
-        }
-
-        private static void UFunc_Op_Inner_Unary<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
-            where C : struct, IUnaryOp<T>
-        {
-            UFunc_Op_Inner<T, C>(op, in1, ref @out);
-        }
-
-        private static void UFunc_Op_Inner<Ta, Tb, C>(NdArray<Ta> in1, ref NdArray<Tb> @out)
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryConvOp{0}"/>.
+        /// This method will always call the unary conv flush method, because the lazy evaluation system does not implement support for handling conversion operations yet.
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        private static void UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(NdArray<Ta> in1, ref NdArray<Tb> @out)
             where C : struct, IUnaryConvOp<Ta, Tb>
         {
             UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(new C(), in1, ref @out);
         }
 
+        /// <summary>
+        /// Actually executes a unary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IUnaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(C op, NdArray<Ta> in1, ref NdArray<Tb> @out)
             where C : IUnaryConvOp<Ta, Tb>
         {
@@ -622,7 +691,15 @@ namespace NumCIL
             }
         }
 
-
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.INullaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the nullary flush operation is called
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Nullary<T, C>(C op, NdArray<T> @out)
             where C : INullaryOp<T>
         {
@@ -632,6 +709,15 @@ namespace NumCIL
                 UFunc_Op_Inner_Nullary_Flush<T, C>(op, @out);
         }
 
+        /// <summary>
+        /// Actually executes a nullary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.INullaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="T">The type of data to generat</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Nullary_Flush<T, C>(C op, NdArray<T> @out)
             where C : INullaryOp<T>
         {

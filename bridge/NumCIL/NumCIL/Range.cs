@@ -80,6 +80,10 @@ namespace NumCIL
             this.NewDimension = false;
         }
 
+        /// <summary>
+        /// Constructs a new range that is optionally a new dimension
+        /// </summary>
+        /// <param name="newDim">True if this range represents a new dimension, false otherwise</param>
         public Range(bool newDim)
             : this()
         {
