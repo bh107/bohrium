@@ -294,8 +294,10 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
-    cphvb_array *a = instruction->operand[operand_no];
-    return a->type;
+    if (instruction->operand[operand_no] == NULL)
+        return instruction->constant_type;
+    else 
+        return instruction->operand[operand_no]->type;
 }
 
 
@@ -307,6 +309,8 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  */
 bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
 {
+    if (a == NULL || b == NULL)
+        return false;
     cphvb_intp i;
     if(a == b)
         return false;
@@ -326,16 +330,27 @@ bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
         if(a->stride[i] != b->stride[i])
             return true;
     }
-    return 0;
+    return false;
 }
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
- * @a The array
+ * @array The array
  * @return The boolean answer
  */
-bool cphvb_scalar(cphvb_array *array)
+bool cphvb_is_scalar(cphvb_array* array)
 {
     return (cphvb_base_array(array)->ndim == 0) ||
         (cphvb_base_array(array)->ndim == 1 && cphvb_base_array(array)->shape[0] == 1);
 }
+
+/* Determines whether the operand is a constant
+ *
+ * @o The operand
+ * @return The boolean answer
+ */
+bool cphvb_is_constant(cphvb_array* o)
+{
+    return (o == NULL);
+}
+

@@ -58,10 +58,13 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
 
     sprintf(buf, "%s {\n", cphvb_opcode_text( instr->opcode) );
     for(int i=0; i < op_count; i++) {
-        operand_to_str( instr->operand[i], op_str );
+        if (!cphvb_is_constant(instr->operand[i]))
+            operand_to_str( instr->operand[i], op_str );
+        else 
+            sprintf(op_str, "CONSTANT");
         sprintf(tmp, "  OP%d %s\n", i, op_str);
         strcat(buf, tmp);
-        if (instr->operand[i]->base != NULL) {
+        if (!cphvb_is_constant(instr->operand[i]) && instr->operand[i]->base != NULL) {
             operand_to_str( instr->operand[i]->base, op_str );
             sprintf(tmp, "      %s\n", op_str);
             strcat(buf, tmp);

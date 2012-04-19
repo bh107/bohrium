@@ -215,7 +215,14 @@ DLLEXPORT bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
  * @a The array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_scalar(cphvb_array *array);
+DLLEXPORT bool cphvb_is_scalar(cphvb_array *array);
+
+/* Determines whether the operand is a constant
+ *
+ * @o The operand
+ * @return The boolean answer
+ */
+DLLEXPORT bool cphvb_is_constant(cphvb_array* o);
 
 
 #ifdef __cplusplus

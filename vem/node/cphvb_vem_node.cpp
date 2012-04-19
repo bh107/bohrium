@@ -244,7 +244,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
             base->owner = CPHVB_CHILD;//The child owns the output ary.
             for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
             {
-                if(cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
+                if(!cphvb_is_constant(inst->operand[j]) &&
+                   cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
                 {
                     cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
                 }
