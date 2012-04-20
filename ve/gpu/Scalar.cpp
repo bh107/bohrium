@@ -22,7 +22,7 @@
 #include <cphvb.h>
 #include "Scalar.hpp"
 
-Scalar::Scalar(cphvb_array* spec)
+Scalar::Scalar(cphvb_constant* c)
   : mytype(oclType(spec->type))
 {
     assert(cphvb_scalar(spec));
@@ -119,4 +119,4 @@ void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
     default:
         assert(false);
     }    
- }
+}

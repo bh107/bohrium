@@ -84,11 +84,11 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             }
             d0 = (cphvb_float32*)cphvb_base_array(inst->operand[0])->data;
             if (cphvb_is_constant(inst->operand[1]))
-                d1 = (cphvb_float32*)&(inst->constant);
+                d1 = (cphvb_float32*)&(inst->constant.value);
             else
                 d1 = (cphvb_float32*)cphvb_base_array(inst->operand[1])->data;
             if (cphvb_is_constant(inst->operand[2]))
-                d2 = (cphvb_float32*)&(inst->constant);
+                d2 = (cphvb_float32*)&(inst->constant.value);
             else
                 d2 = (cphvb_float32*)cphvb_base_array(inst->operand[2])->data;
 

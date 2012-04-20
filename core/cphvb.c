@@ -294,8 +294,8 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
-    if (instruction->operand[operand_no] == NULL)
-        return instruction->constant_type;
+    if (cphvb_is_constant(instruction->operand[operand_no]))
+        return instruction->constant.type;
     else 
         return instruction->operand[operand_no]->type;
 }
