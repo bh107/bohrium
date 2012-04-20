@@ -80,6 +80,7 @@ typedef union /* cphvb_constant_value */
     cphvb_uint16   uint16;
     cphvb_uint32   uint32;
     cphvb_uint64   uint64;
+    cphvb_float16  float16;
     cphvb_float32  float32;
     cphvb_float64  float64;
 } cphvb_constant_value;
