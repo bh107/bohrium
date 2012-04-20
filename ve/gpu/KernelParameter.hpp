@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,24 +17,31 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARRAYOPERAND_HPP
-#define __ARRAYOPERAND_HPP
+#ifndef __KERNALPARAMETER
+#define __KERNALPARAMETER
 
-#include <cphvb_array.h>
-#include <CL/cl.hpp>
+#include <iostream>
 #include "OCLtype.h"
+#include "ResourceManager.hpp"
 
-class ArrayOperand
+class KernelParameter
 {
-private:
 protected:
+<<<<<<< HEAD
+    virtual void printOn(std::ostream& os) const = 0;
+public:
+    static KernelParameter* create(cphvb_array* spec, ResourceManager* resourceManager);
+    virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const = 0;
+    virtual OCLtype type() const = 0;
+    friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
+=======
     cphvb_array* spec;
     ArrayOperand(cphvb_array* spec);
 public:
     size_t size();
     cphvb_array* getSpec();
     virtual OCLtype type() = 0;
+>>>>>>> master
 };
-
 
 #endif

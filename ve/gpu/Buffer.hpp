@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Troels Blum <troels@blum.dk>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,21 +17,32 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <cphvb.h>
-#include "ArrayOperand.hpp"
+#ifndef __BUFFER_HPP
+#define __BUFFER_HPP
 
-ArrayOperand::ArrayOperand(cphvb_array* spec_) 
-    : spec(spec_)
-{}
+#include <deque>
+#include <CL/cl.hpp>
+#include "ResourceManager.hpp"
 
-
-size_t ArrayOperand::size()
+class Buffer
 {
-    return cphvb_nelements(spec->ndim, spec->shape);
-}
+private:
+    ResourceManager* resourceManager;
+    unsigned int device;
+    cl::Buffer buffer;
+    cl::Event writeEvent;
+    std::deque<cl::Event> readEvents;
+    void cleanReadEvents();
+public:
+    Buffer(size_t size, ResourceManager* resourceManager);
+    void read(void* hostPtr);
+    void write(void* hostPtr);
+    void setWriteEvent(cl::Event);
+    cl::Event getWriteEvent();
+    void addReadEvent(cl::Event);
+    std::deque<cl::Event> getReadEvents();
+    std::vector<cl::Event> allEvents();
+};
 
-cphvb_array* ArrayOperand::getSpec()
-{
-    return spec;
-}
+
+#endif

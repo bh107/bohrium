@@ -56,6 +56,7 @@ public:
     // Because we just recieved the array from upstream
     cl::Event enqueueWriteBuffer(const cl::Buffer& buffer,
                                  const void* hostPtr, 
+                                 std::vector<cl::Event> waitFor, 
                                  unsigned int device);
     cl::Event completeEvent();
     cl::Kernel createKernel(const std::string& source, 

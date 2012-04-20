@@ -36,6 +36,7 @@ typedef uint8_t       cphvb_uint8;
 typedef uint16_t      cphvb_uint16;
 typedef uint32_t      cphvb_uint32;
 typedef uint64_t      cphvb_uint64;
+typedef uint16_t      cphvb_float16;
 typedef float         cphvb_float32;
 typedef double        cphvb_float64;
 
@@ -61,7 +62,14 @@ enum /* cphvb_type */
 
 #define CPHVB_NO_TYPES CPHVB_UNKNOWN
 
-typedef union /* cphvb_constant */
+typedef int64_t    cphvb_intp;
+typedef cphvb_intp cphvb_index;
+typedef cphvb_intp cphvb_type;
+typedef cphvb_intp cphvb_opcode;
+typedef cphvb_intp cphvb_error;
+typedef void*      cphvb_data_ptr;
+
+typedef union /* cphvb_constant_value */
 {
     cphvb_bool     bool8;
     cphvb_int8     int8;
@@ -74,14 +82,13 @@ typedef union /* cphvb_constant */
     cphvb_uint64   uint64;
     cphvb_float32  float32;
     cphvb_float64  float64;
-} cphvb_constant;
+} cphvb_constant_value;
 
-typedef int64_t    cphvb_intp;
-typedef cphvb_intp cphvb_index;
-typedef cphvb_intp cphvb_type;
-typedef cphvb_intp cphvb_opcode;
-typedef cphvb_intp cphvb_error;
-typedef void*      cphvb_data_ptr;
+typedef struct
+{
+    cphvb_constant_value value;
+    cphvb_type type;
+} cphvb_constant;
 
 #ifdef __cplusplus
 }
