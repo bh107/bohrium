@@ -22,7 +22,53 @@
 #include <cphvb.h>
 #include "Scalar.hpp"
 
-Scalar::Scalar(cphvb_constant* c)
+Scalar::Scalar(cphvb_constant constant)
+  : mytype(oclType(constant.type))
+{
+    switch (constant.type)
+    {
+    case CPHVB_BOOL:
+        value.uc = constant.value.bool8;
+        break;
+    case CPHVB_INT8:
+        value.c = constant.value.int8;
+        break;
+    case CPHVB_INT16:
+        value.s = constant.value.int16;
+        break;
+    case CPHVB_INT32:
+        value.i = constant.value.int32;
+        break;
+    case CPHVB_INT64:
+        value.l = constant.value.int64;
+        break;
+    case CPHVB_UINT8:
+        value.uc = constant.value.uint8;
+        break;
+    case CPHVB_UINT16:
+        value.us = constant.value.uint16;
+        break;
+    case CPHVB_UINT32:
+        value.ui = constant.value.uint32;
+        break;
+    case CPHVB_UINT64:
+        value.ul = constant.value.uint64;
+        break;
+    case CPHVB_FLOAT16:
+        value.h = constant.value.float16;
+        break;
+    case CPHVB_FLOAT32:
+        value.f = constant.value.float32;
+        break;
+    case CPHVB_FLOAT64:
+        value.d = constant.value.float64;
+        break;
+    default:
+        throw std::runtime_error("Scalar: Unknown type.");
+    }
+}
+
+Scalar::Scalar(cphvb_array* spec)
   : mytype(oclType(spec->type))
 {
     assert(cphvb_scalar(spec));
