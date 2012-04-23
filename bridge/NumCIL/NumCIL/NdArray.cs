@@ -442,6 +442,25 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
+        /// Returns a transposed view of this array. If <paramref name="out"/> is supplied, the contents are copied into that array.
+        /// </summary>
+        /// <param name="out">Optional output array</param>
+        /// <returns>A transposed view or copy</returns>
+        public NdArray<T> Transpose(NdArray<T> @out = null)
+        {
+            if (this.Shape.Dimensions.LongLength == 1)
+                return new NdArray<T>(this);
+            
+            //Optimal case, just reshape the array
+            if (@out == null)
+                return new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
+
+            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
+            UFunc.Apply<T, CopyOp<T>>(lv, @out);
+            return @out;
+        }
+
+        /// <summary>
         /// Extension to support unmanaged mapping
         /// </summary>
         public object Tag;
