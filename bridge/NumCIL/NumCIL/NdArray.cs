@@ -262,7 +262,16 @@ namespace NumCIL.Generic
             var dimensions = this.Shape.Dimensions.Select(x =>
                 {
                     if (j++ == dim)
-                        return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
+                    {
+                        if (range.Last == 0 && stride != 1)
+                        {
+                            long maxlast = last / stride;
+
+                            return new Shape.ShapeDimension((maxlast - first) + 1, stride * x.Stride);
+                        }
+                        else
+                            return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
+                    }
                     else
                         return x;
                 }).ToArray();
@@ -333,15 +342,8 @@ namespace NumCIL.Generic
             set
             {
                 NdArray<T> lv = this[ranges];
-
-                if (lv.Shape.Dimensions.Length != value.Shape.Dimensions.Length)
-                    throw new Exception("Cannot assign incompatible arrays");
-
-                for (long i = 0; i < lv.Shape.Dimensions.Length; i++)
-                    if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
-                        throw new Exception("Cannot assign incompatible arrays");
-
-                UFunc.UFunc_Op_Inner_Unary<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
+                var broadcastShapes = Shape.ToBroadcastShapes(value.Shape, lv.Shape);
+                UFunc.Apply<T, NumCIL.CopyOp<T>>(value.Reshape(broadcastShapes.Item1), lv.Reshape(broadcastShapes.Item2));
             }
         }
 
