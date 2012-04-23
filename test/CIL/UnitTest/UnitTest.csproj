@@ -88,6 +88,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Profiling.cs" />
+    <Compile Include="TransposeTests.cs" />
     <Compile Include="TypeLookupTests.cs" />
   </ItemGroup>
   <ItemGroup>

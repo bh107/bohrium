@@ -17,6 +17,10 @@ namespace UnitTest
             using (new DispTimer("Lookup tests"))
                 TypeLookupTests.RunTests();
 
+            Console.WriteLine("Running transpose tests");
+            using (new DispTimer("Transpose tests"))
+                TransposeTests.RunTests();
+
 
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
 
