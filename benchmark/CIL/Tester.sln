@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "..\..\test\CIL\
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TesterFSharp", "TesterFSharp\TesterFSharp.fsproj", "{D4EBB113-C458-4244-ABC9-78DAF0422069}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "TesterIronPython", "TesterIronPython\TesterIronPython.pyproj", "{D05DEC71-C122-45A5-8DD7-F64CD19486FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,14 @@ Global
 		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x64.Build.0 = Release|x64
 		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x86.ActiveCfg = Release|x86
 		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|x86.Build.0 = Release|x86
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|x64.ActiveCfg = Release|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|x64.Build.0 = Release|Any CPU
+		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
