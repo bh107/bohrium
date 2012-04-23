@@ -251,73 +251,6 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     return CPHVB_SUCCESS;
 }
 
-/* Allocate data memory for the given array if not already allocated.
- * If @array is a view, the data memory for the base array is allocated.
- * If the array has an initial value, it is initialized with this value,
- * otherwise it is returned uninitialized.
- *
- * For convenience array is allowed to be NULL.
- *
- * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-cphvb_error cphvb_data_malloc_and_init(cphvb_array* array)
-{
-    cphvb_intp nelem, bytes;
-    cphvb_array* base;
-
-    if(array == NULL)
-        return CPHVB_SUCCESS;
-
-    base = cphvb_base_array(array);
-
-    if(base->data != NULL)
-        return CPHVB_SUCCESS;
-
-    nelem = cphvb_nelements(base->ndim, base->shape);
-    bytes = nelem * cphvb_type_size(base->type);
-    if(bytes <= 0)
-        return CPHVB_SUCCESS;
-
-    base->data = cphvb_memory_malloc(bytes);
-    if(base->data == NULL)
-    {
-        int errsv = errno;//mmap() sets the errno.
-        printf("cphvb_data_malloc() could not allocate a data region. "
-               "Returned error code: %s.\n", strerror(errsv));
-        return CPHVB_OUT_OF_MEMORY;
-    }
-
-	if (base->has_init_value)
-	{
-		switch(cphvb_type_size(base->type))
-		{
-			case 1:
-				memset(base->data, base->init_value.uint8, nelem);
-				break;
-			case 2:
-				for(int i = 0; i < nelem; i++)
-					((cphvb_uint16*)base->data)[i] = base->init_value.uint16;
-				break;
-			case 4:
-				for(int i = 0; i < nelem; i++)
-					((cphvb_uint32*)base->data)[i] = base->init_value.uint32;
-				break;
-			case 8:
-				for(int i = 0; i < nelem; i++)
-					((cphvb_uint64*)base->data)[i] = base->init_value.uint64;
-				break;
-			default:
-				cphvb_memory_free(base->data, bytes);
-				base->data = NULL;
-				printf("cphvb_data_malloc() could not initialize the data region\n");
-				return CPHVB_OUT_OF_MEMORY;
-		}
-	}
-
-    return CPHVB_SUCCESS;
-}
-
 /* Frees data memory for the given array.
  * For convenience array is allowed to be NULL.
  *
@@ -361,8 +294,10 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
-    cphvb_array *a = instruction->operand[operand_no];
-    return a->type;
+    if (cphvb_is_constant(instruction->operand[operand_no]))
+        return instruction->constant.type;
+    else 
+        return instruction->operand[operand_no]->type;
 }
 
 
@@ -374,6 +309,8 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  */
 bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
 {
+    if (a == NULL || b == NULL)
+        return false;
     cphvb_intp i;
     if(a == b)
         return false;
@@ -393,16 +330,27 @@ bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
         if(a->stride[i] != b->stride[i])
             return true;
     }
-    return 0;
+    return false;
 }
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
- * @a The array
+ * @array The array
  * @return The boolean answer
  */
-bool cphvb_scalar(cphvb_array *array)
+bool cphvb_is_scalar(cphvb_array* array)
 {
     return (cphvb_base_array(array)->ndim == 0) ||
         (cphvb_base_array(array)->ndim == 1 && cphvb_base_array(array)->shape[0] == 1);
 }
+
+/* Determines whether the operand is a constant
+ *
+ * @o The operand
+ * @return The boolean answer
+ */
+bool cphvb_is_constant(cphvb_array* o)
+{
+    return (o == NULL);
+}
+

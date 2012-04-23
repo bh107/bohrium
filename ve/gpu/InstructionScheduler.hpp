@@ -36,7 +36,7 @@ private:
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
-    std::set<BaseArray*>* discardSet;
+    std::set<BaseArray*> discardSet;
     void schedule(cphvb_instruction* inst);
     void sync(cphvb_array* base);
     void discard(cphvb_array* base);

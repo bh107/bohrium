@@ -17,16 +17,31 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERFUNCARG_HPP
-#define __USERFUNCARG_HPP
+#ifndef __BUFFER_HPP
+#define __BUFFER_HPP
 
+#include <deque>
+#include <CL/cl.hpp>
 #include "ResourceManager.hpp"
-#include "KernelParameter.hpp"
 
-struct UserFuncArg
+class Buffer
 {
+private:
     ResourceManager* resourceManager;
-    std::vector<KernelParameter*> operands;
+    unsigned int device;
+    cl::Buffer buffer;
+    cl::Event writeEvent;
+    std::deque<cl::Event> readEvents;
+    void cleanReadEvents();
+public:
+    Buffer(size_t size, ResourceManager* resourceManager);
+    void read(void* hostPtr);
+    void write(void* hostPtr);
+    void setWriteEvent(cl::Event);
+    cl::Event getWriteEvent();
+    void addReadEvent(cl::Event);
+    std::deque<cl::Event> getReadEvents();
+    std::vector<cl::Event> allEvents();
 };
 
 

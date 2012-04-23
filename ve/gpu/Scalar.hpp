@@ -17,16 +17,36 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERFUNCARG_HPP
-#define __USERFUNCARG_HPP
+#ifndef __SCALAR_HPP
+#define __SCALAR_HPP
 
-#include "ResourceManager.hpp"
 #include "KernelParameter.hpp"
 
-struct UserFuncArg
+class Scalar : public KernelParameter
 {
-    ResourceManager* resourceManager;
-    std::vector<KernelParameter*> operands;
+private:
+    OCLtype mytype;
+    union value_t {
+        cl_char c;
+        cl_short s;
+        cl_int i;
+        cl_long l;
+        cl_uchar uc;
+        cl_ushort us;
+        cl_uint ui;
+        cl_ulong ul;
+        cl_half h;
+        cl_float f;
+        cl_double d;
+    } value;
+
+protected:
+    void printOn(std::ostream& os) const;
+public:
+    Scalar(cphvb_array* spec);
+    Scalar(cphvb_constant constant);
+    OCLtype type() const;
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
 };
 
 

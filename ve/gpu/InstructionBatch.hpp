@@ -62,10 +62,10 @@ private:
     bool disjointView(const cphvb_array* a, const cphvb_array* b);
     std::string generateCode();
 public:
-    InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands);
     Kernel generateKernel(ResourceManager* resourceManager);
     void run(ResourceManager* resourceManager);
-    void add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase);
+    void add(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands);
     bool read(BaseArray* array);
     bool write(BaseArray* array);    
     bool access(BaseArray* array);

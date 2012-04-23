@@ -56,6 +56,7 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
     for(i=0; i<instruction_count; ++i)
     {
         cphvb_instruction *inst = &instruction_list[i];
+        cphvb_pprint_instr(inst);
         if(inst->status != CPHVB_INST_UNDONE)
             break;//We should only handle undone instructions.
 
@@ -63,7 +64,6 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
         {
         case CPHVB_NONE:
         case CPHVB_DISCARD:
-        case CPHVB_RELEASE:
         case CPHVB_SYNC:
             //Nothing to do since we only use main memory.
             break;
@@ -77,24 +77,20 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             cphvb_index coord[CPHVB_MAXDIM];
             memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-            if(cphvb_data_malloc_and_init(a0) != CPHVB_SUCCESS)
-            {
-                inst->status = CPHVB_OUT_OF_MEMORY;
-                return CPHVB_PARTIAL_SUCCESS;
-            }
-            if(cphvb_data_malloc_and_init(a1) != CPHVB_SUCCESS)
-            {
-                inst->status = CPHVB_OUT_OF_MEMORY;
-                return CPHVB_PARTIAL_SUCCESS;
-            }
-            if(cphvb_data_malloc_and_init(a2) != CPHVB_SUCCESS)
+            if(cphvb_data_malloc(a0) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 return CPHVB_PARTIAL_SUCCESS;
             }
             d0 = (cphvb_float32*)cphvb_base_array(inst->operand[0])->data;
-            d1 = (cphvb_float32*)cphvb_base_array(inst->operand[1])->data;
-            d2 = (cphvb_float32*)cphvb_base_array(inst->operand[2])->data;
+            if (cphvb_is_constant(inst->operand[1]))
+                d1 = (cphvb_float32*)&(inst->constant.value);
+            else
+                d1 = (cphvb_float32*)cphvb_base_array(inst->operand[1])->data;
+            if (cphvb_is_constant(inst->operand[2]))
+                d2 = (cphvb_float32*)&(inst->constant.value);
+            else
+                d2 = (cphvb_float32*)cphvb_base_array(inst->operand[2])->data;
 
             //We only support float32
             if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
@@ -112,13 +108,22 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                 for(j=0; j<a0->ndim; ++j)
                     off0 += coord[j] * a0->stride[j];
                 off0 += a0->start;
-                for(j=0; j<a0->ndim; ++j)
-                    off1 += coord[j] * a1->stride[j];
-                off1 += a1->start;
-                for(j=0; j<a0->ndim; ++j)
-                    off2 += coord[j] * a2->stride[j];
-                off2 += a2->start;
-
+                if (cphvb_is_constant(inst->operand[1]))
+                    off1 = 0;
+                else
+                {
+                    for(j=0; j<a0->ndim; ++j)
+                        off1 += coord[j] * a1->stride[j];
+                    off1 += a1->start;
+                }
+                if (cphvb_is_constant(inst->operand[2]))
+                    off2 = 0;
+                else
+                {
+                    for(j=0; j<a0->ndim; ++j)
+                        off2 += coord[j] * a2->stride[j];
+                    off2 += a2->start;
+                }
                 //Compute the element.
                 *(d0 + off0) = *(d1 + off1) + *(d2 + off2);
 
@@ -164,5 +169,3 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     printf("cphvb_reduce\n");
     return CPHVB_SUCCESS;
 }
-
-

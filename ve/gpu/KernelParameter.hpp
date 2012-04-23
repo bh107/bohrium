@@ -17,17 +17,21 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERFUNCARG_HPP
-#define __USERFUNCARG_HPP
+#ifndef __KERNALPARAMETER
+#define __KERNALPARAMETER
 
+#include <iostream>
+#include "OCLtype.h"
 #include "ResourceManager.hpp"
-#include "KernelParameter.hpp"
 
-struct UserFuncArg
+class KernelParameter
 {
-    ResourceManager* resourceManager;
-    std::vector<KernelParameter*> operands;
+protected:
+    virtual void printOn(std::ostream& os) const = 0;
+public:
+    virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const = 0;
+    virtual OCLtype type() const = 0;
+    friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
 };
-
 
 #endif

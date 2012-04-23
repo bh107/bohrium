@@ -17,17 +17,13 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __USERFUNCARG_HPP
-#define __USERFUNCARG_HPP
-
-#include "ResourceManager.hpp"
+#include <cphvb.h>
 #include "KernelParameter.hpp"
+#include "Scalar.hpp"
+#include "BaseArray.hpp"
 
-struct UserFuncArg
+std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
 {
-    ResourceManager* resourceManager;
-    std::vector<KernelParameter*> operands;
-};
-
-
-#endif
+    kp.printOn(os);
+    return os;
+}
