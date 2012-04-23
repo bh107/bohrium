@@ -370,7 +370,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Sets all elements in the view to a specific value
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The value to set the elements to</param>
         public void Set(T value)
         {
             UFunc.Apply<T, GenerateOp<T>>(new GenerateOp<T>(value), this);
@@ -418,8 +418,8 @@ namespace NumCIL.Generic
         /// <summary>
         /// Returns the contents of this NdArray as a parseable string
         /// </summary>
-        /// <param name="sb"></param>
-        /// <returns></returns>
+        /// <param name="sb">The stringbuilder used to buffer the output</param>
+        /// <returns>The contents as a parseable string</returns>
         public string AsString(StringBuilder sb = null)
         {
             sb = sb ?? new StringBuilder();
