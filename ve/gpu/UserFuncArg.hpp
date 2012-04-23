@@ -21,12 +21,12 @@
 #define __USERFUNCARG_HPP
 
 #include "ResourceManager.hpp"
-#include "BaseArray.hpp"
+#include "KernelParameter.hpp"
 
 struct UserFuncArg
 {
     ResourceManager* resourceManager;
-    std::vector<BaseArray*> operandBase;
+    std::vector<KernelParameter*> operands;
 };
 
 

@@ -27,11 +27,3 @@ std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
     kp.printOn(os);
     return os;
 }
-
-KernelParameter* KernelParameter::create(cphvb_array* spec, ResourceManager* resourceManager)
-{
-    if (cphvb_scalar(spec))
-        return new Scalar(spec);
-    else
-        return new BaseArray(spec, resourceManager);
-}

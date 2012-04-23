@@ -23,12 +23,13 @@
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
+#include "Scalar.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 
     , batch(0)
-    , discardSet(0)
 {}
+
 inline void InstructionScheduler::schedule(cphvb_instruction* inst)
 {
 #ifdef DEBUG
@@ -74,17 +75,13 @@ void InstructionScheduler::executeBatch()
     if (batch)
     {
         batch->run(resourceManager);
-        if (discardSet)
+        for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
         {
-            for (std::set<BaseArray*>::iterator dsit = discardSet->begin(); dsit != discardSet->end(); ++dsit)
-            {
-                delete *dsit;
-            }
-            delete discardSet;
+            delete *dsit;
+            discardSet.erase(dsit);            
         }
         delete batch;
         batch = 0;
-        discardSet = 0;
     }
 }
 
@@ -116,9 +113,7 @@ void InstructionScheduler::discard(cphvb_array* base)
     }
     if (batch && !batch->discard(it->second))
     {
-        if (!discardSet)
-            discardSet = new std::set<BaseArray*>();
-        discardSet->insert(it->second); 
+        discardSet.insert(it->second); 
     } 
     else
     {
@@ -140,26 +135,31 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     for (int i = 0; i < nops; ++i)
     {
         cphvb_array* operand = userfunc->operand[i];
-        // Is it a new base array we haven't heard of before?
         cphvb_array* base = cphvb_base_array(operand);
+        if (i >= userfunc->nout && cphvb_is_scalar(base))
+        {
+            userFuncArg.operands.push_back(new Scalar(base));
+            continue;
+        }
+        // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
         {
             // Then create it
             BaseArray* ba =  new BaseArray(base, resourceManager);
-            userFuncArg.operandBase.push_back(ba);
             arrayMap[base] = ba;
+            userFuncArg.operands.push_back(ba);
         }
         else
         {
-            userFuncArg.operandBase.push_back(it->second);
+            userFuncArg.operands.push_back(it->second);
         }
     }
 
     // If the instruction batch accesses any of the output operands it need to be executed first
     for (int i = 0; i < userfunc->nout; ++i)
     {
-        if (batch && batch->access(userFuncArg.operandBase[i]))
+        if (batch && batch->access(static_cast<BaseArray*>(userFuncArg.operands[i])))
         {
             executeBatch();
         }
@@ -167,7 +167,7 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     // If the instruction batch writes to any of the input operands it need to be executed first
     for (int i = userfunc->nout; i < nops; ++i)
     {
-        if (batch && batch->write(userFuncArg.operandBase[i]))
+        if (batch && batch->write(static_cast<BaseArray*>(userFuncArg.operands[i])))
         {
             executeBatch();
         }
@@ -183,39 +183,50 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
 
     cphvb_intp nops = cphvb_operands(inst->opcode);
     assert(nops > 0);
-    std::vector<BaseArray*> operandBase(nops);
+    std::vector<KernelParameter*> operands(nops);
     for (int i = 0; i < nops; ++i)
     {
         cphvb_array* operand = inst->operand[i];
-        // Is it a new base array we haven't heard of before?
+        if (cphvb_is_constant(operand))
+        {
+            operands[i] = new Scalar(inst->constant);
+            continue;
+        }
         cphvb_array* base = cphvb_base_array(operand);
+        if (cphvb_is_scalar(base))
+        {
+            operands[i] = new Scalar(base);
+            continue;
+        }
+        // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
         {
             // Then create it
-            operandBase[i] = new BaseArray(base, resourceManager);
-            arrayMap[base] = operandBase[i];
+            BaseArray* ba =  new BaseArray(base, resourceManager);
+            arrayMap[base] = ba;
+            operands[i] = ba;
         }
         else
         {
-            operandBase[i] = it->second;
+            operands[i] = it->second;
         }
     }
     if (batch)
     {
         try 
         {
-            batch->add(inst, operandBase);
+            batch->add(inst, operands);
         } 
         catch (BatchException& be)
         {
             executeBatch();
-            batch = new InstructionBatch(inst, operandBase);
+            batch = new InstructionBatch(inst, operands);
         } 
     }
     else
     {
-        batch = new InstructionBatch(inst, operandBase);
+        batch = new InstructionBatch(inst, operands);
     }
 }
 

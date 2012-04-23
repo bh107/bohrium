@@ -27,21 +27,11 @@
 class KernelParameter
 {
 protected:
-<<<<<<< HEAD
     virtual void printOn(std::ostream& os) const = 0;
 public:
-    static KernelParameter* create(cphvb_array* spec, ResourceManager* resourceManager);
     virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const = 0;
     virtual OCLtype type() const = 0;
     friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
-=======
-    cphvb_array* spec;
-    ArrayOperand(cphvb_array* spec);
-public:
-    size_t size();
-    cphvb_array* getSpec();
-    virtual OCLtype type() = 0;
->>>>>>> master
 };
 
 #endif

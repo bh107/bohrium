@@ -44,6 +44,7 @@ protected:
     void printOn(std::ostream& os) const;
 public:
     Scalar(cphvb_array* spec);
+    Scalar(cphvb_constant constant);
     OCLtype type() const;
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
 };
