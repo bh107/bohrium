@@ -142,6 +142,13 @@ namespace NumCIL.UInt32
         /// Flushes pending operations on the array
         /// </summary>
         public void Flush() { this.value.Flush(); }
+
+        /// <summary>
+        /// Returns a transposed view of this array. If <paramref name="out"/> is supplied, the contents are copied into that array.
+        /// </summary>
+        /// <param name="out">Optional output array</param>
+        /// <returns>A transposed view</returns>
+        public OutArray Transpose(OutArray @out = null) { return value.Transpose(@out); }
         #endregion
 
         /// <summary>
