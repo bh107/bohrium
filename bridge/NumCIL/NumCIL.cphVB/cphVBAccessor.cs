@@ -39,14 +39,22 @@ namespace NumCIL.cphVB
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_SUBTRACT, "Sub");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MULTIPLY, "Mul");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_DIVIDE, "Div");
-
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MOD, "Mod");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MAXIMUM, "Max");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MINIMUM, "Min");
+
+            //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_INCREMENT, "Inc");
+            //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_DECREMENT, "Dec");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_FLOOR, "Floor");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_CEIL, "Ceiling");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_RINT, "Round");
+
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_ABSOLUTE, "Abs");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_LOG, "Log");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_NEGATIVE, "Negate");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_SQRT, "Sqrt");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_EXP, "Exp");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_NEGATIVE, "Negate");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_LOG, "Log");
+            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_LOG10, "Log10");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_POWER, "Pow");
         }
 
