@@ -173,7 +173,7 @@ namespace NumCIL.cphVB
         public void Execute(IEnumerable<IInstruction> inst_list)
         {
             lock (m_executelock)
-                UnprotectedExecute(inst_list);
+                ExecuteWithoutLocks(inst_list);
 
             ExecuteCleanups();
         }
@@ -190,7 +190,7 @@ namespace NumCIL.cphVB
                 m_cleanups = new List<IInstruction>();
 
                 lock (m_executelock)
-                    UnprotectedExecute(lst);
+                    ExecuteWithoutLocks(lst);
             }
         }
 
@@ -198,7 +198,7 @@ namespace NumCIL.cphVB
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
-        private void UnprotectedExecute(IEnumerable<IInstruction> inst_list)
+        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list)
         {
             List<GCHandle> cleanups = new List<GCHandle>();
             long destroys = 0;
