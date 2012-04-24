@@ -249,6 +249,11 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// Register a pending operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="operands">The operands involved, operand 0 is the target</param>
         public override void AddOperation(IOp<T> operation, params NdArray<T>[] operands)
         {
             lock (Lock)
