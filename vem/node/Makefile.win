@@ -13,7 +13,7 @@ OBJ=$(SRC:.cpp=.obj)
 INSTALLDIR=/opt/cphvb/
 
 LIBFLAGS=/nologo /out:$(LIBNAME)
-LINKFLAGS=/nologo /DLL /DEBUG /out:$(DLLNAME)
+LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 
 all: $(DLLNAME)
 
