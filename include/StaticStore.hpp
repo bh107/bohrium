@@ -43,6 +43,7 @@ private:
     T* nextElement;
     size_t bufferSize;
     std::deque<T*> emptySlot;
+    int counter;
   public:
     StaticStore(size_t size);
     StaticStore();
@@ -57,7 +58,7 @@ private:
 };
 
 
-template <typename T> 
+template <typename T>
 StaticStore<T>::StaticStore(size_t initialSize) :
     bufferSize(initialSize)
 {
@@ -67,6 +68,7 @@ StaticStore<T>::StaticStore(size_t initialSize) :
         throw std::runtime_error("Out of memory");
     }
     nextElement = buffer;
+    counter = 0;
 #ifdef DEBUG
     std::cout << "StaticStore<" << typeid(T).name() << ">(): ";
     std::cout << "\n  buffer: " << buffer;
@@ -75,21 +77,24 @@ StaticStore<T>::StaticStore(size_t initialSize) :
 #endif
 }
 
-template <typename T> 
+template <typename T>
 StaticStore<T>::StaticStore()
 {
     StaticStore(__SC_DEFAULT_BUFFER_SIZE);
 }
 
-template <typename T> 
+template <typename T>
 StaticStore<T>::~StaticStore()
 {
+    if(counter > 0)
+        std::cout << "[VEM-NODE] Warning " << counter << " arrays was not destroyed by the BRIDGE" << std::endl;
     free(buffer);
 }
 
-template <typename T> 
+template <typename T>
 T* StaticStore<T>::c_next()
 {
+    counter++;
     if (!emptySlot.empty())
     {
         T* ref = emptySlot.front();
@@ -107,10 +112,11 @@ T* StaticStore<T>::c_next()
 }
 
 #ifndef _WIN32
-template <typename T> 
+template <typename T>
 template <typename... As>
 T* StaticStore<T>::next(As... as)
 {
+    counter++;
     if (!emptySlot.empty())
     {
         T* ref = emptySlot.front();
@@ -128,16 +134,18 @@ T* StaticStore<T>::next(As... as)
 }
 #endif
 
-template <typename T> 
+template <typename T>
 void StaticStore<T>::clear()
 {
+    counter = 0;
     nextElement = buffer;
     emptySlot.clear();
 }
 
-template <typename T> 
+template <typename T>
 void StaticStore<T>::erase(T* e)
 {
+    counter--;
     emptySlot.push_back(e);
 }
 
