@@ -18,6 +18,7 @@
  */
 
 #include <cstring>
+#include <iostream>
 #include <cassert>
 #include "ArrayManager.hpp"
 ArrayManager::ArrayManager() :
@@ -52,6 +53,7 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
 
 ArrayManager::~ArrayManager()
 {
+    flush();
     delete arrayStore;
 }
 
@@ -64,9 +66,9 @@ void ArrayManager::changeOwnerPending(cphvb_array* base,
                                       cphvb_comp owner)
 {
     assert(base->base == NULL);
-	OwnerTicket t;
-	t.array = base;
-	t.owner = owner;
+    OwnerTicket t;
+    t.array = base;
+    t.owner = owner;
     ownerChangeQueue.push_back(t);
 }
 
@@ -89,11 +91,9 @@ void ArrayManager::flush()
         if ((*eit)->base == NULL)
         {   //We have to deallocate the base array because of the
             //triggering opcode CPHVB_DESTROY.
-                        
             cphvb_data_free((*eit));
         }
-        
-		arrayStore->erase(*eit);
+        arrayStore->erase(*eit);
     }
     // All erases have been delt with. So we clear the queue
     eraseQueue.clear();
