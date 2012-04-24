@@ -94,7 +94,7 @@ namespace NumCIL.Float
         /// </summary>
         /// <param name="value">The scalar value</param>
         public NdArray(T value)
-            : this(Generate.Same(value, 1))
+            : this(new T[] { value })
         {
         }
 
