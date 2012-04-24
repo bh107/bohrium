@@ -40,12 +40,12 @@ namespace NumCIL.cphVB
         /// <summary>
         /// ID for the user-defined reduce operation
         /// </summary>
-        private long m_reduceFunctionId = 0;
+        private readonly long m_reduceFunctionId;
 
         /// <summary>
         /// ID for the user-defined random operation
         /// </summary>
-        private long m_randomFunctionId = 0;
+        private readonly long m_randomFunctionId;
 
         /// <summary>
         /// Lookup table for all created userfunc structures
@@ -97,27 +97,31 @@ namespace NumCIL.cphVB
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
 
+            //The exception only happens with the debugger attached
+            long id = 0;
             try
             {
-                e = m_childs[0].reg_func(null, "cphvb_reduce", ref m_reduceFunctionId);
-                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                    throw new cphVBException(e);
+                //Since the current implementation of reduce in cphvb is slow,
+                // it can be disabled by an environment variable
+                if (Environment.GetEnvironmentVariable("CPHVB_MANAGED_REDUCE") == null)
+                {
+                    e = m_childs[0].reg_func(null, "cphvb_reduce", ref id);
+                    if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                        id = 0;
+                }
             }
-            catch
-            {
-                m_reduceFunctionId = 0;
-            }
+            catch { id = 0; }
+            m_reduceFunctionId = id;
 
+            id = 0;
             try
             {
-                e = m_childs[0].reg_func(null, "cphvb_random", ref m_randomFunctionId);
+                e = m_childs[0].reg_func(null, "cphvb_random", ref id);
                 if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                    throw new cphVBException(e);
+                    id = 0;
             }
-            catch
-            {
-                m_randomFunctionId = 0;
-            }
+            catch { id = 0; }
+            m_randomFunctionId = id;
         }
 
         /// <summary>
