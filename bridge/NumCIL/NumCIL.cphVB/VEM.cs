@@ -260,30 +260,7 @@ namespace NumCIL.cphVB
                 1,
                 0,
                 new long[] { d.Length },
-                new long[] { 1 },
-                false,
-                new PInvoke.cphvb_constant() { uint64 = 0 }
-                );
-        }
-
-        /// <summary>
-        /// Creates a base array from a scalar/initial value
-        /// </summary>
-        /// <typeparam name="T">The data type for the array</typeparam>
-        /// <param name="data">The initial value for the base array</param>
-        /// <param name="size">The size of the generated base array</param>
-        /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray<T>(T data, int size)
-        {
-            return CreateArray(
-                PInvoke.cphvb_array_ptr.Null,
-                MapType(typeof(T)),
-                1,
-                0,
-                new long[] { size },
-                new long[] { 1 },
-                true,
-                new PInvoke.cphvb_constant().Set(data)
+                new long[] { 1 }
                 );
         }
 
@@ -300,9 +277,7 @@ namespace NumCIL.cphVB
                 1,
                 0,
                 new long[] { size },
-                new long[] { 1 },
-                false,
-                new PInvoke.cphvb_constant()
+                new long[] { 1 }
                 );
         }
 
@@ -357,13 +332,13 @@ namespace NumCIL.cphVB
         /// <param name="has_init_value">A value indicating if the data has a initial value</param>
         /// <param name="init_value">The initial value if any</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride, bool has_init_value, PInvoke.cphvb_constant init_value)
+        public PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
         {
             PInvoke.cphvb_error e;
             PInvoke.cphvb_array_ptr res;
             lock (m_executelock)
             {
-                e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, has_init_value ? 1 : 0, init_value, out res);
+                e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
@@ -374,7 +349,7 @@ namespace NumCIL.cphVB
                 ExecuteCleanups();
 
                 lock (m_executelock)
-                    e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, has_init_value ? 1 : 0, init_value, out res);
+                    e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
@@ -487,9 +462,7 @@ namespace NumCIL.cphVB
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length },
-                    new long[] { shape.Dimensions[0].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
+                    new long[] { shape.Dimensions[0].Stride }
                 );
             }
             else if (shape.Dimensions.Length == 2)
@@ -500,9 +473,7 @@ namespace NumCIL.cphVB
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride }
                 );
             }
             else if (shape.Dimensions.Length == 3)
@@ -513,9 +484,7 @@ namespace NumCIL.cphVB
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride },
-                    false,
-                    new PInvoke.cphvb_constant()
+                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride }
                 );
             }
             else
@@ -535,48 +504,46 @@ namespace NumCIL.cphVB
                     shape.Dimensions.Length,
                     (int)shape.Offset,
                     lengths,
-                    strides,
-                    false,
-                    new PInvoke.cphvb_constant()
+                    strides
                 );
             }
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> operand)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operand);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2, op3);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operands);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> operand)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand));
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2));
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), CreateViewPtr<T>(type, op3));
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), CreateViewPtr<T>(type, op3), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)));
+            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)), constant);
         }
 
         public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)

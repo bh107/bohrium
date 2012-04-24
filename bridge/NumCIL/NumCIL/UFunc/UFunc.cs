@@ -64,7 +64,7 @@ namespace NumCIL
     /// An operation that outputs the same value for each input
     /// </summary>
     /// <typeparam name="T">The type of data to produce</typeparam>
-    public struct GenerateOp<T> : INullaryOp<T> 
+    public struct GenerateOp<T> : INullaryOp<T>, IScalarAccess<T>
     { 
         /// <summary>
         /// The value all elements are assigned
@@ -79,7 +79,23 @@ namespace NumCIL
         /// Executes the operation, i.e. returns the value
         /// </summary>
         /// <returns>The result value to assign</returns>
-        public T Op() { return Value; } 
+        public T Op() { return Value; }
+
+        /// <summary>
+        /// Returns the operation performed
+        /// </summary>
+        IOp<T> IScalarAccess<T>.Operation
+        {
+            get { return new CopyOp<T>(); }
+        }
+
+        /// <summary>
+        /// Returns the value to set
+        /// </summary>
+        T IScalarAccess<T>.Value
+        {
+            get { return Value; }
+        }
     }
 
     /// <summary>
@@ -195,12 +211,12 @@ namespace NumCIL
     /// Interface to allow reading the scalar value from a ScalarOp.
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
-    public interface ScalarAccess<T>
+    public interface IScalarAccess<T>
     {
         /// <summary>
         /// The operation applied to the input and the scalar value
         /// </summary>
-        IBinaryOp<T> Operation { get; }
+        IOp<T> Operation { get; }
         /// <summary>
         /// The value used in the operation
         /// </summary>
@@ -212,7 +228,7 @@ namespace NumCIL
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
     /// <typeparam name="C">The operation type</typeparam>
-    public struct ScalarOp<T, C> : IUnaryOp<T>, ScalarAccess<T> where C : IBinaryOp<T>
+    public struct ScalarOp<T, C> : IUnaryOp<T>, IScalarAccess<T> where C : IBinaryOp<T>
     {
         /// <summary>
         /// The operation
@@ -244,11 +260,11 @@ namespace NumCIL
         /// <summary>
         /// Hidden implementation of the ScalarAccess interface
         /// </summary>
-        IBinaryOp<T> ScalarAccess<T>.Operation { get { return m_op; } }
+        IOp<T> IScalarAccess<T>.Operation { get { return m_op; } }
         /// <summary>
         /// Hidden implementation of the ScalarAccess interface
         /// </summary>
-        T ScalarAccess<T>.Value { get { return m_value; } }
+        T IScalarAccess<T>.Value { get { return m_value; } }
     }
 
     public static partial class UFunc

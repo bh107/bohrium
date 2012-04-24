@@ -98,6 +98,7 @@ namespace NumCIL.cphVB
             }
 
             res[typeof(NumCIL.CopyOp<T>)] = PInvoke.cphvb_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.GenerateOp<T>)] = PInvoke.cphvb_opcode.CPHVB_IDENTITY;
             if (VEM.Instance.SupportsRandom)
                 res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsReduce)
@@ -194,11 +195,6 @@ namespace NumCIL.cphVB
         /// A pointer to internally allocated data which is pinned
         /// </summary>
         protected GCHandle m_handle;
-
-        /// <summary>
-        /// The default value to fill the array with
-        /// </summary>
-        protected T m_defaultValue;
 
         /// <summary>
         /// Returns the data block, flushed and updated
@@ -300,13 +296,7 @@ namespace NumCIL.cphVB
                 IntPtr actualData = m_externalData.Data;
                 if (actualData == IntPtr.Zero)
                 {
-                    if (!object.Equals(m_defaultValue, default(T)))
-                    {
-                        for (long i = 0; i < data.LongLength; i++)
-                            data[i] = m_defaultValue;
-                    }
-
-                    //Otherwise the array has "empty" which will be zeroes in NumCIL
+                    //The array is "empty" which will be zeroes in NumCIL
                 }
                 else
                 {
@@ -431,25 +421,25 @@ namespace NumCIL.cphVB
         {
             List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
             List<IInstruction> supported = new List<IInstruction>();
+            //This list keeps all scalars so the GC does not collect them
+            // before the instructions are executed, remove list once
+            // constants are supported in score/mcore
+
+            List<NdArray<T>> scalars = new List<NdArray<T>>();
+            long i = 0;
 
             foreach (var op in work)
             {
                 Type t;
                 bool isScalar;
-                if (op.Operation is ScalarAccess<T>)
-                {
-                    t = ((ScalarAccess<T>)op.Operation).Operation.GetType();
-                    isScalar = true;
-                }
-                else if (op.Operation is GenerateOp<T>)
-                {
-                    if (((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData != PInvoke.cphvb_array_ptr.Null || ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_ownsData)
-                        throw new InvalidOperationException("Unexpected generate operation on already allocated array?");
+                IOp<T> ops = op.Operation;
+                NdArray<T>[] operands = op.Operands;
+                i++;
 
-                    T value = ((GenerateOp<T>)op.Operation).Value;
-                    ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_defaultValue = value;
-                    ((cphVB.cphVBAccessor<T>)op.Operands[0].m_data).m_externalData = VEM.CreateArray<T>(value, (int)op.Operands[0].m_data.Length);
-                    continue;
+                if (ops is IScalarAccess<T>)
+                {
+                    t = ((IScalarAccess<T>)ops).Operation.GetType();
+                    isScalar = true;
                 }
                 else
                 {
@@ -468,14 +458,39 @@ namespace NumCIL.cphVB
 
                     if (isScalar)
                     {
-                        var scalarAcc = new cphVBAccessor<T>(1);
-                        scalarAcc.m_defaultValue = ((ScalarAccess<T>)op.Operation).Value;
-                        scalarAcc.m_externalData = VEM.CreateArray<T>(scalarAcc.m_defaultValue, 1);
-                            
-                        Shape bShape = Shape.ToBroadcastShapes(op.Operands[1].Shape, new Shape(1)).Item2;
-                        var scalarOp = new NdArray<T>(scalarAcc, bShape);
+                        IScalarAccess<T> sa = (IScalarAccess<T>)ops;
 
-                        supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1], scalarOp));
+                        //Change to true once score supports constants
+                        if (false)
+                        {
+                            if (sa.Operation is IBinaryOp<T>)
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
+                            else
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
+                        }
+                        else
+                        {
+                            //Since we have no constant support, we mimic the constant with a 1D array
+                            var scalarAcc = new cphVBAccessor<T>(1);
+                            scalarAcc.Data[0] = sa.Value;
+                            NdArray<T> scalarOp;
+
+                            if (sa.Operation is IBinaryOp<T>)
+                            {
+                                Shape bShape = Shape.ToBroadcastShapes(operands[1].Shape, new Shape(1)).Item2;
+                                scalarOp = new NdArray<T>(scalarAcc, bShape);
+
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], scalarOp));
+                            }
+                            else
+                            {
+                                Shape bShape = Shape.ToBroadcastShapes(operands[0].Shape, new Shape(1)).Item2;
+                                scalarOp = new NdArray<T>(scalarAcc, bShape);
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], scalarOp));
+                            }
+
+                            scalars.Add(scalarOp);
+                        }
                     }
                     else
                     {
@@ -483,18 +498,18 @@ namespace NumCIL.cphVB
 
                         if (opcode == PInvoke.cphvb_opcode.CPHVB_USERFUNC)
                         {
-                            if (VEM.SupportsRandom && op.Operation is NumCIL.Generic.RandomGeneratorOp<T>)
+                            if (VEM.SupportsRandom && ops is NumCIL.Generic.RandomGeneratorOp<T>)
                             {
-                                supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, op.Operands[0]));
+                                supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, operands[0]));
                                 isSupported = true;
                             }
-                            else if (VEM.SupportsReduce && op.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
+                            else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
                             {
                                 NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
                                 PInvoke.cphvb_opcode rop;
                                 if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
                                 {
-                                    supported.Add(VEM.CreateReduceInstruction<T>(CPHVB_TYPE, rop, lzop.Axis, op.Operands[0], op.Operands[1]));
+                                    supported.Add(VEM.CreateReduceInstruction<T>(CPHVB_TYPE, rop, lzop.Axis, operands[0], operands[1]));
                                     isSupported = true;
                                 }
                             }
@@ -513,14 +528,14 @@ namespace NumCIL.cphVB
                         }
                         else
                         {
-                            if (op.Operands.Length == 1)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0]));
-                            else if (op.Operands.Length == 2)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1]));
-                            else if (op.Operands.Length == 3)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands[0], op.Operands[1], op.Operands[2]));
+                            if (operands.Length == 1)
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0]));
+                            else if (operands.Length == 2)
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1]));
+                            else if (operands.Length == 3)
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], operands[2]));
                             else
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, op.Operands));
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands));
                         }
                     }
                 }
@@ -534,9 +549,6 @@ namespace NumCIL.cphVB
 
                     unsupported.Add(op);
                 }
-
-                if (op is IDisposable)
-                    ((IDisposable)op).Dispose();
             }
 
             if (supported.Count > 0 && unsupported.Count > 0)
@@ -547,6 +559,15 @@ namespace NumCIL.cphVB
 
             if (supported.Count > 0)
                 VEM.Execute(supported);
+            //TODO: Do we want to do it now, or just let the GC figure it out?
+            foreach (var op in work)
+                if (op is IDisposable)
+                    ((IDisposable)op).Dispose();
+
+            //Touch the data to prevent the scalars from being GC'ed
+            //Remove once constants are supported
+            foreach (var op in scalars)
+                op.Name = null;
         }
 
         /// <summary>

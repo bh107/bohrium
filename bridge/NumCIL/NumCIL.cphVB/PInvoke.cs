@@ -272,8 +272,49 @@ namespace NumCIL.cphVB
             public uint[]   hash ;  /** List of hash values for keys */
         }
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct cphvb_constant
+        {
+            cphvb_constant_value value;
+            cphvb_type type;
+
+            public cphvb_constant(cphvb_type type, object v)
+            {
+                this.type = type;
+                this.value = new cphvb_constant_value().Set(v);
+            }
+
+            public cphvb_constant(object v)
+            {
+                this.value = new cphvb_constant_value().Set(v);
+                
+                if (v is cphvb_bool)
+                    this.type = cphvb_type.CPHVB_BOOL;
+                else if (v is cphvb_int16)
+                    this.type = cphvb_type.CPHVB_INT16;
+                else if (v is cphvb_int32)
+                    this.type = cphvb_type.CPHVB_INT32;
+                else if (v is cphvb_int64)
+                    this.type = cphvb_type.CPHVB_INT64;
+                else if (v is cphvb_uint8)
+                    this.type = cphvb_type.CPHVB_UINT8;
+                else if (v is cphvb_uint16)
+                    this.type = cphvb_type.CPHVB_UINT16;
+                else if (v is cphvb_uint32)
+                    this.type = cphvb_type.CPHVB_UINT32;
+                else if (v is cphvb_uint64)
+                    this.type = cphvb_type.CPHVB_UINT64;
+                else if (v is cphvb_float32)
+                    this.type = cphvb_type.CPHVB_FLOAT32;
+                else if (v is cphvb_float64)
+                    this.type = cphvb_type.CPHVB_FLOAT64;
+                else
+                    throw new NotSupportedException();
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct cphvb_constant_value
         {
             [FieldOffset(0)] public cphvb_bool     bool8;
             [FieldOffset(0)] public cphvb_int8     int8;
@@ -287,18 +328,18 @@ namespace NumCIL.cphVB
             [FieldOffset(0)] public cphvb_float32  float32;
             [FieldOffset(0)] public cphvb_float64  float64;
 
-            public cphvb_constant Set(cphvb_bool v) { this.bool8 = v; return this; }
+            public cphvb_constant_value Set(cphvb_bool v) { this.bool8 = v; return this; }
             //public cphvb_constant Set(cphvb_int8 v) { this.int8 = v; return this; }
-            public cphvb_constant Set(cphvb_int16 v) { this.int16 = v; return this; }
-            public cphvb_constant Set(cphvb_int32 v) { this.int32 = v; return this; }
-            public cphvb_constant Set(cphvb_int64 v) { this.int64 = v; return this; }
-            public cphvb_constant Set(cphvb_uint8 v) { this.uint8 = v; return this; }
-            public cphvb_constant Set(cphvb_uint16 v) { this.uint16 = v; return this; }
-            public cphvb_constant Set(cphvb_uint32 v) { this.uint32 = v; return this; }
-            public cphvb_constant Set(cphvb_uint64 v) { this.uint64 = v; return this; }
-            public cphvb_constant Set(cphvb_float32 v) { this.float32 = v; return this; }
-            public cphvb_constant Set(cphvb_float64 v) { this.float64 = v; return this; }
-            public cphvb_constant Set(object v) 
+            public cphvb_constant_value Set(cphvb_int16 v) { this.int16 = v; return this; }
+            public cphvb_constant_value Set(cphvb_int32 v) { this.int32 = v; return this; }
+            public cphvb_constant_value Set(cphvb_int64 v) { this.int64 = v; return this; }
+            public cphvb_constant_value Set(cphvb_uint8 v) { this.uint8 = v; return this; }
+            public cphvb_constant_value Set(cphvb_uint16 v) { this.uint16 = v; return this; }
+            public cphvb_constant_value Set(cphvb_uint32 v) { this.uint32 = v; return this; }
+            public cphvb_constant_value Set(cphvb_uint64 v) { this.uint64 = v; return this; }
+            public cphvb_constant_value Set(cphvb_float32 v) { this.float32 = v; return this; }
+            public cphvb_constant_value Set(cphvb_float64 v) { this.float64 = v; return this; }
+            public cphvb_constant_value Set(object v) 
             {
                 if (v is cphvb_bool)
                     return Set((cphvb_bool)v);
@@ -322,7 +363,7 @@ namespace NumCIL.cphVB
                     return Set((cphvb_float64)v);
 
                 throw new NotSupportedException(); 
-            }
+            }                
         }
 
         [StructLayout(LayoutKind.Explicit)]
@@ -524,8 +565,6 @@ namespace NumCIL.cphVB
             [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_MAXDIM)]
             public cphvb_index[] stride;
             public cphvb_data_array data;
-            public cphvb_intp has_init_value;
-            public cphvb_constant init_value;
             public cphvb_intp ref_count;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_MAX_EXTRA_META_DATA)]
             public byte[] extra_meta_data;
@@ -658,11 +697,13 @@ namespace NumCIL.cphVB
             public cphvb_array_ptr operand0;
             public cphvb_array_ptr operand1;
             public cphvb_array_ptr operand2;
+            //A constant value, used if operand has IntPtr.Zero
+            public cphvb_constant constant;     
             //Points to the user-defined function when the opcode is
             //CPHVB_USERFUNC.
             public IntPtr userfunc;
 
-            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand)
+            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
@@ -670,9 +711,10 @@ namespace NumCIL.cphVB
                 this.operand1 = cphvb_array_ptr.Null;
                 this.operand2 = cphvb_array_ptr.Null;
                 this.userfunc = IntPtr.Zero;
+                this.constant = constant;
             }
 
-            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2)
+            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
@@ -680,9 +722,10 @@ namespace NumCIL.cphVB
                 this.operand1 = operand2;
                 this.operand2 = cphvb_array_ptr.Null;
                 this.userfunc = IntPtr.Zero;
+                this.constant = constant;
             }
 
-            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, cphvb_array_ptr operand3)
+            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, cphvb_array_ptr operand3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
@@ -690,9 +733,10 @@ namespace NumCIL.cphVB
                 this.operand1 = operand2;
                 this.operand2 = operand3;
                 this.userfunc = IntPtr.Zero;
+                this.constant = constant;
             }
 
-            public cphvb_instruction(cphvb_opcode opcode, IEnumerable<cphvb_array_ptr> operands)
+            public cphvb_instruction(cphvb_opcode opcode, IEnumerable<cphvb_array_ptr> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
                 this.status = cphvb_error.CPHVB_INST_UNDONE;
                 this.opcode = opcode;
@@ -721,6 +765,7 @@ namespace NumCIL.cphVB
                     this.operand2 = cphvb_array_ptr.Null;
                 }
                 this.userfunc = IntPtr.Zero;
+                this.constant = constant;
             }
 
             public cphvb_instruction(cphvb_opcode opcode, IntPtr userfunc)
@@ -731,6 +776,7 @@ namespace NumCIL.cphVB
                 this.operand0 = cphvb_array_ptr.Null;
                 this.operand1 = cphvb_array_ptr.Null;
                 this.operand2 = cphvb_array_ptr.Null;
+                this.constant = new cphvb_constant();
             }
 
             public override string ToString()
@@ -762,8 +808,6 @@ namespace NumCIL.cphVB
                                    cphvb_index    start,
                                    cphvb_index[]    shape,
                                    cphvb_index[]    stride,
-                                   cphvb_intp     has_init_value,
-                                   cphvb_constant init_value,
                                    out cphvb_array_ptr new_array);
 
         /// <summary>
