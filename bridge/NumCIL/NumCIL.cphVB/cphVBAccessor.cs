@@ -43,6 +43,7 @@ namespace NumCIL.cphVB
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MAXIMUM, "Max");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MINIMUM, "Min");
 
+            //These two are not found in cphVB, but are emulated with ADD and SUB
             //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_INCREMENT, "Inc");
             //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_DECREMENT, "Dec");
             _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_FLOOR, "Floor");
@@ -59,6 +60,44 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Gets the specialized operation for given operand name
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>The specialized operation for the given operand or null</returns>
+        public static Type GetOp<T>(string name)
+        {
+            Type basic = GetBasicClass<T>();
+            try { return basic.Assembly.GetType(basic.Namespace + "." + name); }
+            catch { return null; }
+        }
+
+        protected static Type GetBasicClass<T>()
+        {
+            if (typeof(T) == typeof(sbyte))
+                return typeof(NumCIL.Int8.NdArray);
+            else if (typeof(T) == typeof(short))
+                return typeof(NumCIL.Int16.NdArray);
+            else if (typeof(T) == typeof(int))
+                return typeof(NumCIL.Int32.NdArray);
+            else if (typeof(T) == typeof(long))
+                return typeof(NumCIL.Int64.NdArray);
+            else if (typeof(T) == typeof(byte))
+                return typeof(NumCIL.UInt8.NdArray);
+            else if (typeof(T) == typeof(ushort))
+                return typeof(NumCIL.UInt16.NdArray);
+            else if (typeof(T) == typeof(uint))
+                return typeof(NumCIL.UInt32.NdArray);
+            else if (typeof(T) == typeof(ulong))
+                return typeof(NumCIL.UInt64.NdArray);
+            else if (typeof(T) == typeof(float))
+                return typeof(NumCIL.Float.NdArray);
+            else if (typeof(T) == typeof(double))
+                return typeof(NumCIL.Double.NdArray);
+            else
+                throw new Exception("Unexpected type: " + (typeof(T)).FullName);            
+        }
+
+        /// <summary>
         /// Helper function to get the opcode mapping table for the current type
         /// </summary>
         /// <returns>A mapping between the type used for this executor and the cphVB opcodes</returns>
@@ -66,30 +105,7 @@ namespace NumCIL.cphVB
         {
             Dictionary<Type, PInvoke.cphvb_opcode> res = new Dictionary<Type, PInvoke.cphvb_opcode>();
 
-            Type basic = typeof(NumCIL.Generic.NdArray<>);
-
-            if (typeof(T) == typeof(sbyte))
-                basic = typeof(NumCIL.Int8.NdArray);
-            else if (typeof(T) == typeof(short))
-                basic = typeof(NumCIL.Int16.NdArray);
-            else if (typeof(T) == typeof(int))
-                basic = typeof(NumCIL.Int32.NdArray);
-            else if (typeof(T) == typeof(long))
-                basic = typeof(NumCIL.Int64.NdArray);
-            else if (typeof(T) == typeof(byte))
-                basic = typeof(NumCIL.UInt8.NdArray);
-            else if (typeof(T) == typeof(ushort))
-                basic = typeof(NumCIL.UInt16.NdArray);
-            else if (typeof(T) == typeof(uint))
-                basic = typeof(NumCIL.UInt32.NdArray);
-            else if (typeof(T) == typeof(ulong))
-                basic = typeof(NumCIL.UInt64.NdArray);
-            else if (typeof(T) == typeof(float))
-                basic = typeof(NumCIL.Float.NdArray);
-            else if (typeof(T) == typeof(double))
-                basic = typeof(NumCIL.Double.NdArray);
-            else
-                throw new Exception("Unexpected type: " + (typeof(T)).FullName);
+            Type basic = GetBasicClass<T>();
 
             foreach (var e in _opcode_func_name)
             {
@@ -168,6 +184,31 @@ namespace NumCIL.cphVB
         /// A lookup table that maps NumCIL operation types to cphVB opcodes
         /// </summary>
         protected static Dictionary<Type, PInvoke.cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
+
+        /// <summary>
+        /// Gets the type for the Increment operation
+        /// </summary>
+        protected static readonly Type IncrementOp = OpCodeMapper.GetOp<T>("Inc");
+
+        /// <summary>
+        /// Gets the type for the Decrement operation
+        /// </summary>
+        protected static readonly Type DecrementOp = OpCodeMapper.GetOp<T>("Dec");
+
+        /// <summary>
+        /// Gets the type for the Add operation
+        /// </summary>
+        protected static readonly Type AddOp = OpCodeMapper.GetOp<T>("Add");
+
+        /// <summary>
+        /// Gets the type for the Sub operation
+        /// </summary>
+        protected static readonly Type SubOp = OpCodeMapper.GetOp<T>("Sub");
+
+        /// <summary>
+        /// The constant 1
+        /// </summary>
+        protected static readonly T ONE = (T)Convert.ChangeType(1, typeof(T)); 
 
         /// <summary>
         /// Constructs a new data accessor for the given size
@@ -443,8 +484,22 @@ namespace NumCIL.cphVB
                 }
                 else
                 {
-                    t = op.Operation.GetType();
-                    isScalar = false;
+                    t = ops.GetType();
+                    //We mimic the Increment and Decrement with Add(1) and Add(-1) respectively
+                    if (t == IncrementOp)
+                    {
+                        ops = new NumCIL.ScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(AddOp));
+                        t = AddOp;
+                        isScalar = true;
+                    }
+                    else if (t == DecrementOp)
+                    {
+                        ops = new NumCIL.ScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(SubOp));
+                        t = SubOp;
+                        isScalar = true;
+                    }
+                    else
+                        isScalar = false;
                 }
 
                 PInvoke.cphvb_opcode opcode;
