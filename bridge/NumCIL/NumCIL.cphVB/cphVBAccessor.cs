@@ -578,10 +578,7 @@ namespace NumCIL.cphVB
                             if (!isSupported)
                             {
                                 if (supported.Count > 0)
-                                {
-                                    VEM.Execute(supported);
-                                    supported.Clear();
-                                }
+                                    ExecuteWithFailureDetection(supported, work, i - supported.Count - 1);
 
                                 unsupported.Add(op);
                             }
@@ -602,10 +599,7 @@ namespace NumCIL.cphVB
                 else
                 {
                     if (supported.Count > 0)
-                    {
-                        VEM.Execute(supported);
-                        supported.Clear();
-                    }
+                        ExecuteWithFailureDetection(supported, work, i - supported.Count - 1);
 
                     unsupported.Add(op);
                 }
@@ -618,7 +612,8 @@ namespace NumCIL.cphVB
                 base.ExecuteOperations(unsupported);
 
             if (supported.Count > 0)
-                VEM.Execute(supported);
+                ExecuteWithFailureDetection(supported, work, i - supported.Count);
+
             //TODO: Do we want to do it now, or just let the GC figure it out?
             foreach (var op in work)
                 if (op is IDisposable)
@@ -628,6 +623,96 @@ namespace NumCIL.cphVB
             //Remove once constants are supported
             foreach (var op in scalars)
                 op.Name = null;
+        }
+
+        protected void ExecuteWithFailureDetection(List<IInstruction> instructions, IEnumerable<PendingOperation<T>> work, long instructionIndex)
+        {
+            List<PendingOperation<T>> worklist = null;
+            while (instructions.Count > 0)
+            {
+                try
+                {
+                    VEM.Execute(instructions);
+                    instructions.Clear();
+                    return;
+                }
+                catch (cphVBNotSupportedInstruction cex)
+                {
+                    //If we get here, some arrays may be deallocated by the GC, 
+                    // we need to postpone the cleanups until all instructions in the current list are completed
+                    VEM.PreventCleanup = true;
+                    //Remove any instructions that are reported as not being supported
+                    foreach (var n in (from x in OpcodeMap where x.Value == cex.OpCode select x.Key).ToArray())
+                        if (OpcodeMap.Remove(n))
+                            Console.WriteLine(string.Format("Instruction was not supported by the VE: {0} -> {1}", n.FullName, cex.OpCode));
+
+                    //We need to work on this more than once, so we convert it to a list right away
+                    if (worklist == null)
+                        worklist = work.Skip((int)(instructionIndex)).ToList();
+
+                    //Extract the target instruction for inspection
+                    PendingOperation<T> pt = worklist[(int)cex.InstructionNo];
+
+                    //TODO: If the operation in question is found multiple times, 
+                    // we could avoid the costly exception for each invocation
+
+                    //Remove executed operations from each operand to prevent double flushing
+                    foreach (var op in pt.Operands)
+                    {
+                        if (op.m_data is LazyAccessor<T>)
+                        {
+                            ILazyAccessor<T> lzt = (ILazyAccessor<T>)op.m_data;
+                            if (lzt.PendingOperations.Count > 0)
+                            {
+                                if (lzt.PendingOperations[lzt.PendingOperations.Count - 1].Clock < pt.Clock)
+                                {
+                                    lzt.PendignOperationOffset += lzt.PendingOperations.Count;
+                                    lzt.PendingOperations.Clear();
+
+                                }
+                                else
+                                {
+                                    while (lzt.PendingOperations.Count > 0 && lzt.PendingOperations[0].Clock < pt.Clock)
+                                    {
+                                        lzt.PendignOperationOffset++;
+                                        lzt.PendingOperations.RemoveAt(0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //The unsupported instruction is now executed by the CIL
+                    base.ExecuteOperations(new PendingOperation<T>[] { pt });
+
+                    //Then remove all the instructions that have been executed
+                    instructions.RemoveRange(0, (int)cex.InstructionNo + 1);
+                    worklist.RemoveRange(0, (int)cex.InstructionNo + 1);
+                    instructionIndex += cex.InstructionNo + 1;
+
+                    //Make sure we manually set the data pointer to all operands that refer to the
+                    // NdArray that was the target of the instruction that was excuted locally
+                    NdArray<T> target = pt.Operands[0];
+                    if (instructions.Count > 0)
+                    {
+                        int i = 0;
+                        foreach (PendingOperation<T> pop in worklist)
+                        {
+                            if (pop.Operands.Any(x => x.m_data == target.m_data))
+                            {
+                                instructions[i] = VEM.ReCreateInstruction<T>(CPHVB_TYPE, instructions[i], pop.Operands);
+                                
+                            }
+
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            //If we have blocked cleanups, it is now safe to flush them
+            if (VEM.PreventCleanup)
+                VEM.PreventCleanup = false;
         }
 
         /// <summary>

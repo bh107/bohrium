@@ -48,6 +48,25 @@ namespace NumCIL.cphVB
         private readonly long m_randomFunctionId;
 
         /// <summary>
+        /// Flag that guards cleanup execution
+        /// </summary>
+        private bool m_preventCleanup = false;
+
+        /// <summary>
+        /// Gets or sets a value that determines if cleanup execution is currently disabled
+        /// </summary>
+        public bool PreventCleanup
+        {
+            get { return m_preventCleanup; }
+            set 
+            { 
+                m_preventCleanup = value;
+                if (!m_preventCleanup)
+                    ExecuteCleanups();
+            }
+        }
+
+        /// <summary>
         /// Lookup table for all created userfunc structures
         /// </summary>
         private Dictionary<IntPtr, GCHandle> m_allocatedUserfuncs = new Dictionary<IntPtr, GCHandle>();
@@ -79,6 +98,12 @@ namespace NumCIL.cphVB
         /// A list of cleanups not yet performed
         /// </summary>
         private List<IInstruction> m_cleanups = new List<IInstruction>();
+
+        /// <summary>
+        /// A statically allocated PInvoke buffer
+        /// </summary>
+        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[5];//PInvoke.CPHVB_MAX_NO_INST];
+
 
         /// <summary>
         /// Constructs a new VEM
@@ -181,9 +206,9 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Executes all pending cleanup instructions
         /// </summary>
-        private void ExecuteCleanups()
+        public void ExecuteCleanups()
         {
-            if (m_cleanups.Count > 0)
+            if (!m_preventCleanup && m_cleanups.Count > 0)
             {
                 //Lock free swapping, ensures that we never block the garbage collector
                 List<IInstruction> lst = m_cleanups;
@@ -202,43 +227,66 @@ namespace NumCIL.cphVB
         {
             List<GCHandle> cleanups = new List<GCHandle>();
             long destroys = 0;
+            long total_i = 0;
 
             try
             {
-                //We need to execute multiple times if we have more than CPHVB_MAX_NO_INST instructions
-                PInvoke.cphvb_instruction[] buf = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
-
                 int i = 0;
                 foreach (var inst in inst_list)
                 {
-                    buf[i] = (PInvoke.cphvb_instruction)inst;
-                    if (buf[i].opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
+                    m_instBuffer[i] = (PInvoke.cphvb_instruction)inst;
+                    if (m_instBuffer[i].opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
                         destroys++;
-                    if (buf[i].userfunc != IntPtr.Zero)
+                    if (m_instBuffer[i].userfunc != IntPtr.Zero)
                     {
-                        cleanups.Add(m_allocatedUserfuncs[buf[i].userfunc]);
-                        m_allocatedUserfuncs.Remove(buf[i].userfunc);
+                        cleanups.Add(m_allocatedUserfuncs[m_instBuffer[i].userfunc]);
+                        m_allocatedUserfuncs.Remove(m_instBuffer[i].userfunc);
                     }
                         
 
                     i++;
+                    total_i++;
 
-                    if (i >= buf.Length)
+                    //cphVB has a statically defined max size of instructions, so we need to chop it up if there are too many instructions
+                    if (i >= m_instBuffer.Length)
                     {
-                        PInvoke.cphvb_error e = m_childs[0].execute(buf.LongLength, buf);
+                        PInvoke.cphvb_error e = m_childs[0].execute(m_instBuffer.LongLength, m_instBuffer);
 
                         if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                        {
+                            if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
+                            {
+                                for (int ix = 0; ix < i; ix++)
+                                {
+                                    if (m_instBuffer[ix].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
+                                        throw new cphVBNotSupportedInstruction(m_instBuffer[ix].opcode, (total_i - i) + ix);
+                                }
+                            }
+
                             throw new cphVBException(e);
+                        }
+
                         i = 0;
                     }
                 }
 
                 if (i != 0)
                 {
-                    PInvoke.cphvb_error e = m_childs[0].execute(i, buf);
+                    PInvoke.cphvb_error e = m_childs[0].execute(i, m_instBuffer);
 
                     if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                    {
+                        if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
+                        {
+                            for(int ix = 0; ix < i; ix++)
+                            {
+                                if (m_instBuffer[ix].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
+                                    throw new cphVBNotSupportedInstruction(m_instBuffer[ix].opcode, (total_i - i) + ix);
+                            }
+                        }
+
                         throw new cphVBException(e);
+                    }
                 }
             }
             finally
@@ -548,6 +596,14 @@ namespace NumCIL.cphVB
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)), constant);
+        }
+
+        public IInstruction ReCreateInstruction<T>(PInvoke.cphvb_type type, IInstruction instruction, IEnumerable<NdArray<T>> operands)
+        {
+            if (instruction is PInvoke.cphvb_instruction)
+                return new PInvoke.cphvb_instruction(instruction.OpCode, operands.Select(x => CreateViewPtr<T>(type, x)), ((PInvoke.cphvb_instruction)instruction).constant);
+            else
+                throw new Exception("Unknown instruction type");
         }
 
         public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)

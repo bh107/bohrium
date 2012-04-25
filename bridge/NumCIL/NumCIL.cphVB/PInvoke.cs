@@ -548,7 +548,7 @@ namespace NumCIL.cphVB
 
             public override string ToString()
             {
-                return string.Format("(self: {0}, data: {1}, base: {2})", m_ptr, m_ptr == IntPtr.Zero ? "null" : this.Data.ToString(), m_ptr == IntPtr.Zero ? "null" : this.BaseArray.ToString());
+                return string.Format("(self: {0}, data: {1}, base: {2})", m_ptr, m_ptr == IntPtr.Zero ? "null" : this.Data.ToString(), m_ptr == IntPtr.Zero ? "null" : (this.BaseArray == cphvb_array_ptr.Null ? "null" : this.BaseArray.ToString()));
             }
         }
 
@@ -795,7 +795,7 @@ namespace NumCIL.cphVB
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_shutdown();
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate cphvb_error cphvb_execute(cphvb_intp count, cphvb_instruction[] inst_list);
+        public delegate cphvb_error cphvb_execute(cphvb_intp count, [In, Out]cphvb_instruction[] inst_list);
         //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         //public delegate cphvb_error cphvb_execute_with_userfunc(cphvb_intp count, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef=typeof(InstructionMarshal))] cphvb_instruction[] inst_list);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
