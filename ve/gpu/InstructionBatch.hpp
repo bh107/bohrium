@@ -31,12 +31,12 @@
 #endif
 class InstructionBatch
 {
-    typedef std::map<BaseArray*, std::string> ParameterMap;
-    typedef std::map<cphvb_array*, std::string> VariableMap;
+    typedef std::map<KernelParameter*, std::string> ParameterMap;
+    typedef std::map<void*, std::string> VariableMap;
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
     typedef std::map<std::string, Kernel> KernelMap;
-    typedef std::list<BaseArray*> ParameterList;
+    typedef std::list<KernelParameter*> ParameterList;
     typedef std::list<BaseArray*> OutputList;
     typedef std::list<std::pair<BaseArray*, cphvb_array*>> InputList;
 private:

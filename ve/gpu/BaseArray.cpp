@@ -60,3 +60,28 @@ void BaseArray::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
 {
     kernel.setArg(argIndex, buffer);
 }
+
+void BaseArray::setWriteEvent(cl::Event event)
+{
+    buffer.setWriteEvent(event);
+}
+
+cl::Event BaseArray::getWriteEvent()
+{
+    return buffer.getWriteEvent();
+}
+
+void BaseArray::addReadEvent(cl::Event event)
+{
+    buffer.addReadEvent(event);
+}
+
+std::deque<cl::Event> BaseArray::getReadEvents()
+{
+    return buffer.getReadEvents();
+}
+
+std::vector<cl::Event> BaseArray::allEvents()
+{
+    return buffer.allEvents();
+}

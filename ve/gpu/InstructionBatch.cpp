@@ -28,7 +28,7 @@
 int InstructionBatch::kernelNo = 0;
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
-InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
+InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
     , scalarnum(0)
     , variablenum(0)
@@ -39,7 +39,7 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ba
     if (inst->operand[0]->ndim > 3)
         throw std::runtime_error("More than 3 dimensions not supported.");        
     shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
-    add(inst, operandBase);
+    add(inst, operands);
 }
 
 bool InstructionBatch::shapeMatch(cphvb_intp ndim,const cphvb_index dims[])
@@ -107,20 +107,21 @@ bool InstructionBatch::disjointView(const cphvb_array* a, const cphvb_array* b)
     return false;
 }
 
-void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*>& operandBase)
+void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
 {
-    assert(!operandBase[0]->isScalar());
+    assert(!isScalar(operands[0]));
 
     // Check that the shape matches
     if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
         throw BatchException(0);
 
     // If any operand's base is already used as output, it has to be alligned or disjoint
-    for (size_t op = 0; op < operandBase.size(); ++op)
+    for (size_t op = 0; op < operands.size(); ++op)
     {
-        if (!cphvb_scalar(inst->operand[op]))
+        BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
+        if (ba) // not a scalar
         {
-            OutputMap::iterator oit = output.find(operandBase[op]);
+            OutputMap::iterator oit = output.find(ba);
             if (oit != output.end())
             {
                 if (sameView(oit->second, inst->operand[op]))
@@ -129,10 +130,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
                 } 
                 else if (!disjointView(oit->second, inst->operand[op])) 
                 { 
-#ifdef DEBUG
-                    std::cout << "FAIL: disjointView("<< oit->second << ", " << 
-                        inst->operand[op] << ")" << std::endl;
-#endif
                     throw BatchException(0);
                 }
             }
@@ -140,7 +137,8 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     }
 
     // If the output operans is allready used as input it has to be alligned or disjoint
-    std::pair<InputMap::iterator, InputMap::iterator> irange = input.equal_range(operandBase[0]);
+    std::pair<InputMap::iterator, InputMap::iterator> irange = 
+        input.equal_range(static_cast<BaseArray*>(operands[0]));
     for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
     {
         if (sameView(iit->second, inst->operand[0]))
@@ -149,10 +147,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
         } 
         else if (!disjointView(iit->second, inst->operand[0]))
         {
-#ifdef DEBUG
-            std::cout << "FAIL: disjointView("<< iit->second << ", " << 
-                inst->operand[0] << ")" << std::endl;
-#endif
             throw BatchException(0);
         }
     }
@@ -160,63 +154,67 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<BaseArray*
     // OK so we can accept the instruction
     instructions.push_back(inst);
     // Are some of the input parameters allready know? Otherwise register them
-    for (size_t op = 1; op < operandBase.size(); ++op)
+    for (size_t op = 1; op < operands.size(); ++op)
     {
-        OutputMap::iterator oit = output.find(operandBase[op]);
-        if (oit != output.end() && sameView(oit->second, inst->operand[op]))
-        {  //it is allready part of the output
-            inst->operand[op] = oit->second;
-            continue;
-        }
-        bool found = false;
-        irange = input.equal_range(operandBase[op]);
-        for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+        BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
+        if (ba) // not a scalar
         {
-            if (sameView(iit->second, inst->operand[op]))
-            { //it is allready part of the input
-                inst->operand[op] = iit->second;
-                found = true;
-                break;
+            OutputMap::iterator oit = output.find(ba);
+            if (oit != output.end() && sameView(oit->second, inst->operand[op]))
+            {  //it is allready part of the output
+                inst->operand[op] = oit->second;
+                continue;
             }
-        }
-        if (!found)
-        { //it is a new array or view
+            bool found = false;
+            irange = input.equal_range(ba);
+            for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+            {
+                if (sameView(iit->second, inst->operand[op]))
+                { //it is allready part of the input
+                    inst->operand[op] = iit->second;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            { //it is a new array or view
 #ifdef DEBUG
-            std::cout << "Adding input array to batch: (" << operandBase[op] << ", " 
-                      <<  inst->operand[op] << ")" << std::endl;
+                std::cout << "Adding input array to batch: (" << ba << ", " 
+                          <<  inst->operand[op] << ")" << std::endl;
 #endif
-            input.insert(std::make_pair(operandBase[op], inst->operand[op]));
-            inputList.push_back(std::make_pair(operandBase[op], inst->operand[op]));
+                input.insert(std::make_pair(ba, inst->operand[op]));
+                inputList.push_back(std::make_pair(ba, inst->operand[op]));
+            }
         }
     }
     
 
     // Register output
-    if (output.find(operandBase[0]) == output.end())
+    if (output.find(static_cast<BaseArray*>(operands[0])) == output.end())
     {
 #ifdef DEBUG
-        std::cout << "Adding output array to batch: (" << operandBase[0] << ", " 
+        std::cout << "Adding output array to batch: (" << operands[0] << ", " 
                   <<  inst->operand[0] << ")" << std::endl;
 #endif    
-        output.insert(std::make_pair(operandBase[0], inst->operand[0]));
-        outputList.push_back(operandBase[0]);
+        output.insert(std::make_pair(static_cast<BaseArray*>(operands[0]), inst->operand[0]));
+        outputList.push_back(static_cast<BaseArray*>(operands[0]));
     }
     // Register Kernel parameters
-    for (size_t op = 0; op < operandBase.size(); ++op)
+    for (size_t op = 0; op < operands.size(); ++op)
     {
-        BaseArray* baseArray = operandBase[op];
-        if (parameters.find(baseArray) == parameters.end())
+        KernelParameter* kp = operands[op];
+        if (parameters.find(kp) == parameters.end())
         {
             std::stringstream ss;
-            if (baseArray->isScalar())
+            if (isScalar(kp))
             {
                 ss << "s" << scalarnum++;
-                kernelVariables[cphvb_base_array(inst->operand[op])] = ss.str();
+                kernelVariables[&(inst->operand[op])] = ss.str();
             } else {
                 ss << "p" << arraynum++;
             }
-            parameters[baseArray] = ss.str();
-            parameterList.push_back(baseArray);
+            parameters[kp] = ss.str();
+            parameterList.push_back(kp);
         }
     }
 }
@@ -261,7 +259,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
         {
-            if (output.find(*pit) == output.end())
+            if (output.find(static_cast<BaseArray*>(*pit)) == output.end())
                 kernelParameters.push_back(std::make_pair(*pit, false));
             else
                 kernelParameters.push_back(std::make_pair(*pit, true));
@@ -276,13 +274,10 @@ std::string InstructionBatch::generateCode()
     source << "( ";
     // Add Array kernel parameters
     ParameterList::iterator pit = parameterList.begin();
-    (*pit)->printKernelParameterType(true, source);
-    source << " " << parameters[*pit];
+    source << **pit << " " << parameters[*pit];
     for (++pit; pit != parameterList.end(); ++pit)
     {
-        source << "\n                     , ";
-        (*pit)->printKernelParameterType(true, source);
-        source << " " << parameters[*pit];
+        source << "\n                     , " << **pit << " " << parameters[*pit];
     }
 
     source << ")\n{\n";
@@ -292,16 +287,13 @@ std::string InstructionBatch::generateCode()
     // Load input parameters
     for (InputList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
-        if (!iit->first->isScalar())
-        {
-            std::stringstream ss;
-            ss << "v" << variablenum++;
-            kernelVariables[iit->second] = ss.str();
-            source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
-                parameters[iit->first] << "[";
-            generateOffsetSource(iit->second, source);
-            source << "];\n";
-        }
+        std::stringstream ss;
+        ss << "v" << variablenum++;
+        kernelVariables[iit->second] = ss.str();
+        source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
+            parameters[iit->first] << "[";
+        generateOffsetSource(iit->second, source);
+        source << "];\n";
     }
 
     // Generate code for instructions
@@ -325,8 +317,8 @@ std::string InstructionBatch::generateCode()
         // find variable names for input operands
         for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if (cphvb_scalar((*iit)->operand[op]))
-                operands.push_back(kernelVariables[cphvb_base_array((*iit)->operand[op])]);  
+            if (cphvb_is_constant((*iit)->operand[op]) || cphvb_is_scalar((*iit)->operand[op]))
+                operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
             else
                 operands.push_back(kernelVariables[(*iit)->operand[op]]);  
         }
@@ -376,8 +368,8 @@ bool InstructionBatch::discard(BaseArray* array)
         outputList.remove(array);
         if (!r)
         {
-            parameters.erase(array);
-            parameterList.remove(array);
+            parameters.erase(static_cast<KernelParameter*>(array));
+            parameterList.remove(static_cast<KernelParameter*>(array));
         }
     }
     return !r;

@@ -115,12 +115,13 @@ void Kernel::call(Parameters& parameters,
     std::vector<cl::Event> waitFor;
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
-        if (!pit->first->isScalar())
+        BaseArray* ba = static_cast<BaseArray*>(pit->first);
+        if (ba)
         {// If its not a scalar wait for any write events 
-            waitFor.push_back(pit->first->getWriteEvent());
+            waitFor.push_back(ba->getWriteEvent());
             if (pit->second)
             {// If we are going to write to it: Also wait for any read events
-                std::deque<cl::Event> re = pit->first->getReadEvents();
+                std::deque<cl::Event> re = ba->getReadEvents();
                 for (std::deque<cl::Event>::iterator reit = re.begin(); reit != re.end(); ++reit)
                     waitFor.push_back(*reit);
             }
@@ -128,13 +129,13 @@ void Kernel::call(Parameters& parameters,
     }
     unsigned int argIndex = 0;
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
-        pit->first->addToKernel(true, kernel, argIndex++);
+        pit->first->addToKernel(kernel, argIndex++);
     cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, localSize, &waitFor ,device); 
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
         if (pit->second)
-            pit->first->setWriteEvent(event);
+            static_cast<BaseArray*>(pit->first)->setWriteEvent(event);
         else
-            pit->first->addReadEvent(event);
+            static_cast<BaseArray*>(pit->first)->addReadEvent(event);
     }
 }

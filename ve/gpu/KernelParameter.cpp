@@ -27,3 +27,8 @@ std::ostream& operator<< (std::ostream& os, KernelParameter const& kp)
     kp.printOn(os);
     return os;
 }
+
+bool isScalar(KernelParameter* kp)
+{
+    return (dynamic_cast<Scalar*>(kp) != NULL);
+}

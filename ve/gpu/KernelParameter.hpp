@@ -34,4 +34,6 @@ public:
     friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
 };
 
+bool isScalar(KernelParameter* kp);
+
 #endif

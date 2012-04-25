@@ -36,6 +36,11 @@ public:
     OCLtype type() const;
     void sync();
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
+    void setWriteEvent(cl::Event);
+    cl::Event getWriteEvent();
+    void addReadEvent(cl::Event);
+    std::deque<cl::Event> getReadEvents();
+    std::vector<cl::Event> allEvents();
 };
 
 
