@@ -46,6 +46,8 @@ def GetNdClass(dtype):
         return NumCIL.Float
     elif isinstance(dtype, NumCIL.Double.NdArray):
         return NumCIL.Double
+    elif isinstance(dtype, ndarray):
+        return dtype.cls
     else:
         raise Exception("There is only support for float and double types")
 
@@ -332,65 +334,82 @@ class ndarray:
     def __abs__ (self):
         return self.parent.Abs()
 
+    def __str__(self):
+        return self.parent.ToString()
+
 def empty(shape, dtype=float, order='C', dist=False):
     return ndarray(GetNdClass(dtype).Generate.Empty(ReshapeShape(shape)))
 
 def ones(shape, dtype=float, order='C', dist=False):
-    return  ndarray(GetNdClass(dtype).Generate.Ones(ReshapeShape(shape)))
+    return ndarray(GetNdClass(dtype).Generate.Ones(ReshapeShape(shape)))
 
 def zeroes(shape, dtype=float, order='C', dist=False):
-    return  ndarray(GetNdClass(dtype).Generate.Zeroes(ReshapeShape(shape)))
+    return ndarray(GetNdClass(dtype).Generate.Zeroes(ReshapeShape(shape)))
+
+def zeros(shape, dtype=float, order='C', dist=False):
+    return zeroes(shape, dtype, order, dist)
 
 def arange(shape, dtype=float, order='C', dist=False):
-    return  ndarray(GetNdClass(dtype).Generate.Arange(ReshapeShape(shape)))
+    return ndarray(GetNdClass(dtype).Generate.Arange(ReshapeShape(shape)))
 
-def ReduceCall(op, a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-    if dtype != None or skipna != False or keepdims != False:
-        raise Exception("Arguments dtype, skipna or keepdims are not supported")
-    if not isinstance(a, ndarray):
-        raise Exception("Can only reduce ndarrays")
+class ufunc:
+    op = None
+    nin = 2
+    nout = 1
+    nargs = 3
+    name = None
 
-    if out != None:
-        if isinstance(out, ndarray):
-            out = ndarray.parent
-        return ndarray(op.Reduce(a.parent, axis, out))
-    else:
-        return ndarray(op.Reduce(a.parent, axis))
+    def __init__(self, op, name):
+        self.op = op
+        self.name = name
 
-class add:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Add, a, axis, dtype, out, skipna, keepdims)
+    def reduce(self, a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
+        if dtype != None or skipna != False or keepdims != False:
+            raise Exception("Arguments dtype, skipna or keepdims are not supported")
+        if not isinstance(a, ndarray):
+            raise Exception("Can only reduce ndarrays")
 
-class sub:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Sub, a, axis, dtype, out, skipna, keepdims)
-        
-class mul:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Mul, a, axis, dtype, out, skipna, keepdims)
+        cls = None
+        if out != None and isinstance(out, ndarray):
+            cls = out.cls
+        elif isinstance(a, ndarray):
+            cls = a.cls
 
-class div:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Div, a, axis, dtype, out, skipna, keepdims)
+        if out != None and isinstance(out, ndarray):
+            out = out.parent
 
-class mod:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Mod, a, axis, dtype, out, skipna, keepdims)
+        f = getattr(cls, self.op)
+        return ndarray(f.Reduce(a.parent, axis, out))
 
-class max:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Max, a, axis, dtype, out, skipna, keepdims)
+    def __call__(self, a, b, out = None):
+        cls = None
+        if out != None and isinstance(out, ndarray):
+            cls = out.cls
+        elif isinstance(a, ndarray):
+            cls = a.cls
+        elif isinstance(b, ndarray):
+            cls = b.cls
 
-class min:
-    @staticmethod
-    def reduce(a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
-        return ReduceCall(a.cls.Min, a, axis, dtype, out, skipna, keepdims)
+        if cls == None:
+            raise Exception("Apply not supported for scalars")
+        else:
+            f = getattr(cls, self.op)
+            if isinstance(a, ndarray):
+                a = a.parent
+            if isinstance(b, ndarray):
+                b = b.parent
+            if out != None and isinstance(out, ndarray):
+                out = out.parent
+
+            return ndarray(f.Apply(a, b, out))
+
+add = ufunc("Add", "add")
+subtract = ufunc("Sub", "subtract")
+multiply = ufunc("Mul", "multiply")
+divide = ufunc("Div", "divide")
+mod = ufunc("Mod", "mod")
+maximum = ufunc("Max", "maximum")
+minimum = ufunc("Min", "minimum")
 
 class random:
     @staticmethod
