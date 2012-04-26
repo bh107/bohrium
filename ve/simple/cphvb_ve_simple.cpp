@@ -17,7 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
-#include "cphvb_ve_score.h"
+#include "cphvb_ve_simple.h"
 #include <assert.h>
 #include <cphvb_compute.h>
 #include <cphvb_compute_reduce.h>
@@ -29,14 +29,14 @@ static cphvb_intp reduce_impl_id = 0;
 static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
 
-cphvb_error cphvb_ve_score_init(cphvb_com *self)
+cphvb_error cphvb_ve_simple_init(cphvb_com *self)
 {
     myself = self;
 
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_score_execute(
+cphvb_error cphvb_ve_simple_execute(
 
     cphvb_intp          instruction_count,
     cphvb_instruction*   instruction_list
@@ -84,18 +84,18 @@ cphvb_error cphvb_ve_score_execute(
 
             default://This is a regular operation.
                 if(inst->status == CPHVB_INST_UNDONE) {
-                    cphvb_compute_apply( inst );
+                    inst->status = cphvb_compute_apply( inst );
                 }
         }
         ++count;
 
     }
-
+    // TODO: add partial success / error / etc
     return CPHVB_SUCCESS;
 
 }
 
-cphvb_error cphvb_ve_score_shutdown( void )
+cphvb_error cphvb_ve_simple_shutdown( void )
 {
     return CPHVB_SUCCESS;
 }

@@ -29,6 +29,8 @@ class ElementOperators(unittest.TestCase):
         self.arr1 = self.con1 + self.arr2
         self.assertTrue(numpytest.array_equal(self.arr1, self.res))
 
-if __name__ == "__main__":
+def run():
     unittest.main()
 
+if __name__ == "__main__":
+    run()

@@ -17,7 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
-#include "cphvb_ve_score.h"
+#include <cphvb_compute.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -291,9 +291,15 @@ void *thd_do_random(void *msg)
 	
     return NULL;
 }
-//Implementation of the user-defined funtion "random". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
+
+/**
+ * cphvb_compute_random
+ *
+ * Implementation of the user-defined funtion "random". Note that we
+ * follow the function signature defined by cphvb_userfunc_impl.
+ *
+ */
+cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 {
     cphvb_random_type *a = (cphvb_random_type *) arg;
     cphvb_array *ary = a->operand[0];
