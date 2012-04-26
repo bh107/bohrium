@@ -106,6 +106,15 @@ class ndarray:
         else:
             raise Exception("Not yet implemented")
 
+    def sum(self):
+        return self.parent.Sum()
+
+    def max(self):
+        return self.parent.Max()
+
+    def min(self):
+        return self.parent.Min()
+
     def reshape(self, t):
         if isinstance(t, tuple):
             return ndarray(self.parent.Reshape(NumCIL.Shape(System.Array[System.Int64](list(t)))))
@@ -362,6 +371,15 @@ class ufunc:
     def __init__(self, op, name):
         self.op = op
         self.name = name
+
+    def aggregate(self, a):
+        if not isinstance(a, ndarray):
+            raise Exception("Can only aggregate ndarrays")
+
+        cls = a.cls
+        f = getattr(cls, self.op)
+        return f.Aggregate(a.parent)
+
 
     def reduce(self, a, axis=0, dtype=None, out=None, skipna=False, keepdims=False):
         if dtype != None or skipna != False or keepdims != False:
