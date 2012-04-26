@@ -55,6 +55,17 @@ namespace NumCIL
         #endregion
 
         /// <summary>
+        /// The number of virtual elements in the array, i.e. the size excluding any skipped space, but counting copied elements
+        /// </summary>
+        public long Elements
+        {
+            get 
+            { 
+                return m_dimensions.Select(x => x.Length).Aggregate(1L, (a, b) => a * b); 
+            }
+        }
+
+        /// <summary>
         /// Constructs a one dimensional shape
         /// </summary>
         /// <param name="length">The size of the array</param>
@@ -124,6 +135,13 @@ namespace NumCIL
         /// <returns>The number of elements required</returns>
         private long CalculateSpaceRequired()
         {
+            //This calculation takes care of the special case that 
+            // the last dimension may not be fully populated,
+            // and thus accumulates (length - 1) * stride
+            // for each dimension
+            //The +1 is to account for the final dimension,
+            // where the actual last element also needs storage space
+
             long length = 1;
             for (long i = 0; i < m_dimensions.LongLength; i++)
                 length += (m_dimensions[i].Length - 1) * m_dimensions[i].Stride;
