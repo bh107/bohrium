@@ -149,6 +149,27 @@ namespace NumCIL.UInt8
         /// <param name="out">Optional output array</param>
         /// <returns>A transposed view</returns>
         public OutArray Transpose(OutArray @out = null) { return value.Transpose(@out); }
+
+        /// <summary>
+        /// Gets or sets data in a transposed view
+        /// </summary>
+        public OutArray Transposed { get { return value.Transposed; } set { value.Transposed = this.value; } }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform</param>
+        /// <param name="axis">The axis to repeat, if not speficied, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public OutArray Repeat(long repeats, long? axis = null) { return value.Repeat(repeats, axis); }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform in each axis</param>
+        /// <param name="axis">The axis to repeat, if not specified, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public OutArray Repeat(long[] repeats, long? axis = null) { return value.Repeat(repeats, axis); }
         #endregion
 
         /// <summary>
