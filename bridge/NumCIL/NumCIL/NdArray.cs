@@ -583,20 +583,14 @@ namespace NumCIL.Generic
                 var resultShape = new Shape(resultDims);
                 var result = new NdArray<T>(resultShape);
 
-                var sourceRanges = new Range[this.Shape.Dimensions.LongLength];
-                var targetRanges = new Range[this.Shape.Dimensions.LongLength];
-
-                long[] sourceIndices = new long[extendedSize];
-                long ix = 0;
-                for(long i = 0; i < repeats.LongLength; i++)
-                    for(long j = 0; j < repeats[i]; j++)
-                        sourceIndices[ix++] = i;
-
-                for (long i = 0; i < extendedSize; i++)
+                long curStart = 0;
+                for (long i = 0; i < repeats.LongLength; i++)
                 {
-                    sourceRanges[real_axis] = Range.El(sourceIndices[i]);
-                    targetRanges[real_axis] = Range.El(i);
-                    UFunc.Apply<T, CopyOp<T>>(this[sourceRanges], result[targetRanges]);
+                    var lv = this.Subview(Range.El(i), real_axis);
+                    var xv = result.Subview(new Range(curStart, curStart + repeats[i] - 1), real_axis);
+                    var broadcastShapes = Shape.ToBroadcastShapes(lv.Shape, xv.Shape);
+                    UFunc.Apply<T, CopyOp<T>>(lv.Reshape(broadcastShapes.Item1), xv.Reshape(broadcastShapes.Item2));
+                    curStart += repeats[i];
                 }
 
                 return result;
