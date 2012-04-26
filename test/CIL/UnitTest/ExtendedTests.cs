@@ -64,6 +64,9 @@ namespace UnitTest
             var o = n.Flatten();
             if (o.Data.LongLength != 24)
                 throw new Exception("Something failed in flatten");
+
+            if (o.Sum() != 104 || o.Max() != 8)
+                throw new Exception("Something failed in aggregate");
         }
     }
 }
