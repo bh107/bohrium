@@ -149,6 +149,27 @@ namespace NumCIL.UInt32
         /// <param name="out">Optional output array</param>
         /// <returns>A transposed view</returns>
         public OutArray Transpose(OutArray @out = null) { return value.Transpose(@out); }
+
+        /// <summary>
+        /// Gets or sets data in a transposed view
+        /// </summary>
+        public OutArray Transposed { get { return value.Transposed; } set { value.Transposed = this.value; } }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform</param>
+        /// <param name="axis">The axis to repeat, if not speficied, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public OutArray Repeat(long repeats, long? axis = null) { return value.Repeat(repeats, axis); }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform in each axis</param>
+        /// <param name="axis">The axis to repeat, if not specified, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public OutArray Repeat(long[] repeats, long? axis = null) { return value.Repeat(repeats, axis); }
         #endregion
 
         /// <summary>
@@ -559,9 +580,40 @@ namespace NumCIL.UInt32
         /// <param name="op">The function to apply reduction with</param>
         /// <param name="axis">The axis to remove</param>
         /// <param name="out">An optional output array, use this to perform the function in-place</param>
-        /// <returns></returns>
+        /// <returns>A reduced array</returns>
         public OutArray Reduce(IBinaryOp<T> op, long axis = 0, OutArray @out = null) { return UFunc.Reduce<T>(op, this, axis, @out); }
 
+        /// <summary>
+        /// Calculates the scalar result of applying the binary operation to all elements
+        /// </summary>
+        /// <typeparam name="C">The operation to perform</typeparam>
+        /// <returns>A scalar value that is the result of aggregating all elements</returns>
+        public T Aggregate<C>() where C : struct, IBinaryOp<T> { return UFunc.Aggregate<T, C>(this); }
+
+        /// <summary>
+        /// Calculates the scalar result of applying the binary operation to all elements
+        /// </summary>
+        /// <param name="op">The operation to perform</param>
+        /// <returns>A scalar value that is the result of aggregating all elements</returns>
+        public T Aggregate(IBinaryOp<T> op) { return UFunc.Aggregate<T>(op, this); }
+
+        /// <summary>
+        /// Calculates the sum of all elements
+        /// </summary>
+        /// <returns>A scalar value that is the sum of all elements</returns>
+        public T Sum() { return UFunc.Aggregate<T, Add>(this); }
+
+        /// <summary>
+        /// Calculates the maximum of all elements
+        /// </summary>
+        /// <returns>A scalar value that is the maximum of all elements</returns>
+        public T Max() { return UFunc.Aggregate<T, Max>(this); }
+
+        /// <summary>
+        /// Calculates the minimum of all elements
+        /// </summary>
+        /// <returns>A scalar value that is the minimum of all elements</returns>
+        public T Min() { return UFunc.Aggregate<T, Min>(this); }
         #endregion
     }
 
@@ -677,6 +729,14 @@ namespace NumCIL.UInt32
         { return UFunc.Reduce<T, Add>(arg, axis, @out); }
 
         /// <summary>
+        /// Reduces the input array to a scalar with the addition operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Add>(arg); }
+
+        /// <summary>
         /// Applies the addition operation to the input operands
         /// </summary>
         /// <param name="in1">One input operand</param>
@@ -719,6 +779,14 @@ namespace NumCIL.UInt32
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
         { return UFunc.Reduce<T, Sub>(arg, axis, @out); }
+
+        /// <summary>
+        /// Reduces the input array to a scalar with the subtraction operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Sub>(arg); }
 
         /// <summary>
         /// Applies the subtraction operation to the input operands
@@ -765,6 +833,14 @@ namespace NumCIL.UInt32
         { return UFunc.Reduce<T, Mul>(arg, axis, @out); }
 
         /// <summary>
+        /// Reduces the input array to a scalar with the multiplication operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Mul>(arg); }
+
+        /// <summary>
         /// Applies the multiply operation to the input operands
         /// </summary>
         /// <param name="in1">One input operand</param>
@@ -809,6 +885,14 @@ namespace NumCIL.UInt32
         { return UFunc.Reduce<T, Div>(arg, axis, @out); }
 
         /// <summary>
+        /// Reduces the input array to a scalar with the division operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Div>(arg); }
+
+        /// <summary>
         /// Applies the divide operation to the input operands
         /// </summary>
         /// <param name="in1">One input operand</param>
@@ -851,6 +935,14 @@ namespace NumCIL.UInt32
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
         { return UFunc.Reduce<T, Mod>(arg, axis, @out); }
+
+        /// <summary>
+        /// Reduces the input array to a scalar with the modulo operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Mod>(arg); }
 
         /// <summary>
         /// Applies the modulo operation to the input operands
@@ -898,6 +990,14 @@ namespace NumCIL.UInt32
         { return UFunc.Reduce<T, Max>(arg, axis, @out); }
 
         /// <summary>
+        /// Reduces the input array to a scalar with the maximum operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Max>(arg); }
+
+        /// <summary>
         /// Applies the maximum operation to the input operands
         /// </summary>
         /// <param name="in1">One input operand</param>
@@ -940,6 +1040,14 @@ namespace NumCIL.UInt32
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
         { return UFunc.Reduce<T, Min>(arg, axis, @out); }
+
+        /// <summary>
+        /// Reduces the input array to a scalar with the minimum operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Min>(arg); }
 
         /// <summary>
         /// Applies the minimum operation to the input operands
@@ -1217,6 +1325,14 @@ namespace NumCIL.UInt32
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
         { return UFunc.Reduce<T, Max>(arg, axis, @out); }
+
+        /// <summary>
+        /// Reduces the input array to a scalar with the power operation
+        /// </summary>
+        /// <param name="arg">The input operand</param>
+        /// <returns>The scalar result of the aggregation</returns>
+        public static T Aggregate(OutArray arg)
+        { return UFunc.Aggregate<T, Pow>(arg); }
 
         /// <summary>
         /// Applies the power operation to the input operands
