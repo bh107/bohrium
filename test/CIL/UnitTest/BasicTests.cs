@@ -24,7 +24,7 @@ namespace UnitTest
             var c = b[1][0][1];
             var d = c[2];
             var e = b.Flatten();
-            if (e.Data.LongLength != 12 || e.Data[4] != 12)
+            if (e.Data.LongLength != 12 || e.Data[3] != 12)
                 throw new Exception("Failure in flatten");
 
             List<float> fln = new List<float>(b[1, 0, 1].Value);
