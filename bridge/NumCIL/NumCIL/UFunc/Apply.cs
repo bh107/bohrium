@@ -6,363 +6,830 @@ using NumCIL.Generic;
 
 namespace NumCIL
 {
-    //Support for .Net 3.5
     /// <summary>
-    /// Tupple data type for containing a single typesafe element
+    /// Basic marker interface for all operations
     /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    public class Tuple<T1>
-    {
-        /// <summary>
-        /// The first element in the tupple
-        /// </summary>
-        public T1 Item1;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1&gt;"/> class.
-        /// </summary>
-        /// <param name="t1">The value of the first element</param>
-        public Tuple(T1 t1) { Item1 = t1; }
-    }
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public interface IOp<T> { }
 
     /// <summary>
-    /// Tupple data type for containing a two typesafe elements
+    /// Describes an operation that takes two arguments and produce an output
     /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    /// <typeparam name="T2">The type of element 2</typeparam>
-    public class Tuple<T1, T2> : Tuple<T1> 
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public interface IBinaryOp<T> : IOp<T> 
     { 
         /// <summary>
-        /// The second element in the tupple
+        /// Performs the operation
         /// </summary>
-        public T2 Item2;
-
+        /// <param name="a">Left-hand-side input value</param>
+        /// <param name="b">Right-hand-side input value</param>
+        /// <returns>The result of applying the operation</returns>
+        T Op(T a, T b); 
+    }
+    
+    /// <summary>
+    /// Describes an operation that takes an input argument and produce an ouput
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public interface IUnaryOp<T> : IUnaryConvOp<T, T> { };
+    /// <summary>
+    /// Describes an operation that takes an input argument and produce an ouput
+    /// </summary>
+    /// <typeparam name="Ta">The input data type</typeparam>
+    /// <typeparam name="Tb">The output data type</typeparam>
+    public interface IUnaryConvOp<Ta, Tb> : IOp<Ta> 
+    { 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1, T2&gt;"/> class.
+        /// Performs the operation
         /// </summary>
-        /// <param name="t1">The value of the first tupple element</param>
-        /// <param name="t2">The value of the second tupple element</param>
-        public Tuple(T1 t1, T2 t2)
-            : base(t1)
-        { Item2 = t2; }
+        /// <param name="a">The input argument</param>
+        /// <returns>The converted value</returns>
+        Tb Op(Ta a); 
     }
 
     /// <summary>
-    /// Tupple data type for containing a three typesafe elements
+    /// Describes an operation that takes no inputs but produces an output
     /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    /// <typeparam name="T2">The type of element 2</typeparam>
-    /// <typeparam name="T3">The type of element 3</typeparam>
-    public class Tuple<T1, T2, T3> : Tuple<T1, T2>
+    /// <typeparam name="T">The type of data to produce</typeparam>
+    public interface INullaryOp<T>: IOp<T> 
     {
         /// <summary>
-        /// The third element in the tupple
+        /// Performs an operation
         /// </summary>
-        public T3 Item3;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1, T2, T3&gt;"/> class.
-        /// </summary>
-        /// <param name="t1">The value of the first tupple element</param>
-        /// <param name="t2">The value of the second tupple element</param>
-        /// <param name="t3">The value of the third tupple element</param>
-        public Tuple(T1 t1, T2 t2, T3 t3)
-            : base(t1, t2)
-        { Item3 = t3; }
+        /// <returns>The result of the operation</returns>
+        T Op(); 
     }
 
-    public partial class UFunc
+    /// <summary>
+    /// An operation that outputs the same value for each input
+    /// </summary>
+    /// <typeparam name="T">The type of data to produce</typeparam>
+    public struct GenerateOp<T> : INullaryOp<T>, IScalarAccess<T>
+    { 
+        /// <summary>
+        /// The value all elements are assigned
+        /// </summary>
+        public readonly T Value;
+        /// <summary>
+        /// Constructs a new GenerateOp with the specified value
+        /// </summary>
+        /// <param name="value"></param>
+        public GenerateOp(T value) { Value = value; }
+        /// <summary>
+        /// Executes the operation, i.e. returns the value
+        /// </summary>
+        /// <returns>The result value to assign</returns>
+        public T Op() { return Value; }
+
+        /// <summary>
+        /// Returns the operation performed
+        /// </summary>
+        IOp<T> IScalarAccess<T>.Operation
+        {
+            get { return new CopyOp<T>(); }
+        }
+
+        /// <summary>
+        /// Returns the value to set
+        /// </summary>
+        T IScalarAccess<T>.Value
+        {
+            get { return Value; }
+        }
+    }
+
+    /// <summary>
+    /// An operation that copies data from one element to another, aka the identity operation
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public struct CopyOp<T> : IUnaryOp<T> 
     {
         /// <summary>
-        /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
-        /// If no output array is given, a compatible output array is created
+        /// Returns the input value
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="in2">The right-hand-side input argument</param>
-        /// <param name="out">The output target</param>
-        /// <returns>A tupple with broadcast compatible shapes for the inputs, and an output array</returns>
-        public static Tuple<Shape, Shape, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
+        /// <param name="a">The value to return</param>
+        /// <returns>The input value</returns>
+        public T Op(T a) { return a; } 
+    }
+
+    /// <summary>
+    /// An operation that is implemented with a lambda function.
+    /// Note that the operation is executed as a virtual function call,
+    /// and thus induces some overhead to each invocation.
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public struct BinaryLambdaOp<T> : IBinaryOp<T>
+    {
+        /// <summary>
+        /// The local function reference
+        /// </summary>
+        private readonly Func<T, T, T> m_op;
+        /// <summary>
+        /// Constructs a BinaryLambdaOp from a lambda function
+        /// </summary>
+        /// <param name="op">The lambda function to wrap</param>
+        public BinaryLambdaOp(Func<T, T, T> op) { m_op = op; }
+        /// <summary>
+        /// Executes the operation
+        /// </summary>
+        /// <param name="a">Input data a</param>
+        /// <param name="b">Intput data b</param>
+        /// <returns>The result of invoking the function</returns>
+        public T Op(T a, T b) { return m_op(a, b); }
+        /// <summary>
+        /// Convenience method to allow using a lambda function as an operator
+        /// </summary>
+        /// <param name="op">The lambda function</param>
+        /// <returns>A BinaryLambdaOp that wraps the function</returns>
+        public static implicit operator BinaryLambdaOp<T>(Func<T, T, T> op) { return new BinaryLambdaOp<T>(op); }
+    }
+
+    /// <summary>
+    /// An operation that is implemented with a lambda function.
+    /// Note that the operation is executed as a virtual function call,
+    /// and thus induces some overhead to each invocation.
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public struct UnaryLambdaOp<T> : IUnaryOp<T>
+    {
+        /// <summary>
+        /// The local function reference
+        /// </summary>
+        private readonly Func<T, T> m_op;
+        /// <summary>
+        /// Constructs a UnaryLambdaOp from a lambda function
+        /// </summary>
+        /// <param name="op">The lambda function to wrap</param>
+        public UnaryLambdaOp(Func<T, T> op) { m_op = op; }
+        /// <summary>
+        /// Executes the operation
+        /// </summary>
+        /// <param name="a">Input data</param>
+        /// <returns>The result of invoking the function</returns>
+        public T Op(T a) { return m_op(a); }
+        /// <summary>
+        /// Convenience method to allow using a lambda function as an operator
+        /// </summary>
+        /// <param name="op">The lambda function</param>
+        /// <returns>A UnaryLambdaOp that wraps the function</returns>
+        public static implicit operator UnaryLambdaOp<T>(Func<T, T> op) { return new UnaryLambdaOp<T>(op); }
+    }
+
+    /// <summary>
+    /// An operation that is implemented with a lambda function.
+    /// Note that the operation is executed as a virtual function call,
+    /// and thus induces some overhead to each invocation.
+    /// </summary>
+    /// <typeparam name="Ta">The input data type</typeparam>
+    /// <typeparam name="Tb">The output data type</typeparam>
+    public struct UnaryConvLambdaOp<Ta, Tb> : IUnaryConvOp<Ta, Tb>
+    {
+        /// <summary>
+        /// The local function reference
+        /// </summary>
+        private readonly Func<Ta, Tb> m_op;
+        /// <summary>
+        /// Constructs a UnaryConvLambdaOp from a lambda function
+        /// </summary>
+        /// <param name="op">The lambda function to wrap</param>
+        public UnaryConvLambdaOp(Func<Ta, Tb> op) { m_op = op; }
+        /// <summary>
+        /// Executes the operation
+        /// </summary>
+        /// <param name="a">Input data</param>
+        /// <returns>The result of invoking the function</returns>
+        public Tb Op(Ta a) { return m_op(a); }
+        /// <summary>
+        /// Convenience method to allow using a lambda function as an operator
+        /// </summary>
+        /// <param name="op">The lambda function</param>
+        /// <returns>A UnaryConvLambdaOp that wraps the function</returns>
+        public static implicit operator UnaryConvLambdaOp<Ta, Tb>(Func<Ta, Tb> op) { return new UnaryConvLambdaOp<Ta, Tb>(op); }
+    }
+
+    /// <summary>
+    /// Interface to allow reading the scalar value from a ScalarOp.
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public interface IScalarAccess<T>
+    {
+        /// <summary>
+        /// The operation applied to the input and the scalar value
+        /// </summary>
+        IOp<T> Operation { get; }
+        /// <summary>
+        /// The value used in the operation
+        /// </summary>
+        T Value { get; }
+    }
+
+    /// <summary>
+    /// A scalar operation, that is a single binary operation with a scalar value embedded
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    /// <typeparam name="C">The operation type</typeparam>
+    public struct ScalarOp<T, C> : IUnaryOp<T>, IScalarAccess<T> where C : IBinaryOp<T>
+    {
+        /// <summary>
+        /// The operation
+        /// </summary>
+        private C m_op;
+        /// <summary>
+        /// The scalar value
+        /// </summary>
+        private T m_value;
+
+        /// <summary>
+        /// Constructs a new scalar operation
+        /// </summary>
+        /// <param name="value">The scalar value</param>
+        /// <param name="op">The binary operation</param>
+        public ScalarOp(T value, C op)
         {
-            Tuple<Shape, Shape> broadcastshapes = Shape.ToBroadcastShapes(in1.Shape, in2.Shape);
-            if (@out == null)
-            {
-                //We allocate a new array
-                @out = new NdArray<T>(new Shape(broadcastshapes.Item1.Dimensions.Select(x => x.Length).ToArray()));
-            }
-            else
-            {
-                if (@out.Shape.Dimensions.Length != broadcastshapes.Item1.Dimensions.Length)
-                    throw new Exception("Target array does not have the right number of dimensions");
-
-                for (long i = 0; i < @out.Shape.Dimensions.Length; i++)
-                    if (@out.Shape.Dimensions[i].Length != broadcastshapes.Item1.Dimensions[i].Length)
-                        throw new Exception("Dimension size of target array is incorrect");
-            }
-
-            return new Tuple<Shape, Shape, NdArray<T>>(broadcastshapes.Item1, broadcastshapes.Item2, @out);
+            m_value = value;
+            m_op = op;
         }
 
         /// <summary>
-        /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
-        /// If no output array is given, a compatible output array is created
+        /// Executes the binary operation with the scalar value and the input
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="in1">The input array</param>
-        /// <param name="out">The output target</param>
-        /// <returns>A compatible output array or throws an exception</returns>
-        public static NdArray<T> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> @out)
-        {
-            if (@out == null)
-            {
-                //We allocate a new array
-                @out = new NdArray<T>(in1.Shape);
-            }
-            else
-            {
-                if (@out.Shape.Dimensions.Length != in1.Shape.Dimensions.Length)
-                    throw new Exception("Target array does not have the right number of dimensions");
-
-                for (long i = 0; i < @out.Shape.Dimensions.Length; i++)
-                    if (@out.Shape.Dimensions[i].Length != in1.Shape.Dimensions[i].Length)
-                        throw new Exception("Dimension size of target array is incorrect");
-            }
-
-            return @out;
-        }
+        /// <param name="value">The input value</param>
+        /// <returns>The results of applying the operation to the scalar value and the input</returns>
+        public T Op(T value) { return m_op.Op(value, m_value); }
 
         /// <summary>
-        /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
-        /// If no output array is given, a compatible output array is created
+        /// Hidden implementation of the ScalarAccess interface
         /// </summary>
-        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
-        /// <typeparam name="Tb">The type of output data to generate</typeparam>
-        /// <param name="in1">The input data</param>
-        /// <param name="out">The output target</param>
-        /// <returns>A compatible output array or throws an exception</returns>
-        public static NdArray<Tb> SetupApplyHelper<Ta, Tb>(NdArray<Ta> in1, NdArray<Tb> @out)
-        {
-            if (@out == null)
-            {
-                //We allocate a new array
-                @out = new NdArray<Tb>(in1.Shape);
-            }
-            else
-            {
-                if (@out.Shape.Dimensions.Length != in1.Shape.Dimensions.Length)
-                    throw new Exception("Target array does not have the right number of dimensions");
-
-                for (long i = 0; i < @out.Shape.Dimensions.Length; i++)
-                    if (@out.Shape.Dimensions[i].Length != in1.Shape.Dimensions[i].Length)
-                        throw new Exception("Dimension size of target array is incorrect");
-            }
-
-            return @out;
-        }
-
+        IOp<T> IScalarAccess<T>.Operation { get { return m_op; } }
         /// <summary>
-        /// Function that is used as the entry point for applying a binary operator.
-        /// It will setup the output array and then call the evaluation method
-        /// It has a unique name because it is faster to look up the method through reflection,
-        /// if there is only one version of it.
+        /// Hidden implementation of the ScalarAccess interface
+        /// </summary>
+        T IScalarAccess<T>.Value { get { return m_value; } }
+    }
+
+    public static partial class UFunc
+    {
+        /// <summary>
+        /// The inner execution of a <see cref="T:NumCIL.IBinaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the binary flush operation is called
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        private static NdArray<T> Apply_Entry_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
-            where C : struct, IBinaryOp<T>
+        private static void UFunc_Op_Inner_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
+            where C : IBinaryOp<T>
         {
-            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
-            @out = v.Item3;
-
-            UFunc_Op_Inner_Binary<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
-
-            return @out;
+            if (@out.m_data is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1, in2);
+            else
+                UFunc_Op_Inner_Binary_Flush<T, C>(op, in1, in2, ref @out);
         }
 
+
         /// <summary>
-        /// Applies the operation to the input arrays
+        /// Actually executes a binary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T, C>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
-            where C : struct, IBinaryOp<T>
+        private static void UFunc_Op_Inner_Binary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
+            where C : IBinaryOp<T>
         {
-            return Apply_Entry_Binary<T, C>(new C(), in1, in2, @out);
+            T[] d1 = in1.Data;
+            T[] d2 = in2.Data;
+            T[] d3 = @out.Data;
+
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = in2.Shape.Offset;
+                long ix3 = @out.Shape.Offset;
+
+                long stride1 = in1.Shape.Dimensions[0].Stride;
+                long stride2 = in2.Shape.Dimensions[0].Stride;
+                long stride3 = @out.Shape.Dimensions[0].Stride;
+
+                if (stride1 == stride2 && stride2 == stride3 && ix1 == ix2 && ix2 == ix3)
+                {
+                    //Best case, all are equal, just keep a single counter
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        d3[ix1] = op.Op(d1[ix1], d2[ix1]);
+                        ix1 += stride1;
+                    }
+                }
+                else
+                {
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        //We need all three counters
+                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                        ix1 += stride1;
+                        ix2 += stride2;
+                        ix3 += stride3;
+                    }
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = in2.Shape.Offset;
+                long ix3 = @out.Shape.Offset;
+
+                long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                long outerStride2 = in2.Shape.Dimensions[0].Stride;
+                long outerStride3 = @out.Shape.Dimensions[0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                long innerStride2 = in2.Shape.Dimensions[1].Stride;
+                long innerStride3 = @out.Shape.Dimensions[1].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                outerStride2 -= innerStride2 * in2.Shape.Dimensions[1].Length;
+                outerStride3 -= innerStride3 * @out.Shape.Dimensions[1].Length;
+
+                //Loop unrolling here gives a marginal speed increase
+
+                long remainder = opsInner % 4;
+                long fulls = opsInner / 4;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < fulls; j++)
+                    {
+                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                        ix3 += innerStride3;
+                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                        ix3 += innerStride3;
+                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                        ix3 += innerStride3;
+                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                        ix3 += innerStride3;
+                    }
+
+                    switch (remainder)
+                    {
+                        case 1:
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            break;
+                        case 2:
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            break;
+                        case 3:
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                            break;
+                    }
+
+                    ix1 += outerStride1;
+                    ix2 += outerStride2;
+                    ix3 += outerStride3;
+                }
+            }
+            else
+            {
+                //The inner 3 dimensions are optimized
+                long n = in1.Shape.Dimensions.LongLength - 3;
+                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.Length == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunk of variables prevents repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                long outerStride2 = in2.Shape.Dimensions[dimIndex0].Stride;
+                long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                long innerStride2 = in2.Shape.Dimensions[dimIndex1].Stride;
+                long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+
+                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+                long innerInnerStride2 = in2.Shape.Dimensions[dimIndex2].Stride;
+                long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                outerStride2 -= innerStride2 * in2.Shape.Dimensions[dimIndex1].Length;
+                outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+
+                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                innerStride2 -= innerInnerStride2 * in2.Shape.Dimensions[dimIndex2].Length;
+                innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix1 = in1.Shape[counters];
+                    long ix2 = in2.Shape[counters];
+                    long ix3 = @out.Shape[counters];
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += innerInnerStride1;
+                                ix2 += innerInnerStride2;
+                                ix3 += innerInnerStride3;
+                            }
+
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                            ix3 += innerStride3;
+                        }
+
+                        ix1 += outerStride1;
+                        ix2 += outerStride2;
+                        ix3 += outerStride3;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Applies the operation to the input arrays
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="op">The operation instance to use</param>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="in2">The right-hand-side input argument</param>
-        /// <param name="out">The output target</param>
-        public static NdArray<T> Apply<T>(IBinaryOp<T> op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
-        {
-            var method = typeof(UFunc).GetMethod("Apply_Entry_Binary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
-            return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, in2, @out });
-        }
-
-        /// <summary>
-        /// Applies the operation to the input array and scalar value
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryOp{0}"/>.
+        /// This will just call the UnaryConv flush operation with Ta and Tb set to T
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="scalar">The right-hand-side scalar value</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T, C>(NdArray<T> in1, T scalar, NdArray<T> @out = null)
-            where C : struct, IBinaryOp<T>
-        {
-            @out = SetupApplyHelper<T>(in1, @out);
-
-            UFunc_Op_Inner_Unary<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, new C()), in1, ref @out);
-
-            return @out;
-        }
-
-        /// <summary>
-        /// Applies the operation to the input array
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="in1">The input argument</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T, C>(NdArray<T> in1, NdArray<T> @out = null)
-            where C : struct, IUnaryOp<T>
-        {
-            return Apply_Entry_Unary<T, C>(new C(), in1, @out);
-        }
-
-        /// <summary>
-        /// Function that is used as the entry point for applying a unary operator.
-        /// It will setup the output array and then call the evaluation method
-        /// It has a unique name because it is faster to look up the method through reflection,
-        /// if there is only one version of it.
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        private static NdArray<T> Apply_Entry_Unary<T, C>(C op, NdArray<T> in1, NdArray<T> @out = null)
+        private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
             where C : struct, IUnaryOp<T>
         {
-            NdArray<T> v = SetupApplyHelper<T>(in1, @out);
-            UFunc_Op_Inner_Unary<T, C>(op, in1, ref v);
-
-            return v;
+            UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
         }
 
         /// <summary>
-        /// Applies the operation to the input array
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the unary flush operation is called
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="op">The operation instance to use</param>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        public static NdArray<T> Apply<T>(IUnaryOp<T> op, NdArray<T> in1, NdArray<T> @out = null)
+        public static void UFunc_Op_Inner_Unary<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
+            where C : struct, IUnaryOp<T>
         {
-            var method = typeof(UFunc).GetMethod("Apply_Entry_Unary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
-            return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, @out });
+            if (@out.m_data is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1);
+            else
+                UFunc_Op_Inner_Unary_Flush<T, C>(op, in1, ref @out);
         }
 
         /// <summary>
-        /// Applies the operation to the input array
+        /// The inner execution of a <see cref="T:NumCIL.IUnaryConvOp{0}"/>.
+        /// This method will always call the unary conv flush method, because the lazy evaluation system does not implement support for handling conversion operations yet.
         /// </summary>
         /// <typeparam name="Ta">The type of input data to operate on</typeparam>
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
-        /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        public static NdArray<Tb> Apply<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Tb> @out = null)
+        private static void UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(NdArray<Ta> in1, ref NdArray<Tb> @out)
             where C : struct, IUnaryConvOp<Ta, Tb>
         {
-            NdArray<Tb> v = SetupApplyHelper(in1, @out);
-            UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(in1, ref v);
-
-            return v;
+            UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(new C(), in1, ref @out);
         }
 
         /// <summary>
-        /// Applies the lambda operation to the input arrays
+        /// Actually executes a unary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IUnaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="op">The lambda function to apply</param>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="in2">The right-hand-side input argument</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T>(Func<T, T, T> op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
-        {
-            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
-            @out = v.Item3;
-
-            //TODO: Should attempt to compile a new struct with the lambda function embedded to avoid the virtual function call overhead
-
-            UFunc_Op_Inner_Binary<T, BinaryLambdaOp<T>>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
-
-            return v.Item3;
-        }
-
-        /// <summary>
-        /// Applies the lambda operation to the input array
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="op">The lambda function to apply</param>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T>(Func<T, T> op, NdArray<T> in1, NdArray<T> @out = null)
+        private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(C op, NdArray<Ta> in1, ref NdArray<Tb> @out)
+            where C : IUnaryConvOp<Ta, Tb>
         {
-            NdArray<T> v = SetupApplyHelper<T>(in1, @out);
+            Ta[] d1 = in1.Data;
+            Tb[] d2 = @out.Data;
 
-            //TODO: Should attempt to compile a new struct with the lambda function embedded to avoid the virtual function call overhead
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
 
-            UFunc_Op_Inner_Unary<T, UnaryLambdaOp<T>>(op, in1, ref v);
+                long ix1 = in1.Shape.Offset;
+                long ix2 = @out.Shape.Offset;
 
-            return v;
+                long stride1 = in1.Shape.Dimensions[0].Stride;
+                long stride2 = @out.Shape.Dimensions[0].Stride;
+
+
+                if (stride1 == stride2 && ix1 == ix2)
+                {
+                    //Best case, all are equal, just keep a single counter
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        d2[ix1] = op.Op(d1[ix1]);
+                        ix1 += stride1;
+                    }
+                }
+                else
+                {
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        d2[ix2] = op.Op(d1[ix1]);
+                        ix1 += stride1;
+                        ix2 += stride2;
+                    }
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = @out.Shape.Offset;
+
+                long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                long outerStride2 = @out.Shape.Dimensions[0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                long innerStride2 = @out.Shape.Dimensions[1].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                outerStride2 -= innerStride2 * @out.Shape.Dimensions[1].Length;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < opsInner; j++)
+                    {
+                        d2[ix2] = op.Op(d1[ix1]);
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                    }
+
+                    ix1 += outerStride1;
+                    ix2 += outerStride2;
+                }
+            }
+            else
+            {
+                long n = in1.Shape.Dimensions.LongLength - 3;
+                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunck of variables are used to prevent repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[0 + limits.LongLength].Length;
+                long opsInner = @out.Shape.Dimensions[1 + limits.LongLength].Length;
+                long opsInnerInner = @out.Shape.Dimensions[2 + limits.LongLength].Length;
+
+                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+
+                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+                long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+
+                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix1 = in1.Shape[counters];
+                    long ix3 = @out.Shape[counters];
+
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d2[ix3] = op.Op(d1[ix1]);
+                                ix1 += innerInnerStride1;
+                                ix3 += innerInnerStride3;
+                            }
+
+                            ix1 += innerStride1;
+                            ix3 += innerStride3;
+                        }
+
+                        ix1 += outerStride1;
+                        ix3 += outerStride3;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Applies the operation to the output array
+        /// The inner execution of a <see cref="T:NumCIL.INullaryOp{0}"/>.
+        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
+        /// and defer execution. Otherwise the nullary flush operation is called
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="op">The function to apply</param>
+        /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        public static void Apply<T, C>(C op, NdArray<T> @out)
-            where C : struct, INullaryOp<T>
+        private static void UFunc_Op_Inner_Nullary<T, C>(C op, NdArray<T> @out)
+            where C : INullaryOp<T>
         {
-            UFunc_Op_Inner_Nullary<T, C>(op, @out);
+            if (@out.m_data is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out);
+            else
+                UFunc_Op_Inner_Nullary_Flush<T, C>(op, @out);
         }
 
         /// <summary>
-        /// Applies the operation to the output array
+        /// Actually executes a nullary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.INullaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="op">The function to apply</param>
+        /// <typeparam name="T">The type of data to generat</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        public static void Apply<T>(INullaryOp<T> op, NdArray<T> @out)
+        private static void UFunc_Op_Inner_Nullary_Flush<T, C>(C op, NdArray<T> @out)
+            where C : INullaryOp<T>
         {
-            var method = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            var gm = method.MakeGenericMethod(typeof(T), op.GetType());
-            gm.Invoke(null, new object[] { op, @out });
+            T[] d = @out.Data;
+
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
+                long ix = @out.Shape.Offset;
+                long stride = @out.Shape.Dimensions[0].Stride;
+
+                for (long i = 0; i < totalOps; i++)
+                {
+                    d[i] = op.Op();
+                    ix += stride;
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix = @out.Shape.Offset;
+                long outerStride = @out.Shape.Dimensions[0].Stride;
+                long innerStride = @out.Shape.Dimensions[1].Stride;
+
+                outerStride -= innerStride * @out.Shape.Dimensions[1].Length;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < opsInner; j++)
+                    {
+                        d[ix] = op.Op();
+                        ix += innerStride;
+                    }
+
+                    ix += outerStride;
+                }
+            }
+            else
+            {
+                long n = @out.Shape.Dimensions.LongLength - 3;
+                long[] limits = @out.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                long outerStride = @out.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride = @out.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride -= innerStride * @out.Shape.Dimensions[dimIndex1].Length;
+                innerStride -= innerInnerStride * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix = @out.Shape[counters];
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d[ix] = op.Op();
+                                ix += innerInnerStride;
+                            }
+
+                            ix += innerStride;
+                        }
+
+                        ix += outerStride;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
         }
+
     }
 }
