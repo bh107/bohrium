@@ -1,5 +1,5 @@
 #include <cphvb.h>
-#include <cphvb_comp.h>
+#include <cphvb_compute.h>
 #include "dispatch.h"
 #include <assert.h>
 #include <pthread.h>
@@ -231,7 +231,7 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     comploop traverses[CPHVB_MAX_NO_INST];
     for(cphvb_intp j=0; j<size; ++j)
     {
-        traverses[j] = cphvb_comp_get( inst_bundle[j] );
+        traverses[j] = cphvb_compute_get( inst_bundle[j] );
         if(traverses[j] == NULL)
         {
             inst_bundle[j]->status = CPHVB_OUT_OF_MEMORY;

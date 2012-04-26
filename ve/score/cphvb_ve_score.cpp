@@ -19,7 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <assert.h>
-#include <cphvb_comp.h>
+#include <cphvb_compute.h>
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -82,7 +82,7 @@ cphvb_error cphvb_ve_score_execute(
 
             default://This is a regular operation.
                 if(inst->status == CPHVB_INST_UNDONE) {
-                    cphvb_comp_apply( inst );
+                    cphvb_compute_apply( inst );
                 }
         }
         ++count;
@@ -160,7 +160,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     inst[0]->opcode = CPHVB_IDENTITY;
     inst[0]->operand[0] = out;
     inst[0]->operand[1] = &tmp;
-    err = cphvb_comp_apply( inst[0] );    // execute the instruction...
+    err = cphvb_compute_apply( inst[0] );    // execute the instruction...
     if(err != CPHVB_SUCCESS)
         return err;
     tmp.start += step;
@@ -177,7 +177,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     for(i=1; i<axis_size; ++i)
     {
         //One block per thread.
-        err = cphvb_comp_apply(inst[0]);
+        err = cphvb_compute_apply(inst[0]);
         if(err != CPHVB_SUCCESS)
             return err;
         tmp.start += step;

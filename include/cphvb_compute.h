@@ -26,8 +26,8 @@ extern "C" {
 
 typedef cphvb_error (*comploop)( cphvb_instruction* );
 
-cphvb_error cphvb_comp_apply( cphvb_instruction *instr );
-comploop cphvb_comp_get( cphvb_instruction *instr );
+cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
+comploop cphvb_compute_get( cphvb_instruction *instr );
 
 #ifdef __cplusplus
 }
