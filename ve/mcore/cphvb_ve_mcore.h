@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Troels Blum <troels@blum.dk>
+ * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,31 +17,26 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BASEARRAY_HPP
-#define __BASEARRAY_HPP
+#ifndef __CPHVB_VE_MCORE_H
+#define __CPHVB_VE_MCORE_H
 
-#include "Buffer.hpp"
-#include "KernelParameter.hpp"
+#include <cphvb.h>
 
-class BaseArray : public KernelParameter
-{
-private:
-    cphvb_array* spec;
-    OCLtype bufferType;
-    Buffer buffer;
-protected:
-    void printOn(std::ostream& os) const;
-public:
-    BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
-    OCLtype type() const;
-    void sync();
-    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
-    void setWriteEvent(cl::Event);
-    cl::Event getWriteEvent();
-    void addReadEvent(cl::Event);
-    std::deque<cl::Event> getReadEvents();
-    std::vector<cl::Event> allEvents();
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+DLLEXPORT cphvb_error cphvb_ve_mcore_init(cphvb_com *self);
+
+DLLEXPORT cphvb_error cphvb_ve_mcore_execute(cphvb_intp instruction_count,
+                                   cphvb_instruction* instruction_list);
+
+DLLEXPORT cphvb_error cphvb_ve_mcore_shutdown(void);
+
+DLLEXPORT cphvb_error cphvb_ve_mcore_reg_func(char *lib, char *fun, cphvb_intp *id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

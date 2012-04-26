@@ -1,8 +1,8 @@
 ROOT=../..
-LIB=libcphvb_ve_score.so
+LIB=libcphvb_ve_mcore.so
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/traverse
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
@@ -13,13 +13,13 @@ INSTALLDIR?=/opt/cphvb/
 all: $(LIB)
 
 %.o: %.c $(HEADER)
-		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 %.o: %.cpp $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS)
 
 clean:
 		rm -rf *.o *~ *.so

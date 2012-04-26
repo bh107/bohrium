@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 Troels Blum <troels@blum.dk>
+ * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
  *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
+ * This file is part of cphVB.
  *
  * cphVB is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +17,23 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNALPARAMETER
-#define __KERNALPARAMETER
+#ifndef __CPHVB_BUNDLE_H
+#define __CPHVB_BUNDLE_H
 
-#include <iostream>
-#include "OCLtype.h"
-#include "ResourceManager.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class KernelParameter
-{
-protected:
-    virtual void printOn(std::ostream& os) const = 0;
-public:
-    virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const = 0;
-    virtual OCLtype type() const = 0;
-    friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
-};
+/* Calculates the bundleable instructions.
+ *
+ * @inst The instruction list
+ * @size Size of the instruction list
+ * @return Number of consecutive bundeable instruction
+ */
+cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts[], cphvb_intp size);
 
-bool isScalar(KernelParameter* kp);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

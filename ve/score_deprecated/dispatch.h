@@ -17,22 +17,28 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
-
-#include <cphvb.h>
+#ifndef __CPHVB_DISPATCH_H
+#define __CPHVB_DISPATCH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT cphvb_error cphvb_ve_score_init(cphvb_com *self);
+//Dispatch the instruction.
+//NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
+cphvb_error dispatch(cphvb_instruction *instr);
 
-DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
+//Dispatch the bundle of instructions.
+//NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
+cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
+                            cphvb_intp size,
+                            cphvb_intp nblocks);
 
-DLLEXPORT cphvb_error cphvb_ve_score_shutdown(void);
+//Initiate the dispather.
+cphvb_error dispatch_init(void);
 
-DLLEXPORT cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+//Finalize the dispather.
+cphvb_error dispatch_finalize(void);
 
 #ifdef __cplusplus
 }

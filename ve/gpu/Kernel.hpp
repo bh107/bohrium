@@ -33,7 +33,7 @@ private:
     cphvb_intp ndim;
     cl::Kernel kernel;
 public:
-    typedef std::vector<std::pair<BaseArray*, bool>> Parameters;
+    typedef std::vector<std::pair<KernelParameter*, bool>> Parameters;
     Kernel(ResourceManager* resourceManager_, 
            cphvb_intp ndim_,
            cl::Kernel kernel_);

@@ -1,0 +1,50 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+#include <cphvb.h>
+#include "dispatch.hpp"
+#include "traverse.hpp"
+#include "functors.hpp"
+
+cphvb_error dispatch( cphvb_instruction *instr ) {
+
+    cphvb_error res = CPHVB_SUCCESS;
+
+    // Poly contains a unique value, pairing an opcode with its function signature.
+    // All in one nicely switchable value.
+    const long int poly = (cphvb_operands(instr->opcode) == 3) ?
+                            instr->opcode +
+                            (instr->operand[0]->type    << 8)
+                            +(instr->operand[1]->type   << 12)
+                            +(instr->operand[2]->type   << 16):
+
+                            instr->opcode +
+                            (instr->operand[0]->type    << 8)
+                            +(instr->operand[1]->type   << 12);
+
+    switch(poly) {
+
+        %for $case in $cases
+        %if $case.opcount == 2
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
+            traverse_${case.opcount}<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >( instr );
+            break;
+        %else
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
+            traverse_${case.opcount}<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >( instr );
+            break;
+        %end if
+        %end for
+
+        default:        // Unsupported instruction / type
+            instr->status = CPHVB_TYPE_NOT_SUPPORTED;
+            return CPHVB_PARTIAL_SUCCESS;
+
+    }
+
+    return res;
+
+}
+

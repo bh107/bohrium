@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Troels Blum <troels@blum.dk>
+ * Copyright 2012 Simon Andreas Frimann Lund <safl@safl.dk> 
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,31 +17,20 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BASEARRAY_HPP
-#define __BASEARRAY_HPP
+#ifndef __CPHVB_COMP_H
+#define __CPHVB_COMP_H
 
-#include "Buffer.hpp"
-#include "KernelParameter.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class BaseArray : public KernelParameter
-{
-private:
-    cphvb_array* spec;
-    OCLtype bufferType;
-    Buffer buffer;
-protected:
-    void printOn(std::ostream& os) const;
-public:
-    BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
-    OCLtype type() const;
-    void sync();
-    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
-    void setWriteEvent(cl::Event);
-    cl::Event getWriteEvent();
-    void addReadEvent(cl::Event);
-    std::deque<cl::Event> getReadEvents();
-    std::vector<cl::Event> allEvents();
-};
+typedef cphvb_error (*comploop)( cphvb_instruction* );
 
+cphvb_error cphvb_comp_apply( cphvb_instruction *instr );
+comploop cphvb_comp_get( cphvb_instruction *instr );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
