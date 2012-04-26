@@ -24,6 +24,10 @@ type = ve
 impl = /opt/cphvb/libcphvb_ve_score.so
 type = ve
 
+[mcore]
+impl = /opt/cphvb/libcphvb_ve_mcore.so
+type = ve
+
 [gpu]
 impl = /opt/cphvb/libcphvb_ve_gpu.so
 type = ve

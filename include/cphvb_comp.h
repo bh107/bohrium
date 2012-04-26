@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
+ * Copyright 2012 Simon Andreas Frimann Lund <safl@safl.dk> 
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,22 +17,17 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
-
-#include <cphvb.h>
+#ifndef __CPHVB_COMP_H
+#define __CPHVB_COMP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT cphvb_error cphvb_ve_score_init(cphvb_com *self);
+typedef cphvb_error (*comploop)( cphvb_instruction* );
 
-DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
-
-DLLEXPORT cphvb_error cphvb_ve_score_shutdown(void);
-
-DLLEXPORT cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+cphvb_error cphvb_comp_apply( cphvb_instruction *instr );
+comploop cphvb_comp_get( cphvb_instruction *instr );
 
 #ifdef __cplusplus
 }

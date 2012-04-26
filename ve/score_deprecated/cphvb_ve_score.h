@@ -28,7 +28,8 @@ extern "C" {
 
 DLLEXPORT cphvb_error cphvb_ve_score_init(cphvb_com *self);
 
-DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
+DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count,
+                                   cphvb_instruction* instruction_list);
 
 DLLEXPORT cphvb_error cphvb_ve_score_shutdown(void);
 

@@ -17,8 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
+#ifndef __CPHVB_VE_MCORE_H
+#define __CPHVB_VE_MCORE_H
 
 #include <cphvb.h>
 
@@ -26,13 +26,14 @@
 extern "C" {
 #endif
 
-DLLEXPORT cphvb_error cphvb_ve_score_init(cphvb_com *self);
+DLLEXPORT cphvb_error cphvb_ve_mcore_init(cphvb_com *self);
 
-DLLEXPORT cphvb_error cphvb_ve_score_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
+DLLEXPORT cphvb_error cphvb_ve_mcore_execute(cphvb_intp instruction_count,
+                                   cphvb_instruction* instruction_list);
 
-DLLEXPORT cphvb_error cphvb_ve_score_shutdown(void);
+DLLEXPORT cphvb_error cphvb_ve_mcore_shutdown(void);
 
-DLLEXPORT cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id);
+DLLEXPORT cphvb_error cphvb_ve_mcore_reg_func(char *lib, char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus
 }
