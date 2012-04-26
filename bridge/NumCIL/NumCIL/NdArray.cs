@@ -460,6 +460,15 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
+        /// Gets or sets data in a transposed view
+        /// </summary>
+        public NdArray<T> Transposed
+        {
+            get { return this.Transpose(); }
+            set { UFunc.Apply<T, CopyOp<T>>(value, this.Transpose()); }
+        }
+
+        /// <summary>
         /// Extension to support unmanaged mapping
         /// </summary>
         public object Tag;
