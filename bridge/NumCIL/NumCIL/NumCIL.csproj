@@ -108,8 +108,8 @@
     <Compile Include="TypedArrays\UInt64.cs" />
     <Compile Include="TypedArrays\UInt8.cs" />
     <Compile Include="UFunc\Reduce.cs" />
-    <Compile Include="UFunc\UFunc.cs" />
     <Compile Include="UFunc\Apply.cs" />
+    <Compile Include="UFunc\API.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
