@@ -125,7 +125,7 @@ void Scalar::printOn(std::ostream& os) const
     os << "const " << oclTypeStr(mytype);
 }
 
-void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
+void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
     switch(mytype)
     {

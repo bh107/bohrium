@@ -42,6 +42,7 @@ public:
     void addReadEvent(cl::Event);
     std::deque<cl::Event> getReadEvents();
     std::vector<cl::Event> allEvents();
+    cl::Buffer clBuffer();
 };
 
 

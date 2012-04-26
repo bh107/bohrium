@@ -56,10 +56,18 @@ void BaseArray::printOn(std::ostream& os) const
     os << "__global " << oclTypeStr(bufferType) << "*";
 }
 
-void BaseArray::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
+void BaseArray::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
-    kernel.setArg(argIndex, buffer);
+    try
+    {
+        kernel.setArg(argIndex, buffer.clBuffer());
+    } catch (cl::Error err)
+    {
+        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        throw err;
+    }
 }
+
 
 void BaseArray::setWriteEvent(cl::Event event)
 {
