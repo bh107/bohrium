@@ -363,7 +363,6 @@ namespace NumCIL.Generic
         /// <returns>A copy of the view data</returns>
         public NdArray<T> Clone()
         {
-            //TODO: Does not have a sane shape?
             return UFunc.Apply<T, CopyOp<T>>(this);
         }
 

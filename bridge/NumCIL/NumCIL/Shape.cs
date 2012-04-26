@@ -278,5 +278,16 @@ namespace NumCIL
                 code ^= x.Length ^ x.Stride;
             return (int)((code >> 32) | (code & 0xffffffff));
         }
+
+
+        /// <summary>
+        /// Returns a shape with the same dimension sizes as this instance,
+        /// but with natural stride values and an offset of zero
+        /// </summary>
+        /// <returns>This shape as a plain shape</returns>
+        public Shape Plain
+        {
+            get { return new Shape(this.Dimensions.Select(x => x.Length).ToArray()); }
+        }
     }
 }

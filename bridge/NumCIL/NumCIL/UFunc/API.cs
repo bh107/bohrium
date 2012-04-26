@@ -88,7 +88,7 @@ namespace NumCIL
             if (@out == null)
             {
                 //We allocate a new array
-                @out = new NdArray<T>(new Shape(broadcastshapes.Item1.Dimensions.Select(x => x.Length).ToArray()));
+                @out = new NdArray<T>(broadcastshapes.Item1.Plain);
             }
             else
             {
@@ -116,7 +116,7 @@ namespace NumCIL
             if (@out == null)
             {
                 //We allocate a new array
-                @out = new NdArray<T>(in1.Shape);
+                @out = new NdArray<T>(in1.Shape.Plain);
             }
             else
             {
@@ -145,7 +145,7 @@ namespace NumCIL
             if (@out == null)
             {
                 //We allocate a new array
-                @out = new NdArray<Tb>(in1.Shape);
+                @out = new NdArray<Tb>(in1.Shape.Plain);
             }
             else
             {
