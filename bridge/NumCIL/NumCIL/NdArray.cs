@@ -363,7 +363,6 @@ namespace NumCIL.Generic
         /// <returns>A copy of the view data</returns>
         public NdArray<T> Clone()
         {
-            //TODO: Does not have a sane shape?
             return UFunc.Apply<T, CopyOp<T>>(this);
         }
 
@@ -458,6 +457,150 @@ namespace NumCIL.Generic
             var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
             UFunc.Apply<T, CopyOp<T>>(lv, @out);
             return @out;
+        }
+
+        /// <summary>
+        /// Gets or sets data in a transposed view
+        /// </summary>
+        public NdArray<T> Transposed
+        {
+            get { return this.Transpose(); }
+            set { UFunc.Apply<T, CopyOp<T>>(value, this.Transpose()); }
+        }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform</param>
+        /// <param name="axis">The axis to repeat, if not speficied, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public NdArray<T> Repeat(long repeats, long? axis = null)
+        {
+            long real_axis =
+                axis.HasValue ?
+                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - axis.Value : axis.Value)
+                : this.Shape.Dimensions.LongLength;
+
+            //First we add a new axis so all elements are in their own dimension
+            var lv = this.Subview(Range.NewAxis, real_axis);
+
+            //Then we extend the element dimension, and make the shapes match
+            long[] targetDims = lv.Shape.Dimensions.Select(x => x.Length).ToArray();
+            targetDims[real_axis] = repeats;
+            var tp = Shape.ToBroadcastShapes(lv.Shape, new Shape(targetDims));
+
+            //And then we can just copy data as normal
+            var res = UFunc.Apply<T, CopyOp<T>>(lv.Reshape(tp.Item1), new NdArray<T>(tp.Item2));
+
+            //With no axis specified, we return a flat view
+            if (!axis.HasValue)
+                return new NdArray<T>(res.m_data);
+            else
+            {
+                //With a specified axis, we return a reshaped array
+                long[] newDims = this.Shape.Dimensions.Select(x => x.Length).ToArray();
+                newDims[real_axis] = repeats * newDims[real_axis];
+                return res.Reshape(newDims);
+            }
+        }
+
+        /// <summary>
+        /// Repeats elements of the array
+        /// </summary>
+        /// <param name="repeats">The number of repeats to perform in each axis</param>
+        /// <param name="axis">The axis to repeat, if not specified, repeat is done on a flattened array</param>
+        /// <returns>A repeated copy of the input data</returns>
+        public NdArray<T> Repeat(long[] repeats, long? axis = null)
+        {
+            long real_axis =
+                axis.HasValue ?
+                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - axis.Value : axis.Value)
+                : this.Shape.Dimensions.LongLength;
+
+            if (!axis.HasValue)
+            {
+                //Inefficient because we need to access each element
+
+                long elements = this.Shape.Elements;
+                if (elements % repeats.LongLength != 0)
+                    throw new ArgumentException(string.Format("The repeats array has length {0} and is not broadcast-able to length {1}", repeats.LongLength, elements), "repeats");
+
+                //We need to be able to address each element individually, 
+                // so we do not use tricks stride tricks and 
+                // just copy each element individually
+                long resultSize = 0;
+                for (long i = 0; i < elements; i++)
+                    resultSize += repeats[i % repeats.LongLength];
+
+                T[] result = new T[resultSize];
+
+                long[] counters = new long[this.Shape.Dimensions.LongLength];
+                long[] limits = this.Shape.Dimensions.Select(x => x.Length).ToArray();
+                var va = this.Value;
+                long resCount = 0;
+                //The we remove all the outer axis definitions, but preserve the stride for each element
+                for (long i = 0; i < elements; i++)
+                {
+                    T value = va[counters];
+                    for (long j = 0; j < repeats[i % repeats.LongLength]; j++)
+                        result[resCount++] = value;
+
+                    //Basically a ripple carry adder
+                    long p = counters.LongLength - 1;
+                    while (++counters[p] == limits[p] && p > 0)
+                    {
+                        counters[p] = 0;
+                        p--;
+                    }
+                }
+
+                return new NdArray<T>(result);
+            }
+            else
+            {
+                if (this.Shape.Dimensions[real_axis].Length % repeats.LongLength != 0)
+                    throw new ArgumentException(string.Format("The repeats array has length {0} and is not broadcast-able to length {1}", repeats.LongLength, this.Shape.Dimensions[real_axis].Length), "repeats");
+
+                long resultSize = 1;
+                if (repeats.LongLength != this.Shape.Dimensions[real_axis].Length)
+                {
+                    long[] tmp = new long[this.Shape.Dimensions[real_axis].Length];
+                    for(long i = 0; i < tmp.LongLength; i++)
+                        tmp[i] = repeats[i % repeats.LongLength];
+
+                }
+
+                long extendedSize = repeats.Aggregate((a, b) => a + b);
+
+                for (long i = 0; i < this.Shape.Dimensions.LongLength; i++)
+                    if (i == real_axis)
+                        resultSize *= extendedSize;
+                    else
+                        resultSize *= this.Shape.Dimensions[i].Length;
+
+                long[] resultDims = this.Shape.Dimensions.Select(x => x.Length).ToArray();
+                resultDims[real_axis] = extendedSize;
+                var resultShape = new Shape(resultDims);
+                var result = new NdArray<T>(resultShape);
+
+                var sourceRanges = new Range[this.Shape.Dimensions.LongLength];
+                var targetRanges = new Range[this.Shape.Dimensions.LongLength];
+
+                long[] sourceIndices = new long[extendedSize];
+                long ix = 0;
+                for(long i = 0; i < repeats.LongLength; i++)
+                    for(long j = 0; j < repeats[i]; j++)
+                        sourceIndices[ix++] = i;
+
+                for (long i = 0; i < extendedSize; i++)
+                {
+                    sourceRanges[real_axis] = Range.El(sourceIndices[i]);
+                    targetRanges[real_axis] = Range.El(i);
+                    UFunc.Apply<T, CopyOp<T>>(this[sourceRanges], result[targetRanges]);
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
