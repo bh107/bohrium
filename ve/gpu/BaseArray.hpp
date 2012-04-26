@@ -35,7 +35,7 @@ public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     OCLtype type() const;
     void sync();
-    void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const;
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex);
     void setWriteEvent(cl::Event);
     cl::Event getWriteEvent();
     void addReadEvent(cl::Event);

@@ -211,7 +211,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 ss << "s" << scalarnum++;
                 kernelVariables[&(inst->operand[op])] = ss.str();
             } else {
-                ss << "p" << arraynum++;
+                ss << "a" << arraynum++;
             }
             parameters[kp] = ss.str();
             parameterList.push_back(kp);

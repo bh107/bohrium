@@ -24,7 +24,8 @@
 Buffer::Buffer(size_t size, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)
-    , buffer(resourceManager_->createBuffer(size))
+    , buffer(resourceManager->createBuffer(size))
+    , writeEvent(resourceManager->completeEvent())
 {}
 
 void Buffer::read(void* hostPtr)
@@ -71,4 +72,9 @@ std::vector<cl::Event> Buffer::allEvents()
     std::vector<cl::Event> res(readEvents.begin(), readEvents.end());
     res.push_back(writeEvent);
     return res;
+}
+
+cl::Buffer Buffer::clBuffer()
+{
+    return buffer;
 }

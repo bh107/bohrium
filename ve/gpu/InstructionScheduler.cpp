@@ -78,8 +78,8 @@ void InstructionScheduler::executeBatch()
         for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
         {
             delete *dsit;
-            discardSet.erase(dsit);            
         }
+        discardSet.clear();
         delete batch;
         batch = 0;
     }
