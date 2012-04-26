@@ -115,6 +115,9 @@ class ndarray:
     def min(self):
         return self.parent.Min()
 
+    def repeat(self, repeats, axis = None):
+        return ndarray(self.parent.Repeat(repeats, axis))
+
     def reshape(self, t):
         if isinstance(t, tuple):
             return ndarray(self.parent.Reshape(NumCIL.Shape(System.Array[System.Int64](list(t)))))
