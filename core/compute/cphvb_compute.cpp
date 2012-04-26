@@ -1,9 +1,9 @@
 #include <cphvb.h>
-#include "cphvb_comp.h"
+#include "cphvb_compute.h"
 #include "functors.hpp"
 #include "traverser.hpp"
 
-comploop cphvb_comp_get( cphvb_instruction *instr ) {
+comploop cphvb_compute_get( cphvb_instruction *instr ) {
 
     // Poly contains a unique value, pairing an opcode with its function signature.
     // All in one nicely switchable value.
@@ -3323,9 +3323,9 @@ comploop cphvb_comp_get( cphvb_instruction *instr ) {
 
 }
 
-cphvb_error cphvb_comp_apply( cphvb_instruction *instr ) {
+cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
-    comploop comp = cphvb_comp_get( instr );
+    comploop comp = cphvb_compute_get( instr );
     return comp( instr );
 
 }

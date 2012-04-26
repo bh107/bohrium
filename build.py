@@ -124,7 +124,7 @@ if __name__ == "__main__":
     if cmd == "rebuild":
         clean("INIPARSER", "iniparser")
         clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMP", "core/comp")
+        clean("CORE-COMP", "core/compute")
         clean("CORE", "core")
         clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     if cmd == "build" or cmd == "rebuild":
         build("INIPARSER", "iniparser", True)
         build("CORE-BUNDLER", "core/bundler", True)
-        build("CORE-COMP", "core/comp", True)
+        build("CORE-COMP", "core/compute", True)
         build("CORE", "core", True)
         build("VE-GPU", "ve/gpu", False)
         build("VE-SIMPLE", "ve/simple", False)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
         clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMP", "core/comp")
+        clean("CORE-COMP", "core/compute")
         clean("CORE", "core")
         clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
@@ -163,7 +163,7 @@ if __name__ == "__main__":
             os.mkdir("/opt/cphvb")
         install("INIPARSER", "iniparser", True)
         install("CORE-BUNDLER", "core/bundler", True)
-        install("CORE-COMP", "core/comp", True)
+        install("CORE-COMP", "core/compute", True)
         install("CORE", "core", True)
         install("VE-GPU", "ve/gpu", False)
         install("VE-SIMPLE", "ve/simple", True)

@@ -3,6 +3,11 @@ cphVB Developer Guide
 
 ...
 
+Tools and Environment
+---------------------
+
+...
+
 cphVB in short
 --------------
 
@@ -39,6 +44,14 @@ Whether an operand is an array, a scalar or a constant is determined at runtime 
    :path: doxygen/xml
 
 If operand[i] == NULL then the operand i is a constant and the value cphvb_instruction.constant is type cast to the appropriate type according to cphvb_instruction.constant_type and used as operand.
+
+TODO: described instruction interpretation/handling, stuff like what is supposed to happen to inst.status.
+
+Data Structures and Types
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Scalars, constants and array elements all belong to one of the basic types defined cphvb_type.h.
+
 
 Component Communication
 ~~~~~~~~~~~~~~~~~~~~~~~

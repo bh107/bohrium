@@ -1,5 +1,5 @@
 ROOT=../..
-LIB=cphvb_comp
+LIB=cphvb_compute
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include

@@ -268,4 +268,9 @@ epub_copyright  = u'2012, eScience Group @ NBI'
 # -- Options for Breathe -----------------------------
 breathe_projects        = {"cphVB": "/home/safl/Desktop/cphvb/doc/doxygen/xml/index.xml"}
 breathe_default_project = "cphVB"
-
+breathe_domain_by_extension = {
+    "h" : "c",
+    "c" : "c",
+    "hpp" : "cpp",
+    "cpp" : "cpp"
+}
