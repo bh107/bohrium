@@ -79,6 +79,13 @@ namespace UnitTest
             var x7 = x6.Reduce<Add>();
 
             if (!Equals(x7.Data, new float[] { 3, 5, 7 })) throw new Exception("Failure in basic test");
+
+            var n0 = Generate.Arange(4);
+            var n1 = n0[new Range(1, 4)];
+            var n2 = n0[new Range(0, 3)];
+            var n3 = n1 - n2;
+            if (n3.Reduce<Add>().Value[0] != 3)
+                throw new Exception("Failure in basic slicing");
         }
 
         private static bool Equals(double[] a, double[] b)

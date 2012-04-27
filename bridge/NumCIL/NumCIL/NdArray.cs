@@ -246,7 +246,7 @@ namespace NumCIL.Generic
                 else if (range.SingleElement)
                     last = first;
                 else
-                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
+                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last - 1;
 
                 stride = range.Stride;
             }
@@ -263,14 +263,9 @@ namespace NumCIL.Generic
                 {
                     if (j++ == dim)
                     {
-                        if (range.Last == 0 && stride != 1)
-                        {
-                            long maxlast = last / stride;
-
-                            return new Shape.ShapeDimension((maxlast - first) + 1, stride * x.Stride);
-                        }
-                        else
-                            return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
+                        if (last * stride > this.Shape.Dimensions[dim].Length - 1)
+                            last = (this.Shape.Dimensions[dim].Length - 1) / stride;
+                        return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
                     }
                     else
                         return x;
@@ -587,7 +582,7 @@ namespace NumCIL.Generic
                 for (long i = 0; i < repeats.LongLength; i++)
                 {
                     var lv = this.Subview(Range.El(i), real_axis);
-                    var xv = result.Subview(new Range(curStart, curStart + repeats[i] - 1), real_axis);
+                    var xv = result.Subview(new Range(curStart, curStart + repeats[i]), real_axis);
                     var broadcastShapes = Shape.ToBroadcastShapes(lv.Shape, xv.Shape);
                     UFunc.Apply<T, CopyOp<T>>(lv.Reshape(broadcastShapes.Item1), xv.Reshape(broadcastShapes.Item2));
                     curStart += repeats[i];
@@ -634,7 +629,7 @@ namespace NumCIL.Generic
             foreach (NdArray<T> a in args)
             {
                 long endOffset = startOffset + a.Shape.Dimensions[axis].Length;
-                var lv = res.Subview(new Range(startOffset, endOffset - 1), axis);
+                var lv = res.Subview(new Range(startOffset, endOffset), axis);
                 UFunc.Apply<T, CopyOp<T>>(a, lv);
                 startOffset = endOffset;
             }
