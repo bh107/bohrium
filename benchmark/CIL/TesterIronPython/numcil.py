@@ -118,6 +118,11 @@ class ndarray:
     def repeat(self, repeats, axis = None):
         return ndarray(self.parent.Repeat(repeats, axis))
 
+    def getsize(self):
+        return self.parent.Shape.Elements
+    
+    size = property(fget=getsize)
+
     def reshape(self, t):
         if isinstance(t, tuple):
             return ndarray(self.parent.Reshape(NumCIL.Shape(System.Array[System.Int64](list(t)))))
@@ -431,6 +436,12 @@ divide = ufunc("Div", "divide")
 mod = ufunc("Mod", "mod")
 maximum = ufunc("Max", "maximum")
 minimum = ufunc("Min", "minimum")
+
+def size(x):
+    if isinstance(x, ndarray):
+        return x.getsize()
+    else:
+        raise Exception("Can only return size of ndarray")
 
 class random:
     @staticmethod
