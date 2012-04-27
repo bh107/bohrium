@@ -24,7 +24,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
         exit(-1);
     }
 
-    //Make sure that the array memory is allocated.
+    // Make sure that the array memory is allocated.
     if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
        cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
     {

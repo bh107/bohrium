@@ -30,7 +30,7 @@ class ElementOperators(unittest.TestCase):
         self.assertTrue(numpytest.array_equal(self.arr1, self.res))
 
 def run():
-    unittest.main()
+    pass
 
 if __name__ == "__main__":
-    run()
+    unittest.main()
