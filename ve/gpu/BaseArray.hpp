@@ -31,6 +31,7 @@ private:
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
     void sync();
+    size_t size();
 };
 
 

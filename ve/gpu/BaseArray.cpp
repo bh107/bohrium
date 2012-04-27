@@ -43,3 +43,8 @@ void BaseArray::sync()
     }
     read(spec->data);
 }
+
+size_t BaseArray::size()
+{
+    return cphvb_nelements(spec->ndim, spec->shape);
+}

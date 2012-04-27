@@ -39,6 +39,7 @@ private:
 protected:
         void printOn(std::ostream& os) const;
 public:
+    Buffer(size_t size,  ResourceManager* resourceManager);
     Buffer(size_t elements, OCLtype dataType, ResourceManager* resourceManager);
     void read(void* hostPtr);
     void write(void* hostPtr);

@@ -21,6 +21,14 @@
 #include <stdexcept>
 #include "Buffer.hpp"
 
+Buffer::Buffer(size_t size, ResourceManager* resourceManager_) 
+    : resourceManager(resourceManager_)
+    , device(0)
+    , dataType(OCL_UNKNOWN)
+    , clBuffer(resourceManager->createBuffer(size))
+    , writeEvent(resourceManager->completeEvent())
+{}
+
 Buffer::Buffer(size_t elements, OCLtype dataType_, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)

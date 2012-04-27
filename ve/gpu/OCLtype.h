@@ -39,7 +39,7 @@ typedef enum
     OCL_FLOAT16,
     OCL_FLOAT32,
     OCL_FLOAT64,
-    OCL_TYPES //Number of types 
+    OCL_UNKNOWN
 } OCLtype;
 
 OCLtype oclType(cphvb_type vbtype);
