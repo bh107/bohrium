@@ -85,7 +85,11 @@ void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventSta
 
 void UserFunctionRandom::finalize()
 {
-    delete state;
+    if (resourceManager != NULL)
+    {
+        delete state;
+        kernelMap.clear();
+    }
 }
 
 void UserFunctionRandom::run(UserFuncArg* userFuncArg)
