@@ -170,6 +170,14 @@ namespace NumCIL.Float
         /// <param name="axis">The axis to repeat, if not specified, repeat is done on a flattened array</param>
         /// <returns>A repeated copy of the input data</returns>
         public OutArray Repeat(long[] repeats, long? axis = null) { return value.Repeat(repeats, axis); }
+
+        /// <summary>
+        /// Concatenates an array onto this array, joined at the axis
+        /// </summary>
+        /// <param name="arg">The array to join</param>
+        /// <param name="axis">The axis to join at</param>
+        /// <returns>The joined array</returns>
+        public OutArray Concatenate(OutArray arg, long axis = 0) { return this.value.Concatenate(arg, axis); }
         #endregion
 
         /// <summary>
