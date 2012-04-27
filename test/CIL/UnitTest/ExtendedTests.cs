@@ -67,6 +67,16 @@ namespace UnitTest
 
             if (o.Sum() != 104 || o.Max() != 8)
                 throw new Exception("Something failed in aggregate");
+
+            var p = new NdArray(new float[] { 1, 2, 3, 4 }, new long[] { 2, 2 });
+            var q = new NdArray(new float[] { 5, 6 }, new long[] { 1, 2 });
+            var r = p.Concatenate(q);
+            var s = p.Concatenate(q.Transposed, 1);
+
+            if (r.Value[2, 1] != 6)
+                throw new Exception("Something failed in Concatenate");
+            if (s.Value[1, 2] != 6)
+                throw new Exception("Something failed in Concatenate");
         }
     }
 }

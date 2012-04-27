@@ -598,6 +598,62 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
+        /// Concatenates multiple arrays into a single array, joined at the axis
+        /// </summary>
+        /// <param name="axis">The axis to join at</param>
+        /// <param name="args">The arrays to join</param>
+        /// <returns>The joined array</returns>
+        public static NdArray<T> Concatenate(NdArray<T>[] args, long axis = 0)
+        {
+            if (args == null)
+                throw new ArgumentNullException("args");
+            if (args.LongLength == 1)
+                return args[0];
+
+            long[] dims = args[0].Shape.Plain.Dimensions.Select(x => x.Length).ToArray();
+            long newAxisSize = 0;
+            foreach (var a in args)
+            {
+                if (a.Shape.Dimensions.LongLength != dims.LongLength)
+                    throw new Exception(string.Format("Incompatible shapes, size {0} vs {1}", a.Shape.Dimensions.LongLength, dims.LongLength));
+                
+                for (long i = 0; i < dims.LongLength; i++)
+                {
+                    if (i == axis)
+                        newAxisSize += a.Shape.Dimensions[i].Length;
+                    else
+                        if (dims[i] != a.Shape.Dimensions[i].Length)
+                            throw new Exception(string.Format("Incompatible shapes in dimension {0}, size {1} vs {2}", i, a.Shape.Dimensions[i].Length, dims[i]));
+                }
+            }
+
+            dims[axis] = newAxisSize;
+            var res = new NdArray<T>(new Shape(dims));
+            long startOffset = 0;
+
+            foreach (NdArray<T> a in args)
+            {
+                long endOffset = startOffset + a.Shape.Dimensions[axis].Length;
+                var lv = res.Subview(new Range(startOffset, endOffset - 1), axis);
+                UFunc.Apply<T, CopyOp<T>>(a, lv);
+                startOffset = endOffset;
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Concatenates an array onto this array, joined at the axis
+        /// </summary>
+        /// <param name="arg">The array to join</param>
+        /// <param name="axis">The axis to join at</param>
+        /// <returns>The joined array</returns>
+        public NdArray<T> Concatenate(NdArray<T> arg, long axis = 0)
+        {
+            return Concatenate(new NdArray<T>[] { this, arg }, axis);
+        }
+
+        /// <summary>
         /// Extension to support unmanaged mapping
         /// </summary>
         public object Tag;
