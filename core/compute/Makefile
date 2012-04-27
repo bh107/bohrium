@@ -10,7 +10,7 @@ OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
-all: $(OBJ)
+all: $(LIB).o
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
