@@ -22,19 +22,24 @@
 
 #include <deque>
 #include <CL/cl.hpp>
+#include "OCLtype.h"
+#include "KernelParameter.hpp"
 #include "ResourceManager.hpp"
 
-class Buffer
+class Buffer : public KernelParameter
 {
 private:
     ResourceManager* resourceManager;
     unsigned int device;
-    cl::Buffer buffer;
+    OCLtype dataType;
+    cl::Buffer clBuffer;
     cl::Event writeEvent;
     std::deque<cl::Event> readEvents;
     void cleanReadEvents();
+protected:
+        void printOn(std::ostream& os) const;
 public:
-    Buffer(size_t size, ResourceManager* resourceManager);
+    Buffer(size_t elements, OCLtype dataType, ResourceManager* resourceManager);
     void read(void* hostPtr);
     void write(void* hostPtr);
     void setWriteEvent(cl::Event);
@@ -42,7 +47,9 @@ public:
     void addReadEvent(cl::Event);
     std::deque<cl::Event> getReadEvents();
     std::vector<cl::Event> allEvents();
-    cl::Buffer clBuffer();
+    void addToKernel(cl::Kernel& kernel, unsigned int argIndex);
+    OCLtype type() const;
+
 };
 
 

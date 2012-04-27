@@ -19,18 +19,16 @@
 
 #include <cassert>
 #include <stdexcept>
-#include <cphvb.h>
 #include "BaseArray.hpp"
 
 BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager) 
-    : spec(spec_)
-    , bufferType(oclType(spec->type))
-    , buffer(Buffer(cphvb_nelements(spec->ndim, spec->shape) * oclSizeOf(bufferType), resourceManager))
+    : Buffer(cphvb_nelements(spec_->ndim, spec_->shape), oclType(spec_->type), resourceManager)
+    , spec(spec_)
 {
     assert(spec->base == NULL);
     if (spec->data != NULL)
     {
-        buffer.write(spec->data);
+        write(spec->data);
     } 
 }
 
@@ -43,53 +41,5 @@ void BaseArray::sync()
             throw std::runtime_error("Could not allocate memory on host");
         }
     }
-    buffer.read(spec->data);
-}
-
-OCLtype BaseArray::type() const
-{
-    return bufferType;
-}
-
-void BaseArray::printOn(std::ostream& os) const
-{
-    os << "__global " << oclTypeStr(bufferType) << "*";
-}
-
-void BaseArray::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
-{
-    try
-    {
-        kernel.setArg(argIndex, buffer.clBuffer());
-    } catch (cl::Error err)
-    {
-        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
-        throw err;
-    }
-}
-
-
-void BaseArray::setWriteEvent(cl::Event event)
-{
-    buffer.setWriteEvent(event);
-}
-
-cl::Event BaseArray::getWriteEvent()
-{
-    return buffer.getWriteEvent();
-}
-
-void BaseArray::addReadEvent(cl::Event event)
-{
-    buffer.addReadEvent(event);
-}
-
-std::deque<cl::Event> BaseArray::getReadEvents()
-{
-    return buffer.getReadEvents();
-}
-
-std::vector<cl::Event> BaseArray::allEvents()
-{
-    return buffer.allEvents();
+    read(spec->data);
 }
