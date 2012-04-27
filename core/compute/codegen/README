@@ -1,5 +1,1 @@
-dispatch.ctpl - This template is no longer needed since it has been replaced with 'get_traverse'.
-                The dispatch code is now simply a call to get_traverse and then executing the
-                received traversal function-pointer. The point is that discatch.cpp no longer
-                needs a bunch of code generation and it could be deprecated completely.
-                The template however remains here for potential later inspection.
+Describe how and what this does...
