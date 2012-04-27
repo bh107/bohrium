@@ -77,6 +77,7 @@ const char* oclTypeStr(OCLtype type)
     case OCL_FLOAT16: return "half";
     case OCL_FLOAT32: return "float";
     case OCL_FLOAT64: return "double";
+    case OCL_UNKNOWN: return "void";
     default: assert(false);
         
     }

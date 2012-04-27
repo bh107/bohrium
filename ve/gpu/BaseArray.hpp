@@ -20,27 +20,18 @@
 #ifndef __BASEARRAY_HPP
 #define __BASEARRAY_HPP
 
+#include <cphvb.h>
 #include "Buffer.hpp"
 #include "KernelParameter.hpp"
 
-class BaseArray : public KernelParameter
+class BaseArray : public Buffer
 {
 private:
     cphvb_array* spec;
-    OCLtype bufferType;
-    Buffer buffer;
-protected:
-    void printOn(std::ostream& os) const;
 public:
     BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
-    OCLtype type() const;
     void sync();
-    void addToKernel(cl::Kernel& kernel, unsigned int argIndex);
-    void setWriteEvent(cl::Event);
-    cl::Event getWriteEvent();
-    void addReadEvent(cl::Event);
-    std::deque<cl::Event> getReadEvents();
-    std::vector<cl::Event> allEvents();
+    size_t size();
 };
 
 
