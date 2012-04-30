@@ -17,8 +17,8 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_COMP_H
-#define __CPHVB_COMP_H
+#ifndef __CPHVB_COMPUTE_H
+#define __CPHVB_COMPUTE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,8 +26,10 @@ extern "C" {
 
 typedef cphvb_error (*comploop)( cphvb_instruction* );
 
-cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
 comploop cphvb_compute_get( cphvb_instruction *instr );
+cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
+cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg);
+cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,4 @@
 ROOT=../..
-LIB=cphvb_compute
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include
@@ -10,7 +9,7 @@ OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
-all: $(LIB).o
+all: $(OBJ)
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
