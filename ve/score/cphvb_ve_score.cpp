@@ -32,7 +32,6 @@ static cphvb_intp random_impl_id = 0;
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
     myself = self;
-
     return CPHVB_SUCCESS;
 }
 
@@ -42,14 +41,18 @@ cphvb_error cphvb_ve_score_execute(
     cphvb_instruction*   instruction_list
 
 ) {
-    cphvb_intp count=0, nops, i;
+    cphvb_intp count, nops, i;
+    cphvb_instruction* inst;
 
-    while(count < instruction_count)
+    for(count=0; count < instruction_count; count++)
     {
-        cphvb_instruction* inst = &instruction_list[count];
+        inst = &instruction_list[count];
 
-        // Make sure that the array memory is allocated.
-        nops = cphvb_operands(inst->opcode);
+        if(inst->status == CPHVB_INST_DONE) {   // SKIP instruction
+            continue;
+        }
+        
+        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
         for(i = 0; i<nops; i++) {
 
             if (!cphvb_is_constant(inst->operand[i])) {
@@ -60,34 +63,39 @@ cphvb_error cphvb_ve_score_execute(
 
         }
 
-        // Execute it...
-        switch(inst->opcode)
+        switch(inst->opcode)                    // Dispatch instruction
         {
-            case CPHVB_NONE:
+            case CPHVB_NONE:                    // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
+                inst->status = CPHVB_INST_DONE;
                 break;
-            case CPHVB_USERFUNC:
+
+            case CPHVB_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    inst->status = reduce_impl(inst->userfunc, NULL);
+                    inst->status = reduce_impl(inst->userfunc, NULL) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
+                    
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    inst->status = random_impl(inst->userfunc, NULL);
+                    inst->status = random_impl(inst->userfunc, NULL) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
                 }
-                else// Unsupported instruction
+                else                            // Unsupported userfunc
                 {
                     inst->status = CPHVB_TYPE_NOT_SUPPORTED;
                 }
 
-            default://This is a regular operation.
-                if(inst->status == CPHVB_INST_UNDONE) {
-                    cphvb_compute_apply( inst );
-                }
+                break;
+
+            default:                            // Built-in operations
+                inst->status = cphvb_compute_apply( inst ) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
         }
-        ++count;
+
+        if (inst->status != CPHVB_INST_DONE) {
+            return CPHVB_PARTIAL_SUCCESS;
+        }
 
     }
 
