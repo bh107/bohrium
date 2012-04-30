@@ -605,31 +605,55 @@ namespace NumCIL.Generic
             if (args.LongLength == 1)
                 return args[0];
 
-            long[] dims = args[0].Shape.Plain.Dimensions.Select(x => x.Length).ToArray();
-            long newAxisSize = 0;
+            Shape basicShape = args[0].Shape.Plain;
+            NdArray<T>[] ext = new NdArray<T>[args.LongLength];
+
             foreach (var a in args)
+                if (a.Shape.Elements != 1)
+                {
+                    basicShape = a.Shape.Plain;
+                    break;
+                }
+
+            for (long i = 0; i < args.LongLength; i++)
             {
-                if (a.Shape.Dimensions.LongLength != dims.LongLength)
-                    throw new Exception(string.Format("Incompatible shapes, size {0} vs {1}", a.Shape.Dimensions.LongLength, dims.LongLength));
-                
+                var lv = args[i];
+                while (lv.Shape.Dimensions.LongLength <= axis)
+                    lv = lv.Subview(Range.NewAxis, 0);
+
+                ext[i] = lv;
+            }
+
+            long newAxisSize = 0;
+            foreach (var a in ext)
+                newAxisSize += a.Shape.Dimensions[axis].Length;
+
+            long[] dims = basicShape.Plain.Dimensions.Select(x => x.Length).ToArray();
+            dims[Math.Min(axis, dims.LongLength - 1)] = newAxisSize;
+            var res = new NdArray<T>(new Shape(dims));
+            var reslv = res;
+            while (reslv.Shape.Dimensions.LongLength <= axis)
+                reslv = reslv.Subview(Range.NewAxis, 0);
+
+
+            foreach (var a in ext)
+            {
+                if (a.Shape.Dimensions.LongLength != reslv.Shape.Dimensions.LongLength)
+                    throw new Exception(string.Format("Incompatible shapes, size {0} vs {1}", a.Shape.Dimensions.LongLength, reslv.Shape.Dimensions.LongLength));
+
                 for (long i = 0; i < dims.LongLength; i++)
                 {
-                    if (i == axis)
-                        newAxisSize += a.Shape.Dimensions[i].Length;
-                    else
-                        if (dims[i] != a.Shape.Dimensions[i].Length)
-                            throw new Exception(string.Format("Incompatible shapes in dimension {0}, size {1} vs {2}", i, a.Shape.Dimensions[i].Length, dims[i]));
+                    if (i != axis && reslv.Shape.Dimensions[i].Length != a.Shape.Dimensions[i].Length)
+                        throw new Exception(string.Format("Incompatible shapes, sizes in dimension {0} is {1} vs {2}", i, a.Shape.Dimensions[i].Length, reslv.Shape.Dimensions[i].Length));
                 }
             }
 
-            dims[axis] = newAxisSize;
-            var res = new NdArray<T>(new Shape(dims));
             long startOffset = 0;
 
-            foreach (NdArray<T> a in args)
+            foreach (NdArray<T> a in ext)
             {
                 long endOffset = startOffset + a.Shape.Dimensions[axis].Length;
-                var lv = res.Subview(new Range(startOffset, endOffset), axis);
+                var lv = reslv.Subview(new Range(startOffset, endOffset), axis);
                 UFunc.Apply<T, CopyOp<T>>(a, lv);
                 startOffset = endOffset;
             }
