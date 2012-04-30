@@ -17,7 +17,7 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
-#include <cphvb_compute_random.h>
+#include <cphvb_compute.h>
 #ifdef _WIN32
 #include <windows.h>
 #else

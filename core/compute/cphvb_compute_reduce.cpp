@@ -1,6 +1,5 @@
 #include <cphvb.h>
 #include <cphvb_compute.h>
-#include <cphvb_compute_reduce.h>
 
 /**
  * cphvb_compute_reduce
