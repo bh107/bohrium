@@ -92,10 +92,13 @@ namespace NumCIL
         {
             if (in1.Shape.Dimensions.LongLength != 2)
                 throw new ArgumentException("Input elements must be 2D", "in1");
-            if (in2.Shape.Dimensions.LongLength != 2)
+            if (in2.Shape.Dimensions.LongLength > 2)
                 throw new ArgumentException("Input elements must be 2D", "in2");
             if (in1.Shape.Dimensions[1].Length != in2.Shape.Dimensions[0].Length)
                 throw new ArgumentException(string.Format("Input elements shape size must match for matrix multiplication"));
+
+            if (in2.Shape.Dimensions.LongLength < 2)
+                in2 = in2.Subview(Range.NewAxis, in2.Shape.Dimensions.LongLength);
 
             long[] newDims = new long[] { in1.Shape.Dimensions[0].Length, in2.Shape.Dimensions[1].Length };
             if (@out == null)

@@ -93,7 +93,7 @@ namespace UnitTest
             if (y.Sum() != 228)
                 throw new Exception("Failure in matrix multiply");
 
-            var z = w.MatrixMultiply(new NdArray(new float[] {1,2}).Reshape(new Shape(new long[] {2,1})));
+            var z = w.MatrixMultiply(new NdArray(new float[] {1,2}).Reshape(new Shape(new long[] {2})));
             if (z.Sum() != 44)
                 throw new Exception("Failure in matrix multiply");
         }
