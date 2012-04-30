@@ -35,29 +35,29 @@ cphvb_error cphvb_ve_score_init(cphvb_com *self)
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_score_execute(
-
-    cphvb_intp          instruction_count,
-    cphvb_instruction*   instruction_list
-
-) {
+cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
+{
     cphvb_intp count, nops, i;
     cphvb_instruction* inst;
+    cphvb_error ret = CPHVB_SUCCESS;
 
     for(count=0; count < instruction_count; count++)
     {
         inst = &instruction_list[count];
 
-        if(inst->status == CPHVB_INST_DONE) {   // SKIP instruction
+        if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
+        {   
             continue;
         }
         
         nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
-        for(i = 0; i<nops; i++) {
-
-            if (!cphvb_is_constant(inst->operand[i])) {
-                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS) {
-                    return CPHVB_OUT_OF_MEMORY;
+        for(i=0; i<nops; i++)
+        {
+            if (!cphvb_is_constant(inst->operand[i]))
+            {
+                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+                {
+                    return CPHVB_OUT_OF_MEMORY; // EXIT
                 }
             }
 
@@ -75,31 +75,34 @@ cphvb_error cphvb_ve_score_execute(
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    inst->status = reduce_impl(inst->userfunc, NULL) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
+                    ret = reduce_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : NULL;
                     
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    inst->status = random_impl(inst->userfunc, NULL) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
+                    ret = random_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : NULL;
                 }
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_TYPE_NOT_SUPPORTED;
+                    ret = CPHVB_TYPE_NOT_SUPPORTED;
                 }
 
                 break;
 
             default:                            // Built-in operations
-                inst->status = cphvb_compute_apply( inst ) == CPHVB_SUCCESS ? CPHVB_INST_DONE : NULL;
+                ret = cphvb_compute_apply( inst );
+                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : NULL;
         }
 
-        if (inst->status != CPHVB_INST_DONE) {
-            return CPHVB_PARTIAL_SUCCESS;
+        if (inst->status != CPHVB_INST_DONE) {  // Instruction failed
+            return ret;                         // EXIT
         }
 
     }
-
-    return CPHVB_SUCCESS;
+                                                // All instructions succeeded.
+    return ret;                                 // EXIT
 
 }
 
@@ -123,14 +126,12 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg) {
-
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
+{
     return cphvb_compute_reduce( arg, ve_arg );
-
 }
 
-cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg) {
-
+cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
+{
     return cphvb_compute_random( arg, ve_arg );
-
 }
