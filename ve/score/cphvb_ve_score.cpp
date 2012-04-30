@@ -20,6 +20,8 @@
 #include "cphvb_ve_score.h"
 #include <assert.h>
 #include <cphvb_compute.h>
+#include <cphvb_compute_random.h>
+#include <cphvb_compute_reduce.h>
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -113,75 +115,14 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     return CPHVB_SUCCESS;
 }
 
-//Implementation of the user-defined funtion "reduce". Note that we
-//follow the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
-{
-    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
-    cphvb_instruction tinst;
-    cphvb_instruction *inst[1] = {&tinst};
-    cphvb_error err;
-    cphvb_intp i,j;
-    cphvb_index coord[CPHVB_MAXDIM];
-    memset(coord, 0, a->operand[1]->ndim * sizeof(cphvb_index));
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg) {
 
-    if(cphvb_operands(a->opcode) != 3)
-    {
-        fprintf(stderr, "Reduce only support binary operations.\n");
-        exit(-1);
-    }
+    return cphvb_compute_reduce( arg, ve_arg );
 
-    //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
-    {
-        return CPHVB_OUT_OF_MEMORY;
-    }
+}
 
-    //We need a tmp copy of the arrays.
-    cphvb_array *out = a->operand[0];
-    cphvb_array *in  = a->operand[1];
-    cphvb_array tmp  = *in;
-    tmp.base = cphvb_base_array(in);
-    cphvb_intp step = in->stride[a->axis];
-    tmp.start = 0;
-    j=0;
-    for(i=0; i<in->ndim; ++i)//Remove the 'axis' dimension from in
-        if(i != a->axis)
-        {
-            tmp.shape[j] = in->shape[i];
-            tmp.stride[j] = in->stride[i];
-            ++j;
-        }
-    --tmp.ndim;
+cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg) {
 
-    //We copy the first element to the output.
-    inst[0]->status = CPHVB_INST_UNDONE;
-    inst[0]->opcode = CPHVB_IDENTITY;
-    inst[0]->operand[0] = out;
-    inst[0]->operand[1] = &tmp;
-    err = cphvb_compute_apply( inst[0] );    // execute the instruction...
-    if(err != CPHVB_SUCCESS)
-        return err;
-    tmp.start += step;
+    return cphvb_compute_random( arg, ve_arg );
 
-    //Reduce over the 'axis' dimension.
-    //NB: the first element is already handled.
-    inst[0]->status = CPHVB_INST_UNDONE;
-    inst[0]->opcode = a->opcode;
-    inst[0]->operand[0] = out;
-    inst[0]->operand[1] = out;
-    inst[0]->operand[2] = &tmp;
-    cphvb_intp axis_size = in->shape[a->axis];
-
-    for(i=1; i<axis_size; ++i)
-    {
-        //One block per thread.
-        err = cphvb_compute_apply(inst[0]);
-        if(err != CPHVB_SUCCESS)
-            return err;
-        tmp.start += step;
-    }
-
-    return CPHVB_SUCCESS;
 }
