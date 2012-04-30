@@ -106,13 +106,13 @@ if __name__ == "__main__":
             debug = True
         else:
             assert False, "unhandled option"
-    
+
     if sys.platform.startswith('win32'):
-    	makecommand="nmake"
-    	makefilename="Makefile.win"
+        makecommand="nmake"
+        makefilename="Makefile.win"
     elif sys.platform.startswith('darwin'):
-    	makefilename="Makefile.osx"
-    
+        makefilename="Makefile.osx"
+
     try:
         cmd = args[0]
     except IndexError:
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         clean("VE-SCORE", "ve/score")
         clean("VE-MCORE", "ve/mcore")
         clean("VEM-NODE", "vem/node")
-        clean("VEM-CLUSTER", "vem/cluster")
+        #clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
 
     if cmd == "build" or cmd == "rebuild":
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         build("VE-SCORE", "ve/score", True)
         build("VE-MCORE", "ve/mcore", True)
         build("VEM-NODE", "vem/node", True)
-        build("VEM-CLUSTER", "vem/cluster", False)
+        #build("VEM-CLUSTER", "vem/cluster", False)
         build("BRIDGE-NUMPY", "bridge/numpy", True)
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         clean("VE-SCORE", "ve/score")
         clean("VE-MCORE", "ve/mcore")
         clean("VEM-NODE", "vem/node")
-        clean("VEM-CLUSTER", "vem/cluster")
+        #clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
         if not exists("/opt/cphvb"):
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         install("VE-SCORE", "ve/score",True)
         install("VE-MCORE", "ve/mcore",True)
         install("VEM-NODE", "vem/node", True)
-        install("VEM-CLUSTER", "vem/cluster", False)
+        #install("VEM-CLUSTER", "vem/cluster", False)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
         install_config();
         #ldconfig()
