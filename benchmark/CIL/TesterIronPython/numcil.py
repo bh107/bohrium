@@ -85,8 +85,10 @@ def SlicesToRanges(sl):
             ranges[i] = SliceToRange(sl[i])
         elif isinstance(sl[i], NumCIL.Range):
             ranges[i] = sl[i]
+        elif isinstance(sl[i], int) or isinstance(sl[i], System.Int64)  or isinstance(sl[i], System.Int32):
+            ranges[i] = NumCIL.Range.El(sl[i])
         else:
-            raise Exception("Invalid range slice")
+            raise Exception("Invalid range slice " + str(type(sl[i])))
 
     return ranges
 
@@ -96,15 +98,24 @@ class ndarray:
     cls = None
 
     def __init__(self, p):
-        self.parent = p
         if isinstance(p, NumCIL.Float.NdArray):
             self.dtype = float32
             self.cls = NumCIL.Float
+            self.parent = p
         elif isinstance(p, NumCIL.Double.NdArray):
             self.dtype = float64
             self.cls = NumCIL.Double
+            self.parent = p
+        elif isinstance(p, NumCIL.Generic.NdArray[float32]):
+            self.dtype = float32
+            self.cls = NumCIL.Float
+            self.parent = NumCIL.Float.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[float64]):
+            self.dtype = float64
+            self.cls = NumCIL.Double
+            self.parent = NumCIL.Double.NdArray(p)
         else:
-            raise Exception("Not yet implemented")
+            raise Exception("Not yet implemented " + str(type(p)))
 
     def sum(self):
         return self.parent.Sum()
@@ -145,6 +156,9 @@ class ndarray:
 
     T = property(fget=transpose)
 
+    def __len__(self):
+        return self.parent.Shape.Dimensions[0].Length
+
     def __getslice__(self, start, end):
         sl = slice(start, end)
         return self.__getitem__(sl)
@@ -154,7 +168,7 @@ class ndarray:
             return ndarray(self.parent[SlicesToRanges(slices)])
         elif isinstance(slices, slice):
             return ndarray(self.parent[System.Array[NumCIL.Range]([SliceToRange(slices)])])
-        elif isinstance(slices, int):
+        elif isinstance(slices, int) or isinstance(slices, System.Int64) or isinstance(slices, System.Int32):
             return self.parent.Value[slices]
         else:
             return ndarray(self.parent[slices])
@@ -163,10 +177,21 @@ class ndarray:
         v = value
         if isinstance(v, ndarray):
             v = v.parent
-        if (isinstance(value, float) or isinstance(value, int)) and self.cls == NumCIL.Float:
+        elif (isinstance(v, float) or isinstance(v, int)) and self.cls == NumCIL.Float:
             v = System.Single(v)
-        if isinstance(value, int) and self.cls == NumCIL.Double:
+        elif isinstance(v, int) and self.cls == NumCIL.Double:
             v = System.Double(v)
+        elif isinstance(v, list) or isinstance(v, tuple):
+            lst = System.Collections.Generic.List[self.dtype]()
+            for a in v:
+                if self.cls == NumCIL.Float:
+                    lst.Add(System.Single(a))
+                elif self.cls == NumCIL.Double:
+                    lst.Add(System.Double(a))
+                else:
+                    raise Exception("Self cls not supported? " + str(type(self.cls)))
+            c = getattr(self.cls, "NdArray")
+            v = c(lst.ToArray())
 
         if isinstance(slices, list) or isinstance(slices, tuple):
             self.parent[SlicesToRanges(slices)] =  v
