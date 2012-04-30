@@ -622,6 +622,14 @@ namespace NumCIL.Float
         /// </summary>
         /// <returns>A scalar value that is the minimum of all elements</returns>
         public T Min() { return UFunc.Aggregate<T, Min>(this); }
+
+        /// <summary>
+        /// Performs matrix multiplication on the two elements
+        /// </summary>
+        /// <param name="arg">The right-hand-side argument in matrix multiplication</param>
+        /// <param name="out">Optional target for the multiplication</param>
+        /// <returns>The matrix multiplication result</returns>
+        public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
         #endregion
     }
 

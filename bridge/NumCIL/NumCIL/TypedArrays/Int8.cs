@@ -178,6 +178,14 @@ namespace NumCIL.Int8
         /// <param name="axis">The axis to join at</param>
         /// <returns>The joined array</returns>
         public OutArray Concatenate(OutArray arg, long axis = 0) { return this.value.Concatenate(arg, axis); }
+
+        /// <summary>
+        /// Performs matrix multiplication on the two elements
+        /// </summary>
+        /// <param name="arg">The right-hand-side argument in matrix multiplication</param>
+        /// <param name="out">Optional target for the multiplication</param>
+        /// <returns>The matrix multiplication result</returns>
+        public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
         #endregion
 
         /// <summary>
