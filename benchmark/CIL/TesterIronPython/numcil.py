@@ -468,6 +468,69 @@ def size(x):
     else:
         raise Exception("Can only return size of ndarray")
 
+def concatenate(args, axis=0):
+    if args == None or len(args) == 0:
+        raise Exception("Invalid args for concatenate")
+
+    cls = None
+    dtype = None
+    arraycls = None
+    for a in args:
+        if isinstance(a, ndarray):
+            cls = NumCIL.Generic.NdArray[a.dtype] 
+            dtype = a.dtype
+            arraycls = a.cls
+
+    if cls == None:
+        raise Exception("No elements in concatenate were ndarrays")
+
+    arglist = System.Collections.Generic.List[cls]()
+    for a in args:
+        if isinstance(a, ndarray):
+            arglist.Add(a.parent)
+        elif isinstance(a, int) or isinstance(a, float):
+            arglist.Add(cls(a))
+        else:
+            raise Exception("All arguments to concatenate must be ndarrays")
+
+    rargs = arglist.ToArray()
+    return ndarray(cls.Concatenate(rargs, axis))
+
+def vstack(args):
+    cls = None
+    for a in args:
+        if isinstance(a, ndarray):
+            cls = NumCIL.Generic.NdArray[a.dtype] 
+
+    if cls == None:
+        raise Exception("No elements in vstack were ndarrays")
+
+    rargs = []
+    for a in args:
+        if isinstance(a, float) or isinstance(a, int):
+            rargs.append(ndarray(cls(a).Subview(NumCIL.Range.NewAxis, 0)))
+        elif isinstance(a, ndarray):
+            if a.parent.Shape.Dimensions.LongLength == 1:
+                rargs.append(ndarray(a.parent.Subview(NumCIL.Range.NewAxis, 0)))
+            else:
+                rargs.append(a)
+        else:
+            raise Exception("Unsupporte element in vstack "  + str(type(a)))
+
+    return concatenate(rargs, 0)
+
+def hstack(args):
+    return concatenate(args, 1)
+
+def dstack():
+    return concatenate(args, 2)
+
+def shape(el):
+    if isinstance(el, ndarray):
+        return el.shape
+    else:
+        raise Exception("Don't know the shape of " + str(type(el)))
+
 class random:
     @staticmethod
     def random(shape, dtype=float, order='C', cphvb=False):
