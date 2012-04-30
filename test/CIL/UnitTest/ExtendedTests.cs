@@ -77,6 +77,25 @@ namespace UnitTest
                 throw new Exception("Something failed in Concatenate");
             if (s.Value[1, 2] != 6)
                 throw new Exception("Something failed in Concatenate");
+
+            var t = new NdArray(42).Subview(Range.NewAxis, 0);
+            var u = o[Range.NewAxis, Range.All].Concatenate(t, 1);
+            if (u.Reduce<Add>().Reduce<Add>().Value[0] != 104 + 42)
+                throw new Exception("Something failed in Concatenate");
+
+            var v = o.Concatenate(new NdArray(42), 1);
+            if (v.Shape.Dimensions.LongLength != 1 || v.Reduce<Add>().Value[0] != 104 + 42)
+                throw new Exception("Something failed in broadcast extended Concatenate");
+
+            var w = Generate.Arange(4, 2);
+            var x = Generate.Arange(2, 3);
+            var y = w.MatrixMultiply(x);
+            if (y.Sum() != 228)
+                throw new Exception("Failure in matrix multiply");
+
+            var z = w.MatrixMultiply(new NdArray(new float[] {1,2}).Reshape(new Shape(new long[] {2,1})));
+            if (z.Sum() != 44)
+                throw new Exception("Failure in matrix multiply");
         }
     }
 }
