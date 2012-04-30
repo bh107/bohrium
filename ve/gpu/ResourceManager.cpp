@@ -74,6 +74,7 @@ ResourceManager::ResourceManager()
 #ifdef STATS
 ResourceManager::~ResourceManager()
 {
+    std::cout << std::fixed;
     std::cout << "------------------ STATS ------------------------" << std::endl;
     std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
     std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;

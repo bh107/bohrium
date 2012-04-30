@@ -32,11 +32,7 @@ namespace UserFunctionRandom
     static KernelMap kernelMap = KernelMap();
 
     static ResourceManager* resourceManager = NULL;
-    static BaseArray* state;
-    static cphvb_array init_array;
-    static BaseArray* size;
-    static cphvb_array size_array;
-    static cphvb_int64 size_array_data;    
+    static Buffer* state;
 
     void initialize();
     void finalize();
