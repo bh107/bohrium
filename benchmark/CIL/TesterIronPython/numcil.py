@@ -464,6 +464,7 @@ divide = ufunc("Div", "divide")
 mod = ufunc("Mod", "mod")
 maximum = ufunc("Max", "maximum")
 minimum = ufunc("Min", "minimum")
+exp = ufunc("Exp", "exp", nin = 1, nargs = 2)
 
 def size(x):
     if isinstance(x, ndarray):
