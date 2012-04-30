@@ -26,6 +26,7 @@
 #include "GenerateSourceCode.hpp"
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
+std::hash<std::string> InstructionBatch::strHash = std::hash<std::string>();
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)

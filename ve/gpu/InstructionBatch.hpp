@@ -52,7 +52,7 @@ private:
     int arraynum;
     int scalarnum;
     int variablenum;
-    std::hash<std::string> strHash;
+    static std::hash<std::string> strHash;
     static KernelMap kernelMap;
 #ifdef STATS
     timeval createTime;

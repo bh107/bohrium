@@ -18,8 +18,6 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include <assert.h>
-#include <cphvb_compute.h>
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
