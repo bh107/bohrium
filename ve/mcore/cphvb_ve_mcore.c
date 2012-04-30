@@ -17,7 +17,6 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
-#include <cphvb_bundler.h>
 #include "cphvb_ve_mcore.h"
 #include "dispatch.h"
 #include <assert.h>

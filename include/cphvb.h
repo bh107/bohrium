@@ -25,6 +25,7 @@
 #include "cphvb_type.h"
 #include "cphvb_array.h"
 #include "cphvb_instruction.h"
+#include "cphvb_bundler.h"
 #include "cphvb_component.h"
 #include "cphvb_compute.h"
 #include "cphvb_reduce.h"
