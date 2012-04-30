@@ -24,30 +24,29 @@
 #include "UserFunctionRandom.hpp"
 #include "Scalar.hpp"
 
+UserFunctionRandom* userFunctionRandom = NULL;
+
 cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
 {
-    if (arg == NULL)
-        UserFunctionRandom::finalize();
     cphvb_random_type* randomDef = (cphvb_random_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert (randomDef->nout == 1);
     assert (randomDef->nin == 0);
     assert (randomDef->operand[0]->base == NULL);
     assert (userFuncArg->operands.size() == 1);
-    if (UserFunctionRandom::resourceManager == NULL)
+    if (userFunctionRandom == NULL)
     {
-        UserFunctionRandom::resourceManager = userFuncArg->resourceManager;
-        UserFunctionRandom::initialize();
+        userFunctionRandom = new UserFunctionRandom(userFuncArg->resourceManager);
     }
-    assert (UserFunctionRandom::resourceManager == userFuncArg->resourceManager);
-    UserFunctionRandom::run(userFuncArg);
+    userFunctionRandom->fill(userFuncArg);
     return CPHVB_SUCCESS;
 }
 
 #define TPB 128
 #define BPG 128
 
-void UserFunctionRandom::initialize()
+UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
+    : resourceManager(rm)
 {
     cl_uint4* init_data = new cl_uint4[BPG*TPB];
     srandom((unsigned int)std::time(NULL));
@@ -82,18 +81,9 @@ void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventSta
     delete [](cl_uint4*)data;
 }
 
-
-void UserFunctionRandom::finalize()
+void UserFunctionRandom::fill(UserFuncArg* userFuncArg)
 {
-    if (resourceManager != NULL)
-    {
-        delete state;
-        kernelMap.clear();
-    }
-}
-
-void UserFunctionRandom::run(UserFuncArg* userFuncArg)
-{
+    assert (userFuncArg->resourceManager == resourceManager);
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);
     KernelMap::iterator kit = kernelMap.find(ba->type());
     if (kit == kernelMap.end())

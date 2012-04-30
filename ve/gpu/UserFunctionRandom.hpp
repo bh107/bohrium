@@ -26,18 +26,17 @@
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 
-namespace UserFunctionRandom
+class UserFunctionRandom
 {
+private:
     typedef std::map<cphvb_type, Kernel> KernelMap;
-    static KernelMap kernelMap = KernelMap();
-
-    static ResourceManager* resourceManager = NULL;
-    static Buffer* state;
-
-    void initialize();
-    void finalize();
-    void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
-    void run(UserFuncArg* userFuncArg);
-}
+    KernelMap kernelMap;
+    ResourceManager* resourceManager;
+    Buffer* state;
+    static void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
+public:
+    UserFunctionRandom(ResourceManager* rm);
+    void fill(UserFuncArg* userFuncArg);
+};
 
 #endif
