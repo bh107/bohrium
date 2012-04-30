@@ -213,7 +213,7 @@ class ndarray:
 
     def __radd__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Add.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Add.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Add.Apply(System.Single(other), self.parent))
         else:
@@ -240,7 +240,7 @@ class ndarray:
 
     def __rsub__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Sub.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Sub.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Sub.Apply(System.Single(other), self.parent))
         else:
@@ -267,7 +267,7 @@ class ndarray:
 
     def __rdiv__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Div.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Div.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Div.Apply(System.Single(other), self.parent))
         else:
@@ -294,7 +294,7 @@ class ndarray:
 
     def __rmul__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Mul.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Mul.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Mul.Apply(System.Single(other), self.parent))
         else:
@@ -321,7 +321,7 @@ class ndarray:
 
     def __rmod__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Mod.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Mod.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Mod.Apply(System.Single(other), self.parent))
         else:
@@ -351,7 +351,7 @@ class ndarray:
 
     def __rpow__(self, other):
         if isinstance(other, ndarray):
-            return ndarray(self.cls.Pow.Apply(other.parent, other.parent))
+            return ndarray(self.cls.Pow.Apply(other.parent, self.parent))
         elif type(other) == float and self.cls == NumCIL.Float:
             return ndarray(self.cls.Pow.Apply(System.Single(other), self.parent))
         else:
