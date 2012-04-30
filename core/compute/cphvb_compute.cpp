@@ -23,12 +23,12 @@
 
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
-    comploop comp = cphvb_compute_get( instr );
+    computeloop comp = cphvb_compute_get( instr );
     return comp( instr );
 
 }
 
-comploop cphvb_compute_get( cphvb_instruction *instr ) {
+computeloop cphvb_compute_get( cphvb_instruction *instr ) {
 
     // Poly contains a unique value, pairing an opcode with its function signature.
     // All in one nicely switchable value.

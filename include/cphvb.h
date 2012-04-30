@@ -26,6 +26,7 @@
 #include "cphvb_array.h"
 #include "cphvb_instruction.h"
 #include "cphvb_component.h"
+#include "cphvb_compute.h"
 #include "cphvb_reduce.h"
 #include "cphvb_random.h"
 #include "cphvb_pprint.h"
