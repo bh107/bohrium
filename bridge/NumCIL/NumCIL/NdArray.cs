@@ -159,7 +159,7 @@ namespace NumCIL.Generic
         {
             this.Shape = shape ?? new long[] { data.Length };
             if (data.Length < this.Shape.Length)
-                throw new ArgumentOutOfRangeException("dimensionsizes");
+                throw new ArgumentOutOfRangeException("dimensionsizes", string.Format("The length of the data is {0} but the shape requires {1} elements", data.Length, shape.Length));
 
             m_data = data;
 
@@ -322,7 +322,7 @@ namespace NumCIL.Generic
                     return this;
 
                 NdArray<T> v = this;
-                for(long i = 0; i < ranges.LongLength; i++)
+                for (long i = 0; i < ranges.LongLength; i++)
                     v = v.Subview(ranges[i], i);
 
                 //We reduce the last dimension if it only has one element
