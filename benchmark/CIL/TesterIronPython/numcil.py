@@ -401,9 +401,12 @@ class ufunc:
     nargs = 3
     name = None
 
-    def __init__(self, op, name):
+    def __init__(self, op, name, nin = 2, nout = 1, nargs = 3):
         self.op = op
         self.name = name
+        self.nin = nin
+        self.nout = nout
+        self.nargs = nargs
 
     def aggregate(self, a):
         if not isinstance(a, ndarray):
