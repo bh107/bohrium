@@ -43,18 +43,18 @@ cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
 {
     if(strcmp("cphvb_reduce", fun))
     {
-    	if (reduce_impl == NULL)
-    	{
-			cphvb_com_get_func(self, lib, fun, &reduce_impl);
-			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+        if (reduce_impl == NULL)
+        {
+            cphvb_com_get_func(self, lib, fun, &reduce_impl);
+            if (reduce_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
 
-			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
+            reduce_impl_id = *id;
+            return CPHVB_SUCCESS;
         }
         else
         {
-        	return CPHVB_ALREADY_INITALIZED;
+            return CPHVB_ALREADY_INITALIZED;
         }
     }
     return CPHVB_USERFUNC_NOT_SUPPORTED;
@@ -100,8 +100,8 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             else
                 d1 = (cphvb_float32*)cphvb_base_array(inst->operand[1])->data;
 
-			if (d1 == NULL)
-				printf("Argument was NULL for op %d, %d\n", i, inst->opcode);
+            if (d1 == NULL)
+                printf("Argument was NULL for op %ld, %ld\n", i, inst->opcode);
 
             //We only support float32
             if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
@@ -126,16 +126,16 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                         off1 += coord[j] * a1->stride[j];
                     off1 += a1->start;
                 }
-                
-				switch(inst->opcode)
-				{
-					case CPHVB_IDENTITY:
-						*(d0 + off0) = *(d1 + off1);
-						break;
-					case CPHVB_NEGATIVE:
-						*(d0 + off0) = -(*(d1 + off1));
-						break;
-				}
+
+                switch(inst->opcode)
+                {
+                    case CPHVB_IDENTITY:
+                        *(d0 + off0) = *(d1 + off1);
+                        break;
+                    case CPHVB_NEGATIVE:
+                        *(d0 + off0) = -(*(d1 + off1));
+                        break;
+                }
 
                 //Iterate coord one element.
                 for(j=a0->ndim-1; j >= 0; j--)
@@ -185,10 +185,10 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
             else
                 d2 = (cphvb_float32*)cphvb_base_array(inst->operand[2])->data;
 
-			if (d1 == NULL)
-				printf("Argument 1 was NULL for op %d, %d\n", i, inst->opcode);
-			if (d2 == NULL)
-				printf("Argument 2 was NULL for op %d, %d\n", i, inst->opcode);
+            if (d1 == NULL)
+                printf("Argument 1 was NULL for op %ld, %ld\n", i, inst->opcode);
+            if (d2 == NULL)
+                printf("Argument 2 was NULL for op %ld, %ld\n", i, inst->opcode);
 
             //We only support float32
             if(cphvb_type_operand(inst, 0) != CPHVB_FLOAT32 ||
@@ -222,22 +222,22 @@ cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
                         off2 += coord[j] * a2->stride[j];
                     off2 += a2->start;
                 }
-                
+
                 switch(inst->opcode)
                 {
-	                case CPHVB_ADD:
-						*(d0 + off0) = *(d1 + off1) + *(d2 + off2);
-						break;
-	                case CPHVB_SUBTRACT:
-						*(d0 + off0) = *(d1 + off1) - *(d2 + off2);
-						break;
-	                case CPHVB_MULTIPLY:
-						*(d0 + off0) = *(d1 + off1) * *(d2 + off2);
-						break;
-	                case CPHVB_DIVIDE:
-						*(d0 + off0) = *(d1 + off1) / *(d2 + off2);
-						break;
-				}
+                    case CPHVB_ADD:
+                        *(d0 + off0) = *(d1 + off1) + *(d2 + off2);
+                        break;
+                    case CPHVB_SUBTRACT:
+                        *(d0 + off0) = *(d1 + off1) - *(d2 + off2);
+                        break;
+                    case CPHVB_MULTIPLY:
+                        *(d0 + off0) = *(d1 + off1) * *(d2 + off2);
+                        break;
+                    case CPHVB_DIVIDE:
+                        *(d0 + off0) = *(d1 + off1) / *(d2 + off2);
+                        break;
+                }
                 //Iterate coord one element.
                 for(j=a0->ndim-1; j >= 0; j--)
                 {
