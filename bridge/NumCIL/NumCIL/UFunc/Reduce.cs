@@ -15,7 +15,7 @@ namespace NumCIL
         /// Wrapper class to represent a pending reduce operation in a list of pending operations
         /// </summary>
         /// <typeparam name="T">The type of data being processed</typeparam>
-        public struct LazyReduceOperation<T> : IBinaryOp<T>
+        public struct LazyReduceOperation<T> : IOp<T>
         {
             /// <summary>
             /// The axis to reduce
@@ -158,7 +158,7 @@ namespace NumCIL
                 axis = in1.Shape.Dimensions.LongLength - axis;
 
             //Basic case, just return a reduced array
-            if (in1.Shape.Dimensions[axis].Length == 1)
+            if (in1.Shape.Dimensions[axis].Length == 1 && in1.Shape.Dimensions.LongLength > 1)
             {
                 //TODO: If both in and out use the same array, just return a reshaped in
                 long j = 0;
@@ -177,9 +177,9 @@ namespace NumCIL
                     long ix = in1.Shape.Offset;
                     long limit = (stride * in1.Shape.Dimensions[0].Length) + ix;
 
-                    T value = op.Op(d[ix], d[ix + stride]);
+                    T value = d[ix];
 
-                    for (long i = ix + (stride * 2); i < ix + limit; i += stride)
+                    for (long i = ix + stride; i < ix + limit; i += stride)
                         value = op.Op(value, d[i]);
 
                     vd[@out.Shape.Offset] = value;
