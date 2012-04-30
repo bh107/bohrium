@@ -81,7 +81,7 @@ static void *get_dlsym(void *handle, const char *name,
                        cphvb_com_type type, const char *fun)
 {
     char tmp[1024];
-    char *stype;
+    const char *stype;
     void *ret;
     if(type == CPHVB_BRIDGE)
         stype = "bridge";
