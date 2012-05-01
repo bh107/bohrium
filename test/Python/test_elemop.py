@@ -35,6 +35,8 @@ class ElementOperators(unittest.TestCase):
         self.a2_3d = np.array(a_3d, dist=True)
         self.a3_3d = np.array(a_3d, dist=True)
 
+        self.v1_3d = self.a1_3d[0:]
+
         self.ra_0d  = np.array(a_0d)+1
         self.ra_1d  = np.array(a_1d)+1
         self.ra_2d  = np.array(a_2d)+1
@@ -94,6 +96,21 @@ class ElementOperators(unittest.TestCase):
     def test_add_3d_aca(self):
         self.a1_3d = self.con1 + self.a2_3d
         self.assertTrue(numpytest.array_equal(self.a1_3d, self.ra_3d))
+
+    # Three-dimensional on views
+    def test_add_3dv_aaa(self):
+        self.assertTrue(numpytest.array_equal(
+            self.v1_3d + self.a2_3d, 
+            self.ra_3d
+        ))
+
+    def test_add_3dv_aac(self):
+        res = self.v1_3d + self.con1
+        self.assertTrue(numpytest.array_equal(res, self.ra_3d))
+
+    def test_add_3dv_aca(self):
+        res = self.con1 + self.v1_3d
+        self.assertTrue(numpytest.array_equal(res, self.ra_3d))
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(ElementOperators)
