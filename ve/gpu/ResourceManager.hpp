@@ -22,6 +22,7 @@
 
 #include <CL/cl.hpp>
 #include <vector>
+#include <map>
 #ifdef STATS
 #include <sys/time.h>
 #endif
@@ -33,6 +34,8 @@ private:
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
+    typedef std::multimap<size_t,cl::Buffer*> BufferCache;
+    BufferCache bufferCache; 
 public:
 #ifdef STATS
     double batchBuild;
@@ -41,20 +44,21 @@ public:
     double resourceBufferWrite;
     double resourceBufferRead;
     double resourceKernelExecute;
-    ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
     ResourceManager();
-    cl::Buffer createBuffer(size_t size);
+    ~ResourceManager();
+    cl::Buffer* newBuffer(size_t size);
+    void bufferDone(cl::Buffer* buffer);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
-    void readBuffer(const cl::Buffer& buffer,
+    void readBuffer(const cl::Buffer* buffer,
                     void* hostPtr, 
                     cl::Event waitFor,
                     unsigned int device);
     // We allways write asynchronous with NO events to wait for.
     // Because we just recieved the array from upstream
-    cl::Event enqueueWriteBuffer(const cl::Buffer& buffer,
+    cl::Event enqueueWriteBuffer(cl::Buffer* buffer,
                                  const void* hostPtr, 
                                  std::vector<cl::Event> waitFor, 
                                  unsigned int device);
