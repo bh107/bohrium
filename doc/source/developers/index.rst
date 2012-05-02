@@ -44,13 +44,14 @@ Get the source-code::
   git submodule init
   git submodule update
 
-Before compiling remember to set the $PYTHON environment variable. This is useful if you wish to debug the Python bridge with valgrind. Such as::
-
-  PYTHON=dython
-
-Then compile and install it::
+Build and install it::
 
   ./build install
+
+.. note:: To compile to a custom Python (with valgrind debug support for example),
+   set the $PYTHON variable naming the binary of your custom compiled Python::
+
+     PYTHON=dython ./build install
 
 cphVB in short
 --------------
