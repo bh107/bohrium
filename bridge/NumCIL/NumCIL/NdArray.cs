@@ -223,8 +223,9 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="range">The range to view</param>
         /// <param name="dim">The dimension to apply the range to</param>
+        /// <param name="removeIfSingleEl">True if the dimension is removed if it is a single element, false otherwise</param>
         /// <returns>The subview</returns>
-        public NdArray<T> Subview(Range range, long dim)
+        public NdArray<T> Subview(Range range, long dim, bool removeIfSingleEl = false)
         {
             long first = range.First < 0 ? (this.Shape.Dimensions[dim].Length) + range.First : range.First;
             long offset = dim == this.Shape.Dimensions.LongLength ? this.Shape.Length : this.Shape.Offset + first * this.Shape.Dimensions[dim].Stride;
@@ -258,8 +259,16 @@ namespace NumCIL.Generic
 
 
             long j = 0;
-            
-            var dimensions = this.Shape.Dimensions.Select(x =>
+
+            Shape.ShapeDimension[] dimensions;
+
+            if (range.SingleElement && removeIfSingleEl)
+            {
+                dimensions = this.Shape.Dimensions.Where(x => j++ != dim).ToArray();
+            }
+            else
+            {
+                dimensions = this.Shape.Dimensions.Select(x =>
                 {
                     if (j++ == dim)
                     {
@@ -270,6 +279,8 @@ namespace NumCIL.Generic
                     else
                         return x;
                 }).ToArray();
+            }
+            
 
             return new NdArray<T>(this, new Shape(dimensions, offset));
         }
@@ -310,7 +321,35 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
-        /// Gets a subview on the array
+        /// Returnes a sliced subview of the data, optionally collapsing single element dimensions
+        /// </summary>
+        /// <param name="ranges">The ranges to view for each dimension</param>
+        /// <param name="collapse">True if single element dimensions should be collapsed, false to retain all dimensions</param>
+        /// <returns>A new view of the data</returns>
+        public NdArray<T> Subview(Range[] ranges, bool collapse)
+        {
+            if (ranges == null || ranges.Length == 0)
+                return this;
+
+            NdArray<T> v = this;
+            for (long i = 0; i < ranges.LongLength; i++)
+                v = v.Subview(ranges[i], i);
+
+            if (!collapse)
+                return v;
+
+            Shape.ShapeDimension[] sp = v.Shape.Dimensions;
+            long j = 0;
+            sp = sp.Where(x => j < ranges.LongLength ? !ranges[j++].SingleElement : true).ToArray();
+
+            if (sp.LongLength == 0)
+                return v.Reshape(new Shape(new long[] { 1 }, v.Shape[new long[v.Shape.Dimensions.LongLength]]));
+            else
+                return v.Reshape(new Shape(sp, v.Shape.Offset));
+        }
+
+        /// <summary>
+        /// Gets a subview on the array, collapses all single dimensions
         /// </summary>
         /// <param name="ranges">The range get the view from</param>
         /// <returns>A view on the selected element</returns>
@@ -318,21 +357,7 @@ namespace NumCIL.Generic
         {
             get
             {
-                if (ranges == null || ranges.Length == 0)
-                    return this;
-
-                NdArray<T> v = this;
-                for (long i = 0; i < ranges.LongLength; i++)
-                    v = v.Subview(ranges[i], i);
-
-                //We reduce the last dimension if it only has one element
-                while (ranges.LongLength == v.Shape.Dimensions.LongLength && v.Shape.Dimensions[v.Shape.Dimensions.LongLength - 1].Length == 1)
-                {
-                    long j = 0;
-                    v = v.Reshape(new Shape(v.Shape.Dimensions.Where(x => j++ < v.Shape.Dimensions.LongLength - 1).ToArray(), v.Shape.Offset));
-                }
-
-                return v;
+                return this.Subview(ranges, true);
             }
             set
             {
