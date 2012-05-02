@@ -38,8 +38,8 @@ static void operand_to_str( cphvb_array *op, char buf[] ) {
     } else {
 
         if (op->ndim > 0) {                 // Text of shape and stride
-            sprintf(shape, "");
-            sprintf(stride, "");
+            sprintf(shape, " ");
+            sprintf(stride, " ");
             for(cphvb_intp i=0; i< op->ndim; i++)
             {
                 sprintf(tmp, "%d", (int)op->shape[i]);
