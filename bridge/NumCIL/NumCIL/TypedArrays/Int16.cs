@@ -835,7 +835,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Sub>(@in, scalar, @out); }
     }
     /// <summary>
     /// The multiplication operator implementation
@@ -887,7 +887,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Mul>(@in, scalar, @out); }
     }
     /// <summary>
     /// The division operator implementation
@@ -939,7 +939,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Div>(@in, scalar, @out); }
     }
     /// <summary>
     /// The modulo operation implementation
@@ -991,7 +991,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Mod>(@in, scalar, @out); }
     }
 
     /// <summary>
@@ -1044,7 +1044,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Max>(@in, scalar, @out); }
     }
     /// <summary>
     /// The minimum operation implementation
@@ -1096,7 +1096,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Min>(@in, scalar, @out); }
     }
 
     /// <summary>
@@ -1353,7 +1353,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
-        { return UFunc.Reduce<T, Max>(arg, axis, @out); }
+        { return UFunc.Reduce<T, Pow>(arg, axis, @out); }
 
         /// <summary>
         /// Reduces the input array to a scalar with the power operation
@@ -1371,7 +1371,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray in1, OutArray in2, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(in1, in2, @out); }
+        { return UFunc.Apply<T, Pow>(in1, in2, @out); }
 
         /// <summary>
         /// Applies the power operation to the input operands
@@ -1381,7 +1381,7 @@ namespace NumCIL.Int16
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Pow>(@in, scalar, @out); }
     }
     #endregion
 
