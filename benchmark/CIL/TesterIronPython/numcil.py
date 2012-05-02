@@ -58,6 +58,9 @@ def ReshapeShape(sh):
         return sh
 
 def SliceToRange(sl):
+    if isinstance(sl, int) or isinstance(sl, long) or isinstance(sl, float) or isinstance(sl, System.Int64) or isinstance(sl, System.Int32):
+        return NumCIL.Range.El(System.Int64(sl))
+
     start = sl.start
     stop = sl.stop
     step = sl.step
@@ -85,8 +88,8 @@ def SlicesToRanges(sl):
             ranges[i] = SliceToRange(sl[i])
         elif isinstance(sl[i], NumCIL.Range):
             ranges[i] = sl[i]
-        elif isinstance(sl[i], int) or isinstance(sl[i], System.Int64)  or isinstance(sl[i], System.Int32):
-            ranges[i] = NumCIL.Range.El(sl[i])
+        elif isinstance(sl[i], int) or isinstance(sl[i], long) or isinstance(sl[i], float) or isinstance(sl[i], System.Int64) or isinstance(sl[i], System.Int32):
+            ranges[i] = NumCIL.Range.El(System.Int64(sl[i]))
         else:
             raise Exception("Invalid range slice " + str(type(sl[i])))
 
@@ -96,6 +99,8 @@ class ndarray:
     parent = None
     dtype = None
     cls = None
+    owncls = None
+    collapsedSlicing = True
 
     def __init__(self, p):
         if isinstance(p, NumCIL.Float.NdArray):
@@ -114,6 +119,10 @@ class ndarray:
             self.dtype = float64
             self.cls = NumCIL.Double
             self.parent = NumCIL.Double.NdArray(p)
+        elif isinstance(p, ndarray):
+            self.dtype = p.dtype
+            self.cls = p.cls
+            self.parent = p.parent
         else:
             raise Exception("Not yet implemented " + str(type(p)))
 
@@ -127,7 +136,7 @@ class ndarray:
         return self.parent.Min()
 
     def repeat(self, repeats, axis = None):
-        return ndarray(self.parent.Repeat(repeats, axis))
+        return self.owncls(self.parent.Repeat(repeats, axis))
 
     def getsize(self):
         return self.parent.Shape.Elements
@@ -136,12 +145,12 @@ class ndarray:
 
     def reshape(self, t):
         if isinstance(t, tuple):
-            return ndarray(self.parent.Reshape(NumCIL.Shape(System.Array[System.Int64](list(t)))))
+            return self.owncls(self.parent.Reshape(NumCIL.Shape(System.Array[System.Int64](list(t)))))
         else:
-            return ndarray(self.parent.Reshape(NumCIL.Shape(t)))
+            return self.owncls(self.parent.Reshape(NumCIL.Shape(t)))
 
     def getShapeTuple(self):
-        return tuple([x.Length for x in self.parent.Shape.Dimensions])
+        return tuple([int(x.Length) for x in self.parent.Shape.Dimensions])
 
     def setShapeTuple(self, t):
         self.parent.Reshape(System.Array[System.Int64](list(t)))
@@ -152,7 +161,7 @@ class ndarray:
         if self.parent.Shape.Dimensions.LongLength < 2:
             return self
         else:
-            return ndarray(self.parent.Transpose())
+            return self.owncls(self.parent.Transpose())
 
     T = property(fget=transpose)
 
@@ -164,220 +173,115 @@ class ndarray:
         return self.__getitem__(sl)
 
     def __getitem__(self, slices):
+        rval = None
         if isinstance(slices, list) or isinstance(slices, tuple):
-            return ndarray(self.parent[SlicesToRanges(slices)])
-        elif isinstance(slices, slice):
-            return ndarray(self.parent[System.Array[NumCIL.Range]([SliceToRange(slices)])])
-        elif isinstance(slices, int) or isinstance(slices, System.Int64) or isinstance(slices, System.Int32):
-            return self.parent.Value[slices]
+            rval = self.owncls(self.parent.Subview(SlicesToRanges(slices), self.collapsedSlicing))
+        elif isinstance(slices, slice) or isinstance(slices, int) or isinstance(slices, long) or isinstance(slices, System.Int64) or isinstance(slices, System.Int32) or isinstance(slices, float):
+            rval = self.owncls(self.parent.Subview(System.Array[NumCIL.Range]([SliceToRange(slices)]), self.collapsedSlicing))
         else:
-            return ndarray(self.parent[slices])
+            rval = self.owncls(self.parent.Subview(slices, self.collapsedSlicing))
+
+        #If we get a scalar as result, convert it to a python scalar
+        if len(rval.shape) == 1 and rval.shape[0] == 1:
+            if self.cls == NumCIL.Double or self.cls == NumCIL.Float:
+                return float(rval.parent.Value[0])
+            else:
+                return int(rval.parent.Value[0])
+        else:
+            return rval
 
     def __setitem__(self, slices, value):
         v = value
         if isinstance(v, ndarray):
             v = v.parent
-        elif (isinstance(v, float) or isinstance(v, int)) and self.cls == NumCIL.Float:
-            v = System.Single(v)
-        elif isinstance(v, int) and self.cls == NumCIL.Double:
-            v = System.Double(v)
+        elif isinstance(v, float) or isinstance(v, int):
+            c = getattr(self.cls, "NdArray")
+            v = c(self.dtype(v))
         elif isinstance(v, list) or isinstance(v, tuple):
             lst = System.Collections.Generic.List[self.dtype]()
             for a in v:
-                if self.cls == NumCIL.Float:
-                    lst.Add(System.Single(a))
-                elif self.cls == NumCIL.Double:
-                    lst.Add(System.Double(a))
-                else:
-                    raise Exception("Self cls not supported? " + str(type(self.cls)))
+                lst.Add(self.dtype(a))
+
             c = getattr(self.cls, "NdArray")
             v = c(lst.ToArray())
 
         if isinstance(slices, list) or isinstance(slices, tuple):
-            self.parent[SlicesToRanges(slices)] =  v
-        elif isinstance(slices, slice):
-            self.parent[System.Array[NumCIL.Range]([SliceToRange(slices)])] = v
-        elif isinstance(slices, int):
-            self.parent.Values[slices] = v
+            self.parent.Subview(SlicesToRanges(slices), self.collapsedSlicing).Set(v)
+        elif isinstance(slices, slice) or isinstance(slices, long) or isinstance(slices, int) or isinstance(slices, System.Int64) or isinstance(slices, System.Int32):
+            self.parent.Subview(System.Array[NumCIL.Range]([SliceToRange(slices)]), self.collapsedSlicing).Set(v)
         else:
-            self.parent[slices] = v
+            self.parent.Subview(slices, self.collapsedSlicing).Set(v)
 
 
     def __add__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Add.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Add.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Add.Apply(self.parent, other))
+        return add(self, other)
 
     def __radd__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Add.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Add.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Add.Apply(other, self.parent))
+        return add(other, self)
 
     def __iadd__(self, other):
-        if isinstance(other, ndarray):
-            self.cls.Add.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Add.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Add.Apply(self.parent, other, self.parent)
-            return self
+        return add(self, other, self)
 
     def __sub__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Sub.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Sub.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Sub.Apply(self.parent, other))
+        return subtract(self, other)
 
     def __rsub__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Sub.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Sub.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Sub.Apply(other, self.parent))
+        return subtract(other, self)
 
     def __isub__(self, other):
-        if isinstance(other, ndarray):
-            self.cls.Sub.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Sub.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Sub.Apply(self.parent, other, self.parent)
-            return self
+        return subtract(self, other, self)
 
     def __div__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Div.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Div.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Div.Apply(self.parent, other))
+        return divide(self, other)
 
     def __rdiv__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Div.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Div.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Div.Apply(other, self.parent))
+        return divide(other, self)
 
     def __idiv__(self, other):
-        if isinstance(other, ndarray):
-            self.cls.Div.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Div.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Div.Apply(self.parent, other, self.parent)
-            return self
+        return divide(self, other, self)
 
     def __mul__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Mul.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Mul.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Mul.Apply(self.parent, other))
+        return multiply(self, other)
 
     def __rmul__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Mul.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Mul.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Mul.Apply(other, self.parent))
+        return multiply(other, self)
 
     def __imul__(self, other):
-        if isinstance(other, ndarray):
-            self.cls.Mul.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Mul.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Mul.Apply(self.parent, other, self.parent)
-            return self
+        return multiply(self, other, self)
 
     def __mod__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Mod.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Mod.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Mod.Apply(self.parent, other))
+        return mod(self, other)
 
     def __rmod__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Mod.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Mod.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Mod.Apply(other, self.parent))
+        return mod(other, self)
 
     def __imod__(self, other):
-        if isinstance(other, ndarray):
-            self.cls.Mod.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Mod.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Mod.Apply(self.parent, other, self.parent)
-            return self
+        return mod(self, other, self)
 
     def __pow__(self, other, modulo = None):
         if modulo != None:
             raise Exception("Modulo version of Pow not supported")
 
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Pow.Apply(self.parent, other.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Pow.Apply(self.parent, System.Single(other)))
-        else:
-            return ndarray(self.cls.Pow.Apply(self.parent, other))
+        return pow(self, other)
 
     def __rpow__(self, other):
-        if isinstance(other, ndarray):
-            return ndarray(self.cls.Pow.Apply(other.parent, self.parent))
-        elif type(other) == float and self.cls == NumCIL.Float:
-            return ndarray(self.cls.Pow.Apply(System.Single(other), self.parent))
-        else:
-            return ndarray(self.cls.Pow.Apply(other, self.parent))
+        return pow(other, self)
 
     def __ipow__(self, other, modulo = None):
         if modulo != None:
             raise Exception("Modulo version of Pow not supported")
-        if isinstance(other, ndarray):
-            self.cls.Pow.Apply(self.parent, other.parent, self.parent)
-            return self
-        elif type(other) == float and self.cls == NumCIL.Float:
-            self.cls.Pow.Apply(self.parent, System.Single(other), self.parent)
-            return self
-        else:
-            self.cls.Pow.Apply(self.parent, other, self.parent)
-            return self
+        return pow(self, other, self)
 
     def __neg__ (self):
-        return self.parent.Negate()
+        return self.owncls(self.parent.Negate())
 
     def __abs__ (self):
-        return self.parent.Abs()
+        return self.owncls(self.parent.Abs())
 
     def __str__(self):
         return self.parent.ToString()
+
+ndarray.owncls = ndarray
 
 def empty(shape, dtype=float, order='C', dist=False):
     return ndarray(GetNdClass(dtype).Generate.Empty(ReshapeShape(shape)))
@@ -435,14 +339,32 @@ class ufunc:
         f = getattr(cls, self.op)
         return ndarray(f.Reduce(a.parent, axis, out))
 
-    def __call__(self, a, b, out = None):
+    def __call__(self, a, b = None, out = None):
+
+        if self.nin == 2 and b == None:
+            raise Exception("The operation " + self.name + " requires 2 input operands")
+        elif self.nin == 1 and b != None:
+            raise Exception("The operation " + self.name + " accepts only 1 input operand")
+
         cls = None
+        owncls = ndarray
+        dtype = float32
         if out != None and isinstance(out, ndarray):
             cls = out.cls
+            owncls = out.owncls
+            dtype = out.dtype
         elif isinstance(a, ndarray):
             cls = a.cls
+            owncls = a.owncls
+            dtype = a.dtype
+            if isinstance(b, ndarray):
+                if a.owncls == matrix or b.owncls == matrix:
+                    owncls = matrix
         elif isinstance(b, ndarray):
             cls = b.cls
+            owncls = b.owncls
+            dtype = b.dtype
+
 
         if cls == None:
             raise Exception("Apply not supported for scalars")
@@ -450,12 +372,19 @@ class ufunc:
             f = getattr(cls, self.op)
             if isinstance(a, ndarray):
                 a = a.parent
+            elif isinstance(a, int) or isinstance(a, long) or isinstance(a, float):
+                a = dtype(a)
             if isinstance(b, ndarray):
                 b = b.parent
+            elif isinstance(b, int) or isinstance(b, long) or isinstance(b, float):
+                b = dtype(b)
             if out != None and isinstance(out, ndarray):
                 out = out.parent
 
-            return ndarray(f.Apply(a, b, out))
+            if self.nin == 2:
+                return owncls(f.Apply(a, b, out))
+            else:
+                return owncls(f.Apply(a, out))
 
 add = ufunc("Add", "add")
 subtract = ufunc("Sub", "subtract")
@@ -465,6 +394,44 @@ mod = ufunc("Mod", "mod")
 maximum = ufunc("Max", "maximum")
 minimum = ufunc("Min", "minimum")
 exp = ufunc("Exp", "exp", nin = 1, nargs = 2)
+log = ufunc("Log", "log", nin = 1, nargs = 2)
+power = ufunc("Pow", "power")
+
+def array(p):
+    return ndarray(p)
+
+class matrix(ndarray):
+    collapsedSlicing = False
+
+    def __mul__(self, other):
+        if isinstance(other, ndarray):
+            return self.owncls(self.parent.MatrixMultiply(other.parent))
+        else:
+            return self.owncls(self.parent.MatrixMultiply(other))
+
+    def __rmul__(self, other):
+        if isinstance(other, ndarray):
+            return self.owncls(other.parent.MatrixMultiply(self.parent))
+        else:
+            return ndarray.__rmul__(self, other)
+
+    def __imul__(self, other):
+        if isinstance(other, ndarray):
+            self.parent.MatrixMultiply(other.parent, self.parent)
+            return self
+        else:
+            self.parent.MatrixMultiply(other, self.parent)
+            return self
+
+    def transpose(self):
+        if (len(self.shape) == 1):
+            return self.owncls(self.parent.Subview(newaxis, 1))
+        else:
+            return ndarray.transpose(self)
+
+    T = property(fget=transpose)
+
+matrix.owncls = matrix
 
 def size(x):
     if isinstance(x, ndarray):
