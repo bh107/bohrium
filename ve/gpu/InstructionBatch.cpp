@@ -18,6 +18,8 @@
  */
 
 #include <iostream>
+#include <functional>
+#include <algorithm>
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
@@ -115,106 +117,82 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
     if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
         throw BatchException(0);
 
-    // If any operand's base is already used as output, it has to be alligned or disjoint
+    std::vector<bool> known(operands.size(),false);
     for (size_t op = 0; op < operands.size(); ++op)
     {
         BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
         if (ba) // not a scalar
         {
-            OutputMap::iterator oit = output.find(ba);
-            if (oit != output.end())
+            // If any operand's base is already used as output, it has to be alligned or disjoint
+            ArrayRange orange = output.equal_range(ba);
+            for (ArrayMap::iterator oit = orange.first ; oit != orange.second; ++oit)
             {
                 if (sameView(oit->second, inst->operand[op]))
                 {
+                    // Same view so we use the same cphvb_array* for it
                     inst->operand[op] = oit->second;
+                    known[op] = true;
                 } 
                 else if (!disjointView(oit->second, inst->operand[op])) 
                 { 
                     throw BatchException(0);
                 }
             }
+            // If the output operans is allready used as input it has to be alligned or disjoint
+            ArrayRange irange = input.equal_range(ba);
+            for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
+            {
+                if (sameView(iit->second, inst->operand[op]))
+                {
+                    // Same view so we use the same cphvb_array* for it
+                    inst->operand[0] = iit->second;
+                    known[op] = true;
+                } 
+                else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
+                {
+                    throw BatchException(0);
+                }
+            }
         }
     }
 
-    // If the output operans is allready used as input it has to be alligned or disjoint
-    std::pair<InputMap::iterator, InputMap::iterator> irange = 
-        input.equal_range(static_cast<BaseArray*>(operands[0]));
-    for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
-    {
-        if (sameView(iit->second, inst->operand[0]))
-        {
-            inst->operand[0] = iit->second;
-        } 
-        else if (!disjointView(iit->second, inst->operand[0]))
-        {
-            throw BatchException(0);
-        }
-    }
 
     // OK so we can accept the instruction
     instructions.push_back(inst);
-    // Are some of the input parameters allready know? Otherwise register them
-    for (size_t op = 1; op < operands.size(); ++op)
-    {
-        BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
-        if (ba) // not a scalar
-        {
-            OutputMap::iterator oit = output.find(ba);
-            if (oit != output.end() && sameView(oit->second, inst->operand[op]))
-            {  //it is allready part of the output
-                inst->operand[op] = oit->second;
-                continue;
-            }
-            bool found = false;
-            irange = input.equal_range(ba);
-            for (InputMap::iterator iit = irange.first ; iit != irange.second; ++iit)
-            {
-                if (sameView(iit->second, inst->operand[op]))
-                { //it is allready part of the input
-                    inst->operand[op] = iit->second;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            { //it is a new array or view
-#ifdef DEBUG
-                std::cout << "Adding input array to batch: (" << ba << ", " 
-                          <<  inst->operand[op] << ")" << std::endl;
-#endif
-                input.insert(std::make_pair(ba, inst->operand[op]));
-                inputList.push_back(std::make_pair(ba, inst->operand[op]));
-            }
-        }
-    }
-    
-
-    // Register output
-    if (output.find(static_cast<BaseArray*>(operands[0])) == output.end())
-    {
-#ifdef DEBUG
-        std::cout << "Adding output array to batch: (" << operands[0] << ", " 
-                  <<  inst->operand[0] << ")" << std::endl;
-#endif    
-        output.insert(std::make_pair(static_cast<BaseArray*>(operands[0]), inst->operand[0]));
-        outputList.push_back(static_cast<BaseArray*>(operands[0]));
-    }
-    // Register Kernel parameters
+    // Register unknow parameters
     for (size_t op = 0; op < operands.size(); ++op)
     {
-        KernelParameter* kp = operands[op];
-        if (parameters.find(kp) == parameters.end())
+        if (!known[op])
         {
             std::stringstream ss;
-            if (isScalar(kp))
+            KernelParameter* kp = operands[op];
+            BaseArray* ba = dynamic_cast<BaseArray*>(kp);
+            if (ba)
+            {
+                if (op == 0)
+                {
+                    output.insert(std::make_pair(ba, inst->operand[0]));
+                    outputList.push_back(std::make_pair(ba, inst->operand[0]));
+                }
+                else
+                {
+                    input.insert(std::make_pair(ba, inst->operand[0]));
+                    inputList.push_back(std::make_pair(ba, inst->operand[0]));
+                }
+                if (parameters.find(kp) == parameters.end())
+                {
+                    ss << "a" << arraynum++;
+                    parameters[kp] = ss.str();
+                    parameterList.push_back(kp);
+                }
+            }
+            else //scalar
             {
                 ss << "s" << scalarnum++;
                 kernelVariables[&(inst->operand[op])] = ss.str();
-            } else {
-                ss << "a" << arraynum++;
+                parameters[kp] = ss.str();
+                parameterList.push_back(kp);
             }
-            parameters[kp] = ss.str();
-            parameterList.push_back(kp);
         }
     }
 }
@@ -286,7 +264,7 @@ std::string InstructionBatch::generateCode()
     generateGIDSource(shape, source);
     
     // Load input parameters
-    for (InputList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
+    for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
         std::stringstream ss;
         ss << "v" << variablenum++;
@@ -329,11 +307,11 @@ std::string InstructionBatch::generateCode()
     }
 
     // Save output parameters
-    for (OutputList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
+    for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
-        source << "\t" << parameters[*oit] << "[";
-        generateOffsetSource(output[*oit], source);
-        source << "] = " <<  kernelVariables[output[*oit]] << ";\n";
+        source << "\t" << parameters[oit->first] << "[";
+        generateOffsetSource(oit->second, source);
+        source << "] = " <<  kernelVariables[oit->second] << ";\n";
     }
 
     source << "}\n";
@@ -361,17 +339,18 @@ bool InstructionBatch::access(BaseArray* array)
 
 bool InstructionBatch::discard(BaseArray* array)
 {
-    OutputMap::iterator oit = output.find(array);
-    bool r =  read(array);
-    if (oit != output.end())
+    output.erase(array);
+    struct Compare : public std::binary_function<std::pair<BaseArray*,cphvb_array*>,BaseArray*,bool>
     {
-        output.erase(oit);
-        outputList.remove(array);
-        if (!r)
-        {
-            parameters.erase(static_cast<KernelParameter*>(array));
-            parameterList.remove(static_cast<KernelParameter*>(array));
-        }
+        bool operator() (const std::pair<BaseArray*,cphvb_array*> p, const BaseArray* k) const 
+        {return (p.first==k);}
+    };
+    outputList.remove_if(std::binder2nd<Compare>(Compare(),array));
+    bool r =  read(array);
+    if (!r)
+    {
+        parameters.erase(static_cast<KernelParameter*>(array));
+        parameterList.remove(static_cast<KernelParameter*>(array));
     }
     return !r;
 }
