@@ -6,8 +6,8 @@ def run():
     max_ndim = 6
     for i in range(1,max_ndim+1):
         src = numpytest.random_list(random.sample(range(1, 10),i))
-        Ad = np.array(src, dtype=float, dist=True)
-        Af = np.array(src, dtype=float, dist=False)
+        Ad = np.array(src, dtype=float, cphvb=True)
+        Af = np.array(src, dtype=float, cphvb=False)
         for j in range(len(Ad.shape)):
             Cd = np.add.reduce(Ad,j)
             Cf = np.add.reduce(Af,j)

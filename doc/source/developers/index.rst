@@ -33,9 +33,14 @@ Valgrind can be used to detect memory errors by invoking it with::
 Building and Installing
 -----------------------
 
-This requires installing some dependencies in addition to the tools above::
+In addition to the tools described above, the following must be present::
 
+  # Essential dependencies
   sudo apt-get install python-dev mpi-default-dev
+
+  # Code and documentation generator-tools
+  sudo apt-get install python-cheetah python-sphinx doxygen
+  pip install breathe
 
 Get the source-code::
 
