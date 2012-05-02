@@ -85,9 +85,9 @@ namespace NumCIL
             if (lengths == null)
                 throw new ArgumentNullException("dimensionsizes");
             if (lengths.LongLength <= 0 || lengths.Any(x => x <= 0))
-                throw new ArgumentOutOfRangeException("dimensionsizes");
+                throw new ArgumentOutOfRangeException("dimensionsizes", string.Format("The lengths have a zero size element: {0}", lengths));
             if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset");
+                throw new ArgumentOutOfRangeException("offset", string.Format("The offset cannot be negative: {0}", offset));
 
             if (strides == null)
             {

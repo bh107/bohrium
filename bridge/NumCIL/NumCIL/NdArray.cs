@@ -159,7 +159,7 @@ namespace NumCIL.Generic
         {
             this.Shape = shape ?? new long[] { data.Length };
             if (data.Length < this.Shape.Length)
-                throw new ArgumentOutOfRangeException("dimensionsizes");
+                throw new ArgumentOutOfRangeException("dimensionsizes", string.Format("The length of the data is {0} but the shape requires {1} elements", data.Length, shape.Length));
 
             m_data = data;
 
@@ -223,8 +223,9 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="range">The range to view</param>
         /// <param name="dim">The dimension to apply the range to</param>
+        /// <param name="removeIfSingleEl">True if the dimension is removed if it is a single element, false otherwise</param>
         /// <returns>The subview</returns>
-        public NdArray<T> Subview(Range range, long dim)
+        public NdArray<T> Subview(Range range, long dim, bool removeIfSingleEl = false)
         {
             long first = range.First < 0 ? (this.Shape.Dimensions[dim].Length) + range.First : range.First;
             long offset = dim == this.Shape.Dimensions.LongLength ? this.Shape.Length : this.Shape.Offset + first * this.Shape.Dimensions[dim].Stride;
@@ -246,7 +247,7 @@ namespace NumCIL.Generic
                 else if (range.SingleElement)
                     last = first;
                 else
-                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last;
+                    last = range.Last <= 0 ? (this.Shape.Dimensions[dim].Length - 1) + range.Last : range.Last - 1;
 
                 stride = range.Stride;
             }
@@ -258,23 +259,28 @@ namespace NumCIL.Generic
 
 
             long j = 0;
-            
-            var dimensions = this.Shape.Dimensions.Select(x =>
+
+            Shape.ShapeDimension[] dimensions;
+
+            if (range.SingleElement && removeIfSingleEl)
+            {
+                dimensions = this.Shape.Dimensions.Where(x => j++ != dim).ToArray();
+            }
+            else
+            {
+                dimensions = this.Shape.Dimensions.Select(x =>
                 {
                     if (j++ == dim)
                     {
-                        if (range.Last == 0 && stride != 1)
-                        {
-                            long maxlast = last / stride;
-
-                            return new Shape.ShapeDimension((maxlast - first) + 1, stride * x.Stride);
-                        }
-                        else
-                            return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
+                        if (last * stride > this.Shape.Dimensions[dim].Length - 1)
+                            last = (this.Shape.Dimensions[dim].Length - 1) / stride;
+                        return new Shape.ShapeDimension((last - first) + 1, stride * x.Stride);
                     }
                     else
                         return x;
                 }).ToArray();
+            }
+            
 
             return new NdArray<T>(this, new Shape(dimensions, offset));
         }
@@ -315,7 +321,35 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
-        /// Gets a subview on the array
+        /// Returnes a sliced subview of the data, optionally collapsing single element dimensions
+        /// </summary>
+        /// <param name="ranges">The ranges to view for each dimension</param>
+        /// <param name="collapse">True if single element dimensions should be collapsed, false to retain all dimensions</param>
+        /// <returns>A new view of the data</returns>
+        public NdArray<T> Subview(Range[] ranges, bool collapse)
+        {
+            if (ranges == null || ranges.Length == 0)
+                return this;
+
+            NdArray<T> v = this;
+            for (long i = 0; i < ranges.LongLength; i++)
+                v = v.Subview(ranges[i], i);
+
+            if (!collapse)
+                return v;
+
+            Shape.ShapeDimension[] sp = v.Shape.Dimensions;
+            long j = 0;
+            sp = sp.Where(x => j < ranges.LongLength ? !ranges[j++].SingleElement : true).ToArray();
+
+            if (sp.LongLength == 0)
+                return v.Reshape(new Shape(new long[] { 1 }, v.Shape[new long[v.Shape.Dimensions.LongLength]]));
+            else
+                return v.Reshape(new Shape(sp, v.Shape.Offset));
+        }
+
+        /// <summary>
+        /// Gets a subview on the array, collapses all single dimensions
         /// </summary>
         /// <param name="ranges">The range get the view from</param>
         /// <returns>A view on the selected element</returns>
@@ -323,21 +357,7 @@ namespace NumCIL.Generic
         {
             get
             {
-                if (ranges == null || ranges.Length == 0)
-                    return this;
-
-                NdArray<T> v = this;
-                for(long i = 0; i < ranges.LongLength; i++)
-                    v = v.Subview(ranges[i], i);
-
-                //We reduce the last dimension if it only has one element
-                while (ranges.LongLength == v.Shape.Dimensions.LongLength && v.Shape.Dimensions[v.Shape.Dimensions.LongLength - 1].Length == 1)
-                {
-                    long j = 0;
-                    v = v.Reshape(new Shape(v.Shape.Dimensions.Where(x => j++ < v.Shape.Dimensions.LongLength - 1).ToArray(), v.Shape.Offset));
-                }
-
-                return v;
+                return this.Subview(ranges, true);
             }
             set
             {
@@ -345,6 +365,16 @@ namespace NumCIL.Generic
                 var broadcastShapes = Shape.ToBroadcastShapes(value.Shape, lv.Shape);
                 UFunc.Apply<T, NumCIL.CopyOp<T>>(value.Reshape(broadcastShapes.Item1), lv.Reshape(broadcastShapes.Item2));
             }
+        }
+
+        /// <summary>
+        /// Sets the values in this view to values from another view, i.e. copies data
+        /// </summary>
+        /// <param name="value">The data to assign to this view</param>
+        public void Set(NdArray<T> value)
+        {
+            var broadcastShapes = Shape.ToBroadcastShapes(value.Shape, this.Shape);
+            UFunc.Apply<T, NumCIL.CopyOp<T>>(value.Reshape(broadcastShapes.Item1), this.Reshape(broadcastShapes.Item2));
         }
 
         /// <summary>
@@ -411,7 +441,7 @@ namespace NumCIL.Generic
         /// <returns>A string representation of the data viewed by this NdArray</returns>
         public override string ToString()
         {
-            return string.Format("NdArray<{0}>({1}): {2}", typeof(T).FullName, string.Join(", ", this.Shape.Dimensions.Select(x => x.Length.ToString()).ToArray()), this.AsString());
+            return string.Format("NdArray<{0}>({1}): {3} {2}", typeof(T).FullName, string.Join(", ", this.Shape.Dimensions.Select(x => x.Length.ToString()).ToArray()), this.AsString(), Environment.NewLine);
         }
 
         /// <summary>
@@ -424,9 +454,17 @@ namespace NumCIL.Generic
             sb = sb ?? new StringBuilder();
 
             if (this.Shape.Dimensions.LongLength == 1)
-                sb.Append("[" + string.Join(", \n", this.Value.Select(x => x.ToString()).ToArray()) + "] ");
+            {
+                long j = 1;
+                if (typeof(T) == typeof(double))
+                    sb.Append("[" + string.Join("  ", this.Value.Select(x => ((double)(object)x).ToString("0.00####") + (j++ % 6 == 0 ? Environment.NewLine : "\t")).ToArray()) + "] ");
+                else if (typeof(T) == typeof(float))
+                    sb.Append("[" + string.Join("\t ", this.Value.Select(x => ((float)(object)x).ToString("0.00####") + (j++ % 6 == 0 ? Environment.NewLine : "\t")).ToArray()) + "] ");
+                else
+                    sb.Append("[" + string.Join("\t ", this.Value.Select(x => x.ToString()).ToArray()) + "] ");
+            }
             else
-                sb.Append("[" + string.Join(", \n", this.Select(x => x.AsString()).ToArray()) + "] ");
+                sb.Append("[" + string.Join(", " + Environment.NewLine, this.Select(x => x.AsString()).ToArray()) + "] ");
 
             return sb.ToString();
         }
@@ -454,7 +492,7 @@ namespace NumCIL.Generic
             if (@out == null)
                 return new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
 
-            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
+            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Select(x => x.Length).Reverse().ToArray()));
             UFunc.Apply<T, CopyOp<T>>(lv, @out);
             return @out;
         }
@@ -478,7 +516,7 @@ namespace NumCIL.Generic
         {
             long real_axis =
                 axis.HasValue ?
-                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - axis.Value : axis.Value)
+                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - (axis.Value + 1) : (axis.Value + 1))
                 : this.Shape.Dimensions.LongLength;
 
             //First we add a new axis so all elements are in their own dimension
@@ -499,7 +537,7 @@ namespace NumCIL.Generic
             {
                 //With a specified axis, we return a reshaped array
                 long[] newDims = this.Shape.Dimensions.Select(x => x.Length).ToArray();
-                newDims[real_axis] = repeats * newDims[real_axis];
+                newDims[real_axis - 1] = repeats * newDims[real_axis - 1];
                 return res.Reshape(newDims);
             }
         }
@@ -567,6 +605,7 @@ namespace NumCIL.Generic
                     long[] tmp = new long[this.Shape.Dimensions[real_axis].Length];
                     for(long i = 0; i < tmp.LongLength; i++)
                         tmp[i] = repeats[i % repeats.LongLength];
+                    repeats = tmp;
 
                 }
 
@@ -583,24 +622,98 @@ namespace NumCIL.Generic
                 var resultShape = new Shape(resultDims);
                 var result = new NdArray<T>(resultShape);
 
-                var sourceRanges = new Range[this.Shape.Dimensions.LongLength];
-                var targetRanges = new Range[this.Shape.Dimensions.LongLength];
-
-                long[] sourceIndices = new long[extendedSize];
-                long ix = 0;
-                for(long i = 0; i < repeats.LongLength; i++)
-                    for(long j = 0; j < repeats[i]; j++)
-                        sourceIndices[ix++] = i;
-
-                for (long i = 0; i < extendedSize; i++)
+                long curStart = 0;
+                for (long i = 0; i < repeats.LongLength; i++)
                 {
-                    sourceRanges[real_axis] = Range.El(sourceIndices[i]);
-                    targetRanges[real_axis] = Range.El(i);
-                    UFunc.Apply<T, CopyOp<T>>(this[sourceRanges], result[targetRanges]);
+                    var lv = this.Subview(Range.El(i), real_axis);
+                    var xv = result.Subview(new Range(curStart, curStart + repeats[i]), real_axis);
+                    var broadcastShapes = Shape.ToBroadcastShapes(lv.Shape, xv.Shape);
+                    UFunc.Apply<T, CopyOp<T>>(lv.Reshape(broadcastShapes.Item1), xv.Reshape(broadcastShapes.Item2));
+                    curStart += repeats[i];
                 }
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Concatenates multiple arrays into a single array, joined at the axis
+        /// </summary>
+        /// <param name="axis">The axis to join at</param>
+        /// <param name="args">The arrays to join</param>
+        /// <returns>The joined array</returns>
+        public static NdArray<T> Concatenate(NdArray<T>[] args, long axis = 0)
+        {
+            if (args == null)
+                throw new ArgumentNullException("args");
+            if (args.LongLength == 1)
+                return args[0];
+
+            Shape basicShape = args[0].Shape.Plain;
+            NdArray<T>[] ext = new NdArray<T>[args.LongLength];
+
+            foreach (var a in args)
+                if (a.Shape.Elements != 1)
+                {
+                    basicShape = a.Shape.Plain;
+                    break;
+                }
+
+            for (long i = 0; i < args.LongLength; i++)
+            {
+                var lv = args[i];
+                while (lv.Shape.Dimensions.LongLength <= axis)
+                    lv = lv.Subview(Range.NewAxis, 0);
+
+                ext[i] = lv;
+            }
+
+            long newAxisSize = 0;
+            foreach (var a in ext)
+                newAxisSize += a.Shape.Dimensions[axis].Length;
+
+            long[] dims = basicShape.Plain.Dimensions.Select(x => x.Length).ToArray();
+            dims[Math.Min(axis, dims.LongLength - 1)] = newAxisSize;
+            var res = new NdArray<T>(new Shape(dims));
+            var reslv = res;
+            while (reslv.Shape.Dimensions.LongLength <= axis)
+                reslv = reslv.Subview(Range.NewAxis, 0);
+
+
+            foreach (var a in ext)
+            {
+                if (a.Shape.Dimensions.LongLength != reslv.Shape.Dimensions.LongLength)
+                    throw new Exception(string.Format("Incompatible shapes, size {0} vs {1}", a.Shape.Dimensions.LongLength, reslv.Shape.Dimensions.LongLength));
+
+                for (long i = 0; i < dims.LongLength; i++)
+                {
+                    if (i != axis && reslv.Shape.Dimensions[i].Length != a.Shape.Dimensions[i].Length)
+                        throw new Exception(string.Format("Incompatible shapes, sizes in dimension {0} is {1} vs {2}", i, a.Shape.Dimensions[i].Length, reslv.Shape.Dimensions[i].Length));
+                }
+            }
+
+            long startOffset = 0;
+
+            foreach (NdArray<T> a in ext)
+            {
+                long endOffset = startOffset + a.Shape.Dimensions[axis].Length;
+                var lv = reslv.Subview(new Range(startOffset, endOffset), axis);
+                UFunc.Apply<T, CopyOp<T>>(a, lv);
+                startOffset = endOffset;
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Concatenates an array onto this array, joined at the axis
+        /// </summary>
+        /// <param name="arg">The array to join</param>
+        /// <param name="axis">The axis to join at</param>
+        /// <returns>The joined array</returns>
+        public NdArray<T> Concatenate(NdArray<T> arg, long axis = 0)
+        {
+            return Concatenate(new NdArray<T>[] { this, arg }, axis);
         }
 
         /// <summary>
