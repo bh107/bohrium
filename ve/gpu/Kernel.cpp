@@ -115,7 +115,7 @@ void Kernel::call(Parameters& parameters,
     std::vector<cl::Event> waitFor;
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
-        BaseArray* ba = static_cast<BaseArray*>(pit->first);
+        Buffer* ba = dynamic_cast<Buffer*>(pit->first);
         if (ba)
         {// If its not a scalar wait for any write events 
             waitFor.push_back(ba->getWriteEvent());
@@ -133,9 +133,14 @@ void Kernel::call(Parameters& parameters,
     cl::Event event = resourceManager->enqueueNDRangeKernel(kernel, globalSize, localSize, &waitFor ,device); 
     for (Parameters::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
     {
-        if (pit->second)
-            static_cast<BaseArray*>(pit->first)->setWriteEvent(event);
-        else
-            static_cast<BaseArray*>(pit->first)->addReadEvent(event);
+        Buffer* ba = dynamic_cast<Buffer*>(pit->first);
+        if (ba)
+        {
+            if (pit->second)
+                ba->setWriteEvent(event);
+            else 
+                ba->addReadEvent(event);
+
+        }
     }
 }

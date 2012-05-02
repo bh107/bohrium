@@ -17,14 +17,14 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
-#include "cphvb_ve_score.h"
+#include <cphvb_compute.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <time.h>
 #else
 #include <sys/time.h>
 #include <unistd.h>
 #endif
-#include <pthread.h>
 #include <limits.h>
 
 // We use the same Mersenne Twister implementation as NumPy
@@ -180,178 +180,108 @@ rk_initseed(rk_state *state)
     return 0;
 }
 
-//Thread function and it's ID.
-typedef struct
-{
-    int myid;
-    cphvb_intp nthds;
-    cphvb_intp size;
-    cphvb_type type;
-    void *data;
-}thd_id;
 
-void *thd_do_random(void *msg)
+//Implementation of the user-defined funtion "random". Note that we
+//follows the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 {
-    thd_id *id = (thd_id *) msg;
-    int myid           = id->myid;
-    cphvb_intp size    = id->size;
-    cphvb_intp nthds   = id->nthds;
+    cphvb_random_type *a = (cphvb_random_type *) arg;
+    cphvb_array *ary = a->operand[0];
+    cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
 
-    cphvb_intp length = size / nthds; // Find this thread's length of work.
-    cphvb_intp start = myid * length; // Find this thread's start block.
-    if(myid == nthds-1)
-        length += size % nthds;       // The last thread gets the remainder.
+    //Make sure that the array memory is allocated.
+    if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
+        return CPHVB_OUT_OF_MEMORY;
 
     rk_state state;
     rk_initseed(&state);
     
-    switch (id->type)
+    switch (ary->type)
     {
     	case CPHVB_INT8:
 		{
-			cphvb_int8* data = (cphvb_int8*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_int8* data = (cphvb_int8*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int8(&state);
 		}
 		break;
 
     	case CPHVB_INT16:
 		{
-			cphvb_int16* data = (cphvb_int16*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_int16* data = (cphvb_int16*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int16(&state);
 		}
 		break;
 
     	case CPHVB_INT32:
 		{
-			cphvb_int32* data = (cphvb_int32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_int32* data = (cphvb_int32*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int32(&state);
 		}
 		break;
 
     	case CPHVB_INT64:
 		{
-			cphvb_int64* data = (cphvb_int64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_int64* data = (cphvb_int64*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int64(&state);
 		}
 		break;
 		
 		case CPHVB_UINT8:
 		{
-			cphvb_uint8* data = (cphvb_uint8*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_uint8* data = (cphvb_uint8*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint8(&state);
 		}
 		break;
 
     	case CPHVB_UINT16:
 		{
-			cphvb_uint16* data = (cphvb_uint16*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_uint16* data = (cphvb_uint16*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint16(&state);
 		}
 		break;
 
     	case CPHVB_UINT32:
 		{
-			cphvb_uint32* data = (cphvb_uint32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_uint32* data = (cphvb_uint32*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint32(&state);
 		}
 		break;
 
     	case CPHVB_UINT64:
 		{
-			cphvb_uint64* data = (cphvb_uint64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_uint64* data = (cphvb_uint64*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint64(&state);
 		}
 		break;
 
     	case CPHVB_FLOAT32:
 		{
-			cphvb_float32* data = (cphvb_float32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_float32* data = (cphvb_float32*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_float(&state);
 		}
 		break;
 
     	case CPHVB_FLOAT64:
 		{
-			cphvb_float64* data = (cphvb_float64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			cphvb_float64* data = (cphvb_float64*)ary->data;
+			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_double(&state);
 		}
 		break;
 
-	}		
-	
-    return NULL;
-}
-//Implementation of the user-defined funtion "random". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
-{
-    cphvb_random_type *a = (cphvb_random_type *) arg;
-    cphvb_array *ary = a->operand[0];
-    cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
-    cphvb_intp nthds = 1;
-
-    //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
-        
-    switch(ary->type)
-    {
-    	case CPHVB_INT8:
-    	case CPHVB_INT16:
-    	case CPHVB_INT32:
-    	case CPHVB_INT64:
-    	case CPHVB_UINT8:
-    	case CPHVB_UINT16:
-    	case CPHVB_UINT32:
-    	case CPHVB_UINT64:
-    	case CPHVB_FLOAT32:
-    	case CPHVB_FLOAT64:
-    		break;
-    	
     	default:
 	        return CPHVB_TYPE_NOT_SUPPORTED;
-    }
 
-    //We divide the blocks between the threads.
-    {//Find number of threads to use.
-        char *env = getenv("CPHVB_NUM_THREADS");
-        if(env != NULL)
-            nthds = atoi(env);
-
-        if(nthds > size)
-            nthds = size;//Minimum one block per thread.
-        if(nthds > 32)
-        {
-            printf("CPHVB_NUM_THREADS greater than 32!\n");
-            nthds = 32;//MAX 32 thds.
-        }
-    }
-
-    //Start threads.
-    thd_id ids[32];
-    pthread_t tid[32];
-    for(cphvb_intp i=0; i<nthds; ++i)
-    {
-        ids[i].myid        = i;
-        ids[i].nthds       = nthds;
-        ids[i].size        = size;
-        ids[i].data        = ary->data;
-        ids[i].type        = ary->type;
-        pthread_create(&tid[i], NULL, thd_do_random, (void *) (&ids[i]));
-    }
-    //Wait for threads to complete
-    for(cphvb_intp i=0; i<nthds; ++i)
-        pthread_join(tid[i], NULL);
+	}		
 
     return CPHVB_SUCCESS;
 }

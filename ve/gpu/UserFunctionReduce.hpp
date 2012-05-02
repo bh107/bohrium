@@ -28,20 +28,16 @@
 
 namespace UserFunctionReduce
 {
-    typedef std::map<std::string, Kernel> KernelMap;
-    static int kernelNo = 0;
-    static KernelMap kernelMap = KernelMap();
-
-    void run(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
-    Kernel generateKernel(cphvb_reduce_type* reduceDef, 
-                          UserFuncArg* userFuncArg,
-                          const std::vector<cphvb_index>& shape);
-    std::string generateCode(cphvb_reduce_type* reduceDef, 
-                             const std::vector<BaseArray*>& operandBase,
-                             const std::vector<cphvb_index>& shape);
-    void reduce1Dfinnish(cphvb_opcode opcode, 
-                         BaseArray* tmpArray, 
-                         BaseArray* outArray);
+    typedef std::map<size_t, Kernel> KernelMap;
+    static KernelMap kernelMap;
+    static std::hash<std::string> strHash;
+    void reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+    Kernel getKernel(cphvb_reduce_type* reduceDef,
+                     UserFuncArg* userFuncArg,
+                     std::vector<cphvb_index> shape);
+    std::string generateCode(cphvb_reduce_type* reduceDef,
+                             OCLtype outType, OCLtype inType,
+                             std::vector<cphvb_index> shape);
 }
 
 #endif

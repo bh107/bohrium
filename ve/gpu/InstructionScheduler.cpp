@@ -78,8 +78,8 @@ void InstructionScheduler::executeBatch()
         for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
         {
             delete *dsit;
-            discardSet.erase(dsit);            
         }
+        discardSet.clear();
         delete batch;
         batch = 0;
     }
@@ -136,7 +136,7 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     {
         cphvb_array* operand = userfunc->operand[i];
         cphvb_array* base = cphvb_base_array(operand);
-        if (i >= userfunc->nout && cphvb_is_scalar(base))
+        if (cphvb_is_scalar(base))
         {
             userFuncArg.operands.push_back(new Scalar(base));
             continue;

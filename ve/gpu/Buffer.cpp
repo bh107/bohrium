@@ -24,17 +24,27 @@
 Buffer::Buffer(size_t size, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)
-    , buffer(resourceManager_->createBuffer(size))
+    , dataType(OCL_UNKNOWN)
+    , clBuffer(resourceManager->createBuffer(size))
+    , writeEvent(resourceManager->completeEvent())
+{}
+
+Buffer::Buffer(size_t elements, OCLtype dataType_, ResourceManager* resourceManager_) 
+    : resourceManager(resourceManager_)
+    , device(0)
+    , dataType(dataType_)
+    , clBuffer(resourceManager->createBuffer(elements * oclSizeOf(dataType)))
+    , writeEvent(resourceManager->completeEvent())
 {}
 
 void Buffer::read(void* hostPtr)
 {
-    resourceManager->readBuffer(buffer, hostPtr, writeEvent, device);
+    resourceManager->readBuffer(clBuffer, hostPtr, writeEvent, device);
 }
 
 void Buffer::write(void* hostPtr)
 {
-    writeEvent = resourceManager->enqueueWriteBuffer(buffer, hostPtr, allEvents(), device);
+    writeEvent = resourceManager->enqueueWriteBuffer(clBuffer, hostPtr, allEvents(), device);
 }
 
 void Buffer::setWriteEvent(cl::Event event)
@@ -71,4 +81,26 @@ std::vector<cl::Event> Buffer::allEvents()
     std::vector<cl::Event> res(readEvents.begin(), readEvents.end());
     res.push_back(writeEvent);
     return res;
+}
+
+void Buffer::printOn(std::ostream& os) const
+{
+    os << "__global " << oclTypeStr(dataType) << "*";
+}
+
+void Buffer::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
+{
+    try
+    {
+        kernel.setArg(argIndex, clBuffer);
+    } catch (cl::Error err)
+    {
+        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        throw err;
+    }
+}
+
+OCLtype Buffer::type() const
+{
+    return dataType;
 }

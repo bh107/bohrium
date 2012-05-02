@@ -29,7 +29,7 @@ class KernelParameter
 protected:
     virtual void printOn(std::ostream& os) const = 0;
 public:
-    virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) const = 0;
+    virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) = 0;
     virtual OCLtype type() const = 0;
     friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
 };

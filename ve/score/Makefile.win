@@ -10,30 +10,24 @@ LIBFLAGS=/nologo /out:$(LIBNAME)
 LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 
 WARNOPTS=#-Wall
-CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)/pthread_win32/
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 
-HEADER=./*.hpp ./*.h $(ROOT)/include/* $(ROOT)/pthread_win32/*.h
-SRC=bundler.cpp get_traverse.cpp cphvb_ve_score.c dispatch.c random.c
-OBJTMP=$(SRC:.cpp=.obj)
-OBJ=$(OBJTMP:.c=.obj)
+HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+SRC=cphvb_ve_score.cpp
+OBJ=$(SRC:.cpp=.obj)
 
 all: $(DLLNAME)
 
-%.obj: %.c $(HEADER)
-		$(CXX) $(CFLAGS) $< /Fo$@
-
-bundler.obj: bundler.cpp $(HEADER)
-		$(CXX) $(CFLAGS) bundler.cpp /Fo$@
-get_traverse.obj: get_traverse.cpp $(HEADER)
-		$(CXX) $(CFLAGS) get_traverse.cpp /Fo$@
+cphvb_ve_score.obj: cphvb_ve_score.cpp $(HEADER)
+		$(CXX) $(CFLAGS) cphvb_ve_score.cpp /Fo$@
 
 
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib
 
 $(DLLNAME): $(LIBNAME)
-		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib $(ROOT)\pthread_win32\pthreadVC2_x64.lib
+		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib $(ROOT)\core\compute\cphvb_compute.lib $(ROOT)\core\bundler\cphvb_bundler.lib $(ROOT)\pthread_win32\pthreadVC2_x64.lib
 
 clean:
 		del *.obj *.lib *.dll *.exp *.pdb *.ilk

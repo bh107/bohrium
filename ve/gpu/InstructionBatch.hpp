@@ -35,7 +35,7 @@ class InstructionBatch
     typedef std::map<void*, std::string> VariableMap;
     typedef std::map<BaseArray*, cphvb_array*> OutputMap;
     typedef std::multimap<BaseArray*, cphvb_array*> InputMap;
-    typedef std::map<std::string, Kernel> KernelMap;
+    typedef std::map<size_t, Kernel> KernelMap;
     typedef std::list<KernelParameter*> ParameterList;
     typedef std::list<BaseArray*> OutputList;
     typedef std::list<std::pair<BaseArray*, cphvb_array*>> InputList;
@@ -52,7 +52,7 @@ private:
     int arraynum;
     int scalarnum;
     int variablenum;
-    static int kernelNo;
+    static std::hash<std::string> strHash;
     static KernelMap kernelMap;
 #ifdef STATS
     timeval createTime;

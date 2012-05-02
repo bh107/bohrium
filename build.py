@@ -106,13 +106,13 @@ if __name__ == "__main__":
             debug = True
         else:
             assert False, "unhandled option"
-    
+
     if sys.platform.startswith('win32'):
-    	makecommand="nmake"
-    	makefilename="Makefile.win"
+        makecommand="nmake"
+        makefilename="Makefile.win"
     elif sys.platform.startswith('darwin'):
-    	makefilename="Makefile.osx"
-    
+        makefilename="Makefile.osx"
+
     try:
         cmd = args[0]
     except IndexError:
@@ -124,53 +124,53 @@ if __name__ == "__main__":
     if cmd == "rebuild":
         clean("INIPARSER", "iniparser")
         clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMP", "core/comp")
+        clean("CORE-COMPUTE", "core/compute")
         clean("CORE", "core")
         clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
         clean("VE-SCORE", "ve/score")
         clean("VE-MCORE", "ve/mcore")
         clean("VEM-NODE", "vem/node")
-        clean("VEM-CLUSTER", "vem/cluster")
+        #clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
 
     if cmd == "build" or cmd == "rebuild":
         build("INIPARSER", "iniparser", True)
         build("CORE-BUNDLER", "core/bundler", True)
-        build("CORE-COMP", "core/comp", True)
+        build("CORE-COMPUTE", "core/compute", True)
         build("CORE", "core", True)
         build("VE-GPU", "ve/gpu", False)
         build("VE-SIMPLE", "ve/simple", False)
         build("VE-SCORE", "ve/score", True)
         build("VE-MCORE", "ve/mcore", True)
         build("VEM-NODE", "vem/node", True)
-        build("VEM-CLUSTER", "vem/cluster", False)
+        #build("VEM-CLUSTER", "vem/cluster", False)
         build("BRIDGE-NUMPY", "bridge/numpy", True)
     elif cmd == "clean":
         clean("INIPARSER", "iniparser")
         clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMP", "core/comp")
+        clean("CORE-COMPUTE", "core/compute")
         clean("CORE", "core")
         clean("VE-GPU", "ve/gpu")
         clean("VE-SIMPLE", "ve/simple")
         clean("VE-SCORE", "ve/score")
         clean("VE-MCORE", "ve/mcore")
         clean("VEM-NODE", "vem/node")
-        clean("VEM-CLUSTER", "vem/cluster")
+        #clean("VEM-CLUSTER", "vem/cluster")
         clean("BRIDGE-NUMPY", "bridge/numpy")
     elif cmd == "install":
         if not exists("/opt/cphvb"):
             os.mkdir("/opt/cphvb")
         install("INIPARSER", "iniparser", True)
         install("CORE-BUNDLER", "core/bundler", True)
-        install("CORE-COMP", "core/comp", True)
+        install("CORE-COMPUTE", "core/compute", True)
         install("CORE", "core", True)
         install("VE-GPU", "ve/gpu", False)
         install("VE-SIMPLE", "ve/simple", True)
         install("VE-SCORE", "ve/score",True)
         install("VE-MCORE", "ve/mcore",True)
         install("VEM-NODE", "vem/node", True)
-        install("VEM-CLUSTER", "vem/cluster", False)
+        #install("VEM-CLUSTER", "vem/cluster", False)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
         install_config();
         #ldconfig()

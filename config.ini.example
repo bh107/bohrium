@@ -1,12 +1,3 @@
-#[setup]
-#bridge = numpy
-#log = low
-#debug = true
-
-#[numpy]
-#type = bridge
-#children = node
-
 [bridge]
 type = bridge
 children = node

@@ -74,6 +74,7 @@ ResourceManager::ResourceManager()
 #ifdef STATS
 ResourceManager::~ResourceManager()
 {
+    std::cout << std::fixed;
     std::cout << "------------------ STATS ------------------------" << std::endl;
     std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
     std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;
@@ -132,6 +133,7 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
         commandQueues[device].enqueueWriteBuffer(buffer, CL_FALSE, 0, size, hostPtr, &waitFor, &event);
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueWriteBuffer: \"" << e.what() << "\"" << std::endl;
+        throw e;
     }
 #ifdef STATS
     event.setCallback(CL_COMPLETE, &eventProfiler, &resourceBufferWrite);

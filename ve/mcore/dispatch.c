@@ -1,5 +1,5 @@
 #include <cphvb.h>
-#include <cphvb_comp.h>
+#include <cphvb_compute.h>
 #include "dispatch.h"
 #include <assert.h>
 #include <pthread.h>
@@ -59,7 +59,7 @@ static cphvb_intp thd_nblocks;
 static cphvb_intp thd_nthds;
 static cphvb_intp thd_size;
 static cphvb_instruction** thd_inst_bundle;
-static comploop *thd_traverses;
+static computeloop *thd_traverses;
 static int main_finished_idx = 0;//Finished index for main.
 
 //The thread function.
@@ -82,7 +82,7 @@ static void *thd_do(void *msg)
         cphvb_intp size = thd_size;
         cphvb_intp nblocks = thd_nblocks;
         cphvb_instruction** inst_bundle = thd_inst_bundle;
-        comploop *traverses = thd_traverses;
+        computeloop *traverses = thd_traverses;
 
         if(nthds > nblocks)
             nblocks = nthds;//Minimum one block per thread.
@@ -228,10 +228,10 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
     cphvb_error ret = CPHVB_SUCCESS;
 
     //Get all traverse function -- one per instruction.
-    comploop traverses[CPHVB_MAX_NO_INST];
+    computeloop traverses[CPHVB_MAX_NO_INST];
     for(cphvb_intp j=0; j<size; ++j)
     {
-        traverses[j] = cphvb_comp_get( inst_bundle[j] );
+        traverses[j] = cphvb_compute_get( inst_bundle[j] );
         if(traverses[j] == NULL)
         {
             inst_bundle[j]->status = CPHVB_OUT_OF_MEMORY;

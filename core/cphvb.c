@@ -169,11 +169,11 @@ cphvb_array* cphvb_base_array(cphvb_array* view)
  */
 cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
 {
-	cphvb_array* base;
+    cphvb_array* base;
 
-    if(array == NULL) 
+    if(array == NULL)
     {
-    	fprintf(stderr, "Attempt to set data pointer for a null array\n");
+        fprintf(stderr, "Attempt to set data pointer for a null array\n");
         return CPHVB_ERROR;
     }
 
@@ -181,13 +181,13 @@ cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
 
     if(base->data != NULL && data != NULL)
     {
-    	fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
+        fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
         return CPHVB_ERROR;
-	}
+    }
 
-	base->data = data;
-	
-	return CPHVB_SUCCESS;
+    base->data = data;
+
+    return CPHVB_SUCCESS;
 }
 
 /* Get the data pointer for the array.
@@ -198,19 +198,19 @@ cphvb_error cphvb_data_set(cphvb_array* array, cphvb_data_ptr data)
  */
 cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result)
 {
-	cphvb_array* base;
+    cphvb_array* base;
 
-    if(array == NULL) 
+    if(array == NULL)
     {
-    	fprintf(stderr, "Attempt to get data pointer for a null array\n");
+        fprintf(stderr, "Attempt to get data pointer for a null array\n");
         return CPHVB_ERROR;
     }
 
     base = cphvb_base_array(array);
 
-	*result = base->data;
-	
-	return CPHVB_SUCCESS;
+    *result = base->data;
+
+    return CPHVB_SUCCESS;
 }
 
 /* Allocate data memory for the given array if not already allocated.
@@ -296,7 +296,7 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
 {
     if (cphvb_is_constant(instruction->operand[operand_no]))
         return instruction->constant.type;
-    else 
+    else
         return instruction->operand[operand_no]->type;
 }
 
@@ -309,11 +309,13 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  */
 bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
 {
+    cphvb_intp i;
     if (a == NULL || b == NULL)
         return false;
-    cphvb_intp i;
+
     if(a == b)
         return false;
+
     if(cphvb_base_array(a) != cphvb_base_array(b))
         return false;
 

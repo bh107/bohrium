@@ -36,6 +36,8 @@ def array_equal(A,B,maxerror=0.0):
             return True
         else:
             return False
+    cphvbnumpy.unhandle_array(A)
+    cphvbnumpy.unhandle_array(B)
     A = A.flatten()
     B = B.flatten()
     if not len(A) == len(B):

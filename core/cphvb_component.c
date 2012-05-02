@@ -81,7 +81,7 @@ static void *get_dlsym(void *handle, const char *name,
                        cphvb_com_type type, const char *fun)
 {
     char tmp[1024];
-    char *stype;
+    const char *stype;
     void *ret;
     if(type == CPHVB_BRIDGE)
         stype = "bridge";
@@ -113,9 +113,9 @@ static void *get_dlsym(void *handle, const char *name,
  */
 cphvb_com *cphvb_com_setup(void)
 {
-	const char* homepath = HOME_INI_PATH;
-	const char* syspath = SYSTEM_INI_PATH;
-	
+    const char* homepath = HOME_INI_PATH;
+    const char* syspath = SYSTEM_INI_PATH;
+
     cphvb_com *com = (cphvb_com*)malloc(sizeof(cphvb_com));
     const char *env;
     if(com == NULL)
@@ -124,8 +124,8 @@ cphvb_com *cphvb_com_setup(void)
         exit(CPHVB_OUT_OF_MEMORY);
     }
 
-	//Clear memory so we do not have any random pointers
-	memset(com, 0, sizeof(cphvb_com));    
+    //Clear memory so we do not have any random pointers
+    memset(com, 0, sizeof(cphvb_com));
 
     strcpy(com->name, "bridge"); //The config root keyword.
 
@@ -133,60 +133,60 @@ cphvb_com *cphvb_com_setup(void)
     env = getenv("CPHVB_CONFIG");
     if (env != NULL)
     {
-		FILE *fp = fopen(env,"r");
-		if( fp )
-			fclose(fp);
-		else
-			env = NULL;//Did not exist.
+        FILE *fp = fopen(env,"r");
+        if( fp )
+            fclose(fp);
+        else
+            env = NULL;//Did not exist.
     }
-    
+
     //Then the home directory.
     if(env == NULL)
-    { 
-    	
+    {
+
 #if _WIN32
-		DWORD result = ExpandEnvironmentStrings(
-			homepath,
-			_expand_buffer1,
-			MAX_PATH-1
-		);
-		
-		if (result != 0) 
-		{
-			homepath = _expand_buffer1;
-		}
+        DWORD result = ExpandEnvironmentStrings(
+            homepath,
+            _expand_buffer1,
+            MAX_PATH-1
+        );
+
+        if (result != 0)
+        {
+            homepath = _expand_buffer1;
+        }
 #else
-		
-		char* h = getenv("HOME");
-		if (h != NULL) 
-		{
-			snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath+1);
-			homepath = _expand_buffer;
-		}
+
+        char* h = getenv("HOME");
+        if (h != NULL)
+        {
+            snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath+1);
+            homepath = _expand_buffer;
+        }
 #endif
 
-		FILE *fp = fopen(homepath,"r");
+        FILE *fp = fopen(homepath,"r");
         if( fp ) {
             env = homepath;
             fclose(fp);
         }
-    
+
     }
-        
+
     //And finally system-wide.
     if(env == NULL)
     {
 #if _WIN32
-		DWORD result = ExpandEnvironmentStrings(
-			syspath,
-			_expand_buffer2,
-			MAX_PATH-1
-		);
-		
-		if (result != 0) 
-		{
-			syspath = _expand_buffer2;
-		}
+        DWORD result = ExpandEnvironmentStrings(
+            syspath,
+            _expand_buffer2,
+            MAX_PATH-1
+        );
+
+        if (result != 0)
+        {
+            syspath = _expand_buffer2;
+        }
 #endif
 
         FILE *fp = fopen(syspath,"r");
@@ -195,7 +195,7 @@ cphvb_com *cphvb_com_setup(void)
             fclose(fp);
         }
     }
-    
+
     if(env == NULL)
     {
         fprintf(stderr, "Error: cphVB could not find the config file."
@@ -250,7 +250,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
     child = strtok(tchildren,",");
     while(child != NULL && *count < CPHVB_COM_MAX_CHILDS)
     {
-    	(*children)[*count] = (cphvb_com*)malloc(sizeof(cphvb_com));
+        (*children)[*count] = (cphvb_com*)malloc(sizeof(cphvb_com));
         cphvb_com *com = (*children)[*count];
 
         //Save component name.
@@ -375,8 +375,8 @@ cphvb_error cphvb_com_free(cphvb_com *component)
  */
 cphvb_error cphvb_com_free_ptr(void* data)
 {
-	free(data);
-	return CPHVB_SUCCESS;
+    free(data);
+    return CPHVB_SUCCESS;
 }
 
 /* Trace an array creation.

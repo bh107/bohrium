@@ -23,7 +23,7 @@
 #include "Scalar.hpp"
 
 Scalar::Scalar(cphvb_constant constant)
-  : mytype(oclType(constant.type))
+    : mytype(oclType(constant.type))
 {
     switch (constant.type)
     {
@@ -69,7 +69,7 @@ Scalar::Scalar(cphvb_constant constant)
 }
 
 Scalar::Scalar(cphvb_array* spec)
-  : mytype(oclType(spec->type))
+    : mytype(oclType(spec->type))
 {
     assert(cphvb_is_scalar(spec));
     switch (spec->type)
@@ -115,6 +115,12 @@ Scalar::Scalar(cphvb_array* spec)
     }
 }
 
+Scalar::Scalar(cl_long v)
+    : mytype(OCL_INT64)
+{
+    value.l = v;
+}
+
 OCLtype Scalar::type() const
 {
     return mytype;
@@ -125,7 +131,7 @@ void Scalar::printOn(std::ostream& os) const
     os << "const " << oclTypeStr(mytype);
 }
 
-void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex) const
+void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
     switch(mytype)
     {

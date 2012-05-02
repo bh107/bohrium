@@ -25,8 +25,8 @@
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 
-int InstructionBatch::kernelNo = 0;
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
+std::hash<std::string> InstructionBatch::strHash = std::hash<std::string>();
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
@@ -211,7 +211,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 ss << "s" << scalarnum++;
                 kernelVariables[&(inst->operand[op])] = ss.str();
             } else {
-                ss << "p" << arraynum++;
+                ss << "a" << arraynum++;
             }
             parameters[kp] = ss.str();
             parameterList.push_back(kp);
@@ -230,15 +230,16 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     gettimeofday(&end,NULL);
     resourceManager->batchSource += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
 #endif
+    size_t codeHash = strHash(code);
 
-    KernelMap::iterator kit = kernelMap.find(code);
+    KernelMap::iterator kit = kernelMap.find(codeHash);
     if (kit == kernelMap.end())
     {
         std::stringstream source, kname;
-        kname << "kernel" << kernelNo++;
+        kname << "kernel" << std::hex << codeHash;
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
-        kernelMap.insert(std::make_pair(code, kernel));
+        kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
         return kit->second;

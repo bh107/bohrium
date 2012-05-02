@@ -18,8 +18,6 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include <assert.h>
-#include <cphvb_comp.h>
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -30,66 +28,77 @@ static cphvb_intp random_impl_id = 0;
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
     myself = self;
-
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_score_execute(
+cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
+{
+    cphvb_intp count, nops, i;
+    cphvb_instruction* inst;
+    cphvb_error ret = CPHVB_SUCCESS;
 
-    cphvb_intp          instruction_count,
-    cphvb_instruction*   instruction_list
-
-) {
-    cphvb_intp count=0, nops, i;
-
-    while(count < instruction_count)
+    for(count=0; count < instruction_count; count++)
     {
-        cphvb_instruction* inst = &instruction_list[count];
+        inst = &instruction_list[count];
 
-        // Make sure that the array memory is allocated.
-        nops = cphvb_operands(inst->opcode);
-        for(i = 0; i<nops; i++) {
+        if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
+        {
+            continue;
+        }
 
-            if (!cphvb_is_constant(inst->operand[i])) {
-                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS) {
-                    return CPHVB_OUT_OF_MEMORY;
+        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
+        for(i=0; i<nops; i++)
+        {
+            if (!cphvb_is_constant(inst->operand[i]))
+            {
+                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+                {
+                    return CPHVB_OUT_OF_MEMORY; // EXIT
                 }
             }
 
         }
 
-        // Execute it...
-        switch(inst->opcode)
+        switch(inst->opcode)                    // Dispatch instruction
         {
-            case CPHVB_NONE:
+            case CPHVB_NONE:                    // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
+                inst->status = CPHVB_INST_DONE;
                 break;
-            case CPHVB_USERFUNC:
+
+            case CPHVB_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    inst->status = reduce_impl(inst->userfunc, NULL);
+                    ret = reduce_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    inst->status = random_impl(inst->userfunc, NULL);
+                    ret = random_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
-                else// Unsupported instruction
+                else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_TYPE_NOT_SUPPORTED;
+                    ret = CPHVB_TYPE_NOT_SUPPORTED;
                 }
 
-            default://This is a regular operation.
-                if(inst->status == CPHVB_INST_UNDONE) {
-                    cphvb_comp_apply( inst );
-                }
+                break;
+
+            default:                            // Built-in operations
+                ret = cphvb_compute_apply( inst );
+                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
         }
-        ++count;
+
+        if (inst->status != CPHVB_INST_DONE)    // Instruction failed
+        {
+            return ret;                         // EXIT
+        }
 
     }
-
-    return CPHVB_SUCCESS;
+                                                // All instructions succeeded.
+    return ret;                                 // EXIT
 
 }
 
@@ -113,75 +122,12 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     return CPHVB_SUCCESS;
 }
 
-//Implementation of the user-defined funtion "reduce". Note that we
-//follow the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
 {
-    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
-    cphvb_instruction tinst;
-    cphvb_instruction *inst[1] = {&tinst};
-    cphvb_error err;
-    cphvb_intp i,j;
-    cphvb_index coord[CPHVB_MAXDIM];
-    memset(coord, 0, a->operand[1]->ndim * sizeof(cphvb_index));
+    return cphvb_compute_reduce( arg, ve_arg );
+}
 
-    if(cphvb_operands(a->opcode) != 3)
-    {
-        fprintf(stderr, "Reduce only support binary operations.\n");
-        exit(-1);
-    }
-
-    //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
-    {
-        return CPHVB_OUT_OF_MEMORY;
-    }
-
-    //We need a tmp copy of the arrays.
-    cphvb_array *out = a->operand[0];
-    cphvb_array *in  = a->operand[1];
-    cphvb_array tmp  = *in;
-    tmp.base = cphvb_base_array(in);
-    cphvb_intp step = in->stride[a->axis];
-    tmp.start = 0;
-    j=0;
-    for(i=0; i<in->ndim; ++i)//Remove the 'axis' dimension from in
-        if(i != a->axis)
-        {
-            tmp.shape[j] = in->shape[i];
-            tmp.stride[j] = in->stride[i];
-            ++j;
-        }
-    --tmp.ndim;
-
-    //We copy the first element to the output.
-    inst[0]->status = CPHVB_INST_UNDONE;
-    inst[0]->opcode = CPHVB_IDENTITY;
-    inst[0]->operand[0] = out;
-    inst[0]->operand[1] = &tmp;
-    err = cphvb_comp_apply( inst[0] );    // execute the instruction...
-    if(err != CPHVB_SUCCESS)
-        return err;
-    tmp.start += step;
-
-    //Reduce over the 'axis' dimension.
-    //NB: the first element is already handled.
-    inst[0]->status = CPHVB_INST_UNDONE;
-    inst[0]->opcode = a->opcode;
-    inst[0]->operand[0] = out;
-    inst[0]->operand[1] = out;
-    inst[0]->operand[2] = &tmp;
-    cphvb_intp axis_size = in->shape[a->axis];
-
-    for(i=1; i<axis_size; ++i)
-    {
-        //One block per thread.
-        err = cphvb_comp_apply(inst[0]);
-        if(err != CPHVB_SUCCESS)
-            return err;
-        tmp.start += step;
-    }
-
-    return CPHVB_SUCCESS;
+cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_random( arg, ve_arg );
 }
