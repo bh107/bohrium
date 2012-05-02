@@ -474,7 +474,7 @@ namespace NumCIL.Generic
             if (@out == null)
                 return new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
 
-            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
+            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Select(x => x.Length).Reverse().ToArray()));
             UFunc.Apply<T, CopyOp<T>>(lv, @out);
             return @out;
         }
@@ -498,7 +498,7 @@ namespace NumCIL.Generic
         {
             long real_axis =
                 axis.HasValue ?
-                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - axis.Value : axis.Value)
+                (axis.Value < 0 ? this.Shape.Dimensions.LongLength - (axis.Value + 1) : (axis.Value + 1))
                 : this.Shape.Dimensions.LongLength;
 
             //First we add a new axis so all elements are in their own dimension
@@ -519,7 +519,7 @@ namespace NumCIL.Generic
             {
                 //With a specified axis, we return a reshaped array
                 long[] newDims = this.Shape.Dimensions.Select(x => x.Length).ToArray();
-                newDims[real_axis] = repeats * newDims[real_axis];
+                newDims[real_axis - 1] = repeats * newDims[real_axis - 1];
                 return res.Reshape(newDims);
             }
         }
@@ -587,6 +587,7 @@ namespace NumCIL.Generic
                     long[] tmp = new long[this.Shape.Dimensions[real_axis].Length];
                     for(long i = 0; i < tmp.LongLength; i++)
                         tmp[i] = repeats[i % repeats.LongLength];
+                    repeats = tmp;
 
                 }
 
