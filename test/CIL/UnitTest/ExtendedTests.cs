@@ -38,15 +38,15 @@ namespace UnitTest
 
             var h = d.Reshape(new Shape(new long[] { 2, 2, 2 }));
             var i = h.Repeat(4, 0);
-            if (i.Shape.Dimensions[0].Length != 8 || i.Shape.Elements != 8*4 || Add.Reduce(Add.Reduce(Add.Reduce(i))).Value[0] != 144)
+            if (i.Shape.Dimensions[0].Length != 8 || i.Shape.Elements != 8 * 4 || Add.Reduce(Add.Reduce(Add.Reduce(i))).Value[0] != 144 || i.Value[4, 0, 0] != 5 || i.Value[4, 1, 1] != 8 || i.Value[3, 0, 0] != 1)
                 throw new Exception("Something failed in axis repeat");
 
             var j = h.Repeat(4, 1);
-            if (j.Shape.Dimensions[1].Length != 8 || j.Shape.Elements != 8*4 || Add.Reduce(Add.Reduce(Add.Reduce(j))).Value[0] != 144)
+            if (j.Shape.Dimensions[1].Length != 8 || j.Shape.Elements != 8 * 4 || Add.Reduce(Add.Reduce(Add.Reduce(j))).Value[0] != 144 || j.Value[0, 4, 0] != 3 || j.Value[1, 4, 1] != 8 || j.Value[0, 3, 0] != 1)
                 throw new Exception("Something failed in axis repeat");
 
             var k = h.Repeat(4, 2);
-            if (k.Shape.Dimensions[2].Length != 8 || k.Shape.Elements != 8 * 4 || Add.Reduce(Add.Reduce(Add.Reduce(k))).Value[0] != 144)
+            if (k.Shape.Dimensions[2].Length != 8 || k.Shape.Elements != 8 * 4 || Add.Reduce(Add.Reduce(Add.Reduce(k))).Value[0] != 144 || k.Value[0, 0, 4] != 2 || k.Value[1, 1, 4] != 8 || k.Value[0, 0, 3] != 1)
                 throw new Exception("Something failed in axis repeat");
 
             var l = h.Repeat(new long[] {4, 2}, 0);
@@ -96,6 +96,11 @@ namespace UnitTest
             var z = w.MatrixMultiply(new NdArray(new float[] {1,2}).Reshape(new Shape(new long[] {2})));
             if (z.Sum() != 44)
                 throw new Exception("Failure in matrix multiply");
+
+            var x0 = Generate.Arange(20).Repeat(new long[] { 10 }, 0);
+            var x1 = Generate.Arange(20).Repeat(10, 0);
+            if (x0.Sum() != 1900 || x1.Sum() != 1900)
+                throw new Exception("Failure in repeat");
         }
     }
 }
