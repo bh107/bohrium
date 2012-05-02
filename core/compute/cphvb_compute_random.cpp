@@ -20,6 +20,7 @@
 #include <cphvb_compute.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <time.h>
 #else
 #include <sys/time.h>
 #include <unistd.h>

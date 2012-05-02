@@ -9,7 +9,8 @@ LIBFLAGS=/nologo /out:$(LIBNAME)
 LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 
 WARNOPTS=#-Wall
-CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src
+HEADER=.\*.hpp .\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 SRC=cphvb_ve_simple.c
 OBJ=$(SRC:.c=.obj)
@@ -17,7 +18,7 @@ INSTALLDIR=/opt/cphvb/
 
 all: $(DLLNAME)
 
-%.obj: %.c $(ROOT)/include/*
+%.obj: %.c $(HEADER)
 		$(CC) $(CFLAGS) $< /Fo$@
 
 $(LIBNAME): $(OBJ)
