@@ -22,4 +22,4 @@ install: all
 	@-(echo 'Done.')
 
 clean:
-	rm -rf *.o *~ *.so
+	rm -rf *.o *~
