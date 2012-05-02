@@ -52,7 +52,10 @@ void UserFunctionReduce::reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userF
     Kernel::Parameters kernelParameters;
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
-    kernel.call(kernelParameters, shape);
+    std::vector<size_t> globalShape;
+    for (int i = shape.size()-1; i>=0; --i)
+        globalShape.push_back(shape[i]);
+    kernel.call(kernelParameters, globalShape);
 }
 
 Kernel UserFunctionReduce::getKernel(cphvb_reduce_type* reduceDef, 
