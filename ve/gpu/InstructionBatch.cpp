@@ -243,7 +243,10 @@ void InstructionBatch::run(ResourceManager* resourceManager)
             else
                 kernelParameters.push_back(std::make_pair(*pit, true));
         }
-        kernel.call(kernelParameters, shape);
+        std::vector<size_t> globalShape;
+        for (int i = shape.size()-1; i>=0; --i)
+            globalShape.push_back(shape[i]);
+        kernel.call(kernelParameters, globalShape);
     }
 }
 
