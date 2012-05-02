@@ -110,6 +110,7 @@
     <Compile Include="TypedArrays\UInt64.cs" />
     <Compile Include="TypedArrays\UInt8.cs" />
     <Compile Include="UFunc\Aggregate.cs" />
+    <Compile Include="UFunc\Matmul.cs" />
     <Compile Include="UFunc\Reduce.cs" />
     <Compile Include="UFunc\Apply.cs" />
     <Compile Include="UFunc\API.cs" />

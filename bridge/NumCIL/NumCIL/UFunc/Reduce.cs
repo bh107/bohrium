@@ -15,7 +15,7 @@ namespace NumCIL
         /// Wrapper class to represent a pending reduce operation in a list of pending operations
         /// </summary>
         /// <typeparam name="T">The type of data being processed</typeparam>
-        public struct LazyReduceOperation<T> : IBinaryOp<T>
+        public struct LazyReduceOperation<T> : IOp<T>
         {
             /// <summary>
             /// The axis to reduce
@@ -158,7 +158,7 @@ namespace NumCIL
                 axis = in1.Shape.Dimensions.LongLength - axis;
 
             //Basic case, just return a reduced array
-            if (in1.Shape.Dimensions[axis].Length == 1)
+            if (in1.Shape.Dimensions[axis].Length == 1 && in1.Shape.Dimensions.LongLength > 1)
             {
                 //TODO: If both in and out use the same array, just return a reshaped in
                 long j = 0;
@@ -177,9 +177,9 @@ namespace NumCIL
                     long ix = in1.Shape.Offset;
                     long limit = (stride * in1.Shape.Dimensions[0].Length) + ix;
 
-                    T value = op.Op(d[ix], d[ix + stride]);
+                    T value = d[ix];
 
-                    for (long i = ix + (stride * 2); i < ix + limit; i += stride)
+                    for (long i = ix + stride; i < ix + limit; i += stride)
                         value = op.Op(value, d[i]);
 
                     vd[@out.Shape.Offset] = value;
@@ -244,27 +244,17 @@ namespace NumCIL
                 else
                 {
                     long size = in1.Shape.Dimensions[axis].Length;
-                    Range[] inRanges = new Range[in1.Shape.Dimensions.LongLength];
-                    Range[] outRanges = new Range[in1.Shape.Dimensions.LongLength];
-                    
-                    //We make a fake shape for the arrays, so they mach
-                    for (long i = 0; i < inRanges.LongLength; i++)
-                        inRanges[i] = i == axis ? Range.El(0) : Range.All;
-                    for (long i = 0; i < outRanges.LongLength; i++)
-                        outRanges[i] = i == axis ? Range.NewAxis : Range.All;
-
-                    NdArray<T> vl = @out[outRanges];
+                    NdArray<T> vl = @out.Subview(Range.NewAxis, axis);
 
                     //Initially we just copy the value
-                    UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1[inRanges], ref vl);
+                    UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1.Subview(Range.El(0), axis), ref vl);
                     
                     //If there is more than one element in the dimension to reduce, apply the operation accumulatively
                     for (long j = 1; j < size; j++)
                     {
                         //Select the new dimension
-                        inRanges[axis] = Range.El(j);
                         //Apply the operation
-                        UFunc_Op_Inner_Binary_Flush<T, C>(op, vl, in1[inRanges], ref vl);
+                        UFunc_Op_Inner_Binary_Flush<T, C>(op, vl, in1.Subview(Range.El(j), axis), ref vl);
                     }
                 }
             }

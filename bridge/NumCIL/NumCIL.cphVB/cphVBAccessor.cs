@@ -119,7 +119,8 @@ namespace NumCIL.cphVB
                 res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsReduce)
                 res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
-
+            if (VEM.Instance.SupportsMatmul)
+                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
             return res;
         }
     }
@@ -573,7 +574,11 @@ namespace NumCIL.cphVB
                                     isSupported = true;
                                 }
                             }
+                            else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
+                            {
+                                supported.Add(VEM.CreateMatmulInstruction<T>(CPHVB_TYPE, operands[0], operands[1], operands[2]));
 
+                            }
 
                             if (!isSupported)
                             {

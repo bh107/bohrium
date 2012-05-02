@@ -69,6 +69,13 @@ namespace NumCIL.UInt32
         /// <returns>The subview</returns>
         public OutArray Subview(Range range, long dimension) { return this.value.Subview(range, dimension); }
         /// <summary>
+        /// Returnes a sliced subview of the data, optionally collapsing single element dimensions
+        /// </summary>
+        /// <param name="ranges">The ranges to view for each dimension</param>
+        /// <param name="collapse">True if single element dimensions should be collapsed, false to retain all dimensions</param>
+        /// <returns>A new view of the data</returns>
+        public OutArray Subview(Range[] ranges, bool collapse) { return this.value.Subview(ranges, collapse); }
+        /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>
@@ -170,6 +177,28 @@ namespace NumCIL.UInt32
         /// <param name="axis">The axis to repeat, if not specified, repeat is done on a flattened array</param>
         /// <returns>A repeated copy of the input data</returns>
         public OutArray Repeat(long[] repeats, long? axis = null) { return value.Repeat(repeats, axis); }
+
+        /// <summary>
+        /// Concatenates an array onto this array, joined at the axis
+        /// </summary>
+        /// <param name="arg">The array to join</param>
+        /// <param name="axis">The axis to join at</param>
+        /// <returns>The joined array</returns>
+        public OutArray Concatenate(OutArray arg, long axis = 0) { return this.value.Concatenate(arg, axis); }
+
+        /// <summary>
+        /// Performs matrix multiplication on the two elements
+        /// </summary>
+        /// <param name="arg">The right-hand-side argument in matrix multiplication</param>
+        /// <param name="out">Optional target for the multiplication</param>
+        /// <returns>The matrix multiplication result</returns>
+        public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
+
+        /// <summary>
+        /// Sets the values viewed to the values from another array, i.e. copies the values
+        /// </summary>
+        /// <param name="arg">The data to copy</param>
+        public void Set(OutArray arg) { this.value.Set(arg); }
         #endregion
 
         /// <summary>
@@ -806,7 +835,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Sub>(@in, scalar, @out); }
     }
     /// <summary>
     /// The multiplication operator implementation
@@ -858,7 +887,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Mul>(@in, scalar, @out); }
     }
     /// <summary>
     /// The division operator implementation
@@ -910,7 +939,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Div>(@in, scalar, @out); }
     }
     /// <summary>
     /// The modulo operation implementation
@@ -962,7 +991,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Mod>(@in, scalar, @out); }
     }
 
     /// <summary>
@@ -1015,7 +1044,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Max>(@in, scalar, @out); }
     }
     /// <summary>
     /// The minimum operation implementation
@@ -1067,7 +1096,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Min>(@in, scalar, @out); }
     }
 
     /// <summary>
@@ -1324,7 +1353,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>A reduced NdArray</returns>
         public static OutArray Reduce(OutArray arg, long axis = 0, OutArray @out = null)
-        { return UFunc.Reduce<T, Max>(arg, axis, @out); }
+        { return UFunc.Reduce<T, Pow>(arg, axis, @out); }
 
         /// <summary>
         /// Reduces the input array to a scalar with the power operation
@@ -1342,7 +1371,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray in1, OutArray in2, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(in1, in2, @out); }
+        { return UFunc.Apply<T, Pow>(in1, in2, @out); }
 
         /// <summary>
         /// Applies the power operation to the input operands
@@ -1352,7 +1381,7 @@ namespace NumCIL.UInt32
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
-        { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+        { return UFunc.Apply<T, Pow>(@in, scalar, @out); }
     }
     #endregion
 
