@@ -11,8 +11,8 @@ def jacobi(A, B, tol=0.005):
     cphvbnumpy.handle_array(h)
     dmax = 1.0
     n = 0
-    tmp0 = empty(shape(A), float, dist=True)
-    tmp1 = empty(shape(B), float, dist=True)
+    tmp0 = empty(shape(A), float, cphvb=True)
+    tmp1 = empty(shape(B), float, cphvb=True)
     AD = diagonal(A)
     while dmax > tol:
         n += 1

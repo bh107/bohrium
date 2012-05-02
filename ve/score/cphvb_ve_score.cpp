@@ -72,13 +72,12 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 if(inst->userfunc->id == reduce_impl_id)
                 {
                     ret = reduce_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_ERROR;
-
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
                     ret = random_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_ERROR;
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
                 else                            // Unsupported userfunc
                 {
@@ -89,10 +88,11 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
             default:                            // Built-in operations
                 ret = cphvb_compute_apply( inst );
-                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_ERROR;
+                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
         }
 
-        if (inst->status != CPHVB_INST_DONE) {  // Instruction failed
+        if (inst->status != CPHVB_INST_DONE)    // Instruction failed
+        {
             return ret;                         // EXIT
         }
 

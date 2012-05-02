@@ -125,6 +125,7 @@ namespace NumCIL.cphVB
         public static readonly int USERFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_union));
         public static readonly int RANDOMFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_random));
         public static readonly int REDUCEFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_reduce));
+        public static readonly int MATMULFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_matmul));
         public static readonly int PLAINFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_plain));
 
         public enum cphvb_com_type : long
@@ -638,6 +639,29 @@ namespace NumCIL.cphVB
                 this.nin = 0;
                 this.struct_size = RANDOMFUNC_SIZE;
                 this.operand = op;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
+        public struct cphvb_userfunc_matmul
+        {
+            public cphvb_intp id;
+            public cphvb_intp nout;
+            public cphvb_intp nin;
+            public cphvb_intp struct_size;
+            public cphvb_array_ptr operand0;
+            public cphvb_array_ptr operand1;
+            public cphvb_array_ptr operand2;
+
+            public cphvb_userfunc_matmul(cphvb_intp func, cphvb_array_ptr op1, cphvb_array_ptr op2, cphvb_array_ptr op3)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 2;
+                this.struct_size = MATMULFUNC_SIZE;
+                this.operand0 = op1;
+                this.operand1 = op2;
+                this.operand2 = op3;
             }
         }
 

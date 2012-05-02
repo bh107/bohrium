@@ -15,25 +15,25 @@ class ElementOperators(unittest.TestCase):
         a_2d = [a_1d]*10
         a_3d = [a_2d]*10
 
-        self.a1_0d = np.array(a_0d, dist=True)
-        self.a2_0d = np.array(a_0d, dist=True)
-        self.a3_0d = np.array(a_0d, dist=True)
+        self.a1_0d = np.array(a_0d, cphvb=True)
+        self.a2_0d = np.array(a_0d, cphvb=True)
+        self.a3_0d = np.array(a_0d, cphvb=True)
 
-        self.a1_1d = np.array(a_1d, dist=True)
-        self.a2_1d = np.array(a_1d, dist=True)
-        self.a3_1d = np.array(a_1d, dist=True)
+        self.a1_1d = np.array(a_1d, cphvb=True)
+        self.a2_1d = np.array(a_1d, cphvb=True)
+        self.a3_1d = np.array(a_1d, cphvb=True)
 
-        self.a1_1d = np.array(a_1d, dist=True)
-        self.a2_1d = np.array(a_1d, dist=True)
-        self.a3_1d = np.array(a_1d, dist=True)
+        self.a1_1d = np.array(a_1d, cphvb=True)
+        self.a2_1d = np.array(a_1d, cphvb=True)
+        self.a3_1d = np.array(a_1d, cphvb=True)
 
-        self.a1_2d = np.array(a_2d, dist=True)
-        self.a2_2d = np.array(a_2d, dist=True)
-        self.a3_2d = np.array(a_2d, dist=True)
+        self.a1_2d = np.array(a_2d, cphvb=True)
+        self.a2_2d = np.array(a_2d, cphvb=True)
+        self.a3_2d = np.array(a_2d, cphvb=True)
 
-        self.a1_3d = np.array(a_3d, dist=True)
-        self.a2_3d = np.array(a_3d, dist=True)
-        self.a3_3d = np.array(a_3d, dist=True)
+        self.a1_3d = np.array(a_3d, cphvb=True)
+        self.a2_3d = np.array(a_3d, cphvb=True)
+        self.a3_3d = np.array(a_3d, cphvb=True)
 
         self.v1_3d = self.a1_3d[0:]
 
@@ -100,7 +100,7 @@ class ElementOperators(unittest.TestCase):
     # Three-dimensional on views
     def test_add_3dv_aaa(self):
         self.assertTrue(numpytest.array_equal(
-            self.v1_3d + self.a2_3d, 
+            self.v1_3d + self.a2_3d,
             self.ra_3d
         ))
 

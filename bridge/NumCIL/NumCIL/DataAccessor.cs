@@ -167,6 +167,10 @@ namespace NumCIL.Generic
         /// </summary>
         protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc).GetMethod("UFunc_Reduce_Inner_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         /// <summary>
+        /// Cache of the generic template method
+        /// </summary>
+        protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc).GetMethod("UFunc_Matmul_Inner_Flush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        /// <summary>
         /// Cache of instantiated template methods
         /// </summary>
         protected static readonly Dictionary<object, System.Reflection.MethodInfo> specializedMethods = new Dictionary<object, System.Reflection.MethodInfo>();
@@ -332,6 +336,14 @@ namespace NumCIL.Generic
 
                     genericVersion.Invoke(null, new object[] { lzop.Operation, lzop.Axis, n.Operands[1], n.Operands[0] });
                     
+                }
+                else if (n.Operation is NumCIL.UFunc.LazyMatmulOperation<T>)
+                {
+                    NumCIL.UFunc.LazyMatmulOperation<T> lzmt = (NumCIL.UFunc.LazyMatmulOperation<T>)n.Operation;
+
+                    System.Reflection.MethodInfo genericVersion = matmulBaseMethodType.MakeGenericMethod(typeof(T), lzmt.AddOperator.GetType(), lzmt.MulOperator.GetType());
+                    genericVersion.Invoke(null, new object[] { lzmt.AddOperator, lzmt.MulOperator, n.Operands[1], n.Operands[2], n.Operands[0] });
+
                 }
                 else if (n.Operation is IBinaryOp<T>)
                 {

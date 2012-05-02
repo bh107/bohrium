@@ -48,6 +48,11 @@ namespace NumCIL.cphVB
         private readonly long m_randomFunctionId;
 
         /// <summary>
+        /// ID for the user-defined maxtrix multiplication operation
+        /// </summary>
+        private readonly long m_matmulFunctionId;
+
+        /// <summary>
         /// Flag that guards cleanup execution
         /// </summary>
         private bool m_preventCleanup = false;
@@ -147,6 +152,16 @@ namespace NumCIL.cphVB
             }
             catch { id = 0; }
             m_randomFunctionId = id;
+
+            id = 0;
+            try
+            {
+                e = m_childs[0].reg_func(null, "cphvb_matmul", ref id);
+                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                    id = 0;
+            }
+            catch { id = 0; }
+            m_matmulFunctionId = id;
         }
 
         /// <summary>
@@ -655,6 +670,31 @@ namespace NumCIL.cphVB
             );
         }
 
+        public IInstruction CreateMatmulInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        {
+            if (!SupportsMatmul)
+                throw new cphVBException("The VEM/VE setup does not support the matmul function");
+
+            GCHandle gh = GCHandle.Alloc(
+                new PInvoke.cphvb_userfunc_matmul(
+                    m_matmulFunctionId,
+                    CreateViewPtr<T>(type, op1),
+                    CreateViewPtr<T>(type, op2),
+                    CreateViewPtr<T>(type, op3)
+                ),
+                GCHandleType.Pinned
+            );
+
+            IntPtr adr = gh.AddrOfPinnedObject();
+
+            m_allocatedUserfuncs.Add(adr, gh);
+
+            return new PInvoke.cphvb_instruction(
+                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                adr
+            );
+        }
+
         /// <summary>
         /// Gets a value indicating if the Reduce operation is supported
         /// </summary>
@@ -665,5 +705,10 @@ namespace NumCIL.cphVB
         /// Gets a value indicating if the Random operation is supported
         /// </summary>
         public bool SupportsRandom { get { return m_randomFunctionId > 0; } }
+
+        /// <summary>
+        /// Gets a value indicating if the Matrix Multiplication operation is supported
+        /// </summary>
+        public bool SupportsMatmul { get { return m_matmulFunctionId > 0; } }
     }
 }

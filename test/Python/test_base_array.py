@@ -8,9 +8,9 @@ import numpytest
 import cphvbnumpy
 
 def f(DIST, SIZE):
-    tmp1 = np.array(range(1,SIZE), dtype=float, dist=DIST)
-    B    = np.array(range(1,SIZE), dtype=float, dist=DIST)
-    AD   = np.array(range(1,SIZE), dtype=float, dist=DIST)
+    tmp1 = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
+    B    = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
+    AD   = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
     for i in range(10):
         cphvbnumpy.flush()
         tmp1 += B

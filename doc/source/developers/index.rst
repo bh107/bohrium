@@ -6,7 +6,57 @@ cphVB Developer Guide
 Tools and Environment
 ---------------------
 
-...
+Tools of the trade::
+
+  sudo apt-get install git valgrind 
+
+Valgrind and Python
+~~~~~~~~~~~~~~~~~~~
+
+Valgrind is a great tool for memory debugging, memory leak detection, and profiling.
+However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python::
+
+  PV=2.7.3
+  sudo mkdir /opt/python
+  cd /tmp
+  wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
+  tar xf Python-$PV.tgz
+  cd Python-$PV
+  ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
+  sudo make install
+  sudo ln -s /opt/python/bin/python /usr/bin/dython
+
+Valgrind can be used to detect memory errors by invoking it with::
+
+  valgrind --vex-iropt-precise-memory-exns=yes dython <SCRIPT_NAME>
+
+Building and Installing
+-----------------------
+
+In addition to the tools described above, the following must be present::
+
+  # Essential dependencies
+  sudo apt-get install python-dev mpi-default-dev
+
+  # Code and documentation generator-tools
+  sudo apt-get install python-cheetah python-sphinx doxygen
+  pip install breathe
+
+Get the source-code::
+
+  git clone git@bitbucket.org:cphvb/cphvb-priv.git
+  cd cphvb-priv
+  git submodule init
+  git submodule update
+
+Build and install it::
+
+  ./build install
+
+.. note:: To compile to a custom Python (with valgrind debug support for example),
+   set the $PYTHON variable naming the binary of your custom compiled Python::
+
+     PYTHON=dython ./build install
 
 cphVB in short
 --------------
