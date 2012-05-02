@@ -187,6 +187,14 @@ namespace NumCIL.Float
         public OutArray Concatenate(OutArray arg, long axis = 0) { return this.value.Concatenate(arg, axis); }
 
         /// <summary>
+        /// Performs matrix multiplication on the two elements
+        /// </summary>
+        /// <param name="arg">The right-hand-side argument in matrix multiplication</param>
+        /// <param name="out">Optional target for the multiplication</param>
+        /// <returns>The matrix multiplication result</returns>
+        public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
+
+        /// <summary>
         /// Sets the values viewed to the values from another array, i.e. copies the values
         /// </summary>
         /// <param name="arg">The data to copy</param>
@@ -635,14 +643,6 @@ namespace NumCIL.Float
         /// </summary>
         /// <returns>A scalar value that is the minimum of all elements</returns>
         public T Min() { return UFunc.Aggregate<T, Min>(this); }
-
-        /// <summary>
-        /// Performs matrix multiplication on the two elements
-        /// </summary>
-        /// <param name="arg">The right-hand-side argument in matrix multiplication</param>
-        /// <param name="out">Optional target for the multiplication</param>
-        /// <returns>The matrix multiplication result</returns>
-        public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
         #endregion
     }
 
