@@ -178,6 +178,12 @@ namespace NumCIL.Float
         /// <param name="axis">The axis to join at</param>
         /// <returns>The joined array</returns>
         public OutArray Concatenate(OutArray arg, long axis = 0) { return this.value.Concatenate(arg, axis); }
+
+        /// <summary>
+        /// Sets the values viewed to the values from another array, i.e. copies the values
+        /// </summary>
+        /// <param name="arg">The data to copy</param>
+        public void Set(OutArray arg) { this.value.Set(arg); }
         #endregion
 
         /// <summary>

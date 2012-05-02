@@ -186,6 +186,12 @@ namespace NumCIL.Int64
         /// <param name="out">Optional target for the multiplication</param>
         /// <returns>The matrix multiplication result</returns>
         public OutArray MatrixMultiply(OutArray arg, OutArray @out = null) { return UFunc.Matmul<T, Add, Mul>(this, arg, @out); }
+
+        /// <summary>
+        /// Sets the values viewed to the values from another array, i.e. copies the values
+        /// </summary>
+        /// <param name="arg">The data to copy</param>
+        public void Set(OutArray arg) { this.value.Set(arg); }
         #endregion
 
         /// <summary>

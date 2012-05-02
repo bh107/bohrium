@@ -368,6 +368,16 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
+        /// Sets the values in this view to values from another view, i.e. copies data
+        /// </summary>
+        /// <param name="value">The data to assign to this view</param>
+        public void Set(NdArray<T> value)
+        {
+            var broadcastShapes = Shape.ToBroadcastShapes(value.Shape, this.Shape);
+            UFunc.Apply<T, NumCIL.CopyOp<T>>(value.Reshape(broadcastShapes.Item1), this.Reshape(broadcastShapes.Item2));
+        }
+
+        /// <summary>
         /// Returns a flattened (1-d copy) of the current data view
         /// </summary>
         /// <returns>A flattened copy</returns>
