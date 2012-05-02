@@ -2,13 +2,12 @@ ROOT=../..
 LIB=libcphvb_ve_mcore.dylib
 CXX?=g++
 WARNOPTS=-Wall
-ARCHOPTS=-m32
+ARCHOPTS=-m64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -L../../core -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
-HEADER=./*.hpp ./*.h $(ROOT)/include/*
+HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
-OBJTMP=$(SRC:.c=.o)
-OBJ=$(OBJTMP:.cpp=.o)
+OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)

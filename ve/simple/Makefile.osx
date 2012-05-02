@@ -2,7 +2,7 @@ ROOT=../..
 LIB=libcphvb_ve_simple.dylib
 CC?=gcc
 WARNOPTS=-Wall
-ARCHOPTS=-m32
+ARCHOPTS=-m64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
 SRC=cphvb_ve_simple.c
