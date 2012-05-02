@@ -1,0 +1,26 @@
+ROOT=..\..
+LIBNAME=cphvb_bundler.lib
+CC=cl
+LIBTOOL=lib.exe
+LINKTOOL=link.exe
+
+LIBFLAGS=/nologo /out:$(LIBNAME)
+LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
+
+WARNOPTS=#-Wall
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
+LDFLAGS=/LD /MD /nologo
+SRC=cphvb_bundler.cpp
+OBJ=$(SRC:.cpp=.obj)
+INSTALLDIR=/opt/cphvb/
+
+all: $(LIBNAME)
+
+cphvb_bundler.obj: cphvb_bundler.cpp
+		$(CC) $(CFLAGS) cphvb_bundler.cpp /Fo$@
+
+$(LIBNAME): $(OBJ)
+		$(LIBTOOL) $(LIBFLAGS) $(OBJ)
+		
+clean:
+		del *.obj *.lib *.dll *.exp *.pdb *.ilk
