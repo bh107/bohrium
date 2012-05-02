@@ -145,7 +145,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 if (sameView(iit->second, inst->operand[op]))
                 {
                     // Same view so we use the same cphvb_array* for it
-                    inst->operand[0] = iit->second;
+                    inst->operand[op] = iit->second;
                     known[op] = true;
                 } 
                 else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
@@ -171,13 +171,13 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
             {
                 if (op == 0)
                 {
-                    output.insert(std::make_pair(ba, inst->operand[0]));
-                    outputList.push_back(std::make_pair(ba, inst->operand[0]));
+                    output.insert(std::make_pair(ba, inst->operand[op]));
+                    outputList.push_back(std::make_pair(ba, inst->operand[op]));
                 }
                 else
                 {
-                    input.insert(std::make_pair(ba, inst->operand[0]));
-                    inputList.push_back(std::make_pair(ba, inst->operand[0]));
+                    input.insert(std::make_pair(ba, inst->operand[op]));
+                    inputList.push_back(std::make_pair(ba, inst->operand[op]));
                 }
                 if (parameters.find(kp) == parameters.end())
                 {
