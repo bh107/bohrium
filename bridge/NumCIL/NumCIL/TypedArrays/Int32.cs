@@ -69,6 +69,13 @@ namespace NumCIL.Int32
         /// <returns>The subview</returns>
         public OutArray Subview(Range range, long dimension) { return this.value.Subview(range, dimension); }
         /// <summary>
+        /// Returnes a sliced subview of the data, optionally collapsing single element dimensions
+        /// </summary>
+        /// <param name="ranges">The ranges to view for each dimension</param>
+        /// <param name="collapse">True if single element dimensions should be collapsed, false to retain all dimensions</param>
+        /// <returns>A new view of the data</returns>
+        public OutArray Subview(Range[] ranges, bool collapse) { return this.value.Subview(ranges, collapse); }
+        /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>
