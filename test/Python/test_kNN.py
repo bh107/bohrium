@@ -10,8 +10,8 @@ def compute_targets(base, targets):
     return r
 
 def kNN(src, dist):
-    targets = np.array(src, dtype=float, dist=dist)
-    base    = np.array(src, dtype=float, dist=dist)
+    targets = np.array(src, dtype=float, cphvb=dist)
+    base    = np.array(src, dtype=float, cphvb=dist)
     return compute_targets(base, targets)
 
 def run():

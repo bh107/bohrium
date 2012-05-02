@@ -14,7 +14,7 @@ def run():
     max_ndim = 6
     for i in xrange(1,max_ndim+1):
         src = numpytest.random_list(random.sample(xrange(1, 10),i))
-        A = np.array(src, dtype=float, dist=True)
+        A = np.array(src, dtype=float, cphvb=True)
         fname = "distnumpt_test_matrix.npy"
         np.save(fname,A)
         B = np.load(fname)

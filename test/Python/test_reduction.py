@@ -2,7 +2,6 @@ import numpy as np
 import numpytest
 import cphvbnumpy as cp
 import unittest
-import util
 
 class Reduction(unittest.TestCase):
 
@@ -14,12 +13,12 @@ class Reduction(unittest.TestCase):
         a_3d = [a_2d]*10
         a_4d = [a_3d]*10
 
-        self.a1_0d = np.array(a_0d, dist=True)
-        self.a1_1d = np.array(a_1d, dist=True)
+        self.a1_0d = np.array(a_0d, cphvb=True)
+        self.a1_1d = np.array(a_1d, cphvb=True)
         self.v1_1d = self.a1_1d[0:]
-        self.a1_2d = np.array(a_2d, dist=True)
-        self.a1_3d = np.array(a_3d, dist=True)
-        self.a1_4d = np.array(a_4d, dist=True)
+        self.a1_2d = np.array(a_2d, cphvb=True)
+        self.a1_3d = np.array(a_3d, cphvb=True)
+        self.a1_4d = np.array(a_4d, cphvb=True)
         self.v1_4d = self.a1_4d[0:]
 
     # One-dimensional with only one element
