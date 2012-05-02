@@ -441,7 +441,7 @@ namespace NumCIL.Generic
         /// <returns>A string representation of the data viewed by this NdArray</returns>
         public override string ToString()
         {
-            return string.Format("NdArray<{0}>({1}): {2}", typeof(T).FullName, string.Join(", ", this.Shape.Dimensions.Select(x => x.Length.ToString()).ToArray()), this.AsString());
+            return string.Format("NdArray<{0}>({1}): {3} {2}", typeof(T).FullName, string.Join(", ", this.Shape.Dimensions.Select(x => x.Length.ToString()).ToArray()), this.AsString(), Environment.NewLine);
         }
 
         /// <summary>
@@ -454,9 +454,17 @@ namespace NumCIL.Generic
             sb = sb ?? new StringBuilder();
 
             if (this.Shape.Dimensions.LongLength == 1)
-                sb.Append("[" + string.Join(", \n", this.Value.Select(x => x.ToString()).ToArray()) + "] ");
+            {
+                long j = 1;
+                if (typeof(T) == typeof(double))
+                    sb.Append("[" + string.Join("  ", this.Value.Select(x => ((double)(object)x).ToString("0.00####") + (j++ % 6 == 0 ? Environment.NewLine : "\t")).ToArray()) + "] ");
+                else if (typeof(T) == typeof(float))
+                    sb.Append("[" + string.Join("\t ", this.Value.Select(x => ((float)(object)x).ToString("0.00####") + (j++ % 6 == 0 ? Environment.NewLine : "\t")).ToArray()) + "] ");
+                else
+                    sb.Append("[" + string.Join("\t ", this.Value.Select(x => x.ToString()).ToArray()) + "] ");
+            }
             else
-                sb.Append("[" + string.Join(", \n", this.Select(x => x.AsString()).ToArray()) + "] ");
+                sb.Append("[" + string.Join(", " + Environment.NewLine, this.Select(x => x.AsString()).ToArray()) + "] ");
 
             return sb.ToString();
         }
