@@ -66,6 +66,29 @@ namespace NumCIL
         }
 
         /// <summary>
+        /// Returns a value that describes if the shape is regular, 
+        /// meaning it has no hidden or duplicate elements,
+        /// without considering the offset or trailing elements.
+        /// To check for trailing elements, compare the <see cref="Elements"/>
+        /// value with the length of the data
+        /// </summary>
+        public bool IsPlain
+        {
+            get
+            {
+                long size = 1;
+                for (long i = m_dimensions.LongLength - 1; i >= 0; i--)
+                {
+                    if (m_dimensions[i].Stride != size)
+                        return false;
+                    size *= m_dimensions[i].Length;
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Constructs a one dimensional shape
         /// </summary>
         /// <param name="length">The size of the array</param>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NumCIL.Generic;
+using System.Runtime.InteropServices;
 
 namespace NumCIL
 {
@@ -197,6 +198,197 @@ namespace NumCIL
         {
             foreach (T n in seq)
                 a(n);
+        }
+
+        /// <summary>
+        /// Reads serialized elements from a file into a new array
+        /// </summary>
+        /// <typeparam name="T">The type of data to read</typeparam>
+        /// <param name="file">The file to read from</param>
+        /// <param name="elements">A maximum number of elements to read, a negative value means read everything</param>
+        /// <returns>An array populated with data from the file</returns>
+        public static T[] ReadArray<T>(string file, long elements = -1)
+        {
+            using (var fs = new System.IO.FileStream(file, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                return ReadArray<T>(fs, elements);
+        }
+
+        /// <summary>
+        /// Reads serialized elements from a file into a new array
+        /// </summary>
+        /// <typeparam name="T">The type of data to read</typeparam>
+        /// <param name="fs">The stream to read from</param>
+        /// <param name="elements">A maximum number of elements to read, a negative value means read everything</param>
+        /// <returns>An array populated with data from the file</returns>
+        public static T[] ReadArray<T>(System.IO.Stream fs, long elements = -1)
+        {
+            long streamlen = -1;
+            int elsize = Marshal.SizeOf(typeof(T));
+            try { streamlen = fs.Length; }
+            catch { }
+
+            if (elements < 0)
+                elements = long.MaxValue;
+
+            byte[] elbuf = new byte[1024 * 8 * elsize];
+
+            if (streamlen == -1)
+            {
+                //We do not know the size in advance, so we allocate data in chunks
+                long bytesread = 0;
+                long elementsread = 0;
+                int offset = 0;
+                int a;
+                List<T[]> r = new List<T[]>();
+                while ((a = fs.Read(elbuf, offset, elbuf.Length - offset)) != 0)
+                {
+                    bytesread += a;
+                    T[] p = new T[Math.Min(a / elsize, elements - elementsread)];
+                    elementsread += p.LongLength;
+
+                    //TODO: Free
+                    GCHandle gh = new GCHandle();
+                    try
+                    {
+                        gh = GCHandle.Alloc(p, GCHandleType.Pinned);
+                        Marshal.Copy(elbuf, 0, gh.AddrOfPinnedObject(), p.Length * elsize);
+                    }
+                    finally
+                    {
+                        if (gh.IsAllocated)
+                            gh.Free();
+                    }
+
+                    offset = a % elsize;
+                    r.Add(p);
+
+                    if (elements == elementsread)
+                    {
+                        offset = 0;
+                        break;
+                    }
+                }
+
+                if (offset != 0)
+                    throw new System.IO.InvalidDataException(string.Format("Data size was {0}, but must be evenly divisible with {1}", bytesread, elsize));
+
+                T[] result = new T[elementsread];
+                long eloffset = 0;
+                foreach (var e in r)
+                {
+                    Array.Copy(e, 0, result, eloffset, e.LongLength);
+                    eloffset += e.LongLength;
+                }
+
+                if (elements != long.MaxValue && result.LongLength != elements)
+                    throw new Exception("Internal error, read a wrong number of arguments");
+
+                return result;
+            }
+            else
+            {
+                if (streamlen % elsize != 0)
+                    throw new System.IO.InvalidDataException(string.Format("Data size is {0}, but must be evenly divisible with {1}", streamlen, elsize));
+
+                //We can allocate the result in one go
+                T[] result = new T[Math.Min(elements, streamlen / elsize)];
+
+                GCHandle gh = new GCHandle();
+                try
+                {
+                    gh = GCHandle.Alloc(result, GCHandleType.Pinned);
+                    IntPtr curadr = gh.AddrOfPinnedObject();
+
+                    long bytesread = 0;
+                    long elementsread = 0;
+                    int offset = 0;
+                    int a;
+                    while ((a = fs.Read(elbuf, offset, elbuf.Length - offset)) != 0)
+                    {
+                        int fes = (int)Math.Min(result.LongLength - elementsread, a / elsize);
+                        elementsread += fes;
+
+                        Marshal.Copy(elbuf, 0, curadr, fes * elsize);
+                        offset = a % elsize;
+                        bytesread += a;
+                        curadr += fes * elsize;
+
+                        if (elementsread == elements)
+                        {
+                            offset = 0;
+                            break;
+                        }
+                    }
+
+                    if (offset != 0 || (streamlen != bytesread && elements != long.MaxValue))
+                        throw new System.IO.InvalidDataException(string.Format("Data size was {0}, but must be evenly divisible with {1}", bytesread, elsize));
+                }
+                finally
+                {
+                    if (gh.IsAllocated)
+                        gh.Free();
+                }
+
+                if (elements != long.MaxValue && result.LongLength != elements)
+                    throw new Exception("Internal error, read a wrong number of arguments");
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Writes the input data to a file
+        /// </summary>
+        /// <typeparam name="T">The type of data to write</typeparam>
+        /// <param name="data">The data to write</param>
+        /// <param name="file">The file to write to</param>
+        /// <param name="elements">The number of elements to write</param>
+        /// <param name="offset">An optional offset into the array</param>
+        public static void ToFile<T>(T[] data, string file, long elements = -1, long offset = 0)
+        {
+            using (var fs = new System.IO.FileStream(file, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                ToFile<T>(data, fs, elements);
+        }
+
+        /// <summary>
+        /// Writes the input data to a file
+        /// </summary>
+        /// <typeparam name="T">The type of data to write</typeparam>
+        /// <param name="data">The data to write</param>
+        /// <param name="fs">The stream to write to</param>
+        /// <param name="elements">The number of elements to write</param>
+        /// <param name="offset">An optional offset into the array</param>
+        public static void ToFile<T>(T[] data, System.IO.Stream fs, long elements = -1, long offset = 0)
+        {
+            long elementstowrite = elements < 0 ? (data.LongLength - offset) : elements;
+            if (data.LongLength < elements + offset)
+                throw new ArgumentOutOfRangeException("data", string.Format("The size of the data is {0} but there should be {1} + {2} = {3} elements", data.LongLength, elements, offset, offset + elements));
+
+            int elsize = Marshal.SizeOf(typeof(T));
+            
+            byte[] elbuf = new byte[1024 * 8 * elsize];
+            GCHandle gh = new GCHandle();
+            try
+            {
+                gh = GCHandle.Alloc(data, GCHandleType.Pinned);
+                IntPtr curpos = gh.AddrOfPinnedObject();
+                curpos += (int)(offset * elsize);
+
+                while (elementstowrite > 0)
+                {
+                    int curels = (int)Math.Min(elementstowrite, elbuf.LongLength / elsize);
+                    int bytes = curels * elsize;
+                    Marshal.Copy(curpos, elbuf, 0, bytes);
+                    fs.Write(elbuf, 0, bytes);
+                    curpos += bytes;
+                    elementstowrite -= curels;
+                }
+            }
+            finally
+            {
+                if (gh.IsAllocated)
+                    gh.Free();
+            }
         }
     }
 }
