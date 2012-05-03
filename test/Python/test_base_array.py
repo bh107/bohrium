@@ -2,15 +2,12 @@ import numpy as np
 import cphvbnumpy
 import numpytest
 
-
-from numpy import *
-import numpytest
-import cphvbnumpy
+dtype=np.float32
 
 def f(DIST, SIZE):
-    tmp1 = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
-    B    = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
-    AD   = np.array(range(1,SIZE), dtype=float, cphvb=DIST)
+    tmp1 = np.array(range(1,SIZE), dtype=dtype, cphvb=DIST)
+    B    = np.array(range(1,SIZE), dtype=dtype, cphvb=DIST)
+    AD   = np.array(range(1,SIZE), dtype=dtype, cphvb=DIST)
     for i in range(10):
         cphvbnumpy.flush()
         tmp1 += B

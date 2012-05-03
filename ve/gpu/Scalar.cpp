@@ -71,7 +71,8 @@ Scalar::Scalar(cphvb_constant constant)
 Scalar::Scalar(cphvb_array* spec)
     : mytype(oclType(spec->type))
 {
-    assert(cphvb_is_scalar(spec));
+    assert (cphvb_is_scalar(spec));
+    assert (spec->data != NULL);
     switch (spec->type)
     {
     case CPHVB_BOOL:

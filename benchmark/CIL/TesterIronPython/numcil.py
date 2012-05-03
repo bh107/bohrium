@@ -34,22 +34,36 @@ float32 = System.Single
 float64 = System.Double
 double = System.Double
 single = System.Single
+int16 = System.Int16
+uint16 = System.UInt16
+int32 = System.Int32
+uint32 = System.UInt32
+int64 = System.Int64
+uint64 = System.UInt64
 
 newaxis = NumCIL.Range.NewAxis
 
 def GetNdClass(dtype):
-    if dtype==System.Single:
+    if dtype == float32 or isinstance(dtype, NumCIL.Float.NdArray):
         return NumCIL.Float
-    elif dtype==System.Double or dtype==float:
+    elif dtype == float64 or dtype == float or isinstance(dtype, NumCIL.Double.NdArray):
         return NumCIL.Double
-    elif isinstance(dtype, NumCIL.Float.NdArray):
-        return NumCIL.Float
-    elif isinstance(dtype, NumCIL.Double.NdArray):
-        return NumCIL.Double
+    elif dtype == int16 or isinstance(dtype, NumCIL.Int16.NdArray):
+        return NumCIL.Int16
+    elif dtype == uint16 or isinstance(dtype, NumCIL.UInt16.NdArray):
+        return NumCIL.UInt16
+    elif dtype == int32 or isinstance(dtype, NumCIL.Int32.NdArray):
+        return NumCIL.Int32
+    elif dtype == uint32 or isinstance(dtype, NumCIL.UInt32.NdArray):
+        return NumCIL.UInt32
+    elif dtype == int64 or isinstance(dtype, NumCIL.Int64.NdArray):
+        return NumCIL.Int64
+    elif dtype == uint64 or isinstance(dtype, NumCIL.UInt64.NdArray):
+        return NumCIL.UInt64
     elif isinstance(dtype, ndarray):
         return dtype.cls
     else:
-        raise Exception("There is only support for float and double types")
+        raise Exception("The specified type is not supported: " + str(type(dtype)))
 
 def ReshapeShape(sh):
     if (isinstance(sh, list)):
@@ -95,6 +109,63 @@ def SlicesToRanges(sl):
 
     return ranges
 
+def CreateNdArrayFromList(lst):
+    dims = []
+    fullsize = 0
+    l = lst
+    dtype = None
+
+    # We inspect the data object to discover the shape
+    # and data type
+    while(isinstance(l, list) or isinstance(l, tuple)):
+        dims.append(len(l))
+        if fullsize == 0:
+            fullsize = len(l)
+        else:
+            fullsize *= len(l)
+
+        for x in l:
+            if isinstance(x, list) or isinstance(x, tuple):
+                if len(x) != len(l[0]):
+                    raise Exception("Bad shapes")
+            else:
+                if isinstance(x, int):
+                    if dtype == None:
+                        dtype = int32
+                elif isinstance(x, long):
+                    if dtype == None or dtype == int32:
+                        dtype = int64
+                elif isinstance(x, float):
+                    dtype = float64
+                else:
+                    raise Exception("Bad type in list: " + str(type(x)))
+
+        
+        l = l[0]
+
+    if dtype == None:
+        dtype = float64
+
+    # Then we create a new contigous array
+    arr = System.Array.CreateInstance(dtype, fullsize)
+    ix = 0
+
+    tmplst = [x for x in lst]
+
+    while len(tmplst) > 0:
+        top = tmplst[0]
+        tmplst.remove(top)
+        if isinstance(top, list) or isinstance(top, tuple):
+            for x in top:
+                tmplst.append(x)
+        else:
+            arr[ix] = dtype(top)
+            ix += 1
+
+    shp = NumCIL.Shape(System.Array[System.Int64]([System.Int64(x) for x in dims]))
+    return GetNdClass(dtype).NdArray(arr).Reshape(shp), dtype        
+
+
 class ndarray:
     parent = None
     dtype = None
@@ -111,6 +182,30 @@ class ndarray:
             self.dtype = float64
             self.cls = NumCIL.Double
             self.parent = p
+        elif isinstance(p, NumCIL.Int16.NdArray):
+            self.dtype = int16
+            self.cls = NumCIL.Int16
+            self.parent = p
+        elif isinstance(p, NumCIL.UInt16.NdArray):
+            self.dtype = uint16
+            self.cls = NumCIL.UInt16
+            self.parent = p
+        elif isinstance(p, NumCIL.Int32.NdArray):
+            self.dtype = int32
+            self.cls = NumCIL.Int32
+            self.parent = p
+        elif isinstance(p, NumCIL.UInt32.NdArray):
+            self.dtype = uint32
+            self.cls = NumCIL.UInt32
+            self.parent = p
+        elif isinstance(p, NumCIL.Int64.NdArray):
+            self.dtype = int64
+            self.cls = NumCIL.Int64
+            self.parent = p
+        elif isinstance(p, NumCIL.UInt64.NdArray):
+            self.dtype = uint64
+            self.cls = NumCIL.UInt64
+            self.parent = p
         elif isinstance(p, NumCIL.Generic.NdArray[float32]):
             self.dtype = float32
             self.cls = NumCIL.Float
@@ -119,10 +214,37 @@ class ndarray:
             self.dtype = float64
             self.cls = NumCIL.Double
             self.parent = NumCIL.Double.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[int16]):
+            self.dtype = int16
+            self.cls = NumCIL.Int16
+            self.parent = NumCIL.Int16.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[uint16]):
+            self.dtype = uint16
+            self.cls = NumCIL.UInt16
+            self.parent = NumCIL.UInt16.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[int32]):
+            self.dtype = int32
+            self.cls = NumCIL.Int32
+            self.parent = NumCIL.Int32.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[uint32]):
+            self.dtype = uint32
+            self.cls = NumCIL.UInt32
+            self.parent = NumCIL.UInt32.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[int64]):
+            self.dtype = int64
+            self.cls = NumCIL.Int64
+            self.parent = NumCIL.Int64.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[uint64]):
+            self.dtype = uint64
+            self.cls = NumCIL.UInt64
+            self.parent = NumCIL.UInt64.NdArray(p)
         elif isinstance(p, ndarray):
             self.dtype = p.dtype
             self.cls = p.cls
             self.parent = p.parent
+        elif isinstance(p, list) or isinstance(p, tuple):
+            self.parent, self.dtype = CreateNdArrayFromList(p)
+            self.cls = GetNdClass(self.dtype)
         else:
             raise Exception("Not yet implemented " + str(type(p)))
 
@@ -183,7 +305,7 @@ class ndarray:
 
         #If we get a scalar as result, convert it to a python scalar
         if len(rval.shape) == 1 and rval.shape[0] == 1:
-            if self.cls == NumCIL.Double or self.cls == NumCIL.Float:
+            if self.dtype == float32 or self.dtype == float64:
                 return float(rval.parent.Value[0])
             else:
                 return int(rval.parent.Value[0])
@@ -193,6 +315,8 @@ class ndarray:
     def __setitem__(self, slices, value):
         v = value
         if isinstance(v, ndarray):
+            if v.dtype != self.dtype:
+                v = v.astype(self.dtype)
             v = v.parent
         elif isinstance(v, float) or isinstance(v, int):
             c = getattr(self.cls, "NdArray")
@@ -262,15 +386,16 @@ class ndarray:
         if modulo != None:
             raise Exception("Modulo version of Pow not supported")
 
-        return pow(self, other)
+        return power(self, other)
 
     def __rpow__(self, other):
-        return pow(other, self)
+        return power(other, self)
 
     def __ipow__(self, other, modulo = None):
         if modulo != None:
             raise Exception("Modulo version of Pow not supported")
-        return pow(self, other, self)
+        power(self, other, self)
+        return self
 
     def __neg__ (self):
         return self.owncls(self.parent.Negate())
@@ -280,6 +405,25 @@ class ndarray:
 
     def __str__(self):
         return self.parent.ToString()
+
+    def astype(self, dtype):
+        preshape = self.shape
+        tmp = self.owncls(clr.Convert(self.parent, GetNdClass(dtype).NdArray))
+        # For some reason the type conversion throws away the shape :(
+        if tmp.shape != preshape:
+            tmp = tmp.reshape(preshape)
+        return tmp
+
+    def tofile(self, file, sep="", format="%s"):
+        if sep != "":
+            raise Exceptio("Only binary output is supported")
+        
+        tmp = self.parent
+        if not tmp.Shape.IsPlain:
+            tmp = tmp.Clone()
+
+        NumCIL.Utility.ToFile[self.dtype](tmp.Data, file, tmp.Shape.Offset, tmp.Shape.Elements)
+
 
 ndarray.owncls = ndarray
 
@@ -395,6 +539,8 @@ maximum = ufunc("Max", "maximum")
 minimum = ufunc("Min", "minimum")
 exp = ufunc("Exp", "exp", nin = 1, nargs = 2)
 log = ufunc("Log", "log", nin = 1, nargs = 2)
+sqrt = ufunc("Sqrt", "sqrt", nin = 1, nargs = 2)
+rint = ufunc("Round", "rint", nin = 1, nargs = 2)
 power = ufunc("Pow", "power")
 
 def array(p):
@@ -459,7 +605,7 @@ def concatenate(args, axis=0):
     for a in args:
         if isinstance(a, ndarray):
             arglist.Add(a.parent)
-        elif isinstance(a, int) or isinstance(a, float):
+        elif isinstance(a, int) or isinstance(a, long) or isinstance(a, float):
             arglist.Add(cls(a))
         else:
             raise Exception("All arguments to concatenate must be ndarrays")
@@ -506,6 +652,10 @@ class random:
     @staticmethod
     def random(shape, dtype=float, order='C', cphvb=False):
         return ndarray(GetNdClass(dtype).Generate.Random(ReshapeShape(shape)))
+
+
+def fromfile(file, elems=-1, dtype=float32):
+    return ndarray(GetNdClass(dtype).NdArray(NumCIL.Utility.ReadArray[dtype](file, elems)))
 
 def activate_cphVB(active = True):
     try:
