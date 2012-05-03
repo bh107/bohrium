@@ -1,48 +1,49 @@
-from numpy import *
+import numpy as np
 import numpytest
-import cphvbnumpy
+import cphvbnumpy as cnp
 
-def jacobi(A, B, tol=0.005):
+def jacobi(A, B, cphvb, tol=0.005):
     '''itteratively solving for matrix A with solution vector B
        tol = tolerance for dh/h
        init_val = array of initial values to use in the solver
     '''
-    h = zeros(shape(B), float)
-    cphvbnumpy.handle_array(h)
+    h = np.zeros(np.shape(B), np.float32)
+    if cphvb:
+        cnp.handle_array(A)
+        cnp.handle_array(B)
+        cnp.handle_array(h)
     dmax = 1.0
     n = 0
-    tmp0 = empty(shape(A), float, cphvb=True)
-    tmp1 = empty(shape(B), float, cphvb=True)
-    AD = diagonal(A)
+    tmp0 = np.empty(np.shape(A), np.float32, cphvb=cphvb)
+    tmp1 = np.empty(np.shape(B), np.float32, cphvb=cphvb)
+    AD = np.diagonal(A)
     while dmax > tol:
         n += 1
-        multiply(A,h,tmp0)
-        add.reduce(tmp0,1,out=tmp1)
+        np.multiply(A,h,tmp0)
+        np.add.reduce(tmp0,1,out=tmp1)
         tmp2 = AD
-        subtract(B, tmp1, tmp1)
-        divide(tmp1, tmp2, tmp1)
+        np.subtract(B, tmp1, tmp1)
+        np.divide(tmp1, tmp2, tmp1)
         hnew = h + tmp1
-        subtract(hnew,h,tmp2)
+        np.subtract(hnew,h,tmp2)
         if n != 1:
-            divide(tmp2,h,tmp1)
-            absolute(tmp1,tmp1)
-            dmax = maximum.reduce(tmp1)
+            np.divide(tmp2,h,tmp1)
+            np.absolute(tmp1,tmp1)
+            dmax = np.maximum.reduce(tmp1)
         else:
             dmax = 1
         h = hnew
     return h
 
 def run():
-    A = load("%sJacobi_Amatrix.npy"%numpytest.DataSetDir)
-    B = load("%sJacobi_Bvector.npy"%numpytest.DataSetDir)
-    C = load("%sJacobi_Cvector.npy"%numpytest.DataSetDir)
+    A = np.load("%sJacobi_Amatrix.npy"%numpytest.DataSetDir)
+    B = np.load("%sJacobi_Bvector.npy"%numpytest.DataSetDir)
 
-    cphvbnumpy.handle_array(A)
-    cphvbnumpy.handle_array(B)
-    result = jacobi(A,B)
+    resNPY = jacobi(A,B,False)
+    resCPHVB = jacobi(A,B,True)
 
-    if not numpytest.array_equal(C,result):
-        raise Exception("Uncorrect result vector\n")
+    if not numpytest.array_equal(resCPHVB,resNPY):
+        raise Exception("Incorrect result vector\n")
 
 if __name__ == "__main__":
     run()
