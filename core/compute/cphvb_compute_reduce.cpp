@@ -36,9 +36,10 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     out     = a->operand[0];
     in      = a->operand[1];
 
-    // WARN: This does not always succeed!
-    tmp     = *in;
-    tmp.base = cphvb_base_array(in);
+    // WARN: This can create a ndim = 0.
+    // it seems to work though...
+    tmp         = *in;
+    tmp.base    = cphvb_base_array(in);
     cphvb_intp step = in->stride[a->axis];
     tmp.start = 0;
     j=0;
@@ -58,6 +59,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
 
+    //cphvb_pprint_instr( &inst );
     err = cphvb_compute_apply( &inst );    // execute the instruction...
     if(err != CPHVB_SUCCESS)
         return err;

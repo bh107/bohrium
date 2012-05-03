@@ -95,6 +95,6 @@ void UserFunctionRandom::fill(UserFuncArg* userFuncArg)
     parameters.push_back(std::make_pair(state, false));
     
     std::vector<size_t> localShape(1,TPB);
-    std::vector<cphvb_index> globalShape(1,BPG*TPB);
+    std::vector<size_t> globalShape(1,BPG*TPB);
     kit->second.call(parameters, globalShape, localShape);
 }

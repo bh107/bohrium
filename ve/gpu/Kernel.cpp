@@ -73,13 +73,13 @@ std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManag
 
 
 void Kernel::call(Parameters& parameters,
-                  const std::vector<cphvb_index>& globalShape)
+                  const std::vector<size_t>& globalShape)
 {
     call(parameters, globalShape, resourceManager->localShape(globalShape.size()));
 }
 
 void Kernel::call(Parameters& parameters,
-                  const std::vector<cphvb_index>& globalShape,
+                  const std::vector<size_t>& globalShape,
                   const std::vector<size_t>& localShape)
 {
     assert(globalShape.size() ==  (size_t)ndim && localShape.size() == (size_t)ndim);
