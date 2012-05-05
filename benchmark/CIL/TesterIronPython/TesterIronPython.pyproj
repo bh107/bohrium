@@ -30,8 +30,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="cphhpc\signal\convolution.py" />
+    <Compile Include="cphhpc\signal\__init__.py" />
+    <Compile Include="cphhpc\__init__.py" />
     <Compile Include="nbody.py" />
     <Compile Include="numcil.py" />
+    <Compile Include="sobel.py" />
     <Compile Include="TesterIronPython.py" />
     <Compile Include="util.py" />
   </ItemGroup>
@@ -41,6 +45,10 @@
       <Project>{08c17283-4f2a-466c-ae28-1923837a2f58}</Project>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="cphhpc\" />
+    <Folder Include="cphhpc\signal\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

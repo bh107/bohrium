@@ -6,6 +6,8 @@ import numpytest
 import cphvbnumpy as cp
 import unittest
 
+dtype = np.float32
+
 class ElementOperators(unittest.TestCase):
 
     def setUp(self):
@@ -15,25 +17,25 @@ class ElementOperators(unittest.TestCase):
         a_2d = [a_1d]*10
         a_3d = [a_2d]*10
 
-        self.a1_0d = np.array(a_0d, cphvb=True)
-        self.a2_0d = np.array(a_0d, cphvb=True)
-        self.a3_0d = np.array(a_0d, cphvb=True)
+        self.a1_0d = np.array(a_0d, dtype=dtype, cphvb=True)
+        self.a2_0d = np.array(a_0d, dtype=dtype, cphvb=True)
+        self.a3_0d = np.array(a_0d, dtype=dtype, cphvb=True)
 
-        self.a1_1d = np.array(a_1d, cphvb=True)
-        self.a2_1d = np.array(a_1d, cphvb=True)
-        self.a3_1d = np.array(a_1d, cphvb=True)
+        self.a1_1d = np.array(a_1d, dtype=dtype, cphvb=True)
+        self.a2_1d = np.array(a_1d, dtype=dtype, cphvb=True)
+        self.a3_1d = np.array(a_1d, dtype=dtype, cphvb=True)
 
-        self.a1_1d = np.array(a_1d, cphvb=True)
-        self.a2_1d = np.array(a_1d, cphvb=True)
-        self.a3_1d = np.array(a_1d, cphvb=True)
+        self.a1_1d = np.array(a_1d, dtype=dtype, cphvb=True)
+        self.a2_1d = np.array(a_1d, dtype=dtype, cphvb=True)
+        self.a3_1d = np.array(a_1d, dtype=dtype, cphvb=True)
 
-        self.a1_2d = np.array(a_2d, cphvb=True)
-        self.a2_2d = np.array(a_2d, cphvb=True)
-        self.a3_2d = np.array(a_2d, cphvb=True)
+        self.a1_2d = np.array(a_2d, dtype=dtype, cphvb=True)
+        self.a2_2d = np.array(a_2d, dtype=dtype, cphvb=True)
+        self.a3_2d = np.array(a_2d, dtype=dtype, cphvb=True)
 
-        self.a1_3d = np.array(a_3d, cphvb=True)
-        self.a2_3d = np.array(a_3d, cphvb=True)
-        self.a3_3d = np.array(a_3d, cphvb=True)
+        self.a1_3d = np.array(a_3d, dtype=dtype, cphvb=True)
+        self.a2_3d = np.array(a_3d, dtype=dtype, cphvb=True)
+        self.a3_3d = np.array(a_3d, dtype=dtype, cphvb=True)
 
         self.v1_3d = self.a1_3d[0:]
 
