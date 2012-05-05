@@ -1,24 +1,29 @@
 ROOT=../..
 LIB=libcphvb_ve_simple.dylib
-CC?=gcc
+CXX?=g++
 WARNOPTS=-Wall
 ARCHOPTS=-m64
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
-LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
-SRC=cphvb_ve_simple.c
-OBJ=$(SRC:.c=.o)
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
+LDFLAGS= $(ARCHOPTS) -L../../core -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
+HEADER=./*.h $(ROOT)/include/*
+SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
+OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/include/*
-		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+%.o: %.c $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+
+%.o: %.cpp $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CC) $(OBJ) -o $@ $(LDFLAGS)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(CFLAGS)
 
 clean:
-		rm -rf *.o *~ $(LIB)
+		rm -rf *.o *~ *.so
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)
+
