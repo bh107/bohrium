@@ -81,7 +81,7 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 }
                 else                            // Unsupported userfunc
                 {
-                    ret = CPHVB_TYPE_NOT_SUPPORTED;
+                    inst->status = CPHVB_INST_UNDONE;
                 }
 
                 break;
@@ -93,12 +93,16 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 
         if (inst->status != CPHVB_INST_DONE)    // Instruction failed
         {
-            return ret;                         // EXIT
+            break;
         }
 
     }
-                                                // All instructions succeeded.
-    return ret;                                 // EXIT
+
+    if (count == instruction_count) {
+        return CPHVB_SUCCESS;
+    } else {
+        return CPHVB_PARTIAL_SUCCESS;
+    }
 
 }
 
