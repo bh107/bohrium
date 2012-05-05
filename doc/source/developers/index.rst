@@ -8,7 +8,7 @@ Tools and Environment
 
 Tools of the trade::
 
-  sudo apt-get install git valgrind 
+  sudo apt-get install git valgrind g++
 
 Valgrind and Python
 ~~~~~~~~~~~~~~~~~~~
