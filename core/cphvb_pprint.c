@@ -128,6 +128,21 @@ void cphvb_pprint_instr( cphvb_instruction *instr ) {
     puts( buf );
 }
 
+void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt )
+{
+    cphvb_intp count;
+    printf("%s %d {\n", txt, (int)instruction_count);
+    for(count=0; count < instruction_count; count++) {
+        cphvb_pprint_instr( &instruction_list[count] );
+    }
+    printf("}\n");
+}
+
+void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count  )
+{
+    cphvb_pprint_instr_list( instruction_list, instruction_count, "BUNDLE");
+}
+
 /* Pretty print an array.
  *
  * @instr  The array in question
