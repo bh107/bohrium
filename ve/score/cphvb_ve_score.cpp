@@ -38,13 +38,13 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
 
     if (count > 1) {
 
-        cphvb_pprint_instr_list( &list[start], count, "POTENTIAL" );
+        //cphvb_pprint_instr_list( &list[start], count, "POTENTIAL" );
         for(i=0; i < count; i++)
         {
             inst[i] = &list[start+i];
         }
         bundle_size = cphvb_inst_bundle( inst, count );
-        cphvb_pprint_instr_list( *inst, bundle_size, "BUNDLE" );
+        //cphvb_pprint_instr_list( *inst, bundle_size, "BUNDLE" );
 
         for(i=0; i < bundle_size; i++)          // TODO: Make nice loop here
         {
