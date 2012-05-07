@@ -35,7 +35,10 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     if (cphvb_is_scalar(reduceDef->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        return cphvb_compute_reduce(arg,NULL);
+        cphvb_error err = cphvb_compute_reduce(arg,NULL);
+        if (err == CPHVB_SUCCESS)
+            static_cast<BaseArray*>(userFuncArg->operands[0])->update();
+        return err;
     }
     else
     {

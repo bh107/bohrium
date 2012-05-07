@@ -44,6 +44,12 @@ void BaseArray::sync()
     read(spec->data);
 }
 
+void BaseArray::update()
+{
+    assert(spec->data != NULL);
+    write(spec->data);
+}
+
 size_t BaseArray::size()
 {
     return cphvb_nelements(spec->ndim, spec->shape);

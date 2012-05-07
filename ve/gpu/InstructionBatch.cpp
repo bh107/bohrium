@@ -299,7 +299,7 @@ std::string InstructionBatch::generateCode()
         // find variable names for input operands
         for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if (cphvb_is_constant((*iit)->operand[op]) || cphvb_is_scalar((*iit)->operand[op]))
+            if (cphvb_is_constant((*iit)->operand[op]))
                 operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
             else
                 operands.push_back(kernelVariables[(*iit)->operand[op]]);  

@@ -136,11 +136,6 @@ void InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     {
         cphvb_array* operand = userfunc->operand[i];
         cphvb_array* base = cphvb_base_array(operand);
-        if (cphvb_is_scalar(base))
-        {
-            userFuncArg.operands.push_back(new Scalar(base));
-            continue;
-        }
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
@@ -193,11 +188,6 @@ void InstructionScheduler::ufunc(cphvb_instruction* inst)
             continue;
         }
         cphvb_array* base = cphvb_base_array(operand);
-        if (cphvb_is_scalar(base))
-        {
-            operands[i] = new Scalar(base);
-            continue;
-        }
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
