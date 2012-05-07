@@ -146,7 +146,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 {
                     // Same view so we use the same cphvb_array* for it
                     inst->operand[op] = iit->second;
-                    known[op] = true;
                 } 
                 else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
                 {
@@ -330,8 +329,8 @@ bool InstructionBatch::read(BaseArray* array)
 
 bool InstructionBatch::write(BaseArray* array)
 {
-    if (output.find(array) == output.end())
-        return false;
+//    if (output.find(array) == output.end())
+//        return false;
     return true;
 }
 
