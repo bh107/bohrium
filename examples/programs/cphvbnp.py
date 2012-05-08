@@ -2,11 +2,13 @@ import numpy as np
 
 def ones(shape, dtype=np.float32, cphvb=True):
     A = np.empty(shape, dtype, cphvb)
-    a[:] = 1
+    A[:] = 1
+    return A
 
 def zeros(shape, dtype=np.float32, cphvb=True):
     A = np.empty(shape, dtype, cphvb)
-    a[:] = 0
+    A[:] = 0
+    return A
 
 def flatten(A):
     return A.reshape(np.multiply.reduce(np.asarray(A.shape)))
@@ -19,7 +21,7 @@ def diagonal(A,k=0):
     elif k > 0:
         d = A[0,k:]
     else:
-        d = a[0]
+        d = A[0]
     d.strides=(A.strides[0]+A.strides[1])
     return d
 
