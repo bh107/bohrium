@@ -14,6 +14,6 @@ def jacobi(A, b, tol=0.0005):
     while error > tol:
         xo = x
         x = np.add.reduce(T*x,-1) + C
-        error = nla.norm(x-xo)
+        error = nla.norm(x-xo)/nla.norm(x)
     return x
 
