@@ -7,7 +7,7 @@ E-mail: Jonas.Latt@cui.unige.ch
 '''
 import numpy as np
 import util
-import cphvbnumpy
+import cphvbbridge
 
 """
 # Initialise Tk ...
@@ -52,10 +52,10 @@ cy_l = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float)
 opp = np.array([ 0,   3,  4,  1,  2,    7,   8,   5,   6], dtype=float)
 col = np.array(xrange(2,ly), dtype=float)
 if B.cphvb:
-    cphvbnumpy.handle_array(t)
-    cphvbnumpy.handle_array(cx)
-    cphvbnumpy.handle_array(cy)
-    cphvbnumpy.handle_array(col)
+    cphvbbridge.handle_array(t)
+    cphvbbridge.handle_array(cx)
+    cphvbbridge.handle_array(cy)
+    cphvbbridge.handle_array(col)
 
 bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)
 not_bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)

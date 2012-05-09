@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy as cp
+import cphvbbridge as cp
 import unittest
 
 class RandomUfunc(unittest.TestCase):

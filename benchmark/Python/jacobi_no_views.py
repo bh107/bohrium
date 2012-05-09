@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import util
 
 B = util.Benchmark()
@@ -12,7 +12,7 @@ h = np.empty([N], dtype=np.double, dist=B.cphvb)
 h[:] = 0.001
 AD = np.diagonal(A).copy()
 if B.cphvb:
-    cphvbnumpy.handle_array(AD)
+    cphvbbridge.handle_array(AD)
 
 B.start()
 for i in xrange(iterations):

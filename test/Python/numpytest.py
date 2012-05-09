@@ -1,6 +1,6 @@
 #Test and demonstration of DistNumPy.
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import sys
 import time
 import subprocess
@@ -36,8 +36,8 @@ def array_equal(A,B,maxerror=0.0):
             return True
         else:
             return False
-    cphvbnumpy.unhandle_array(A)
-    cphvbnumpy.unhandle_array(B)
+    cphvbbridge.unhandle_array(A)
+    cphvbbridge.unhandle_array(B)
     A = A.flatten()
     B = B.flatten()
     if not len(A) == len(B):
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     print "*"*100
     print "*"*31, "Testing Distributed Numerical Python", "*"*31
-    cphvbnumpy.flush()
+    cphvbbridge.flush()
     for i in xrange(len(script_list)):
         f = script_list[i]
         if f.startswith("test_") and f.endswith("py")\
@@ -112,11 +112,11 @@ if __name__ == "__main__":
             if pydebug:
                 r1 = sys.gettotalrefcount()
             try:
-                cphvbnumpy.flush()
+                cphvbbridge.flush()
                 m.run()
-                cphvbnumpy.flush()
+                cphvbbridge.flush()
             except:
-                cphvbnumpy.flush()
+                cphvbbridge.flush()
                 err = True
                 msg = sys.exc_info()[1]
             if pydebug:
@@ -129,7 +129,7 @@ if __name__ == "__main__":
                       "message: %s\n"%(f, seed, msg),
             else:
                 print "Succes\n",
-    cphvbnumpy.flush()
+    cphvbbridge.flush()
     print "*"*100
     print "*"*46, "Finish", "*"*46
     print "*"*100

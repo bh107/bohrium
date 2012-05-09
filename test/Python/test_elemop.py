@@ -3,7 +3,7 @@
 """
 import numpy as np
 import numpytest
-import cphvbnumpy as cp
+import cphvbbridge as cp
 import unittest
 
 dtype = np.float32

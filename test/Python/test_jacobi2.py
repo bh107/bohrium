@@ -1,6 +1,6 @@
 from numpy import *
 import numpytest
-import cphvbnumpy
+import cphvbbridge
 
 def jacobi(A, B, tol=0.05):
     '''itteratively solving for matrix A with solution vector B
@@ -8,11 +8,11 @@ def jacobi(A, B, tol=0.05):
        init_val = array of initial values to use in the solver
     '''
     h = zeros(shape(B), float)
-    cphvbnumpy.handle_array(h)
+    cphvbbridge.handle_array(h)
     dmax = 1.0
     n = 0
     AD = diagonal(A)
-    cphvbnumpy.handle_array(AD)
+    cphvbbridge.handle_array(AD)
     while dmax > tol:
         n += 1
         t = add.reduce(A * h, axis=1)
@@ -31,8 +31,8 @@ def jacobi(A, B, tol=0.05):
 def run():
     A = load("%sJacobi_Amatrix.npy"%numpytest.DataSetDir)
     B = load("%sJacobi_Bvector.npy"%numpytest.DataSetDir)
-    cphvbnumpy.handle_array(A)
-    cphvbnumpy.handle_array(B)
+    cphvbbridge.handle_array(A)
+    cphvbbridge.handle_array(B)
     result1 = jacobi(A,B)
 
     A = load("%sJacobi_Amatrix.npy"%numpytest.DataSetDir)

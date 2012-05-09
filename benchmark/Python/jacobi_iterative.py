@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import util
 
 B = util.Benchmark()

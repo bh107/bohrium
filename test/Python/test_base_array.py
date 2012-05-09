@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import numpytest
 
 dtype=np.float32
@@ -9,10 +9,10 @@ def f(DIST, SIZE):
     B    = np.array(range(1,SIZE), dtype=dtype, cphvb=DIST)
     AD   = np.array(range(1,SIZE), dtype=dtype, cphvb=DIST)
     for i in range(10):
-        cphvbnumpy.flush()
+        cphvbbridge.flush()
         tmp1 += B
         tmp1 += AD
-        cphvbnumpy.flush()
+        cphvbbridge.flush()
     return (tmp1,B,AD)
 
 def run():

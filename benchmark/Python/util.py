@@ -3,7 +3,7 @@
 #This is collection of help functions for the DistNumPy benchmarks.
 
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import getopt
 import sys
 import datetime
@@ -59,11 +59,11 @@ class Benchmark:
         self.dtype = eval("np.%s"%self.info['dtype'])
 
     def start(self):
-        cphvbnumpy.flush()
+        cphvbbridge.flush()
         self.info['totaltime'] = time.time()
 
     def stop(self):
-        cphvbnumpy.flush()
+        cphvbbridge.flush()
         self.info['totaltime'] = time.time() - self.info['totaltime']
 
     def pprint(self):
