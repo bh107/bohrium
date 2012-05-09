@@ -1,12 +1,15 @@
 import numpy as np
 
-def ones(shape, dtype=np.float32, cphvb=True):
-    A = np.empty(shape, dtype, cphvb)
+def empty(shape, dtype=float, cphvb=True):
+    return np.empty(shape, dtype, cphvb)
+
+def ones(shape, dtype=float, cphvb=True):
+    A = empty(shape, dtype, cphvb)
     A[:] = 1
     return A
 
-def zeros(shape, dtype=np.float32, cphvb=True):
-    A = np.empty(shape, dtype, cphvb)
+def zeros(shape, dtype=float, cphvb=True):
+    A = empty(shape, dtype, cphvb)
     A[:] = 0
     return A
 
@@ -40,3 +43,10 @@ def diag(A,k=0):
         return diagonal(A,k)
     else:
         raise ValueError("Input must be 1- or 2-d.")
+
+def dot(A,B):
+    if B.ndim == 1:
+        return np.add.reduce(A*B,-1)
+    if A.ndim == 1:
+        return np.add.reduce(A*np.transpose(B),-1)
+    return np.add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
