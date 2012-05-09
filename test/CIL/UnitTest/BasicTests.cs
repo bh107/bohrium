@@ -39,6 +39,7 @@ namespace UnitTest
             if (c.Value[2] != 32) throw new Exception("Failure in basic test");
             if (c.Value[0] != 30) throw new Exception("Failure in basic test");
             if (c.Value[1] != 31) throw new Exception("Failure in basic test");
+            if (b.Sum() != 228) throw new Exception("Failure in basic test");
 
             var r1 = Generate.Arange(12).Reshape(new long[] { 2, 1, 2, 3 });
             if (!Equals(r1.Data, new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test");
