@@ -9,6 +9,8 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
+            NumCIL.Utility.DisableUnsafeAPI = true;
+
             Console.WriteLine("Running basic tests");
             using (new DispTimer("Basic tests"))
                 BasicTests.RunTests();
@@ -21,6 +23,26 @@ namespace UnitTest
             using (new DispTimer("Extended tests"))
                 ExtendedTests.RunTests();
 
+            if (NumCIL.Utility.IsUnsafeSupported)
+            {
+                NumCIL.Utility.DisableUnsafeAPI = false;
+
+                Console.WriteLine("Running basic tests - Unsafe");
+                using (new DispTimer("Basic tests"))
+                    BasicTests.RunTests();
+
+                Console.WriteLine("Running Lookup tests - Unsafe");
+                using (new DispTimer("Lookup tests"))
+                    TypeLookupTests.RunTests();
+
+                Console.WriteLine("Running extended tests - Unsafe");
+                using (new DispTimer("Extended tests"))
+                    ExtendedTests.RunTests();
+            }
+            else
+            {
+                Console.WriteLine("Unsafe code is not supported, skipping tests for unsafe code");
+            }
 
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
 

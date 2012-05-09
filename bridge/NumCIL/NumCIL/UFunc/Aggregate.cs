@@ -46,8 +46,11 @@ namespace NumCIL
         private static T Aggregate_Entry<T, C>(C op, NdArray<T> in1)
             where C : struct, IBinaryOp<T>
         {
-            T[] d1 = in1.Data;
             T result;
+            if (UnsafeAPI.Aggregate_Entry_Unsafe<T, C>(op, in1, out result))
+                return result;
+
+            T[] d1 = in1.Data;
 
             if (in1.Shape.Dimensions.Length == 1)
             {

@@ -92,10 +92,17 @@
     <Compile Include="TypeLookupTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+      <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
+      <Name>NumCIL.Unsafe</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
       <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
       <Name>NumCIL</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
