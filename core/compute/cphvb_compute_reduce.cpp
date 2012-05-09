@@ -59,7 +59,6 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
 
-    //cphvb_pprint_instr( &inst );
     err = cphvb_compute_apply( &inst );    // execute the instruction...
     if(err != CPHVB_SUCCESS)
         return err;

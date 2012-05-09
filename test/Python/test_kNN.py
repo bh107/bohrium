@@ -1,6 +1,8 @@
 import numpy as np
 import numpytest
 
+dtype=np.float32
+
 def compute_targets(base, targets):
     b1 = base[:,np.newaxis,:]
     d1 = (b1-targets)**2
@@ -10,8 +12,8 @@ def compute_targets(base, targets):
     return r
 
 def kNN(src, dist):
-    targets = np.array(src, dtype=float, cphvb=dist)
-    base    = np.array(src, dtype=float, cphvb=dist)
+    targets = np.array(src, dtype=dtype, cphvb=dist)
+    base    = np.array(src, dtype=dtype, cphvb=dist)
     return compute_targets(base, targets)
 
 def run():

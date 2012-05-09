@@ -146,7 +146,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 {
                     // Same view so we use the same cphvb_array* for it
                     inst->operand[op] = iit->second;
-                    known[op] = true;
                 } 
                 else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
                 {
@@ -299,7 +298,7 @@ std::string InstructionBatch::generateCode()
         // find variable names for input operands
         for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if (cphvb_is_constant((*iit)->operand[op]) || cphvb_is_scalar((*iit)->operand[op]))
+            if (cphvb_is_constant((*iit)->operand[op]))
                 operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
             else
                 operands.push_back(kernelVariables[(*iit)->operand[op]]);  
@@ -330,8 +329,8 @@ bool InstructionBatch::read(BaseArray* array)
 
 bool InstructionBatch::write(BaseArray* array)
 {
-    if (output.find(array) == output.end())
-        return false;
+//    if (output.find(array) == output.end())
+//        return false;
     return true;
 }
 

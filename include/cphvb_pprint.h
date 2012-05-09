@@ -28,17 +28,26 @@
 extern "C" {
 #endif
 
+/* Pretty print an array.
+ *
+ * @param instr The array in question
+ */
+void cphvb_pprint_array( cphvb_array *array );
+
 /* Pretty print an instruction.
  *
- * @instr  The instruction in question
+ * @param instr The instruction in question.
  */
 void cphvb_pprint_instr( cphvb_instruction *instr );
 
-/* Pretty print an array.
- *
- * @instr  The array in question
+void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt );
+
+/**
+ * Pretty print a list of instructions
+ * @param instruction_count Number of instruction in list.
+ * @param instruction_list Array of instructions.
  */
-void cphvb_pprint_array( cphvb_array *array );
+void cphvb_pprint_bundle( cphvb_intp instruction_count, cphvb_instruction* instruction_list );
 
 #ifdef __cplusplus
 }

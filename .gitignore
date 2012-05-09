@@ -22,6 +22,9 @@ ve/cuda/pytest
 *.ilk
 *.pdb
 *.suo
+*.gen
+*.log
+doc/doxygen
 */NumCIL/*/obj/*
 */NumCIL/*/bin/*
 */CIL/*/bin/*

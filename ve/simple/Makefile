@@ -1,23 +1,29 @@
 ROOT=../..
 LIB=libcphvb_ve_simple.so
-CC?=gcc
+CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
-LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
-SRC=cphvb_ve_simple.c
-OBJ=$(SRC:.c=.o)
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/traverse
+LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
+HEADER=./*.h $(ROOT)/include/*
+SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
+OBJTMP=$(SRC:.c=.o)
+OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/include/*
-		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+%.o: %.c $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
+
+%.o: %.cpp $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CC) $(OBJ) -o $@ $(LDFLAGS)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ $(LIB)
+		rm -rf *.o *~ *.so
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)
+
