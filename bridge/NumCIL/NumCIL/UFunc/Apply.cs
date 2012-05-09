@@ -263,9 +263,7 @@ namespace NumCIL
         private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
             where C : struct, IUnaryOp<T>
         {
-            if (UnsafeAPI.UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(op, in1, ref @out))
-                return;
-            else
+            if (!UnsafeAPI.UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(op, in1, ref @out))
                 UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
         }
 

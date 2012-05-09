@@ -37,6 +37,10 @@ namespace NumCIL
         /// The method used to retrieve aggregate methods
         /// </summary>
         private static readonly MethodInfo _getAggregate;
+        /// <summary>
+        /// The method used to retrieve reduce methods
+        /// </summary>
+        private static readonly MethodInfo _getReduce;
 
         /// <summary>
         /// Cache of compiled unsafe binary methods bound to a particular operator
@@ -54,6 +58,10 @@ namespace NumCIL
         /// Cache of compiled unsafe aggregate methods bound to a particular operator
         /// </summary>
         private static readonly Dictionary<object, MethodInfo> _aggregateMethodCache = new Dictionary<object, MethodInfo>();
+        /// <summary>
+        /// Cache of compiled unsafe reduce methods bound to a particular operator
+        /// </summary>
+        private static readonly Dictionary<object, MethodInfo> _reduceMethodCache = new Dictionary<object, MethodInfo>();
 
         /// <summary>
         /// Static constructor, loads the unsafe dll and probes for support,
@@ -66,6 +74,7 @@ namespace NumCIL
             MethodInfo supportsUnaryApply = null;
             MethodInfo supportsNullaryApply = null;
             MethodInfo supportsAggregate = null;
+            MethodInfo supportsReduce = null;
 
             try
             {
@@ -80,10 +89,12 @@ namespace NumCIL
                     supportsUnaryApply = utilityType.GetMethod("GetUnaryApply");
                     supportsNullaryApply = utilityType.GetMethod("GetNullaryApply");
                     supportsAggregate = utilityType.GetMethod("GetAggregate");
+                    supportsReduce = utilityType.GetMethod("GetReduce");
                     unsafeSupported &= supportsBinaryApply != null;
                     unsafeSupported &= supportsUnaryApply != null;
                     unsafeSupported &= supportsNullaryApply != null;
                     unsafeSupported &= supportsAggregate != null;
+                    unsafeSupported &= supportsReduce != null;
                 }
             }
             catch
@@ -99,6 +110,7 @@ namespace NumCIL
                 _getUnaryApply = supportsUnaryApply;
                 _getNullaryApply = supportsNullaryApply;
                 _getAggregate = supportsAggregate;
+                _getReduce = supportsReduce;
             }
             else
             {
@@ -106,6 +118,7 @@ namespace NumCIL
                 _getUnaryApply = null;
                 _getNullaryApply = null;
                 _getAggregate = null;
+                _getReduce = null;
             }
 
             if (Environment.GetEnvironmentVariable("NUMCIL_DISABLE_UNSAFE") != null)
@@ -243,6 +256,39 @@ namespace NumCIL
             }
 
             res = (T)mi.Invoke(null, new object[] { op, in1 });
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side argument</param>
+        /// <param name="axis">The axis to reduce over</param>
+        /// <param name="out">The output result</param>
+        /// <returns>True if the operation was supported and executed, false otherwise</returns>
+        public static bool UFunc_Reduce_Inner_Flush_Unsafe<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+            where C : struct, IBinaryOp<T>
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_reduceMethodCache.TryGetValue(op, out mi))
+            {
+                MethodInfo mix = (MethodInfo)_getReduce.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                if (mix != null)
+                    mi = mix.MakeGenericMethod(typeof(C));
+
+                _reduceMethodCache[op] = mi;
+            }
+
+            if (mi == null)
+                return false;
+
+            mi.Invoke(null, new object[] { op, axis, in1, @out });
             return true;
         }
     }

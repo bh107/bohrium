@@ -16,7 +16,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Single<C>(C op, NdArray<float> in1, NdArray<float> in2, ref NdArray<float> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Single<C>(C op, NdArray<float> in1, NdArray<float> in2, ref NdArray<float> @out)
             where C : IBinaryOp<float>
         {
             unsafe
@@ -236,7 +236,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Double<C>(C op, NdArray<double> in1, NdArray<double> in2, ref NdArray<double> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Double<C>(C op, NdArray<double> in1, NdArray<double> in2, ref NdArray<double> @out)
             where C : IBinaryOp<double>
         {
             unsafe
@@ -456,7 +456,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Int64<C>(C op, NdArray<long> in1, NdArray<long> in2, ref NdArray<long> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Int64<C>(C op, NdArray<long> in1, NdArray<long> in2, ref NdArray<long> @out)
             where C : IBinaryOp<long>
         {
             unsafe
@@ -676,7 +676,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_UInt64<C>(C op, NdArray<ulong> in1, NdArray<ulong> in2, ref NdArray<ulong> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_UInt64<C>(C op, NdArray<ulong> in1, NdArray<ulong> in2, ref NdArray<ulong> @out)
             where C : IBinaryOp<ulong>
         {
             unsafe
@@ -896,7 +896,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Int32<C>(C op, NdArray<int> in1, NdArray<int> in2, ref NdArray<int> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Int32<C>(C op, NdArray<int> in1, NdArray<int> in2, ref NdArray<int> @out)
             where C : IBinaryOp<int>
         {
             unsafe
@@ -1116,7 +1116,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_UInt32<C>(C op, NdArray<uint> in1, NdArray<uint> in2, ref NdArray<uint> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_UInt32<C>(C op, NdArray<uint> in1, NdArray<uint> in2, ref NdArray<uint> @out)
             where C : IBinaryOp<uint>
         {
             unsafe
@@ -1336,7 +1336,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Int16<C>(C op, NdArray<short> in1, NdArray<short> in2, ref NdArray<short> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Int16<C>(C op, NdArray<short> in1, NdArray<short> in2, ref NdArray<short> @out)
             where C : IBinaryOp<short>
         {
             unsafe
@@ -1556,7 +1556,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_UInt16<C>(C op, NdArray<ushort> in1, NdArray<ushort> in2, ref NdArray<ushort> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_UInt16<C>(C op, NdArray<ushort> in1, NdArray<ushort> in2, ref NdArray<ushort> @out)
             where C : IBinaryOp<ushort>
         {
             unsafe
@@ -1776,7 +1776,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_Byte<C>(C op, NdArray<byte> in1, NdArray<byte> in2, ref NdArray<byte> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_Byte<C>(C op, NdArray<byte> in1, NdArray<byte> in2, ref NdArray<byte> @out)
             where C : IBinaryOp<byte>
         {
             unsafe
@@ -1996,7 +1996,7 @@ namespace NumCIL.Unsafe
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush_SByte<C>(C op, NdArray<sbyte> in1, NdArray<sbyte> in2, ref NdArray<sbyte> @out)
+        internal static void UFunc_Op_Inner_Binary_Flush_SByte<C>(C op, NdArray<sbyte> in1, NdArray<sbyte> in2, ref NdArray<sbyte> @out)
             where C : IBinaryOp<sbyte>
         {
             unsafe
@@ -2215,7 +2215,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Single<C>(C op, NdArray<float> in1, ref NdArray<float> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Single<C>(C op, NdArray<float> in1, ref NdArray<float> @out)
             where C : IUnaryOp<float>
         {
             unsafe
@@ -2364,7 +2364,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Double<C>(C op, NdArray<double> in1, ref NdArray<double> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Double<C>(C op, NdArray<double> in1, ref NdArray<double> @out)
             where C : IUnaryOp<double>
         {
             unsafe
@@ -2513,7 +2513,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Int64<C>(C op, NdArray<long> in1, ref NdArray<long> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Int64<C>(C op, NdArray<long> in1, ref NdArray<long> @out)
             where C : IUnaryOp<long>
         {
             unsafe
@@ -2662,7 +2662,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_UInt64<C>(C op, NdArray<ulong> in1, ref NdArray<ulong> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_UInt64<C>(C op, NdArray<ulong> in1, ref NdArray<ulong> @out)
             where C : IUnaryOp<ulong>
         {
             unsafe
@@ -2811,7 +2811,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Int32<C>(C op, NdArray<int> in1, ref NdArray<int> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Int32<C>(C op, NdArray<int> in1, ref NdArray<int> @out)
             where C : IUnaryOp<int>
         {
             unsafe
@@ -2960,7 +2960,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_UInt32<C>(C op, NdArray<uint> in1, ref NdArray<uint> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_UInt32<C>(C op, NdArray<uint> in1, ref NdArray<uint> @out)
             where C : IUnaryOp<uint>
         {
             unsafe
@@ -3109,7 +3109,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Int16<C>(C op, NdArray<short> in1, ref NdArray<short> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Int16<C>(C op, NdArray<short> in1, ref NdArray<short> @out)
             where C : IUnaryOp<short>
         {
             unsafe
@@ -3258,7 +3258,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_UInt16<C>(C op, NdArray<ushort> in1, ref NdArray<ushort> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_UInt16<C>(C op, NdArray<ushort> in1, ref NdArray<ushort> @out)
             where C : IUnaryOp<ushort>
         {
             unsafe
@@ -3407,7 +3407,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_Byte<C>(C op, NdArray<byte> in1, ref NdArray<byte> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_Byte<C>(C op, NdArray<byte> in1, ref NdArray<byte> @out)
             where C : IUnaryOp<byte>
         {
             unsafe
@@ -3556,7 +3556,7 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush_SByte<C>(C op, NdArray<sbyte> in1, ref NdArray<sbyte> @out)
+        internal static void UFunc_Op_Inner_Unary_Flush_SByte<C>(C op, NdArray<sbyte> in1, ref NdArray<sbyte> @out)
             where C : IUnaryOp<sbyte>
         {
             unsafe
@@ -3704,7 +3704,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Single<C>(C op, NdArray<float> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Single<C>(C op, NdArray<float> @out)
             where C : INullaryOp<float>
         {
             unsafe
@@ -3812,7 +3812,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Double<C>(C op, NdArray<double> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Double<C>(C op, NdArray<double> @out)
             where C : INullaryOp<double>
         {
             unsafe
@@ -3920,7 +3920,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Int64<C>(C op, NdArray<long> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Int64<C>(C op, NdArray<long> @out)
             where C : INullaryOp<long>
         {
             unsafe
@@ -4028,7 +4028,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_UInt64<C>(C op, NdArray<ulong> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_UInt64<C>(C op, NdArray<ulong> @out)
             where C : INullaryOp<ulong>
         {
             unsafe
@@ -4136,7 +4136,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Int32<C>(C op, NdArray<int> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Int32<C>(C op, NdArray<int> @out)
             where C : INullaryOp<int>
         {
             unsafe
@@ -4244,7 +4244,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_UInt32<C>(C op, NdArray<uint> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_UInt32<C>(C op, NdArray<uint> @out)
             where C : INullaryOp<uint>
         {
             unsafe
@@ -4352,7 +4352,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Int16<C>(C op, NdArray<short> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Int16<C>(C op, NdArray<short> @out)
             where C : INullaryOp<short>
         {
             unsafe
@@ -4460,7 +4460,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_UInt16<C>(C op, NdArray<ushort> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_UInt16<C>(C op, NdArray<ushort> @out)
             where C : INullaryOp<ushort>
         {
             unsafe
@@ -4568,7 +4568,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_Byte<C>(C op, NdArray<byte> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_Byte<C>(C op, NdArray<byte> @out)
             where C : INullaryOp<byte>
         {
             unsafe
@@ -4676,7 +4676,7 @@ namespace NumCIL.Unsafe
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary_Flush_SByte<C>(C op, NdArray<sbyte> @out)
+        internal static void UFunc_Op_Inner_Nullary_Flush_SByte<C>(C op, NdArray<sbyte> @out)
             where C : INullaryOp<sbyte>
         {
             unsafe

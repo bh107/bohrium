@@ -91,6 +91,21 @@ namespace NumCIL.Unsafe
         }
 
         /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the reduce operation, bound to the data type, but unbound in the operand type.
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, but unbound in the operand type, or null if no such method exists</returns>
+        public static MethodInfo GetReduce<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "UFunc_Reduce_Inner_Flush_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.Aggregate).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+        /// <summary>
         /// Method that performs an unsafe operation
         /// </summary>
         /// <returns>A test value</returns>
