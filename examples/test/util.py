@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy as cnp
+import cphvbbridge as cnp
 import random
 
 def array_equal(A,B,maxerror=0.0):

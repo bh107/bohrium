@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import util
 
 B = util.Benchmark()
@@ -22,12 +22,12 @@ up     = full[0:-2, 1:-1]
 down   = full[2:  , 1:-1]
 
 if B.cphvb:
-  cphvbnumpy.handle_array(full)
-  cphvbnumpy.handle_array(work)
+  cphvbbridge.handle_array(full)
+  cphvbbridge.handle_array(work)
 
 B.start()
 for i in xrange(iterations):
-  cphvbnumpy.flush();
+  cphvbbridge.flush();
   work[:] = center 
   work += left
   work += right 
@@ -37,7 +37,7 @@ for i in xrange(iterations):
   center[:] = work
 
 if B.cphvb:
-  cphvbnumpy.unhandle_array(full)
+  cphvbbridge.unhandle_array(full)
 
 B.stop()
 B.pprint()

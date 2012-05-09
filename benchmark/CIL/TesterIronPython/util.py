@@ -68,11 +68,11 @@ class Benchmark:
             numcil.activate_cphVB()
 
     def start(self):
-        #cphvbnumpy.flush()
+        #cphvbbridge.flush()
         self.info['totaltime'] = time.time()
 
     def stop(self):
-        #cphvbnumpy.flush()
+        #cphvbbridge.flush()
         self.info['totaltime'] = time.time() - self.info['totaltime']
 
     def pprint(self):

@@ -1,6 +1,6 @@
 import numpy as np
 import numpytest
-import cphvbnumpy
+import cphvbbridge
 
 type=np.float32
 
@@ -12,9 +12,9 @@ def SOR(H,W,Dist):
     diff = np.zeros((H/2,W/2), dtype=type)
     tmpdelta = np.zeros((H/2), dtype=type)
     if Dist:
-        cphvbnumpy.handle_array(full)
-        cphvbnumpy.handle_array(diff)
-        cphvbnumpy.handle_array(tmpdelta)
+        cphvbbridge.handle_array(full)
+        cphvbbridge.handle_array(diff)
+        cphvbbridge.handle_array(tmpdelta)
 
     cells  = full[1:-1, 1:-1]
     black1 = full[1:-1:2, 1:-1:2]

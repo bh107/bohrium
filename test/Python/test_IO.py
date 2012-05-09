@@ -2,7 +2,7 @@ import numpy as np
 import numpytest
 import random
 import subprocess
-import cphvbnumpy
+import cphvbbridge
 
 def run():
     try:#This test requires zlib

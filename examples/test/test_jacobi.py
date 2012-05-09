@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy as cnp
+import cphvbbridge as cnp
 import util
 import sys
 sys.path.append('../programs/')

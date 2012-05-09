@@ -1,6 +1,6 @@
 import numpy as np
 import numpytest
-import cphvbnumpy
+import cphvbbridge
 
 type=np.float32
 
@@ -11,10 +11,10 @@ def jacobi_sencil(H,W,Dist):
     tmpdelta = np.zeros((H), dtype=type)
 
     if Dist:
-        cphvbnumpy.handle_array(full)
-        cphvbnumpy.handle_array(work)
-        cphvbnumpy.handle_array(diff)
-        cphvbnumpy.handle_array(tmpdelta)
+        cphvbbridge.handle_array(full)
+        cphvbbridge.handle_array(work)
+        cphvbbridge.handle_array(diff)
+        cphvbbridge.handle_array(tmpdelta)
 
     cells = full[1:-1, 1:-1]
     up    = full[1:-1, 0:-2]

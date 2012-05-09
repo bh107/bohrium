@@ -4,7 +4,7 @@
 
 import numpy
 import time
-import cphvbnumpy
+import cphvbbridge
 import util
 
 B = util.Benchmark()
@@ -30,15 +30,15 @@ Vy = numpy.zeros((n+1,n+1),dtype=B.dtype);
 H[droploc,droploc] += 5.0
 
 if B.cphvb:
-    cphvbnumpy.handle_array(H)
-    cphvbnumpy.handle_array(Hx)
-    cphvbnumpy.handle_array(Hy)
-    cphvbnumpy.handle_array(U)
-    cphvbnumpy.handle_array(Ux)
-    cphvbnumpy.handle_array(Uy)
-    cphvbnumpy.handle_array(V)
-    cphvbnumpy.handle_array(Vx)
-    cphvbnumpy.handle_array(Vy)
+    cphvbbridge.handle_array(H)
+    cphvbbridge.handle_array(Hx)
+    cphvbbridge.handle_array(Hy)
+    cphvbbridge.handle_array(U)
+    cphvbbridge.handle_array(Ux)
+    cphvbbridge.handle_array(Uy)
+    cphvbbridge.handle_array(V)
+    cphvbbridge.handle_array(Vx)
+    cphvbbridge.handle_array(Vy)
 
 B.start()
 for i in xrange(timesteps):
@@ -114,7 +114,7 @@ for i in xrange(timesteps):
                                      (Vy[:-1,:-1]**2/Hy[:-1,:-1] + \
                                       g/2*Hy[:-1,:-1]**2))
 if B.cphvb:
-    cphvbnumpy.unhandle_array(H)
+    cphvbbridge.unhandle_array(H)
 
 #print(numpy.add.reduce(numpy.add.reduce(H / n)))
 
