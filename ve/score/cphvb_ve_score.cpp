@@ -24,6 +24,8 @@ static cphvb_userfunc_impl reduce_impl = NULL;
 static cphvb_intp reduce_impl_id = 0;
 static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
+static cphvb_userfunc_impl matmul_impl = NULL;
+static cphvb_intp matmul_impl_id = 0;
 
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
@@ -167,6 +169,12 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
         cphvb_com_get_func(myself, lib, fun, &random_impl);
         random_impl_id = *id;
     }
+    else if(strcmp("cphvb_matmul", fun) && matmul_impl == NULL)
+    {
+        cphvb_com_get_func(myself, lib, fun, &matmul_impl);
+        matmul_impl_id = *id;
+    }
+    
     return CPHVB_SUCCESS;
 }
 
@@ -179,3 +187,10 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 {
     return cphvb_compute_random( arg, ve_arg );
 }
+
+cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
+{
+    printf("SCORE doing Matrix Multiplication!\n");
+    return CPHVB_SUCCESS;
+}
+
