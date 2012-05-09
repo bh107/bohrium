@@ -1,18 +1,11 @@
 import numpy as np
 
 def dot(A,B):
-    Adim = A.ndim
-    Bdim = B.ndim
-    if Adim == 1:
-        A = A[np.newaxis,:]
-    if Bdim == 1:
-        B = B[:,np.newaxis]
-    res = np.add.reduce(A[:,np.newaxis]*np.transpose(B),2)
-    if Bdim == 1:
-        res = res[:,0]
-    if Adim == 1:
-        res = res[0]
-    return res
+    if B.ndim == 1:
+        return np.add.reduce(A*B,-1)
+    if A.ndim == 1:
+        return np.add.reduce(A*np.transpose(B),-1)
+    return np.add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
 
 def solve(A ,b , cphvb=True):
     # solve Ax=b via Gausian elimination
