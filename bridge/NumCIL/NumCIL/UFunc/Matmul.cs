@@ -201,13 +201,12 @@ namespace NumCIL
         /// but the operation aggregation occurs accross all dimensions.
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="CADD">The typed add operator</typeparam>
-        /// <typeparam name="CMUL">The typed multiply operator</typeparam>
+        /// <typeparam name="CAGGREGATE">The typed add operator</typeparam>
+        /// <typeparam name="CCOMBINE">The typed multiply operator</typeparam>
         /// <param name="aggregate">The add operator</param>
         /// <param name="combine">The multiply operator</param>
         /// <param name="in1">The left-hand-side argument</param>
         /// <param name="in2">The right-hand-side argument</param>
-        /// <param name="out">An optional output argument, use for in-place operations</param>
         private static T UFunc_CombineAndAggregate_Inner_Flush<T, CAGGREGATE, CCOMBINE>(CAGGREGATE aggregate, CCOMBINE combine, NdArray<T> in1, NdArray<T> in2)
             where CAGGREGATE : struct, IBinaryOp<T>
             where CCOMBINE : struct, IBinaryOp<T>
