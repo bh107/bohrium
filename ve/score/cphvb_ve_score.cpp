@@ -159,7 +159,7 @@ cphvb_error cphvb_ve_score_shutdown( void )
 
 cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
-    if(strcmp("cphvb_reduce", fun))
+    if(strcmp("cphvb_reduce", fun) == 0)
     {
     	if (reduce_impl == NULL)
     	{
@@ -176,7 +176,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
         	return CPHVB_SUCCESS;
         }
     }
-    else if(strcmp("cphvb_random", fun))
+    else if(strcmp("cphvb_random", fun) == 0)
     {
     	if (random_impl == NULL)
     	{
@@ -193,7 +193,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
         	return CPHVB_SUCCESS;
         }
     }
-    else if(strcmp("cphvb_matmul", fun))
+    else if(strcmp("cphvb_matmul", fun) == 0)
     {
     	if (matmul_impl == NULL)
     	{
