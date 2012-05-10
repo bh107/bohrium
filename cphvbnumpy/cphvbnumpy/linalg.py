@@ -29,5 +29,3 @@ def jacobi(A, b, tol=0.0005):
         x = np.add.reduce(T*x,-1) + C
         error = norm(x-xo)/norm(x)
     return x
-
-def norm

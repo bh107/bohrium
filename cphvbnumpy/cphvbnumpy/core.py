@@ -18,15 +18,20 @@ def zeros(shape, dtype=float, cphvb=True):
 def flatten(A):
     return A.reshape(np.multiply.reduce(np.asarray(A.shape)))
 
-def diagonal(A,k=0):
+def diagonal(A,offset=0):
     if A.ndim !=2 :
         raise Exception("diagonal only supports 2 dimensions\n")
-    if k < 0:
-        d = A[-k:,0]
-    elif k > 0:
-        d = A[0,k:]
+    if offset < 0:
+        offset = -offset
+        if (A.shape[0]-offset) > A.shape[1]:
+            d = A[offset,:]
+        else:
+            d = A[offset:,0]
     else:
-        d = A[0]
+         if A.shape[1]-offset > A.shape[0]:
+             d = A[:,offset]
+         else:
+             d = A[0,offset:]
     d.strides=(A.strides[0]+A.strides[1])
     return d
 
