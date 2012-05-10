@@ -93,6 +93,11 @@
       <Project>{78cbe5f3-ad51-4b1e-a8ab-1a085f4d6a07}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+      <Name>NumCIL.Unsafe</Name>
+      <Project>{f3da9742-5a09-4456-9531-548324d35ce3}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
       <Name>NumCIL</Name>
       <Project>{08c17283-4f2a-466c-ae28-1923837a2f58}</Project>
