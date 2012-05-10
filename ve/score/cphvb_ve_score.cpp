@@ -161,21 +161,57 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
     if(strcmp("cphvb_reduce", fun) && reduce_impl == NULL)
     {
-        cphvb_com_get_func(myself, lib, fun, &reduce_impl);
-        reduce_impl_id = *id;
+    	if (reduce_impl == NULL)
+    	{
+			cphvb_com_get_func(myself, lib, fun, &reduce_impl);
+			if (reduce_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			reduce_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = reduce_impl_id;
+        	return CPHVB_SUCCESS;
+        }
     }
     else if(strcmp("cphvb_random", fun) && random_impl == NULL)
     {
-        cphvb_com_get_func(myself, lib, fun, &random_impl);
-        random_impl_id = *id;
+    	if (random_impl == NULL)
+    	{
+			cphvb_com_get_func(myself, lib, fun, &random_impl);
+			if (random_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			random_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = random_impl_id;
+        	return CPHVB_SUCCESS;
+        }
     }
     else if(strcmp("cphvb_matmul", fun) && matmul_impl == NULL)
     {
-        cphvb_com_get_func(myself, lib, fun, &matmul_impl);
-        matmul_impl_id = *id;
+    	if (matmul_impl == NULL)
+    	{
+			cphvb_com_get_func(myself, lib, fun, &matmul_impl);
+			if (matmul_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			matmul_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = matmul_impl_id;
+        	return CPHVB_SUCCESS;
+        }
     }
     
-    return CPHVB_SUCCESS;
+    return CPHVB_USERFUNC_NOT_SUPPORTED;
 }
 
 cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)

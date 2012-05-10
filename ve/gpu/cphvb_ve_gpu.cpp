@@ -66,6 +66,10 @@ cphvb_error cphvb_ve_gpu_reg_func(char *lib,
     cphvb_userfunc_impl userfunc;
     cphvb_com_get_func(component, lib, fun, &userfunc);
     if (userfunc != NULL)
+    {
         instructionScheduler->registerFunction(*id, userfunc);
-    return CPHVB_SUCCESS;
+    	return CPHVB_SUCCESS;
+    }
+    else
+	    return CPHVB_USERFUNC_NOT_SUPPORTED;
 }
