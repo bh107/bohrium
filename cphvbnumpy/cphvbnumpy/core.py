@@ -1,4 +1,6 @@
 import numpy as np
+from numpy import *
+import cphvbbridge as bridge
 
 def empty(shape, dtype=float, cphvb=True):
     return np.empty(shape, dtype=dtype, cphvb=cphvb)
@@ -45,8 +47,11 @@ def diag(A,k=0):
         raise ValueError("Input must be 1- or 2-d.")
 
 def dot(A,B):
+    if A.cphvb or B.cphvb:
+        bridge.handle_array(A)
+        bridge.handle_array(B)
     if B.ndim == 1:
         return np.add.reduce(A*B,-1)
     if A.ndim == 1:
-        return np.add.reduce(A*np.transpose(B),-1)
-    return np.add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
+        return add.reduce(A*np.transpose(B),-1)
+    return add.reduce(A[:,np.newaxis]*np.transpose(B),-1)

@@ -1,5 +1,6 @@
 import cphvbnumpy as np
 import numpy.linalg as la
+from numpy.linalg import *
 
 def solve(A ,b):
     # solve Ax=b via Gausian elimination
@@ -18,7 +19,7 @@ def solve(A ,b):
 def jacobi(A, b, tol=0.0005):
     # solve Ax=b via the Jacobi method
     x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
-    D = 1/np.diag(A)
+    D = np.reciprocal(np.diag(A))
     R = np.diag(np.diag(A)) - A
     T = D[:,np.newaxis]*R
     C = D*b
@@ -26,5 +27,7 @@ def jacobi(A, b, tol=0.0005):
     while error > tol:
         xo = x
         x = np.add.reduce(T*x,-1) + C
-        error = la.norm(x-xo)/nla.norm(x)
+        error = norm(x-xo)/norm(x)
     return x
+
+def norm
