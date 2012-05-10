@@ -347,14 +347,14 @@ namespace NumCIL.cphVB
                 }
                 else
                 {
-                    if (m_size > int.MaxValue)
-                        throw new OverflowException();
-
                     //TODO: It is possible that Marshal.Copy() is actually faster
 
                     //Then copy the data into the local buffer
                     if (!NumCIL.UnsafeAPI.CopyFromIntPtr<T>(actualData, data))
                     {
+                        if (m_size > int.MaxValue)
+                            throw new OverflowException();
+
                         if (typeof(T) == typeof(float))
                             Marshal.Copy(actualData, (float[])(object)data, 0, (int)m_size);
                         else if (typeof(T) == typeof(double))
