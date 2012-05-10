@@ -39,7 +39,7 @@ def diagflat(d,k=0):
     d = np.asarray(d)
     d = flatten(d) 
     A = zeros((d.size,d.size), dtype=d.dtype, cphvb=d.cphvb)
-    Ad = diagonal(A)
+    Ad = diagonal(A, offset=k)
     Ad[:] = d 
     return A
 
