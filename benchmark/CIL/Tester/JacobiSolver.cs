@@ -23,13 +23,12 @@ namespace Tester
             work.Name = "work";
             diff.Name = "diff";
             tmpdelta.Name = "tmpdelta";
-            work.Data[0] = 0;
 
-            var cells = full[R.Slice(1, -1),        R.Slice(1, -1)       ];
-            var up =    full[R.Slice(1, -1),        R.Slice(0, -2)       ];
-            var left =  full[R.Slice(0, -2),        R.Slice(1, -1)       ];
-            var right = full[R.Slice(2,  0),        R.Slice(1, -1)       ];
-            var down =  full[R.Slice(1, -1),        R.Slice(2,  0)       ];
+            var cells = full[R.Slice(1, -1),  R.Slice(1, -1) ];
+            var up =    full[R.Slice(1, -1),  R.Slice(0, -2) ];
+            var left =  full[R.Slice(0, -2),  R.Slice(1, -1) ];
+            var right = full[R.Slice(2,  0),  R.Slice(1, -1) ];
+            var down =  full[R.Slice(1, -1),  R.Slice(2,  0) ];
 
             full[R.All, R.El(0)] += -273.5f;
             full[R.All, R.El(-1)] += -273.5f;
