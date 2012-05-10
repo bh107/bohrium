@@ -23,11 +23,6 @@ namespace UnitTest
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
             RunSomeTests("Lazy");
 
-
-            string path = Environment.GetEnvironmentVariable("PATH");
-            Environment.SetEnvironmentVariable("PATH", path + @";Z:\Udvikler\cphvb\core;Z:\Udvikler\cphvb\vem\node;Z:\Udvikler\cphvb\pthread_win32");
-            Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"Z:\Udvikler\cphvb\config.win.ini");
-
             try { NumCIL.cphVB.Utility.Activate(); }
             catch { } 
 
