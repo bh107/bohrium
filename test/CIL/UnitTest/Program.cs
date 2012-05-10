@@ -9,7 +9,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            NumCIL.Utility.DisableUnsafeAPI = true;
+            NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
 
             Console.WriteLine("Running basic tests");
             using (new DispTimer("Basic tests"))
@@ -23,9 +23,9 @@ namespace UnitTest
             using (new DispTimer("Extended tests"))
                 ExtendedTests.RunTests();
 
-            if (NumCIL.Utility.IsUnsafeSupported)
+            if (NumCIL.UnsafeAPI.IsUnsafeSupported)
             {
-                NumCIL.Utility.DisableUnsafeAPI = false;
+                NumCIL.UnsafeAPI.DisableUnsafeAPI = false;
 
                 Console.WriteLine("Running basic tests - Unsafe");
                 using (new DispTimer("Basic tests"))

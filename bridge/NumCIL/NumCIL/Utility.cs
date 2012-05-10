@@ -390,15 +390,5 @@ namespace NumCIL
                     gh.Free();
             }
         }
-
-        /// <summary>
-        /// Gets ot sets wether NumCIL should attempt to run unsafe code for speedups
-        /// </summary>
-        public static bool DisableUnsafeAPI { get { return UnsafeAPI.DisableUnsafeAPI; } set { UnsafeAPI.DisableUnsafeAPI = value; } }
-
-        /// <summary>
-        /// Gets ot sets wether unsafe code is supported
-        /// </summary>
-        public static bool IsUnsafeSupported { get { return UnsafeAPI.IsUnsafeSupported; } }
     }
 }

@@ -11,7 +11,7 @@ namespace NumCIL
     /// <summary>
     /// This class wraps access to the unsafe methods
     /// </summary>
-    internal static class UnsafeAPI
+    public static class UnsafeAPI
     {
         /// <summary>
         /// Gets or sets a value indicating if use of unsafe methods is disabled
@@ -41,6 +41,14 @@ namespace NumCIL
         /// The method used to retrieve reduce methods
         /// </summary>
         private static readonly MethodInfo _getReduce;
+        /// <summary>
+        /// The method used to retrieve copyToManaged methods
+        /// </summary>
+        private static readonly MethodInfo _getCopyToManaged;
+        /// <summary>
+        /// The method used to retrieve copyToManaged methods
+        /// </summary>
+        private static readonly MethodInfo _getCopyFromManaged;
 
         /// <summary>
         /// Cache of compiled unsafe binary methods bound to a particular operator
@@ -62,6 +70,14 @@ namespace NumCIL
         /// Cache of compiled unsafe reduce methods bound to a particular operator
         /// </summary>
         private static readonly Dictionary<object, MethodInfo> _reduceMethodCache = new Dictionary<object, MethodInfo>();
+        /// <summary>
+        /// Cache of compiled unsafe copy methods bound to a particular type
+        /// </summary>
+        private static readonly Dictionary<Type, MethodInfo> _copyToManagedMethodCache = new Dictionary<Type, MethodInfo>();
+        /// <summary>
+        /// Cache of compiled unsafe copy methods bound to a particular type
+        /// </summary>
+        private static readonly Dictionary<Type, MethodInfo> _copyFromManagedMethodCache = new Dictionary<Type, MethodInfo>();
 
         /// <summary>
         /// Static constructor, loads the unsafe dll and probes for support,
@@ -75,6 +91,8 @@ namespace NumCIL
             MethodInfo supportsNullaryApply = null;
             MethodInfo supportsAggregate = null;
             MethodInfo supportsReduce = null;
+            MethodInfo supportsCopyToManaged = null;
+            MethodInfo supportsCopyFromManaged = null;
 
             try
             {
@@ -90,6 +108,8 @@ namespace NumCIL
                     supportsNullaryApply = utilityType.GetMethod("GetNullaryApply");
                     supportsAggregate = utilityType.GetMethod("GetAggregate");
                     supportsReduce = utilityType.GetMethod("GetReduce");
+                    supportsCopyToManaged = utilityType.GetMethod("GetCopyToManaged");
+                    supportsCopyFromManaged = utilityType.GetMethod("GetCopyFromManaged");
                     unsafeSupported &= supportsBinaryApply != null;
                     unsafeSupported &= supportsUnaryApply != null;
                     unsafeSupported &= supportsNullaryApply != null;
@@ -111,6 +131,8 @@ namespace NumCIL
                 _getNullaryApply = supportsNullaryApply;
                 _getAggregate = supportsAggregate;
                 _getReduce = supportsReduce;
+                _getCopyFromManaged = supportsCopyFromManaged;
+                _getCopyToManaged = supportsCopyToManaged;
             }
             else
             {
@@ -119,6 +141,8 @@ namespace NumCIL
                 _getNullaryApply = null;
                 _getAggregate = null;
                 _getReduce = null;
+                _getCopyFromManaged = null;
+                _getCopyToManaged = null;
             }
 
             if (Environment.GetEnvironmentVariable("NUMCIL_DISABLE_UNSAFE") != null)
@@ -135,7 +159,7 @@ namespace NumCIL
         /// <param name="in2">The right-handside argument</param>
         /// <param name="out">The output target</param>
         /// <returns>True if the operation was supported and executed, false otherwise</returns>
-        public static bool UFunc_Op_Inner_Binary_Flush_Unsafe<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
+        internal static bool UFunc_Op_Inner_Binary_Flush_Unsafe<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
             where C : struct, IBinaryOp<T>
         {
             if (DisableUnsafeAPI || !IsUnsafeSupported)
@@ -167,7 +191,7 @@ namespace NumCIL
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
         /// <returns>True if the operation was supported and executed, false otherwise</returns>
-        public static bool UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
+        internal static bool UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
             where C : struct, IUnaryOp<T>
         {
             if (DisableUnsafeAPI || !IsUnsafeSupported)
@@ -198,7 +222,7 @@ namespace NumCIL
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
         /// <returns>True if the operation was supported and executed, false otherwise</returns>
-        public static bool UFunc_Op_Inner_Nullary_Flush_Unsafe<T, C>(C op, NdArray<T> @out)
+        internal static bool UFunc_Op_Inner_Nullary_Flush_Unsafe<T, C>(C op, NdArray<T> @out)
             where C : struct, INullaryOp<T>
         {
             if (DisableUnsafeAPI || !IsUnsafeSupported)
@@ -230,7 +254,7 @@ namespace NumCIL
         /// <param name="in1">The left-hand-side argument</param>
         /// <param name="res">The output result</param>
         /// <returns>True if the operation was supported and executed, false otherwise</returns>
-        public static bool Aggregate_Entry_Unsafe<T, C>(C op, NdArray<T> in1, out T res)
+        internal static bool Aggregate_Entry_Unsafe<T, C>(C op, NdArray<T> in1, out T res)
             where C : struct, IBinaryOp<T>
         {
             if (DisableUnsafeAPI || !IsUnsafeSupported)
@@ -269,7 +293,7 @@ namespace NumCIL
         /// <param name="axis">The axis to reduce over</param>
         /// <param name="out">The output result</param>
         /// <returns>True if the operation was supported and executed, false otherwise</returns>
-        public static bool UFunc_Reduce_Inner_Flush_Unsafe<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+        internal static bool UFunc_Reduce_Inner_Flush_Unsafe<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
             where C : struct, IBinaryOp<T>
         {
             if (DisableUnsafeAPI || !IsUnsafeSupported)
@@ -289,6 +313,68 @@ namespace NumCIL
                 return false;
 
             mi.Invoke(null, new object[] { op, axis, in1, @out });
+            return true;
+        }
+        
+        /// <summary>
+        /// Copies the content of the array to the target memory area.
+        /// If the copy succeeds, the return value is true, and false if the copy has not been performed
+        /// </summary>
+        /// <typeparam name="T">The type of data to process.</typeparam>
+        /// <param name="data">The data to copy from</param>
+        /// <param name="target">The memory area to copy to</param>
+        /// <param name="length">The number of elements to copy</param>
+        /// <returns>True if the call succeeded, false otherwise</returns>
+        public static bool CopyToIntPtr<T>(T[] data, IntPtr target, long length = -1)
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_copyFromManagedMethodCache.TryGetValue(typeof(T), out mi))
+            {
+                mi = (MethodInfo)_getCopyFromManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                _copyFromManagedMethodCache[typeof(T)] = mi;
+            }
+
+            if (mi == null)
+                return false;
+
+            if (length < 0)
+                length = data.LongLength;
+
+            mi.Invoke(null, new object[] { target, data, length });
+            return true;
+        }
+
+        /// <summary>
+        /// Copies the content of the memory area into the array.
+        /// If the copy succeeds, the return value is true, and false if the copy has not been performed
+        /// </summary>
+        /// <typeparam name="T">The type of data to process.</typeparam>
+        /// <param name="data">The data to copy to</param>
+        /// <param name="source">The memory area to copy from</param>
+        /// <param name="length">The number of elements to copy</param>
+        /// <returns>True if the call succeeded, false otherwise</returns>
+        public static bool CopyFromIntPtr<T>(IntPtr source, T[] data, long length = -1)
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_copyToManagedMethodCache.TryGetValue(typeof(T), out mi))
+            {
+                mi = (MethodInfo)_getCopyToManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                _copyToManagedMethodCache[typeof(T)] = mi;
+            }
+
+            if (mi == null)
+                return false;
+
+            if (length < 0)
+                length = data.LongLength;
+
+            mi.Invoke(null, new object[] { data, source, length });
             return true;
         }
     }

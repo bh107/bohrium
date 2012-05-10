@@ -106,6 +106,34 @@ namespace NumCIL.Unsafe
         }
 
         /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the copy operation, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
+        public static MethodInfo GetCopyToManaged<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            return typeof(NumCIL.Unsafe.Copy).GetMethod("Memcpy", new Type[] { typeof(T[]), typeof(IntPtr), typeof(long) });
+        }
+
+        /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the copy operation, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
+        public static MethodInfo GetCopyFromManaged<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            return typeof(NumCIL.Unsafe.Copy).GetMethod("Memcpy", new Type[] { typeof(IntPtr), typeof(T[]), typeof(long) });
+        }
+
+        /// <summary>
         /// Method that performs an unsafe operation
         /// </summary>
         /// <returns>A test value</returns>
