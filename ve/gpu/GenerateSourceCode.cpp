@@ -142,7 +142,10 @@ void generateInstructionSource(cphvb_opcode opcode,
         source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
         break;
     case CPHVB_RECIPROCAL:
-        source << "\t" << parameters[0] << " = 1/" << parameters[1] << ";\n";
+        if (returnType == OCL_FLOAT16)
+            source << "\t" << parameters[0] << " = half_recip(" << parameters[1] << ");\n";
+        else
+            source << "\t" << parameters[0] << " = native_recip(" << parameters[1] << ");\n";
         break;
     case CPHVB_SIN:
         source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
