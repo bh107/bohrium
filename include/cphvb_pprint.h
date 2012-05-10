@@ -47,7 +47,7 @@ void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp in
  * @param instruction_count Number of instruction in list.
  * @param instruction_list Array of instructions.
  */
-void cphvb_pprint_bundle( cphvb_intp instruction_count, cphvb_instruction* instruction_list );
+void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count );
 
 #ifdef __cplusplus
 }

@@ -41,7 +41,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     tmp         = *in;
     tmp.base    = cphvb_base_array(in);
     cphvb_intp step = in->stride[a->axis];
-    tmp.start = 0;
+    tmp.start = in->start;
     j=0;
     for(i=0; i<in->ndim; ++i) //Remove the 'axis' dimension from in
         if(i != a->axis)

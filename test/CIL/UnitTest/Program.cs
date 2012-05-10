@@ -9,58 +9,51 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            NumCIL.Utility.DisableUnsafeAPI = true;
+            NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
+            RunSomeTests(null);
 
-            Console.WriteLine("Running basic tests");
-            using (new DispTimer("Basic tests"))
-                BasicTests.RunTests();
-
-            Console.WriteLine("Running Lookup tests");
-            using (new DispTimer("Lookup tests"))
-                TypeLookupTests.RunTests();
-
-            Console.WriteLine("Running extended tests");
-            using (new DispTimer("Extended tests"))
-                ExtendedTests.RunTests();
-
-            if (NumCIL.Utility.IsUnsafeSupported)
+            if (NumCIL.UnsafeAPI.IsUnsafeSupported)
             {
-                NumCIL.Utility.DisableUnsafeAPI = false;
-
-                Console.WriteLine("Running basic tests - Unsafe");
-                using (new DispTimer("Basic tests"))
-                    BasicTests.RunTests();
-
-                Console.WriteLine("Running Lookup tests - Unsafe");
-                using (new DispTimer("Lookup tests"))
-                    TypeLookupTests.RunTests();
-
-                Console.WriteLine("Running extended tests - Unsafe");
-                using (new DispTimer("Extended tests"))
-                    ExtendedTests.RunTests();
+                NumCIL.UnsafeAPI.DisableUnsafeAPI = false;
+                RunSomeTests("Unsafe");
             }
             else
-            {
                 Console.WriteLine("Unsafe code is not supported, skipping tests for unsafe code");
-            }
 
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
+            RunSomeTests("Lazy");
 
-            Console.WriteLine("Running basic tests - Lazy");
-            using (new DispTimer("Basic tests"))
-                BasicTests.RunTests();
+            try { NumCIL.cphVB.Utility.Activate(); }
+            catch { } 
 
-            Console.WriteLine("Running Lookup tests - Lazy");
-            using (new DispTimer("Lookup tests"))
-                TypeLookupTests.RunTests();
+            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.cphVB.cphVBAccessorFactory<float>))
+                RunSomeTests("cphVB");
+            else
+                Console.WriteLine("cphVB code is not supported, skipping tests for cphVB code");
 
-            Console.WriteLine("Running extended tests");
-            using (new DispTimer("Extended tests"))
-                ExtendedTests.RunTests();
 
             /*Console.WriteLine("Running profiling tests");
             using (new DispTimer("Profiling tests"))
                 Profiling.RunProfiling();*/
+
+        }
+
+        private static void RunSomeTests(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+                name = " - " + name;
+
+            Console.WriteLine("Running basic tests" + name);
+            using (new DispTimer("Basic tests"))
+                BasicTests.RunTests();
+
+            Console.WriteLine("Running Lookup tests" + name);
+            using (new DispTimer("Lookup tests"))
+                TypeLookupTests.RunTests();
+
+            Console.WriteLine("Running extended tests" + name);
+            using (new DispTimer("Extended tests"))
+                ExtendedTests.RunTests();
         }
     }
 }

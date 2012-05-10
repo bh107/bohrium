@@ -107,7 +107,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A statically allocated PInvoke buffer
         /// </summary>
-        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[5];//PInvoke.CPHVB_MAX_NO_INST];
+        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
 
 
         /// <summary>
@@ -225,9 +225,9 @@ namespace NumCIL.cphVB
         {
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
-                //Lock free swapping, ensures that we never block the garbage collector
-                List<IInstruction> lst = m_cleanups;
-                m_cleanups = new List<IInstruction>();
+				//Atomically reset instruction list and get copy,
+				// should not need to be atomic, but Mono fails otherwise
+				List<IInstruction> lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
                 lock (m_executelock)
                     ExecuteWithoutLocks(lst);

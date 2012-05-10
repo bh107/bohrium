@@ -126,17 +126,42 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
 
 cphvb_error cphvb_ve_mcore_reg_func(char *lib, char *fun, cphvb_intp *id) {
 
-    if(strcmp("cphvb_reduce", fun) && reduce_impl == NULL)
+    if(strcmp("cphvb_reduce", fun) == 0)
     {
-        cphvb_com_get_func(myself, lib, fun, &reduce_impl);
-        reduce_impl_id = *id;
+    	if (reduce_impl == NULL)
+    	{
+			cphvb_com_get_func(myself, lib, fun, &reduce_impl);
+			if (reduce_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			reduce_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = reduce_impl_id;
+        	return CPHVB_SUCCESS;
+        }
     }
-    else if(strcmp("cphvb_random", fun) && random_impl == NULL)
+    else if(strcmp("cphvb_random", fun) == 0)
     {
-        cphvb_com_get_func(myself, lib, fun, &random_impl);
-        random_impl_id = *id;
+    	if (random_impl == NULL)
+    	{
+			cphvb_com_get_func(myself, lib, fun, &random_impl);
+			if (random_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			random_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = random_impl_id;
+        	return CPHVB_SUCCESS;
+        }
     }
-    return CPHVB_SUCCESS;
+
+    return CPHVB_USERFUNC_NOT_SUPPORTED;
 }
 
 //Implementation of the user-defined funtion "reduce". Note that we

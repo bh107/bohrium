@@ -154,6 +154,7 @@ namespace NumCIL.cphVB
             CPHVB_INST_UNDONE,
             CPHVB_INST_NOT_SUPPORTED,
             CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
+            CPHVB_USERFUNC_NOT_SUPPORTED,
         }
 
         public enum cphvb_opcode : long
