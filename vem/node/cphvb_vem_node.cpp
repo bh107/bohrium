@@ -152,7 +152,8 @@ cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
     //If the call succeeded, register the id as taken and return it
     if (e == CPHVB_SUCCESS)
     {
-    	userfunc_count = tmpid;
+	    if (tmpid > userfunc_count)
+	    	userfunc_count = tmpid;
     	*id = tmpid;
     }
     
