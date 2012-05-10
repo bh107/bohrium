@@ -107,7 +107,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A statically allocated PInvoke buffer
         /// </summary>
-        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[5];//PInvoke.CPHVB_MAX_NO_INST];
+        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
 
 
         /// <summary>
