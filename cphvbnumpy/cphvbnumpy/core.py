@@ -1,15 +1,15 @@
 import numpy as np
 
 def empty(shape, dtype=float, cphvb=True):
-    return np.empty(shape, dtype, cphvb)
+    return np.empty(shape, dtype=dtype, cphvb=cphvb)
 
 def ones(shape, dtype=float, cphvb=True):
-    A = empty(shape, dtype, cphvb)
+    A = empty(shape, dtype=dtype, cphvb=cphvb)
     A[:] = 1
     return A
 
 def zeros(shape, dtype=float, cphvb=True):
-    A = empty(shape, dtype, cphvb)
+    A = empty(shape, dtype=dtype, cphvb=cphvb)
     A[:] = 0
     return A
 

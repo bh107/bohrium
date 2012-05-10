@@ -30,6 +30,7 @@
 #include "cphvb_compute.h"
 #include "cphvb_reduce.h"
 #include "cphvb_random.h"
+#include "cphvb_matmul.h"
 #include "cphvb_pprint.h"
 #include "cphvb_osx.h"
 #include "cphvb_win.h"
