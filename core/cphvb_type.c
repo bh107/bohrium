@@ -25,14 +25,6 @@
 extern "C" {
 #endif
 
-/* Data size in bytes for the different types */
-int _type_size[CPHVB_UNKNOWN+1];
-bool _type_size_initialized = false;
-
-/* Text string for the different types */
-const char* _type_text[CPHVB_UNKNOWN+1];
-bool _type_text_initialized = false;
-
 /* Byte size for type
  *
  * @type   Type code
@@ -40,23 +32,37 @@ bool _type_text_initialized = false;
  */
 int cphvb_type_size(cphvb_type type)
 {
-	if (!_type_size_initialized) {
-		_type_size[CPHVB_BOOL] = 1;
-		_type_size[CPHVB_INT8] = 1;
-		_type_size[CPHVB_INT16] = 2;
-		_type_size[CPHVB_INT32] = 4;
-		_type_size[CPHVB_INT64] = 8;
-		_type_size[CPHVB_UINT8] = 1;
-		_type_size[CPHVB_UINT16] = 2;
-		_type_size[CPHVB_UINT32] = 4;
-		_type_size[CPHVB_UINT64] = 8;
-		_type_size[CPHVB_FLOAT16] = 2;
-		_type_size[CPHVB_FLOAT32] = 4;
-		_type_size[CPHVB_FLOAT64] = 8;
-		_type_size[CPHVB_UNKNOWN] = -1;
-		_type_size_initialized = true;
+    switch(type)
+    {
+    case CPHVB_BOOL:
+        return 1;
+    case CPHVB_INT8:
+        return 1;
+    case CPHVB_INT16:
+        return 2;
+    case CPHVB_INT32:
+        return 4;
+    case CPHVB_INT64:
+        return 8;
+    case CPHVB_UINT8:
+        return 1;
+    case CPHVB_UINT16:
+        return 2;
+    case CPHVB_UINT32:
+        return 4;
+    case CPHVB_UINT64:
+        return 8;
+    case CPHVB_FLOAT16:
+        return 2;
+    case CPHVB_FLOAT32:
+        return 4;
+    case CPHVB_FLOAT64:
+        return 8;
+    case CPHVB_UNKNOWN:
+        return -1;
+    default:
+        return -1;
 	}
-    return _type_size[type];
 }
 
 /* Text string for type
@@ -66,23 +72,37 @@ int cphvb_type_size(cphvb_type type)
  */
 const char* cphvb_type_text(cphvb_type type)
 {
-	if (!_type_text_initialized) {
-		_type_text[CPHVB_BOOL]    = "CPHVB_BOOL";
-		_type_text[CPHVB_INT8]    = "CPHVB_INT8";
-		_type_text[CPHVB_INT16]   = "CPHVB_INT16";
-		_type_text[CPHVB_INT32]   = "CPHVB_INT32";
-		_type_text[CPHVB_INT64]   = "CPHVB_INT64";
-		_type_text[CPHVB_UINT8]   = "CPHVB_UINT8";
-		_type_text[CPHVB_UINT16]  = "CPHVB_UINT16";
-		_type_text[CPHVB_UINT32]  = "CPHVB_UNIT32";
-		_type_text[CPHVB_UINT64]  = "CPHVB_UINT64";
-		_type_text[CPHVB_FLOAT16] = "CPHVB_FLOAT16";
-		_type_text[CPHVB_FLOAT32] = "CPHVB_FLOAT32";
-		_type_text[CPHVB_FLOAT64] = "CPHVB_FLOAT64";
-		_type_text[CPHVB_UNKNOWN] = "CPHVB_UNKNOWN";
-		_type_text_initialized = true;
-	}
-    return _type_text[type];
+    switch(type)
+    {
+    case CPHVB_BOOL:
+        return "CPHVB_BOOL";
+    case CPHVB_INT8:
+        return "CPHVB_INT8";
+    case CPHVB_INT16:
+        return "CPHVB_INT16";
+    case CPHVB_INT32:
+        return "CPHVB_INT32";
+    case CPHVB_INT64:
+        return "CPHVB_INT64";
+    case CPHVB_UINT8:
+        return "CPHVB_UINT8";
+    case CPHVB_UINT16:
+        return "CPHVB_UINT16";
+    case CPHVB_UINT32:
+        return "CPHVB_UNIT32";
+    case CPHVB_UINT64:
+        return "CPHVB_UINT64";
+    case CPHVB_FLOAT16:
+        return "CPHVB_FLOAT16";
+    case CPHVB_FLOAT32:
+        return "CPHVB_FLOAT32";
+    case CPHVB_FLOAT64:
+        return "CPHVB_FLOAT64";
+    case CPHVB_UNKNOWN:
+        return "CPHVB_UNKNOWN";
+    default:
+        return "Unknown type";
+    }
 }
 
 #ifdef __cplusplus
