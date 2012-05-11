@@ -22,7 +22,7 @@
 
 #include <string>
 #include <map>
-#include <cphvb_reduce.h>
+#include <cphvb.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 
