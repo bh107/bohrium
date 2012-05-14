@@ -28,7 +28,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
     {
         return CPHVB_TYPE_NOT_SUPPORTED;
     } else {
-        return comp( instr );
+        return comp( instr, (cphvb_index)0, (cphvb_index)0 );
     }
 
 }
@@ -36,7 +36,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 cphvb_error cphvb_compute_apply_unsafe( cphvb_instruction *instr ) {
 
     computeloop comp = cphvb_compute_get( instr );
-    return comp( instr );
+    return comp( instr, (cphvb_index)0, (cphvb_index)0 );
 
 }
 
