@@ -16,13 +16,14 @@ Valgrind and Python
 Valgrind is a great tool for memory debugging, memory leak detection, and profiling.
 However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python::
 
+  sudo apt-get build-dep python
   PV=2.7.3
   sudo mkdir /opt/python
   cd /tmp
   wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
   tar xf Python-$PV.tgz
   cd Python-$PV
-  ./configure --with-zlib --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
+  ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
