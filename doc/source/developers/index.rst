@@ -22,7 +22,7 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
   tar xf Python-$PV.tgz
   cd Python-$PV
-  ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
+  ./configure --with-zlib --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
