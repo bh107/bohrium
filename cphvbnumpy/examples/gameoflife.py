@@ -27,11 +27,11 @@ def play(state, iterations):
         # extract live cells neighbors
         live = neighbors * cells
         # find cells the stay alive
-        live = (live >= SURVIVE_LOW) & (live <= SURVIVE_HIGH) 
+        stay = (live >= SURVIVE_LOW) & (live <= SURVIVE_HIGH) 
         # extract dead cell neighbors
         dead = neighbors * (cells == 0)
         # find cells that spaw new life
         spawn = dead == SPAWN
         # save result for next iteration
-        cells[:] = live | spawn
+        cells[:] = stay | spawn
     return state
