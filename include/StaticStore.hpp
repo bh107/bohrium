@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <deque>
+#include <list>
 
 #ifdef DEBUG
 #include <iostream>
@@ -43,6 +44,7 @@ private:
     T* nextElement;
     size_t bufferSize;
     std::deque<T*> emptySlot;
+    std::list<T*> allocatedBuffers;
     int counter;
   public:
     StaticStore(size_t size);
@@ -62,7 +64,7 @@ template <typename T>
 StaticStore<T>::StaticStore(size_t initialSize) :
     bufferSize(initialSize)
 {
-    buffer = (T*)malloc(initialSize*sizeof(T));
+    buffer = (T*)malloc(bufferSize*sizeof(T));
     if (buffer == NULL)
     {
         throw std::runtime_error("Out of memory");
@@ -86,8 +88,15 @@ StaticStore<T>::StaticStore()
 template <typename T>
 StaticStore<T>::~StaticStore()
 {
+	typename std::list<T*>::iterator it;
+    
     if(counter > 0)
         std::cout << "[VEM-NODE] Warning " << counter << " arrays was not destroyed by the BRIDGE" << std::endl;
+
+    for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
+	    free(*it);
+    
+    allocatedBuffers.clear();
     free(buffer);
 }
 
@@ -107,7 +116,24 @@ T* StaticStore<T>::c_next()
     }
     else
     {
-        throw StaticStoreException();
+    	//Out of space, create a new block
+		T* tmp = (T*)malloc(bufferSize*sizeof(T));
+		if (tmp == NULL)
+		{
+			throw std::runtime_error("Out of memory");
+		}
+		
+#ifdef DEBUG
+    std::cout << "StaticStore<" << typeid(T).name() << ">(): ";
+    std::cout << "Allocated " << bufferSize*sizeof(T) << " bytes; ";
+#endif
+
+		allocatedBuffers.push_back(buffer);
+		buffer = tmp;
+		nextElement = buffer;
+
+		return nextElement++;
+
     }
 }
 
@@ -116,29 +142,30 @@ template <typename T>
 template <typename... As>
 T* StaticStore<T>::next(As... as)
 {
-    counter++;
-    if (!emptySlot.empty())
-    {
-        T* ref = emptySlot.front();
-        emptySlot.pop_front();
-        return new(ref) T(as...);
-    }
-    else if (nextElement < buffer + bufferSize)
-    {
-        return new(nextElement++) T(as...);
-    }
-    else
-    {
-        throw StaticStoreException();
-    }
+	return new(c_next()) T(as...);
 }
 #endif
 
 template <typename T>
 void StaticStore<T>::clear()
 {
+	typename std::list<T*>::iterator it;
+
+#ifdef DEBUG
+	if (counter != 0)
+	{
+		std::cout << "StaticStore<" << typeid(T).name() << ">(): ";
+		std::cout << "Warning, clear called while counter was: " << counter << "; ";
+    }
+#endif
+
     counter = 0;
     nextElement = buffer;
+    
+    for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
+	    free(*it);
+    
+    allocatedBuffers.clear();
     emptySlot.clear();
 }
 

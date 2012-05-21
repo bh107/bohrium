@@ -174,7 +174,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// The maximum number of instructions to queue
         /// </summary>
-        protected static readonly long HIGH_WATER_MARK = 2000;
+        protected static readonly long HIGH_WATER_MARK = 4000;
 
         /// <summary>
         /// Local copy of the type, to avoid lookups in the VEM dictionary
