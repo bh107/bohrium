@@ -5,9 +5,11 @@ import unittest
 
 dtype = np.float32
 
-class TraverseBroadcast(unittest.TestCase):
+class Broadcast(unittest.TestCase):
 
     def test_a_bad_case(self):
+        res = np.ones((3,3,3))+np.ones((3,3,3))
+
         tb3 = np.ones((3,3,3))
         tb2 = np.ones((3,3))
         
@@ -15,10 +17,10 @@ class TraverseBroadcast(unittest.TestCase):
         b = np.array(tb2,dtype=dtype, cphvb=True)
         c = a+b
 
-        print c
+        self.assertTrue(numpytest.array_equal( c, res ))
 
 def run():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TraverseBroadcast)
+    suite = unittest.TestLoader().loadTestsFromTestCase(Broadcast)
     unittest.TextTestRunner(verbosity=1).run(suite)
 
 if __name__ == "__main__":

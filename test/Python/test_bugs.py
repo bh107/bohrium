@@ -17,9 +17,9 @@ class Bugs(unittest.TestCase):
         i = 0
 
         while True:
-            a = a + b
+            a[:] = a + b
             i += 1
-            if i > 200:
+            if i > 1000:
                 break
 
 def run():

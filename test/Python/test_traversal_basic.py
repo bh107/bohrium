@@ -8,22 +8,29 @@ dtype = np.float32
 class Traversal(unittest.TestCase):
 
     def test_3x3x3x3(self):
+        res = np.array(np.ones((3,3,3,3))+np.ones((3,3,3,3)))
+    
         a = np.array(np.ones((3,3,3,3)),dtype=dtype, cphvb=True)
         b = np.array(np.ones((3,3,3,3)),dtype=dtype, cphvb=True)
         c = a+b
-        print c
+
+        self.assertTrue(numpytest.array_equal( c, res ))
 
     def test_3x3x3(self):
+        res = np.array(np.ones((3,3,3))+np.ones((3,3,3)))
         a = np.array(np.ones((3,3,3)),dtype=dtype, cphvb=True)
         b = np.array(np.ones((3,3,3)),dtype=dtype, cphvb=True)
         c = a+b
-        print c
+
+        self.assertTrue(numpytest.array_equal( c, res ))
 
     def test_3x3(self):
+        res = np.array(np.ones((3,3))+np.ones((3,3)))
         a = np.array(np.ones((3,3)),dtype=dtype, cphvb=True)
         b = np.array(np.ones((3,3)),dtype=dtype, cphvb=True)
         c = a+b
-        print c
+
+        self.assertTrue(numpytest.array_equal( c, res ))
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(Traversal)

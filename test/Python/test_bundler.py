@@ -7,20 +7,8 @@ dtype = np.float32
 
 class Bundler(unittest.TestCase):
 
-    def test_oooo(self):
-
-        a = np.ones((1024,1024))
-        a.cphvb = True
-        b = np.ones((1024,1024))
-        b.cphvb = True
-
-        i = 0
-
-        while True:
-            a = a + b
-            i += 1
-            if i > 200:
-                break
+    def test_todo(self):
+        pass
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(Traversal)

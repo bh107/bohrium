@@ -8,21 +8,28 @@ dtype = np.float32
 class Traversal(unittest.TestCase):
 
     def test_a_bad_case(self):
-        a = np.array([[1]]*10,dtype=dtype, cphvb=True)
-        b = np.array([[1]]*10,dtype=dtype, cphvb=True)
+        ones = np.ones((10,1))
+        res = ones + ones + ones + ones
+        a = np.array(ones,dtype=dtype, cphvb=True)
+        b = np.array(ones,dtype=dtype, cphvb=True)
         c = a+b+a+b
+
+        self.assertTrue(numpytest.array_equal( c, res ))
 
     def test_b_better_case(self):
-        a = np.array([[1]*10],dtype=dtype, cphvb=True)
-        b = np.array([[1]*10],dtype=dtype, cphvb=True)
+        ones = np.ones((1,10))
+        res = ones+ones+ones+ones
+
+        a = np.array(ones,dtype=dtype, cphvb=True)
+        b = np.array(ones,dtype=dtype, cphvb=True)
         c = a+b+a+b
 
-    def test_c_better_larger_case(self):
-        a = np.array([[[1]*10]*10],dtype=dtype, cphvb=True)
-        b = np.array([[[1]*10]*10],dtype=dtype, cphvb=True)
-        c = a+b+a+b
+        self.assertTrue(numpytest.array_equal( c, res ))
 
-    def test_oooo(self):
+    def test_stride(self):
+        ones = np.ones((20,10))
+        res = ones+ones+ones+ones
+
         a = np.ones((20,20))
         a.cphvb = True
         b = np.ones((20,20))
@@ -31,6 +38,8 @@ class Traversal(unittest.TestCase):
         c = a[1::2]
         d = b[0::2]
         e = c+d+c+d
+
+        self.assertTrue(numpytest.array_equal( e, res ))
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(Traversal)
