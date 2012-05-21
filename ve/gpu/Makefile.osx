@@ -1,6 +1,6 @@
 CPHVB_BASE=../../
 CPHVB_INCLUDE=$(CPHVB_BASE)include/
-INCLUDE=-I$(CPHVB_BASE)include
+INCLUDE=-I$(CPHVB_BASE)include -I/System/Library/Frameworks/OpenCL.framework
 LIB=libcphvb_ve_gpu.dylib
 CXX?=g++
 CC?=gcc
@@ -10,7 +10,7 @@ LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
-LDFLAGS = $(ARCHOPTS) -L../../core -L/usr/lib/nvidia-current -lOpenCL -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
+LDFLAGS = $(ARCHOPTS) -L../../core -L/System/Library/Frameworks/OpenCL.framework -framework OpenCL -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
 		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce

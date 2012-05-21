@@ -38,7 +38,8 @@ def diagonal(A,offset=0):
 def diagflat(d,k=0):
     d = np.asarray(d)
     d = flatten(d) 
-    A = zeros((d.size,d.size), dtype=d.dtype, cphvb=d.cphvb)
+    size = d.size+abs(k)
+    A = zeros((size,size), dtype=d.dtype, cphvb=d.cphvb)
     Ad = diagonal(A, offset=k)
     Ad[:] = d 
     return A
