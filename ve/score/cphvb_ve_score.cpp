@@ -35,8 +35,10 @@ cphvb_error cphvb_ve_score_init(cphvb_com *self)
 
 inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cphvb_intp count) {
 
-    cphvb_intp i, bundle_size;
+    cphvb_intp i, bundle_size, nelements,
+                block_size=100, trav_start=0, trav_end=0, trav_len=100;
     cphvb_instruction* inst[CPHVB_MAX_NO_INST];
+    computeloop compute_loops[CPHVB_MAX_NO_INST];
 
     if (count > 1) {
 
@@ -46,11 +48,39 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
             inst[i] = &list[start+i];
         }
         bundle_size = cphvb_inst_bundle( inst, count );
+
+        for(i=0; i < bundle_size; i++)
+        {
+            compute_loops[i] = cphvb_compute_get( inst[i] );
+        }
+
         //cphvb_pprint_instr_list( *inst, bundle_size, "BUNDLE" );
 
-        for(i=0; i < bundle_size; i++)          // TODO: Make nice loop here
+        /* Regular invocation of instructions.
+        for(i=0; i<bundle_size; i++)
         {
             cphvb_compute_apply( inst[i] );
+            inst[i]->status = CPHVB_INST_DONE;
+        }*/
+
+        nelements = cphvb_nelements( inst[0]->operand[0]->ndim, inst[0]->operand[0]->shape );
+        while(nelements>0)
+        {
+            nelements -= block_size;
+            if (nelements < 0) {
+                trav_len = block_size + nelements;
+            }
+            trav_start   = trav_end;
+            trav_end     = trav_start+trav_len;
+
+            for(i=0; i < bundle_size; i++)      
+            {
+                compute_loops[i]( inst[i], trav_start, trav_end );
+            }
+        }
+
+        for(i=0; i < bundle_size; i++)          // Set instruction status
+        {
             inst[i]->status = CPHVB_INST_DONE;
         }
 

@@ -19,26 +19,41 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
-                off0=skip, off1=skip, off2=skip,
-                nelements = cphvb_nelements( a0->ndim, a0->shape ),
+                off0, off1, off2,
+                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
                 ec = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
+    if (skip>0)                                 // Create coord based on skip
+        while(ec<skip)
+        {
+            ec += a0->shape[last_dim];
+            for(j = last_dim-1; j >= 0; --j)
+            {
+                coord[j]++;
+                if (coord[j] < a0->shape[j]) {
+                    break;
+                } else {
+                    coord[j] = 0;
+                }
+            }
+        }
+
     while( ec < nelements )
     {
-        off0 = a0->start + coord[0] * a0->stride[0];
-        off1 = a1->start + coord[0] * a1->stride[0];
-        off2 = a2->start + coord[0] * a2->stride[0];
-        for( j=1; j<last_dim; ++j)
+        off0 = a0->start;                           // Compute offset based on coord
+        off1 = a1->start;
+        off2 = a2->start;
+        for( j=0; j<last_dim; ++j)
         {
             off0 += coord[j] * a0->stride[j];
             off1 += coord[j] * a1->stride[j];
             off2 += coord[j] * a2->stride[j];
         }
 
-        for( coord[last_dim]=0; coord[last_dim] < a0->shape[last_dim]; coord[last_dim]++)
+        for( j=0; j < a0->shape[last_dim]; j++ )    // Iterate over "last" / "innermost" dimension
         {
             opcode_func( (off0+d0), (off1+d1), (off2+d2) );
 
@@ -48,18 +63,14 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
         }
         ec += a0->shape[last_dim];
 
-        for(j = last_dim; j >= 0; --j)
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
             coord[j]++;
-            if(j==0 && coord[0] >= a0->shape[0])
-            {
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
                 break;
-            }
-            else if (coord[j] < a0->shape[j]) {
-                break;
-            } else {
-                coord[j] = 0;
-            }
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
         }
 
     }
@@ -84,24 +95,39 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
-                off0=skip, off1=skip,
-                nelements = cphvb_nelements( a0->ndim, a0->shape ),
+                off0, off1,
+                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
                 ec = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
+    if (skip>0)                                 // Create coord based on skip
+        while(ec<skip)
+        {
+            ec += a0->shape[last_dim];
+            for(j = last_dim-1; j >= 0; --j)
+            {
+                coord[j]++;
+                if (coord[j] < a0->shape[j]) {
+                    break;
+                } else {
+                    coord[j] = 0;
+                }
+            }
+        }
+
     while( ec < nelements )
     {
-        off0 = a0->start + coord[0] * a0->stride[0];
-        off1 = a1->start + coord[0] * a1->stride[0];
-        for( j=1; j<last_dim; ++j)
+        off0 = a0->start;                           // Compute offset based on coord
+        off1 = a1->start;
+        for( j=0; j<last_dim; ++j)
         {
             off0 += coord[j] * a0->stride[j];
             off1 += coord[j] * a1->stride[j];
         }
 
-        for( coord[last_dim]=0; coord[last_dim] < a0->shape[last_dim]; coord[last_dim]++ )
+        for( j=0; j < a0->shape[last_dim]; j++ )    // Iterate over "last" / "innermost" dimension
         {
             opcode_func( (off0+d0), (off1+d1), d2 );
 
@@ -110,19 +136,16 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
         }
         ec += a0->shape[last_dim];
 
-        for(j = last_dim; j >= 0; --j)
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
             coord[j]++;
-            if(j==0 && coord[0] >= a0->shape[0])
-            {
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
                 break;
-            }
-            else if (coord[j] < a0->shape[j]) {
-                break;
-            } else {
-                coord[j] = 0;
-            }
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
         }
+
     }
 
     return CPHVB_SUCCESS;
@@ -145,24 +168,39 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
-                off0=skip, off2=skip,
-                nelements = cphvb_nelements( a0->ndim, a0->shape ),
+                off0, off2,
+                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
                 ec = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
+    if (skip>0)                                 // Create coord based on skip
+        while(ec<skip)
+        {
+            ec += a0->shape[last_dim];
+            for(j = last_dim-1; j >= 0; --j)
+            {
+                coord[j]++;
+                if (coord[j] < a0->shape[j]) {
+                    break;
+                } else {
+                    coord[j] = 0;
+                }
+            }
+        }
+
     while( ec < nelements )
     {
-        off0 = a0->start + coord[0] * a0->stride[0];
-        off2 = a2->start + coord[0] * a2->stride[0];
-        for( j=1; j<last_dim; ++j)
+        off0 = a0->start;                           // Compute offset based on coord
+        off2 = a2->start;
+        for( j=0; j<last_dim; ++j)
         {
             off0 += coord[j] * a0->stride[j];
             off2 += coord[j] * a2->stride[j];
         }
 
-        for( coord[last_dim]=0; coord[last_dim] < a0->shape[last_dim]; coord[last_dim]++ )
+        for( j=0; j < a0->shape[last_dim]; j++ )    // Iterate over "last" / "innermost" dimension
         {
             opcode_func( (off0+d0), d1, (off2+d2) );
 
@@ -171,19 +209,16 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
         }
         ec += a0->shape[last_dim];
 
-        for(j = last_dim; j >= 0; --j)
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
             coord[j]++;
-            if(j==0 && coord[0] >= a0->shape[0])
-            {
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
                 break;
-            }
-            else if (coord[j] < a0->shape[j]) {
-                break;
-            } else {
-                coord[j] = 0;
-            }
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
         }
+
     }
 
     return CPHVB_SUCCESS;
@@ -205,16 +240,31 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
 
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
-                off0=skip, off1=skip,
-                nelements = cphvb_nelements( a0->ndim, a0->shape ),
+                off0, off1,
+                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
                 ec = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-    
+
+    if (skip>0)                                 // Create coord based on skip
+        while(ec<skip)
+        {
+            ec += a0->shape[last_dim];
+            for(j = last_dim-1; j >= 0; --j)
+            {
+                coord[j]++;
+                if (coord[j] < a0->shape[j]) {
+                    break;
+                } else {
+                    coord[j] = 0;
+                }
+            }
+        }
+   
     while( ec < nelements )
     {
-        off0 = a0->start;
+        off0 = a0->start;                           // Compute offset based on coord
         off1 = a1->start;
         for( j=0; j<last_dim; ++j )
         {
@@ -222,7 +272,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
             off1 += coord[j] * a1->stride[j];
         }
 
-        for( coord[last_dim]=0; coord[last_dim] < a0->shape[last_dim]; coord[last_dim]++ )
+        for( j=0; j < a0->shape[last_dim]; j++ )    // Iterate over "last" / "innermost" dimension
         {
             opcode_func( (off0+d0), (off1+d1) );
 
@@ -231,14 +281,14 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
         }
         ec += a0->shape[last_dim];
 
-        for(j=a0->ndim-2; j >= 0; j--)
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
             coord[j]++;
-            if (coord[j] < a0->shape[j]) {
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
                 break;
-            } else {
-                coord[j] = 0;
-            }
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
         }
 
     }
@@ -260,22 +310,37 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index
 
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
-                off0=skip,
-                nelements = cphvb_nelements( a0->ndim, a0->shape ),
+                off0,
+                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
                 ec = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
+    if (skip>0)                                 // Create coord based on skip
+        while(ec<skip)
+        {
+            ec += a0->shape[last_dim];
+            for(j = last_dim-1; j >= 0; --j)
+            {
+                coord[j]++;
+                if (coord[j] < a0->shape[j]) {
+                    break;
+                } else {
+                    coord[j] = 0;
+                }
+            }
+        }
+
     while( ec < nelements )
     {
-        off0 = a0->start;
+        off0 = a0->start;                           // Compute offset based on coord
         for( j=0; j<last_dim; ++j)
         {
             off0 += coord[j] * a0->stride[j];
         }
 
-        for( coord[last_dim]=0; coord[last_dim] < a0->shape[last_dim]; coord[last_dim]++)
+        for( j=0; j < a0->shape[last_dim]; j++ )    // Iterate over "last" / "innermost" dimension
         {
             opcode_func( (off0+d0), d1 );
 
@@ -283,14 +348,14 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index
         }
         ec += a0->shape[last_dim];
 
-        for(j=a0->ndim-2; j >= 0; j--)
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
             coord[j]++;
-            if (coord[j] < a0->shape[j]) {
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
                 break;
-            } else {
-                coord[j] = 0;
-            }
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
         }
 
     }
