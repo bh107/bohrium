@@ -49,6 +49,9 @@ void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp in
  */
 void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count );
 
+//void cphvb_pprint_coord( cphvb_index* coord[CPHVB_MAXDIM], cphvb_index dims );
+void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims );
+
 #ifdef __cplusplus
 }
 #endif
