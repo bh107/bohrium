@@ -3,8 +3,8 @@ LIB=libcphvb_vem_node.dylib
 CC?=gcc
 CXX?=g++
 WARNOPTS=-Wall
-ARCHOPTS=-m64
-LCFLAGS= $(ARCHOPTS) $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
+ARCHOPTS?=-arch i386 -arch x86_64
+LCFLAGS= $(ARCHOPTS) $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
 SRC=cphvb_vem_node.cpp ArrayManager.cpp
 HEADER=ArrayManager.hpp cphvb_vem_node.h

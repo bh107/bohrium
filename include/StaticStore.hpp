@@ -52,7 +52,7 @@ private:
     ~StaticStore();
     void clear();
     void erase(T* e);
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(__APPLE__))
     template <typename... As>
     T* next(As... as);
 #endif
@@ -137,7 +137,7 @@ T* StaticStore<T>::c_next()
     }
 }
 
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(__APPLE__))
 template <typename T>
 template <typename... As>
 T* StaticStore<T>::next(As... as)

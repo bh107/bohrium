@@ -5,7 +5,7 @@ LIB=libcphvb_ve_gpu.dylib
 CXX?=g++
 CC?=gcc
 WARNOPTS=-Wall
-ARCHOPTS=-m64
+ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
