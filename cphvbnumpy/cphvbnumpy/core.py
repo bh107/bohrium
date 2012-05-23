@@ -61,3 +61,17 @@ def dot(A,B):
     if A.ndim == 1:
         return add.reduce(A*np.transpose(B),-1)
     return add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
+
+def matmul(A,B):
+    if A.dtype != B.dtype:
+        raise ValueError("Input must be of same type")
+    if A.ndim != 2 and B.ndim != 2:
+        raise ValueError("Input must be 2-d.")
+    if A.cphvb or B.cphvb:
+        A.cphvb=True
+        B.cphvb=True
+        C = empty((A.shape[0],B.shape[1]),dtype=A.dtype)
+        bridge.matmul(A,B,C)
+        return C
+    else:
+        raise ValueError("mapmul only defined for cphVB arrays.")

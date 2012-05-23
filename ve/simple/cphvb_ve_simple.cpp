@@ -24,6 +24,8 @@ static cphvb_userfunc_impl reduce_impl = NULL;
 static cphvb_intp reduce_impl_id = 0;
 static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
+static cphvb_userfunc_impl matmul_impl = NULL;
+static cphvb_intp matmul_impl_id = 0;
 
 cphvb_error cphvb_ve_simple_init(cphvb_com *self)
 {
@@ -77,6 +79,11 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 else if(inst->userfunc->id == random_impl_id)
                 {
                     ret = random_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                }
+                else if(inst->userfunc->id == matmul_impl_id)
+                {
+                    ret = matmul_impl(inst->userfunc, NULL);
                     inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
                 else                            // Unsupported userfunc
@@ -147,6 +154,23 @@ cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
         	return CPHVB_SUCCESS;
         }
     }
+    else if(strcmp("cphvb_matmul", fun) == 0)
+    {
+    	if (matmul_impl == NULL)
+    	{
+            cphvb_com_get_func(myself, lib, fun, &matmul_impl);
+            if (matmul_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
+            
+            matmul_impl_id = *id;
+            return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = random_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
     
     return CPHVB_USERFUNC_NOT_SUPPORTED;
 }
@@ -160,3 +184,10 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 {
     return cphvb_compute_random( arg, ve_arg );
 }
+
+cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
+{
+    printf("Matrix multiplication!!!\n");
+    return CPHVB_SUCCESS;
+}
+
