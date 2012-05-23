@@ -26,6 +26,8 @@
 #include <cphvb.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
+#include "StringHasher.hpp"
+
 #ifdef STATS
 #include <sys/time.h>
 #endif
@@ -37,7 +39,7 @@ class InstructionBatch
     typedef std::pair<ArrayMap::iterator, ArrayMap::iterator> ArrayRange;
     typedef std::map<size_t, Kernel> KernelMap;
     typedef std::list<KernelParameter*> ParameterList;
-    typedef std::list<std::pair<BaseArray*, cphvb_array*>> ArrayList;
+    typedef std::list<std::pair<BaseArray*, cphvb_array*> > ArrayList;
 private:
     std::vector<cphvb_index> shape;
     std::vector<cphvb_instruction*> instructions;
@@ -51,7 +53,6 @@ private:
     int arraynum;
     int scalarnum;
     int variablenum;
-    static std::hash<std::string> strHash;
     static KernelMap kernelMap;
 #ifdef STATS
     timeval createTime;

@@ -8,12 +8,12 @@ WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
-CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
+CXXFLAGS = $(LCFLAGS) -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = $(ARCHOPTS) -L../../core -L/System/Library/Frameworks/OpenCL.framework -framework OpenCL -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce
+		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/opt/cphvb/

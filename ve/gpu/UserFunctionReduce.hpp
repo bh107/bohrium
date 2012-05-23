@@ -25,12 +25,12 @@
 #include <cphvb.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
+#include "StringHasher.hpp"
 
 namespace UserFunctionReduce
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    static std::hash<std::string> strHash;
     void reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
     Kernel getKernel(cphvb_reduce_type* reduceDef,
                      UserFuncArg* userFuncArg,
