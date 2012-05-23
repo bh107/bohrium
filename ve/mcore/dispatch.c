@@ -148,7 +148,7 @@ static void *thd_do(void *msg)
                     if(inst->operand[0]->shape[0] <= 0)
                         break;//Nothing to do.
 
-                    inst->status = traverses[j](inst);
+                    inst->status = traverses[j](inst, 0, 0 );
                     if(inst->status != CPHVB_SUCCESS)
                     {
                         //ret = CPHVB_PARTIAL_SUCCESS;

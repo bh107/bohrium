@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-typedef cphvb_error (*computeloop)( cphvb_instruction* );
+typedef cphvb_error (*computeloop)( cphvb_instruction*, cphvb_index, cphvb_index );
 
 computeloop cphvb_compute_get( cphvb_instruction *instr );
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr );

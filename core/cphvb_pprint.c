@@ -153,3 +153,28 @@ void cphvb_pprint_array( cphvb_array *array ) {
     operand_to_str( array, buf );
     puts( buf );
 }
+
+void cphvb_sprint_coord( char buf[], cphvb_index* coord, cphvb_index dims ) {
+
+    char tmp[64];
+    cphvb_index j;
+
+    for(j=0; j<dims; j++)
+    {
+        sprintf(tmp, "%ld", coord[j]);
+        strcat(buf, tmp);
+        if (j<dims-1) {
+            strcat(buf, ", ");
+        }
+    }
+}
+
+void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims ) {
+
+    char buf[1024];
+    sprintf(buf, "Coord ( ");
+    cphvb_sprint_coord( buf, coord, dims );
+    strcat(buf, " )");
+    puts(buf);
+
+}
