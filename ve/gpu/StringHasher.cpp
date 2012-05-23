@@ -22,7 +22,7 @@
 
 size_t string_hasher(std::string str)
 {
-#if !(defined(__APPLE__) || defined(_WIN32))
+#if __cplusplus > 199711L
     return std::hash<std::string>(str);
 #else
 	//fnv_64_str fixed to use fnv-1 initial value
