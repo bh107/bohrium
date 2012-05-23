@@ -33,6 +33,7 @@ cphvb_error cphvb_ve_score_init(cphvb_com *self)
     return CPHVB_SUCCESS;
 }
 
+/*
 inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cphvb_intp count) {
 
     cphvb_intp i, bundle_size, nelements,
@@ -42,12 +43,11 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
 
     if (count > 1) {
 
-        //cphvb_pprint_instr_list( &list[start], count, "POTENTIAL" );
         for(i=0; i < count; i++)
         {
             inst[i] = &list[start+i];
         }
-        bundle_size = cphvb_inst_bundle( inst, count );
+        bundle_size = cphvb_inst_bundle( inst, 0, count-1 );
 
         for(i=0; i < bundle_size; i++)
         {
@@ -56,12 +56,12 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
 
         //cphvb_pprint_instr_list( *inst, bundle_size, "BUNDLE" );
 
-        /* Regular invocation of instructions.
+        // Regular invocation of instructions.
         for(i=0; i<bundle_size; i++)
         {
             cphvb_compute_apply( inst[i] );
             inst[i]->status = CPHVB_INST_DONE;
-        }*/
+        }
 
         nelements = cphvb_nelements( inst[0]->operand[0]->ndim, inst[0]->operand[0]->shape );
         while(nelements>0)
@@ -104,12 +104,16 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
 
 }
 
+*/
+
+/*
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
     cphvb_intp count, nops, i, kernel_size;
     cphvb_instruction* inst;
     cphvb_error ret = CPHVB_SUCCESS;
 
+    //cphvb_pprint_instr_list( instruction_list, instruction_count, "INST-LIST" );
     kernel_size = 0;
     for(count=0; count < instruction_count; count++)
     {
@@ -179,6 +183,112 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
     kernel_size = 0;
 
     return ret;                                 // EXIT
+
+}
+*/
+cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
+{
+    cphvb_intp count, nops, i, j;
+    cphvb_instruction *inst, *binst;
+    cphvb_error ret = CPHVB_SUCCESS;
+
+    cphvb_intp krn_start, krn_end, krn_size;
+
+    for(count=0; count < instruction_count; count++)
+    {
+        inst = &instruction_list[count];
+
+        if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
+        {
+            continue;
+        }
+
+        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
+        for(i=0; i<nops; i++)
+        {
+            if (!cphvb_is_constant(inst->operand[i]))
+            {
+                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+                {
+                    return CPHVB_OUT_OF_MEMORY; // EXIT
+                }
+            }
+
+        }
+
+        switch(inst->opcode)                    // Dispatch instruction
+        {
+            case CPHVB_NONE:                    // NOOP.
+            case CPHVB_DISCARD:
+            case CPHVB_SYNC:
+                inst->status = CPHVB_INST_DONE;
+                break;
+
+            case CPHVB_USERFUNC:                // External libraries
+
+                if(inst->userfunc->id == reduce_impl_id)
+                {
+                    ret = reduce_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                }
+                else if(inst->userfunc->id == random_impl_id)
+                {
+                    ret = random_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                }
+                else                            // Unsupported userfunc
+                {
+                    inst->status = CPHVB_INST_UNDONE;
+                }
+
+                break;
+
+            default:                            // Built-in operations
+
+                krn_start   = count;
+                krn_end     = count;
+
+                for(j=krn_start+1; j<instruction_count; j++)    // Bundle built-in operations together
+                {
+                    binst = &instruction_list[j];
+                    if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) ) {
+                        break;
+                    }
+
+                    krn_end++;                              // Extend bundle
+                    nops = cphvb_operands(binst->opcode);   // Allocate memory for operands
+                    for(i=0; i<nops; i++)
+                    {
+                        if (!cphvb_is_constant(binst->operand[i]))
+                        {
+                            if (cphvb_data_malloc(binst->operand[i]) != CPHVB_SUCCESS)
+                            {
+                                return CPHVB_OUT_OF_MEMORY; // EXIT
+                            }
+                        }
+
+                    }
+
+                }
+    
+                krn_size = cphvb_inst_bundle( instruction_list, krn_start, krn_end );
+
+                ret = cphvb_compute_apply( inst );
+                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+        }
+
+        if (inst->status != CPHVB_INST_DONE)    // Instruction failed
+        {
+            break;
+        }
+
+    }
+
+    if (count == instruction_count) {
+        return CPHVB_SUCCESS;
+    } else {
+        return CPHVB_PARTIAL_SUCCESS;
+    }
 
 }
 
