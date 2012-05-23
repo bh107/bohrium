@@ -40,15 +40,36 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
                 trav_start=0, trav_end=0, trav_len=100;
     computeloop compute_loops[CPHVB_MAX_NO_INST];
 
-    // Regular invocation of instructions.
+    /*
+    // Strategy One:
+    // Consecutively execute instructions one by one applying compute-loop immediately.
     for(i=start; i <= end; i++)
     {
         cphvb_compute_apply( &instr[i] );
         instr[i].status = CPHVB_INST_DONE;
     }
+    */
+    
+    // Strategy Two:
+    // Seperating execution into: grabbing instructions, executing them and lastly setting status.
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
+    {
+        compute_loops[k] = cphvb_compute_get( &instr[i] );
+    }
 
+    for(i=start, k=0; i <= end; i++, k++)
+    {
+        compute_loops[k]( &instr[i], 0, 0 );
+    }
+
+    for(i=start; i <= end; i++)                     // Set instruction status
+    {
+        instr[i].status = CPHVB_INST_DONE;
+    }
     /*
-    // Blocked instruction execution
+    // Strategy Three:
+    // Same as two but also slice into blocks.
+
     for(i=start, k=0; i <= end; i++,k++)                // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );

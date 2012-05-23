@@ -17,10 +17,13 @@ class Bugs(unittest.TestCase):
         i = 0
 
         while True:
-            a[:] = a + b
+            a = b + b + b
+
             i += 1
-            if i > 1000:
+            if i > 100:
                 break
+
+        self.assertTrue(True)
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(Traversal)
