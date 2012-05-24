@@ -11,7 +11,7 @@ class Bundler(unittest.TestCase):
         pass
 
 def run():
-    suite = unittest.TestLoader().loadTestsFromTestCase(Traversal)
+    suite = unittest.TestLoader().loadTestsFromTestCase(Bundler)
     unittest.TextTestRunner(verbosity=1).run(suite)
 
 if __name__ == "__main__":

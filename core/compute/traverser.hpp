@@ -2,7 +2,7 @@
 #include <assert.h>
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_index limit ) {
+cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
     cphvb_array *a0 = instr->operand[0],        // Operands
@@ -20,17 +20,16 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
                 off0, off1, off2,
-                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
-                ec = 0;
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e   = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    if (skip>0)                                 // Create coord based on skip
-        while(ec<skip)
+    if (start>0)                                 // Create coord based on start
+        for(; cur_e < start; cur_e++)
         {
-            ec += a0->shape[last_dim];
-            for(j = last_dim-1; j >= 0; --j)
+            for(j = last_dim; j >= 0; --j)
             {
                 coord[j]++;
                 if (coord[j] < a0->shape[j]) {
@@ -41,7 +40,9 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             }
         }
 
-    while( ec < nelements )
+    cphvb_pprint_coord( coord, a0->ndim );
+    printf("CUR=%ld, LAST=%ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         off1 = a1->start;
@@ -61,7 +62,7 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             off1 += a1->stride[last_dim];
             off2 += a2->stride[last_dim];
         }
-        ec += a0->shape[last_dim];
+        cur_e += a0->shape[last_dim];
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
@@ -80,10 +81,10 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 }
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_index limit ) {
+cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
-    cphvb_array *a0 = instr->operand[0],        // Array-Operands
+    cphvb_array *a0 = instr->operand[0],        // Operands
                 *a1 = instr->operand[1];
                                                 // Pointers to start of data elements
     T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
@@ -96,17 +97,16 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
                 off0, off1,
-                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
-                ec = 0;
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e   = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    if (skip>0)                                 // Create coord based on skip
-        while(ec<skip)
+    if (start>0)                                 // Create coord based on start
+        for(; cur_e < start; cur_e++)
         {
-            ec += a0->shape[last_dim];
-            for(j = last_dim-1; j >= 0; --j)
+            for(j = last_dim; j >= 0; --j)
             {
                 coord[j]++;
                 if (coord[j] < a0->shape[j]) {
@@ -117,7 +117,8 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             }
         }
 
-    while( ec < nelements )
+    //printf("CUR=%ld, LAST=%ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         off1 = a1->start;
@@ -134,7 +135,7 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             off0 += a0->stride[last_dim];
             off1 += a1->stride[last_dim];
         }
-        ec += a0->shape[last_dim];
+        cur_e += a0->shape[last_dim];
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
@@ -153,7 +154,7 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 }
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_index limit ) {
+cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
     Instr opcode_func;
     cphvb_array *a0 = instr->operand[0],        // Array-Operands
@@ -169,17 +170,16 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
                 off0, off2,
-                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
-                ec = 0;
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    if (skip>0)                                 // Create coord based on skip
-        while(ec<skip)
+    if (start>0)                                 // Create coord based on start
+        for(; cur_e < start; cur_e++)
         {
-            ec += a0->shape[last_dim];
-            for(j = last_dim-1; j >= 0; --j)
+            for(j = last_dim; j >= 0; --j)
             {
                 coord[j]++;
                 if (coord[j] < a0->shape[j]) {
@@ -190,7 +190,8 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             }
         }
 
-    while( ec < nelements )
+    //printf("EC=%ld, NELEMENTS= %ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         off2 = a2->start;
@@ -207,7 +208,7 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
             off0 += a0->stride[last_dim];
             off2 += a2->stride[last_dim];
         }
-        ec += a0->shape[last_dim];
+        cur_e += a0->shape[last_dim];
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
@@ -226,7 +227,7 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_index skip, cphvb_inde
 }
 
 template <typename T0,typename T1, typename Instr>
-cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index limit ) {
+cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
     Instr opcode_func;
     cphvb_array *a0 = instr->operand[0],        // Operands
@@ -241,17 +242,16 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
                 off0, off1,
-                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
-                ec = 0;
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    if (skip>0)                                 // Create coord based on skip
-        while(ec<skip)
+    if (start>0)                                 // Create coord based on start
+        for(; cur_e < start; cur_e++)
         {
-            ec += a0->shape[last_dim];
-            for(j = last_dim-1; j >= 0; --j)
+            for(j = last_dim; j >= 0; --j)
             {
                 coord[j]++;
                 if (coord[j] < a0->shape[j]) {
@@ -262,7 +262,8 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
             }
         }
    
-    while( ec < nelements )
+    //printf("EC=%ld, NELEMENTS= %ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         off1 = a1->start;
@@ -279,7 +280,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
             off0 += a0->stride[last_dim];
             off1 += a1->stride[last_dim];
         }
-        ec += a0->shape[last_dim];
+        cur_e += a0->shape[last_dim];
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
@@ -298,7 +299,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_index skip, cphvb_index
 }
 
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index limit ) {
+cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
     Instr opcode_func;
     cphvb_array *a0 = instr->operand[0];        // Array-Operands
@@ -311,17 +312,16 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index
     cphvb_index j,                              // Traversal variables
                 last_dim = a0->ndim-1,
                 off0,
-                nelements = (limit>0) ? limit : cphvb_nelements( a0->ndim, a0->shape ),
-                ec = 0;
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e = 0;
 
     cphvb_index coord[CPHVB_MAXDIM];
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
-    if (skip>0)                                 // Create coord based on skip
-        while(ec<skip)
+    if (start>0)                                 // Create coord based on start
+        for(; cur_e < start; cur_e++)
         {
-            ec += a0->shape[last_dim];
-            for(j = last_dim-1; j >= 0; --j)
+            for(j = last_dim; j >= 0; --j)
             {
                 coord[j]++;
                 if (coord[j] < a0->shape[j]) {
@@ -332,7 +332,8 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index
             }
         }
 
-    while( ec < nelements )
+    //printf("EC=%ld, NELEMENTS= %ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         for( j=0; j<last_dim; ++j)
@@ -346,7 +347,7 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index skip, cphvb_index
 
             off0 += a0->stride[last_dim];
         }
-        ec += a0->shape[last_dim];
+        cur_e += a0->shape[last_dim];
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {

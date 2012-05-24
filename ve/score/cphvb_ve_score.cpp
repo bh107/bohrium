@@ -27,17 +27,29 @@ static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
 
+static cphvb_intp block_size = 1000;
+
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
-    myself = self;
+    myself = self;                              // Assign config container.
+
+    char *env = getenv("CPHVB_VE_BLOCKSIZE");   // Override block_size from environment-variable.
+    if(env != NULL)
+    {
+        block_size = atoi(env);
+    }
+    if(block_size <= 0)                         // Verify it
+    {
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", block_size);
+        return CPHVB_ERROR;
+    }
+
     return CPHVB_SUCCESS;
 }
 
 inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cphvb_intp end) {
 
-    cphvb_intp i, k, nelements,
-                block_size=100,
-                trav_start=0, trav_end=0, trav_len=100;
+    cphvb_intp i, k;
     computeloop compute_loops[CPHVB_MAX_NO_INST];
 
     /*
@@ -50,6 +62,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
     */
     
+    /*
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
@@ -57,7 +70,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         compute_loops[k] = cphvb_compute_get( &instr[i] );
     }
 
-    for(i=start, k=0; i <= end; i++, k++)
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
     {
         compute_loops[k]( &instr[i], 0, 0 );
     }
@@ -66,36 +79,43 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_INST_DONE;
     }
-    /*
+
+    */
+    cphvb_intp  nelements,
+                trav_start=0,
+                trav_end=-1;
+
     // Strategy Three:
     // Same as two but also slice into blocks.
-
-    for(i=start, k=0; i <= end; i++,k++)                // Get the compute-loops
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );
     }
-                                            // Execute them
-    nelements = cphvb_nelements( instr[0].operand[0]->ndim, instr[0].operand[0]->shape );
+                                                    // Execute them
+    nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
+    printf("Blocking up %ld elements in blocks of max  %ld!\n", nelements, block_size);
     while(nelements>0)
     {
         nelements -= block_size;
-        if (nelements < 0) {
-            trav_len = block_size + nelements;
+        trav_start = trav_end +1;
+        if (nelements > 0) {
+            trav_end = trav_start+ block_size-1;
+        } else {
+            trav_end = trav_start+ block_size-1 +nelements;
         }
-        trav_start   = trav_end;
-        trav_end     = trav_start+trav_len;
 
         for(i=start, k=0; i <= end; i++, k++)
         {
+            printf("Instr[%ld], ELEMENTS: %ld-->%ld. \n", i, trav_start, trav_end);
+            cphvb_pprint_instr( &instr[i] );
             compute_loops[k]( &instr[i], trav_start, trav_end );
         }
     }
 
-    for(i=start; i <= end; i++)          // Set instruction status
+    for(i=start; i <= end; i++)                     // Set instruction status
     {
         instr[i].status = CPHVB_INST_DONE;
     }
-    */
 
     return CPHVB_SUCCESS;
 
@@ -103,15 +123,16 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
-    cphvb_intp count, nops, i, j;
+    cphvb_intp cur_index, nops, i, j;
     cphvb_instruction *inst, *binst;
     cphvb_error ret = CPHVB_SUCCESS;
 
-    cphvb_intp krn_start, krn_end, krn_size;
+    cphvb_intp bin_start, bin_end, bin_size;
+    cphvb_intp bundle_start, bundle_end, bundle_size;
 
-    for(count=0; count < instruction_count; count++)
+    for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
-        inst = &instruction_list[count];
+        inst = &instruction_list[cur_index];
 
         if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
         {
@@ -158,47 +179,44 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
                 break;
 
-            default:                            // Built-in operations
-
-                krn_start   = count;
-                krn_end     = count;
-
-                for(j=krn_start+1; j<instruction_count; j++)    // Bundle built-in operations together
+            default:                                            // Built-in operations
+                                                                // -={[ BINNING ]}=-
+                bin_start   = cur_index;                        // Count built-ins and their start/end indexes and allocate memory for them.
+                bin_end     = cur_index;
+                for(j=bin_start+1; j<instruction_count; j++)    
                 {
-                    binst = &instruction_list[j];
+                    binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
                     if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) ) {
                         break;
                     }
 
-                    krn_end++;                              // Extend bundle
-                    nops = cphvb_operands(binst->opcode);   // Allocate memory for operands
+                    bin_end++;                                  // The "end" index
+
+                    nops = cphvb_operands(binst->opcode);       // The memory part...
                     for(i=0; i<nops; i++)
                     {
                         if (!cphvb_is_constant(binst->operand[i]))
                         {
                             if (cphvb_data_malloc(binst->operand[i]) != CPHVB_SUCCESS)
                             {
-                                return CPHVB_OUT_OF_MEMORY; // EXIT
+                                return CPHVB_OUT_OF_MEMORY;     // EXIT
                             }
                         }
 
                     }
 
                 }
-   
-                krn_size = krn_end - krn_start +1; 
-                krn_size = (krn_size > 1) ? cphvb_inst_bundle( instruction_list, krn_start, krn_end ) : 1;
-                krn_end = krn_start + krn_size-1;
+                bin_size = bin_end - bin_start +1;              // The counting part
 
-                if (krn_size>1) {
-                    //printf("%ld %ld %ld\n", krn_start, krn_end, krn_size);
-                    block_execute( instruction_list, krn_start, krn_end );
-                    count += krn_size-1;
-                } else {
-                    ret = cphvb_compute_apply( inst );
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
-                }
-       }
+                                                                // -={[ BUNDLING ]}=-
+                bundle_size     = (bin_size > 1) ? cphvb_inst_bundle( instruction_list, bin_start, bin_end ) : 1;
+                bundle_start    = bin_start;
+                bundle_end      = bundle_start + bundle_size-1;
+
+                //printf("\nINSTRUCTIONS: %ld-->%ld\n", bundle_start, bundle_end);
+                block_execute( instruction_list, bundle_start, bundle_end );
+                cur_index += bundle_size-1;
+        }
 
         if (inst->status != CPHVB_INST_DONE)    // Instruction failed
         {
@@ -207,7 +225,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
     }
 
-    if (count == instruction_count) {
+    if (cur_index == instruction_count) {
         return CPHVB_SUCCESS;
     } else {
         return CPHVB_PARTIAL_SUCCESS;
