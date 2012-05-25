@@ -27,7 +27,8 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index start, cphvb_ind
     memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
 
     if (start>0)                                 // Create coord based on start
-        for(; cur_e < start; cur_e++)
+        //for(; cur_e < start; cur_e++)
+        while( cur_e < start )
         {
             for(j = last_dim; j >= 0; --j)
             {
@@ -38,10 +39,11 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index start, cphvb_ind
                     coord[j] = 0;
                 }
             }
+            cur_e++;
         }
 
-    cphvb_pprint_coord( coord, a0->ndim );
-    printf("CUR=%ld, LAST=%ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
+    //cphvb_pprint_coord( coord, a0->ndim );
+    //printf("CUR=%ld, LAST=%ld, START=%ld, END=%ld.\n", cur_e, last_e, start, end);
     while( cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord

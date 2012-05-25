@@ -9,9 +9,9 @@ class Bugs(unittest.TestCase):
 
     def test_leaking(self):
 
-        a = np.ones((16,62768))
+        a = np.ones((128,62768))
         a.cphvb = True
-        b = np.ones((16,62768))
+        b = np.ones((128,62768))
         b.cphvb = True
 
         i = 0
@@ -20,10 +20,11 @@ class Bugs(unittest.TestCase):
             a = b + b + b
 
             i += 1
-            print i
-            if i > 100:
+            if i > 20:
                 break
 
+        print "Out."
+        print a
         self.assertTrue(True)
 
 def run():

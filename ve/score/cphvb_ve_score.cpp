@@ -29,6 +29,19 @@ static cphvb_intp matmul_impl_id = 0;
 
 static cphvb_intp block_size = 1000;
 
+timespec cphvb_diff(timespec start, timespec end)
+{
+    timespec temp;
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+        temp.tv_sec = end.tv_sec-start.tv_sec-1;
+        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+        temp.tv_sec = end.tv_sec-start.tv_sec;
+        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+    return temp;
+}
+
 cphvb_error cphvb_ve_score_init(cphvb_com *self)
 {
     myself = self;                              // Assign config container.
@@ -51,7 +64,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     cphvb_intp i, k;
     computeloop compute_loops[CPHVB_MAX_NO_INST];
-
+    
     /*
     // Strategy One:
     // Consecutively execute instructions one by one applying compute-loop immediately.
@@ -60,8 +73,8 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         cphvb_compute_apply( &instr[i] );
         instr[i].status = CPHVB_INST_DONE;
     }
-    */
-    
+    */   
+
     /*
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
@@ -79,21 +92,23 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_INST_DONE;
     }
-
     */
+
+    /*
+    // Strategy Two.Five:
+    // This is strategy three but without actually using the calculated offsets.
+    // This should definately isolate the performance problem.
+    //
     cphvb_intp  nelements,
                 trav_start=0,
                 trav_end=-1;
 
-    // Strategy Three:
-    // Same as two but also slice into blocks.
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );
     }
-                                                    // Execute them
+                                                    // Block-size split
     nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
-    printf("Blocking up %ld elements in blocks of max  %ld!\n", nelements, block_size);
     while(nelements>0)
     {
         nelements -= block_size;
@@ -106,8 +121,48 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
         for(i=start, k=0; i <= end; i++, k++)
         {
-            printf("Instr[%ld], ELEMENTS: %ld-->%ld. \n", i, trav_start, trav_end);
-            cphvb_pprint_instr( &instr[i] );
+            // no actual execution here...
+        }
+    }
+
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
+    {
+        compute_loops[k]( &instr[i], 0, 0 );
+    }
+
+    for(i=start; i <= end; i++)                     // Set instruction status
+    {
+        instr[i].status = CPHVB_INST_DONE;
+    }
+    */
+
+    cphvb_intp  nelements,
+                trav_start=0,
+                trav_end=-1;
+
+    // Strategy Three:
+    // Same as two but also slice into blocks.
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
+    {
+        compute_loops[k] = cphvb_compute_get( &instr[i] );
+    }
+                                                    // Execute them
+    nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
+    //printf("Blocking up %ld elements in blocks of max  %ld!\n", nelements, block_size);
+    while(nelements>0)
+    {
+        nelements -= block_size;
+        trav_start = trav_end +1;
+        if (nelements > 0) {
+            trav_end = trav_start+ block_size-1;
+        } else {
+            trav_end = trav_start+ block_size-1 +nelements;
+        }
+
+        for(i=start, k=0; i <= end; i++, k++)
+        {
+            //printf("Instr[%ld], ELEMENTS: %ld-->%ld. \n", i, trav_start, trav_end);
+            //cphvb_pprint_instr( &instr[i] );
             compute_loops[k]( &instr[i], trav_start, trav_end );
         }
     }
@@ -116,7 +171,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_INST_DONE;
     }
-
+    
     return CPHVB_SUCCESS;
 
 }
