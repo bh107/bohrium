@@ -52,10 +52,10 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     srandom((unsigned int)std::time(NULL));
     for (int i = 0; i < BPG*TPB; ++i)
     {
-        while ((init_data[i].s0 = random())<129);
-        while ((init_data[i].s1 = random())<129);
-        while ((init_data[i].s2 = random())<129);
-        while ((init_data[i].s3 = random())<129);
+        while ((init_data[i].s[0] = random())<129);
+        while ((init_data[i].s[1] = random())<129);
+        while ((init_data[i].s[2] = random())<129);
+        while ((init_data[i].s[3] = random())<129);
     }
     
     state = new Buffer(BPG*TPB*sizeof(cl_uint4), resourceManager);
