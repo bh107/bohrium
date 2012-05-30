@@ -24,6 +24,11 @@
 #include "UserFunctionRandom.hpp"
 #include "Scalar.hpp"
 
+#ifdef _WIN32
+#define srandom srand
+#define random rand
+#endif
+
 UserFunctionRandom* userFunctionRandom = NULL;
 
 cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
@@ -52,10 +57,17 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     srandom((unsigned int)std::time(NULL));
     for (int i = 0; i < BPG*TPB; ++i)
     {
+#ifdef _WIN32
+        while ((init_data[i].s[0] = random())<129);
+        while ((init_data[i].s[1] = random())<129);
+        while ((init_data[i].s[2] = random())<129);
+        while ((init_data[i].s[3] = random())<129);
+#else
         while ((init_data[i].s0 = random())<129);
         while ((init_data[i].s1 = random())<129);
         while ((init_data[i].s2 = random())<129);
         while ((init_data[i].s3 = random())<129);
+#endif
     }
     
     state = new Buffer(BPG*TPB*sizeof(cl_uint4), resourceManager);
