@@ -1,6 +1,6 @@
 ROOT=..\..
-LIBNAME=libcphvb_ve_score.lib
-DLLNAME=libcphvb_ve_score.dll
+LIBNAME=libcphvb_ve_gpu.lib
+DLLNAME=libcphvb_ve_gpu.dll
 CC=cl
 CXX=cl
 LIBTOOL=lib.exe
