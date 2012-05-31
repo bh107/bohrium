@@ -34,7 +34,12 @@ private:
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
+    cl_uint maxWorkItemDims;
+    std::vector<size_t> maxWorkItemSizes;
     cphvb_component* component;
+    std::vector<size_t> localShape1D;
+    std::vector<size_t> localShape2D;
+    std::vector<size_t> localShape3D;
 public:
 #ifdef STATS
     double batchBuild;
@@ -72,7 +77,7 @@ public:
                                    const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
-    std::vector<size_t> localShape(size_t ndim);
+    std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
     std::string getKernelPath();
 };
 
