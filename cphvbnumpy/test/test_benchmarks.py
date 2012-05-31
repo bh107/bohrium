@@ -2,7 +2,7 @@ import cphvbnumpy as np
 import cphvbnumpy.linalg as la
 from numpy.testing import assert_array_equal, assert_almost_equal, run_module_suite
 from numpy.random import randint, random
-from examples import gameoflife 
+from examples import gameoflife, jacobi_stencil, k_nearest_neighbor as knn
 
 def test_dot():
     dtype = np.float32
@@ -36,6 +36,14 @@ def test_gameoflife():
     Ref = gameoflife.play(state, it)
     state.cphvb=True
     cphVB = gameoflife.play(state, it)
+    cphVB.cphvb = False
+    assert_array_equal(Ref,cphVB)
+
+def test_jacobi_stencil():
+    grid = jacobi_stencil.frezetrap(50,50,cphvb=False)
+    Ref = jacobi_stencil.solve(grid)
+    grid.cphvb=True
+    cphVB = jacobi_stencil.solve(grid)
     cphVB.cphvb = False
     assert_array_equal(Ref,cphVB)
 
