@@ -332,7 +332,7 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
  * @return Error codes (CPHVB_SUCCESS)
  */
 cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *func,
-                               cphvb_userfunc_impl *ret_func)
+                                     cphvb_userfunc_impl *ret_func)
 {
     if(lib != NULL)
     {
@@ -436,4 +436,17 @@ cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction 
 
     fclose(f);
     return CPHVB_SUCCESS;
+}
+
+/* Look up a key in the config file 
+ *
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @return    The value if found, otherwise NULL
+ */
+char* cphvb_component_config_lookup(cphvb_component *component, const char* key)
+{
+    char dictkey[CPHVB_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, CPHVB_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    return iniparser_getstring(component->config, dictkey, NULL);    
 }

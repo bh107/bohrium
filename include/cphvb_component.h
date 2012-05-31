@@ -191,6 +191,14 @@ DLLEXPORT cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_a
  */
 DLLEXPORT cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction *inst);
 
+/* Look up a key in the config file 
+ *
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @return    The value if found, otherwise NULL
+ */
+DLLEXPORT char* cphvb_component_config_lookup(cphvb_component *component, const char* key);
+
 #ifdef __cplusplus
 }
 #endif
