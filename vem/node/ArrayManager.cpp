@@ -63,7 +63,7 @@ void ArrayManager::erasePending(cphvb_array* array)
 }
 
 void ArrayManager::changeOwnerPending(cphvb_array* base,
-                                      cphvb_comp owner)
+                                      owner_t owner)
 {
     assert(base->base == NULL);
     OwnerTicket t;
