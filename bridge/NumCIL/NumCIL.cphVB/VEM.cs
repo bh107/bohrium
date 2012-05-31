@@ -626,10 +626,13 @@ namespace NumCIL.cphVB
             if (!SupportsRandom)
                 throw new cphVBException("The VEM/VE setup does not support the random function");
 
+            if (op1.Shape.Offset != 0 || !op1.Shape.IsPlain || op1.Shape.Elements != op1.m_data.Length)
+                throw new Exception("The shape of the element that is sent to the random implementation must be a non-shape plain array");
+
             GCHandle gh = GCHandle.Alloc(
                 new PInvoke.cphvb_userfunc_random(
                     m_randomFunctionId,
-                    CreateViewPtr<T>(type, op1)
+                    CreateViewPtr<T>(type, op1).BaseArray
                 ), 
                 GCHandleType.Pinned
             );

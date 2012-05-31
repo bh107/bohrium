@@ -562,8 +562,12 @@ namespace NumCIL.cphVB
                         {
                             if (VEM.SupportsRandom && ops is NumCIL.Generic.RandomGeneratorOp<T>)
                             {
-                                supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, operands[0]));
-                                isSupported = true;
+                                //cphVB only supports random for plain arrays
+                                if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].m_data.Length)
+                                {
+                                    supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, operands[0]));
+                                    isSupported = true;
+                                }
                             }
                             else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
                             {
