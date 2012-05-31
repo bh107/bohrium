@@ -128,6 +128,21 @@ void cphvb_pprint_instr( cphvb_instruction *instr ) {
     puts( buf );
 }
 
+void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt )
+{
+    cphvb_intp count;
+    printf("%s %d {\n", txt, (int)instruction_count);
+    for(count=0; count < instruction_count; count++) {
+        cphvb_pprint_instr( &instruction_list[count] );
+    }
+    printf("}\n");
+}
+
+void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count  )
+{
+    cphvb_pprint_instr_list( instruction_list, instruction_count, "BUNDLE");
+}
+
 /* Pretty print an array.
  *
  * @instr  The array in question
@@ -137,4 +152,29 @@ void cphvb_pprint_array( cphvb_array *array ) {
     char buf[PPRINT_BUF_OPSTR_SIZE];
     operand_to_str( array, buf );
     puts( buf );
+}
+
+void cphvb_sprint_coord( char buf[], cphvb_index* coord, cphvb_index dims ) {
+
+    char tmp[64];
+    cphvb_index j;
+
+    for(j=0; j<dims; j++)
+    {
+        sprintf(tmp, "%ld", coord[j]);
+        strcat(buf, tmp);
+        if (j<dims-1) {
+            strcat(buf, ", ");
+        }
+    }
+}
+
+void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims ) {
+
+    char buf[1024];
+    sprintf(buf, "Coord ( ");
+    cphvb_sprint_coord( buf, coord, dims );
+    strcat(buf, " )");
+    puts(buf);
+
 }

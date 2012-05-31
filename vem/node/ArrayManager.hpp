@@ -33,19 +33,18 @@ typedef struct
 
 
 /* Codes for known components */
-enum /* cphvb_comp */
+typedef enum
 {
     CPHVB_PARENT,
     CPHVB_SELF,
     CPHVB_CHILD
 
-};
-typedef cphvb_intp cphvb_comp;
+} owner_t;
 
 struct OwnerTicket
 {
     cphvb_array* array;
-    cphvb_comp owner;
+    owner_t owner;
 };
 
 class ArrayManager
@@ -66,7 +65,7 @@ public:
                         cphvb_index stride[CPHVB_MAXDIM]);
     void erasePending(cphvb_array* array);
     void changeOwnerPending(cphvb_array* base,
-                            cphvb_intp owner);
+                            owner_t owner);
     void flush();
 };
 

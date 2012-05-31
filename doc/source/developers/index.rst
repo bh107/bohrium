@@ -8,7 +8,7 @@ Tools and Environment
 
 Tools of the trade::
 
-  sudo apt-get install git valgrind 
+  sudo apt-get install git valgrind g++
 
 Valgrind and Python
 ~~~~~~~~~~~~~~~~~~~
@@ -16,6 +16,7 @@ Valgrind and Python
 Valgrind is a great tool for memory debugging, memory leak detection, and profiling.
 However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python::
 
+  sudo apt-get build-dep python
   PV=2.7.3
   sudo mkdir /opt/python
   cd /tmp
@@ -39,8 +40,8 @@ In addition to the tools described above, the following must be present::
   sudo apt-get install python-dev mpi-default-dev
 
   # Code and documentation generator-tools
-  sudo apt-get install python-cheetah python-sphinx doxygen
-  pip install breathe
+  sudo apt-get install python-pip python-cheetah python-sphinx doxygen
+  sudo pip install breathe
 
 Get the source-code::
 
@@ -57,6 +58,19 @@ Build and install it::
    set the $PYTHON variable naming the binary of your custom compiled Python::
 
      PYTHON=dython ./build install
+
+Automated Build / Jenkins
+-------------------------
+
+https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu
+Setup jenkins::
+
+  wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+  sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+  sudo apt-get update
+  sudo apt-get install jenkins
+
+Then configure it via web-interface.
 
 cphVB in short
 --------------

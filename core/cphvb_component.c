@@ -52,10 +52,10 @@ char _expand_buffer[PATH_MAX];
 #endif
 
 
-static cphvb_com_type get_type(dictionary *dict, const char *name)
+static cphvb_component_type get_type(dictionary *dict, const char *name)
 {
-    char tmp[CPHVB_COM_NAME_SIZE];
-    snprintf(tmp, CPHVB_COM_NAME_SIZE, "%s:type", name);
+    char tmp[CPHVB_COMPONENT_NAME_SIZE];
+    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:type", name);
     char *s = iniparser_getstring(dict, tmp, NULL);
     if(s == NULL)
     {
@@ -78,7 +78,7 @@ static cphvb_com_type get_type(dictionary *dict, const char *name)
 }
 
 static void *get_dlsym(void *handle, const char *name,
-                       cphvb_com_type type, const char *fun)
+                       cphvb_component_type type, const char *fun)
 {
     char tmp[1024];
     const char *stype;
@@ -95,7 +95,7 @@ static void *get_dlsym(void *handle, const char *name,
         return NULL;
     }
 
-    snprintf(tmp, CPHVB_COM_NAME_SIZE, "cphvb_%s_%s_%s", stype, name, fun);
+    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "cphvb_%s_%s_%s", stype, name, fun);
     dlerror();//Clear old errors.
     ret = dlsym(handle, tmp);
     char *err = dlerror();
@@ -111,21 +111,21 @@ static void *get_dlsym(void *handle, const char *name,
  *
  * @return The root component in the configuration.
  */
-cphvb_com *cphvb_com_setup(void)
+cphvb_component *cphvb_component_setup(void)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
 
-    cphvb_com *com = (cphvb_com*)malloc(sizeof(cphvb_com));
+    cphvb_component *com = (cphvb_component*)malloc(sizeof(cphvb_component));
     const char *env;
     if(com == NULL)
     {
-        fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
+        fprintf(stderr, "cphvb_component_setup(): out of memory.\n");
         exit(CPHVB_OUT_OF_MEMORY);
     }
 
     //Clear memory so we do not have any random pointers
-    memset(com, 0, sizeof(cphvb_com));
+    memset(com, 0, sizeof(cphvb_component));
 
     strcpy(com->name, "bridge"); //The config root keyword.
 
@@ -228,33 +228,33 @@ cphvb_com *cphvb_com_setup(void)
  * @children Array of children components (output).
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
-                               cphvb_com **children[])
+cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
+                               cphvb_component **children[])
 {
-    char tmp[CPHVB_COM_NAME_SIZE];
+    char tmp[CPHVB_COMPONENT_NAME_SIZE];
     char *child;
     *count = 0;
-    snprintf(tmp, CPHVB_COM_NAME_SIZE, "%s:children",parent->name);
+    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:children",parent->name);
     char *tchildren = iniparser_getstring(parent->config, tmp, NULL);
     if(tchildren == NULL)
         exit(CPHVB_ERROR);
 
-    *children = (cphvb_com**)malloc(CPHVB_COM_MAX_CHILDS * sizeof(cphvb_com *));
+    *children = (cphvb_component**)malloc(CPHVB_COMPONENT_MAX_CHILDS * sizeof(cphvb_component *));
     if(*children == NULL)
     {
-        fprintf(stderr, "cphvb_com_setup(): out of memory.\n");
+        fprintf(stderr, "cphvb_component_setup(): out of memory.\n");
         exit(CPHVB_OUT_OF_MEMORY);
     }
 
     //Handle one child at a time.
     child = strtok(tchildren,",");
-    while(child != NULL && *count < CPHVB_COM_MAX_CHILDS)
+    while(child != NULL && *count < CPHVB_COMPONENT_MAX_CHILDS)
     {
-        (*children)[*count] = (cphvb_com*)malloc(sizeof(cphvb_com));
-        cphvb_com *com = (*children)[*count];
+        (*children)[*count] = (cphvb_component*)malloc(sizeof(cphvb_component));
+        cphvb_component *com = (*children)[*count];
 
         //Save component name.
-        strncpy(com->name, child, CPHVB_COM_NAME_SIZE);
+        strncpy(com->name, child, CPHVB_COMPONENT_NAME_SIZE);
         //Save configuration dictionary.
         com->config = parent->config;
         //Save component type.
@@ -270,7 +270,7 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
             exit(CPHVB_ERROR);
         }
 
-        snprintf(tmp, CPHVB_COM_NAME_SIZE, "%s:impl", child);
+        snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:impl", child);
         char *impl = iniparser_getstring(com->config, tmp, NULL);
         if(impl == NULL)
         {
@@ -331,12 +331,12 @@ cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
-                               cphvb_userfunc_impl *ret_func)
+cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *func,
+                                     cphvb_userfunc_impl *ret_func)
 {
     if(lib != NULL)
     {
-        fprintf(stderr, "cphvb_com_get_func() does'nt support the "
+        fprintf(stderr, "cphvb_component_get_func() does'nt support the "
                         "specification of library name. At the moment "
                         "we only support the default library.\n");
         exit(-1);
@@ -359,7 +359,7 @@ cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
  *
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_free(cphvb_com *component)
+cphvb_error cphvb_component_free(cphvb_component *component)
 {
     if(component->type == CPHVB_BRIDGE)
         iniparser_freedict(component->config);
@@ -373,7 +373,7 @@ cphvb_error cphvb_com_free(cphvb_com *component)
  *
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_free_ptr(void* data)
+cphvb_error cphvb_component_free_ptr(void* data)
 {
     free(data);
     return CPHVB_SUCCESS;
@@ -385,7 +385,7 @@ cphvb_error cphvb_com_free_ptr(void* data)
  * @ary  The array to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary)
+cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_array *ary)
 {
     int i;
     FILE *f = fopen("/tmp/cphvb_trace.ary", "a");
@@ -407,7 +407,7 @@ cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary)
  * @inst  The instruction to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst)
+cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction *inst)
 {
     int i;
     cphvb_intp nop;
@@ -436,4 +436,17 @@ cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst)
 
     fclose(f);
     return CPHVB_SUCCESS;
+}
+
+/* Look up a key in the config file 
+ *
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @return    The value if found, otherwise NULL
+ */
+char* cphvb_component_config_lookup(cphvb_component *component, const char* key)
+{
+    char dictkey[CPHVB_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, CPHVB_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    return iniparser_getstring(component->config, dictkey, NULL);    
 }

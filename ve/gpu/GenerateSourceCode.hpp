@@ -19,6 +19,9 @@
 
 #include <vector>
 #include <iostream>
+#ifdef _WIN32
+#include <sstream>
+#endif
 #include <cphvb.h>
 #include "OCLtype.h"
 

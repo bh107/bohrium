@@ -1,6 +1,6 @@
 import numpy as np
 import numpytest
-import cphvbnumpy as cnp
+import cphvbbridge as cnp
 
 def jacobi(A, B, cphvb, tol=0.005):
     '''itteratively solving for matrix A with solution vector B

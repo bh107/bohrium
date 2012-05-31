@@ -188,10 +188,11 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
     cphvb_random_type *a = (cphvb_random_type *) arg;
     cphvb_array *ary = a->operand[0];
     cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
+    cphvb_array *base = cphvb_base_array(ary);
 
     //Make sure that the array memory is allocated.
     if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+        return CPHVB_OUT_OF_MEMORY;	
 
     rk_state state;
     rk_initseed(&state);
@@ -200,7 +201,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
     {
     	case CPHVB_INT8:
 		{
-			cphvb_int8* data = (cphvb_int8*)ary->data;
+			cphvb_int8* data = (cphvb_int8*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int8(&state);
 		}
@@ -208,7 +209,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_INT16:
 		{
-			cphvb_int16* data = (cphvb_int16*)ary->data;
+			cphvb_int16* data = (cphvb_int16*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int16(&state);
 		}
@@ -216,7 +217,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_INT32:
 		{
-			cphvb_int32* data = (cphvb_int32*)ary->data;
+			cphvb_int32* data = (cphvb_int32*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int32(&state);
 		}
@@ -224,7 +225,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_INT64:
 		{
-			cphvb_int64* data = (cphvb_int64*)ary->data;
+			cphvb_int64* data = (cphvb_int64*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_int64(&state);
 		}
@@ -232,7 +233,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 		
 		case CPHVB_UINT8:
 		{
-			cphvb_uint8* data = (cphvb_uint8*)ary->data;
+			cphvb_uint8* data = (cphvb_uint8*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint8(&state);
 		}
@@ -240,7 +241,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_UINT16:
 		{
-			cphvb_uint16* data = (cphvb_uint16*)ary->data;
+			cphvb_uint16* data = (cphvb_uint16*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint16(&state);
 		}
@@ -248,7 +249,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_UINT32:
 		{
-			cphvb_uint32* data = (cphvb_uint32*)ary->data;
+			cphvb_uint32* data = (cphvb_uint32*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint32(&state);
 		}
@@ -256,7 +257,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_UINT64:
 		{
-			cphvb_uint64* data = (cphvb_uint64*)ary->data;
+			cphvb_uint64* data = (cphvb_uint64*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_uint64(&state);
 		}
@@ -264,7 +265,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_FLOAT32:
 		{
-			cphvb_float32* data = (cphvb_float32*)ary->data;
+			cphvb_float32* data = (cphvb_float32*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_float(&state);
 		}
@@ -272,7 +273,7 @@ cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg)
 
     	case CPHVB_FLOAT64:
 		{
-			cphvb_float64* data = (cphvb_float64*)ary->data;
+			cphvb_float64* data = (cphvb_float64*)base->data;
 			for(cphvb_intp i=0; i<size; ++i)
 				data[i] = rk_double(&state);
 		}

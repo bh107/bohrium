@@ -1,0 +1,41 @@
+ROOT=..\..
+LIBNAME=libcphvb_ve_gpu.lib
+DLLNAME=libcphvb_ve_gpu.dll
+CC=cl
+CXX=cl
+LIBTOOL=lib.exe
+LINKTOOL=link.exe
+
+LIBFLAGS=/nologo /out:$(LIBNAME)
+LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
+
+WARNOPTS=#-Wall
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32 /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.2\include" /D__CL_ENABLE_EXCEPTIONS
+LDFLAGS=/LD /MD /nologo
+
+HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+OBJECTS = OCLtype.obj ResourceManager.obj cphvb_ve_gpu.obj InstructionBatch.obj Buffer.obj KernelParameter.obj BaseArray.obj Scalar.obj \
+		InstructionScheduler.obj Kernel.obj GenerateSourceCode.obj UserFunctionRandom.obj UserFunctionReduce.obj StringHasher.obj
+ 
+INSTALLDIR=/opt/cphvb/
+KERNELDIR=/usr/local/cphvb/
+
+all: $(DLLNAME)
+
+.c.obj:
+		$(CC) $(CFLAGS) $*.c /Fo$*.obj
+.cpp.obj:
+		$(CXX) $(CFLAGS) $*.cpp /Fo$*.obj
+
+cphvb_ve_gpu.obj: cphvb_ve_gpu.cpp cphvb_ve_gpu.h Makefile
+		$(CXX) $(CFLAGS) cphvb_ve_gpu.cpp /Focphvb_ve_gpu.obj
+
+$(LIBNAME): $(OBJECTS)
+		$(LIBTOOL) $(LIBFLAGS) $(OBJECTS) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib
+
+$(DLLNAME): $(LIBNAME)
+		$(LINKTOOL) $(LINKFLAGS) $(OBJECTS) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib $(ROOT)\core\compute\cphvb_compute.lib $(ROOT)\core\bundler\cphvb_bundler.lib $(ROOT)\pthread_win32\pthreadVC2_x64.lib "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.2\lib\x64\OpenCL.lib"
+
+clean:
+		del *.obj *.lib *.dll *.exp *.pdb *.ilk
+

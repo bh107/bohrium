@@ -20,7 +20,7 @@ namespace NumCIL
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
-            where C : IBinaryOp<T>
+            where C : struct, IBinaryOp<T>
         {
             if (@out.m_data is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1, in2);
@@ -41,8 +41,11 @@ namespace NumCIL
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Binary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
-            where C : IBinaryOp<T>
+            where C : struct, IBinaryOp<T>
         {
+            if (UnsafeAPI.UFunc_Op_Inner_Binary_Flush_Unsafe(op, in1, in2, ref @out))
+                return;
+
             T[] d1 = in1.Data;
             T[] d2 = in2.Data;
             T[] d3 = @out.Data;
@@ -260,7 +263,8 @@ namespace NumCIL
         private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
             where C : struct, IUnaryOp<T>
         {
-            UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
+            if (!UnsafeAPI.UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(op, in1, ref @out))
+                UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
         }
 
         /// <summary>
@@ -456,7 +460,7 @@ namespace NumCIL
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Nullary<T, C>(C op, NdArray<T> @out)
-            where C : INullaryOp<T>
+            where C : struct, INullaryOp<T>
         {
             if (@out.m_data is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out);
@@ -474,8 +478,11 @@ namespace NumCIL
         /// <param name="op">The operation instance</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Nullary_Flush<T, C>(C op, NdArray<T> @out)
-            where C : INullaryOp<T>
+            where C : struct, INullaryOp<T>
         {
+            if (UnsafeAPI.UFunc_Op_Inner_Nullary_Flush_Unsafe<T, C>(op, @out))
+                return;
+
             T[] d = @out.Data;
 
             if (@out.Shape.Dimensions.Length == 1)

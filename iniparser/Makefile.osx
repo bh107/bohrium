@@ -4,7 +4,7 @@
 
 # Compiler settings
 CC?=gcc
-ARCHOPTS=-m64
+ARCHOPTS?=-arch i386 -arch x86_64
 CFLAGS  = $(ARCHOPTS) -g -O2 -fPIC -Wall -ansi -pedantic
 
 # Ar settings to build the library

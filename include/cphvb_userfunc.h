@@ -17,10 +17,10 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_REDUCE_H
-#define __CPHVB_REDUCE_H
+#ifndef __CPHVB_USERFUNC_H
+#define __CPHVB_USERFUNC_H
 
-/* This header file is for the user-defined reduce function.
+/* This header file is for the user-defined functions.
  * We include an implementation with the default cphVB project.
  * However, it is possible to overwrite the default implementation
  * by specifying an alternative library in the config.ini.
@@ -45,6 +45,24 @@ typedef struct
 } cphvb_reduce_type;
 
 DLLEXPORT cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg);
+
+//The type of the user-defined random function.
+typedef struct
+{
+    //User-defined function header with one operands.
+    CPHVB_USER_FUNC_HEADER(1)
+} cphvb_random_type;
+
+DLLEXPORT cphvb_error cphvb_random(cphvb_userfunc* arg, void* ve_arg);
+
+//The type of the user-defined matrix multiplication function.
+typedef struct
+{
+    //User-defined function header with three operands.
+    CPHVB_USER_FUNC_HEADER(3)
+} cphvb_matmul_type;
+
+DLLEXPORT cphvb_error cphvb_matmul(cphvb_userfunc* arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

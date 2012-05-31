@@ -35,7 +35,10 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     if (cphvb_is_scalar(reduceDef->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        return cphvb_compute_reduce(arg,NULL);
+        cphvb_error err = cphvb_compute_reduce(arg,NULL);
+        if (err == CPHVB_SUCCESS)
+            static_cast<BaseArray*>(userFuncArg->operands[0])->update();
+        return err;
     }
     else
     {
@@ -73,7 +76,7 @@ Kernel UserFunctionReduce::getKernel(cphvb_reduce_type* reduceDef,
     userFuncArg->resourceManager->batchSource += 
         (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
 #endif
-    size_t codeHash = strHash(code);
+    size_t codeHash = string_hasher(code);
     KernelMap::iterator kit = kernelMap.find(codeHash);
     if (kit == kernelMap.end())
     {

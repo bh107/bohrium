@@ -114,6 +114,7 @@
     <Compile Include="UFunc\Reduce.cs" />
     <Compile Include="UFunc\Apply.cs" />
     <Compile Include="UFunc\API.cs" />
+    <Compile Include="UnsafeAPI.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

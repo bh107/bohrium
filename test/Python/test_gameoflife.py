@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import numpytest
-import cphvbnumpy
+import cphvbbridge
 
 dtype = np.int32
 
@@ -28,7 +28,7 @@ def gameoflife(W,H,ITER,DIST,random_state):
           if random.random() > .8:
               cells[i][j] = 1
     if DIST:
-        cphvbnumpy.handle_array(full)
+        cphvbbridge.handle_array(full)
 
     for i in xrange(ITER):
         # count neighbors

@@ -21,7 +21,7 @@
 #define __USERFUNCTIONRANDOM_HPP
 
 #include <map>
-#include <cphvb_random.h>
+#include <cphvb.h>
 #include <CL/cl.hpp>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"

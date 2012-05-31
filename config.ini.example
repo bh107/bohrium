@@ -22,4 +22,5 @@ type = ve
 [gpu]
 impl = /opt/cphvb/libcphvb_ve_gpu.so
 type = ve
+ocldir = /opt/cphvb/lib/ocl_source
 

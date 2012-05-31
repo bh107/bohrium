@@ -8,7 +8,6 @@ namespace NumCIL
 {
     partial class UFunc
     {
-
         /// <summary>
         /// Wrapper class to represent a pending matrix multiplication operation in a list of pending operations
         /// </summary>
@@ -119,10 +118,6 @@ namespace NumCIL
 
         /// <summary>
         /// Actual implmentation of the matrix multiplication operation.
-        /// This implementation is not working in-place, but rather creates
-        /// a combined temporary matrix of the multiplication results,
-        /// which is then reduced with the add operation to produce the
-        /// final result
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <typeparam name="CADD">The typed add operator</typeparam>
@@ -132,31 +127,227 @@ namespace NumCIL
         /// <param name="in1">The left-hand-side argument</param>
         /// <param name="in2">The right-hand-side argument</param>
         /// <param name="out">An optional output argument, use for in-place operations</param>
-        /// <returns>An array with the matrix multiplication result</returns>
         private static void UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
             where CADD : struct, IBinaryOp<T>
             where CMUL : struct, IBinaryOp<T>
         {
-            //The matrix multiplication is implemented by extending
-            // one operand to allow broacast compatible shapes,
-            // then applying the multiplication to this enlarged array,
-            // and finally reducing the result to a suitable shape
-            // 
-            //The operations are done using internal functions to avoid 
-            // lazy evaluating the operations
+            //Matrix multiplication of two vectors is the dot product
+            if (@out.Shape.Elements == 1)
+            {
+                @out.Value[0] = UFunc_CombineAndAggregate_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2);
+                return;
+            }
 
-            var lv = in1.Subview(Range.NewAxis, 2);
+            if (@out.Shape.Dimensions.LongLength != 2)
+                throw new Exception("Matrix multiplication is only supported for 1 and 2 dimensional arrays");
 
-            Tuple<Shape, Shape, NdArray<T>> reshaped = SetupApplyHelper<T>(lv, in2, null);
+            long opsOuter = @out.Shape.Dimensions[0].Length;
+            long opsInner = @out.Shape.Dimensions[1].Length;
+            long opsInnerInner = in1.Shape.Dimensions[1].Length;
 
-            lv = lv.Reshape(reshaped.Item1);
-            var rv = in2.Reshape(reshaped.Item2);
-            var tmp = reshaped.Item3;
+            T[] d1 = in1.Data;
+            T[] d2 = in2.Data;
+            T[] d3 = @out.Data;
 
-            UFunc_Op_Inner_Binary_Flush<T, CMUL>(mulop, lv, rv, ref tmp);
+            long ix1Base = in1.Shape.Offset;
+            long outerStride1 = in1.Shape.Dimensions[0].Stride;
+            long innerStride1 = in1.Shape.Dimensions[1].Stride;
+            //outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
 
-            var nx = SetupReduceHelper<T>(tmp, 1, @out);
-            UFunc_Reduce_Inner_Flush<T, CADD>(addop, 1, tmp, nx);
+            NdArray<T> rhs = in2.Transpose();
+            long ix2Base = rhs.Shape.Offset;
+            long outerStride2 = rhs.Shape.Dimensions[0].Stride;
+            long innerStride2 = rhs.Shape.Dimensions[1].Stride;
+            outerStride2 -= innerStride2 * rhs.Shape.Dimensions[1].Length;
+
+            long ix3 = @out.Shape.Offset;
+            long outerStride3 = @out.Shape.Dimensions[0].Stride;
+            long innerStride3 = @out.Shape.Dimensions[1].Stride;
+            outerStride3 -= innerStride3 * @out.Shape.Dimensions[1].Length;
+
+            for (long i = 0; i < opsOuter; i++)
+            {
+                long ix2 = ix2Base;
+
+                for (long j = 0; j < opsInner; j++)
+                {
+                    long ix1 = ix1Base;
+
+                    T result = mulop.Op(d1[ix1], d2[ix2]);
+                    ix1 += innerStride1;
+                    ix2 += innerStride2;
+
+                    for(long k = 1; k < opsInnerInner; k++)
+                    {
+                        result = addop.Op(result, mulop.Op(d1[ix1], d2[ix2]));
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                    }
+
+
+                    d3[ix3] = result;
+                    ix3 += innerStride3;
+                    ix2 += outerStride2;
+                }
+
+                ix3 += outerStride3;
+                ix1Base += outerStride1;
+            }
         }
+
+        /// <summary>
+        /// Actual implmentation of an operation that performs combination of two NdArray values and aggregates the results.
+        /// If the aggregation operation is addition, and the combination operation is multiplication, the operation is essentially the dot product, 
+        /// but the operation aggregation occurs accross all dimensions.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="CAGGREGATE">The typed add operator</typeparam>
+        /// <typeparam name="CCOMBINE">The typed multiply operator</typeparam>
+        /// <param name="aggregate">The add operator</param>
+        /// <param name="combine">The multiply operator</param>
+        /// <param name="in1">The left-hand-side argument</param>
+        /// <param name="in2">The right-hand-side argument</param>
+        private static T UFunc_CombineAndAggregate_Inner_Flush<T, CAGGREGATE, CCOMBINE>(CAGGREGATE aggregate, CCOMBINE combine, NdArray<T> in1, NdArray<T> in2)
+            where CAGGREGATE : struct, IBinaryOp<T>
+            where CCOMBINE : struct, IBinaryOp<T>
+        {
+            T result;
+            T[] d1 = in1.Data;
+            T[] d2 = in2.Data;
+
+            if (in1.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = in1.Shape.Dimensions[0].Length;
+                long ix1 = in1.Shape.Offset;
+                long ix2 = in2.Shape.Offset;
+
+                long stride1 = in1.Shape.Dimensions[0].Stride;
+                long stride2 = in2.Shape.Dimensions[0].Stride;
+
+                result = combine.Op(d1[ix1], d2[ix2]);
+                ix1 += stride1;
+                ix2 += stride2;
+
+                for (long i = 1; i < totalOps; i++)
+                {
+                    result = aggregate.Op(result, combine.Op(d1[ix1], d2[ix2]));
+                    ix1 += stride1;
+                    ix2 += stride2;
+                }
+            }
+            else if (in1.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = in1.Shape.Dimensions[0].Length;
+                long opsInner = in1.Shape.Dimensions[1].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = in2.Shape.Offset;
+
+                long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                long outerStride2 = in2.Shape.Dimensions[0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                long innerStride2 = in2.Shape.Dimensions[1].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                outerStride2 -= innerStride2 * in2.Shape.Dimensions[1].Length;
+
+                result = combine.Op(d1[ix1], d2[ix2]);
+                ix1 += innerStride1;
+                ix2 += innerStride2;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = (i == 0 ? 1 : 0); j < opsInner; j++)
+                    {
+                        result = aggregate.Op(result, combine.Op(d1[ix1], d2[ix2]));
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                    }
+
+                    ix1 += outerStride1;
+                    ix2 += outerStride2;
+                }
+            }
+            else
+            {
+                long n = in1.Shape.Dimensions.LongLength - 3;
+                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunck of variables are used to prevent repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = in1.Shape.Dimensions[dimIndex0].Length;
+                long opsInner = in1.Shape.Dimensions[dimIndex1].Length;
+                long opsInnerInner = in1.Shape.Dimensions[dimIndex2].Length;
+
+                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+
+                long outerStride2 = in2.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride2 = in2.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride2 = in2.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                outerStride2 -= innerStride2 * in2.Shape.Dimensions[dimIndex1].Length;
+                innerStride2 -= innerInnerStride2 * in2.Shape.Dimensions[dimIndex2].Length;
+
+                result = combine.Op(d1[in1.Shape[counters]], d2[in2.Shape[counters]]);
+                bool first = true;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix1 = in1.Shape[counters];
+                    long ix2 = in2.Shape[counters];
+                    if (first)
+                    {
+                        ix1 += innerInnerStride1;
+                        ix2 += innerInnerStride2;
+                    }
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = (first ? 1 : 0); k < opsInnerInner; k++)
+                            {
+                                result = aggregate.Op(result, combine.Op(d1[ix1], d2[ix2]));
+                                ix1 += innerInnerStride1;
+                                ix2 += innerInnerStride2;
+                            }
+                            first = false;
+
+                            ix1 += innerStride1;
+                            ix2 += innerStride2;
+                        }
+
+                        ix1 += outerStride1;
+                        ix2 += outerStride2;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
     }
 }

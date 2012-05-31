@@ -3,7 +3,7 @@ LIB=libcphvb.dylib
 CC?=gcc
 CXX?=g++
 WARNOPTS=-Wall
-ARCHOPTS=-m64
+ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -shared  -Wl,-dylib_install_name,$(LIB)
 SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c

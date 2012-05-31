@@ -46,12 +46,116 @@ namespace NumCIL
         private static T Aggregate_Entry<T, C>(C op, NdArray<T> in1)
             where C : struct, IBinaryOp<T>
         {
-            //TODO: This can be implemented without reduce, and would be faster and use less memory
-            while (in1.Shape.Dimensions.LongLength > 1)
-                in1 = UFunc.Reduce_Entry<T, C>(op, in1, 0);
+            T result;
+            if (UnsafeAPI.Aggregate_Entry_Unsafe<T, C>(op, in1, out result))
+                return result;
 
-            return UFunc.Reduce_Entry<T, C>(op, in1, 0).Value[0];
+            T[] d1 = in1.Data;
 
+            if (in1.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = in1.Shape.Dimensions[0].Length;
+                long ix1 = in1.Shape.Offset;
+                long stride1 = in1.Shape.Dimensions[0].Stride;
+
+                result = d1[ix1];
+                ix1 += stride1;
+
+                for (long i = 1; i < totalOps; i++)
+                {
+                    result = op.Op(result, d1[ix1]);
+                    ix1 += stride1;
+                }
+            }
+            else if (in1.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = in1.Shape.Dimensions[0].Length;
+                long opsInner = in1.Shape.Dimensions[1].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+
+                result = d1[ix1];
+                ix1 += innerStride1;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = (i == 0 ? 1 : 0); j < opsInner; j++)
+                    {
+                        result = op.Op(result, d1[ix1]);
+                        ix1 += innerStride1;
+                    }
+
+                    ix1 += outerStride1;
+                }
+            }
+            else
+            {
+                long n = in1.Shape.Dimensions.LongLength - 3;
+                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunck of variables are used to prevent repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = in1.Shape.Dimensions[0 + limits.LongLength].Length;
+                long opsInner = in1.Shape.Dimensions[1 + limits.LongLength].Length;
+                long opsInnerInner = in1.Shape.Dimensions[2 + limits.LongLength].Length;
+
+                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+
+                result = d1[in1.Shape[counters]];
+                bool first = true;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix1 = in1.Shape[counters];
+                    if (first)
+                        ix1 += innerInnerStride1;
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = (first ? 1 : 0); k < opsInnerInner; k++)
+                            {
+                                result = op.Op(result, d1[ix1]);
+                                ix1 += innerInnerStride1;
+                            }
+                            first = false;
+
+                            ix1 += innerStride1;
+                        }
+
+                        ix1 += outerStride1;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

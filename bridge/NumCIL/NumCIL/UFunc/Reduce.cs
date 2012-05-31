@@ -154,6 +154,9 @@ namespace NumCIL
         private static NdArray<T> UFunc_Reduce_Inner_Flush<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
             where C : struct, IBinaryOp<T>
         {
+            if (UnsafeAPI.UFunc_Reduce_Inner_Flush_Unsafe<T, C>(op, axis, in1, @out))
+                return @out;
+
             if (axis < 0)
                 axis = in1.Shape.Dimensions.LongLength - axis;
 

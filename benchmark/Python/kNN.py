@@ -1,5 +1,5 @@
 import numpy as np
-import cphvbnumpy
+import cphvbbridge
 import util
 
 def compute_targets(base, target):

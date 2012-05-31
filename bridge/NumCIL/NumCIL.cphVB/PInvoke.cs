@@ -114,7 +114,7 @@ namespace NumCIL.cphVB
 
     public static class PInvoke
     {
-        public const int CPHVB_COM_NAME_SIZE = 1024;
+        public const int CPHVB_COMPONENT_NAME_SIZE = 1024;
         public const int CPHVB_MAXDIM = 16;
         public const int CPHVB_MAX_EXTRA_META_DATA = 1024;
         public const int CPHVB_MAX_NO_INST = 100;
@@ -128,7 +128,7 @@ namespace NumCIL.cphVB
         public static readonly int MATMULFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_matmul));
         public static readonly int PLAINFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_plain));
 
-        public enum cphvb_com_type : long
+        public enum cphvb_component_type : long
         {
             CPHVB_BRIDGE,
             CPHVB_VEM,
@@ -154,6 +154,7 @@ namespace NumCIL.cphVB
             CPHVB_INST_UNDONE,
             CPHVB_INST_NOT_SUPPORTED,
             CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
+            CPHVB_USERFUNC_NOT_SUPPORTED,
         }
 
         public enum cphvb_opcode : long
@@ -408,13 +409,13 @@ namespace NumCIL.cphVB
         }*/
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
-        public struct cphvb_com
+        public struct cphvb_component
         {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_COM_NAME_SIZE)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_COMPONENT_NAME_SIZE)]
             public byte[] name;
             public IntPtr config;  /*dictionary *config;*/
             public IntPtr lib_handle; //Handle for the dynamic linked library.
-            public cphvb_com_type type;
+            public cphvb_component_type type;
             public cphvb_init init;
             public cphvb_shutdown shutdown;
             public cphvb_execute execute;
@@ -499,7 +500,7 @@ namespace NumCIL.cphVB
                 if (m_ptr == IntPtr.Zero)
                     return;
 
-                cphvb_com_free_ptr(m_ptr);
+                cphvb_component_free_ptr(m_ptr);
                 m_ptr = IntPtr.Zero;
             }
 
@@ -815,7 +816,7 @@ namespace NumCIL.cphVB
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate cphvb_error cphvb_init(ref cphvb_com self);
+        public delegate cphvb_error cphvb_init(ref cphvb_component self);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_shutdown();
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -838,18 +839,18 @@ namespace NumCIL.cphVB
         /// Setup the root component, which normally is the bridge.
         /// </summary>
         /// <returns>A new component object</returns>
-        [DllImport("libcphvb", EntryPoint = "cphvb_com_setup", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
-        private extern static IntPtr cphvb_com_setup_masked();
+        [DllImport("libcphvb", EntryPoint = "cphvb_component_setup", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        private extern static IntPtr cphvb_component_setup_masked();
 
         /// <summary>
         /// Setup the root component, which normally is the bridge.
         /// </summary>
         /// <returns>A new component object</returns>
-        public static cphvb_com cphvb_com_setup()
+        public static cphvb_component cphvb_component_setup()
         {
-            IntPtr p = cphvb_com_setup_masked();
-            cphvb_com r = (cphvb_com)Marshal.PtrToStructure(p, typeof(cphvb_com));
-            cphvb_com_free_ptr(p);
+            IntPtr p = cphvb_component_setup_masked();
+            cphvb_component r = (cphvb_component)Marshal.PtrToStructure(p, typeof(cphvb_component));
+            cphvb_component_free_ptr(p);
 			return r;
         }
 
@@ -861,8 +862,8 @@ namespace NumCIL.cphVB
         /// <param name="count">Number of children components</param>
         /// <param name="children">Array of children components (output)</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
-        [DllImport("libcphvb", EntryPoint = "cphvb_com_children", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
-        private extern static cphvb_error cphvb_com_children_masked([In] ref cphvb_com parent, [Out] out cphvb_intp count, [Out] out IntPtr children);
+        [DllImport("libcphvb", EntryPoint = "cphvb_component_children", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        private extern static cphvb_error cphvb_component_children_masked([In] ref cphvb_component parent, [Out] out cphvb_intp count, [Out] out IntPtr children);
 
         /// <summary>
         /// Retrieves the children components of the parent.
@@ -872,7 +873,7 @@ namespace NumCIL.cphVB
         /// <param name="count">Number of children components</param>
         /// <param name="children">Array of children components (output)</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
-        public static cphvb_error cphvb_com_children(cphvb_com parent, out cphvb_com[] children)
+        public static cphvb_error cphvb_component_children(cphvb_component parent, out cphvb_component[] children)
         {
 
             //TODO: Errors in setup may cause memory leaks, but we should terminate anyway
@@ -881,21 +882,21 @@ namespace NumCIL.cphVB
             long count = 0;
             children = null;
 
-            cphvb_error e = cphvb_com_children_masked(ref parent, out count, out ch);
+            cphvb_error e = cphvb_component_children_masked(ref parent, out count, out ch);
             if (e != cphvb_error.CPHVB_SUCCESS)
                 return e;
 
-            children = new cphvb_com[count];
+            children = new cphvb_component[count];
             for (int i = 0; i < count; i++)
             {
                 IntPtr cur = Marshal.ReadIntPtr(ch, Marshal.SizeOf(typeof(cphvb_intp)) * i);
-                children[i] = (cphvb_com)Marshal.PtrToStructure(cur, typeof(cphvb_com));
-                e = cphvb_com_free_ptr(cur);
+                children[i] = (cphvb_component)Marshal.PtrToStructure(cur, typeof(cphvb_component));
+                e = cphvb_component_free_ptr(cur);
                 if (e != cphvb_error.CPHVB_SUCCESS)
                     return e;
             }
 
-            e = cphvb_com_free_ptr(ch);
+            e = cphvb_component_free_ptr(ch);
             if (e != cphvb_error.CPHVB_SUCCESS)
                 return e;
 
@@ -909,7 +910,7 @@ namespace NumCIL.cphVB
         /// <param name="component">The component to free</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_com_free([In] ref cphvb_com component);
+        public extern static cphvb_error cphvb_component_free([In] ref cphvb_component component);
 
         /// <summary>
         /// Frees the component
@@ -917,7 +918,7 @@ namespace NumCIL.cphVB
         /// <param name="component">The component to free</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_com_free_ptr([In] IntPtr component);
+        public extern static cphvb_error cphvb_component_free_ptr([In] IntPtr component);
         
         /// <summary>
         /// Retrieves an user-defined function
@@ -928,7 +929,7 @@ namespace NumCIL.cphVB
         /// <param name="ret_func">Pointer to the function (output), Is NULL if the function doesn't exist</param>
         /// <returns>Error codes (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_com_get_func([In] ref cphvb_com self, [In] string lib, [In] string func,
+        public extern static cphvb_error cphvb_component_get_func([In] ref cphvb_component self, [In] string lib, [In] string func,
                                [Out] IntPtr ret_func);
 
         /// <summary>
@@ -938,7 +939,7 @@ namespace NumCIL.cphVB
         /// <param name="ary">The array to trace</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_com_trace_array([In] ref cphvb_com self, [In] ref cphvb_array ary);
+        public extern static cphvb_error cphvb_component_trace_array([In] ref cphvb_component self, [In] ref cphvb_array ary);
 
 
         /// <summary>
@@ -948,7 +949,7 @@ namespace NumCIL.cphVB
         /// <param name="inst">The instruction to trace</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_com_trace_inst([In] ref cphvb_com self, [In] ref cphvb_instruction inst);
+        public extern static cphvb_error cphvb_component_trace_inst([In] ref cphvb_component self, [In] ref cphvb_instruction inst);
 
         /// <summary>
         /// Set the data pointer for the array.

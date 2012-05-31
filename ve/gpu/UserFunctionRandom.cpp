@@ -24,6 +24,11 @@
 #include "UserFunctionRandom.hpp"
 #include "Scalar.hpp"
 
+#ifdef _WIN32
+#define srandom srand
+#define random rand
+#endif
+
 UserFunctionRandom* userFunctionRandom = NULL;
 
 cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
@@ -52,10 +57,10 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     srandom((unsigned int)std::time(NULL));
     for (int i = 0; i < BPG*TPB; ++i)
     {
-        while ((init_data[i].s0 = random())<129);
-        while ((init_data[i].s1 = random())<129);
-        while ((init_data[i].s2 = random())<129);
-        while ((init_data[i].s3 = random())<129);
+        while ((init_data[i].s[0] = random())<129);
+        while ((init_data[i].s[1] = random())<129);
+        while ((init_data[i].s[2] = random())<129);
+        while ((init_data[i].s[3] = random())<129);
     }
     
     state = new Buffer(BPG*TPB*sizeof(cl_uint4), resourceManager);
@@ -69,7 +74,7 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     std::vector<cphvb_intp> ndims(3,1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
-                                      "/opt/cphvb/lib/ocl_source/HybridTaus.cl", kernelNames);
+                                      resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
     kernelMap.insert(std::make_pair(OCL_INT32, kernels[0]));
     kernelMap.insert(std::make_pair(OCL_UINT32, kernels[1]));
     kernelMap.insert(std::make_pair(OCL_FLOAT32, kernels[2]));    

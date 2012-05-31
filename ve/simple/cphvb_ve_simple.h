@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Kenneth Skovhede <kenneth@hexad.dk>
+ * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
  *
  * This file is part of cphVB <http://code.google.com/p/cphvb/>.
  *
@@ -17,19 +17,22 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CPHVB_SIMPLE_H
-#define __CPHVB_SIMPLE_H
+#ifndef __CPHVB_VE_SIMPLE_H
+#define __CPHVB_VE_SIMPLE_H
+
+#include <cphvb.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT cphvb_error cphvb_ve_simple_init(cphvb_com *new_self);
+DLLEXPORT cphvb_error cphvb_ve_simple_init(cphvb_component *self);
+
+DLLEXPORT cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
+
 DLLEXPORT cphvb_error cphvb_ve_simple_shutdown(void);
+
 DLLEXPORT cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id);
-DLLEXPORT cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count,
-                                    cphvb_instruction instruction_list[]);
-DLLEXPORT cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

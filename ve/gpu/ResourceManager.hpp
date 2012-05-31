@@ -22,9 +22,13 @@
 
 #include <CL/cl.hpp>
 #include <vector>
+<<<<<<< HEAD
 #include <map>
+=======
+#include <cphvb.h>
+>>>>>>> master
 #ifdef STATS
-#include <sys/time.h>
+#include "timing.h"
 #endif
 
 class ResourceManager
@@ -33,9 +37,15 @@ private:
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
-    size_t maxWorkGroupSize;
     typedef std::multimap<size_t,cl::Buffer*> BufferCache;
     BufferCache bufferCache; 
+    size_t maxWorkGroupSize;
+    cl_uint maxWorkItemDims;
+    std::vector<size_t> maxWorkItemSizes;
+    cphvb_component* component;
+    std::vector<size_t> localShape1D;
+    std::vector<size_t> localShape2D;
+    std::vector<size_t> localShape3D;
 public:
 #ifdef STATS
     double batchBuild;
@@ -46,10 +56,11 @@ public:
     double resourceKernelExecute;
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
-    ResourceManager();
+    ResourceManager(cphvb_component* _component);
     ~ResourceManager();
     cl::Buffer* newBuffer(size_t size);
     void bufferDone(cl::Buffer* buffer);
+    cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
     void readBuffer(const cl::Buffer* buffer,
@@ -74,7 +85,8 @@ public:
                                    const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
-    std::vector<size_t> localShape(size_t ndim);
+    std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
+    std::string getKernelPath();
 };
 
 #endif

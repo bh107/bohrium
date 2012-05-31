@@ -21,7 +21,11 @@
 #include <stdlib.h>
 #include <cphvb.h>
 #include "OCLtype.h"
+#ifdef __APPLE__
+#include <Headers/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 OCLtype oclType(cphvb_type vbtype)
 {

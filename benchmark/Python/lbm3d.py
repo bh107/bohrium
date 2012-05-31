@@ -6,7 +6,7 @@
 ##               Iain Haslam, March 2006.
 import numpy as np
 import util
-import cphvbnumpy
+import cphvbbridge
 
 B = util.Benchmark()
 NO_OBST = 1

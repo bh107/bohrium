@@ -22,11 +22,11 @@
 #include <cphvb.h>
 #include "cphvb_ve_gpu.h"
 
-cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
+cphvb_error cphvb_ve_gpu_init(cphvb_component* _component)
 {
     component = _component;
     try {
-        resourceManager = new ResourceManager();
+        resourceManager = new ResourceManager(component);
         instructionScheduler = new InstructionScheduler(resourceManager);
     } 
     catch (std::exception& e)
@@ -38,7 +38,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
 }
 
 cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
-                                 cphvb_instruction instruction_list[])
+                                           cphvb_instruction instruction_list[])
 {
     try 
     {
@@ -60,12 +60,16 @@ cphvb_error cphvb_ve_gpu_shutdown()
 }
 
 cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
-                                  char *fun, 
-                                  cphvb_intp *id)
+                                            char *fun, 
+                                            cphvb_intp *id)
 {
     cphvb_userfunc_impl userfunc;
-    cphvb_com_get_func(component, lib, fun, &userfunc);
+    cphvb_component_get_func(component, lib, fun, &userfunc);
     if (userfunc != NULL)
+    {
         instructionScheduler->registerFunction(*id, userfunc);
-    return CPHVB_SUCCESS;
+    	return CPHVB_SUCCESS;
+    }
+    else
+	    return CPHVB_USERFUNC_NOT_SUPPORTED;
 }

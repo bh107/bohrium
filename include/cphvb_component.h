@@ -33,19 +33,19 @@ extern "C" {
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.
-#define CPHVB_COM_NAME_SIZE (1024)
+#define CPHVB_COMPONENT_NAME_SIZE (1024)
 
 //Maximum number of support childs for a component
-#define CPHVB_COM_MAX_CHILDS (10)
+#define CPHVB_COMPONENT_MAX_CHILDS (10)
 
-//Prototype of the cphvb_com datatype.
-typedef struct cphvb_com_struct cphvb_com;
+//Prototype of the cphvb_component datatype.
+typedef struct cphvb_component_struct cphvb_component;
 
 /* Initialize the component
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_init)(cphvb_com *self);
+typedef cphvb_error (*cphvb_init)(cphvb_component *self);
 
 
 /* Shutdown the component, which include a instruction flush
@@ -113,16 +113,16 @@ typedef enum
     CPHVB_VEM,
     CPHVB_VE,
     CPHVB_COMPONENT_ERROR
-}cphvb_com_type;
+}cphvb_component_type;
 
 
-/* Data struct for the cphvb_com data type */
-struct cphvb_com_struct
+/* Data struct for the cphvb_component data type */
+struct cphvb_component_struct
 {
-    char name[CPHVB_COM_NAME_SIZE];
+    char name[CPHVB_COMPONENT_NAME_SIZE];
     dictionary *config;
     void *lib_handle;//Handle for the dynamic linked library.
-    cphvb_com_type type;
+    cphvb_component_type type;
     cphvb_init init;
     cphvb_shutdown shutdown;
     cphvb_execute execute;
@@ -135,7 +135,7 @@ struct cphvb_com_struct
  *
  * @return A new component object.
  */
-DLLEXPORT cphvb_com *cphvb_com_setup(void);
+DLLEXPORT cphvb_component *cphvb_component_setup(void);
 
 
 /* Retrieves the children components of the parent.
@@ -146,21 +146,21 @@ DLLEXPORT cphvb_com *cphvb_com_setup(void);
  * NB: the array and all the children should be free'd by the caller.
  * @return Error code (CPHVB_SUCCESS).
  */
-DLLEXPORT cphvb_error cphvb_com_children(cphvb_com *parent, cphvb_intp *count,
-                               cphvb_com **children[]);
+DLLEXPORT cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
+                               cphvb_component **children[]);
 
 
 /* Frees the component.
  *
  * @return Error code (CPHVB_SUCCESS).
  */
-DLLEXPORT cphvb_error cphvb_com_free(cphvb_com *component);
+DLLEXPORT cphvb_error cphvb_component_free(cphvb_component *component);
 
 /* Frees allocated data.
  *
  * @return Error code (CPHVB_SUCCESS).
  */
-DLLEXPORT cphvb_error cphvb_com_free_ptr(void* data);
+DLLEXPORT cphvb_error cphvb_component_free_ptr(void* data);
 
 /* Retrieves an user-defined function.
  *
@@ -172,7 +172,7 @@ DLLEXPORT cphvb_error cphvb_com_free_ptr(void* data);
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
  */
-DLLEXPORT cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
+DLLEXPORT cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *func,
                                cphvb_userfunc_impl *ret_func);
 
 /* Trace an array creation.
@@ -181,7 +181,7 @@ DLLEXPORT cphvb_error cphvb_com_get_func(cphvb_com *self, char *lib, char *func,
  * @ary  The array to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-DLLEXPORT cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
+DLLEXPORT cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_array *ary);
 
 /* Trace an instruction.
  *
@@ -189,7 +189,15 @@ DLLEXPORT cphvb_error cphvb_com_trace_array(cphvb_com *self, cphvb_array *ary);
  * @inst  The instruction to trace.
  * @return Error code (CPHVB_SUCCESS).
  */
-DLLEXPORT cphvb_error cphvb_com_trace_inst(cphvb_com *self, cphvb_instruction *inst);
+DLLEXPORT cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction *inst);
+
+/* Look up a key in the config file 
+ *
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @return    The value if found, otherwise NULL
+ */
+DLLEXPORT char* cphvb_component_config_lookup(cphvb_component *component, const char* key);
 
 #ifdef __cplusplus
 }

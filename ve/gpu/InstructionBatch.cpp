@@ -28,7 +28,6 @@
 #include "GenerateSourceCode.hpp"
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
-std::hash<std::string> InstructionBatch::strHash = std::hash<std::string>();
 
 InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
@@ -146,7 +145,6 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                 {
                     // Same view so we use the same cphvb_array* for it
                     inst->operand[op] = iit->second;
-                    known[op] = true;
                 } 
                 else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
                 {
@@ -208,7 +206,7 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     gettimeofday(&end,NULL);
     resourceManager->batchSource += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
 #endif
-    size_t codeHash = strHash(code);
+    size_t codeHash = string_hasher(code);
 
     KernelMap::iterator kit = kernelMap.find(codeHash);
     if (kit == kernelMap.end())
@@ -299,7 +297,7 @@ std::string InstructionBatch::generateCode()
         // find variable names for input operands
         for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
         {
-            if (cphvb_is_constant((*iit)->operand[op]) || cphvb_is_scalar((*iit)->operand[op]))
+            if (cphvb_is_constant((*iit)->operand[op]))
                 operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
             else
                 operands.push_back(kernelVariables[(*iit)->operand[op]]);  
@@ -330,8 +328,8 @@ bool InstructionBatch::read(BaseArray* array)
 
 bool InstructionBatch::write(BaseArray* array)
 {
-    if (output.find(array) == output.end())
-        return false;
+//    if (output.find(array) == output.end())
+//        return false;
     return true;
 }
 
@@ -340,14 +338,15 @@ bool InstructionBatch::access(BaseArray* array)
     return (read(array) || write(array));
 }
 
+struct Compare : public std::binary_function<std::pair<BaseArray*,cphvb_array*>,BaseArray*,bool>
+{
+	bool operator() (const std::pair<BaseArray*,cphvb_array*> p, const BaseArray* k) const 
+	{return (p.first==k);}
+};
+
 bool InstructionBatch::discard(BaseArray* array)
 {
     output.erase(array);
-    struct Compare : public std::binary_function<std::pair<BaseArray*,cphvb_array*>,BaseArray*,bool>
-    {
-        bool operator() (const std::pair<BaseArray*,cphvb_array*> p, const BaseArray* k) const 
-        {return (p.first==k);}
-    };
     outputList.remove_if(std::binder2nd<Compare>(Compare(),array));
     bool r =  read(array);
     if (!r)
