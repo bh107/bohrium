@@ -22,7 +22,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_gpu.h"
 
-cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
+cphvb_error cphvb_ve_gpu_init(cphvb_component* _component)
 {
     component = _component;
     try {
@@ -64,7 +64,7 @@ cphvb_error cphvb_ve_gpu_reg_func(char *lib,
                                   cphvb_intp *id)
 {
     cphvb_userfunc_impl userfunc;
-    cphvb_com_get_func(component, lib, fun, &userfunc);
+    cphvb_component_get_func(component, lib, fun, &userfunc);
     if (userfunc != NULL)
     {
         instructionScheduler->registerFunction(*id, userfunc);

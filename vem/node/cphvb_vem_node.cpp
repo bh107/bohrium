@@ -32,10 +32,10 @@ static cphvb_shutdown ve_shutdown;
 static cphvb_reg_func ve_reg_func;
 
 //The VE components
-static cphvb_com **coms;
+static cphvb_component **components;
 
 //Our self
-static cphvb_com *myself;
+static cphvb_component *myself;
 
 //Number of user-defined functions registered.
 static cphvb_intp userfunc_count = 0;
@@ -49,20 +49,20 @@ ArrayManager* arrayManager;
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_init(cphvb_com *self)
+cphvb_error cphvb_vem_node_init(cphvb_component *self)
 {
     cphvb_intp children_count;
     cphvb_error err;
     myself = self;
 
-    cphvb_com_children(self, &children_count, &coms);
-    ve_init = coms[0]->init;
-    ve_execute = coms[0]->execute;
-    ve_shutdown = coms[0]->shutdown;
-    ve_reg_func = coms[0]->reg_func;
+    cphvb_component_children(self, &children_count, &components);
+    ve_init = components[0]->init;
+    ve_execute = components[0]->execute;
+    ve_shutdown = components[0]->shutdown;
+    ve_reg_func = components[0]->reg_func;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(coms[0]);
+    err = ve_init(components[0]);
     if(err)
         return err;
 
@@ -88,8 +88,8 @@ cphvb_error cphvb_vem_node_shutdown(void)
 {
     cphvb_error err;
     err = ve_shutdown();
-    cphvb_com_free(coms[0]);//Only got one child.
-    free(coms);
+    cphvb_component_free(components[0]);//Only got one child.
+    free(components);
     delete arrayManager;
     return err;
 }
@@ -124,7 +124,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
         return CPHVB_OUT_OF_MEMORY;
     }
     #ifdef CPHVB_TRACE
-        cphvb_com_trace_array(myself, *new_array);
+        cphvb_component_trace_array(myself, *new_array);
     #endif
 
     return CPHVB_SUCCESS;
@@ -176,7 +176,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     {
         cphvb_instruction* inst = &inst_list[i];
         #ifdef CPHVB_TRACE
-            cphvb_com_trace_inst(myself, inst);
+            cphvb_component_trace_inst(myself, inst);
         #endif
         switch(inst->opcode)
         {

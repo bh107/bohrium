@@ -28,12 +28,12 @@
 extern "C" {
 #endif
 
-static cphvb_com* component = NULL;
+static cphvb_component* component = NULL;
 static InstructionScheduler* instructionScheduler;
 static ResourceManager* resourceManager;
 
 
-cphvb_error cphvb_ve_gpu_init(cphvb_com* _component);
+cphvb_error cphvb_ve_gpu_init(cphvb_component* _component);
     
 cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
                                  cphvb_instruction* instruction_list);

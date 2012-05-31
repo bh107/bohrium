@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-DLLEXPORT cphvb_error cphvb_ve_simple_init(cphvb_com *self);
+DLLEXPORT cphvb_error cphvb_ve_simple_init(cphvb_component *self);
 
 DLLEXPORT cphvb_error cphvb_ve_simple_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
 

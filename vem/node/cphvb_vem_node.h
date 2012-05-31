@@ -30,7 +30,7 @@ extern "C" {
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-DLLEXPORT cphvb_error cphvb_vem_node_init(cphvb_com *self);
+DLLEXPORT cphvb_error cphvb_vem_node_init(cphvb_component *self);
 
 
 /* Shutdown the VEM, which include a instruction flush
