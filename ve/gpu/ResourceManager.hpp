@@ -24,7 +24,7 @@
 #include <vector>
 #include <cphvb.h>
 #ifdef STATS
-#include <sys/time.h>
+#include "timing.h"
 #endif
 
 class ResourceManager
