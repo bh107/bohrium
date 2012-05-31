@@ -74,7 +74,7 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     std::vector<cphvb_intp> ndims(3,1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
-                                      "/opt/cphvb/lib/ocl_source/HybridTaus.cl", kernelNames);
+                                      resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
     kernelMap.insert(std::make_pair(OCL_INT32, kernels[0]));
     kernelMap.insert(std::make_pair(OCL_UINT32, kernels[1]));
     kernelMap.insert(std::make_pair(OCL_FLOAT32, kernels[2]));    

@@ -22,6 +22,7 @@
 
 #include <CL/cl.hpp>
 #include <vector>
+#include <cphvb.h>
 #ifdef STATS
 #include <sys/time.h>
 #endif
@@ -33,6 +34,7 @@ private:
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
+    cphvb_component* component;
 public:
 #ifdef STATS
     double batchBuild;
@@ -44,7 +46,7 @@ public:
     ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
-    ResourceManager();
+    ResourceManager(cphvb_component* _component);
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
@@ -71,6 +73,7 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(size_t ndim);
+    std::string getKernelPath();
 };
 
 #endif

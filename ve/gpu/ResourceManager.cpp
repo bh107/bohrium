@@ -23,8 +23,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <dictionary.h>
 
-ResourceManager::ResourceManager()
+ResourceManager::ResourceManager(cphvb_component* _component) 
+    : component(_component)
 {
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -263,3 +265,11 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus,
     *(double*)total += (double)(end - start) / 1000.0;
 }
 #endif
+
+std::string ResourceManager::getKernelPath()
+{
+    char* dir = cphvb_component_config_lookup(component, "ocldir");
+    if (dir == NULL)
+        return std::string("/opt/cphvb/lib/ocl_source");
+    return std::string(dir);
+}
