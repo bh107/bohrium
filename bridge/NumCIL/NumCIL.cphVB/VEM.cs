@@ -227,7 +227,9 @@ namespace NumCIL.cphVB
             {
 				//Atomically reset instruction list and get copy,
 				// should not need to be atomic, but Mono fails otherwise
-				List<IInstruction> lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
+                List<IInstruction> lst;
+                lock (m_cleanups)
+				    lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
                 lock (m_executelock)
                     ExecuteWithoutLocks(lst);
