@@ -32,25 +32,25 @@ extern "C" {
  *
  * @param instr The array in question
  */
-void cphvb_pprint_array( cphvb_array *array );
+DLLEXPORT void cphvb_pprint_array( cphvb_array *array );
 
 /* Pretty print an instruction.
  *
  * @param instr The instruction in question.
  */
-void cphvb_pprint_instr( cphvb_instruction *instr );
+DLLEXPORT void cphvb_pprint_instr( cphvb_instruction *instr );
 
-void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt );
+DLLEXPORT void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt );
 
 /**
  * Pretty print a list of instructions
  * @param instruction_count Number of instruction in list.
  * @param instruction_list Array of instructions.
  */
-void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count );
+DLLEXPORT void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count );
 
 //void cphvb_pprint_coord( cphvb_index* coord[CPHVB_MAXDIM], cphvb_index dims );
-void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims );
+DLLEXPORT void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims );
 
 #ifdef __cplusplus
 }
