@@ -26,7 +26,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_component* _component)
 {
     component = _component;
     try {
-        resourceManager = new ResourceManager();
+        resourceManager = new ResourceManager(component);
         instructionScheduler = new InstructionScheduler(resourceManager);
     } 
     catch (std::exception& e)
