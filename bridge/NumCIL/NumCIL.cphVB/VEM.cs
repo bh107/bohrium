@@ -93,11 +93,11 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A reference to the cphVB component for "self" aka the bridge
         /// </summary>
-        private PInvoke.cphvb_com m_component;
+        private PInvoke.cphvb_component m_component;
         /// <summary>
         /// A reference to the chpVB VEM
         /// </summary>
-        private PInvoke.cphvb_com[] m_childs;
+        private PInvoke.cphvb_component[] m_childs;
 
         /// <summary>
         /// A list of cleanups not yet performed
@@ -115,8 +115,8 @@ namespace NumCIL.cphVB
         /// </summary>
         public VEM()
         {
-            m_component = PInvoke.cphvb_com_setup();
-            PInvoke.cphvb_error e = PInvoke.cphvb_com_children(m_component, out m_childs);
+            m_component = PInvoke.cphvb_component_setup();
+            PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs);
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
 
@@ -440,14 +440,14 @@ namespace NumCIL.cphVB
                 if (m_childs != null)
                 {
                     for (int i = 0; i < m_childs.Length; i++)
-                        PInvoke.cphvb_com_free(ref m_childs[i]);
+                        PInvoke.cphvb_component_free(ref m_childs[i]);
 
                     m_childs = null;
                 }
 
                 if (m_component.config != IntPtr.Zero)
                 {
-                    PInvoke.cphvb_com_free(ref m_component);
+                    PInvoke.cphvb_component_free(ref m_component);
                     m_component.config = IntPtr.Zero;
                 }
             }
@@ -626,10 +626,13 @@ namespace NumCIL.cphVB
             if (!SupportsRandom)
                 throw new cphVBException("The VEM/VE setup does not support the random function");
 
+            if (op1.Shape.Offset != 0 || !op1.Shape.IsPlain || op1.Shape.Elements != op1.m_data.Length)
+                throw new Exception("The shape of the element that is sent to the random implementation must be a non-shape plain array");
+
             GCHandle gh = GCHandle.Alloc(
                 new PInvoke.cphvb_userfunc_random(
                     m_randomFunctionId,
-                    CreateViewPtr<T>(type, op1)
+                    CreateViewPtr<T>(type, op1).BaseArray
                 ), 
                 GCHandleType.Pinned
             );
