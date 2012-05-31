@@ -22,7 +22,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_gpu.h"
 
-cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
+DLLEXPORT cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
 {
     component = _component;
     try {
@@ -37,7 +37,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_com* _component)
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
+DLLEXPORT cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
                                  cphvb_instruction instruction_list[])
 {
     try 
@@ -52,14 +52,14 @@ cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_gpu_shutdown()
+DLLEXPORT cphvb_error cphvb_ve_gpu_shutdown()
 {
     delete instructionScheduler;
     delete resourceManager;
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
+DLLEXPORT cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
                                   char *fun, 
                                   cphvb_intp *id)
 {

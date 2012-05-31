@@ -24,6 +24,11 @@
 #include "UserFunctionRandom.hpp"
 #include "Scalar.hpp"
 
+#ifdef _WIN32
+#define srandom srand
+#define random rand
+#endif
+
 UserFunctionRandom* userFunctionRandom = NULL;
 
 cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
