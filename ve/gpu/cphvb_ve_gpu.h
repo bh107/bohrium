@@ -23,6 +23,7 @@
 #include <cphvb.h>
 #include "InstructionScheduler.hpp"
 #include "ResourceManager.hpp"
+#include <cphvb_win.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,14 +34,14 @@ static InstructionScheduler* instructionScheduler;
 static ResourceManager* resourceManager;
 
 
-cphvb_error cphvb_ve_gpu_init(cphvb_com* _component);
+DLLEXPORT cphvb_error cphvb_ve_gpu_init(cphvb_com* _component);
     
-cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
+DLLEXPORT cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
                                  cphvb_instruction* instruction_list);
 
-cphvb_error cphvb_ve_gpu_shutdown(void);
+DLLEXPORT cphvb_error cphvb_ve_gpu_shutdown(void);
 
-cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
+DLLEXPORT cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
                                   char *fun, 
                                   cphvb_intp *id);
 
