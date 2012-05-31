@@ -37,7 +37,7 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 {
     cphvb_intp count, nops, i;
     cphvb_instruction* inst;
-    cphvb_error ret = CPHVB_SUCCESS;
+    cphvb_error ret;
 
     for(count=0; count < instruction_count; count++)
     {
@@ -74,28 +74,28 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 if(inst->userfunc->id == reduce_impl_id)
                 {
                     ret = reduce_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
                     ret = random_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
                 }
                 else if(inst->userfunc->id == matmul_impl_id)
                 {
                     ret = matmul_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
                 }
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_INST_UNDONE;
+                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
 
             default:                            // Built-in operations
                 ret = cphvb_compute_apply( inst );
-                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
         }
 
         if (inst->status != CPHVB_INST_DONE)    // Instruction failed
