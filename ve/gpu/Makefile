@@ -16,7 +16,6 @@ CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter Ba
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR=/opt/cphvb/
-KERNELDIR=/usr/local/cphvb/
 
 all: $(LIB)
 

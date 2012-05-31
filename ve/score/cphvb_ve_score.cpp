@@ -19,7 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 
-static cphvb_com *myself = NULL;
+static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
 static cphvb_intp reduce_impl_id = 0;
 static cphvb_userfunc_impl random_impl = NULL;
@@ -27,7 +27,7 @@ static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
 
-cphvb_error cphvb_ve_score_init(cphvb_com *self)
+cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
     myself = self;
     return CPHVB_SUCCESS;
@@ -193,7 +193,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     {
     	if (reduce_impl == NULL)
     	{
-			cphvb_com_get_func(myself, lib, fun, &reduce_impl);
+			cphvb_component_get_func(myself, lib, fun, &reduce_impl);
 			if (reduce_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -210,7 +210,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     {
     	if (random_impl == NULL)
     	{
-			cphvb_com_get_func(myself, lib, fun, &random_impl);
+			cphvb_component_get_func(myself, lib, fun, &random_impl);
 			if (random_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -227,7 +227,7 @@ cphvb_error cphvb_ve_score_reg_func(char *lib, char *fun, cphvb_intp *id) {
     {
     	if (matmul_impl == NULL)
     	{
-			cphvb_com_get_func(myself, lib, fun, &matmul_impl);
+			cphvb_component_get_func(myself, lib, fun, &matmul_impl);
 			if (matmul_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
