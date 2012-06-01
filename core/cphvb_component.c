@@ -316,8 +316,11 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
     }
 
     if(*count == 0)//No children.
+    {
         free(*children);
-
+        *children = NULL;
+    }
+    
     return CPHVB_SUCCESS;
 }
 

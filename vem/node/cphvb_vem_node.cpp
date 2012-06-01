@@ -32,13 +32,13 @@ static cphvb_shutdown ve_shutdown;
 static cphvb_reg_func ve_reg_func;
 
 //The VE components
-static cphvb_component **components;
+static cphvb_component **vem_node_components;
 
 //Our self
-static cphvb_component *myself;
+static cphvb_component *vem_node_myself;
 
 //Number of user-defined functions registered.
-static cphvb_intp userfunc_count = 0;
+static cphvb_intp vem_userfunc_count = 0;
 
 #define PLAININST (1)
 #define REDUCEINST (2)
@@ -53,16 +53,25 @@ cphvb_error cphvb_vem_node_init(cphvb_component *self)
 {
     cphvb_intp children_count;
     cphvb_error err;
-    myself = self;
+    vem_node_myself = self;
 
-    cphvb_component_children(self, &children_count, &components);
-    ve_init = components[0]->init;
-    ve_execute = components[0]->execute;
-    ve_shutdown = components[0]->shutdown;
-    ve_reg_func = components[0]->reg_func;
+    err = cphvb_component_children(self, &children_count, &vem_node_components);
+    if (children_count != 1) 
+    {
+		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
+		return CPHVB_ERROR;
+    }
+    
+    if (err != CPHVB_SUCCESS)
+	    return err;
+    
+    ve_init = vem_node_components[0]->init;
+    ve_execute = vem_node_components[0]->execute;
+    ve_shutdown = vem_node_components[0]->shutdown;
+    ve_reg_func = vem_node_components[0]->reg_func;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(components[0]);
+    err = ve_init(vem_node_components[0]);
     if(err)
         return err;
 
@@ -88,9 +97,15 @@ cphvb_error cphvb_vem_node_shutdown(void)
 {
     cphvb_error err;
     err = ve_shutdown();
-    cphvb_component_free(components[0]);//Only got one child.
-    free(components);
+    cphvb_component_free(vem_node_components[0]);//Only got one child.
+    ve_init = NULL;
+    ve_execute = NULL;
+    ve_shutdown = NULL;
+    ve_reg_func= NULL;
+    cphvb_component_free_ptr(vem_node_components);
+    vem_node_components = NULL;
     delete arrayManager;
+    arrayManager = NULL;
     return err;
 }
 
@@ -124,13 +139,13 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
         return CPHVB_OUT_OF_MEMORY;
     }
     #ifdef CPHVB_TRACE
-        cphvb_component_trace_array(myself, *new_array);
+        cphvb_component_trace_array(vem_node_myself, *new_array);
     #endif
 
     return CPHVB_SUCCESS;
 }
 
-/* Registre a new user-defined function.
+/* Register a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
  *      When NULL the default library is used.
@@ -145,15 +160,15 @@ cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
 	cphvb_intp tmpid;
     
     if(*id == 0)//Only if parent didn't set the ID.
-        tmpid = userfunc_count + 1;
+        tmpid = vem_userfunc_count + 1;
 
     e = ve_reg_func(lib, fun, &tmpid);
 
     //If the call succeeded, register the id as taken and return it
     if (e == CPHVB_SUCCESS)
     {
-	    if (tmpid > userfunc_count)
-	    	userfunc_count = tmpid;
+	    if (tmpid > vem_userfunc_count)
+	    	vem_userfunc_count = tmpid;
     	*id = tmpid;
     }
     
@@ -176,7 +191,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     {
         cphvb_instruction* inst = &inst_list[i];
         #ifdef CPHVB_TRACE
-            cphvb_component_trace_inst(myself, inst);
+            cphvb_component_trace_inst(vem_node_myself, inst);
         #endif
         switch(inst->opcode)
         {
