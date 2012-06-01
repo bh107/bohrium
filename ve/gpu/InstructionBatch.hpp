@@ -29,7 +29,7 @@
 #include "StringHasher.hpp"
 
 #ifdef STATS
-#include <sys/time.h>
+#include "timing.h"
 #endif
 class InstructionBatch
 {

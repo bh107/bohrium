@@ -95,9 +95,17 @@ namespace NumCIL.cphVB
         /// </summary>
         private PInvoke.cphvb_component m_component;
         /// <summary>
+        /// The unmanaged copy of the component
+        /// </summary>
+        private IntPtr m_componentPtr;
+        /// <summary>
         /// A reference to the chpVB VEM
         /// </summary>
         private PInvoke.cphvb_component[] m_childs;
+        /// <summary>
+        /// The unmanaged copy of the childs array
+        /// </summary>
+        private IntPtr m_childsPtr;
 
         /// <summary>
         /// A list of cleanups not yet performed
@@ -115,8 +123,8 @@ namespace NumCIL.cphVB
         /// </summary>
         public VEM()
         {
-            m_component = PInvoke.cphvb_component_setup();
-            PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs);
+            m_component = PInvoke.cphvb_component_setup(out m_componentPtr);
+            PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs, out m_childsPtr);
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
 
@@ -227,7 +235,9 @@ namespace NumCIL.cphVB
             {
 				//Atomically reset instruction list and get copy,
 				// should not need to be atomic, but Mono fails otherwise
-				List<IInstruction> lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
+                List<IInstruction> lst;
+                lock (m_cleanups)
+				    lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
                 lock (m_executelock)
                     ExecuteWithoutLocks(lst);
@@ -440,17 +450,39 @@ namespace NumCIL.cphVB
                 if (m_childs != null)
                 {
                     for (int i = 0; i < m_childs.Length; i++)
-                        PInvoke.cphvb_component_free(ref m_childs[i]);
+                        m_childs[i].shutdown();
+
+                    if (m_childsPtr != IntPtr.Zero)
+                    {
+                        for (int i = 0; i < m_childs.Length; i++)
+                        {
+                            IntPtr cur = Marshal.ReadIntPtr(m_childsPtr, Marshal.SizeOf(typeof(IntPtr)) * i);
+                            PInvoke.cphvb_component_free(cur);
+                            cur += Marshal.SizeOf(typeof(IntPtr));
+                        }
+
+                        m_childsPtr = IntPtr.Zero;
+                    }
 
                     m_childs = null;
                 }
 
-                if (m_component.config != IntPtr.Zero)
+                if (m_componentPtr != IntPtr.Zero)
                 {
-                    PInvoke.cphvb_component_free(ref m_component);
+                    PInvoke.cphvb_component_free(m_componentPtr);
                     m_component.config = IntPtr.Zero;
                 }
+
+                m_componentPtr = IntPtr.Zero;
             }
+        }
+
+        /// <summary>
+        /// Finalizes the VEM and shuts down the cphVB components
+        /// </summary>
+        ~VEM()
+        {
+            Dispose();
         }
 
         /// <summary>
