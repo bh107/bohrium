@@ -229,7 +229,7 @@ cphvb_component *cphvb_component_setup(void)
  * @return Error code (CPHVB_SUCCESS).
  */
 cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
-                               cphvb_component **children[])
+                                     cphvb_component **children[])
 {
     char tmp[CPHVB_COMPONENT_NAME_SIZE];
     char *child;
@@ -323,10 +323,10 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
 
 /* Retrieves an user-defined function.
  *
- * @self The component.
- * @lib Name of the shared library e.g. libmyfunc.so
-*       When NULL the default library is used.
- * @fun Name of the function e.g. myfunc
+ * @self     The component.
+ * @lib      Name of the shared library e.g. libmyfunc.so
+ *           When NULL the default library is used.
+ * @fun      Name of the function e.g. myfunc
  * @ret_func Pointer to the function (output)
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
@@ -341,17 +341,35 @@ cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *fun
                         "we only support the default library.\n");
         exit(-1);
     }
-
+    //First we search the libs in the config file to find the user-defined function.
+    //Secondly we search the component's library. 
+    char *lib_paths = cphvb_component_config_lookup(self,"libs");
+    if(lib_paths != NULL)
+    {
+        //Handle one library path at a time.
+        char *path = strtok(lib_paths,",");
+        while(path != NULL)
+        {
+            void *lib_handle = dlopen(path, RTLD_NOW);
+            if(lib_handle != NULL)
+            {
+                dlerror();//Clear old errors.
+                *ret_func = (cphvb_userfunc_impl)dlsym(lib_handle, func);
+                char *err = dlerror();
+                if(err == NULL)
+                    return CPHVB_SUCCESS;
+            }
+            path = strtok(NULL,",");
+        }
+    }
     dlerror();//Clear old errors.
     *ret_func = (cphvb_userfunc_impl)dlsym(self->lib_handle, func);
     char *err = dlerror();
     if(err != NULL)
+    {
         *ret_func = NULL;//Make sure it is NULL on error.
-
-    if(*ret_func == NULL)
-        printf("Warning - the user-defined function (%s, %s) was not "
-               "found.\n", lib, func);
-
+        return CPHVB_USERFUNC_NOT_SUPPORTED;
+    }
     return CPHVB_SUCCESS;
 }
 
