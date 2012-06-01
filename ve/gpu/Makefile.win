@@ -15,7 +15,7 @@ LDFLAGS=/LD /MD /nologo
 
 HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
 OBJECTS = OCLtype.obj ResourceManager.obj cphvb_ve_gpu.obj InstructionBatch.obj Buffer.obj KernelParameter.obj BaseArray.obj Scalar.obj \
-		InstructionScheduler.obj Kernel.obj GenerateSourceCode.obj UserFunctionRandom.obj UserFunctionReduce.obj StringHasher.obj
+		InstructionScheduler.obj Kernel.obj GenerateSourceCode.obj UserFunctionRandom.obj UserFunctionReduce.obj StringHasher.obj timing.obj
  
 INSTALLDIR=/opt/cphvb/
 KERNELDIR=/usr/local/cphvb/

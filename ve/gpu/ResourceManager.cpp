@@ -26,6 +26,14 @@
 #include <algorithm>
 #include <cmath>
 
+#ifdef _WIN32
+#define STD_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define STD_MAX(a, b) ((a) >= (b) ? (a) : (b))
+#else
+#define STD_MIN(a, b) std::min(a, b)
+#define STD_MAX(a, b) std::max(a, b)
+#endif
+
 ResourceManager::ResourceManager(cphvb_component* _component) 
     : component(_component)
 {
@@ -64,12 +72,12 @@ ResourceManager::ResourceManager(cphvb_component* _component)
             }
             else {
                 size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-                maxWorkGroupSize = std::min(maxWorkGroupSize,mwgs);
+                maxWorkGroupSize = STD_MIN(maxWorkGroupSize,mwgs);
                 cl_uint mwid = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-                maxWorkItemDims = std::min(maxWorkItemDims,mwid);
+                maxWorkItemDims = STD_MIN(maxWorkItemDims,mwid);
                 std::vector<size_t> mwis = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
                 for (cl_uint d = 0; d < maxWorkItemDims; ++d)
-                    maxWorkItemSizes[d] = std::min(maxWorkItemSizes[d],mwis[d]);
+                    maxWorkItemSizes[d] = STD_MIN(maxWorkItemSizes[d],mwis[d]);
             }
         }
     } else {
@@ -77,24 +85,24 @@ ResourceManager::ResourceManager(cphvb_component* _component)
     }
     
     // Calculate "sane" localShapes
-    size_t lsx = std::min(256UL,maxWorkItemSizes[0]);
+    size_t lsx = STD_MIN(256UL,maxWorkItemSizes[0]);
 #ifdef DEBUG
     std::cout << "ResourceManager.localShape1D[" << lsx << "]" << std::endl;
 #endif
     localShape1D.push_back(lsx);
-    lsx = std::min(32UL,maxWorkItemSizes[0]);
-    size_t lsy = std::min(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
+    lsx = STD_MIN(32UL,maxWorkItemSizes[0]);
+    size_t lsy = STD_MIN(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
 #ifdef DEBUG
     std::cout << "ResourceManager.localShape2D[" << lsx << ", " << lsy << "]" << std::endl;
 #endif
     localShape2D.push_back(lsx);
     localShape2D.push_back(lsy);
-    lsx = std::min(16UL,maxWorkItemSizes[0]);
+    lsx = STD_MIN(16UL,maxWorkItemSizes[0]);
     lsy = 1;
     while(lsy < std::sqrt((float)(maxWorkGroupSize/lsx)))
         lsy <<= 1;
-    lsy = std::min(lsy,maxWorkItemSizes[1]);
-    size_t lsz = std::min(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
+    lsy = STD_MIN(lsy,maxWorkItemSizes[1]);
+    size_t lsz = STD_MIN(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
 #ifdef DEBUG
     std::cout << "ResourceManager.localShape3D[" << lsx << ", " << lsy << ", " << lsz << "]" << std::endl;
 #endif
