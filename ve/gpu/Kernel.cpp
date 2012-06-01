@@ -75,7 +75,7 @@ std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManag
 void Kernel::call(Parameters& parameters,
                   const std::vector<size_t>& globalShape)
 {
-    call(parameters, globalShape, resourceManager->localShape(globalShape.size()));
+    call(parameters, globalShape, resourceManager->localShape(globalShape));
 }
 
 void Kernel::call(Parameters& parameters,

@@ -23,7 +23,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <dictionary.h>
+#include <algorithm>
+#include <cmath>
 
 ResourceManager::ResourceManager(cphvb_component* _component) 
     : component(_component)
@@ -47,7 +48,6 @@ ResourceManager::ResourceManager(cphvb_component* _component)
     if (foundPlatform)
     {
         devices = context.getInfo<CL_CONTEXT_DEVICES>();
-        maxWorkGroupSize = 1 << 16;
         for(std::vector<cl::Device>::iterator dit = devices.begin(); dit != devices.end(); ++dit)        
         {
             commandQueues.push_back(cl::CommandQueue(context,*dit,
@@ -56,12 +56,52 @@ ResourceManager::ResourceManager(cphvb_component* _component)
                                                      | CL_QUEUE_PROFILING_ENABLE
 #endif
                                         ));
-            size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-            maxWorkGroupSize = maxWorkGroupSize>mwgs?mwgs:maxWorkGroupSize; 
+            if (dit == devices.begin())
+            {
+                maxWorkGroupSize = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+                maxWorkItemDims = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+                maxWorkItemSizes = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
+            }
+            else {
+                size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+                maxWorkGroupSize = std::min(maxWorkGroupSize,mwgs);
+                cl_uint mwid = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+                maxWorkItemDims = std::min(maxWorkItemDims,mwid);
+                std::vector<size_t> mwis = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
+                for (cl_uint d = 0; d < maxWorkItemDims; ++d)
+                    maxWorkItemSizes[d] = std::min(maxWorkItemSizes[d],mwis[d]);
+            }
         }
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
+    
+    // Calculate "sane" localShapes
+    size_t lsx = std::min(256UL,maxWorkItemSizes[0]);
+#ifdef DEBUG
+    std::cout << "ResourceManager.localShape1D[" << lsx << "]" << std::endl;
+#endif
+    localShape1D.push_back(lsx);
+    lsx = std::min(32UL,maxWorkItemSizes[0]);
+    size_t lsy = std::min(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
+#ifdef DEBUG
+    std::cout << "ResourceManager.localShape2D[" << lsx << ", " << lsy << "]" << std::endl;
+#endif
+    localShape2D.push_back(lsx);
+    localShape2D.push_back(lsy);
+    lsx = std::min(16UL,maxWorkItemSizes[0]);
+    lsy = 1;
+    while(lsy < std::sqrt((float)(maxWorkGroupSize/lsx)))
+        lsy <<= 1;
+    lsy = std::min(lsy,maxWorkItemSizes[1]);
+    size_t lsz = std::min(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
+#ifdef DEBUG
+    std::cout << "ResourceManager.localShape3D[" << lsx << ", " << lsy << ", " << lsz << "]" << std::endl;
+#endif
+    localShape3D.push_back(lsx);
+    localShape3D.push_back(lsy);
+    localShape3D.push_back(lsz);
+
 
 #ifdef STATS
     batchBuild = 0.0;
@@ -231,27 +271,19 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
     return event;
 }
 
-std::vector<size_t> ResourceManager::localShape(size_t ndim)
+std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globalShape)
 {
-    std::vector<size_t> res;
-    switch (ndim)
+    switch (globalShape.size())
     {
     case 1:
-        res.push_back(256);
-        break;
+        return localShape1D; 
     case 2:
-        res.push_back(32);
-        res.push_back(8);
-        break;
+        return localShape2D; 
     case 3:
-        res.push_back(32);
-        res.push_back(4);
-        res.push_back(2);
-        break;
+        return localShape3D; 
     default:
         assert (false);
     }
-    return res;
 }
 
 #ifdef STATS
