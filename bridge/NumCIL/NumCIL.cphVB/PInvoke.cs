@@ -846,11 +846,10 @@ namespace NumCIL.cphVB
         /// Setup the root component, which normally is the bridge.
         /// </summary>
         /// <returns>A new component object</returns>
-        public static cphvb_component cphvb_component_setup()
+        public static cphvb_component cphvb_component_setup(out IntPtr unmanaged)
         {
-            IntPtr p = cphvb_component_setup_masked();
-            cphvb_component r = (cphvb_component)Marshal.PtrToStructure(p, typeof(cphvb_component));
-            cphvb_component_free_ptr(p);
+            unmanaged = cphvb_component_setup_masked();
+            cphvb_component r = (cphvb_component)Marshal.PtrToStructure(unmanaged, typeof(cphvb_component));
 			return r;
         }
 
@@ -873,32 +872,23 @@ namespace NumCIL.cphVB
         /// <param name="count">Number of children components</param>
         /// <param name="children">Array of children components (output)</param>
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
-        public static cphvb_error cphvb_component_children(cphvb_component parent, out cphvb_component[] children)
+        public static cphvb_error cphvb_component_children(cphvb_component parent, out cphvb_component[] children, out IntPtr unmanagedData)
         {
-
             //TODO: Errors in setup may cause memory leaks, but we should terminate anyway
 
-            IntPtr ch;
             long count = 0;
             children = null;
 
-            cphvb_error e = cphvb_component_children_masked(ref parent, out count, out ch);
+            cphvb_error e = cphvb_component_children_masked(ref parent, out count, out unmanagedData);
             if (e != cphvb_error.CPHVB_SUCCESS)
                 return e;
 
             children = new cphvb_component[count];
             for (int i = 0; i < count; i++)
             {
-                IntPtr cur = Marshal.ReadIntPtr(ch, Marshal.SizeOf(typeof(cphvb_intp)) * i);
+                IntPtr cur = Marshal.ReadIntPtr(unmanagedData, Marshal.SizeOf(typeof(cphvb_intp)) * i);
                 children[i] = (cphvb_component)Marshal.PtrToStructure(cur, typeof(cphvb_component));
-                e = cphvb_component_free_ptr(cur);
-                if (e != cphvb_error.CPHVB_SUCCESS)
-                    return e;
             }
-
-            e = cphvb_component_free_ptr(ch);
-            if (e != cphvb_error.CPHVB_SUCCESS)
-                return e;
 
             return e;
         }
@@ -911,6 +901,14 @@ namespace NumCIL.cphVB
         /// <returns>Error code (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static cphvb_error cphvb_component_free([In] ref cphvb_component component);
+
+        /// <summary>
+        /// Frees the component
+        /// </summary>
+        /// <param name="component">The component to free</param>
+        /// <returns>Error code (CPHVB_SUCCESS)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_component_free(IntPtr component);
 
         /// <summary>
         /// Frees the component
