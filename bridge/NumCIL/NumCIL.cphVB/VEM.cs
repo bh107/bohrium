@@ -230,7 +230,7 @@ namespace NumCIL.cphVB
             try
             {
                 lock (m_executelock)
-                    ExecuteWithoutLocks(inst_list, out errorIndex);
+                    ExecuteWithoutLocks(lst, out errorIndex);
             }
             catch
             {

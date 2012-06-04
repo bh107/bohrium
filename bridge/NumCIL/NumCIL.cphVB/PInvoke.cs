@@ -117,7 +117,6 @@ namespace NumCIL.cphVB
         public const int CPHVB_COMPONENT_NAME_SIZE = 1024;
         public const int CPHVB_MAXDIM = 16;
         public const int CPHVB_MAX_EXTRA_META_DATA = 1024;
-        public const int CPHVB_MAX_NO_INST = 100;
         public const int CPHVB_MAX_NO_OPERANDS = 3;
 
         public static readonly bool Is64Bit = IntPtr.Size == 8;
