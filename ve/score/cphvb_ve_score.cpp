@@ -27,6 +27,10 @@ static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
 
+static cphvb_intp cphvb_ve_score_buffersizes = 0;
+static cphvb_instruction** cphvb_ve_score_instruction_list = NULL;
+static computeloop* cphvb_ve_score_compute_loops = NULL;
+
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
     myself = self;
@@ -37,8 +41,40 @@ inline cphvb_error execute_range( cphvb_instruction* list, cphvb_intp start, cph
 
     cphvb_intp i, bundle_size, nelements,
                 block_size=100, trav_start=0, trav_end=0, trav_len=100;
-    cphvb_instruction* inst[CPHVB_MAX_NO_INST];
-    computeloop compute_loops[CPHVB_MAX_NO_INST];
+        
+    //Make sure we have enough space
+    if (count > cphvb_ve_score_buffersizes) 
+    {
+    	cphvb_intp mcount = count;
+
+    	//We only work in multiples of 1000
+    	if (mcount % 1000 != 0)
+    		mcount = (mcount + 1000) - (mcount % 1000);
+    		
+    	//Make sure we re-allocate on error
+    	cphvb_ve_score_buffersizes = 0;
+    	
+    	if (cphvb_ve_score_instruction_list != NULL) {
+    		free(cphvb_ve_score_instruction_list);
+    		cphvb_ve_score_instruction_list = NULL;
+    	}
+
+    	if (cphvb_ve_score_compute_loops != NULL) {
+    		free(cphvb_ve_score_compute_loops);
+    		cphvb_ve_score_compute_loops = NULL;
+    	}
+    	
+    	cphvb_ve_score_instruction_list = (cphvb_instruction**)malloc(sizeof(cphvb_instruction*) * mcount);
+    	cphvb_ve_score_compute_loops = (computeloop*)malloc(sizeof(computeloop) * mcount);
+    	
+    	if (cphvb_ve_score_instruction_list == NULL || cphvb_ve_score_compute_loops == NULL)
+    		return CPHVB_OUT_OF_MEMORY;
+    	
+    	cphvb_ve_score_buffersizes = mcount;
+    }
+    
+    cphvb_instruction** inst = cphvb_ve_score_instruction_list;
+    computeloop* compute_loops = cphvb_ve_score_compute_loops;
 
     if (count > 1) {
 

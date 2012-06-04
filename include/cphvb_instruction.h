@@ -28,9 +28,6 @@
 extern "C" {
 #endif
 
-// Maximum number of instructions in a batch.
-#define CPHVB_MAX_NO_INST (1000)
-
 // Maximum number of operands in a instruction.
 #define CPHVB_MAX_NO_OPERANDS (3)
 

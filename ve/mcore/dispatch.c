@@ -62,11 +62,20 @@ static cphvb_instruction** thd_inst_bundle;
 static computeloop *thd_traverses;
 static int main_finished_idx = 0;//Finished index for main.
 
+//Buffer for allocated region for holding traverse elements
+static computeloop* cphvb_ve_mcore_traverses = NULL;
+static cphvb_intp cphvb_ve_mcore_traverses_buffersize = 0;
+
 //The thread function.
 static void *thd_do(void *msg)
 {
     cphvb_intp myid = ((cphvb_intp)msg);
     int finished_idx = 0;//Finished index (swapped between iterations).
+    
+    cphvb_instruction* thd_inst = NULL;
+    cphvb_array* ary_stack = NULL;
+    cphvb_intp instr_buffer_size = 0;
+    
     while(1)
     {
         //Wait for start signal.
@@ -101,9 +110,41 @@ static void *thd_do(void *msg)
             if(myid == nthds-1)
                 length += nblocks % nthds;       // The last thread gets the reminder.
 
-            //Clone the instruction and make new views of all operands.
-            cphvb_instruction thd_inst[CPHVB_MAX_NO_INST];
-            cphvb_array ary_stack[CPHVB_MAX_NO_INST*CPHVB_MAX_NO_OPERANDS];
+			//Make sure we have enough space
+			if (size > instr_buffer_size) 
+			{
+				cphvb_intp mcount = size;
+		
+				//We only work in multiples of 1000
+				if (mcount % 1000 != 0)
+					mcount = (mcount + 1000) - (mcount % 1000);
+					
+				//Make sure we re-allocate on error
+				instr_buffer_size = 0;
+				
+				if (thd_inst != NULL) {
+					free(thd_inst);
+					thd_inst = NULL;
+				}
+				
+				if (ary_stack != NULL) {
+					free(ary_stack);
+					ary_stack = NULL;
+				}
+		
+				thd_inst = (cphvb_instruction*)malloc(sizeof(cphvb_instruction) * mcount);
+				ary_stack = (cphvb_array*)malloc(sizeof(cphvb_instruction) * mcount * CPHVB_MAX_NO_OPERANDS);
+				
+				if (thd_inst == NULL || ary_stack == NULL) {
+					inst_bundle[0]->status = CPHVB_OUT_OF_MEMORY;
+					//HACK: shortcut loops below
+					size = 0;
+					length = 0;
+				}
+				else
+					instr_buffer_size = mcount;
+			}
+
             cphvb_intp ary_stack_count=0;
             for(cphvb_intp j=0; j<size; ++j)
             {
@@ -227,8 +268,34 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
 {
     cphvb_error ret = CPHVB_SUCCESS;
 
+    //Make sure we have enough space
+    if (size > cphvb_ve_mcore_traverses_buffersize) 
+    {
+    	cphvb_intp mcount = size;
+
+    	//We only work in multiples of 1000
+    	if (mcount % 1000 != 0)
+    		mcount = (mcount + 1000) - (mcount % 1000);
+    		
+    	//Make sure we re-allocate on error
+    	cphvb_ve_mcore_traverses_buffersize = 0;
+    	
+    	if (cphvb_ve_mcore_traverses != NULL) {
+    		free(cphvb_ve_mcore_traverses);
+    		cphvb_ve_mcore_traverses = NULL;
+    	}
+
+    	cphvb_ve_mcore_traverses = (computeloop*)malloc(sizeof(computeloop) * mcount);
+    	
+    	if (cphvb_ve_mcore_traverses == NULL)
+    		return CPHVB_OUT_OF_MEMORY;
+    	
+    	cphvb_ve_mcore_traverses_buffersize = mcount;
+    }
+
+	computeloop* traverses = cphvb_ve_mcore_traverses;
+	
     //Get all traverse function -- one per instruction.
-    computeloop traverses[CPHVB_MAX_NO_INST];
     for(cphvb_intp j=0; j<size; ++j)
     {
         traverses[j] = cphvb_compute_get( inst_bundle[j] );
