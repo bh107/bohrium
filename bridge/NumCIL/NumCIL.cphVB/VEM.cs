@@ -441,6 +441,9 @@ namespace NumCIL.cphVB
         /// </summary>
         public void Dispose()
         {
+            GC.Collect();
+            m_preventCleanup = false;
+
             ExecuteCleanups();
 
             //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed
