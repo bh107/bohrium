@@ -233,10 +233,9 @@ namespace NumCIL.cphVB
         {
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
-				//Atomically reset instruction list and get copy,
-				// should not need to be atomic, but Mono fails otherwise
+				//Atomically reset instruction list and get copy
                 List<IInstruction> lst;
-                lock (m_cleanups)
+                lock (m_releaselock)
 				    lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
                 lock (m_executelock)
@@ -442,6 +441,9 @@ namespace NumCIL.cphVB
         /// </summary>
         public void Dispose()
         {
+            GC.Collect();
+            m_preventCleanup = false;
+
             ExecuteCleanups();
 
             //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed

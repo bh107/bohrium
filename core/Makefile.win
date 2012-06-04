@@ -12,7 +12,7 @@ WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c dlfcn-win32.c
-OBJ=$(SRC:.c=.obj) $(ROOT)/core/compute/cphvb_compute.obj $(ROOT)\core\compute\cphvb_compute_random.obj $(ROOT)\core\compute\cphvb_compute_reduce.obj $(ROOT)\core\bundler\cphvb_bundler.obj
+OBJ=$(SRC:.c=.obj) $(ROOT)/core/compute/cphvb_compute.obj $(ROOT)\core\compute\cphvb_compute_random.obj $(ROOT)\core\compute\cphvb_compute_reduce.obj $(ROOT)\core\bundler\cphvb_bundler.obj $(ROOT)\core\compute\cphvb_compute_matmul.obj
 INSTALLDIR=/opt/cphvb/
 
 all: $(DLLNAME)
