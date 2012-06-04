@@ -1,4 +1,4 @@
-ROOT=../../..
+ROOT=../..
 LIB=libatlas_gemm.so
 CXX?=g++
 WARNOPTS=-Wall
