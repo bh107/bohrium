@@ -637,6 +637,9 @@ namespace NumCIL.cphVB
 
         protected void ExecuteWithFailureDetection(List<IInstruction> instructions, IEnumerable<PendingOperation<T>> work, long instructionIndex)
         {
+            //Reclaim everything in gen 0
+            GC.Collect(0);
+
             List<PendingOperation<T>> worklist = null;
             while (instructions.Count > 0)
             {
