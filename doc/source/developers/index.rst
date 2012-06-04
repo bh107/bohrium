@@ -31,6 +31,23 @@ Valgrind can be used to detect memory errors by invoking it with::
 
   valgrind --vex-iropt-precise-memory-exns=yes dython <SCRIPT_NAME>
 
+Narrowing the valgrind analysis, add the following to your source code::
+
+  #include <valgrind/callgrind.h>
+  ... your code ...
+  CALLGRIND_START_INSTRUMENTATION;
+  ... your code ...
+  CALLGRIND_STOP_INSTRUMENTATION;
+  CALLGRIND_DUMP_STATS;
+
+Then run valgrind with the flag::
+
+  --instr-atstart=no
+
+Invoking valgrind to determine cache-utilization::
+
+  --tool=callgrind --simulate-cache=yes <PROG> <PROG_PARAM>
+
 Building and Installing
 -----------------------
 
@@ -52,12 +69,12 @@ Get the source-code::
 
 Build and install it::
 
-  ./build install
+  ./build.py install
 
 .. note:: To compile to a custom Python (with valgrind debug support for example),
    set the $PYTHON variable naming the binary of your custom compiled Python::
 
-     PYTHON=dython ./build install
+     PYTHON=dython ./build.py install
 
 Automated Build / Jenkins
 -------------------------
