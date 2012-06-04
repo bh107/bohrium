@@ -14,7 +14,7 @@ all: $(LIB)
 		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CC) $(OBJ) $(ROOT)/core/compute/cphvb_compute.o $(ROOT)/core/compute/cphvb_compute_random.o $(ROOT)/core/compute/cphvb_compute_reduce.o $(ROOT)/core/bundler/cphvb_bundler.o $(ROOT)/iniparser/libiniparser.a -o $@ $(LDFLAGS)
+		$(CC) $(OBJ) $(ROOT)/core/compute/cphvb_compute.o $(ROOT)/core/compute/cphvb_compute_random.o $(ROOT)/core/compute/cphvb_compute_reduce.o $(ROOT)/core/compute/cphvb_compute_matmul.o $(ROOT)/core/bundler/cphvb_bundler.o $(ROOT)/iniparser/libiniparser.a -o $@ $(LDFLAGS)
 
 clean:
 		rm -rf *.o *~ $(LIB)
