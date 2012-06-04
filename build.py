@@ -172,6 +172,7 @@ if __name__ == "__main__":
         install("VEM-NODE", "vem/node", True)
         #install("VEM-CLUSTER", "vem/cluster", False)
         install("BRIDGE-NUMPY", "bridge/numpy",True)
+        install("USERFUNCS-ATLAS", "userfuncs/ATLAS")
         install_config();
         #ldconfig()
     else:
