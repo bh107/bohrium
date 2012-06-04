@@ -185,10 +185,8 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
     return cphvb_compute_random( arg, ve_arg );
 }
 
-/*
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
-    printf("Matrix multiplication!!!\n");
-    return CPHVB_SUCCESS;
+    return cphvb_compute_matmul( arg, ve_arg );
+    
 }
-*/
