@@ -28,7 +28,21 @@ def test_diagonal():
     assert_array_equal(np.diagonal(A),cnp.diagonal(A))
     assert_array_equal(np.diagonal(A,offset=k),cnp.diagonal(A,offset=k))
     assert_array_equal(np.diagonal(A,offset=-k),cnp.diagonal(A,offset=-k))
-    
 
+def test_matmul():
+    niter = 6
+    for m in range(2,niter+2):
+        for n in range(2,niter+2):
+            for k in range(2,niter+2):
+                A = random((k,m))
+                B = random((m,k))
+                C1 = np.dot(A,B)
+                A.cphvb = True
+                B.cphvb = True
+                C2 = cnp.matmul(A,B)
+                C2.cphvb = False
+                assert_array_equal(C1,C2)
+                print C1
+                print C2
 if __name__ == "__main__":
     run_module_suite()
