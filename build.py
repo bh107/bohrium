@@ -136,6 +136,7 @@ if __name__ == "__main__":
                   ("VEM-NODE", "vem/node", True),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  ("CPHVBNUMPY", "cphvbnumpy", True),\
                  ]
 
     if cmd == "rebuild":
