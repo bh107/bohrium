@@ -8,5 +8,5 @@ setup(name='cphVB NumPy',
       author='The cphVB Team',
       author_email='madsbk@gmail.com',
       url='https://bitbucket.org/cphvb',
-      packages=['cphvbnumpy'],
+      packages=['cphvbnumpy','cphvbnumpy.examples'],
      )
