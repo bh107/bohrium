@@ -327,23 +327,14 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
 /* Retrieves an user-defined function.
  *
  * @self     The component.
- * @lib      Name of the shared library e.g. libmyfunc.so
- *           When NULL the default library is used.
  * @fun      Name of the function e.g. myfunc
  * @ret_func Pointer to the function (output)
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *func,
+cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
                                      cphvb_userfunc_impl *ret_func)
 {
-    if(lib != NULL)
-    {
-        fprintf(stderr, "cphvb_component_get_func() does'nt support the "
-                        "specification of library name. At the moment "
-                        "we only support the default library.\n");
-        exit(-1);
-    }
     //First we search the libs in the config file to find the user-defined function.
     //Secondly we search the component's library. 
     char *lib_paths = cphvb_component_config_lookup(self,"libs");

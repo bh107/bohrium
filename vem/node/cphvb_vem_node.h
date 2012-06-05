@@ -78,7 +78,7 @@ DLLEXPORT cphvb_error cphvb_vem_node_execute(cphvb_intp count,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-DLLEXPORT cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id);
+DLLEXPORT cphvb_error cphvb_vem_node_reg_func(char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus
 }

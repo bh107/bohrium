@@ -167,19 +167,17 @@ cphvb_error cphvb_vem_cluster_shutdown(void)
 
 /* Registre a new user-defined function.
  *
- * @lib Name of the shared library e.g. libmyfunc.so
- *      When NULL the default library is used.
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_cluster_reg_func(char *lib, char *fun, cphvb_intp *id)
+cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
     if(*id == 0)//Only if parent didn't set the ID.
         *id = ++userfunc_count;
 
-    return vem_reg_func(lib, fun, id);
+    return vem_reg_func(fun, id);
 }
 
 
