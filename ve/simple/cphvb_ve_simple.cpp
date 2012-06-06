@@ -167,7 +167,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *fun, cphvb_intp *id)
         }
         else
         {
-        	*id = random_impl_id;
+        	*id = matmul_impl_id;
         	return CPHVB_SUCCESS;
         }
     }
