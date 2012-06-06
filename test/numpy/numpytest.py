@@ -25,11 +25,15 @@ def _array_equal(A,B,maxerror=0.0):
     return False
 
 class numpytest:
-    def __init__(self,cphvb,random_state):
+    def __init__(self,cphvb):
         self.config = {'maxerror':0.0,'dtype':[np.float32]}
         self.cphvb  = cphvb
     def array(self,dims,dtype):
-        return np.arange(reduce(mul,dims),dtype=dtype).reshape(dims)
+        try: 
+            total = reduce(mul,dims)
+        except TypeError:
+            total = dims
+        return np.arange(1,total+1,dtype=dtype).reshape(dims)
 
 if __name__ == "__main__":
     pydebug = True
@@ -64,16 +68,15 @@ if __name__ == "__main__":
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_")]:
                 cls_obj = getattr(m, cls)
-                rstate = np.random.get_state()
-                cls1 = cls_obj(False,rstate)
-                cls2 = cls_obj(True,rstate)
+                cls1 = cls_obj(False)
+                cls2 = cls_obj(True)
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     print "Testing %s.%s()"%(cls,mth)
                     for t in cls1.config['dtypes']:
                         print "\t%s"%(t)
-                        results1  = getattr(cls1,mth)(t)
-                        results2  = getattr(cls2,mth)(t)
+                        results1  = getattr(cls1,mth)({'dtype':t,'cphvb':True})
+                        results2  = getattr(cls2,mth)({'dtype':t,'cphvb':False})
                         for (res1,res2) in zip(results1,results2):
                             res = _array_equal(res1, res2, cls1.config['maxerror'])
                             if res:
