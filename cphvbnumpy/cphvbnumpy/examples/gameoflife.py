@@ -1,11 +1,10 @@
 import cphvbnumpy as np
 
-dtype = np.int32
 SURVIVE_LOW= 2
 SURVIVE_HIGH = 3
 SPAWN = 3
 
-def randomstate(height, width, prob=0.2, cphvb=True):
+def randomstate(height, width, prob=0.2, dtype=np.int32, cphvb=True):
     state = np.zeros((height+2,width+2), dtype=dtype, cphvb=cphvb)
     state[1:-1,1:-1] = np.random.random((width,height), dtype=np.float32, cphvb=cphvb) < prob
     return state
