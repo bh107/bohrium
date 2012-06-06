@@ -71,8 +71,7 @@ def matmul(A,B):
         A.cphvb=True
         B.cphvb=True
         C = empty((A.shape[0],B.shape[1]),dtype=A.dtype)
-        
         bridge.matmul(A,B,C)
         return C
     else:
-        raise ValueError("matmul only defined for cphVB arrays.")
+	return np.dot(A,B)
