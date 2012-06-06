@@ -25,15 +25,19 @@ def _array_equal(A,B,maxerror=0.0):
     return False
 
 class numpytest:
-    def __init__(self,cphvb):
-        self.config = {'maxerror':0.0,'dtype':[np.float32]}
-        self.cphvb  = cphvb
-    def array(self,dims,dtype):
+    def __init__(self):
+        self.config = {'maxerror':0.0,'dtypes':[np.float32]}
+        self.runtime = {} 
+    def array(self,dims,dtype=None,cphvb=None):
         try: 
             total = reduce(mul,dims)
         except TypeError:
             total = dims
-        return np.arange(1,total+1,dtype=dtype).reshape(dims)
+        t = dtype if dtype is not None else self.runtime['dtype']
+        c = cphvb if cphvb is not None else self.runtime['cphvb']
+        res = np.arange(1,total+1,dtype=t).reshape(dims)
+        res.cphvb = c
+        return res
 
 if __name__ == "__main__":
     pydebug = True
@@ -67,18 +71,20 @@ if __name__ == "__main__":
             m = __import__(m)
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_")]:
-                cls_obj = getattr(m, cls)
-                cls1 = cls_obj(False)
-                cls2 = cls_obj(True)
+                cls_obj  = getattr(m, cls)
+                cls_inst = cls_obj()
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     print "Testing %s.%s()"%(cls,mth)
-                    for t in cls1.config['dtypes']:
+                    for t in cls_inst.config['dtypes']:
                         print "\t%s"%(t)
-                        results1  = getattr(cls1,mth)({'dtype':t,'cphvb':True})
-                        results2  = getattr(cls2,mth)({'dtype':t,'cphvb':False})
+                        cls_inst.runtime['dtype'] = t
+                        cls_inst.runtime['cphvb'] = False
+                        results1  = getattr(cls_inst,mth)()
+                        cls_inst.runtime['cphvb'] = True
+                        results2  = getattr(cls_inst,mth)()
                         for (res1,res2) in zip(results1,results2):
-                            res = _array_equal(res1, res2, cls1.config['maxerror'])
+                            res = _array_equal(res1, res2, cls_inst.config['maxerror'])
                             if res:
                                 print "Delta error:",res
                                 sys.exit()
