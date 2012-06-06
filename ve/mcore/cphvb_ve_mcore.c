@@ -124,13 +124,13 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
 
 }
 
-cphvb_error cphvb_ve_mcore_reg_func(char *lib, char *fun, cphvb_intp *id) {
+cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
 
     if(strcmp("cphvb_reduce", fun) == 0)
     {
     	if (reduce_impl == NULL)
     	{
-			cphvb_component_get_func(myself, lib, fun, &reduce_impl);
+			cphvb_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -147,7 +147,7 @@ cphvb_error cphvb_ve_mcore_reg_func(char *lib, char *fun, cphvb_intp *id) {
     {
     	if (random_impl == NULL)
     	{
-			cphvb_component_get_func(myself, lib, fun, &random_impl);
+			cphvb_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 

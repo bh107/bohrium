@@ -154,7 +154,7 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
+cphvb_error cphvb_vem_node_reg_func(char *fun, cphvb_intp *id)
 {
 	cphvb_error e;
 	cphvb_intp tmpid;
@@ -162,7 +162,7 @@ cphvb_error cphvb_vem_node_reg_func(char *lib, char *fun, cphvb_intp *id)
     if(*id == 0)//Only if parent didn't set the ID.
         tmpid = vem_userfunc_count + 1;
 
-    e = ve_reg_func(lib, fun, &tmpid);
+    e = ve_reg_func(fun, &tmpid);
 
     //If the call succeeded, register the id as taken and return it
     if (e == CPHVB_SUCCESS)

@@ -118,13 +118,13 @@ cphvb_error cphvb_ve_simple_shutdown( void )
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id) 
+cphvb_error cphvb_ve_simple_reg_func(char *fun, cphvb_intp *id) 
 {
     if(strcmp("cphvb_reduce", fun) == 0)
     {
     	if (reduce_impl == NULL)
     	{
-			cphvb_component_get_func(myself, lib, fun, &reduce_impl);
+			cphvb_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -141,7 +141,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
     {
     	if (random_impl == NULL)
     	{
-			cphvb_component_get_func(myself, lib, fun, &random_impl);
+			cphvb_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
 				return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -158,7 +158,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
     {
     	if (matmul_impl == NULL)
     	{
-            cphvb_component_get_func(myself, lib, fun, &matmul_impl);
+            cphvb_component_get_func(myself, fun, &matmul_impl);
             if (matmul_impl == NULL)
                 return CPHVB_USERFUNC_NOT_SUPPORTED;
             
@@ -167,7 +167,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *lib, char *fun, cphvb_intp *id)
         }
         else
         {
-        	*id = random_impl_id;
+        	*id = matmul_impl_id;
         	return CPHVB_SUCCESS;
         }
     }
@@ -185,10 +185,8 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
     return cphvb_compute_random( arg, ve_arg );
 }
 
-/*
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
-    printf("Matrix multiplication!!!\n");
-    return CPHVB_SUCCESS;
+    return cphvb_compute_matmul( arg, ve_arg );
+    
 }
-*/

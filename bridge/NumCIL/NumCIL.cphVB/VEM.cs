@@ -143,7 +143,7 @@ namespace NumCIL.cphVB
                 // it can be disabled by an environment variable
                 if (Environment.GetEnvironmentVariable("CPHVB_MANAGED_REDUCE") == null)
                 {
-                    e = m_childs[0].reg_func(null, "cphvb_reduce", ref id);
+                    e = m_childs[0].reg_func("cphvb_reduce", ref id);
                     if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                         id = 0;
                 }
@@ -154,7 +154,7 @@ namespace NumCIL.cphVB
             id = 0;
             try
             {
-                e = m_childs[0].reg_func(null, "cphvb_random", ref id);
+                e = m_childs[0].reg_func("cphvb_random", ref id);
                 if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                     id = 0;
             }
@@ -164,7 +164,7 @@ namespace NumCIL.cphVB
             id = 0;
             try
             {
-                e = m_childs[0].reg_func(null, "cphvb_matmul", ref id);
+                e = m_childs[0].reg_func("cphvb_matmul", ref id);
                 if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                     id = 0;
             }
@@ -233,10 +233,9 @@ namespace NumCIL.cphVB
         {
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
-				//Atomically reset instruction list and get copy,
-				// should not need to be atomic, but Mono fails otherwise
+				//Atomically reset instruction list and get copy
                 List<IInstruction> lst;
-                lock (m_cleanups)
+                lock (m_releaselock)
 				    lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
                 lock (m_executelock)
@@ -442,6 +441,9 @@ namespace NumCIL.cphVB
         /// </summary>
         public void Dispose()
         {
+            GC.Collect();
+            m_preventCleanup = false;
+
             ExecuteCleanups();
 
             //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed

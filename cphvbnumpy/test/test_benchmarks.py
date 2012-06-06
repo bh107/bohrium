@@ -2,7 +2,7 @@ import cphvbnumpy as np
 import cphvbnumpy.linalg as la
 from numpy.testing import assert_array_equal, assert_almost_equal, run_module_suite
 from numpy.random import randint, random
-from examples import gameoflife, jacobi_stencil, k_nearest_neighbor as knn
+from cphvbnumpy.examples import gameoflife, jacobi_stencil, k_nearest_neighbor as knn
 
 def test_dot():
     dtype = np.float32

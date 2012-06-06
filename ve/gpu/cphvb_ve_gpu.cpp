@@ -38,7 +38,7 @@ cphvb_error cphvb_ve_gpu_init(cphvb_component* _component)
 }
 
 cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
-                                           cphvb_instruction instruction_list[])
+                                 cphvb_instruction instruction_list[])
 {
     try 
     {
@@ -59,12 +59,11 @@ cphvb_error cphvb_ve_gpu_shutdown()
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
-                                            char *fun, 
-                                            cphvb_intp *id)
+cphvb_error cphvb_ve_gpu_reg_func(char *fun, 
+                                  cphvb_intp *id)
 {
     cphvb_userfunc_impl userfunc;
-    cphvb_component_get_func(component, lib, fun, &userfunc);
+    cphvb_component_get_func(component, fun, &userfunc);
     if (userfunc != NULL)
     {
         instructionScheduler->registerFunction(*id, userfunc);
