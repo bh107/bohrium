@@ -316,7 +316,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner_Unary<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
+                UFunc.Apply<T, NumCIL.CopyOp<T>>(value, lv);
             }
         }
 
