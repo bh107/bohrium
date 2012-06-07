@@ -118,6 +118,12 @@ DLLEXPORT void cphvb_dimbound(cphvb_intp ndim,
  */
 DLLEXPORT int cphvb_operands(cphvb_opcode opcode);
 
+/* Number of operands in instruction
+ * NB: this function handles user-defined function correctly
+ * @inst Instruction
+ * @return Number of operands
+ */
+DLLEXPORT int cphvb_operands_in_instruction(cphvb_instruction *inst);
 
 /* Text string for operation
  *

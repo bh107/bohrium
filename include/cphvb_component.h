@@ -92,7 +92,7 @@ typedef cphvb_error (*cphvb_create_array)(cphvb_array*   base,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-typedef cphvb_error (*cphvb_reg_func)(char *lib, char *fun,
+typedef cphvb_error (*cphvb_reg_func)(char *fun,
                                       cphvb_intp *id);
 
 
@@ -147,7 +147,7 @@ DLLEXPORT cphvb_component *cphvb_component_setup(void);
  * @return Error code (CPHVB_SUCCESS).
  */
 DLLEXPORT cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
-                               cphvb_component **children[]);
+                                               cphvb_component **children[]);
 
 
 /* Frees the component.
@@ -165,15 +165,13 @@ DLLEXPORT cphvb_error cphvb_component_free_ptr(void* data);
 /* Retrieves an user-defined function.
  *
  * @self The component.
- * @lib Name of the shared library e.g. libmyfunc.so
-*       When NULL the default library is used.
  * @fun Name of the function e.g. myfunc
  * @ret_func Pointer to the function (output)
  *           Is NULL if the function doesn't exist
  * @return Error codes (CPHVB_SUCCESS)
  */
-DLLEXPORT cphvb_error cphvb_component_get_func(cphvb_component *self, char *lib, char *func,
-                               cphvb_userfunc_impl *ret_func);
+DLLEXPORT cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
+                                               cphvb_userfunc_impl *ret_func);
 
 /* Trace an array creation.
  *
