@@ -10,6 +10,12 @@ import getopt
 from operator import mul
 from itertools import izip as zip
 
+ALL_INT      = [np.int8,np.int16,np.int32,np.uint64,np.uint8,np.uint16,np.uint32,np.uint64]
+NORMAL_FLOAT = [np.float32,np.float64]
+ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
+NORMAL_TYPES = ALL_INT + NORMAL_FLOAT
+ALL_TYPES    = ALL_INT + ALL_FLOAT
+
 def _array_equal(A,B,maxerror=0.0):
     cphvbbridge.unhandle_array(A)
     cphvbbridge.unhandle_array(B)
