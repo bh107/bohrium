@@ -5,7 +5,7 @@ class test_matmul(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.0
-        self.config['dtypes'] = [np.float32,np.float64]
+        self.config['dtypes'] = [np.float32,np.float64,np.int64]
 
     def test_matmul(self):
         maxdim = 2

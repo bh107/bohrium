@@ -122,6 +122,20 @@ int cphvb_operands(cphvb_opcode opcode)
     }
 }
 
+/* Number of operands in instruction
+ * NB: this function handles user-defined function correctly
+ * @inst Instruction
+ * @return Number of operands
+ */
+int cphvb_operands_in_instruction(cphvb_instruction *inst)
+{
+    if (inst->opcode == CPHVB_USERFUNC)
+        return inst->userfunc->nin + inst->userfunc->nout;
+    else
+        return cphvb_operands(inst->opcode);
+}
+
+
 /* Text descriptions for a given operation */
 const char* _opcode_text[CPHVB_NONE+1];
 bool _opcode_text_initialized = false;
