@@ -48,6 +48,77 @@ def _array_equal(A,B,maxerror=0.0):
 
     return True
 
+def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
+    for ndim in xrange(min_ndim,max_ndim+1):
+        shape = [1]*ndim
+        if iters:
+            yield shape #Min shape
+            yield [max_dim]*(ndim) #Max shape
+            for _ in xrange(iters):
+                for d in xrange(len(shape)):
+                    shape[d] = self.random.randint(1,max_dim)
+                yield shape
+        else:       
+            finished = False
+            while not finished:
+                yield shape
+                #Find next shape
+                d = ndim-1
+                while True:
+                    shape[d] += 1
+                    if shape[d] > max_dim:
+                        shape[d] = 1
+                        d -= 1
+                        if d < 0:
+                            finished = True
+                            break
+                    else:
+                        break
+
+def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
+    for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
+        #Base array
+        A = self.array(shape)
+        yield (A,"A = self.array(%s)"%(shape))
+        #Views with offset per dimension
+        for d in xrange(len(shape)):
+            if shape[d] > 1:
+                s = "B = A["
+                for _ in xrange(d):
+                    s += ":,"
+                s += "1:,"
+                for _ in xrange(len(shape)-(d+1)):
+                    s += ":,"
+                s = s[:-1] + "]"
+                exec s 
+                yield (B,s)
+
+        #Views with negative offset per dimension
+        for d in xrange(len(shape)):
+            if shape[d] > 1:
+                s = "B = A["
+                for _ in xrange(d):
+                    s += ":,"
+                s += ":-1,"
+                for _ in xrange(len(shape)-(d+1)):
+                    s += ":,"
+                s = s[:-1] + "]"
+                exec s 
+                yield (B,s)
+                
+        #Views with steps per dimension
+        for d in xrange(len(shape)):
+            if shape[d] > 1:
+                s = "B = A["
+                for _ in xrange(d):
+                    s += ":,"
+                s += "::2,"
+                for _ in xrange(len(shape)-(d+1)):
+                    s += ":,"
+                s = s[:-1] + "]"
+                exec s 
+                yield (B,s)
+
 
 class numpytest:
     def __init__(self):
