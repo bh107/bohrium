@@ -79,7 +79,8 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
     for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
         #Base array
         A = self.array(shape)
-        yield (A,"A = self.array(%s)"%(shape))
+        cmd = "A = self.array(%s)"%(shape)
+        yield (A,cmd)
         #Views with offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
@@ -91,7 +92,7 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,s)
+                yield (B,"%s; %s"%(cmd,s))
 
         #Views with negative offset per dimension
         for d in xrange(len(shape)):
@@ -104,8 +105,8 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,s)
-                
+                yield (B,"%s; %s"%(cmd,s))
+
         #Views with steps per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
@@ -117,8 +118,7 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,s)
-
+                yield (B,"%s; %s"%(cmd,s))
 
 class numpytest:
     def __init__(self):
@@ -177,7 +177,8 @@ if __name__ == "__main__":
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     skip_dtypes = False
-                    print "Testing %s.%s()"%(cls,mth)
+                    name = "%s/%s/%s"%(f,cls[5:],mth[5:])
+                    print "Testing %s"%(name)
                     for t in cls_inst1.config['dtypes']:
                         print "\t%s"%(t)
                         cls_inst1.runtime['dtype'] = t
@@ -187,7 +188,8 @@ if __name__ == "__main__":
                         for ((res1,cmd1),(res2,cmd2)) in zip(results1,results2):
                             assert cmd1 == cmd2
                             if not _array_equal(res1, res2, cls_inst1.config['maxerror']):
-                                print _bcolors.FAIL   +"[Error] %s.%s (%s)"%(cls,mth,t) + _bcolors.ENDC 
+                                print _bcolors.FAIL +"[Error] %s (%s)"%(name,str(t)[7:-2])\
+                                    + _bcolors.ENDC 
                                 print _bcolors.OKBLUE +"[CMD]   %s"%cmd1 + _bcolors.ENDC 
                                 #print res1
                                 #print res2
