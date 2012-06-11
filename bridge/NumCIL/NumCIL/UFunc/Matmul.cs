@@ -111,7 +111,7 @@ namespace NumCIL
             if (@out.m_data is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.m_data).AddOperation(new LazyMatmulOperation<T>(addop, mulop), @out, in1, in2);
             else
-                UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
+                FlushMethods.Matmul<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
 
             return @out;
         }
