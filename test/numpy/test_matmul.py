@@ -12,15 +12,17 @@ class test_matmul(numpytest):
         for m in range(1,maxdim+1):
             for n in range(1,maxdim+1):
                 for k in range(1,maxdim+1):
-                    A = self.array((k,m))
-                    B = self.array((m,k))
-                    yield np.matmul(A,B)
+                    A = self.array((m,k))
+                    B = self.array((k,n))
+                    cmd = "array(({0},{1})),array(({1},{2}))".format(m,k,n)
+                    yield (np.matmul(A,B),cmd)
 
     def test_dot(self):
         maxdim = 6
         for m in range(1,maxdim+1):
             for n in range(1,maxdim+1):
                 for k in range(1,maxdim+1):
-                    A = self.array((k,m))
-                    B = self.array((m,k))
-                    yield np.dot(A,B)
+                    A = self.array((m,k))
+                    B = self.array((k,n))
+                    cmd = "array(({0},{1})),array(({1},{2}))".format(m,k,n)
+                    yield (np.dot(A,B),cmd)

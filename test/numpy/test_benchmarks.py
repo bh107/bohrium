@@ -14,13 +14,16 @@ class test_jacobi(numpytest):
         A = self.array((self.size,self.size))
         B = self.array((self.size))
         A += np.diag(np.add.reduce(A,-1)) #make sure A is diagonally dominant
-        return [la.jacobi(A,B)]
+        res = la.jacobi(A,B)
+        cmd = "A = array(({0},{0})); B = array(({0})); la.jacobi(A,B)".format(self.size)
+        return [(res,cmd)]
 
     def test_jacobi_stencil(self):
         grid = jacobi_stencil.frezetrap(self.size,self.size,cphvb=self.runtime['cphvb'])
         res = jacobi_stencil.solve(grid)
-        return [res]
-        
+        msg = "jacobi_stencil.solve(jacobi_stencil.frezetrap({0},{0}))".format(self.size)
+        return [(res,msg)]
+"""        
 class test_gameoflife(numpytest):
     def __init__(self):
         numpytest.__init__(self)
@@ -31,4 +34,4 @@ class test_gameoflife(numpytest):
         self.input.cphvb = self.runtime['cphvb']
         res   = gameoflife.play(self.input, 50)
         return [res]
-
+"""
