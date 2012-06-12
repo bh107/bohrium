@@ -11,11 +11,13 @@ import random
 from operator import mul
 from itertools import izip as zip
 
-ALL_INT      = [np.int8,np.int16,np.int32,np.uint64,np.uint8,np.uint16,np.uint32,np.uint64]
-NORMAL_FLOAT = [np.float32,np.float64]
-ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
-NORMAL_TYPES = ALL_INT + NORMAL_FLOAT
-ALL_TYPES    = ALL_INT + ALL_FLOAT
+class TYPES:
+    NORMAL_INT   = [np.int32,np.int64,np.uint32,np.uint64]
+    ALL_INT      = NORMAL_INT + [np.int8,np.int16,np.uint8,np.uint16]
+    NORMAL_FLOAT = [np.float32,np.float64]
+    ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
+    NORMAL       = NORMAL_INT + NORMAL_FLOAT
+    ALL          = ALL_INT + ALL_FLOAT
 
 class _bcolors:
     HEADER = '\033[95m'
@@ -79,7 +81,7 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
     for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
         #Base array
         A = self.array(shape)
-        cmd = "A = self.array(%s)"%(shape)
+        cmd = "A = array(%s)"%(shape)
         yield (A,cmd)
         #Views with offset per dimension
         for d in xrange(len(shape)):
@@ -92,12 +94,12 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,"%s; %s"%(cmd,s))
+                yield (B,"%s; A%s"%(cmd,s[1:]))
 
         #Views with negative offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "B = A["
+                s = "A = A["
                 for _ in xrange(d):
                     s += ":,"
                 s += ":-1,"
@@ -105,12 +107,12 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,"%s; %s"%(cmd,s))
+                yield (B,"%s; A%s"%(cmd,s[1:]))
 
         #Views with steps per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "B = A["
+                s = "A = A["
                 for _ in xrange(d):
                     s += ":,"
                 s += "::2,"
@@ -118,7 +120,7 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     s += ":,"
                 s = s[:-1] + "]"
                 exec s 
-                yield (B,"%s; %s"%(cmd,s))
+                yield (B,"%s; A%s"%(cmd,s[1:]))
 
 class numpytest:
     def __init__(self):
@@ -134,6 +136,7 @@ class numpytest:
         t = dtype if dtype is not None else self.runtime['dtype']
         c = cphvb if cphvb is not None else self.runtime['cphvb']
         res = np.arange(1,total+1,dtype=t).reshape(dims)
+        res += res == self.runtime['dtype'](0)#Remove zeros
         res.cphvb = c
         return res
 
