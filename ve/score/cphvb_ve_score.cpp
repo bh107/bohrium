@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
+#include <valgrind/callgrind.h>
 
 static cphvb_com *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -136,12 +137,13 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
     */
 
-    cphvb_intp  nelements,
-                trav_start=0,
-                trav_end=-1;
-
+    
     // Strategy Three:
     // Same as two but also slice into blocks.
+    cphvb_intp  nelements,
+    trav_start=0,
+    trav_end=-1;
+
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );
@@ -171,6 +173,44 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_INST_DONE;
     }
+
+    /*
+    // Strategy Five:
+    // No block-size splits, instead do a pseudo-split.
+    //
+
+    cphvb_intp nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
+    //cphvb_intp split = 15728640;
+    cphvb_intp split = nelements-99;
+    //cphvb_intp split = 1;
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
+    {
+        compute_loops[k] = cphvb_compute_get( &instr[i] );
+    }
+
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
+    {
+        compute_loops[k]( &instr[i], 0, split );
+    }
+
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
+    {
+        compute_loops[k]( &instr[i], split+1, nelements );
+    }
+
+    for(i=start; i <= end; i++)                     // Set instruction status
+    {
+        instr[i].status = CPHVB_INST_DONE;
+    }
+    */
+
+    //
+    //
+    //
+    //  THE LESSON LEARNED: COORDINATED BASED OFFSET COMPUTATION SUCKS! It is much too expensive!
+    //
+    //
+    //
     
     return CPHVB_SUCCESS;
 

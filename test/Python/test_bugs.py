@@ -2,6 +2,7 @@ import numpy as np
 import numpytest
 import cphvbbridge as cp
 import unittest
+import time
 
 dtype = np.float32
 
@@ -9,22 +10,26 @@ class Bugs(unittest.TestCase):
 
     def test_leaking(self):
 
-        a = np.ones((128,62768))
+        a = np.ones((1024*1024*30))
         a.cphvb = True
-        b = np.ones((128,62768))
+        b = np.ones((1024*1024*30))
         b.cphvb = True
 
         i = 0
-
+        lim = 100
+        cp.flush()
+        start = time.time()
         while True:
-            a = b + b + b
+            a += b
+            #a = a + b
 
             i += 1
-            if i > 20:
+            if i > lim:
                 break
 
-        print "Out."
-        print a
+        cp.flush()
+        print "Elapsed", time.time()-start
+        
         self.assertTrue(True)
 
 def run():
