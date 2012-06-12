@@ -115,8 +115,8 @@ namespace NumCIL
         {
             NdArray<T> v = SetupReduceHelper<T>(in1, axis, @out);
 
-            if (v.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)v.m_data).AddOperation(new LazyReduceOperation<T>(new C(), axis), v, in1);
+            if (v.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)v.DataAccessor).AddOperation(new LazyReduceOperation<T>(new C(), axis), v, in1);
             else
                 return FlushMethods.Reduce<T, C>(op, axis, in1, v);
 
@@ -170,8 +170,8 @@ namespace NumCIL
             }
             else
             {
-                T[] d = in1.Data;
-                T[] vd = @out.Data;
+                T[] d = in1.AsArray();
+                T[] vd = @out.AsArray();
 
                 //Simple case, reduce 1D array to scalar value
                 if (axis == 0 && in1.Shape.Dimensions.LongLength == 1)

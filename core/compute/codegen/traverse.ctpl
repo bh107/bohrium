@@ -1,0 +1,133 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+/*
+ * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
+ *
+ * This file is part of cphVB.
+ *
+ * cphVB is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * cphVB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include <cphvb.h>
+#include <assert.h>
+%for $traverse in $traversers
+template <${traverse.tsig}, typename Instr>
+cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
+
+    Instr opcode_func;                          // Element-wise functor-pointer
+
+    cphvb_array *a0 = instr->operand[0];        // Operand pointers
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    cphvb_array *a$op[0] = instr->operand[$op[0]];
+    %end if
+    %end for
+                                                // Pointers to start of data elements
+    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    T$op[0]* d$op[0] = (T$op[0]*) cphvb_base_array(instr->operand[$op[0]])->data;
+    %else
+    T$op[0]* d$op[0] = (T$op[0]*) &(instr->constant.value);
+    %end if
+    %end for
+
+    assert(d0 != NULL);                         // Ensure that data is allocated
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    assert(d$op[0] != NULL);
+    %end if
+    %end for
+
+    cphvb_index j,                              // Traversal variables
+                last_dim = a0->ndim-1,
+                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
+                cur_e;
+    cphvb_index off0;                           // Stride-offset
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    cphvb_index off$op[0];
+    %end if
+    %end for
+
+    cphvb_index coord[CPHVB_MAXDIM];
+    memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
+
+    coord[last_dim] = start % a0->shape[last_dim];      // Fast-forward coordinates
+    cur_e           = coord[last_dim];
+    for(; cur_e < start; cur_e += a0->shape[last_dim] ) // As well as coordinates for the remaining dimensions
+    {
+        for(j = last_dim-1; (j >= 0) && (cur_e<start); --j )
+        {
+            coord[j]++;
+            if (coord[j] < a0->shape[j]) {              // Still within this dimension
+                break;
+            } else {                                    // Reached the end of this dimension
+                coord[j] = 0;                           // Reset coordinate
+            }                                           // Loop then continues to increment the next dimension
+        }
+    }
+
+    while( cur_e <= last_e )
+    {
+        off0 = a0->start;                           // Compute offset based on coord
+        %for $op in $traverse.ops[1:]
+        %if $op[1] == 'a'
+        off$op[0] = a$op[0]->start;
+        %end if
+        %end for
+
+        for( j=0; j<=last_dim; ++j)
+        {
+            off0 += coord[j] * a0->stride[j];
+            %for $op in $traverse.ops[1:]
+            %if $op[1] == 'a'
+            off$op[0] += coord[j] * a$op[0]->stride[j];
+            %end if
+            %end for
+        }
+                                                    // Iterate over "last" / "innermost" dimension
+        for(; (coord[last_dim] < a0->shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++ )    
+        {
+            opcode_func( ${traverse.func_call} );
+
+            off0 += a0->stride[last_dim];
+            %for $op in $traverse.ops[1:]
+            %if $op[1] == 'a'
+            off$op[0] += a$op[0]->stride[last_dim];
+            %end if
+            %end for
+        }
+        coord[last_dim] = 0;
+
+        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        {
+            coord[j]++;
+            if (coord[j] < a0->shape[j]) {          // Still within this dimension
+                break;
+            } else {                                // Reached the end of this dimension
+                coord[j] = 0;                       // Reset coordinate
+            }                                       // Loop then continues to increment the next dimension
+        }
+
+    }
+
+    return CPHVB_SUCCESS;
+
+}
+
+%end for
+

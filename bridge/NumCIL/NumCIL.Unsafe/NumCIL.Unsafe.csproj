@@ -42,11 +42,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aggregate.cs" />
-    <Compile Include="Apply.cs" />
-    <Compile Include="Copy.cs" />
+    <Compile Include="Aggregate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Aggregate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Apply.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Apply.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Copy.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Copy.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CreateAccessor.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CreateAccessor.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Pinner.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Pinner.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reduce.cs" />
+    <Compile Include="Reduce.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reduce.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UnmanagedAccessor.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +81,35 @@
       <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
       <Name>NumCIL</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Aggregate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Aggregate.cs</LastGenOutput>
+    </None>
+    <None Include="Apply.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Apply.cs</LastGenOutput>
+    </None>
+    <None Include="Copy.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Copy.cs</LastGenOutput>
+    </None>
+    <None Include="CreateAccessor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CreateAccessor.cs</LastGenOutput>
+    </None>
+    <None Include="Pinner.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Pinner.cs</LastGenOutput>
+    </None>
+    <None Include="Reduce.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Reduce.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

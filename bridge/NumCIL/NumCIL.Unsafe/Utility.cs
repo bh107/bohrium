@@ -102,7 +102,7 @@ namespace NumCIL.Unsafe
                 return null;
 
             string name = "UFunc_Reduce_Inner_Flush_" + typeof(T).Name.Replace(".", "_");
-            return typeof(NumCIL.Unsafe.Aggregate).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+            return typeof(NumCIL.Unsafe.Reduce).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
 
         /// <summary>
@@ -133,6 +133,25 @@ namespace NumCIL.Unsafe
             return typeof(NumCIL.Unsafe.Copy).GetMethod("Memcpy", new Type[] { typeof(IntPtr), typeof(T[]), typeof(long) });
         }
 
+        public static MethodInfo GetCreateAccessorSize<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "CreateFromSize_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+
+        public static MethodInfo GetCreateAccessorData<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "CreateFromData_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+        
         /// <summary>
         /// Method that performs an unsafe operation
         /// </summary>

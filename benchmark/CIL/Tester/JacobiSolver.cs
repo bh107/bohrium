@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NumCIL.Float;
+using NumCIL.Double;
 using NumCIL;
 
 namespace Tester
 {
-    using T = System.Single;
+    using T = System.Double;
     using R = NumCIL.Range;
 
     public static class JacobiSolver
@@ -37,7 +37,7 @@ namespace Tester
 
             T epsilon = width * height * 0.002f;
             T delta = epsilon + 1;
-            
+
             int i = 0;
 
             while (fixedIterations.HasValue ? (i < fixedIterations.Value) : epsilon < delta)
@@ -70,7 +70,7 @@ namespace Tester
             if (fixedIterations.HasValue)
             {
                 //Access the data to ensure it is flushed
-                var token = full.Data[0];
+                var token = full.Value[0];
             }
 
             return i;

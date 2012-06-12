@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NumCIL.Float;
+using NumCIL.Double;
 
 namespace Tester
 {
-    using T = System.Single;
+    using T = System.Double;
     using R = NumCIL.Range;
 
     public static class kNNSolver
@@ -29,9 +29,9 @@ namespace Tester
             return ComputeTargets(src, input);
         }
 
-        public static NdArray Solve(long size, long dimensions, long k)
+        public static NdArray Solve(long size, long dimensions, long k, bool randomdata = true)
         {
-            var src = Generate.Random(size, dimensions);
+            var src = randomdata ? Generate.Random(size, dimensions) : Generate.Arange(size, dimensions);
             return kNN(src)[R.Slice(0, k)];
         }
     }

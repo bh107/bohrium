@@ -9,6 +9,8 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
+            NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+
             NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
             RunSomeTests(null);
 
@@ -31,11 +33,12 @@ namespace UnitTest
             else
                 Console.WriteLine("cphVB code is not supported, skipping tests for cphVB code");
 
-
-            /*Console.WriteLine("Running profiling tests");
-            using (new DispTimer("Profiling tests"))
-                Profiling.RunProfiling();*/
-
+            if (args.Contains<string>("--profiling", StringComparer.InvariantCultureIgnoreCase))
+            {
+                Console.WriteLine("Running profiling tests");
+                using (new DispTimer("Profiling tests"))
+                    Profiling.RunProfiling();
+            }
         }
 
         private static void RunSomeTests(string name)
@@ -54,6 +57,10 @@ namespace UnitTest
             Console.WriteLine("Running extended tests" + name);
             using (new DispTimer("Extended tests"))
                 ExtendedTests.RunTests();
+
+            Console.WriteLine("Running benchmark tests" + name);
+            using (new DispTimer("benchmark tests"))
+                BenchmarkTests.RunTests();
         }
     }
 }

@@ -1,0 +1,53 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Runtime.InteropServices;
+using NumCIL.Generic;
+
+namespace NumCIL.Unsafe
+{
+    /// <summary>
+    /// Helper class to extract a pinned pointer from the data
+    /// </summary>
+    internal unsafe class Pinner : IDisposable
+    {
+        private GCHandle m_handle;
+        public readonly void* ptr = null;
+
+<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+        public Pinner(IDataAccessor<System.<#=typename#>> i)
+        {
+            if (i is IUnmanagedDataAccessor<System.<#=typename#>>)
+                ptr = ((IUnmanagedDataAccessor<System.<#=typename#>>)i).Pointer.ToPointer();
+            else
+            {
+                m_handle = GCHandle.Alloc(i.AsArray(), GCHandleType.Pinned);
+                ptr = m_handle.AddrOfPinnedObject().ToPointer();
+            }
+
+			if (ptr == null)
+				throw new Exception("Null pointer allocation?");
+        }
+<# } #>
+
+        public void Dispose() { Dispose(true); }
+
+        protected void Dispose(bool disposing)
+        {
+            if (m_handle.IsAllocated)
+                m_handle.Free();
+
+            if (disposing)
+                GC.SuppressFinalize(this);
+        }
+
+        ~Pinner()
+        {
+            Dispose(false);
+        }
+
+	}
+}

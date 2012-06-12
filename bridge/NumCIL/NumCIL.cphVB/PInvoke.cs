@@ -959,6 +959,26 @@ namespace NumCIL.cphVB
         public extern static cphvb_error cphvb_data_set([In] cphvb_array_ptr array, [In] IntPtr data);
 
         /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_malloc([In] cphvb_array_ptr array);
+
+        /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_free([In] cphvb_array_ptr array);
+
+        /// <summary>
         /// Get the data pointer for the array.
         /// </summary>
         /// <param name="array">The array in question</param>
