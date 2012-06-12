@@ -191,11 +191,12 @@ if __name__ == "__main__":
                         for ((res1,cmd1),(res2,cmd2)) in zip(results1,results2):
                             assert cmd1 == cmd2
                             if not _array_equal(res1, res2, cls_inst1.config['maxerror']):
-                                print _bcolors.FAIL +"[Error] %s (%s)"%(name,str(t)[7:-2])\
+                                print _bcolors.FAIL + "[Error] %s (%s)"%(name,str(t)[7:-2])\
                                     + _bcolors.ENDC 
-                                print _bcolors.OKBLUE +"[CMD]   %s"%cmd1 + _bcolors.ENDC 
-                                #print res1
-                                #print res2
+                                print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC 
+                                print _bcolors.OKGREEN + str(res1) + _bcolors.ENDC 
+                                print _bcolors.FAIL + str(res2) + _bcolors.ENDC 
+                                print 
                                 #sys.exit()
                                 skip_dtypes = True
                                 break
