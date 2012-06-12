@@ -130,7 +130,8 @@ cphvb_error cphvb_ve_mcore_execute(
         while(regular_size > 0)
         {
             //Get number of consecutive bundeable instruction.
-            cphvb_intp bundle_size = cphvb_inst_bundle(cur_bundle, regular_size);
+            //cphvb_intp bundle_size = cphvb_inst_bundle(cur_bundle, 0, regular_size-1);
+            cphvb_intp bundle_size = 1;
             //Dispatch the bundle
             dispatch_bundle(cur_bundle, bundle_size, nblocks);
             //Iterate to next bundle.
