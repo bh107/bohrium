@@ -28,6 +28,8 @@ static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
 static cphvb_intp nblocks = 16;
 
+static cphvb_intp cphvb_ve_mcore_buffersizes = 0;
+static cphvb_instruction** cphvb_ve_mcore_instruction_list = NULL;
 
 cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
 {
@@ -54,7 +56,33 @@ cphvb_error cphvb_ve_mcore_execute(
 
 ) {
     cphvb_intp count=0;
-    cphvb_instruction* regular_inst[CPHVB_MAX_NO_INST];
+    
+    //Make sure we have enough space
+    if (instruction_count > cphvb_ve_mcore_buffersizes) 
+    {
+    	cphvb_intp mcount = instruction_count;
+
+    	//We only work in multiples of 1000
+    	if (mcount % 1000 != 0)
+    		mcount = (mcount + 1000) - (mcount % 1000);
+    		
+    	//Make sure we re-allocate on error
+    	cphvb_ve_mcore_buffersizes = 0;
+    	
+    	if (cphvb_ve_mcore_instruction_list != NULL) {
+    		free(cphvb_ve_mcore_instruction_list);
+    		cphvb_ve_mcore_instruction_list = NULL;
+    	}
+
+    	cphvb_ve_mcore_instruction_list = (cphvb_instruction**)malloc(sizeof(cphvb_instruction*) * mcount);
+    	
+    	if (cphvb_ve_mcore_instruction_list == NULL)
+    		return CPHVB_OUT_OF_MEMORY;
+    	
+    	cphvb_ve_mcore_buffersizes = mcount;
+    }
+
+	cphvb_instruction** regular_inst = cphvb_ve_mcore_instruction_list;
 
     while(count < instruction_count)
     {
@@ -102,7 +130,8 @@ cphvb_error cphvb_ve_mcore_execute(
         while(regular_size > 0)
         {
             //Get number of consecutive bundeable instruction.
-            cphvb_intp bundle_size = cphvb_inst_bundle(cur_bundle, regular_size);
+            //cphvb_intp bundle_size = cphvb_inst_bundle(cur_bundle, 0, regular_size-1);
+            cphvb_intp bundle_size = 1;
             //Dispatch the bundle
             dispatch_bundle(cur_bundle, bundle_size, nblocks);
             //Iterate to next bundle.

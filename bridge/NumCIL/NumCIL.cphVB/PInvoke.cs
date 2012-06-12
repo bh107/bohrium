@@ -117,7 +117,6 @@ namespace NumCIL.cphVB
         public const int CPHVB_COMPONENT_NAME_SIZE = 1024;
         public const int CPHVB_MAXDIM = 16;
         public const int CPHVB_MAX_EXTRA_META_DATA = 1024;
-        public const int CPHVB_MAX_NO_INST = 100;
         public const int CPHVB_MAX_NO_OPERANDS = 3;
 
         public static readonly bool Is64Bit = IntPtr.Size == 8;
@@ -957,6 +956,26 @@ namespace NumCIL.cphVB
         /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static cphvb_error cphvb_data_set([In] cphvb_array_ptr array, [In] IntPtr data);
+
+        /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_malloc([In] cphvb_array_ptr array);
+
+        /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_free([In] cphvb_array_ptr array);
 
         /// <summary>
         /// Get the data pointer for the array.

@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicTests.cs" />
+    <Compile Include="BenchmarkTests.cs" />
     <Compile Include="CustomTimer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -92,6 +93,10 @@
     <Compile Include="TypeLookupTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\benchmark\CIL\Tester\Tester.csproj">
+      <Project>{755ED908-E379-4075-AD80-C7B351E27319}</Project>
+      <Name>Tester</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.cphVB\NumCIL.cphVB.csproj">
       <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
       <Name>NumCIL.cphVB</Name>

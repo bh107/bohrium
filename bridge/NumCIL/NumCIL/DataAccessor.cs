@@ -17,9 +17,27 @@ namespace NumCIL.Generic
         long Length { get; }
 
         /// <summary>
-        /// Gets the .Net representation of the data
+        /// Gets the data as a .Net Array
         /// </summary>
-        T[] Data { get; }
+        T[] AsArray();
+
+        /// <summary>
+        /// Ensures that data is allocated
+        /// </summary>
+        void Allocate();
+
+        /// <summary>
+        /// Returns a value indicating if the array is allocated
+        /// </summary>
+        bool IsAllocated { get; }
+
+        /// <summary>
+        /// Gets or sets the value at a specific index.
+        /// Depending on implementation, this may cause the array to be allocated.
+        /// </summary>
+        /// <param name="index">The index to get or set the value at</param>
+        /// <returns>The value at the given index</returns>
+        T this[long index] { get; set; }
 
         /// <summary>
         /// An extra component that can be used to tag data to the accessor
@@ -28,9 +46,26 @@ namespace NumCIL.Generic
     }
 
     /// <summary>
+    /// Interface to data that is not kept in managed memory
+    /// </summary>
+    /// <typeparam name="T">The type of data in the array</typeparam>
+    public interface IUnmanagedDataAccessor<T> : IDataAccessor<T>
+    {
+        /// <summary>
+        /// Gets a pointer to the data
+        /// </summary>
+        IntPtr Pointer { get; }
+
+        /// <summary>
+        /// Gets a value indicating if it is possible to return the data as a .Net array
+        /// </summary>
+        bool CanAllocateArray { get; }
+    }
+
+    /// <summary>
     /// Interface that adds a lazy registration function to a data accessor
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of data in the array</typeparam>
     public interface ILazyAccessor<T> : IDataAccessor<T>
     {
         /// <summary>
@@ -125,24 +160,45 @@ namespace NumCIL.Generic
         }
 
         /// <summary>
-        /// Accesses the actual data, accessing this property will allocate memory
+        /// Allocates data
         /// </summary>
-        public virtual T[] Data
+        public virtual void Allocate()
         {
-            get
-            {
-                if (m_data == null)
-                    m_data = new T[m_size];
-                return m_data;
-            }
+            if (m_data == null)
+                m_data = new T[m_size];
+        }
+
+        /// <summary>
+        /// Returns the value at a given index, this will allocated the array
+        /// </summary>
+        /// <param name="index">The index to get the value for</param>
+        /// <returns>The value at the given index</returns>
+        public virtual T this[long index]
+        {
+            get { Allocate(); return m_data[index]; }
+            set { Allocate(); m_data[index] = value; }
+        }
+
+        /// <summary>
+        /// Allocates data and returns the array
+        /// </summary>
+        /// <returns>The allocated data block</returns>
+        public virtual T[] AsArray()
+        {
+            Allocate();
+            return m_data;
         }
 
         /// <summary>
         /// Gets the size of the array
         /// </summary>
-        public long Length { get { return m_size; } }
-    }
+        public virtual long Length { get { return m_size; } }
 
+        /// <summary>
+        /// Gets a value indicating if the data is allocated
+        /// </summary>
+        public virtual bool IsAllocated { get { return m_data != null; } }
+    }
 
     /// <summary>
     /// Implementation of a lazy initialized array, will collect operations until data is accessed
@@ -202,19 +258,15 @@ namespace NumCIL.Generic
         public LazyAccessor(long size) : base(size) { }
 
         /// <summary>
-        /// Accesses the actual data, accessing this property will allocate memory,
+        /// Allocates that data, calling this method will allocate memory,
         /// and execute all pending operations
         /// </summary>
-        public override T[] Data
+        public override void Allocate()
         {
-            get
-            {
+            if (PendingOperations.Count != 0)
+                this.ExecutePendingOperations();
 
-                if (PendingOperations.Count != 0)
-                    this.ExecutePendingOperations();
-
-                return base.Data;
-            }
+            base.Allocate();
         }
 
         /// <summary>
@@ -233,9 +285,12 @@ namespace NumCIL.Generic
         /// </summary>
         protected virtual void ExecutePendingOperations()
         {
-            var lst = UnrollWorkList(this);
-            ExecuteOperations(lst);
-            PendingOperations.Clear();
+            if (PendingOperations.Count > 0)
+            {
+                var lst = UnrollWorkList(this);
+                ExecuteOperations(lst);
+                PendingOperations.Clear();
+            }
         }
 
         /// <summary>
@@ -265,9 +320,9 @@ namespace NumCIL.Generic
                 PendingOperation<T> cur = res[(int)i];
 
                 for (int j = 0; j < cur.Operands.Length; j++)
-                    if (cur.Operands[j].m_data is ILazyAccessor<T>)
+                    if (cur.Operands[j].DataAccessor is ILazyAccessor<T>)
                     {
-                        ILazyAccessor<T> lz = (ILazyAccessor<T>)cur.Operands[j].m_data;
+                        ILazyAccessor<T> lz = (ILazyAccessor<T>)cur.Operands[j].DataAccessor;
                         long cp;
                         long dest_cp = cur.OperandIndex[j] + (j == 0 ? -1 : 0);
 
@@ -451,9 +506,9 @@ namespace NumCIL.Generic
             foreach (var x in operands)
             {
                 oprs[i] = x;
-                if (x.m_data is ILazyAccessor<T>)
+                if (x.DataAccessor is ILazyAccessor<T>)
                 {
-                    ILazyAccessor<T> lz = (ILazyAccessor<T>)x.m_data;
+                    ILazyAccessor<T> lz = (ILazyAccessor<T>)x.DataAccessor;
                     indx[i] = (lz.PendingOperations.Count + lz.PendignOperationOffset) + (i == 0 ? 1 : 0);
                 }
                 else
@@ -477,13 +532,29 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="size">The size of the array to create an accessor for</param>
         /// <returns>A new accessor</returns>
-        public IDataAccessor<T> Create(long size) { return new DefaultAccessor<T>(size); }
+        public IDataAccessor<T> Create(long size) 
+        { 
+            IDataAccessor<T> result = null;
+
+            if (UnsafeAPI.IsUnsafeSupported)
+                result = UnsafeAPI.CreateAccessor<T>(size);
+
+            return result ?? new DefaultAccessor<T>(size); 
+        }
         /// <summary>
         /// Creates a new data accessor for an allocated array
         /// </summary>
         /// <param name="data">The array to create an accessor for</param>
         /// <returns>A new accessor</returns>
-        public IDataAccessor<T> Create(T[] data) { return new DefaultAccessor<T>(data); }
+        public IDataAccessor<T> Create(T[] data) 
+        {
+            IDataAccessor<T> result = null;
+
+            if (UnsafeAPI.IsUnsafeSupported)
+                result = UnsafeAPI.CreateAccessor<T>(data);
+
+            return result ?? new DefaultAccessor<T>(data); 
+        }
     }
 
     /// <summary>

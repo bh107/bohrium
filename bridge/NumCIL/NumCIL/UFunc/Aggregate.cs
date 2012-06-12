@@ -50,7 +50,7 @@ namespace NumCIL
             if (UnsafeAPI.Aggregate_Entry_Unsafe<T, C>(op, in1, out result))
                 return result;
 
-            T[] d1 = in1.Data;
+            T[] d1 = in1.AsArray();
 
             if (in1.Shape.Dimensions.Length == 1)
             {

@@ -30,6 +30,7 @@ class Traversal(unittest.TestCase):
         b = np.array(np.ones((3,3)),dtype=dtype, cphvb=True)
         c = a+b
 
+
         self.assertTrue(numpytest.array_equal( c, res ))
 
 def run():

@@ -137,7 +137,7 @@ struct logical_or_functor {
 template <typename T1, typename T2, typename T3>
 struct logical_xor_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = (*op2 != *op3) ? 0 : 1;
+        *op1 = (!*op2 != !*op3);
     }
 };
 
@@ -246,13 +246,7 @@ struct sign_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct conj_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        // TODO: implement
-        *op1 = 100;
-    }
-};
+
 
 template <typename T1, typename T2>
 struct exp_functor {
@@ -324,12 +318,6 @@ struct reciprocal_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct ones_like_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = 100; // TODO: implement
-    }
-};
 
 template <typename T1, typename T2>
 struct sin_functor {
@@ -457,24 +445,18 @@ struct invert_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct isfinite_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = 100; // TODO: implement
-    }
-};
-
+// TODO: implement
 template <typename T1, typename T2>
 struct isinf_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = 100; // TODO: implement
+        *op1 = 42; // TODO: implement
     }
 };
 
 template <typename T1, typename T2>
 struct isnan_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = 100; // TODO: implement
+        *op1 = 42; // TODO: implement
     }
 };
 
@@ -507,6 +489,22 @@ struct trunc_functor {
 };
 
 template <typename T1, typename T2>
+struct identity_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = *op2;
+    }
+};
+
+/* IMPLEMENT TOGETHER WITH COMPLEX NUMBERS
+template <typename T1, typename T2>
+struct conj_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        // TODO: implement
+        *op1 = 100;
+    }
+};
+
+template <typename T1, typename T2>
 struct isreal_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = 100; // TODO: implement
@@ -515,6 +513,24 @@ struct isreal_functor {
 
 template <typename T1, typename T2>
 struct iscomplex_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+*/
+
+/*  THESE MIGHT NEVER BE IMPLEMENTED.
+
+template <typename T1, typename T2>
+struct ones_like_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+template <typename T1, typename T2>
+struct isfinite_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = 100; // TODO: implement
     }
@@ -536,9 +552,4 @@ struct frexp_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct identity_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2;
-    }
-};
+*/

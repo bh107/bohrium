@@ -330,5 +330,16 @@ namespace NumCIL
         {
             get { return new Shape(this.Dimensions.Select(x => x.Length).ToArray()); }
         }
+
+        /// <summary>
+        /// Returns the shape as a human readable string
+        /// </summary>
+        /// <returns>The shape setup as a string</returns>
+        public override string ToString()
+        {
+            return string.Format("Size: {0} = Offset+Elements: {1} + {2}, Dimensions: [{3}]", this.Length, this.Offset, this.Elements,
+                string.Join(", ", this.Dimensions.Select(x => string.Format("{{{0} * {1} = {2}}}", x.Length, x.Stride, x.Length * x.Stride)))
+                );
+        }
     }
 }
