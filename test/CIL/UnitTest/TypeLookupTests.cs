@@ -32,7 +32,7 @@ namespace UnitTest
             a = a.Reduce(Ops.Add);
             a = Add.Reduce(a);
 
-            if (a.Data[0] != 48)
+            if (a.Value[0] != 48)
                 throw new Exception("Something went wrong");
         }
     }

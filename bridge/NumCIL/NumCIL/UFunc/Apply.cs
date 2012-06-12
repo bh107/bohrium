@@ -25,9 +25,9 @@ namespace NumCIL
             if (UnsafeAPI.UFunc_Op_Inner_Binary_Flush_Unsafe(op, in1, in2, ref @out))
                 return;
 
-            T[] d1 = in1.Data;
-            T[] d2 = in2.Data;
-            T[] d3 = @out.Data;
+            T[] d1 = in1.AsArray();
+            T[] d2 = in2.AsArray();
+            T[] d3 = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -275,8 +275,8 @@ namespace NumCIL
         private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out)
             where C : IUnaryConvOp<Ta, Tb>
         {
-            Ta[] d1 = in1.Data;
-            Tb[] d2 = @out.Data;
+            Ta[] d1 = in1.AsArray();
+            Tb[] d2 = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -425,7 +425,7 @@ namespace NumCIL
             if (UnsafeAPI.UFunc_Op_Inner_Nullary_Flush_Unsafe<T, C>(op, @out))
                 return;
 
-            T[] d = @out.Data;
+            T[] d = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -435,7 +435,7 @@ namespace NumCIL
 
                 for (long i = 0; i < totalOps; i++)
                 {
-                    d[i] = op.Op();
+                    d[ix] = op.Op();
                     ix += stride;
                 }
             }

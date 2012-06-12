@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NumCIL.Float;
+using NumCIL.Double;
 
 namespace Tester
 {
-    using DATA = System.Single;
+    using DATA = System.Double;
 
     public static class BlackScholesSolver
     {
@@ -38,9 +38,9 @@ namespace Tester
                 return X * (DATA)Math.Exp(-r * T) * CND(d2.Negate()) - S * CND(d1.Negate());
         }
 
-        public static DATA Solve(long size, long years)
+        public static DATA Solve(long size, long years, bool randomdata = true)
         {
-            var S = Generate.Random(size);
+            var S = randomdata ? Generate.Random(size) : Generate.Ones(size);
             S = S * 4.0f - 2.0f + 60.0f; //Price is 58-62
 
             DATA X = 65.0f;

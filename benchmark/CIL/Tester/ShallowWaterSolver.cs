@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NumCIL.Float;
-using T = System.Single;
+using NumCIL.Double;
+using T = System.Double;
 using R = NumCIL.Range;
 using NumCIL;
 
@@ -153,7 +153,7 @@ namespace Tester
             }
 
             //Make sure we have the actual data and use it as a checksum
-            return Add.Reduce(Add.Reduce(H / n)).Data[0];
+            return Add.Reduce(Add.Reduce(H / n)).Value[0];
         }
     }
 }

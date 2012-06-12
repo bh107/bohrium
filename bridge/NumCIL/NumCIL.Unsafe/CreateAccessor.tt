@@ -1,0 +1,51 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+
+namespace NumCIL.Unsafe
+{
+    internal static class oldCreateAccessor
+    {
+<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+        private static IDataAccessor<System.<#=typename#>> CreateFromSize_<#=typename#>(long size) { return new UnmanagedAccessor<#=typename#>(size); }
+        private static IDataAccessor<System.<#=typename#>> CreateFromData_<#=typename#>(System.<#=typename#>[] data) { return new UnmanagedAccessor<#=typename#>(data); }
+
+		public class UnmanagedAccessor<#=typename#> : UnmanagedAccessorBase<System.<#=typename#>>
+		{
+			public UnmanagedAccessor<#=typename#>(long size) : base(size) { }
+			public UnmanagedAccessor<#=typename#>(System.<#=typename#>[] data) : base(data) { }
+
+			public override System.<#=typename#> this[long index]
+			{
+				get
+				{
+					Allocate();
+					unsafe 
+					{
+						return m_dataPtr != IntPtr.Zero ? ((System.<#=typename#>*)m_dataPtr.ToPointer())[index] : m_data[index];
+					}
+				}
+				set
+				{
+					Allocate();
+					if (m_dataPtr != IntPtr.Zero)
+					{
+						unsafe 
+						{
+							((System.<#=typename#>*)m_dataPtr.ToPointer())[index] = value;
+						}
+					}
+					else
+					{
+						m_data[index] = value;
+					}
+				}
+			}
+		}
+<# } #>
+	}
+}

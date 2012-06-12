@@ -29,3 +29,10 @@ doc/doxygen
 */NumCIL/*/bin/*
 */CIL/*/bin/*
 */CIL/*/obj/*
+bridge/NumCIL/NumCIL.Unsafe/Aggregate.cs
+bridge/NumCIL/NumCIL.Unsafe/Apply.cs
+bridge/NumCIL/NumCIL.Unsafe/Copy.cs
+bridge/NumCIL/NumCIL.Unsafe/CreateAccessor.cs
+bridge/NumCIL/NumCIL.Unsafe/Pinner.cs
+bridge/NumCIL/NumCIL.Unsafe/Reduce.cs
+bridge/NumCIL/NumCIL/TypedArrays.cs
