@@ -52,7 +52,7 @@ namespace NumCIL
                 long offset = arg.Shape.Offset + (blockoffset * arg.Shape.Dimensions[0].Stride);
                 lengths[0] = (arg.Shape.Dimensions[0].Length / nblocks) + (blockno == 0 ? arg.Shape.Dimensions[0].Length % nblocks : 0);
 
-                return new NdArray<T>(arg.m_data, new Shape(lengths, offset, arg.Shape.Dimensions.Select(x => x.Stride).ToArray()));
+                return new NdArray<T>(arg.DataAccessor, new Shape(lengths, offset, arg.Shape.Dimensions.Select(x => x.Stride).ToArray()));
             }
 
             internal static void BinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
@@ -63,10 +63,12 @@ namespace NumCIL
                     System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
+                    @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
-                        System.Threading.ThreadPool.QueueUserWorkItem((args) => {
+                        System.Threading.ThreadPool.QueueUserWorkItem((args) => 
+                        {
                             int block = (int)args;
 
                             UFunc.UFunc_Op_Inner_Binary_Flush(op, Reshape(in1, block, totalblocks), Reshape(in2, block, totalblocks), Reshape(@out, block, totalblocks));
@@ -88,13 +90,12 @@ namespace NumCIL
             internal static void UnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IUnaryOp<T>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && false)
                 {
                     System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
-                    long nelems = @out.Shape.Elements;
-                    long nelemsprblock = nelems / totalblocks;
+                    @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
@@ -127,8 +128,7 @@ namespace NumCIL
                     System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
-                    long nelems = @out.Shape.Elements;
-                    long nelemsprblock = nelems / totalblocks;
+                    @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
@@ -155,13 +155,12 @@ namespace NumCIL
             internal static void UnaryConvOp<Ta, Tb, C>(IUnaryConvOp<Ta, Tb> op, NdArray<Ta> in1, NdArray<Tb> @out)
                 where C : struct, IUnaryConvOp<Ta, Tb>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && (@out.Shape.Elements / _no_blocks) > 128)
                 {
                     System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
-                    long nelems = @out.Shape.Elements;
-                    long nelemsprblock = nelems / totalblocks;
+                    @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {

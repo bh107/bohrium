@@ -179,8 +179,8 @@ namespace NumCIL
             Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
             @out = v.Item3;
 
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2));
+            if (@out.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2));
             else
                 FlushMethods.ApplyBinaryOp<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), @out);
 
@@ -263,8 +263,8 @@ namespace NumCIL
         {
             NdArray<T> v = SetupApplyHelper<T>(in1, @out);
 
-            if (v.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)v.m_data).AddOperation(op, v, in1);
+            if (v.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)v.DataAccessor).AddOperation(op, v, in1);
             else
                 FlushMethods.ApplyUnaryOp<T, C>(op, in1, v);
 
@@ -340,8 +340,8 @@ namespace NumCIL
         private static void Apply_Entry_Nullary<T, C>(C op, NdArray<T> @out)
             where C : struct, INullaryOp<T>
         {
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out);
+            if (@out.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out);
             else
                 FlushMethods.ApplyNullaryOp<T, C>(op, @out);
         }

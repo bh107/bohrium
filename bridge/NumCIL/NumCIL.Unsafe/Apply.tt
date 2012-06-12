@@ -1,0 +1,501 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+using System.Runtime.InteropServices;
+
+namespace NumCIL.Unsafe
+{
+    internal static class Apply
+    {
+<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+        /// <summary>
+        /// Unsafe implementation of applying a binary operation
+        /// </summary>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="in2">The right-hand-side input argument</param>
+        /// <param name="out">The output target</param>
+        internal static void UFunc_Op_Inner_Binary_Flush_<#=typename#><C>(C op, NdArray<System.<#=typename#>> in1, NdArray<System.<#=typename#>> in2, ref NdArray<System.<#=typename#>> @out)
+            where C : IBinaryOp<System.<#=typename#>>
+        {
+            unsafe
+            {
+                using (var f1 = new Pinner(in1.DataAccessor))
+                using (var f2 = new Pinner(in2.DataAccessor))
+                using (var f3 = new Pinner(@out.DataAccessor))
+                {
+                    var d1 = (System.<#=typename#>*)f1.ptr;
+                    var d2 = (System.<#=typename#>*)f2.ptr;
+                    var d3 = (System.<#=typename#>*)f3.ptr;
+
+                    if (@out.Shape.Dimensions.Length == 1)
+                    {
+                        long totalOps = @out.Shape.Dimensions[0].Length;
+
+                        long ix1 = in1.Shape.Offset;
+                        long ix2 = in2.Shape.Offset;
+                        long ix3 = @out.Shape.Offset;
+
+                        long stride1 = in1.Shape.Dimensions[0].Stride;
+                        long stride2 = in2.Shape.Dimensions[0].Stride;
+                        long stride3 = @out.Shape.Dimensions[0].Stride;
+
+                        if (stride1 == stride2 && stride2 == stride3 && ix1 == ix2 && ix2 == ix3)
+                        {
+                            //Best case, all are equal, just keep a single counter
+                            for (long i = 0; i < totalOps; i++)
+                            {
+                                d3[ix1] = op.Op(d1[ix1], d2[ix1]);
+                                ix1 += stride1;
+                            }
+                        }
+                        else
+                        {
+                            for (long i = 0; i < totalOps; i++)
+                            {
+                                //We need all three counters
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += stride1;
+                                ix2 += stride2;
+                                ix3 += stride3;
+                            }
+                        }
+                    }
+                    else if (@out.Shape.Dimensions.Length == 2)
+                    {
+                        long opsOuter = @out.Shape.Dimensions[0].Length;
+                        long opsInner = @out.Shape.Dimensions[1].Length;
+
+                        long ix1 = in1.Shape.Offset;
+                        long ix2 = in2.Shape.Offset;
+                        long ix3 = @out.Shape.Offset;
+
+                        long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                        long outerStride2 = in2.Shape.Dimensions[0].Stride;
+                        long outerStride3 = @out.Shape.Dimensions[0].Stride;
+
+                        long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                        long innerStride2 = in2.Shape.Dimensions[1].Stride;
+                        long innerStride3 = @out.Shape.Dimensions[1].Stride;
+
+                        outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                        outerStride2 -= innerStride2 * in2.Shape.Dimensions[1].Length;
+                        outerStride3 -= innerStride3 * @out.Shape.Dimensions[1].Length;
+
+                        //Loop unrolling here gives a marginal speed increase
+
+                        long remainder = opsInner % 4;
+                        long fulls = opsInner / 4;
+
+                        for (long i = 0; i < opsOuter; i++)
+                        {
+                            for (long j = 0; j < fulls; j++)
+                            {
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += innerStride1;
+                                ix2 += innerStride2;
+                                ix3 += innerStride3;
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += innerStride1;
+                                ix2 += innerStride2;
+                                ix3 += innerStride3;
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += innerStride1;
+                                ix2 += innerStride2;
+                                ix3 += innerStride3;
+                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                ix1 += innerStride1;
+                                ix2 += innerStride2;
+                                ix3 += innerStride3;
+                            }
+
+                            switch (remainder)
+                            {
+                                case 1:
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    break;
+                                case 2:
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    break;
+                                case 3:
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                    break;
+                            }
+
+                            ix1 += outerStride1;
+                            ix2 += outerStride2;
+                            ix3 += outerStride3;
+                        }
+                    }
+                    else
+                    {
+                        //The inner 3 dimensions are optimized
+                        long n = in1.Shape.Dimensions.LongLength - 3;
+                        long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                        long[] counters = new long[limits.LongLength];
+
+                        long totalOps = limits.Length == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                        //This chunk of variables prevents repeated calculations of offsets
+                        long dimIndex0 = 0 + limits.LongLength;
+                        long dimIndex1 = 1 + limits.LongLength;
+                        long dimIndex2 = 2 + limits.LongLength;
+
+                        long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                        long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                        long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                        long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                        long outerStride2 = in2.Shape.Dimensions[dimIndex0].Stride;
+                        long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+
+                        long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                        long innerStride2 = in2.Shape.Dimensions[dimIndex1].Stride;
+                        long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+
+                        long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+                        long innerInnerStride2 = in2.Shape.Dimensions[dimIndex2].Stride;
+                        long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                        outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                        outerStride2 -= innerStride2 * in2.Shape.Dimensions[dimIndex1].Length;
+                        outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+
+                        innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                        innerStride2 -= innerInnerStride2 * in2.Shape.Dimensions[dimIndex2].Length;
+                        innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                        for (long outer = 0; outer < totalOps; outer++)
+                        {
+                            //Get the array offset for the first element in the outer dimension
+                            long ix1 = in1.Shape[counters];
+                            long ix2 = in2.Shape[counters];
+                            long ix3 = @out.Shape[counters];
+
+                            for (long i = 0; i < opsOuter; i++)
+                            {
+                                for (long j = 0; j < opsInner; j++)
+                                {
+                                    for (long k = 0; k < opsInnerInner; k++)
+                                    {
+                                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                        ix1 += innerInnerStride1;
+                                        ix2 += innerInnerStride2;
+                                        ix3 += innerInnerStride3;
+                                    }
+
+                                    ix1 += innerStride1;
+                                    ix2 += innerStride2;
+                                    ix3 += innerStride3;
+                                }
+
+                                ix1 += outerStride1;
+                                ix2 += outerStride2;
+                                ix3 += outerStride3;
+                            }
+
+                            if (counters.LongLength > 0)
+                            {
+                                //Basically a ripple carry adder
+                                long p = counters.LongLength - 1;
+                                while (++counters[p] == limits[p] && p > 0)
+                                {
+                                    counters[p] = 0;
+                                    p--;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Unsafe implementation of applying a unary operation
+        /// </summary>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        internal static void UFunc_Op_Inner_Unary_Flush_<#=typename#><C>(C op, NdArray<System.<#=typename#>> in1, ref NdArray<System.<#=typename#>> @out)
+            where C : IUnaryOp<System.<#=typename#>>
+        {
+            unsafe
+            {
+                using (var f1 = new Pinner(in1.DataAccessor))
+                using (var f2 = new Pinner(@out.DataAccessor))
+                {
+                    var d1 = (System.<#=typename#>*)f1.ptr;
+                    var d2 = (System.<#=typename#>*)f2.ptr;
+
+                    if (@out.Shape.Dimensions.Length == 1)
+                    {
+                        long totalOps = @out.Shape.Dimensions[0].Length;
+
+                        long ix1 = in1.Shape.Offset;
+                        long ix2 = @out.Shape.Offset;
+
+                        long stride1 = in1.Shape.Dimensions[0].Stride;
+                        long stride2 = @out.Shape.Dimensions[0].Stride;
+
+
+                        if (stride1 == stride2 && ix1 == ix2)
+                        {
+                            //Best case, all are equal, just keep a single counter
+                            for (long i = 0; i < totalOps; i++)
+                            {
+                                d2[ix1] = op.Op(d1[ix1]);
+                                ix1 += stride1;
+                            }
+                        }
+                        else
+                        {
+                            for (long i = 0; i < totalOps; i++)
+                            {
+                                d2[ix2] = op.Op(d1[ix1]);
+                                ix1 += stride1;
+                                ix2 += stride2;
+                            }
+                        }
+                    }
+                    else if (@out.Shape.Dimensions.Length == 2)
+                    {
+                        long opsOuter = @out.Shape.Dimensions[0].Length;
+                        long opsInner = @out.Shape.Dimensions[1].Length;
+
+                        long ix1 = in1.Shape.Offset;
+                        long ix2 = @out.Shape.Offset;
+
+                        long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                        long outerStride2 = @out.Shape.Dimensions[0].Stride;
+
+                        long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                        long innerStride2 = @out.Shape.Dimensions[1].Stride;
+
+                        outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                        outerStride2 -= innerStride2 * @out.Shape.Dimensions[1].Length;
+
+                        for (long i = 0; i < opsOuter; i++)
+                        {
+                            for (long j = 0; j < opsInner; j++)
+                            {
+                                d2[ix2] = op.Op(d1[ix1]);
+                                ix1 += innerStride1;
+                                ix2 += innerStride2;
+                            }
+
+                            ix1 += outerStride1;
+                            ix2 += outerStride2;
+                        }
+                    }
+                    else
+                    {
+                        long n = in1.Shape.Dimensions.LongLength - 3;
+                        long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                        long[] counters = new long[limits.LongLength];
+
+                        long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                        //This chunck of variables are used to prevent repeated calculations of offsets
+                        long dimIndex0 = 0 + limits.LongLength;
+                        long dimIndex1 = 1 + limits.LongLength;
+                        long dimIndex2 = 2 + limits.LongLength;
+
+                        long opsOuter = @out.Shape.Dimensions[0 + limits.LongLength].Length;
+                        long opsInner = @out.Shape.Dimensions[1 + limits.LongLength].Length;
+                        long opsInnerInner = @out.Shape.Dimensions[2 + limits.LongLength].Length;
+
+                        long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                        long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+
+                        long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                        long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+
+                        long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+                        long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                        outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                        outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+
+                        innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                        innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                        for (long outer = 0; outer < totalOps; outer++)
+                        {
+                            //Get the array offset for the first element in the outer dimension
+                            long ix1 = in1.Shape[counters];
+                            long ix3 = @out.Shape[counters];
+
+
+                            for (long i = 0; i < opsOuter; i++)
+                            {
+                                for (long j = 0; j < opsInner; j++)
+                                {
+                                    for (long k = 0; k < opsInnerInner; k++)
+                                    {
+                                        d2[ix3] = op.Op(d1[ix1]);
+                                        ix1 += innerInnerStride1;
+                                        ix3 += innerInnerStride3;
+                                    }
+
+                                    ix1 += innerStride1;
+                                    ix3 += innerStride3;
+                                }
+
+                                ix1 += outerStride1;
+                                ix3 += outerStride3;
+                            }
+
+                            if (counters.LongLength > 0)
+                            {
+                                //Basically a ripple carry adder
+                                long p = counters.LongLength - 1;
+                                while (++counters[p] == limits[p] && p > 0)
+                                {
+                                    counters[p] = 0;
+                                    p--;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Unsafe implementation of applying a floating point nullary operation
+        /// </summary>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="out">The output target</param>
+        internal static void UFunc_Op_Inner_Nullary_Flush_<#=typename#><C>(C op, NdArray<System.<#=typename#>> @out)
+            where C : INullaryOp<System.<#=typename#>>
+        {
+            unsafe
+            {
+                using (var f = new Pinner(@out.DataAccessor))
+                {
+                    var d = (System.<#=typename#>*)f.ptr;
+
+                    if (@out.Shape.Dimensions.Length == 1)
+                    {
+                        long totalOps = @out.Shape.Dimensions[0].Length;
+                        long ix = @out.Shape.Offset;
+                        long stride = @out.Shape.Dimensions[0].Stride;
+
+                        for (long i = 0; i < totalOps; i++)
+                        {
+                            d[ix] = op.Op();
+                            ix += stride;
+                        }
+                    }
+                    else if (@out.Shape.Dimensions.Length == 2)
+                    {
+                        long opsOuter = @out.Shape.Dimensions[0].Length;
+                        long opsInner = @out.Shape.Dimensions[1].Length;
+
+                        long ix = @out.Shape.Offset;
+                        long outerStride = @out.Shape.Dimensions[0].Stride;
+                        long innerStride = @out.Shape.Dimensions[1].Stride;
+
+                        outerStride -= innerStride * @out.Shape.Dimensions[1].Length;
+
+                        for (long i = 0; i < opsOuter; i++)
+                        {
+                            for (long j = 0; j < opsInner; j++)
+                            {
+                                d[ix] = op.Op();
+                                ix += innerStride;
+                            }
+
+                            ix += outerStride;
+                        }
+                    }
+                    else
+                    {
+                        long n = @out.Shape.Dimensions.LongLength - 3;
+                        long[] limits = @out.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                        long[] counters = new long[limits.LongLength];
+
+                        long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                        long dimIndex0 = 0 + limits.LongLength;
+                        long dimIndex1 = 1 + limits.LongLength;
+                        long dimIndex2 = 2 + limits.LongLength;
+
+                        long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                        long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                        long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                        long outerStride = @out.Shape.Dimensions[dimIndex0].Stride;
+                        long innerStride = @out.Shape.Dimensions[dimIndex1].Stride;
+                        long innerInnerStride = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                        outerStride -= innerStride * @out.Shape.Dimensions[dimIndex1].Length;
+                        innerStride -= innerInnerStride * @out.Shape.Dimensions[dimIndex2].Length;
+
+                        for (long outer = 0; outer < totalOps; outer++)
+                        {
+                            //Get the array offset for the first element in the outer dimension
+                            long ix = @out.Shape[counters];
+
+                            for (long i = 0; i < opsOuter; i++)
+                            {
+                                for (long j = 0; j < opsInner; j++)
+                                {
+                                    for (long k = 0; k < opsInnerInner; k++)
+                                    {
+                                        d[ix] = op.Op();
+                                        ix += innerInnerStride;
+                                    }
+
+                                    ix += innerStride;
+                                }
+
+                                ix += outerStride;
+                            }
+
+                            if (counters.LongLength > 0)
+                            {
+                                //Basically a ripple carry adder
+                                long p = counters.LongLength - 1;
+                                while (++counters[p] == limits[p] && p > 0)
+                                {
+                                    counters[p] = 0;
+                                    p--;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+<# } #>
+	}
+}

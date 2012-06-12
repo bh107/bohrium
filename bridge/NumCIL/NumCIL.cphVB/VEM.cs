@@ -508,22 +508,22 @@ namespace NumCIL.cphVB
         {
             PInvoke.cphvb_array_ptr basep;
 
-            if (view.m_data is cphVBAccessor<T>)
+            if (view.DataAccessor is cphVBAccessor<T>)
             {
-                basep = ((cphVBAccessor<T>)view.m_data).Pin();
+                basep = ((cphVBAccessor<T>)view.DataAccessor).Pin();
             }
             else
             {
-                if (view.m_data.Tag is ViewPtrKeeper)
+                if (view.DataAccessor.Tag is ViewPtrKeeper)
                 {
-                    basep = ((ViewPtrKeeper)view.m_data.Tag).Pointer;
+                    basep = ((ViewPtrKeeper)view.DataAccessor.Tag).Pointer;
                 }
                 else
                 {
-                    GCHandle h = GCHandle.Alloc(view.m_data.Data, GCHandleType.Pinned);
-                    basep = CreateArray<T>(view.m_data.Data.Length);
+                    GCHandle h = GCHandle.Alloc(view.DataAccessor.AsArray(), GCHandleType.Pinned);
+                    basep = CreateArray<T>(view.DataAccessor.AsArray().Length);
                     basep.Data = h.AddrOfPinnedObject();
-                    view.m_data.Tag = new ViewPtrKeeper(basep, h);
+                    view.DataAccessor.Tag = new ViewPtrKeeper(basep, h);
                 }
             }
 
@@ -660,7 +660,7 @@ namespace NumCIL.cphVB
             if (!SupportsRandom)
                 throw new cphVBException("The VEM/VE setup does not support the random function");
 
-            if (op1.Shape.Offset != 0 || !op1.Shape.IsPlain || op1.Shape.Elements != op1.m_data.Length)
+            if (op1.Shape.Offset != 0 || !op1.Shape.IsPlain || op1.Shape.Elements != op1.DataAccessor.Length)
                 throw new Exception("The shape of the element that is sent to the random implementation must be a non-shape plain array");
 
             GCHandle gh = GCHandle.Alloc(

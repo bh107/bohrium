@@ -3,10 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.UInt16
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#
+foreach(string tpn in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"})
 {
-    using T = System.UInt16;
-    using InArray = NumCIL.Generic.NdArray<System.UInt16>;
+	string typename = tpn;
+	switch (typename)
+	{
+		case "Single":
+			typename = "Float";
+			break;
+		case "SByte":
+			typename = "Int8";
+			break;
+		case "Byte":
+			typename = "UInt8";
+			break;
+	}
+#>
+
+namespace NumCIL.<#=typename#>
+{
+    using T = System.<#=tpn#>;
+    using InArray = NumCIL.Generic.NdArray<System.<#=tpn#>>;
     using OutArray = NdArray;
 
     /// <summary>
@@ -26,7 +46,7 @@ namespace NumCIL.UInt16
         /// <summary>
         /// A reference to the underlying data storage
         /// </summary>
-        public T[] Data { get { return value.Data; } }
+        public T[] AsArray() { return value.AsArray(); }
         /// <summary>
         /// Gets a subview on the array
         /// </summary>
@@ -93,6 +113,10 @@ namespace NumCIL.UInt16
         /// A debug tag used for naming a view
         /// </summary>
         public string Name { get { return this.value.Name; } set { this.value.Name = value; } }
+        /// <summary>
+        /// The data accessor providing the data storage
+        /// </summary>
+        public NumCIL.Generic.IDataAccessor<T> DataAccessor { get { return this.value.DataAccessor; } }
 
         /// <summary>
         /// Constructs a NdArray that is a scalar wrapper,
@@ -475,12 +499,6 @@ namespace NumCIL.UInt16
         /// <returns>An NdArray with all values rounded to the nearest integer</returns>
         public OutArray Round(OutArray @out = null) { return UFunc.Apply<T, Round>(this, @out); }
         /// <summary>
-        /// Returns a new NdArray that has the absolute value of all elements in this array
-        /// </summary>
-        /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
-        /// <returns>An NdArray with all absolute values</returns>
-        public OutArray Abs(OutArray @out = null) { return UFunc.Apply<T, Abs>(this, @out); }
-        /// <summary>
         /// Returns a new NdArray that is the result of calculating the square root for all the elements in this NdArray
         /// </summary>
         /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
@@ -492,12 +510,20 @@ namespace NumCIL.UInt16
         /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
         /// <returns>An NdArray with the exponent of all values</returns>
         public OutArray Exp(OutArray @out = null) { return UFunc.Apply<T, Exp>(this, @out); }
+<# if (typename[0] != 'U') { #>
+        /// <summary>
+        /// Returns a new NdArray that has the absolute value of all elements in this array
+        /// </summary>
+        /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
+        /// <returns>An NdArray with all absolute values</returns>
+        public OutArray Abs(OutArray @out = null) { return UFunc.Apply<T, Abs>(this, @out); }
         /// <summary>
         /// Returns a new NdArray with the negated value of all elements in this NdArray
         /// </summary>
         /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
         /// <returns>An NdArray with all values negated</returns>
         public OutArray Negate(OutArray @out = null) { return UFunc.Apply<T, Negate>(this, @out); }
+<# } #>
         /// <summary>
         /// Returns a new NdArray that is the result of calculating the logarithmic value of all the elements in this NdArray
         /// </summary>
@@ -644,6 +670,117 @@ namespace NumCIL.UInt16
         /// <returns>A scalar value that is the minimum of all elements</returns>
         public T Min() { return UFunc.Aggregate<T, Min>(this); }
         #endregion
+
+		#region Conversion operators
+        <# 
+		if (tpn != "Double") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
+        public static explicit operator NumCIL.Double.NdArray(OutArray a) { return UFunc.Apply<T, double, ToDouble>(a); }
+        <# 
+		}
+		
+		if (tpn != "Single") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
+        public static explicit operator NumCIL.Float.NdArray(OutArray a) { return UFunc.Apply<T, float, ToFloat>(a); }
+        <# 
+		} 
+		
+		if (tpn != "SByte") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
+        public static explicit operator NumCIL.Int8.NdArray(OutArray a) { return UFunc.Apply<T, sbyte, ToInt8>(a); }
+        <# 
+		} 
+		
+		if (tpn != "Int16") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
+        public static explicit operator NumCIL.Int16.NdArray(OutArray a) { return UFunc.Apply<T, short, ToInt16>(a); }
+        <# 
+		} 
+		
+		if (tpn != "Int32") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
+        public static explicit operator NumCIL.Int32.NdArray(OutArray a) { return UFunc.Apply<T, int, ToInt32>(a); }
+        <# 
+		} 
+		
+		if (tpn != "Int64") 
+		{
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
+        public static explicit operator NumCIL.Int64.NdArray(OutArray a) { return UFunc.Apply<T, long, ToInt64>(a); }
+        <#
+		}
+		if (tpn != "Byte") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
+        public static explicit operator NumCIL.UInt8.NdArray(OutArray a) { return UFunc.Apply<T, byte, ToUInt8>(a); }
+        <# 
+		}
+		
+		if (tpn != "UInt16") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
+        public static explicit operator NumCIL.UInt16.NdArray(OutArray a) { return UFunc.Apply<T, ushort, ToUInt16>(a); }
+        <# 
+		}
+		
+		if (tpn != "UInt32") 
+		{ 
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
+        public static explicit operator NumCIL.UInt32.NdArray(OutArray a) { return UFunc.Apply<T, uint, ToUInt32>(a); }
+        <# 
+		}
+		
+		if (tpn != "UInt64") 
+		{
+		#>/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The input array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
+        public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
+		<# } #>
+		#endregion
     }
 
     #region Struct instances for common operations
@@ -701,10 +838,16 @@ namespace NumCIL.UInt16
         /// The round operation
         /// </summary>
         public static readonly Round Round;
+<# if (typename[0] != 'U') { #>
         /// <summary>
         /// The absolute operation
         /// </summary>
         public static readonly Abs Abs;
+        /// <summary>
+        /// The negate operation
+        /// </summary>
+        public static readonly Negate Negate;
+<# } #>
         /// <summary>
         /// The square root operation
         /// </summary>
@@ -713,10 +856,6 @@ namespace NumCIL.UInt16
         /// The exponential operation
         /// </summary>
         public static readonly Exp Exp;
-        /// <summary>
-        /// The negate operation
-        /// </summary>
-        public static readonly Negate Negate;
         /// <summary>
         /// The logarithmic operation
         /// </summary>
@@ -1206,27 +1345,6 @@ namespace NumCIL.UInt16
         { return UFunc.Apply<T, Round>(@in, @out); }
     }
     /// <summary>
-    /// The absolute operation implementation
-    /// </summary>
-    public struct Abs : IUnaryOp<T>
-    {
-        /// <summary>
-        /// Implementation of the absolute operation
-        /// </summary>
-        /// <param name="a">The input operand</param>
-        /// <returns>The absolute value of the operand</returns>
-        public T Op(T a) { return (T)Math.Abs(a); }
-
-        /// <summary>
-        /// Applies the absolute operation to the operand
-        /// </summary>
-        /// <param name="in">The input operand</param>
-        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
-        /// <returns>The result of applying the operation to the input array</returns>
-        public static OutArray Apply(OutArray @in, OutArray @out = null)
-        { return UFunc.Apply<T, Abs>(@in, @out); }
-    }
-    /// <summary>
     /// The square root operation implementation
     /// </summary>
     public struct Sqrt : IUnaryOp<T>
@@ -1268,6 +1386,8 @@ namespace NumCIL.UInt16
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Exp>(@in, @out); }
     }
+
+<# if (typename[0] != 'U') { #>
     /// <summary>
     /// The negate operation implementation
     /// </summary>
@@ -1279,7 +1399,6 @@ namespace NumCIL.UInt16
         /// <param name="a">The input operand</param>
         /// <returns>The negated value of the operand</returns>
         public T Op(T a) { return (T)(-a); }
-
         /// <summary>
         /// Applies the negate operation to the operand
         /// </summary>
@@ -1289,6 +1408,29 @@ namespace NumCIL.UInt16
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Negate>(@in, @out); }
     }
+    /// <summary>
+    /// The absolute operation implementation
+    /// </summary>
+    public struct Abs : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the absolute operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The absolute value of the operand</returns>
+        public T Op(T a) { return (T)Math.Abs(a); }
+
+        /// <summary>
+        /// Applies the absolute operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Abs>(@in, @out); }
+    }
+<# } #>
+
     /// <summary>
     /// The logarithmic operation implementation
     /// </summary>
@@ -1473,6 +1615,139 @@ namespace NumCIL.UInt16
         public static OutArray Random(params long[] dimensions) { return Generator.Random(dimensions); }
     }
     #endregion
+
+	#region Conversion operators
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Single"/>
+    /// </summary>
+    public struct ToFloat : IUnaryConvOp<T, float> 
+    { 
+        /// <summary>
+        /// Converts the input value to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public float Op(T a) { return (float)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Double"/>
+    /// </summary>
+    public struct ToDouble : IUnaryConvOp<T, double> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public double Op(T a) { return (double)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.SByte"/>
+    /// </summary>
+    public struct ToInt8 : IUnaryConvOp<T, sbyte> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public sbyte Op(T a) { return (sbyte)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int16"/>
+    /// </summary>
+    public struct ToInt16 : IUnaryConvOp<T, short> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public short Op(T a) { return (short)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int32"/>
+    /// </summary>
+    public struct ToInt32 : IUnaryConvOp<T, int> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public int Op(T a) { return (int)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Int64"/>
+    /// </summary>
+    public struct ToInt64 : IUnaryConvOp<T, long> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public long Op(T a) { return (long)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.Byte"/>
+    /// </summary>
+    public struct ToUInt8 : IUnaryConvOp<T, byte> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public byte Op(T a) { return (byte)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt16"/>
+    /// </summary>
+    public struct ToUInt16 : IUnaryConvOp<T, ushort> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ushort Op(T a) { return (ushort)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt32"/>
+    /// </summary>
+    public struct ToUInt32 : IUnaryConvOp<T, uint> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public uint Op(T a) { return (uint)a; } 
+    }
+
+    /// <summary>
+    /// Operator for converting a value to <see cref="System.UInt64"/>
+    /// </summary>
+    public struct ToUInt64 : IUnaryConvOp<T, ulong> 
+    {
+        /// <summary>
+        /// Converts the input value to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="a">The value to convert</param>
+        /// <returns>The converted valued</returns>
+        public ulong Op(T a) { return (ulong)a; } 
+    }	
+	#endregion
 }
-
-
+<#
+}
+#>
