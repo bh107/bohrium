@@ -1,92 +1,88 @@
 import cphvbnumpy as np
-from numpytest import numpytest, NORMAL_TYPES
+from numpytest import numpytest,gen_views,TYPES
 import random
 
 
-class test_views(numpytest):
-    def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
-        for ndim in xrange(min_ndim,max_ndim+1):
-            shape = [1]*ndim
-            if iters:
-                yield shape #Min shape
-                yield [max_dim]*(ndim) #Max shape
-                for _ in xrange(iters):
-                    for d in xrange(len(shape)):
-                        shape[d] = self.random.randint(1,max_dim)
-                    yield shape
-            else:       
-                finished = False
-                while not finished:
-                    yield shape
-                    #Find next shape
-                    d = ndim-1
-                    while True:
-                        shape[d] += 1
-                        if shape[d] > max_dim:
-                            shape[d] = 1
-                            d -= 1
-                            if d < 0:
-                                finished = True
-                                break
-                        else:
-                            break
-
-    def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
-        for shape in self.gen_shapes(max_ndim, max_dim, iters, min_ndim):
-            #Base array
-            A = self.array(shape)
-            yield (A,"A = self.array(%s)"%(shape))
-            #Views with offset per dimension
-            for d in xrange(len(shape)):
-                if shape[d] > 1:
-                    s = "B = A["
-                    for _ in xrange(d):
-                        s += ":,"
-                    s += "1:,"
-                    for _ in xrange(len(shape)-(d+1)):
-                        s += ":,"
-                    s = s[:-1] + "]"
-                    exec s 
-                    yield (B,s)
-
-            #Views with negative offset per dimension
-            for d in xrange(len(shape)):
-                if shape[d] > 1:
-                    s = "B = A["
-                    for _ in xrange(d):
-                        s += ":,"
-                    s += ":-1,"
-                    for _ in xrange(len(shape)-(d+1)):
-                        s += ":,"
-                    s = s[:-1] + "]"
-                    exec s 
-                    yield (B,s)
-                    
-            #Views with steps per dimension
-            for d in xrange(len(shape)):
-                if shape[d] > 1:
-                    s = "B = A["
-                    for _ in xrange(d):
-                        s += ":,"
-                    s += "::2,"
-                    for _ in xrange(len(shape)-(d+1)):
-                        s += ":,"
-                    s = s[:-1] + "]"
-                    exec s 
-                    yield (B,s)
+class test_function(numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.0
-        self.config['dtypes'] = NORMAL_TYPES
-        self.size = 100
+        self.config['dtypes'] = TYPES.NORMAL
 
     def test_flatten(self):
-        for (A,cmd) in self.gen_views(3,64,10):
-            yield (np.flatten(A),cmd)
+        for (A,cmd) in gen_views(self,3,64,10):
+            yield (np.flatten(A),"%s; np.flatten(A)"%cmd)
 
     def test_diagonal(self):
-        for (A,cmd) in self.gen_views(2,64,10,min_ndim=2):
-            yield (np.diagonal(A),cmd)
+        for (A,cmd) in gen_views(self,2,64,10,min_ndim=2):
+            yield (np.diagonal(A),"%s; np.diagonal(A)"%cmd)
 
+class test_ufunc(numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0
+        self.config['dtypes'] = TYPES.NORMAL 
+
+    def test_ufunc(self):
+        fun = [np.add,\
+            np.subtract,\
+            np.divide,\
+            np.true_divide,\
+            np.floor_divide,\
+            np.multiply,\
+            np.greater,\
+            np.greater_equal,\
+            np.less,\
+            np.less_equal,\
+            np.not_equal,\
+            np.equal,\
+            np.logical_and,\
+            np.logical_or,\
+            np.logical_xor,\
+            np.logical_not,\
+            np.maximum,\
+            np.minimum,\
+            np.rint,\
+            np.sign,\
+            np.conj,\
+            np.exp,\
+            np.exp2,\
+            np.log,\
+            np.log2,\
+            np.log10,\
+            np.log1p,\
+            np.expm1,\
+            np.sqrt,\
+            np.square,\
+            np.reciprocal,\
+            np.ones_like,\
+            np.arcsin,\
+            np.arccos,\
+            np.arctan,\
+            np.arctan2,\
+            np.hypot,\
+            np.sinh,\
+            np.cosh,\
+            np.tanh,\
+            np.arcsinh,\
+            np.arccosh,\
+            np.arctanh,\
+            np.deg2rad,\
+            np.rad2deg,\
+            np.isfinite,\
+            np.isinf,\
+            np.isnan,\
+            np.signbit,\
+            np.floor,\
+            np.ceil,\
+            np.trunc,\
+            np.modf]
+        fun = [np.divide] 
+        for f in fun:
+            for (A,cmd) in gen_views(self,3,64,10):
+                B = self.array(A.shape)
+                cmd = "%s; B = array(%s); np.%s(A,B)"%(cmd,A.shape,str(f)[8:-2])
+                yield (f(A,B),cmd)
 
