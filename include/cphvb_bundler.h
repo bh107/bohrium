@@ -30,7 +30,7 @@ extern "C" {
  * @size Size of the instruction list
  * @return Number of consecutive bundeable instruction
  */
-cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts[], cphvb_intp size);
+cphvb_intp cphvb_inst_bundle(cphvb_instruction* insts, cphvb_intp start, cphvb_intp end);
 
 #ifdef __cplusplus
 }
