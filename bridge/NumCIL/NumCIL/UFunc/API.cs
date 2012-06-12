@@ -82,7 +82,7 @@ namespace NumCIL
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
         /// <returns>A tupple with broadcast compatible shapes for the inputs, and an output array</returns>
-        public static Tuple<Shape, Shape, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
+        private static Tuple<Shape, Shape, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
         {
             Tuple<Shape, Shape> broadcastshapes = Shape.ToBroadcastShapes(in1.Shape, in2.Shape);
             if (@out == null)
@@ -111,7 +111,7 @@ namespace NumCIL
         /// <param name="in1">The input array</param>
         /// <param name="out">The output target</param>
         /// <returns>A compatible output array or throws an exception</returns>
-        public static NdArray<T> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> @out)
+        private static NdArray<T> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> @out)
         {
             if (@out == null)
             {
@@ -140,7 +140,7 @@ namespace NumCIL
         /// <param name="in1">The input data</param>
         /// <param name="out">The output target</param>
         /// <returns>A compatible output array or throws an exception</returns>
-        public static NdArray<Tb> SetupApplyHelper<Ta, Tb>(NdArray<Ta> in1, NdArray<Tb> @out)
+        private static NdArray<Tb> SetupApplyHelper<Ta, Tb>(NdArray<Ta> in1, NdArray<Tb> @out)
         {
             if (@out == null)
             {
@@ -179,7 +179,10 @@ namespace NumCIL
             Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
             @out = v.Item3;
 
-            UFunc_Op_Inner_Binary<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
+            if (@out.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2));
+            else
+                FlushMethods.ApplyBinaryOp<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), @out);
 
             return @out;
         }
@@ -226,11 +229,7 @@ namespace NumCIL
         public static NdArray<T> Apply<T, C>(NdArray<T> in1, T scalar, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
-            @out = SetupApplyHelper<T>(in1, @out);
-
-            UFunc_Op_Inner_Unary<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, new C()), in1, ref @out);
-
-            return @out;
+            return Apply_Entry_Unary<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, new C()), in1, @out);
         }
 
         /// <summary>
@@ -263,7 +262,11 @@ namespace NumCIL
             where C : struct, IUnaryOp<T>
         {
             NdArray<T> v = SetupApplyHelper<T>(in1, @out);
-            UFunc_Op_Inner_Unary<T, C>(op, in1, ref v);
+
+            if (v.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)v.DataAccessor).AddOperation(op, v, in1);
+            else
+                FlushMethods.ApplyUnaryOp<T, C>(op, in1, v);
 
             return v;
         }
@@ -294,7 +297,7 @@ namespace NumCIL
             where C : struct, IUnaryConvOp<Ta, Tb>
         {
             NdArray<Tb> v = SetupApplyHelper(in1, @out);
-            UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(in1, ref v);
+            UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(in1, v);
 
             return v;
         }
@@ -310,14 +313,7 @@ namespace NumCIL
         /// <returns>The output value</returns>
         public static NdArray<T> Apply<T>(Func<T, T, T> op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
         {
-            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
-            @out = v.Item3;
-
-            //TODO: Should attempt to compile a new struct with the lambda function embedded to avoid the virtual function call overhead
-
-            UFunc_Op_Inner_Binary<T, BinaryLambdaOp<T>>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), ref @out);
-
-            return v.Item3;
+            return Apply_Entry_Binary<T, BinaryLambdaOp<T>>(op, in1, in2, @out);
         }
 
         /// <summary>
@@ -330,13 +326,24 @@ namespace NumCIL
         /// <returns>The output value</returns>
         public static NdArray<T> Apply<T>(Func<T, T> op, NdArray<T> in1, NdArray<T> @out = null)
         {
-            NdArray<T> v = SetupApplyHelper<T>(in1, @out);
-
             //TODO: Should attempt to compile a new struct with the lambda function embedded to avoid the virtual function call overhead
+            return Apply_Entry_Unary<T, UnaryLambdaOp<T>>(op, in1, @out);
+        }
 
-            UFunc_Op_Inner_Unary<T, UnaryLambdaOp<T>>(op, in1, ref v);
-
-            return v;
+        /// <summary>
+        /// Applies the operation to the output array
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The function to apply</param>
+        /// <param name="out">The output target</param>
+        private static void Apply_Entry_Nullary<T, C>(C op, NdArray<T> @out)
+            where C : struct, INullaryOp<T>
+        {
+            if (@out.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out);
+            else
+                FlushMethods.ApplyNullaryOp<T, C>(op, @out);
         }
 
         /// <summary>
@@ -349,7 +356,7 @@ namespace NumCIL
         public static void Apply<T, C>(C op, NdArray<T> @out)
             where C : struct, INullaryOp<T>
         {
-            UFunc_Op_Inner_Nullary<T, C>(op, @out);
+            Apply_Entry_Nullary<T, C>(op, @out);
         }
 
         /// <summary>
@@ -360,7 +367,7 @@ namespace NumCIL
         /// <param name="out">The output target</param>
         public static void Apply<T>(INullaryOp<T> op, NdArray<T> @out)
         {
-            var method = typeof(UFunc).GetMethod("UFunc_Op_Inner_Nullary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var method = typeof(UFunc).GetMethod("Apply_Entry_Nullary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             var gm = method.MakeGenericMethod(typeof(T), op.GetType());
             gm.Invoke(null, new object[] { op, @out });
         }

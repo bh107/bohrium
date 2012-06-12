@@ -9,27 +9,6 @@ namespace NumCIL
     public static partial class UFunc
     {
         /// <summary>
-        /// The inner execution of a <see cref="T:NumCIL.IBinaryOp{0}"/>.
-        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
-        /// and defer execution. Otherwise the binary flush operation is called
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="op">The operation instance</param>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="in2">The right-hand-side input argument</param>
-        /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
-            where C : struct, IBinaryOp<T>
-        {
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1, in2);
-            else
-                UFunc_Op_Inner_Binary_Flush<T, C>(op, in1, in2, ref @out);
-        }
-
-
-        /// <summary>
         /// Actually executes a binary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element.
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
@@ -40,15 +19,15 @@ namespace NumCIL
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Binary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> in2, ref NdArray<T> @out)
+        private static void UFunc_Op_Inner_Binary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
             where C : struct, IBinaryOp<T>
         {
             if (UnsafeAPI.UFunc_Op_Inner_Binary_Flush_Unsafe(op, in1, in2, ref @out))
                 return;
 
-            T[] d1 = in1.Data;
-            T[] d2 = in2.Data;
-            T[] d3 = @out.Data;
+            T[] d1 = in1.AsArray();
+            T[] d2 = in2.AsArray();
+            T[] d3 = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -260,30 +239,11 @@ namespace NumCIL
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
+        private static void UFunc_Op_Inner_Unary_Flush<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
             where C : struct, IUnaryOp<T>
         {
             if (!UnsafeAPI.UFunc_Op_Inner_Unary_Flush_Unsafe<T, C>(op, in1, ref @out))
-                UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, ref @out);
-        }
-
-        /// <summary>
-        /// The inner execution of a <see cref="T:NumCIL.IUnaryOp{0}"/>.
-        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
-        /// and defer execution. Otherwise the unary flush operation is called
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="op">The operation instance</param>
-        /// <param name="in1">The input argument</param>
-        /// <param name="out">The output target</param>
-        public static void UFunc_Op_Inner_Unary<T, C>(C op, NdArray<T> in1, ref NdArray<T> @out)
-            where C : struct, IUnaryOp<T>
-        {
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out, in1);
-            else
-                UFunc_Op_Inner_Unary_Flush<T, C>(op, in1, ref @out);
+                UFunc_Op_Inner_UnaryConv_Flush<T, T, C>(op, in1, @out);
         }
 
         /// <summary>
@@ -295,10 +255,10 @@ namespace NumCIL
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(NdArray<Ta> in1, ref NdArray<Tb> @out)
+        private static void UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Tb> @out)
             where C : struct, IUnaryConvOp<Ta, Tb>
         {
-            UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(new C(), in1, ref @out);
+            UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(new C(), in1, @out);
         }
 
         /// <summary>
@@ -312,11 +272,11 @@ namespace NumCIL
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(C op, NdArray<Ta> in1, ref NdArray<Tb> @out)
+        private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out)
             where C : IUnaryConvOp<Ta, Tb>
         {
-            Ta[] d1 = in1.Data;
-            Tb[] d2 = @out.Data;
+            Ta[] d1 = in1.AsArray();
+            Tb[] d2 = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -451,24 +411,6 @@ namespace NumCIL
         }
 
         /// <summary>
-        /// The inner execution of a <see cref="T:NumCIL.INullaryOp{0}"/>.
-        /// This method will determine if the accessor is a <see cref="T:NumCIL.Generic.ILazyAccessor{0}"/>,
-        /// and defer execution. Otherwise the nullary flush operation is called
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="op">The operation instance</param>
-        /// <param name="out">The output target</param>
-        private static void UFunc_Op_Inner_Nullary<T, C>(C op, NdArray<T> @out)
-            where C : struct, INullaryOp<T>
-        {
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(op, @out);
-            else
-                UFunc_Op_Inner_Nullary_Flush<T, C>(op, @out);
-        }
-
-        /// <summary>
         /// Actually executes a nullary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.INullaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
@@ -483,7 +425,7 @@ namespace NumCIL
             if (UnsafeAPI.UFunc_Op_Inner_Nullary_Flush_Unsafe<T, C>(op, @out))
                 return;
 
-            T[] d = @out.Data;
+            T[] d = @out.AsArray();
 
             if (@out.Shape.Dimensions.Length == 1)
             {
@@ -493,7 +435,7 @@ namespace NumCIL
 
                 for (long i = 0; i < totalOps; i++)
                 {
-                    d[i] = op.Op();
+                    d[ix] = op.Op();
                     ix += stride;
                 }
             }

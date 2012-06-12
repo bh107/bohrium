@@ -25,7 +25,7 @@ inline cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
     dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
 
     return ary->org_shape[0] / nblocks * block + //Whole blocks
-           ary->org_shape[0] % nblocks;//The reminder.
+           ary->org_shape[0] % nblocks;//The remainder.
 }
 
 //Returns the shape based on the current block.
@@ -35,7 +35,7 @@ inline cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
     dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
 
     //We block over the most significant dimension
-    //and the first block gets the reminder.
+    //and the first block gets the remainder.
     if(block == 0)
     {
         return ary->org_shape[0] / nblocks +

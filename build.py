@@ -28,45 +28,48 @@ import subprocess
 makecommand = "make"
 makefilename = "Makefile"
 
-def build(name, dir, fatal=False):
-    print "***Building %s***"%name
-    try:
-        p = subprocess.Popen([makecommand, "-f", makefilename], cwd=join(install_dir, dir))
-        err = p.wait()
-    except KeyboardInterrupt:
-        p.terminate()
+def build(components):
+    for (name, dir, fatal) in components:
+        print "***Building %s***"%name
+        try:
+            p = subprocess.Popen([makecommand, "-f", makefilename], cwd=join(install_dir, dir))
+            err = p.wait()
+        except KeyboardInterrupt:
+            p.terminate()
 
-    if fatal:
-        if err != 0:
-            print "A build error in %s is fatal. Exiting."%name
-            sys.exit(-1)
-    else:
-        if err != 0:
-            print "A build error in %s is not fatal. Continuing."%name
+        if fatal:
+            if err != 0:
+                print "A build error in %s is fatal. Exiting."%name
+                sys.exit(-1)
+        else:
+            if err != 0:
+                print "A build error in %s is not fatal. Continuing."%name
 
-def clean(name, dir):
-    print "***Cleaning %s***"%name
-    try:
-        p = subprocess.Popen([makecommand, "-f", makefilename, "clean"], cwd=join(install_dir, dir))
-        err = p.wait()
-    except KeyboardInterrupt:
-        p.terminate()
+def clean(components):
+    for (name, dir, fatal) in components:
+        print "***Cleaning %s***"%name
+        try:
+            p = subprocess.Popen([makecommand, "-f", makefilename, "clean"], cwd=join(install_dir, dir))
+            err = p.wait()
+        except KeyboardInterrupt:
+            p.terminate()
 
-def install(name, dir, fatal=False):
-    print "***Installing %s***"%name
-    try:
-        p = subprocess.Popen([makecommand, "-f", makefilename, "install"], cwd=join(install_dir, dir))
-        err = p.wait()
-    except KeyboardInterrupt:
-        p.terminate()
+def install(components):
+    for (name, dir, fatal) in components:
+        print "***Installing %s***"%name
+        try:
+            p = subprocess.Popen([makecommand, "-f", makefilename, "install"], cwd=join(install_dir, dir))
+            err = p.wait()
+        except KeyboardInterrupt:
+            p.terminate()
 
-    if fatal:
-        if err != 0:
-            print "A build error in %s is fatal. Exiting."%name
-            sys.exit(-1)
-    else:
-        if err != 0:
-            print "A build error in %s is not fatal. Continuing."%name
+        if fatal:
+            if err != 0:
+                print "A build error in %s is fatal. Exiting."%name
+                sys.exit(-1)
+        else:
+            if err != 0:
+                print "A build error in %s is not fatal. Continuing."%name
 
 def ldconfig():
     print "***Configure ldconfig***"
@@ -121,59 +124,32 @@ if __name__ == "__main__":
         print "Known commands: build, clean, install, rebuild"
         sys.exit(-1)
 
-    if cmd == "rebuild":
-        clean("INIPARSER", "iniparser")
-        clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMPUTE", "core/compute")
-        clean("CORE", "core")
-        clean("VE-GPU", "ve/gpu")
-        clean("VE-SIMPLE", "ve/simple")
-        clean("VE-SCORE", "ve/score")
-        clean("VE-MCORE", "ve/mcore")
-        clean("VEM-NODE", "vem/node")
-        #clean("VEM-CLUSTER", "vem/cluster")
-        clean("BRIDGE-NUMPY", "bridge/numpy")
+    components = [\
+                  ("INIPARSER","iniparser",True),\
+                  ("CORE-BUNDLER", "core/bundler", True),\
+                  ("CORE-COMPUTE", "core/compute", True),\
+                  ("CORE", "core", True),\
+                  ("VE-GPU", "ve/gpu", False),\
+                  ("VE-SIMPLE", "ve/simple", True),\
+                  ("VE-SCORE", "ve/score", False),\
+                  ("VE-MCORE", "ve/mcore", False),\
+                  ("VEM-NODE", "vem/node", True),\
+                  ("BRIDGE-NUMPY", "bridge/numpy", True),\
+                  ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  ("CPHVBNUMPY", "cphvbnumpy", True),\
+                 ]
 
+    if cmd == "rebuild":
+        clean(components)        
     if cmd == "build" or cmd == "rebuild":
-        build("INIPARSER", "iniparser", True)
-        build("CORE-BUNDLER", "core/bundler", True)
-        build("CORE-COMPUTE", "core/compute", True)
-        build("CORE", "core", True)
-        build("VE-GPU", "ve/gpu", False)
-        build("VE-SIMPLE", "ve/simple", False)
-        build("VE-SCORE", "ve/score", True)
-        build("VE-MCORE", "ve/mcore", True)
-        build("VEM-NODE", "vem/node", True)
-        #build("VEM-CLUSTER", "vem/cluster", False)
-        build("BRIDGE-NUMPY", "bridge/numpy", True)
+        build(components)        
     elif cmd == "clean":
-        clean("INIPARSER", "iniparser")
-        clean("CORE-BUNDLER", "core/bundler")
-        clean("CORE-COMPUTE", "core/compute")
-        clean("CORE", "core")
-        clean("VE-GPU", "ve/gpu")
-        clean("VE-SIMPLE", "ve/simple")
-        clean("VE-SCORE", "ve/score")
-        clean("VE-MCORE", "ve/mcore")
-        clean("VEM-NODE", "vem/node")
-        #clean("VEM-CLUSTER", "vem/cluster")
-        clean("BRIDGE-NUMPY", "bridge/numpy")
+        clean(components)        
     elif cmd == "install":
         if not exists("/opt/cphvb"):
             os.mkdir("/opt/cphvb")
-        install("INIPARSER", "iniparser", True)
-        install("CORE-BUNDLER", "core/bundler", True)
-        install("CORE-COMPUTE", "core/compute", True)
-        install("CORE", "core", True)
-        install("VE-GPU", "ve/gpu", False)
-        install("VE-SIMPLE", "ve/simple", True)
-        install("VE-SCORE", "ve/score",True)
-        install("VE-MCORE", "ve/mcore",True)
-        install("VEM-NODE", "vem/node", True)
-        #install("VEM-CLUSTER", "vem/cluster", False)
-        install("BRIDGE-NUMPY", "bridge/numpy",True)
+        install(components)        
         install_config();
-        #ldconfig()
     else:
         print "Unknown command: '%s'."%cmd
         print ""

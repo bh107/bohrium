@@ -108,10 +108,10 @@ namespace NumCIL
                     throw new Exception("The output array for matrix multiplication is not correctly shaped");
             }
 
-            if (@out.m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.m_data).AddOperation(new LazyMatmulOperation<T>(addop, mulop), @out, in1, in2);
+            if (@out.DataAccessor is ILazyAccessor<T>)
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(new LazyMatmulOperation<T>(addop, mulop), @out, in1, in2);
             else
-                UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
+                FlushMethods.Matmul<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
 
             return @out;
         }
@@ -145,9 +145,9 @@ namespace NumCIL
             long opsInner = @out.Shape.Dimensions[1].Length;
             long opsInnerInner = in1.Shape.Dimensions[1].Length;
 
-            T[] d1 = in1.Data;
-            T[] d2 = in2.Data;
-            T[] d3 = @out.Data;
+            T[] d1 = in1.AsArray();
+            T[] d2 = in2.AsArray();
+            T[] d3 = @out.AsArray();
 
             long ix1Base = in1.Shape.Offset;
             long outerStride1 = in1.Shape.Dimensions[0].Stride;
@@ -212,8 +212,8 @@ namespace NumCIL
             where CCOMBINE : struct, IBinaryOp<T>
         {
             T result;
-            T[] d1 = in1.Data;
-            T[] d2 = in2.Data;
+            T[] d1 = in1.AsArray();
+            T[] d2 = in2.AsArray();
 
             if (in1.Shape.Dimensions.Length == 1)
             {

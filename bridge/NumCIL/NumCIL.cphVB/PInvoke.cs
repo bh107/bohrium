@@ -823,7 +823,7 @@ namespace NumCIL.cphVB
         //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         //public delegate cphvb_error cphvb_execute_with_userfunc(cphvb_intp count, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef=typeof(InstructionMarshal))] cphvb_instruction[] inst_list);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate cphvb_error cphvb_reg_func(string lib, string fun, ref cphvb_intp id);
+        public delegate cphvb_error cphvb_reg_func(string fun, ref cphvb_intp id);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_create_array(
                                    cphvb_array_ptr basearray,
@@ -921,12 +921,11 @@ namespace NumCIL.cphVB
         /// Retrieves an user-defined function
         /// </summary>
         /// <param name="self">The component</param>
-        /// <param name="lib">Name of the shared library e.g. libmyfunc.so, When NULL the default library is used.</param>
         /// <param name="func">Name of the function e.g. myfunc</param>
         /// <param name="ret_func">Pointer to the function (output), Is NULL if the function doesn't exist</param>
         /// <returns>Error codes (CPHVB_SUCCESS)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static cphvb_error cphvb_component_get_func([In] ref cphvb_component self, [In] string lib, [In] string func,
+        public extern static cphvb_error cphvb_component_get_func([In] ref cphvb_component self, [In] string func,
                                [Out] IntPtr ret_func);
 
         /// <summary>
@@ -957,6 +956,26 @@ namespace NumCIL.cphVB
         /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
         [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static cphvb_error cphvb_data_set([In] cphvb_array_ptr array, [In] IntPtr data);
+
+        /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_malloc([In] cphvb_array_ptr array);
+
+        /// <summary>
+        /// Set the data pointer for the array.
+        /// Can only set to non-NULL if the data ptr is already NULL
+        /// </summary>
+        /// <param name="array">The array in question</param>
+        /// <param name="data">The new data pointer</param>
+        /// <returns>Error code (CPHVB_SUCCESS, CPHVB_ERROR)</returns>
+        [DllImport("libcphvb", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_data_free([In] cphvb_array_ptr array);
 
         /// <summary>
         /// Get the data pointer for the array.

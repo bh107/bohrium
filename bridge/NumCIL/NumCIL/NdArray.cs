@@ -22,11 +22,6 @@ namespace NumCIL.Generic
         public class ValueAccessor : IEnumerable<T>
         {
             /// <summary>
-            /// The reference to the data
-            /// </summary>
-            private T[] m_data = null;
-
-            /// <summary>
             /// The NdArray that owns this instance
             /// </summary>
             private readonly NdArray<T> m_parent;
@@ -49,16 +44,17 @@ namespace NumCIL.Generic
             {
                 get 
                 {
-                    if (m_data == null)
-                        m_data = m_parent.Data;
-
-                    return m_data[m_parent.Shape[index]]; 
+                    if (index.LongLength == 1 && index[0] == 0)
+                        return m_parent.DataAccessor[m_parent.Shape.Offset];
+                    else
+                        return m_parent.DataAccessor[m_parent.Shape[index]]; 
                 }
                 set 
                 {
-                    if (m_data == null)
-                        m_data = m_parent.Data;
-                    m_data[m_parent.Shape[index]] = value; 
+                    if (index.LongLength == 1 && index[0] == 0)
+                        m_parent.DataAccessor[m_parent.Shape.Offset] = value;
+                    else
+                        m_parent.DataAccessor[m_parent.Shape[index]] = value; 
                 }
             }
 
@@ -96,19 +92,17 @@ namespace NumCIL.Generic
         /// <summary>
         /// A reference to the underlying data storage, should not be accessed directly, may not be completely updated
         /// </summary>
-        public readonly IDataAccessor<T> m_data;
+        protected readonly IDataAccessor<T> m_data;
 
         /// <summary>
-        /// Gets the real underlying data, accessing this property may flush pending executions
+        /// Gets a reference to the underlying data accessor
         /// </summary>
-        public T[] Data
-        {
-            get 
-            {
-                return m_data.Data;
-            }
-        }
+        public IDataAccessor<T> DataAccessor { get { return m_data; } }
 
+        /// <summary>
+        /// Gets the real underlying data as a managed array, accessing this property may flush pending executions
+        /// </summary>
+        public T[] AsArray() { return m_data.AsArray(); }
 
         /// <summary>
         /// A reference to the shape instance that describes this view
@@ -316,7 +310,7 @@ namespace NumCIL.Generic
                     if (lv.Shape.Dimensions[i].Length != value.Shape.Dimensions[i].Length)
                         throw new Exception("Cannot assign incompatible arrays");
 
-                UFunc.UFunc_Op_Inner_Unary<T, NumCIL.CopyOp<T>>(new NumCIL.CopyOp<T>(), value, ref lv);
+                UFunc.Apply<T, NumCIL.CopyOp<T>>(value, lv);
             }
         }
 

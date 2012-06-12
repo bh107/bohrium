@@ -296,6 +296,8 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
 {
     if (cphvb_is_constant(instruction->operand[operand_no]))
         return instruction->constant.type;
+    else if (instruction->opcode == CPHVB_USERFUNC)
+        return instruction->userfunc->operand[operand_no]->type;
     else
         return instruction->operand[operand_no]->type;
 }

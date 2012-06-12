@@ -41,8 +41,7 @@ DLLEXPORT cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
 
 DLLEXPORT cphvb_error cphvb_ve_gpu_shutdown(void);
 
-DLLEXPORT cphvb_error cphvb_ve_gpu_reg_func(char *lib, 
-                                            char *fun, 
+DLLEXPORT cphvb_error cphvb_ve_gpu_reg_func(char *fun, 
                                             cphvb_intp *id);
 
 #ifdef __cplusplus

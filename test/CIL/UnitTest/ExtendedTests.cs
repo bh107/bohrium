@@ -21,19 +21,19 @@ namespace UnitTest
             c[new Range(0, 0, (long)Math.Sqrt(c.Shape.Length) + 1)] = 1;
 
             if (c.Value[99] != 1 || c.Value[22] != 1 || c.Value[10] != 0 || c.Value[12] != 0 || Add.Reduce(c).Value[0] != 10)
-                throw new Exception("Something failed in stride tricks");
+                throw new Exception(string.Format("Something failed in stride tricks: {0}, {1}, {2}, {3}, {4}", c.Value[99], c.Value[22], c.Value[10], c.Value[12], Add.Reduce(c).Value[0]));
 
 
             var d = Generate.Arange(8) + 1;
             var e = d.Repeat(2);
-            if (e.Data.LongLength != 16 || Add.Reduce(e).Value[0] != 72)
+            if (e.AsArray().LongLength != 16 || Add.Reduce(e).Value[0] != 72)
                 throw new Exception("Something failed in simple repeat");
             var f = d.Repeat(3);
-            if (f.Data.LongLength != 24 || Add.Reduce(f).Value[0] != 108)
+            if (f.AsArray().LongLength != 24 || Add.Reduce(f).Value[0] != 108)
                 throw new Exception("Something failed in simple repeat");
 
             var g = d.Repeat(new long[] { 1, 2, 1, 3, 4, 1, 1, 2 });
-            if (g.Data.LongLength != 15 || Add.Reduce(g).Value[0] != 69)
+            if (g.AsArray().LongLength != 15 || Add.Reduce(g).Value[0] != 69)
                 throw new Exception("Something failed in extended repeat");
 
             var h = d.Reshape(new Shape(new long[] { 2, 2, 2 }));
@@ -62,7 +62,7 @@ namespace UnitTest
                 throw new Exception("Something failed in axis repeat");
 
             var o = n.Flatten();
-            if (o.Data.LongLength != 24)
+            if (o.AsArray().LongLength != 24)
                 throw new Exception("Something failed in flatten");
 
             if (o.Sum() != 104 || o.Max() != 8)

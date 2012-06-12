@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NumCIL.Float;
+using NumCIL.Double;
 using NumCIL;
 using System.Linq.Expressions;
 
@@ -13,50 +13,43 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-			//Bad OS detection :)
-			if (System.IO.Path.PathSeparator == ':')
-			{
-	            Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", @"/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node");
-	            Environment.SetEnvironmentVariable("DYLD_LIBRARY_PATH", @"/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node");
-	            Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"/Users/kenneth/Udvikler/cphvb/config.osx.ini");
-			}
-			else
-			{
-				string path = Environment.GetEnvironmentVariable("PATH");
-	            Environment.SetEnvironmentVariable("PATH", path + @";Z:\Udvikler\cphvb\core;Z:\Udvikler\cphvb\vem\node;Z:\Udvikler\cphvb\pthread_win32");
-	            Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"Z:\Udvikler\cphvb\config.win.ini");
-                //Environment.SetEnvironmentVariable("CPHVB_CONFIG", @"config.ini");
-                //Environment.SetEnvironmentVariable("PATH", path + @";" + System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
-			}
+            NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
 
+            int threads;
+            if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_THREADS"), out threads))
+            {
+                int p1, p2;
+                System.Threading.ThreadPool.GetMaxThreads(out p1, out p2);
+                System.Threading.ThreadPool.SetMaxThreads(threads, p2);
+            }
 
             try
             {
+                TimeJacobi();
+                TimeScholes();
+                TimeJacobiFixed();
+                TimeShallowWater();
+                TimekNN();
+
+                //NumCIL.cphVB.Utility.Activate();
+
                 //TimeJacobi();
                 //TimeScholes();
                 //TimeJacobiFixed();
-                TimeShallowWater();
-                //TimekNN();
-
-                NumCIL.cphVB.Utility.Activate();
-
-                //TimeJacobi();
-                //TimeScholes();
-                //TimeJacobiFixed();
-                TimeShallowWater();
+                //TimeShallowWater();
                 //TimekNN();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                //Console.ReadLine();
             }
         }
 
         private static void TimeJacobi()
         {
-            long size = 100;
+            long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolver {0}x{0}", size)))
                 count = JacobiSolver.Solve(size, size);
@@ -66,17 +59,17 @@ namespace Tester
 
         private static void TimeJacobiFixed()
         {
-            long size = 5000;
+            long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, 10);
+                count = JacobiSolver.Solve(size, size, 2000);
 
             Console.WriteLine("Count: " + count.ToString());
         }
 
         private static void TimeScholes()
         {
-            long size = 320000;
+            long size = 3200000;
             long years = 36;
             double result;
 
@@ -88,7 +81,7 @@ namespace Tester
 
         private static void TimekNN()
         {
-            long size = 1000;
+            long size = 2000;
             long dims = 64;
             long k = 4;
             NdArray result;
@@ -97,15 +90,13 @@ namespace Tester
                 result = kNNSolver.Solve(size, dims, k);
 
             Console.WriteLine("Result: " + result.ToString());
-
-
         }
 
         private static void TimeShallowWater()
         {
-            long size = 1000;
+            long size = 5000;
             long timesteps = 10;
-            float r;
+            double r;
             using (new DispTimer(string.Format("ShallowWaterSolver {0}x{0} with {1} rounds", size, timesteps)))
                 r = ShallowWaterSolver.Solve(size, timesteps);
 
