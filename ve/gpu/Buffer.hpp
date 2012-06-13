@@ -32,7 +32,8 @@ private:
     ResourceManager* resourceManager;
     unsigned int device;
     OCLtype dataType;
-    cl::Buffer clBuffer;
+    size_t size;
+    cl::Buffer* clBuffer;
     cl::Event writeEvent;
     std::deque<cl::Event> readEvents;
     void cleanReadEvents();
@@ -41,6 +42,7 @@ protected:
 public:
     Buffer(size_t size,  ResourceManager* resourceManager);
     Buffer(size_t elements, OCLtype dataType, ResourceManager* resourceManager);
+    ~Buffer();
     void read(void* hostPtr);
     void write(void* hostPtr);
     void setWriteEvent(cl::Event);
