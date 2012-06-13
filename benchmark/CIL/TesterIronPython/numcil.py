@@ -422,7 +422,7 @@ class ndarray:
         if not tmp.Shape.IsPlain:
             tmp = tmp.Clone()
 
-        NumCIL.Utility.ToFile[self.dtype](tmp.Data, file, tmp.Shape.Offset, tmp.Shape.Elements)
+        NumCIL.Utility.ToFile[self.dtype](tmp.AsArray(), file, tmp.Shape.Offset, tmp.Shape.Elements)
 
 
 ndarray.owncls = ndarray
