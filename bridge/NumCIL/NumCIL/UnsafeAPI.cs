@@ -18,6 +18,14 @@ namespace NumCIL
         /// </summary>
         public static bool DisableUnsafeAPI { get; set; }
         /// <summary>
+        /// Gets or sets a value indicating if use of unsafe arrays is disabled
+        /// </summary>
+        public static bool DisableUnsafeArrays { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating at what size unsafe arrays are created (in bytes)
+        /// </summary>
+        public static long UnsafeArraysLargerThan { get; set; }
+        /// <summary>
         /// Gets a value indicating if unsafe operations are supported by the runtime/environment
         /// </summary>
         public static readonly bool IsUnsafeSupported;
@@ -173,6 +181,15 @@ namespace NumCIL
 
             if (Environment.GetEnvironmentVariable("NUMCIL_DISABLE_UNSAFE") != null)
                 DisableUnsafeAPI = true;
+
+            if (Environment.GetEnvironmentVariable("NUMCIL_DISABLE_UNSAFE_ARRAYS") != null)
+                DisableUnsafeArrays = true;
+
+            long size;
+            if (long.TryParse(Environment.GetEnvironmentVariable("NUMCIL_UNSAFE_SIZELIMIT"), out size))
+                UnsafeArraysLargerThan = size;
+            else
+                UnsafeArraysLargerThan = 100 * 1024 * 1024; //Default, larger than 100MB makes unsafe
         }
 
         /// <summary>
