@@ -22,11 +22,8 @@
 
 #include <CL/cl.hpp>
 #include <vector>
-<<<<<<< HEAD
 #include <map>
-=======
 #include <cphvb.h>
->>>>>>> master
 #ifdef STATS
 #include "timing.h"
 #endif
