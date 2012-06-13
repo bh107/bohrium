@@ -21,12 +21,11 @@
 #include <stdexcept>
 #include "Buffer.hpp"
 
-Buffer::Buffer(size_t size_, ResourceManager* resourceManager_) 
+Buffer::Buffer(size_t size, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)
     , dataType(OCL_UNKNOWN)
-    , size(size_)
-    , clBuffer(NULL)
+    , clBuffer(resourceManager->createBuffer(size))
     , writeEvent(resourceManager->completeEvent())
 {}
 
@@ -34,28 +33,17 @@ Buffer::Buffer(size_t elements, OCLtype dataType_, ResourceManager* resourceMana
     : resourceManager(resourceManager_)
     , device(0)
     , dataType(dataType_)
-    , size(elements * oclSizeOf(dataType))
-    , clBuffer(NULL)
+    , clBuffer(resourceManager->createBuffer(elements * oclSizeOf(dataType)))
     , writeEvent(resourceManager->completeEvent())
 {}
 
-Buffer::~Buffer()
-{
-    resourceManager->bufferDone(clBuffer);
-}
-
 void Buffer::read(void* hostPtr)
 {
-    if (clBuffer)
-        resourceManager->readBuffer(clBuffer, hostPtr, writeEvent, device);
-    else
-        throw std::runtime_error("Reading uninitialized cl::Buffer."); 
+    resourceManager->readBuffer(clBuffer, hostPtr, writeEvent, device);
 }
 
 void Buffer::write(void* hostPtr)
 {
-    if (!clBuffer)
-        clBuffer = resourceManager->newBuffer(size);
     writeEvent = resourceManager->enqueueWriteBuffer(clBuffer, hostPtr, allEvents(), device);
 }
 
@@ -104,8 +92,6 @@ void Buffer::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
     try
     {
-        if (!clBuffer)
-            clBuffer = resourceManager->newBuffer(size);
         kernel.setArg(argIndex, clBuffer);
     } catch (cl::Error err)
     {

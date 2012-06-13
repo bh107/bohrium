@@ -34,8 +34,6 @@ private:
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
-    typedef std::multimap<size_t,cl::Buffer*> BufferCache;
-    BufferCache bufferCache; 
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
     std::vector<size_t> maxWorkItemSizes;
@@ -51,22 +49,20 @@ public:
     double resourceBufferWrite;
     double resourceBufferRead;
     double resourceKernelExecute;
+    ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
     ResourceManager(cphvb_component* _component);
-    ~ResourceManager();
-    cl::Buffer* newBuffer(size_t size);
-    void bufferDone(cl::Buffer* buffer);
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
-    void readBuffer(const cl::Buffer* buffer,
+    void readBuffer(const cl::Buffer& buffer,
                     void* hostPtr, 
                     cl::Event waitFor,
                     unsigned int device);
     // We allways write asynchronous with NO events to wait for.
     // Because we just recieved the array from upstream
-    cl::Event enqueueWriteBuffer(cl::Buffer* buffer,
+    cl::Event enqueueWriteBuffer(const cl::Buffer& buffer,
                                  const void* hostPtr, 
                                  std::vector<cl::Event> waitFor, 
                                  unsigned int device);
