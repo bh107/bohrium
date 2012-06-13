@@ -18,7 +18,6 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
-#include <valgrind/callgrind.h>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -28,20 +27,10 @@ static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
 
-static cphvb_intp block_size = 1000;
+static cphvb_intp cphvb_ve_score_buffersizes = 0;
+static computeloop* cphvb_ve_score_compute_loops = NULL;
 
-timespec cphvb_diff(timespec start, timespec end)
-{
-    timespec temp;
-    if ((end.tv_nsec-start.tv_nsec)<0) {
-        temp.tv_sec = end.tv_sec-start.tv_sec-1;
-        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
-    } else {
-        temp.tv_sec = end.tv_sec-start.tv_sec;
-        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
-    }
-    return temp;
-}
+static cphvb_intp block_size = 1000;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
@@ -64,8 +53,33 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
 inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cphvb_intp end) {
 
     cphvb_intp i, k;
-    computeloop compute_loops[CPHVB_MAX_NO_INST];
+
+    //Make sure we have enough space
+    if ((end - start + 1) > cphvb_ve_score_buffersizes) 
+    {
+    	cphvb_intp mcount = (end - start + 1);
+
+    	//We only work in multiples of 1000
+    	if (mcount % 1000 != 0)
+    		mcount = (mcount + 1000) - (mcount % 1000);
+
+    	//Make sure we re-allocate on error
+    	cphvb_ve_score_buffersizes = 0;
+    	
+    	if (cphvb_ve_score_compute_loops != NULL) {
+    		free(cphvb_ve_score_compute_loops);
+    		cphvb_ve_score_compute_loops = NULL;
+    	}
+    	
+    	cphvb_ve_score_compute_loops = (computeloop*)malloc(sizeof(computeloop) * mcount);
+    	
+    	if (cphvb_ve_score_compute_loops == NULL)
+    		return CPHVB_OUT_OF_MEMORY;
+    	
+    	cphvb_ve_score_buffersizes = mcount;
+    }
     
+    computeloop* compute_loops = cphvb_ve_score_compute_loops;    
     /*
     // Strategy One:
     // Consecutively execute instructions one by one applying compute-loop immediately.
@@ -74,7 +88,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         cphvb_compute_apply( &instr[i] );
         instr[i].status = CPHVB_INST_DONE;
     }
-    */   
+    */
 
     /*
     // Strategy Two:
@@ -267,9 +281,14 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                     ret = random_impl(inst->userfunc, NULL);
                     inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
                 }
+                else if(inst->userfunc->id == matmul_impl_id)
+                {
+                    ret = matmul_impl(inst->userfunc, NULL);
+                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                }
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_INST_UNDONE;
+                    inst->status = CPHVB_INST_NOT_SUPPORTED;
                 }
 
                 break;
@@ -308,7 +327,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bundle_start    = bin_start;
                 bundle_end      = bundle_start + bundle_size-1;
 
-                //printf("\nINSTRUCTIONS: %ld-->%ld\n", bundle_start, bundle_end);
+				//printf("\nINSTRUCTIONS: %ld-->%ld\n", bundle_start, bundle_end);
                 block_execute( instruction_list, bundle_start, bundle_end );
                 cur_index += bundle_size-1;
         }

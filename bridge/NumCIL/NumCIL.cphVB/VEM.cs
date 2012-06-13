@@ -113,12 +113,6 @@ namespace NumCIL.cphVB
         private List<IInstruction> m_cleanups = new List<IInstruction>();
 
         /// <summary>
-        /// A statically allocated PInvoke buffer
-        /// </summary>
-        private readonly PInvoke.cphvb_instruction[] m_instBuffer = new PInvoke.cphvb_instruction[PInvoke.CPHVB_MAX_NO_INST];
-
-
-        /// <summary>
         /// Constructs a new VEM
         /// </summary>
         public VEM()
@@ -220,10 +214,41 @@ namespace NumCIL.cphVB
         /// <param name="inst_list">The list of instructions to execute</param>
         public void Execute(IEnumerable<IInstruction> inst_list)
         {
-            lock (m_executelock)
-                ExecuteWithoutLocks(inst_list);
+            var lst = inst_list;
+            List<IInstruction> cleanup_lst = null;
 
-            ExecuteCleanups();
+            if (!m_preventCleanup && m_cleanups.Count > 0)
+            {
+                lock (m_releaselock)
+                    cleanup_lst = System.Threading.Interlocked.Exchange(ref m_cleanups, new List<IInstruction>());
+
+                lst = lst.Concat(cleanup_lst);
+            }
+
+            long errorIndex = -1;
+
+            try
+            {
+                lock (m_executelock)
+                    ExecuteWithoutLocks(lst, out errorIndex);
+            }
+            catch
+            {
+                //This catch handler protects against leaks that happen during execution
+                if (cleanup_lst != null)
+                    lock (m_releaselock)
+                    {
+                        errorIndex -= inst_list.LongCount();
+                        if (errorIndex > 0)
+                        {
+                            cleanup_lst.RemoveRange(0, (int)errorIndex);
+                            cleanup_lst.AddRange(m_cleanups);
+                            System.Threading.Interlocked.Exchange(ref m_cleanups, cleanup_lst);
+                        }
+                    }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -238,8 +263,21 @@ namespace NumCIL.cphVB
                 lock (m_releaselock)
 				    lst = System.Threading.Interlocked.Exchange (ref m_cleanups, new List<IInstruction>());
 
-                lock (m_executelock)
-                    ExecuteWithoutLocks(lst);
+                long errorIndex = -1;
+                try
+                {
+                    lock (m_executelock)
+                        ExecuteWithoutLocks(lst, out errorIndex);
+                }
+                catch
+                {
+                    lock (m_releaselock)
+                    {
+                        lst.RemoveRange(0, (int)errorIndex);
+                        lst.AddRange(m_cleanups);
+                        System.Threading.Interlocked.Exchange(ref m_cleanups, lst);
+                    }
+                }
             }
         }
 
@@ -247,77 +285,58 @@ namespace NumCIL.cphVB
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
-        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list)
+        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list, out long errorIndex)
         {
             List<GCHandle> cleanups = new List<GCHandle>();
             long destroys = 0;
-            long total_i = 0;
+            errorIndex = -1;
 
             try
             {
-                int i = 0;
-                foreach (var inst in inst_list)
+                PInvoke.cphvb_instruction[] instrBuffer = inst_list.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+
+                foreach (var inst in instrBuffer)
                 {
-                    m_instBuffer[i] = (PInvoke.cphvb_instruction)inst;
-                    if (m_instBuffer[i].opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
+                    if (inst.opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
                         destroys++;
-                    if (m_instBuffer[i].userfunc != IntPtr.Zero)
+                    if (inst.userfunc != IntPtr.Zero)
                     {
-                        cleanups.Add(m_allocatedUserfuncs[m_instBuffer[i].userfunc]);
-                        m_allocatedUserfuncs.Remove(m_instBuffer[i].userfunc);
-                    }
-                        
-
-                    i++;
-                    total_i++;
-
-                    //cphVB has a statically defined max size of instructions, so we need to chop it up if there are too many instructions
-                    if (i >= m_instBuffer.Length)
-                    {
-                        PInvoke.cphvb_error e = m_childs[0].execute(m_instBuffer.LongLength, m_instBuffer);
-
-                        if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                        {
-                            if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
-                            {
-                                for (int ix = 0; ix < i; ix++)
-                                {
-                                    if (m_instBuffer[ix].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
-                                        throw new cphVBNotSupportedInstruction(m_instBuffer[ix].opcode, (total_i - i) + ix);
-                                }
-                            }
-
-                            throw new cphVBException(e);
-                        }
-
-                        i = 0;
+                        cleanups.Add(m_allocatedUserfuncs[inst.userfunc]);
+                        m_allocatedUserfuncs.Remove(inst.userfunc);
                     }
                 }
 
-                if (i != 0)
+                PInvoke.cphvb_error e = m_childs[0].execute(instrBuffer.LongLength, instrBuffer);
+
+                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 {
-                    PInvoke.cphvb_error e = m_childs[0].execute(i, m_instBuffer);
-
-                    if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                    if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
                     {
-                        if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
+                        for (long i = 0; i < instrBuffer.LongLength; i++)
                         {
-                            for(int ix = 0; ix < i; ix++)
+                            if (instrBuffer[i].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
                             {
-                                if (m_instBuffer[ix].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
-                                    throw new cphVBNotSupportedInstruction(m_instBuffer[ix].opcode, (total_i - i) + ix);
+                                errorIndex = i;
+                                throw new cphVBNotSupportedInstruction(instrBuffer[i].opcode, i);
+                            }
+
+                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_INST_DONE)
+                            {
+                                errorIndex = i;
+                                break;
                             }
                         }
-
-                        throw new cphVBException(e);
                     }
+
+                    throw new cphVBException(e);
                 }
+
             }
             finally
             {
                 if (destroys > 0)
                     System.Threading.Interlocked.Add(ref m_allocatedviews, -destroys);
-                
+
                 foreach (var h in cleanups)
                     h.Free();
             }
@@ -446,7 +465,6 @@ namespace NumCIL.cphVB
 
             ExecuteCleanups();
 
-            //TODO: Probably not good because the call will "free" the component as well, and that is semi-managed
             lock (m_executelock)
             {
                 if (m_childs != null)
