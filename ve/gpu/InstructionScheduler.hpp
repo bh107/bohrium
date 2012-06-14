@@ -23,7 +23,7 @@
 
 #include <map>
 #include <set>
-#include <cphvb_instruction.h>
+#include <cphvb.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 
@@ -37,18 +37,16 @@ private:
     ArrayMap arrayMap;
     FunctionMap functionMap;
     std::set<BaseArray*> discardSet;
-    void schedule(cphvb_instruction* inst);
     void sync(cphvb_array* base);
     void discard(cphvb_array* base);
     void executeBatch();
-    void ufunc(cphvb_instruction* inst);
-    void userdeffunc(cphvb_userfunc* userfunc);
+    cphvb_error ufunc(cphvb_instruction* inst);
+    cphvb_error userdeffunc(cphvb_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);
     void registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc);
-    void schedule(cphvb_intp instructionCount,
-                  cphvb_instruction* instructionList);
-    void forceFlush();
+    cphvb_error schedule(cphvb_intp instructionCount,
+                         cphvb_instruction* instructionList);
 };
 
 #endif

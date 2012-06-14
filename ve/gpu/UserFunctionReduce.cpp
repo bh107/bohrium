@@ -82,6 +82,16 @@ Kernel UserFunctionReduce::getKernel(cphvb_reduce_type* reduceDef,
     {
         std::stringstream source, kname;
         kname << "reduce" << std::hex << codeHash;
+        if (userFuncArg->operands[0]->type() == OCL_FLOAT16 || 
+            userFuncArg->operands[1]->type() == OCL_FLOAT16)
+        {
+            source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
+        }
+        else if (userFuncArg->operands[0]->type() == OCL_FLOAT64 ||
+                 userFuncArg->operands[0]->type() == OCL_FLOAT64)
+        {
+            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+        }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim, source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));

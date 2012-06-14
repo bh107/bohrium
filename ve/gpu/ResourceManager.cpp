@@ -53,6 +53,7 @@ ResourceManager::ResourceManager(cphvb_component* _component)
             foundPlatform = false;
         }
     }
+    std::vector<std::string> extensions;
     if (foundPlatform)
     {
         devices = context.getInfo<CL_CONTEXT_DEVICES>();
@@ -79,11 +80,42 @@ ResourceManager::ResourceManager(cphvb_component* _component)
                 for (cl_uint d = 0; d < maxWorkItemDims; ++d)
                     maxWorkItemSizes[d] = STD_MIN(maxWorkItemSizes[d],mwis[d]);
             }
+            extensions.push_back(dit->getInfo<CL_DEVICE_EXTENSIONS>());
         }
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
     
+    calcLocalShape();
+    registerExtensions(extensions);
+
+#ifdef STATS
+    batchBuild = 0.0;
+    batchSource = 0.0;
+    resourceCreateKernel = 0.0;
+    resourceBufferWrite = 0.0;
+    resourceBufferRead = 0.0;
+    resourceKernelExecute = 0.0;
+#endif
+}
+
+#ifdef STATS
+ResourceManager::~ResourceManager()
+{
+    std::cout << std::fixed;
+    std::cout << "------------------ STATS ------------------------" << std::endl;
+    std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
+    std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;
+    std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000.0 << std::endl;
+    std::cout << "Writing buffers:          " << resourceBufferWrite / 1000000.0 << std::endl;
+    std::cout << "Reading buffers:          " << resourceBufferRead / 1000000.0 << std::endl;
+    std::cout << "Executing kernels:        " << resourceKernelExecute / 1000000.0 << std::endl;
+}
+#endif
+
+
+void ResourceManager::calcLocalShape()
+{
     // Calculate "sane" localShapes
     size_t lsx = STD_MIN(256UL,maxWorkItemSizes[0]);
 #ifdef DEBUG
@@ -109,31 +141,17 @@ ResourceManager::ResourceManager(cphvb_component* _component)
     localShape3D.push_back(lsx);
     localShape3D.push_back(lsy);
     localShape3D.push_back(lsz);
-
-
-#ifdef STATS
-    batchBuild = 0.0;
-    batchSource = 0.0;
-    resourceCreateKernel = 0.0;
-    resourceBufferWrite = 0.0;
-    resourceBufferRead = 0.0;
-    resourceKernelExecute = 0.0;
-#endif
 }
 
-#ifdef STATS
-ResourceManager::~ResourceManager()
+void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
-    std::cout << std::fixed;
-    std::cout << "------------------ STATS ------------------------" << std::endl;
-    std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
-    std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;
-    std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000.0 << std::endl;
-    std::cout << "Writing buffers:          " << resourceBufferWrite / 1000000.0 << std::endl;
-    std::cout << "Reading buffers:          " << resourceBufferRead / 1000000.0 << std::endl;
-    std::cout << "Executing kernels:        " << resourceKernelExecute / 1000000.0 << std::endl;
-}
+    float16 = extensions[0].find("cl_khr_fp16");
+    float64 = extensions[0].find("cl_khr_fp64");
+#ifdef DEBUG
+    std::cout << "ResourceManager.float16 = " << float16 << std::endl;
+    std::cout << "ResourceManager.float64 = " << float64 << std::endl;
 #endif
+}
 
 cl::Buffer ResourceManager::createBuffer(size_t size)
 {
@@ -292,6 +310,16 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     default:
         assert (false);
     }
+}
+
+bool ResourceManager::float16support()
+{
+    return float16;
+}
+
+bool ResourceManager::float64support()
+{
+    return float64;
 }
 
 #ifdef STATS

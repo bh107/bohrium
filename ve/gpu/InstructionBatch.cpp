@@ -33,6 +33,8 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ke
     : arraynum(0)
     , scalarnum(0)
     , variablenum(0)
+    , float16(false)
+    , float64(false)
 {
 #ifdef STATS
     gettimeofday(&createTime,NULL);
@@ -183,6 +185,14 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
                     parameters[kp] = ss.str();
                     parameterList.push_back(kp);
                 }
+                if (ba->type() == OCL_FLOAT64)
+                {
+                    float64 = true;
+                } 
+                else if (ba->type() == OCL_FLOAT16)
+                {
+                    float16 = true;
+                }
             }
             else //scalar
             {
@@ -213,6 +223,14 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
     {
         std::stringstream source, kname;
         kname << "kernel" << std::hex << codeHash;
+        if (float16)
+        {
+            source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
+        }
+        if (float64)
+        {
+            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+        }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
