@@ -106,8 +106,8 @@ def gen_cfile(opcode_dict):
         {
         \n"""
     for op in opcode_dict:
-        ret += "            case %s: return %s;\n"%(op,op)
-    ret +=   """            default: return -1;
+        ret += '            case %s: return "%s";\n'%(op,op)
+    ret +=   """            default: return "Unknown opcode";
         }
     }
     """
