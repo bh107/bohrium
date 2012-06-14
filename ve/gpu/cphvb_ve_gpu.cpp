@@ -42,14 +42,13 @@ cphvb_error cphvb_ve_gpu_execute(cphvb_intp instruction_count,
 {
     try 
     {
-        instructionScheduler->schedule(instruction_count, instruction_list);
+        return instructionScheduler->schedule(instruction_count, instruction_list);
     }
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
         return CPHVB_ERROR;
     }
-    return CPHVB_SUCCESS;
 }
 
 cphvb_error cphvb_ve_gpu_shutdown()
