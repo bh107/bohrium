@@ -179,8 +179,7 @@ cphvb_error InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     }
 
     // Execute the userdefined function
-    fit->second(userfunc, &userFuncArg);
-    return CPHVB_SUCCESS;
+    return fit->second(userfunc, &userFuncArg);
 }
 
 cphvb_error InstructionScheduler::ufunc(cphvb_instruction* inst)
@@ -198,8 +197,8 @@ cphvb_error InstructionScheduler::ufunc(cphvb_instruction* inst)
             operands[i] = new Scalar(inst->constant);
             continue;
         }
-        if (!resourceManager->float64support() && operand->type == CPHVB_FLOAT64
-            || !resourceManager->float16support() && operand->type == CPHVB_FLOAT16)
+        if ((!resourceManager->float64support() && operand->type == CPHVB_FLOAT64)
+            || (!resourceManager->float16support() && operand->type == CPHVB_FLOAT16))
         {
             return CPHVB_TYPE_NOT_SUPPORTED;
         }
