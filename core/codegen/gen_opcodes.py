@@ -30,7 +30,8 @@ def gen_headerfile(opcode_dict):
     {
     \n"""%time.strftime("%d/%m/%Y")
     for op in opcode_dict:
-        ret += "        %s,\n"%op
+        doc = opcode_dict[op]['doc']
+        ret += "        %s,\t//%s\n"%(op,doc)
         last_op = op
     ret = ret[:-2]#Remove the last comma.
     ret +=  """
