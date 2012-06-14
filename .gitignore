@@ -10,8 +10,6 @@
 *.test
 *.swp
 bridge/numpy/build/*
-ve/cuda/log
-ve/cuda/pytest
 *~
 *.obj
 .DS_Store
@@ -36,3 +34,4 @@ bridge/NumCIL/NumCIL.Unsafe/CreateAccessor.cs
 bridge/NumCIL/NumCIL.Unsafe/Pinner.cs
 bridge/NumCIL/NumCIL.Unsafe/Reduce.cs
 bridge/NumCIL/NumCIL/TypedArrays.cs
+cphvbnumpy/build
