@@ -4,6 +4,8 @@ import sys
 import os
 import re
 import time
+import stat
+
 """
     Generates the include/cphvb_opcode.h and core/cphvb_opcode 
     based on the definitnion in /core/codegen/opcodes.json.
@@ -127,18 +129,46 @@ def comment_remover(text):
     )
     return re.sub(pattern, replacer, text)
 
+
+def get_timestamp(f):
+    st = os.stat(f)
+    atime = st[stat.ST_ATIME] #access time
+    mtime = st[stat.ST_MTIME] #modification time
+    return (atime,mtime)
+
+def set_timestamp(f,timestamp):
+    os.utime(f,timestamp)
+
 def main(script_dir):
+    #Save the newest timestamp of this file and the definition file.
+    #We will set this timest   
+    timestamp = get_timestamp(os.path.join(script_dir,'gen_opcodes.py'))
+    t = get_timestamp(os.path.join(script_dir,'opcodes.json'))
+    timestamp = t if t[1] > timestamp[1] else timestamp
+
     #Read the opcode definitions from opcodes.json. 
     f = open(os.path.join(script_dir,'opcodes.json')).read()
+    
     #We have to manual ignore comments since comments is not 
     #part of the JSON standard.
     opcodes = json.loads(comment_remover(f))
+    
+    #Write the header file
     headerfile = gen_headerfile(opcodes)
     cfile = gen_cfile(opcodes)    
-    h = open(os.path.join(script_dir,'..','..','include','cphvb_opcode.h'),"w")
+    name = os.path.join(script_dir,'..','..','include','cphvb_opcode.h')
+    h = open(name,"w")
     h.write(headerfile)
-    h = open(os.path.join(script_dir,'..','cphvb_opcode.c'),"w")
+    h.close()
+    set_timestamp(name, timestamp)
+
+    #Write the c file
+    name = os.path.join(script_dir,'..','cphvb_opcode.c')
+    h = open(name,"w")
     h.write(cfile)    
+    h.close()
+    set_timestamp(name, timestamp)
+    
 
 if __name__ == "__main__":
     try:
