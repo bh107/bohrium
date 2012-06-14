@@ -41,6 +41,10 @@ private:
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
+    bool float64;
+    bool float16;
+    void calcLocalShape();
+    void registerExtensions(std::vector<std::string> extensions);
 public:
 #ifdef STATS
     double batchBuild;
@@ -80,6 +84,8 @@ public:
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
     std::string getKernelPath();
+    bool float16support();
+    bool float64support();
 };
 
 #endif

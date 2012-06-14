@@ -53,6 +53,8 @@ private:
     int arraynum;
     int scalarnum;
     int variablenum;
+    bool float16;
+    bool float64;
     static KernelMap kernelMap;
 #ifdef STATS
     timeval createTime;

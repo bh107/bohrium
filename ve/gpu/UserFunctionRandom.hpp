@@ -36,7 +36,7 @@ private:
     static void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
 public:
     UserFunctionRandom(ResourceManager* rm);
-    void fill(UserFuncArg* userFuncArg);
+    cphvb_error fill(UserFuncArg* userFuncArg);
 };
 
 #endif

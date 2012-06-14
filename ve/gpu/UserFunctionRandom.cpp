@@ -43,8 +43,7 @@ cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
     {
         userFunctionRandom = new UserFunctionRandom(userFuncArg->resourceManager);
     }
-    userFunctionRandom->fill(userFuncArg);
-    return CPHVB_SUCCESS;
+    return userFunctionRandom->fill(userFuncArg);
 }
 
 #define TPB 128
@@ -86,13 +85,13 @@ void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventSta
     delete [](cl_uint4*)data;
 }
 
-void UserFunctionRandom::fill(UserFuncArg* userFuncArg)
+cphvb_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);
     KernelMap::iterator kit = kernelMap.find(ba->type());
     if (kit == kernelMap.end())
-        throw std::runtime_error("Data type not supported for random number generation.");
+        return CPHVB_TYPE_NOT_SUPPORTED;
     Scalar size(ba->size());    
     Kernel::Parameters parameters;
     parameters.push_back(std::make_pair(ba, true));
@@ -102,4 +101,5 @@ void UserFunctionRandom::fill(UserFuncArg* userFuncArg)
     std::vector<size_t> localShape(1,TPB);
     std::vector<size_t> globalShape(1,BPG*TPB);
     kit->second.call(parameters, globalShape, localShape);
+    return CPHVB_SUCCESS;
 }
