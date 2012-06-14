@@ -361,20 +361,6 @@
             ]
         }
     }, 
-    "CPHVB_DEG2RAD": {
-        "doc": "Convert angles from degrees to radians.", 
-        "nop": 2, 
-        "opcode": "CPHVB_DEG2RAD", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
-            ]
-        }
-    }, 
     "CPHVB_DESTROY": {
         "doc": "System instruction that informs the child component to deallocate the array.", 
         "nop": 1, 
@@ -1491,20 +1477,6 @@
             ], 
             "CPHVB_UINT8": [
                 "CPHVB_UINT8"
-            ]
-        }
-    }, 
-    "CPHVB_RAD2DEG": {
-        "doc": "Convert angles from radians to degrees.", 
-        "nop": 2, 
-        "opcode": "CPHVB_RAD2DEG", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
             ]
         }
     }, 
