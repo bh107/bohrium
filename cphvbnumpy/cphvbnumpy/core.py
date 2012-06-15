@@ -15,6 +15,23 @@ def zeros(shape, dtype=float, cphvb=True):
     A[:] = 0
     return A
 
+def empty_like(a, dtype=None, cphvb=None):
+    if dtype == None:
+        dtype = a.dtype
+    if cphvb == None:
+        cphvb = a.cphvb
+    return empty(a.shape, dtype, cphvb)
+
+def zeros_like(a, dtype=None, cphvb=None):
+    b = empty_like(a, dtype=dtype, cphvb=cphvb)
+    b[:] = 0
+    return b
+
+def ones_like(a, dtype=None, cphvb=None):
+    b = empty_like(a, dtype=dtype, cphvb=cphvb)
+    b[:] = 1
+    return b
+
 def flatten(A):
     return A.reshape(np.multiply.reduce(np.asarray(A.shape)))
 
