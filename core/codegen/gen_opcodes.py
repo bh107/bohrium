@@ -5,6 +5,7 @@ import os
 import re
 import time
 import stat
+import collections
 
 """
     Generates the include/cphvb_opcode.h and core/cphvb_opcode 
@@ -151,7 +152,7 @@ def main(script_dir):
     
     #We have to manual ignore comments since comments is not 
     #part of the JSON standard.
-    opcodes = json.loads(comment_remover(f))
+    opcodes = json.loads(comment_remover(f),object_pairs_hook=collections.OrderedDict)
     
     #Write the header file
     headerfile = gen_headerfile(opcodes)
