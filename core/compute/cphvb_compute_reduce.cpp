@@ -53,7 +53,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     --tmp.ndim;
 
     //We copy the first element to the output.
-    inst.status = CPHVB_INST_UNDONE;
+    inst.status = CPHVB_INST_PENDING;
     inst.opcode = CPHVB_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
@@ -66,7 +66,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
 
     //Reduce over the 'axis' dimension.
     //NB: the first element is already handled.
-    inst.status = CPHVB_INST_UNDONE;
+    inst.status = CPHVB_INST_PENDING;
     inst.opcode = a->opcode;
     inst.operand[0] = out;
     inst.operand[1] = out;

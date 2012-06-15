@@ -120,7 +120,7 @@ cphvb_error cphvb_ve_mcore_execute(
                 case CPHVB_SYNC:
                     break;
                 default://This is a regular operation.
-                    if(inst->status == CPHVB_INST_UNDONE)
+                    if(inst->status == CPHVB_INST_PENDING)
                         regular_inst[regular_size++] = inst;
             }
             ++count;
@@ -236,7 +236,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
     --tmp.ndim;
 
     //We copy the first element to the output.
-    inst[0]->status = CPHVB_INST_UNDONE;
+    inst[0]->status = CPHVB_INST_PENDING;
     inst[0]->opcode = CPHVB_IDENTITY;
     inst[0]->operand[0] = out;
     inst[0]->operand[1] = &tmp;
@@ -247,7 +247,7 @@ cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
 
     //Reduce over the 'axis' dimension.
     //NB: the first element is already handled.
-    inst[0]->status = CPHVB_INST_UNDONE;
+    inst[0]->status = CPHVB_INST_PENDING;
     inst[0]->opcode = a->opcode;
     inst[0]->operand[0] = out;
     inst[0]->operand[1] = out;

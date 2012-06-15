@@ -75,3 +75,42 @@ def matmul(A,B):
         return C
     else:
 	return np.dot(A,B)
+
+def rad2deg(x, out=None):
+    if out == None:
+        out = 180 * x / pi
+    else:
+        out[:] = 180 * x / pi
+    return out
+
+def deg2rad(x, out=None):
+    if out == None:
+        out = x * pi / 180
+    else:
+        out[:] = x * pi / 180
+    return out
+        
+def logaddexp(x1, x2, out=None):
+    if out == None:
+        out = log(exp(x1) + exp(x2))
+    else:
+        out[:] = log(exp(x1) + exp(x2))
+    return out
+    
+def logaddexp2(x1, x2, out=None):
+    if out == None:
+        out = log2(exp2(x1) + exp2(x2))
+    else:
+        out[:] = log2(exp2(x1) + exp2(x2))
+    return out
+    
+def modf(x, out1=None, out2=None):
+    if out1 == None:
+        out1 = mod(x,1.0)
+    else:
+        out1[:] = mod(x,1.0)
+    if out2 == None:
+        out2 = floor(x)
+    else: 
+        out2[:] = floor(x)
+    return (out1, out2)

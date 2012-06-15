@@ -37,13 +37,12 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 {
     cphvb_intp count, nops, i;
     cphvb_instruction* inst;
-    cphvb_error ret;
 
     for(count=0; count < instruction_count; count++)
     {
         inst = &instruction_list[count];
 
-        if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
+        if(inst->status == CPHVB_SUCCESS)     // SKIP instruction
         {
             continue;
         }
@@ -66,25 +65,22 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
             case CPHVB_NONE:                    // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
-                inst->status = CPHVB_INST_DONE;
+                inst->status = CPHVB_SUCCESS;
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    ret = reduce_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
+                    inst->status = reduce_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    ret = random_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
+                    inst->status = random_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == matmul_impl_id)
                 {
-                    ret = matmul_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
+                    inst->status = matmul_impl(inst->userfunc, NULL);
                 }
                 else                            // Unsupported userfunc
                 {
@@ -94,11 +90,10 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 break;
 
             default:                            // Built-in operations
-                ret = cphvb_compute_apply( inst );
-                inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : ret;
+                inst->status = cphvb_compute_apply( inst );
         }
 
-        if (inst->status != CPHVB_INST_DONE)    // Instruction failed
+        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
         {
             break;
         }

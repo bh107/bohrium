@@ -185,7 +185,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
-        instr[i].status = CPHVB_INST_DONE;
+        instr[i].status = CPHVB_SUCCESS;
     }
 
     /*
@@ -234,7 +234,6 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 {
     cphvb_intp cur_index, nops, i, j;
     cphvb_instruction *inst, *binst;
-    cphvb_error ret = CPHVB_SUCCESS;
 
     cphvb_intp bin_start, bin_end, bin_size;
     cphvb_intp bundle_start, bundle_end, bundle_size;
@@ -243,7 +242,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
     {
         inst = &instruction_list[cur_index];
 
-        if(inst->status == CPHVB_INST_DONE)     // SKIP instruction
+        if(inst->status == CPHVB_SUCCESS)     // SKIP instruction
         {
             continue;
         }
@@ -266,29 +265,26 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
             case CPHVB_NONE:                    // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
-                inst->status = CPHVB_INST_DONE;
+                inst->status = CPHVB_SUCCESS;
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    ret = reduce_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = reduce_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    ret = random_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = random_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == matmul_impl_id)
                 {
-                    ret = matmul_impl(inst->userfunc, NULL);
-                    inst->status = (ret == CPHVB_SUCCESS) ? CPHVB_INST_DONE : CPHVB_INST_UNDONE;
+                    inst->status = matmul_impl(inst->userfunc, NULL);
                 }
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_INST_NOT_SUPPORTED;
+                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -332,7 +328,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 cur_index += bundle_size-1;
         }
 
-        if (inst->status != CPHVB_INST_DONE)    // Instruction failed
+        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
         {
             break;
         }
