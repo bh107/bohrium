@@ -1,6 +1,6 @@
 #Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 
-import cphvbnumpy as np
+import numpy as np
 
 g = 9.80665 # gravitational acceleration
 
@@ -56,3 +56,105 @@ def step(H, U, V, dt=0.02, dx=1.0, dy=1.0):
 
     return (H, U, V)
 
+def simulate(H, timesteps):
+    U = np.zeros_like(H)
+    V = np.zeros_like(H)
+    for i in xrange(timesteps):
+        (H, U, V) = step(H, U, V)
+    return H
+
+
+
+
+
+def swater(n, timesteps):
+    dt = 0.02# hardwired timestep
+    dx = 1.0
+    dy = 1.0
+    droploc = n/4
+    
+    H = np.ones((n+2,n+2));   
+    U = np.zeros((n+2,n+2));  
+    V = np.zeros((n+2,n+2));
+    Hx = np.zeros((n+1,n+1)); 
+    Ux = np.zeros((n+1,n+1)); 
+    Vx = np.zeros((n+1,n+1));
+    Hy = np.zeros((n+1,n+1)); 
+    Uy = np.zeros((n+1,n+1)); 
+    Vy = np.zeros((n+1,n+1));
+    
+    H[droploc,droploc] += 5.0
+    
+    for i in xrange(timesteps):
+        # Reflecting boundary conditions
+        H[:,0] = H[:,1]   ; U[:,0] = U[:,1]     ; V[:,0] = -V[:,1]
+        H[:,n+1] = H[:,n] ; U[:,n+1] = U[:,n]   ; V[:,n+1] = -V[:,n]
+        H[0,:] = H[1,:]   ; U[0,:] = -U[1,:]    ; V[0,:] = V[1,:]
+        H[n+1,:] = H[n,:] ; U[n+1,:] = -U[n,:]  ; V[n+1,:] = V[n,:]
+
+    #First half step
+
+    # height
+        Hx[:,:-1] = (H[1:,1:-1]+H[:-1,1:-1])/2 - \
+            dt/(2*dx)*(U[1:,1:-1]-U[:-1,1:-1]);
+
+    # x momentum
+        Ux[:,:-1] = (U[1:,1:-1]+U[:-1,1:-1])/2 - \
+            dt/(2*dx)*((U[1:,1:-1]**2/H[1:,1:-1] + \
+                            g/2*H[1:,1:-1]**2) - \
+                           (U[:-1,1:-1]**2/H[:-1,1:-1] + \
+                                g/2*H[:-1,1:-1]**2))
+
+    # y momentum
+        Vx[:,:-1] = (V[1:,1:-1]+V[:-1,1:-1])/2 - \
+            dt/(2*dx)*((U[1:,1:-1] * \
+                            V[1:,1:-1]/H[1:,1:-1]) - \
+                           (U[:-1,1:-1] * \
+                                V[:-1,1:-1]/H[:-1,1:-1]))
+
+
+
+    #height
+        Hy[:-1,:] = (H[1:-1,1:]+H[1:-1,:-1])/2 - \
+            dt/(2*dy)*(V[1:-1,1:]-V[1:-1,:-1])
+        
+    #x momentum
+        Uy[:-1,:] = (U[1:-1,1:]+U[1:-1,:-1])/2 - \
+            dt/(2*dy)*((V[1:-1,1:] * \
+                            U[1:-1,1:]/H[1:-1,1:]) - \
+                           (V[1:-1,:-1] * \
+                                U[1:-1,:-1]/H[1:-1,:-1]))
+    #y momentum
+        Vy[:-1,:] = (V[1:-1,1:]+V[1:-1,:-1])/2 - \
+            dt/(2*dy)*((V[1:-1,1:]**2/H[1:-1,1:] + \
+                            g/2*H[1:-1,1:]**2) - \
+                           (V[1:-1,:-1]**2/H[1:-1,:-1] + \
+                                g/2*H[1:-1,:-1]**2))
+
+    #Second half step
+
+    # height
+        H[1:-1,1:-1] = H[1:-1,1:-1] - \
+            (dt/dx)*(Ux[1:,:-1]-Ux[:-1,:-1]) - \
+            (dt/dy)*(Vy[:-1,1:]-Vy[:-1,:-1])
+
+    # x momentum
+        U[1:-1,1:-1] = U[1:-1,1:-1] - \
+            (dt/dx)*((Ux[1:,:-1]**2/Hx[1:,:-1] + \
+                          g/2*Hx[1:,:-1]**2) - \
+                         (Ux[:-1,:-1]**2/Hx[:-1,:-1] + \
+                              g/2*Hx[:-1,:-1]**2)) - \
+                              (dt/dy)*((Vy[:-1,1:] * \
+                                            Uy[:-1,1:]/Hy[:-1,1:]) - \
+                                           (Vy[:-1,:-1] * \
+                                                Uy[:-1,:-1]/Hy[:-1,:-1]))
+    # y momentum
+        V[1:-1,1:-1] = V[1:-1,1:-1] - \
+            (dt/dx)*((Ux[1:,:-1] * \
+                          Vx[1:,:-1]/Hx[1:,:-1]) - \
+                         (Ux[:-1,:-1]*Vx[:-1,:-1]/Hx[:-1,:-1])) - \
+                         (dt/dy)*((Vy[:-1,1:]**2/Hy[:-1,1:] + \
+                                       g/2*Hy[:-1,1:]**2) - \
+                                      (Vy[:-1,:-1]**2/Hy[:-1,:-1] + \
+                                           g/2*Hy[:-1,:-1]**2))
+    return H
