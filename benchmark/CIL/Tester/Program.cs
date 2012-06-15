@@ -15,14 +15,6 @@ namespace Tester
         {
             NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
 
-            int threads;
-            if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_THREADS"), out threads))
-            {
-                int p1, p2;
-                System.Threading.ThreadPool.GetMaxThreads(out p1, out p2);
-                System.Threading.ThreadPool.SetMaxThreads(threads, p2);
-            }
-
             Console.WriteLine("Tester execution with {0} workblock{1}", NumCIL.UFunc.Threads.BlockCount, NumCIL.UFunc.Threads.BlockCount == 1 ? "" : "s");
             Console.WriteLine("Tester UnsafeAPI is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported ? "ENABLED" : "DISABLED");
             Console.WriteLine("Tester Unsafe arrays is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? "ENABLED": "DISABLED");

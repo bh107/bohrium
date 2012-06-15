@@ -51,6 +51,16 @@ namespace NumCIL
         }
 
         /// <summary>
+        /// Static initializer
+        /// </summary>
+        static ThreadPool()
+        {
+            int i;
+            if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_MAX_THREADS"), out i))
+                m_max_threads = i;
+        }
+
+        /// <summary>
         /// The main synchronization unit, a blocking queue of work
         /// </summary>
         private static BlockingCollection<IWorkToken> m_workQueue = new BlockingCollection<IWorkToken>();
