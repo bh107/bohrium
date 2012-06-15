@@ -36,3 +36,5 @@ bridge/NumCIL/NumCIL.Unsafe/CreateAccessor.cs
 bridge/NumCIL/NumCIL.Unsafe/Pinner.cs
 bridge/NumCIL/NumCIL.Unsafe/Reduce.cs
 bridge/NumCIL/NumCIL/TypedArrays.cs
+include/cphvb_opcode.h
+core/cphvb_opcode.c
