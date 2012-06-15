@@ -496,6 +496,20 @@
             ]
         }
     }, 
+    "CPHVB_LDEXP": {
+        "doc": "Calculate ``x1 * 2**x2`` for all elements in the array.", 
+        "nop": 3, 
+        "opcode": "CPHVB_LDEXP", 
+        "system_opcode": false, 
+        "types": {
+            "CPHVB_FLOAT32": [
+                "CPHVB_FLOAT32"
+            ], 
+            "CPHVB_FLOAT64": [
+                "CPHVB_FLOAT64"
+            ]
+        }
+    }, 
     "CPHVB_FLOOR": {
         "doc": "Return the floor of the input, element-wise.", 
         "nop": 2, 
@@ -510,48 +524,10 @@
             ]
         }
     }, 
-    "CPHVB_FLOOR_DIVIDE": {
-        "doc": "Return the largest integer smaller or equal to the division of the inputs.", 
-        "nop": 3, 
-        "opcode": "CPHVB_FLOOR_DIVIDE", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
-            ], 
-            "CPHVB_INT16": [
-                "CPHVB_INT16"
-            ], 
-            "CPHVB_INT32": [
-                "CPHVB_INT32"
-            ], 
-            "CPHVB_INT64": [
-                "CPHVB_INT64"
-            ], 
-            "CPHVB_INT8": [
-                "CPHVB_INT8"
-            ], 
-            "CPHVB_UINT16": [
-                "CPHVB_UINT16"
-            ], 
-            "CPHVB_UINT32": [
-                "CPHVB_UINT32"
-            ], 
-            "CPHVB_UINT64": [
-                "CPHVB_UINT64"
-            ], 
-            "CPHVB_UINT8": [
-                "CPHVB_UINT8"
-            ]
-        }
-    }, 
-    "CPHVB_FMOD": {
+    "CPHVB_MOD": {
         "doc": "Return the element-wise remainder of division.", 
         "nop": 3, 
-        "opcode": "CPHVB_FMOD", 
+        "opcode": "CPHVB_MOD", 
         "system_opcode": false, 
         "types": {
             "CPHVB_FLOAT32": [
@@ -1038,34 +1014,6 @@
             ]
         }
     }, 
-    "CPHVB_LOGADDEXP": {
-        "doc": "Logarithm of the sum of exponentiations of the inputs.", 
-        "nop": 3, 
-        "opcode": "CPHVB_LOGADDEXP", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
-            ]
-        }
-    }, 
-    "CPHVB_LOGADDEXP2": {
-        "doc": "Logarithm of the sum of exponentiations of the inputs in base-2.", 
-        "nop": 3, 
-        "opcode": "CPHVB_LOGADDEXP2", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
-            ]
-        }
-    }, 
     "CPHVB_LOGICAL_AND": {
         "doc": "Compute the truth value of x1 AND x2 elementwise.", 
         "nop": 3, 
@@ -1484,44 +1432,6 @@
         "doc": "Return the reciprocal of the argument, element-wise.", 
         "nop": 2, 
         "opcode": "CPHVB_RECIPROCAL", 
-        "system_opcode": false, 
-        "types": {
-            "CPHVB_FLOAT32": [
-                "CPHVB_FLOAT32"
-            ], 
-            "CPHVB_FLOAT64": [
-                "CPHVB_FLOAT64"
-            ], 
-            "CPHVB_INT16": [
-                "CPHVB_INT16"
-            ], 
-            "CPHVB_INT32": [
-                "CPHVB_INT32"
-            ], 
-            "CPHVB_INT64": [
-                "CPHVB_INT64"
-            ], 
-            "CPHVB_INT8": [
-                "CPHVB_INT8"
-            ], 
-            "CPHVB_UINT16": [
-                "CPHVB_UINT16"
-            ], 
-            "CPHVB_UINT32": [
-                "CPHVB_UINT32"
-            ], 
-            "CPHVB_UINT64": [
-                "CPHVB_UINT64"
-            ], 
-            "CPHVB_UINT8": [
-                "CPHVB_UINT8"
-            ]
-        }
-    }, 
-    "CPHVB_REMAINDER": {
-        "doc": "Return element-wise remainder of division.", 
-        "nop": 3, 
-        "opcode": "CPHVB_REMAINDER", 
         "system_opcode": false, 
         "types": {
             "CPHVB_FLOAT32": [

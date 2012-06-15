@@ -125,6 +125,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     components = [\
+                  ("OPCODES","core/codegen",True),\
                   ("INIPARSER","iniparser",True),\
                   ("CORE-BUNDLER", "core/bundler", True),\
                   ("CORE-COMPUTE", "core/compute", True),\
