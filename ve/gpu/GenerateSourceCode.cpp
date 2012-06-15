@@ -75,35 +75,14 @@ void generateInstructionSource(cphvb_opcode opcode,
     case CPHVB_DIVIDE:
         source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
         break;
-    case CPHVB_LOGADDEXP:
-        source << "\t" << parameters[0] << " = log(exp(" << parameters[1] << ") + exp(" 
-               << parameters[2] << "));\n";
-        break;
-    case CPHVB_LOGADDEXP2:
-        source << "\t" << parameters[0] << " = log2(exp2(" << parameters[1] << ") + exp2(" 
-               << parameters[2] << "));\n";
-        break;
-    case CPHVB_TRUE_DIVIDE:
-        source << "\t" << parameters[0] << " = (" << type_str << ")" << parameters[1] << " / (" 
-               << type_str << ")" << parameters[2] << ";\n";
-        break;
-    case CPHVB_FLOOR_DIVIDE:
-        source << "\t" << parameters[0] << " = floor(" << parameters[1] << " / " << parameters[2] << ");\n";
-        break;
     case CPHVB_NEGATIVE:
         source << "\t" << parameters[0] << " = -" << parameters[1] << ";\n";
         break;
     case CPHVB_POWER:
         source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
-    case CPHVB_REMAINDER:
-        source << "\t" << parameters[0] << " = remainder(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
     case CPHVB_MOD:
         source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
-        break;
-    case CPHVB_FMOD:
-        source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
     case CPHVB_ABSOLUTE:
         if (isFloat(returnType))
@@ -188,12 +167,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         break;
     case CPHVB_ARCTANH:
         source << "\t" << parameters[0] << " = atanh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_DEG2RAD:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " * M_PI / 180.0;\n";
-        break;
-    case CPHVB_RAD2DEG:
-        source << "\t" << parameters[0] << " = 180.0 * " << parameters[1] << " / M_PI;\n";
         break;
     case CPHVB_BITWISE_AND:
         source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
