@@ -117,6 +117,9 @@ namespace NumCIL.cphVB
         /// </summary>
         public VEM()
         {
+            if (cphvb_opcode.CPHVB_ADD == cphvb_opcode.CPHVB_SUBTRACT)
+                throw new Exception("This version of NumCIL.cphVB contains invalid opcodes!");
+
             m_component = PInvoke.cphvb_component_setup(out m_componentPtr);
             PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs, out m_childsPtr);
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
@@ -297,7 +300,7 @@ namespace NumCIL.cphVB
 
                 foreach (var inst in instrBuffer)
                 {
-                    if (inst.opcode == PInvoke.cphvb_opcode.CPHVB_DESTROY)
+                    if (inst.opcode == cphvb_opcode.CPHVB_DESTROY)
                         destroys++;
                     if (inst.userfunc != IntPtr.Zero)
                     {
@@ -320,7 +323,7 @@ namespace NumCIL.cphVB
                                 throw new cphVBNotSupportedInstruction(instrBuffer[i].opcode, i);
                             }
 
-                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_INST_DONE)
+                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_SUCCESS)
                             {
                                 errorIndex = i;
                                 break;
@@ -628,39 +631,39 @@ namespace NumCIL.cphVB
             }
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operand);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2, op3);
         }
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operands);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), CreateViewPtr<T>(type, op3), constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)), constant);
         }
@@ -694,12 +697,12 @@ namespace NumCIL.cphVB
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.cphvb_instruction(
-                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                cphvb_opcode.CPHVB_USERFUNC,
                 adr                    
             );
         }
 
-        public IInstruction CreateReduceInstruction<T>(PInvoke.cphvb_type type, PInvoke.cphvb_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
+        public IInstruction CreateReduceInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
         {
             if (!SupportsReduce)
                 throw new cphVBException("The VEM/VE setup does not support the reduce function");
@@ -720,7 +723,7 @@ namespace NumCIL.cphVB
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.cphvb_instruction(
-                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                cphvb_opcode.CPHVB_USERFUNC,
                 adr
             );
         }
@@ -745,7 +748,7 @@ namespace NumCIL.cphVB
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.cphvb_instruction(
-                PInvoke.cphvb_opcode.CPHVB_USERFUNC,
+                cphvb_opcode.CPHVB_USERFUNC,
                 adr
             );
         }

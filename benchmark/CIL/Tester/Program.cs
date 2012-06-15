@@ -15,14 +15,6 @@ namespace Tester
         {
             NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
 
-            int threads;
-            if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_THREADS"), out threads))
-            {
-                int p1, p2;
-                System.Threading.ThreadPool.GetMaxThreads(out p1, out p2);
-                System.Threading.ThreadPool.SetMaxThreads(threads, p2);
-            }
-
             Console.WriteLine("Tester execution with {0} workblock{1}", NumCIL.UFunc.Threads.BlockCount, NumCIL.UFunc.Threads.BlockCount == 1 ? "" : "s");
             Console.WriteLine("Tester UnsafeAPI is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported ? "ENABLED" : "DISABLED");
             Console.WriteLine("Tester Unsafe arrays is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? "ENABLED": "DISABLED");
@@ -31,16 +23,26 @@ namespace Tester
             try
             {
                 TimeJacobi();
-                TimeScholes();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimeJacobiFixed();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
+                TimeScholes();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimeShallowWater();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimekNN();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
 
                 //NumCIL.cphVB.Utility.Activate();
 
                 //TimeJacobi();
-                //TimeScholes();
                 //TimeJacobiFixed();
+                //TimeScholes();
                 //TimeShallowWater();
                 //TimekNN();
                 return;
@@ -67,7 +69,7 @@ namespace Tester
             long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, 2000);
+                count = JacobiSolver.Solve(size, size, 118);
 
             Console.WriteLine("Count: " + count.ToString());
         }

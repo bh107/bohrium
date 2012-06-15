@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NumCIL.Generic;
+using System.Threading;
 
 namespace NumCIL
 {
@@ -60,20 +61,20 @@ namespace NumCIL
             {
                 if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
+                    AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
-                        System.Threading.ThreadPool.QueueUserWorkItem((args) => 
+                        NumCIL.ThreadPool.QueueUserWorkItem((args) => 
                         {
                             int block = (int)args;
 
                             UFunc.UFunc_Op_Inner_Binary_Flush(op, Reshape(in1, block, totalblocks), Reshape(in2, block, totalblocks), Reshape(@out, block, totalblocks));
 
-                            System.Threading.Interlocked.Increment(ref blocksdone);
+                            Interlocked.Increment(ref blocksdone);
                             cond.Set();    
                         }, i);
                     }
@@ -92,20 +93,20 @@ namespace NumCIL
             {
                 if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && false)
                 {
-                    System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
+                    AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
-                        System.Threading.ThreadPool.QueueUserWorkItem((args) =>
+                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
                         {
                             int block = (int)args;
 
                             UFunc.UFunc_Op_Inner_Unary_Flush(op, Reshape(in1, block, totalblocks), Reshape(@out, block, totalblocks));
 
-                            System.Threading.Interlocked.Increment(ref blocksdone);
+                            Interlocked.Increment(ref blocksdone);
                             cond.Set();
                         }, i);
                     }
@@ -125,20 +126,20 @@ namespace NumCIL
             {
                 if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
+                    AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
-                        System.Threading.ThreadPool.QueueUserWorkItem((args) =>
+                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
                         {
                             int block = (int)args;
 
                             UFunc.UFunc_Op_Inner_Nullary_Flush(op, Reshape(@out, block, totalblocks));
 
-                            System.Threading.Interlocked.Increment(ref blocksdone);
+                            Interlocked.Increment(ref blocksdone);
                             cond.Set();
                         }, i);
                     }
@@ -157,20 +158,20 @@ namespace NumCIL
             {
                 if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && (@out.Shape.Elements / _no_blocks) > 128)
                 {
-                    System.Threading.AutoResetEvent cond = new System.Threading.AutoResetEvent(false);
+                    AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
                     {
-                        System.Threading.ThreadPool.QueueUserWorkItem((args) =>
+                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
                         {
                             int block = (int)args;
 
                             UFunc.UFunc_Op_Inner_UnaryConv_Flush(op, Reshape(in1, block, totalblocks), Reshape(@out, block, totalblocks));
 
-                            System.Threading.Interlocked.Increment(ref blocksdone);
+                            Interlocked.Increment(ref blocksdone);
                             cond.Set();
                         }, i);
                     }

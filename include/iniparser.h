@@ -1,1 +1,1 @@
-../iniparser/src/iniparser.h
+#include <../iniparser/src/iniparser.h>

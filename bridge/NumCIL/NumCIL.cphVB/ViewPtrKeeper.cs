@@ -68,7 +68,7 @@ namespace NumCIL.cphVB
 
             if (m_ptr != PInvoke.cphvb_array_ptr.Null)
             {
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DESTROY, m_ptr));
+                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DESTROY, m_ptr));
                 m_ptr = PInvoke.cphvb_array_ptr.Null;
             }
 

@@ -1,1 +1,1 @@
-../iniparser/src/dictionary.h
+#include <../iniparser/src/dictionary.h>
