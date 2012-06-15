@@ -31,16 +31,26 @@ namespace Tester
             try
             {
                 TimeJacobi();
-                TimeScholes();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimeJacobiFixed();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
+                TimeScholes();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimeShallowWater();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
                 TimekNN();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
 
                 //NumCIL.cphVB.Utility.Activate();
 
                 //TimeJacobi();
-                //TimeScholes();
                 //TimeJacobiFixed();
+                //TimeScholes();
                 //TimeShallowWater();
                 //TimekNN();
                 return;
@@ -67,7 +77,7 @@ namespace Tester
             long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, 2000);
+                count = JacobiSolver.Solve(size, size, 118);
 
             Console.WriteLine("Count: " + count.ToString());
         }

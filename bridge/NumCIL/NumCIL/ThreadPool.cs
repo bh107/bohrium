@@ -81,7 +81,7 @@ namespace NumCIL
         /// <summary>
         /// Gets the combined number of ticks spent in threads
         /// </summary>
-        public static long TicksExecuted { get { return m_ticksExecuted; } }
+        public static long TicksExecuted { get { return m_ticksExecuted; } set { m_ticksExecuted = value; } }
 #endif
 
         /// <summary>
