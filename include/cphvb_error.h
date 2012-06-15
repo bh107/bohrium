@@ -32,7 +32,7 @@ enum /* cphvb_error */
     CPHVB_TYPE_NOT_SUPPORTED,    // Data type not supported
     CPHVB_OUT_OF_MEMORY,         // Out of memory
     CPHVB_PARTIAL_SUCCESS,       // Recoverable
-    CPHVB_INST_UNDONE,           // Instruction is not executed
+    CPHVB_INST_PENDING,           // Instruction is not executed
     CPHVB_INST_NOT_SUPPORTED,    // Instruction not supported
     CPHVB_USERFUNC_NOT_SUPPORTED,// User-defined function not supported
 };

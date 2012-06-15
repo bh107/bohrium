@@ -45,8 +45,8 @@ const char* cphvb_error_text(cphvb_error error)
         return "CPHVB_OUT_OF_MEMORY";
     case CPHVB_PARTIAL_SUCCESS: 
         return "CPHVB_PARTIAL_SUCCESS";
-    case CPHVB_INST_UNDONE:
-        return "CPHVB_INST_UNDONE";
+    case CPHVB_INST_PENDING:
+        return "CPHVB_INST_PENDING";
     case CPHVB_INST_NOT_SUPPORTED: 
         return "CPHVB_INST_NOT_SUPPORTED";
     case CPHVB_USERFUNC_NOT_SUPPORTED: 
