@@ -323,7 +323,7 @@ namespace NumCIL.cphVB
                                 throw new cphVBNotSupportedInstruction(instrBuffer[i].opcode, i);
                             }
 
-                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_INST_DONE)
+                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_SUCCESS)
                             {
                                 errorIndex = i;
                                 break;

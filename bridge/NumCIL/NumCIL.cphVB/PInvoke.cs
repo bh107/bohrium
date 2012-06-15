@@ -53,23 +53,38 @@ namespace NumCIL.cphVB
 
         public enum cphvb_error : long
         {
+            /// <summary>
+            /// General success
+            /// </summary>
             CPHVB_SUCCESS,
+            /// <summary>
+            /// Fatal error
+            /// </summary>
             CPHVB_ERROR,
-            CPHVB_TYPE_ERROR,
+            /// <summary>
+            /// Data type not supported
+            /// </summary>
             CPHVB_TYPE_NOT_SUPPORTED,
-            CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-            CPHVB_TYPE_COMB_NOT_SUPPORTED,
+            /// <summary>
+            /// Out of memory
+            /// </summary>
             CPHVB_OUT_OF_MEMORY,
-            CPHVB_RESULT_IS_CONSTANT,
-            CPHVB_OPERAND_UNKNOWN,
-            CPHVB_ALREADY_INITALIZED,
-            CPHVB_NOT_INITALIZED,
+            /// <summary>
+            /// Recoverable
+            /// </summary>
             CPHVB_PARTIAL_SUCCESS,
-            CPHVB_INST_DONE,
-            CPHVB_INST_UNDONE,
+            /// <summary>
+            /// Instruction is not executed
+            /// </summary>
+            CPHVB_INST_PENDING,
+            /// <summary>
+            /// Instruction not supported
+            /// </summary>
             CPHVB_INST_NOT_SUPPORTED,
-            CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-            CPHVB_USERFUNC_NOT_SUPPORTED,
+            /// <summary>
+            /// User-defined function not supported
+            /// </summary>
+            CPHVB_USERFUNC_NOT_SUPPORTED
         }
 
         public enum cphvb_type : long
@@ -557,7 +572,7 @@ namespace NumCIL.cphVB
 
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
-                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.status = cphvb_error.CPHVB_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand;
                 this.operand1 = cphvb_array_ptr.Null;
@@ -568,7 +583,7 @@ namespace NumCIL.cphVB
 
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
-                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.status = cphvb_error.CPHVB_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand1;
                 this.operand1 = operand2;
@@ -579,7 +594,7 @@ namespace NumCIL.cphVB
 
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, cphvb_array_ptr operand3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
-                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.status = cphvb_error.CPHVB_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand1;
                 this.operand1 = operand2;
@@ -590,7 +605,7 @@ namespace NumCIL.cphVB
 
             public cphvb_instruction(cphvb_opcode opcode, IEnumerable<cphvb_array_ptr> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
-                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.status = cphvb_error.CPHVB_INST_PENDING;
                 this.opcode = opcode;
                 var en = operands.GetEnumerator();
                 if (en.MoveNext())
@@ -622,7 +637,7 @@ namespace NumCIL.cphVB
 
             public cphvb_instruction(cphvb_opcode opcode, IntPtr userfunc)
             {
-                this.status = cphvb_error.CPHVB_INST_UNDONE;
+                this.status = cphvb_error.CPHVB_INST_PENDING;
                 this.opcode = opcode;
                 this.userfunc = userfunc;
                 this.operand0 = cphvb_array_ptr.Null;
