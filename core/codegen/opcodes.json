@@ -496,6 +496,20 @@
             ]
         }
     }, 
+    "CPHVB_LDEXP": {
+        "doc": "Calculate ``x1 * 2**x2`` for all elements in the array.", 
+        "nop": 3, 
+        "opcode": "CPHVB_LDEXP", 
+        "system_opcode": false, 
+        "types": {
+            "CPHVB_FLOAT32": [
+                "CPHVB_FLOAT32"
+            ], 
+            "CPHVB_FLOAT64": [
+                "CPHVB_FLOAT64"
+            ]
+        }
+    }, 
     "CPHVB_FLOOR": {
         "doc": "Return the floor of the input, element-wise.", 
         "nop": 2, 
