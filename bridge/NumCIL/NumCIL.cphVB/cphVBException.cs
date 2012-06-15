@@ -30,9 +30,9 @@ namespace NumCIL.cphVB
     public class cphVBNotSupportedInstruction : cphVBException
     {
         private long m_instructionNo;
-        private PInvoke.cphvb_opcode m_opcode;
+        private cphvb_opcode m_opcode;
 
-        public cphVBNotSupportedInstruction(PInvoke.cphvb_opcode opcode, long instructionNo)
+        public cphVBNotSupportedInstruction(cphvb_opcode opcode, long instructionNo)
             : base(PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
         {
             m_opcode = opcode;
@@ -40,6 +40,6 @@ namespace NumCIL.cphVB
         }
 
         public long InstructionNo { get { return m_instructionNo; } }
-        public PInvoke.cphvb_opcode OpCode { get { return m_opcode; } }
+        public cphvb_opcode OpCode { get { return m_opcode; } }
     }
 }

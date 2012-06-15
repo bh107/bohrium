@@ -7,6 +7,6 @@ namespace NumCIL.cphVB
 {
     public interface IInstruction
     {
-        PInvoke.cphvb_opcode OpCode { get; }
+        cphvb_opcode OpCode { get; }
     }
 }

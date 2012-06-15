@@ -25,7 +25,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Lookup table with mapping from NumCIL operation name to cphVB opcode
         /// </summary>
-        private static Dictionary<PInvoke.cphvb_opcode, string> _opcode_func_name;
+        private static Dictionary<cphvb_opcode, string> _opcode_func_name;
 
         /// <summary>
         /// Static initializer, builds mapping table between the cphVB opcodes.
@@ -33,30 +33,30 @@ namespace NumCIL.cphVB
         /// </summary>
         static OpCodeMapper()
         {
-            _opcode_func_name = new Dictionary<PInvoke.cphvb_opcode, string>();
+            _opcode_func_name = new Dictionary<cphvb_opcode, string>();
 
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_ADD, "Add");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_SUBTRACT, "Sub");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MULTIPLY, "Mul");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_DIVIDE, "Div");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MOD, "Mod");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MAXIMUM, "Max");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_MINIMUM, "Min");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_ADD, "Add");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_SUBTRACT, "Sub");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_MULTIPLY, "Mul");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_DIVIDE, "Div");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_MOD, "Mod");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_MAXIMUM, "Max");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_MINIMUM, "Min");
 
             //These two are not found in cphVB, but are emulated with ADD and SUB
-            //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_INCREMENT, "Inc");
-            //_opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_DECREMENT, "Dec");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_FLOOR, "Floor");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_CEIL, "Ceiling");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_RINT, "Round");
+            //_opcode_func_name.Add(cphvb_opcode.CPHVB_INCREMENT, "Inc");
+            //_opcode_func_name.Add(cphvb_opcode.CPHVB_DECREMENT, "Dec");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_FLOOR, "Floor");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_CEIL, "Ceiling");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_RINT, "Round");
 
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_ABSOLUTE, "Abs");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_SQRT, "Sqrt");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_EXP, "Exp");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_NEGATIVE, "Negate");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_LOG, "Log");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_LOG10, "Log10");
-            _opcode_func_name.Add(PInvoke.cphvb_opcode.CPHVB_POWER, "Pow");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_ABSOLUTE, "Abs");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_SQRT, "Sqrt");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_EXP, "Exp");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_NEGATIVE, "Negate");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG, "Log");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG10, "Log10");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_POWER, "Pow");
         }
 
         /// <summary>
@@ -101,9 +101,9 @@ namespace NumCIL.cphVB
         /// Helper function to get the opcode mapping table for the current type
         /// </summary>
         /// <returns>A mapping between the type used for this executor and the cphVB opcodes</returns>
-        public static Dictionary<Type, PInvoke.cphvb_opcode> CreateOpCodeMap<T>()
+        public static Dictionary<Type, cphvb_opcode> CreateOpCodeMap<T>()
         {
-            Dictionary<Type, PInvoke.cphvb_opcode> res = new Dictionary<Type, PInvoke.cphvb_opcode>();
+            Dictionary<Type, cphvb_opcode> res = new Dictionary<Type, cphvb_opcode>();
 
             Type basic = GetBasicClass<T>();
 
@@ -113,14 +113,14 @@ namespace NumCIL.cphVB
                 catch { }
             }
 
-            res[typeof(NumCIL.CopyOp<T>)] = PInvoke.cphvb_opcode.CPHVB_IDENTITY;
-            res[typeof(NumCIL.GenerateOp<T>)] = PInvoke.cphvb_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.CopyOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.GenerateOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
             if (VEM.Instance.SupportsRandom)
-                res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsReduce)
-                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
-                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = PInvoke.cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
             return res;
         }
     }
@@ -189,7 +189,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A lookup table that maps NumCIL operation types to cphVB opcodes
         /// </summary>
-        protected static Dictionary<Type, PInvoke.cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
+        protected static Dictionary<Type, cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
 
         /// <summary>
         /// Gets the type for the Increment operation
@@ -427,7 +427,7 @@ namespace NumCIL.cphVB
         {
             if (!m_isSynced && m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero)
             {
-                VEM.Execute(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_SYNC, m_externalData));
+                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData));
                 m_isSynced = true;
             }
         }
@@ -439,7 +439,7 @@ namespace NumCIL.cphVB
         {
             if (!m_isDiscarded && m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero)
             {
-                VEM.Execute(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DISCARD, m_externalData));
+                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
                 m_isDiscarded = true;
             }
         }
@@ -454,8 +454,8 @@ namespace NumCIL.cphVB
                 if (!m_isSynced && !m_isDiscarded)
                 {
                     VEM.Execute(
-                        new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_SYNC, m_externalData),
-                        new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DISCARD, m_externalData)
+                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData),
+                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData)
                     );
                     m_isSynced = true;
                     m_isDiscarded = true;
@@ -719,7 +719,7 @@ namespace NumCIL.cphVB
                         isScalar = false;
                 }
 
-                PInvoke.cphvb_opcode opcode;
+                cphvb_opcode opcode;
                 if (OpcodeMap.TryGetValue(t, out opcode))
                 {
                     if (unsupported.Count > 0)
@@ -768,7 +768,7 @@ namespace NumCIL.cphVB
                     {
                         bool isSupported = true;
 
-                        if (opcode == PInvoke.cphvb_opcode.CPHVB_USERFUNC)
+                        if (opcode == cphvb_opcode.CPHVB_USERFUNC)
                         {
                             if (VEM.SupportsRandom && ops is NumCIL.Generic.RandomGeneratorOp<T>)
                             {
@@ -782,7 +782,7 @@ namespace NumCIL.cphVB
                             else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
                             {
                                 NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
-                                PInvoke.cphvb_opcode rop;
+                                cphvb_opcode rop;
                                 if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
                                 {
                                     supported.Add(VEM.CreateReduceInstruction<T>(CPHVB_TYPE, rop, lzop.Axis, operands[0], operands[1]));
@@ -956,7 +956,7 @@ namespace NumCIL.cphVB
 
                 if (m_externalData != PInvoke.cphvb_array_ptr.Null)
                 {
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(PInvoke.cphvb_opcode.CPHVB_DESTROY, m_externalData));
+                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DESTROY, m_externalData));
                     m_externalData = PInvoke.cphvb_array_ptr.Null;
                 }
 
