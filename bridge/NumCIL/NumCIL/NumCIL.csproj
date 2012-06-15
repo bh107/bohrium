@@ -93,6 +93,7 @@
     <Compile Include="BasicOperators.cs" />
     <Compile Include="DataAccessor.cs" />
     <Compile Include="Generators.cs" />
+    <Compile Include="ThreadPool.cs" />
     <Compile Include="NdArray.cs" />
     <Compile Include="OperatorInterfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
