@@ -27,23 +27,14 @@ extern "C" {
 /* Error codes */
 enum /* cphvb_error */
 {
-    CPHVB_SUCCESS,
-    CPHVB_ERROR,
-    CPHVB_TYPE_ERROR,
-    CPHVB_TYPE_NOT_SUPPORTED,
-    CPHVB_TYPE_NOT_SUPPORTED_BY_OP,
-    CPHVB_TYPE_COMB_NOT_SUPPORTED,
-    CPHVB_OUT_OF_MEMORY,
-    CPHVB_RESULT_IS_CONSTANT,
-    CPHVB_OPERAND_UNKNOWN,
-    CPHVB_ALREADY_INITALIZED,
-    CPHVB_NOT_INITALIZED,
-    CPHVB_PARTIAL_SUCCESS,
-    CPHVB_INST_DONE,
-    CPHVB_INST_UNDONE,
-    CPHVB_INST_NOT_SUPPORTED,
-    CPHVB_INST_NOT_SUPPORTED_FOR_SLICE,
-    CPHVB_USERFUNC_NOT_SUPPORTED,
+    CPHVB_SUCCESS,               // General success
+    CPHVB_ERROR,                 // Fatal error 
+    CPHVB_TYPE_NOT_SUPPORTED,    // Data type not supported
+    CPHVB_OUT_OF_MEMORY,         // Out of memory
+    CPHVB_PARTIAL_SUCCESS,       // Recoverable
+    CPHVB_INST_UNDONE,           // Instruction is not executed
+    CPHVB_INST_NOT_SUPPORTED,    // Instruction not supported
+    CPHVB_USERFUNC_NOT_SUPPORTED,// User-defined function not supported
 };
 
 
