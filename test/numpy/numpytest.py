@@ -8,6 +8,7 @@ import subprocess
 import os
 import getopt
 import random
+import warnings
 from operator import mul
 from itertools import izip as zip
 
@@ -141,6 +142,7 @@ class numpytest:
         return res
 
 if __name__ == "__main__":
+    warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
     script_list = []
     exclude_list = []
