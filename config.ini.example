@@ -4,7 +4,7 @@ children = node
 
 [node]
 impl = /opt/cphvb/libcphvb_vem_node.so
-children = score
+children = simple
 type = vem
 
 [simple]
