@@ -38,8 +38,20 @@ namespace NumCIL.cphVB
 				{
 					if (opcode is Newtonsoft.Json.Linq.JProperty)
 					{
+						string comment = "";
+						try { comment = (string)((Newtonsoft.Json.Linq.JProperty)opcode).Value["doc"]; }
+						catch { }
+
 						string name =  ((Newtonsoft.Json.Linq.JProperty)opcode).Name;
 						long id = i++;
+
+						if (!string.IsNullOrEmpty(comment))
+						{
+							WriteLine("\t\t///<summary>");
+							WriteLine("\t\t/// " + comment);
+							WriteLine("\t\t/// Integer value: " + id);
+							WriteLine("\t\t///</summary>");
+						}
 						WriteLine("\t\t" + name + ",");
 					}
 				}
