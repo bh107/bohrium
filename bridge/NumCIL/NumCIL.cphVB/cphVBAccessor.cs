@@ -679,12 +679,6 @@ namespace NumCIL.cphVB
         {
             List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
             List<IInstruction> supported = new List<IInstruction>();
-            //This list keeps all scalars so the GC does not collect them
-            // before the instructions are executed, remove list once
-            // constants are supported in score/mcore
-
-            List<NdArray<T>> scalars = new List<NdArray<T>>();
-            long i = 0;
 
             foreach (var op in work)
             {
@@ -692,7 +686,6 @@ namespace NumCIL.cphVB
                 bool isScalar;
                 IOp<T> ops = op.Operation;
                 NdArray<T>[] operands = op.Operands;
-                i++;
 
                 if (ops is IScalarAccess<T>)
                 {
@@ -732,37 +725,10 @@ namespace NumCIL.cphVB
                     {
                         IScalarAccess<T> sa = (IScalarAccess<T>)ops;
 
-                        //Change to true once score supports constants
-                        if (false)
-                        {
-                            if (sa.Operation is IBinaryOp<T>)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
-                            else
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
-                        }
+                        if (sa.Operation is IBinaryOp<T>)
+                            supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
                         else
-                        {
-                            //Since we have no constant support, we mimic the constant with a 1D array
-                            var scalarAcc = new cphVBAccessor<T>(1);
-                            scalarAcc[0] = sa.Value;
-                            NdArray<T> scalarOp;
-
-                            if (sa.Operation is IBinaryOp<T>)
-                            {
-                                Shape bShape = Shape.ToBroadcastShapes(operands[1].Shape, new Shape(1)).Item2;
-                                scalarOp = new NdArray<T>(scalarAcc, bShape);
-
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], scalarOp));
-                            }
-                            else
-                            {
-                                Shape bShape = Shape.ToBroadcastShapes(operands[0].Shape, new Shape(1)).Item2;
-                                scalarOp = new NdArray<T>(scalarAcc, bShape);
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], scalarOp));
-                            }
-
-                            scalars.Add(scalarOp);
-                        }
+                            supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
                     }
                     else
                     {
@@ -798,7 +764,7 @@ namespace NumCIL.cphVB
                             if (!isSupported)
                             {
                                 if (supported.Count > 0)
-                                    ExecuteWithFailureDetection(supported, work, i - supported.Count - 1);
+                                    ExecuteWithFailureDetection(supported);
 
                                 unsupported.Add(op);
                             }
@@ -819,7 +785,7 @@ namespace NumCIL.cphVB
                 else
                 {
                     if (supported.Count > 0)
-                        ExecuteWithFailureDetection(supported, work, i - supported.Count - 1);
+                        ExecuteWithFailureDetection(supported);
 
                     unsupported.Add(op);
                 }
@@ -832,20 +798,15 @@ namespace NumCIL.cphVB
                 base.ExecuteOperations(unsupported);
 
             if (supported.Count > 0)
-                ExecuteWithFailureDetection(supported, work, i - supported.Count);
+                ExecuteWithFailureDetection(supported);
 
             //TODO: Do we want to do it now, or just let the GC figure it out?
             foreach (var op in work)
                 if (op is IDisposable)
                     ((IDisposable)op).Dispose();
-
-            //Touch the data to prevent the scalars from being GC'ed
-            //Remove once constants are supported
-            foreach (var op in scalars)
-                op.Name = null;
         }
 
-        protected void ExecuteWithFailureDetection(List<IInstruction> instructions, IEnumerable<PendingOperation<T>> work, long instructionIndex)
+        protected void ExecuteWithFailureDetection(List<IInstruction> instructions)
         {
             //Reclaim everything in gen 0
             GC.Collect(0);
