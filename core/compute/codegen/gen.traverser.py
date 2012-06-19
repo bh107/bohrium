@@ -8,7 +8,7 @@ def tfunc(ops):
     }
     return t
 
-def main():
+def gen_traverse():
 
     funcs = [
         [(0, 'a'),(1,'a'),(2, 'a')],
@@ -35,7 +35,11 @@ def main():
         })
 
     f_tmpl  = Template(file='traverse.ctpl', searchList=[{'traversers': t}])
-    print f_tmpl
+    return f_tmpl
+
+def main():
+    print gen_traverse()
+
 
 if __name__ == "__main__":
     main()

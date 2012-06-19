@@ -1,104 +1,62 @@
 #!/usr/bin/env python
+import re
 import json
 from Cheetah.Template import Template
 
-nonmapped = {        # The following types does not have an equivalent in CPHVB
+def gen_traverse(defs):
 
-    'g': 'longdouble',
+    def tfunc(ops):
+        t = {
+            'ops': ops
+        }
+        return t
 
-    'e': 'float16',
-    'F': 'cfloat',
-    'D': 'cdouble',
-    'G': 'clongdouble',
+    funcs = [
+        [(0, 'a'),(1,'a'),(2, 'a')],
+        [(0, 'a'),(1,'a'),(2, 'c')],
+        [(0, 'a'),(1,'c'),(2, 'a')],
+        [(0, 'a'),(1,'a')],
+        [(0, 'a'),(1,'c')],
+    ]
 
-    'M': 'datetime',
-    'm': 'timedelta',
-    'O': 'OBJECT',
-    'P': 'OBJECT',
-}
+    t = []
+    for f in funcs:
+        template_sig = ', '.join(['typename T%d'%op[0] for op in f])
+        func_call = []
+        for op in f:
+            if op[1] == 'a':
+                func_call.append('(off%d+d%d)' % (op[0], op[0]))
+            else:
+                func_call.append('d%d' % op[0])
+        t.append({
+            'sig': ''.join([op[1] for op in f]),
+            'tsig': template_sig,
+            'ops': f,
+            'func_call': ', '.join(func_call)
+        })
 
-mapped = {          # Datatype mapping from numpy to CPHVB
-    '?': 'CPHVB_BOOL',
+    f_tmpl  = Template(file='traverse.ctpl', searchList=[{'traversers': t}])
+    return f_tmpl
 
-    'b': 'CPHVB_INT8',
-    'B': 'CPHVB_UINT8',
+def gen_functors():
+    pass
 
-    'h': 'CPHVB_INT16',
-    'H': 'CPHVB_UINT16',
+def gen_cases(defs, ignore):
 
-    'i': 'CPHVB_INT32',
-    'I': 'CPHVB_UINT32',
+    reshape = [defs[opcode] for opcode in defs]
+    types   = [(f, out_type, in_type) for f in reshape for out_type in f['types'] for in_type in f['types'][out_type]]
+    filter_ignore   = (f for f in reshape if f['opcode'] not in ignore)
+    filter_system   = (f for f in filter_ignore if not f['system_opcode'] )
+    expand          = (dict(f.items, {'op1': o, 'op2': i, 'op3': i}) for f in filter_system for f['types']
 
-    'l': 'CPHVB_INT32',
-    'L': 'CPHVB_UINT32',
-
-    'q': 'CPHVB_INT64',
-    'Q': 'CPHVB_UINT64',
-
-    'f': 'CPHVB_FLOAT32',
-    'd': 'CPHVB_FLOAT64',
-}
+    return list(filter_system)
 
 def main():
-
-    functions   = json.load(open('functions.json'))                 # Read the function definitions.
-    ignore      = json.load(open('functions.ignore.json'))          # Read list of functions to ignore.
-
-    cases       = []
-    functors    = []
-    log         = []
-                                                                    # Generate the cpp code.
-    for (opcode, nin, nout, signatures) in [f for f in functions if f[0] not in ignore]:
-
-        fname   = opcode.replace('CPHVB_','').lower()
-        opcount = nin+nout
-
-        sigs        = []                                            # Filter signatures
-        unsupported = []
-
-        for sin, sout in signatures:
-            type_sig    = [mapped[t] for t in sin+sout if t in mapped][::-1]
-            u_sig       = [t for t in sin+sout if t not in mapped]
-    
-            if u_sig:
-                unsupported.append( u_sig )
-
-            if type_sig not in sigs and len(type_sig) > 1:
-                sigs.append( type_sig )
-
-        for signature in [s for s in sigs if len(s) == opcount]:            # case for each signature
-
-            case = {
-                'opcode':       opcode,
-                'op1':          signature[0].upper(),
-                'op2':          signature[1].upper(),
-                'opcount':      opcount,
-                'ftypes':       ','.join(signature).lower(),
-                'fname':        fname
-            }
-
-            if opcount == 3:
-                case['op3'] = signature[2].upper()
-            cases.append( case )
-
-        functor = {                                                 # Abstract functor for "function"
-            'fname':        fname,
-            'type_params':  ', '.join(['typename T%d'%t for t in xrange(1, opcount+1)]),
-            'fparams':      ', '.join(['T%d *op%d'% (t, t) for t in xrange(1, opcount+1)])
-        }
-
-        functors.append( functor )
-
-        if unsupported:
-            log.append("%s\t\tUnsupported signatures\t%s" %(opcode, ' | '.join([','.join(s) for s in unsupported])))
-
-                                                                    # Generate the cpp code.
-    f_tmpl  = Template(file='functors.ctpl', searchList=[{'functors': functors}])
-    t_tmpl  = Template(file='cphvb_compute.ctpl', searchList=[{'cases': cases}])
-    
-                                                                    # Write them to file
-    open('cphvb_compute.gen','w').write(str(t_tmpl))
-    open('gen.log','w+').write('\n'.join(log))
+    ignore  = json.load(open('ignore.json'))
+    defs    = json.loads(re.sub('//.*?\n|/\*.*?\*/', '', open('../../codegen/opcodes.json').read(), re.S, re.DOTALL | re.MULTILINE))
+    data = gen_cases( defs, ignore )
+    t_tmpl = Template(file='cphvb_compute.ctpl', searchList=[{'cases': data}])
+    print t_tmpl
 
 if __name__ == "__main__":
     main()

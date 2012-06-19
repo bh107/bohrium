@@ -1,1 +1,15 @@
-Describe how and what this does...
+README
+======
+
+The gen.*.py scripts generates the following files:
+
+ functors.hpp
+   A set of cpp functors, they are used to perform the inner-most logic of a whole-array operation. Such as: op1 = op2 + op3.
+
+ traverers.hpp
+   Contains the logic for traversing through arrays and applying functors / element-wise operations.
+
+ cphvb_compute.cpp
+   Maps opcode to traversal+functor pair, either by returning a pointer to the traversal function with an inlined functor or directly invoking the traversal function.
+
+The code-generation is based on the *.ctpl files which are c/c++ code with Python Cheetah string-template annotations.
