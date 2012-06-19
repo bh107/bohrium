@@ -1,0 +1,8 @@
+all:
+		python gen_opcodes.py
+
+clean:
+		del /Q ..\cphvb_opcode.c ..\..\include\cphvb_opcode.h
+
+install: all
+		
