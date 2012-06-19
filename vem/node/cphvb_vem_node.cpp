@@ -229,10 +229,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 								inst->opcode = CPHVB_NONE;
 								--valid_instruction_count;
 								break;
-//#ifdef CPHVB_TRACE
 							default:
-								printf("Unexpected opcode %lld\n", (cphvb_int64)inst->opcode);
-//#endif
+								assert(false);
 						}
 						break;
 					default:
@@ -249,10 +247,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 							case CPHVB_SYNC:
 								arrayManager->changeOwnerPending(inst, base,CPHVB_SELF);
 								break;
-//#ifdef CPHVB_TRACE
 							default:
-								printf("Unexpected opcode %lld\n", (cphvb_int64)inst->opcode);
-//#endif
+								assert(false);
 						}
 					}
 				break;
