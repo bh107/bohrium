@@ -12,7 +12,7 @@ def partition(pred, iterable):
             falses.append(item)
     return trues, falses
 
-defs    = json.load(open('opcodes.json.dict_format'))
+defs    = json.load(open('opcodes_dict.json'))
 reshape = (defs[opcode] for opcode in defs)                 # Remove the dict-index
 
 ops = []                                                    # Reshape the type-signature
