@@ -300,7 +300,7 @@ namespace NumCIL.cphVB
 
                 foreach (var inst in instrBuffer)
                 {
-                    if (inst.opcode == cphvb_opcode.CPHVB_DESTROY)
+                    if (inst.opcode == cphvb_opcode.CPHVB_DISCARD)
                         destroys++;
                     if (inst.userfunc != IntPtr.Zero)
                     {

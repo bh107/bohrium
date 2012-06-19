@@ -59,16 +59,19 @@ namespace NumCIL.cphVB
         /// <param name="disposing">True if called from Dispose(), false if called fron the finalizer</param>
         public void Dispose(bool disposing)
         {
+            bool doFree = true;
             if (m_handle.IsAllocated)
             {
                 m_handle.Free();
-                if (m_ptr != PInvoke.cphvb_array_ptr.Null)
-                    m_ptr.Data = IntPtr.Zero;
+                doFree = false;
             }
 
             if (m_ptr != PInvoke.cphvb_array_ptr.Null)
             {
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DESTROY, m_ptr));
+                if (m_ptr.Data == IntPtr.Zero && m_ptr.BaseArray == PInvoke.cphvb_array_ptr.Null && doFree)
+                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_ptr));
+
+                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr));
                 m_ptr = PInvoke.cphvb_array_ptr.Null;
             }
 

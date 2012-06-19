@@ -226,7 +226,7 @@ namespace NumCIL.cphVB
         /// Constructs a new data accessor for a pre-allocated block of storage
         /// </summary>
         /// <param name="data"></param>
-        public cphVBAccessor(T[] data) : base(data) { m_ownsData = true; }
+        public cphVBAccessor(T[] data) : base(data) { }
 
         /// <summary>
         /// A pointer to the base-array view structure
@@ -234,19 +234,9 @@ namespace NumCIL.cphVB
         protected PInvoke.cphvb_array_ptr m_externalData = PInvoke.cphvb_array_ptr.Null;
 
         /// <summary>
-        /// A value indicating if NumCIL owns the data, false means that cphVB owns the data
-        /// </summary>
-        protected bool m_ownsData = false;
-
-        /// <summary>
         /// A value indicating if a CPHVB_SYNC command has been sent
         /// </summary>
         protected bool m_isSynced = false;
-
-        /// <summary>
-        /// A value indicating if a CPHVB_DISCARD command has been sent
-        /// </summary>
-        protected bool m_isDiscarded = false;
 
         /// <summary>
         /// A pointer to internally allocated data which is pinned
@@ -260,20 +250,19 @@ namespace NumCIL.cphVB
         {
             Flush();
 
-            if (IsAllocated)
+            if (m_data != null)
             {
                 cphVB_SyncAndDiscard();
             }
             else
             {
-                if (m_data == null && m_externalData == PInvoke.cphvb_array_ptr.Null)
+                if (m_externalData == PInvoke.cphvb_array_ptr.Null)
                 {
                     //Data is not yet allocated, convert to external storage
                     m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
-                    m_ownsData = false;
                 }
 
-                if (!m_ownsData && m_externalData.Data == IntPtr.Zero)
+                if (m_externalData.Data == IntPtr.Zero)
                 {
                     PInvoke.cphvb_error e = PInvoke.cphvb_data_malloc(m_externalData);
                     if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
@@ -405,7 +394,7 @@ namespace NumCIL.cphVB
             get 
             {
                 Allocate();
-                cphVB_SyncAndDiscard();
+                cphVB_Sync();
 
                 Pin();
                 return m_externalData.Data; 
@@ -437,38 +426,66 @@ namespace NumCIL.cphVB
         /// </summary>
         protected void cphVB_Discard()
         {
-            if (!m_isDiscarded && m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero)
+            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
             {
-                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
-                m_isDiscarded = true;
+                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
+                m_externalData = PInvoke.cphvb_array_ptr.Null;
             }
         }
 
         /// <summary>
-        /// Sends a CPHVB_SYNC command to the VEM
+        /// Sends a CPHVB_FREE and CPHVB_SYNC command to the VEM
         /// </summary>
-        protected void cphVB_SyncAndDiscard()
+        protected void cphVB_FreeAndDiscard()
         {
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero)
+            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
             {
-                if (!m_isSynced && !m_isDiscarded)
+                System.Diagnostics.Debug.Assert(!m_handle.IsAllocated);
+
+                if (m_externalData.Data != IntPtr.Zero)
                 {
-                    VEM.Execute(
-                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData),
+                    VEM.ExecuteRelease(
+                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData),
                         new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData)
                     );
-                    m_isSynced = true;
-                    m_isDiscarded = true;
+                    m_externalData = PInvoke.cphvb_array_ptr.Null;
                 }
-                else if (!m_isSynced)
-                    cphVB_Sync();
-                else if (!m_isDiscarded)
+                else
+                {
                     cphVB_Discard();
-
-
+                }
             }
         }
 
+        /// <summary>
+        /// Sends a CPHVB_FREE command to the VEM as required
+        /// </summary>
+        protected void cphVB_Free()
+        {
+            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
+                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData));
+        }
+
+        /// <summary>
+        /// Sends a CPHVB_SYNC and CPHVB_DISCARD command to the VEM as required
+        /// </summary>
+        protected void cphVB_SyncAndDiscard()
+        {
+            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
+            {
+                System.Diagnostics.Debug.Assert(m_data != null);
+
+                if (!m_isSynced)
+                {
+                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
+                    VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData));
+                    m_isSynced = true;
+                    m_externalData = PInvoke.cphvb_array_ptr.Null;
+                }
+                else
+                    cphVB_Discard();
+            }
+        }
 
         /// <summary>
         /// Register a pending operation on the underlying array
@@ -487,7 +504,8 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Pins the allocated data and returns the pinned pointer
+        /// Pins the allocated data and returns an array with the data set to the pinned pointer.
+        /// If data is not yet allocated, nothing is done
         /// </summary>
         /// <returns>A pinned pointer</returns>
         internal virtual PInvoke.cphvb_array_ptr Pin()
@@ -502,21 +520,16 @@ namespace NumCIL.cphVB
 
                 m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
                 m_externalData.Data = m_handle.AddrOfPinnedObject();
-                m_ownsData = true;
-
-                m_isDiscarded = false;
-                m_isSynced = false;
             }
-            else if (m_ownsData && m_externalData.Data == IntPtr.Zero)
+            else if (m_data != null && m_externalData.Data == IntPtr.Zero)
             {
                 //Internally allocated data, we need to pin it
                 if (!m_handle.IsAllocated)
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
                 m_externalData.Data = m_handle.AddrOfPinnedObject();
-
-                m_isDiscarded = false;
-                m_isSynced = false;
             }
+
+            m_isSynced = false;
 
             return m_externalData;
         }
@@ -543,10 +556,9 @@ namespace NumCIL.cphVB
             if (m_size < 0)
                 throw new ObjectDisposedException(this.GetType().FullName);
 
-            if (m_ownsData && m_externalData != PInvoke.cphvb_array_ptr.Null)
+            if (m_data != null && m_externalData != PInvoke.cphvb_array_ptr.Null)
             {
                 this.Unpin();
-                m_externalData.Data = IntPtr.Zero;
                 return;
             }
 
@@ -556,7 +568,7 @@ namespace NumCIL.cphVB
 
 
             //If data is allocated in cphVB, we need to flush it and de-allocate it
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null && !m_ownsData)
+            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
             {
                 cphVB_Sync();
 
@@ -663,10 +675,7 @@ namespace NumCIL.cphVB
                 }
 
                 //Release the unmanaged copy
-                cphVB_Discard();
-                PInvoke.cphvb_data_free(m_externalData);
-                m_externalData.Data = IntPtr.Zero;
-                m_ownsData = true;
+                cphVB_FreeAndDiscard();
             }
         }
 
@@ -829,12 +838,15 @@ namespace NumCIL.cphVB
                     m_handle.Free();
 
                     if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-                        PInvoke.cphvb_data_set(m_externalData, IntPtr.Zero);
-                }
+                        m_externalData.Data = IntPtr.Zero;
+               }
 
                 if (m_externalData != PInvoke.cphvb_array_ptr.Null)
                 {
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DESTROY, m_externalData));
+                    if (m_externalData.Data != IntPtr.Zero)
+                        VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData));
+
+                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
                     m_externalData = PInvoke.cphvb_array_ptr.Null;
                 }
 
