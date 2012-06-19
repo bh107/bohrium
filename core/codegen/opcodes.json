@@ -376,22 +376,6 @@
             ]
         }
     }, 
-    "CPHVB_DESTROY": {
-        "doc": "System instruction that informs the child component to deallocate the array.",
-        "code": "free(op1)",
-        "nop": 1, 
-        "opcode": "CPHVB_DESTROY", 
-        "system_opcode": true, 
-        "types": {}
-    }, 
-    "CPHVB_DISCARD": {
-        "doc": "System instruction that informs the child component to forget the array.",
-        "code": "forget(op1)",
-        "nop": 1, 
-        "opcode": "CPHVB_DISCARD", 
-        "system_opcode": true, 
-        "types": {}
-    }, 
     "CPHVB_DIVIDE": {
         "doc": "Divide arguments element-wise.",
         "code": "op1 = op2 / op3",
@@ -1743,14 +1727,6 @@
             ]
         }
     }, 
-    "CPHVB_SYNC": {
-        "doc": "System instruction that informs the child component to make data synchronized and available.", 
-        "code": "COPY",
-        "nop": 1, 
-        "opcode": "CPHVB_SYNC", 
-        "system_opcode": true, 
-        "types": {}
-    }, 
     "CPHVB_TAN": {
         "doc": "Compute tangent element-wise.", 
         "code": "op1 = tan( op2 )",
@@ -1796,6 +1772,30 @@
             ]
         }
     }, 
+    "CPHVB_FREE": {
+        "doc": "System instruction that informs the child component to deallocate the storage area associated with the array.",
+        "code": "cphvb_data_free(op1)",
+        "nop": 1, 
+        "opcode": "CPHVB_FREE", 
+        "system_opcode": true, 
+        "types": {}
+    }, 
+    "CPHVB_SYNC": {
+        "doc": "System instruction that informs the child component to make data synchronized and available.", 
+        "code": "cphvb_sync(op1)",
+        "nop": 1, 
+        "opcode": "CPHVB_SYNC", 
+        "system_opcode": true, 
+        "types": {}
+    }, 
+    "CPHVB_DISCARD": {
+        "doc": "System instruction that informs the child component to forget the array and deallocate any control structures associated with the array.",
+        "code": "cphvb_forget(op1)",
+        "nop": 1, 
+        "opcode": "CPHVB_DISCARD", 
+        "system_opcode": true, 
+        "types": {}
+    },     
     "CPHVB_USERFUNC": {
         "doc": "System instruction that represents a user-defined function registered by the Bridge.", 
         "code": "USER DEFINED BEHAVIOR",

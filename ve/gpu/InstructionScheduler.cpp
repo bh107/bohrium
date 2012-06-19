@@ -55,6 +55,10 @@ cphvb_error InstructionScheduler::schedule(cphvb_intp instructionCount,
                 discard(inst->operand[0]);
                 inst->status = CPHVB_SUCCESS;
                 break;
+            case CPHVB_FREE:
+                cphvb_data_free(inst->operand[0]);
+                inst->status = CPHVB_SUCCESS;
+                break;                
             case CPHVB_USERFUNC:
                 inst->status = userdeffunc(inst->userfunc);
                 break;

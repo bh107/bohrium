@@ -43,6 +43,7 @@ typedef enum
 
 struct OwnerTicket
 {
+    cphvb_instruction* instruction;
     cphvb_array* array;
     owner_t owner;
 };
@@ -51,7 +52,7 @@ class ArrayManager
 {
 private:
     StaticStore<cphvb_array>* arrayStore;
-    std::deque<cphvb_array*> eraseQueue;
+    std::deque<cphvb_instruction*> eraseQueue;
     std::deque<OwnerTicket> ownerChangeQueue;
 
 public:
@@ -63,9 +64,11 @@ public:
                         cphvb_index start,
                         cphvb_index shape[CPHVB_MAXDIM],
                         cphvb_index stride[CPHVB_MAXDIM]);
-    void erasePending(cphvb_array* array);
-    void changeOwnerPending(cphvb_array* base,
-                            owner_t owner);
+    void erase(cphvb_array* base);
+    void erasePending(cphvb_instruction* inst);
+    void changeOwnerPending(cphvb_instruction* inst, 
+                        cphvb_array* base,
+                        owner_t owner);
     void flush();
 };
 

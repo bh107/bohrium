@@ -195,90 +195,103 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         #endif
         switch(inst->opcode)
         {
-        case CPHVB_DESTROY:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            if (inst->operand[0]->base != NULL)
-            {   // It's a view and we can mark it for deletion
-                arrayManager->erasePending(inst->operand[0]);
-            }
-            --base->ref_count; //decrease refcount
-            if(base->ref_count <= 0)
-            {
-                // Mark the Base for deletion
-                arrayManager->erasePending(base);
-                if (base->owner != CPHVB_PARENT)
-                {
-                    //Tell the VE to discard the base array.
-                    inst->operand[0] = base;
-                    inst->opcode = CPHVB_DISCARD;
-                }
-                else
-                {
-                    inst->opcode = CPHVB_NONE;
-                    --valid_instruction_count;
-                }
-            }
-            else
-            {   //Tell the VE to do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
-            }
-            break;
-        }
-        case CPHVB_SYNC:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            switch (base->owner)
-            {
-            case CPHVB_PARENT:
-            case CPHVB_SELF:
-                //The owner is not down stream so we do nothing
-                inst->opcode = CPHVB_NONE;
-                --valid_instruction_count;
-                break;
-            default:
-                //The owner is downstream so send the sync down
-                //and take ownership
-                inst->operand[0] = base;
-                arrayManager->changeOwnerPending(base,CPHVB_SELF);
-            }
-            break;
-        }
-        case CPHVB_USERFUNC:
-        {
-            cphvb_userfunc *uf = inst->userfunc;
-            //The children should own the output arrays.
-            for(int j = 0; j < uf->nout; ++j)
-            {
-                cphvb_array* base = cphvb_base_array(uf->operand[j]);
-                base->owner = CPHVB_CHILD;
-            }
-            //We should own the input arrays.
-            for(int j = uf->nout; j < uf->nout + uf->nin; ++j)
-            {
-                cphvb_array* base = cphvb_base_array(uf->operand[j]);
-                if(base->owner == CPHVB_PARENT)
-                {
-                    base->owner = CPHVB_SELF;
-                }
-            }
-            break;
-        }
-        default:
-        {
-            cphvb_array* base = cphvb_base_array(inst->operand[0]);
-            // "Regular" operation: set ownership and send down stream
-            base->owner = CPHVB_CHILD;//The child owns the output ary.
-            for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
-            {
-                if(!cphvb_is_constant(inst->operand[j]) &&
-                   cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
-                {
-                    cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
-                }
-            }
-        }
+        	//Special handling
+			case CPHVB_FREE:
+			case CPHVB_SYNC:
+			case CPHVB_DISCARD:
+			{
+				cphvb_array* base = cphvb_base_array(inst->operand[0]);
+				
+				switch (base->owner)
+				{
+					case CPHVB_PARENT:
+					case CPHVB_SELF:
+						
+						//The owner is not down stream so we handle the operation here
+						switch(inst->opcode)
+						{
+							case CPHVB_FREE:
+								assert(inst->operand[0]->base == NULL);
+								cphvb_data_free(inst->operand[0]);
+								inst->status = CPHVB_SUCCESS;
+								inst->opcode = CPHVB_NONE;
+								--valid_instruction_count;
+								break;
+							case CPHVB_DISCARD:
+								arrayManager->erase(inst->operand[0]);
+								inst->status = CPHVB_SUCCESS;
+								inst->opcode = CPHVB_NONE;
+								--valid_instruction_count;
+								break;
+							case CPHVB_SYNC:
+								base->owner = CPHVB_PARENT;
+								inst->status = CPHVB_SUCCESS;
+								inst->opcode = CPHVB_NONE;
+								--valid_instruction_count;
+								break;
+//#ifdef CPHVB_TRACE
+							default:
+								printf("Unexpected opcode %lld\n", (cphvb_int64)inst->opcode);
+//#endif
+						}
+						break;
+					default:
+						//The owner is downstream so send the free down
+						// and register a free later, so we free it
+						// even if the child does not
+						switch(inst->opcode)
+						{
+							case CPHVB_FREE:
+								assert(inst->operand[0]->base == NULL);
+								break;
+							case CPHVB_DISCARD:
+								arrayManager->erasePending(inst);
+								break;
+							case CPHVB_SYNC:
+								arrayManager->changeOwnerPending(inst, base,CPHVB_SELF);
+								break;
+//#ifdef CPHVB_TRACE
+							default:
+								printf("Unexpected opcode %lld\n", (cphvb_int64)inst->opcode);
+//#endif
+						}
+					}
+				break;
+			}
+			case CPHVB_USERFUNC:
+			{
+				cphvb_userfunc *uf = inst->userfunc;
+				//The children should own the output arrays.
+				for(int j = 0; j < uf->nout; ++j)
+				{
+					cphvb_array* base = cphvb_base_array(uf->operand[j]);
+					base->owner = CPHVB_CHILD;
+				}
+				//We should own the input arrays.
+				for(int j = uf->nout; j < uf->nout + uf->nin; ++j)
+				{
+					cphvb_array* base = cphvb_base_array(uf->operand[j]);
+					if(base->owner == CPHVB_PARENT)
+					{
+						base->owner = CPHVB_SELF;
+					}
+				}
+				break;
+			}
+			default:
+			{
+				cphvb_array* base = cphvb_base_array(inst->operand[0]);
+				// "Regular" operation: set ownership and send down stream
+				base->owner = CPHVB_CHILD;//The child owns the output ary.
+				for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
+				{
+					if(!cphvb_is_constant(inst->operand[j]) &&
+					   cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
+					{
+						cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
+					}
+				}
+			}
         }
     }
     if (valid_instruction_count > 0)

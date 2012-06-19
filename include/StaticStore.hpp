@@ -91,7 +91,7 @@ StaticStore<T>::~StaticStore()
 	typename std::list<T*>::iterator it;
     
     if(counter > 0)
-        std::cout << "[VEM-NODE] Warning " << counter << " arrays was not destroyed by the BRIDGE" << std::endl;
+        std::cout << "[VEM-NODE] Warning " << counter << " arrays were not destroyed by the BRIDGE" << std::endl;
 
     for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
 	    free(*it);

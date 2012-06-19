@@ -68,6 +68,11 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 inst->status = CPHVB_SUCCESS;
                 break;
 
+            case CPHVB_FREE:
+            	cphvb_data_free(inst->operand[0]);
+                inst->status = CPHVB_SUCCESS;
+                break;
+
             case CPHVB_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)

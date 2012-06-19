@@ -43,7 +43,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%lld) should be greater than zero!\n", (cphvb_int64)block_size);
         return CPHVB_ERROR;
     }
 
@@ -265,6 +265,11 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
             case CPHVB_NONE:                    // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
+                inst->status = CPHVB_SUCCESS;
+                break;
+
+            case CPHVB_FREE:
+            	cphvb_data_free(inst->operand[0]);
                 inst->status = CPHVB_SUCCESS;
                 break;
 

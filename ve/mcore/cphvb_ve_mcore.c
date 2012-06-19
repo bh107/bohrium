@@ -104,13 +104,19 @@ cphvb_error cphvb_ve_mcore_execute(
             }
             ++count;
         }
+        else if (inst->opcode == CPHVB_FREE)
+        {
+			cphvb_data_free(inst->operand[0]);
+			inst->status = CPHVB_SUCCESS;
+			++count;
+        }
 
         //Gather regular operations.
         cphvb_intp regular_size=0;
         while(count < instruction_count)
         {
             inst = &instruction_list[count];
-            if(inst->opcode == CPHVB_USERFUNC)
+            if(inst->opcode == CPHVB_USERFUNC || inst->opcode == CPHVB_FREE)
                 break;
 
             switch(inst->opcode)
