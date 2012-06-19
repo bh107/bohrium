@@ -60,19 +60,24 @@ void ArrayManager::erase(cphvb_array* array)
 {
 	cphvb_array* base = cphvb_base_array(array);
 	base->ref_count--;
-	
-	//We always delete views
-	if (array->base != NULL)
-	    arrayStore->erase(array);
 
-	//If all views are accounted for, we delete the base view
-	if (base->ref_count <= 0)
-		arrayStore->erase(base);
+	if (array->base == NULL && array->ref_count != 0)
+	{
+		fprintf(stderr, "Deleted base array with ref-count %lld\n", array->ref_count);
+		exit(-1);
+	}
+	
+	arrayStore->erase(array);
 }
 
 void ArrayManager::erasePending(cphvb_instruction* inst)
 {
     eraseQueue.push_back(inst);
+}
+
+void ArrayManager::freePending(cphvb_instruction* inst)
+{
+    freeQueue.push_back(inst);
 }
 
 void ArrayManager::changeOwnerPending(cphvb_instruction* inst, 
@@ -99,16 +104,25 @@ void ArrayManager::flush()
     }
     // All ownerships are changed. So we clear the queue
     ownerChangeQueue.clear();
+    
+    //Then we free arrays
+    std::deque<cphvb_instruction*>::iterator fit = freeQueue.begin();
+    for (; fit != freeQueue.end(); ++fit)
+    {
+    	if ((*fit)->status == CPHVB_SUCCESS)
+	        cphvb_data_free((*fit)->operand[0]);
+    }
+    // All free's have been dealt with, so we clear the queue
+    freeQueue.clear();
+    
 
-    //Then we delete arrays marked for deletion
+    //Finally we delete arrays marked for deletion
     std::deque<cphvb_instruction*>::iterator eit = eraseQueue.begin();
     for (; eit != eraseQueue.end(); ++eit)
     {
     	if ((*eit)->status == CPHVB_SUCCESS)
 	        this->erase((*eit)->operand[0]);
     }
-    // All erases have been dealt with. So we clear the queue
+    // All erases have been dealt with, so we clear the queue
     eraseQueue.clear();
-
-
 }

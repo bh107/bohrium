@@ -200,57 +200,21 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 			case CPHVB_SYNC:
 			case CPHVB_DISCARD:
 			{
-				cphvb_array* base = cphvb_base_array(inst->operand[0]);
-				
-				switch (base->owner)
+				switch(inst->opcode)
 				{
-					case CPHVB_PARENT:
-					case CPHVB_SELF:
-						
-						//The owner is not down stream so we handle the operation here
-						switch(inst->opcode)
-						{
-							case CPHVB_FREE:
-								assert(inst->operand[0]->base == NULL);
-								cphvb_data_free(inst->operand[0]);
-								inst->status = CPHVB_SUCCESS;
-								inst->opcode = CPHVB_NONE;
-								--valid_instruction_count;
-								break;
-							case CPHVB_DISCARD:
-								arrayManager->erase(inst->operand[0]);
-								inst->status = CPHVB_SUCCESS;
-								inst->opcode = CPHVB_NONE;
-								--valid_instruction_count;
-								break;
-							case CPHVB_SYNC:
-								base->owner = CPHVB_PARENT;
-								inst->status = CPHVB_SUCCESS;
-								inst->opcode = CPHVB_NONE;
-								--valid_instruction_count;
-								break;
-							default:
-								assert(false);
-						}
+					case CPHVB_FREE:
+						assert(inst->operand[0]->base == NULL);
+						arrayManager->freePending(inst);
+						break;
+					case CPHVB_DISCARD:
+						arrayManager->erasePending(inst);
+						break;
+					case CPHVB_SYNC:
+						arrayManager->changeOwnerPending(inst, cphvb_base_array(inst->operand[0]), CPHVB_SELF);
 						break;
 					default:
-						//The owner is downstream so send the instruction
-						// and handle actual change after the execution
-						switch(inst->opcode)
-						{
-							case CPHVB_FREE:
-								assert(inst->operand[0]->base == NULL);
-								break;
-							case CPHVB_DISCARD:
-								arrayManager->erasePending(inst);
-								break;
-							case CPHVB_SYNC:
-								arrayManager->changeOwnerPending(inst, base,CPHVB_SELF);
-								break;
-							default:
-								assert(false);
-						}
-					}
+						assert(false);
+				}
 				break;
 			}
 			case CPHVB_USERFUNC:

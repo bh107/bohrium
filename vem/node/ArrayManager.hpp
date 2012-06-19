@@ -53,7 +53,9 @@ class ArrayManager
 private:
     StaticStore<cphvb_array>* arrayStore;
     std::deque<cphvb_instruction*> eraseQueue;
+    std::deque<cphvb_instruction*> freeQueue;
     std::deque<OwnerTicket> ownerChangeQueue;
+    void erase(cphvb_array* base);
 
 public:
     ArrayManager();
@@ -64,8 +66,8 @@ public:
                         cphvb_index start,
                         cphvb_index shape[CPHVB_MAXDIM],
                         cphvb_index stride[CPHVB_MAXDIM]);
-    void erase(cphvb_array* base);
     void erasePending(cphvb_instruction* inst);
+    void freePending(cphvb_instruction* inst);
     void changeOwnerPending(cphvb_instruction* inst, 
                         cphvb_array* base,
                         owner_t owner);
