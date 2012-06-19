@@ -236,9 +236,8 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 						}
 						break;
 					default:
-						//The owner is downstream so send the free down
-						// and register a free later, so we free it
-						// even if the child does not
+						//The owner is downstream so send the instruction
+						// and handle actual change after the execution
 						switch(inst->opcode)
 						{
 							case CPHVB_FREE:
