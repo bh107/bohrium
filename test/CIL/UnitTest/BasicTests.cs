@@ -80,15 +80,18 @@ namespace UnitTest
 
             var x7 = x6.Reduce<Add>();
 
-            if (!Equals(x7.AsArray(), new T[] { 3, 5, 7 })) throw new Exception("Failure in basic test");
+            var rx7 = x7.AsArray();
+            if (!Equals(rx7, new T[] { 3, 5, 7 })) throw new Exception(string.Format("Failure in basic test: [{0}]", string.Join(", ", rx7.Select(x => x.ToString()).ToArray())));
 
             var x8 = Generate.Arange(10) * 0.5f;
-            if (x8.Reduce<Add>().Value[0] != 22.5)
-                throw new Exception("Failure in broadcast multiply");
+            var rx8 = x8.Reduce<Add>().Value[0];
+            if (rx8 != 22.5)
+                throw new Exception(string.Format("Failure in broadcast multiply: {0}", rx8));
 
             var x9 = Mul.Apply(Generate.Arange(10), 0.5f);
-            if (x9.Reduce<Add>().Value[0] != 22.5)
-                throw new Exception("Failure in broadcast multiply");
+            var rx9 = x9.Reduce<Add>().Value[0];
+            if (rx9 != 22.5)
+                throw new Exception(string.Format("Failure in broadcast multiply: {0}", rx9));
 
             var n0 = Generate.Arange(4);
             var n1 = n0[new Range(1, 4)];

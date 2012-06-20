@@ -37,3 +37,4 @@ bridge/NumCIL/NumCIL/TypedArrays.cs
 include/cphvb_opcode.h
 core/cphvb_opcode.c
 cphvbnumpy/build
+OpCodes.cs
