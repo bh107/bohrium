@@ -186,7 +186,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                    cphvb_instruction inst_list[])
 {
     cphvb_intp i;
-    cphvb_intp valid_instruction_count = count;
+    
+	if (count <= 0)
+		return CPHVB_SUCCESS;
+    
     for(i=0; i<count; ++i)
     {
         cphvb_instruction* inst = &inst_list[i];
@@ -253,20 +256,13 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 			}
         }
     }
-    if (valid_instruction_count > 0)
-    {
-        cphvb_error e1 = ve_execute(count, inst_list);
-		cphvb_error e2 = arrayManager->flush();
-		if (e1 != CPHVB_SUCCESS)
-	        return e1;
-	    else if (e2 != CPHVB_SUCCESS)
-	    	return e2;
-	    else
-		    return CPHVB_SUCCESS;
-    }
-    else
-    {
-        // No valid instructions in batch
-        return CPHVB_SUCCESS;
-    }
+
+	cphvb_error e1 = ve_execute(count, inst_list);
+	cphvb_error e2 = arrayManager->flush();
+	if (e1 != CPHVB_SUCCESS)
+		return e1;
+	else if (e2 != CPHVB_SUCCESS)
+		return e2;
+	else
+		return CPHVB_SUCCESS;
 }
