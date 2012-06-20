@@ -247,19 +247,29 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
             continue;
         }
 
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
+        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands        
         for(i=0; i<nops; i++)
         {
             if (!cphvb_is_constant(inst->operand[i]))
             {
-                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+            	//We allow allocation of the output operand only
+            	if (i == 0)
+            	{
+					if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+					{
+						inst->status = CPHVB_OUT_OF_MEMORY;
+						return CPHVB_OUT_OF_MEMORY; // EXIT
+					}
+                }
+                else if(cphvb_base_array(inst->operand[i])->data == NULL) 
                 {
-                    return CPHVB_OUT_OF_MEMORY; // EXIT
+					inst->status = CPHVB_ERROR;
+					return CPHVB_ERROR; // EXIT
                 }
             }
 
         }
-
+        
         switch(inst->opcode)                    // Dispatch instruction
         {
             case CPHVB_NONE:                    // NOOP.

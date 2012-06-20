@@ -22,12 +22,17 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     if(cphvb_operands(a->opcode) != 3)
     {
         fprintf(stderr, "Reduce only support binary operations.\n");
-        exit(-1);
+        return CPHVB_ERROR;
     }
 
+	if (cphvb_base_array(a->operand[1])->data == NULL)
+	{
+        fprintf(stderr, "Reduce called with input set to null.\n");
+        return CPHVB_ERROR;
+	}
+
     // Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
+    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS)
     {
         return CPHVB_OUT_OF_MEMORY;
     }
