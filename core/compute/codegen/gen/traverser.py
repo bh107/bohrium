@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-import json
-from Cheetah.Template import Template
 
 def tfunc(ops):
     t = {
@@ -8,7 +5,7 @@ def tfunc(ops):
     }
     return t
 
-def gen_traverse():
+def gen( opcodes, ignore ):
 
     funcs = [
         [(0, 'a'),(1,'a'),(2, 'a')],
@@ -34,12 +31,5 @@ def gen_traverse():
             'func_call': ', '.join(func_call)
         })
 
-    f_tmpl  = Template(file='traverse.ctpl', searchList=[{'traversers': t}])
-    return f_tmpl
+    return t
 
-def main():
-    print gen_traverse()
-
-
-if __name__ == "__main__":
-    main()

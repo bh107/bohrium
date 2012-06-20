@@ -3,9 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-
 #include <cmath>
 #include <cstdlib>
+#include <cphvb_win_math.hpp>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -14,12 +14,12 @@ directiveStartToken = %
 #define DEG_CIR 360.0
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
+%for $functor in $data
 
-%for $functor in $functors
-
-template <${functor.type_params}>
-struct ${functor.fname}_functor {
-    void operator()( ${functor.fparams} ) {
+template <${functor.tparams}>
+struct ${functor.opcode.lower().replace('cphvb_','')}_functor {
+    void operator()(${functor.fparams}) {
+        ${functor.code};
     }
 };
 %end for

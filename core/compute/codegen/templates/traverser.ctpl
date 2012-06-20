@@ -23,7 +23,8 @@ directiveStartToken = %
  */
 #include <cphvb.h>
 #include <assert.h>
-%for $traverse in $traversers
+
+%for $traverse in $data
 template <${traverse.tsig}, typename Instr>
 cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
