@@ -18,6 +18,10 @@ namespace NumCIL.cphVB
         protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
 
         /// <summary>
+        /// Flag to prevent double disposing
+        /// </summary>
+        private bool m_isDisposed = false;
+        /// <summary>
         /// The view pointer
         /// </summary>
         private PInvoke.cphvb_array_ptr m_ptr;
@@ -29,6 +33,7 @@ namespace NumCIL.cphVB
         /// Gets the view pointer associated with this instance
         /// </summary>
         public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
+
 
         /// <summary>
         /// Constructs a new instance guarding the given pointer
@@ -59,20 +64,34 @@ namespace NumCIL.cphVB
         /// <param name="disposing">True if called from Dispose(), false if called fron the finalizer</param>
         public void Dispose(bool disposing)
         {
-            bool doFree = true;
-            if (m_handle.IsAllocated)
-            {
-                m_handle.Free();
-                doFree = false;
-            }
+            if (m_isDisposed)
+                return;
+
+            m_isDisposed = true;
 
             if (m_ptr != PInvoke.cphvb_array_ptr.Null)
             {
-                if (m_ptr.Data == IntPtr.Zero && m_ptr.BaseArray == PInvoke.cphvb_array_ptr.Null && doFree)
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_ptr));
+                if (m_handle.IsAllocated)
+                {
+                    VEM.ExecuteRelease(m_ptr, m_handle);
+                }
+                else if (m_ptr.Data != IntPtr.Zero && m_ptr.BaseArray == PInvoke.cphvb_array_ptr.Null)
+                {
+                    VEM.ExecuteRelease(
+                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_ptr),
+                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr)
+                    );
+                }
+                else
+                {
+                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr));
+                }
 
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr));
                 m_ptr = PInvoke.cphvb_array_ptr.Null;
+            }
+            else if (m_handle.IsAllocated)
+            {
+                m_handle.Free();
             }
 
             if (disposing)

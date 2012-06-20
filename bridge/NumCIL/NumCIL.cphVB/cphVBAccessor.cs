@@ -483,7 +483,9 @@ namespace NumCIL.cphVB
                     m_externalData = PInvoke.cphvb_array_ptr.Null;
                 }
                 else
+                {
                     cphVB_Discard();
+                }
             }
         }
 
@@ -539,12 +541,14 @@ namespace NumCIL.cphVB
         /// </summary>
         protected void Unpin()
         {
-            cphVB_Sync();
+            System.Diagnostics.Debug.Assert(m_data != null);
+            cphVB_SyncAndDiscard();
 
             if (m_handle.IsAllocated)
             {
+                if (m_externalData != PInvoke.cphvb_array_ptr.Null)
+                    m_externalData.Data = IntPtr.Zero;
                 m_handle.Free();
-                m_externalData.Data = IntPtr.Zero;
             }
         }
 
@@ -807,12 +811,10 @@ namespace NumCIL.cphVB
                 base.ExecuteOperations(unsupported);
 
             if (supported.Count > 0)
+            {
                 ExecuteWithFailureDetection(supported);
 
-            //TODO: Do we want to do it now, or just let the GC figure it out?
-            foreach (var op in work)
-                if (op is IDisposable)
-                    ((IDisposable)op).Dispose();
+            }
         }
 
         protected void ExecuteWithFailureDetection(List<IInstruction> instructions)
@@ -833,21 +835,27 @@ namespace NumCIL.cphVB
         {
             if (m_size > 0)
             {
-                if (m_handle.IsAllocated)
-                {
-                    m_handle.Free();
-
-                    if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-                        m_externalData.Data = IntPtr.Zero;
-               }
-
                 if (m_externalData != PInvoke.cphvb_array_ptr.Null)
                 {
-                    if (m_externalData.Data != IntPtr.Zero)
-                        VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData));
-
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
-                    m_externalData = PInvoke.cphvb_array_ptr.Null;
+                    if (m_handle.IsAllocated)
+                    {
+                        VEM.ExecuteRelease(m_externalData, m_handle);
+                    }
+                    else if (m_externalData.Data != IntPtr.Zero && m_externalData.BaseArray == PInvoke.cphvb_array_ptr.Null)
+                    {
+                        VEM.ExecuteRelease(
+                            new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData),
+                            new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData)
+                        );
+                    }
+                    else
+                    {
+                        VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
+                    }
+                }
+                else if (m_handle.IsAllocated)
+                {
+                    m_handle.Free();
                 }
 
                 m_data = null;

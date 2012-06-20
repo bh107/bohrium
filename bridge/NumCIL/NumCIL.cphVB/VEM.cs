@@ -18,6 +18,20 @@ namespace NumCIL.cphVB
         private static VEM _instance = null;
 
         /// <summary>
+        /// Accessor for singleton VEM instance
+        /// </summary>
+        public static VEM Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new VEM();
+
+                return _instance;
+            }
+        }
+
+        /// <summary>
         /// Lock object for ensuring single threaded access to the VEM
         /// </summary>
         private object m_executelock = new object();
@@ -53,44 +67,6 @@ namespace NumCIL.cphVB
         private readonly long m_matmulFunctionId;
 
         /// <summary>
-        /// Flag that guards cleanup execution
-        /// </summary>
-        private bool m_preventCleanup = false;
-
-        /// <summary>
-        /// Gets or sets a value that determines if cleanup execution is currently disabled
-        /// </summary>
-        public bool PreventCleanup
-        {
-            get { return m_preventCleanup; }
-            set 
-            { 
-                m_preventCleanup = value;
-                if (!m_preventCleanup)
-                    ExecuteCleanups();
-            }
-        }
-
-        /// <summary>
-        /// Lookup table for all created userfunc structures
-        /// </summary>
-        private Dictionary<IntPtr, GCHandle> m_allocatedUserfuncs = new Dictionary<IntPtr, GCHandle>();
-
-        /// <summary>
-        /// Accessor for singleton VEM instance
-        /// </summary>
-        public static VEM Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new VEM();
-
-                return _instance;
-            }
-        }
-
-        /// <summary>
         /// A reference to the cphVB component for "self" aka the bridge
         /// </summary>
         private PInvoke.cphvb_component m_component;
@@ -111,6 +87,22 @@ namespace NumCIL.cphVB
         /// A list of cleanups not yet performed
         /// </summary>
         private List<IInstruction> m_cleanups = new List<IInstruction>();
+        /// <summary>
+        /// Flag that guards cleanup execution
+        /// </summary>
+        private bool m_preventCleanup = false;
+        /// <summary>
+        /// A ref-counter for base arrays
+        /// </summary>
+        private Dictionary<PInvoke.cphvb_array_ptr, long> m_baseArrayRefCount = new Dictionary<PInvoke.cphvb_array_ptr, long>();
+        /// <summary>
+        /// Lookup table for all created userfunc structures
+        /// </summary>
+        private Dictionary<IntPtr, GCHandle> m_allocatedUserfuncs = new Dictionary<IntPtr, GCHandle>();
+        /// <summary>
+        /// GC Handles for managed data
+        /// </summary>
+        private Dictionary<PInvoke.cphvb_array_ptr, GCHandle> m_managedHandles = new Dictionary<PInvoke.cphvb_array_ptr, GCHandle>();
 
         /// <summary>
         /// Constructs a new VEM
@@ -170,6 +162,20 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Gets or sets a value that determines if cleanup execution is currently disabled
+        /// </summary>
+        public bool PreventCleanup
+        {
+            get { return m_preventCleanup; }
+            set
+            {
+                m_preventCleanup = value;
+                if (!m_preventCleanup)
+                    ExecuteCleanups();
+            }
+        }
+
+        /// <summary>
         /// Invokes garbage collection and flushes all pending cleanup messages
         /// </summary>
         public void Flush()
@@ -193,11 +199,23 @@ namespace NumCIL.cphVB
         /// <param name="insts">The instructions to queue</param>
         public void ExecuteRelease(params IInstruction[] insts)
         {
-            //Lock is not really required as the GC is single threaded,
-            // but user code could also call this
+            //Locks are re-entrant, so we lock here to enforce order
             lock(m_releaselock)
-                m_cleanups.AddRange(insts);
+                foreach (var i in insts)
+                    ExecuteRelease((PInvoke.cphvb_instruction)i);
         }
+
+        public void ExecuteRelease(PInvoke.cphvb_array_ptr array, GCHandle handle)
+        {
+            lock (m_releaselock)
+            {
+                System.Diagnostics.Debug.Assert(array.BaseArray == PInvoke.cphvb_array_ptr.Null);
+                if (handle.IsAllocated)
+                    m_managedHandles.Add(array, handle);
+                ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, array));
+            }
+        }
+
 
         /// <summary>
         /// Registers an instruction for later execution, usually destroy calls
@@ -205,10 +223,35 @@ namespace NumCIL.cphVB
         /// <param name="inst">The instruction to queue</param>
         public void ExecuteRelease(PInvoke.cphvb_instruction inst)
         {
-            //Lock is not really required as the GC is single threaded,
-            // but user code could also call this
             lock (m_releaselock)
-                m_cleanups.Add(inst);
+            {
+                if (inst.opcode == cphvb_opcode.CPHVB_DISCARD)
+                {
+                    var ar = inst.operand0;
+                    if (ar.BaseArray != PInvoke.cphvb_array_ptr.Null)
+                    {
+                        ar = ar.BaseArray;
+                        
+                        //Discard the view
+                        m_cleanups.Add(inst);
+                    }
+
+                    long rf = m_baseArrayRefCount[ar];
+                    rf--;
+                    if (rf == 0)
+                    {
+                        m_baseArrayRefCount.Remove(ar);
+                        m_cleanups.Add(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, ar));
+                    }
+                    else
+                        m_baseArrayRefCount[ar] = rf;
+
+                }
+                else
+                {
+                    m_cleanups.Add(inst);
+                }
+            }
         }
 
         /// <summary>
@@ -219,11 +262,25 @@ namespace NumCIL.cphVB
         {
             var lst = inst_list;
             List<IInstruction> cleanup_lst = null;
+            List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>> handles = null;
 
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
                 lock (m_releaselock)
                     cleanup_lst = System.Threading.Interlocked.Exchange(ref m_cleanups, new List<IInstruction>());
+
+                GCHandle tmp;
+                long ix = inst_list.LongCount();
+                foreach (PInvoke.cphvb_instruction inst in cleanup_lst)
+                {
+                    if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
+                    {
+                        if (handles == null)
+                            handles = new List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>>();
+                        handles.Add(new Tuple<long, PInvoke.cphvb_instruction, GCHandle>(ix, inst, tmp));
+                    }
+                    ix++;
+                }
 
                 lst = lst.Concat(cleanup_lst);
             }
@@ -251,6 +308,21 @@ namespace NumCIL.cphVB
                     }
 
                 throw;
+            }
+            finally
+            {
+                if (handles != null)
+                    lock (m_releaselock)
+                    {
+                        foreach (var kp in handles)
+                        {
+                            if (errorIndex == -1 || kp.Item1 < errorIndex)
+                            {
+                                m_managedHandles.Remove(kp.Item2.operand0);
+                                kp.Item3.Free();
+                            }
+                        }
+                    }
             }
         }
 
@@ -285,6 +357,30 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Reshuffles instructions to honor cphVB rules
+        /// </summary>
+        /// <param name="list">The list of instructions to reshuffle</param>
+        private void ReshuffleInstructions(PInvoke.cphvb_instruction[] list)
+        {
+            if (list.LongLength <= 1)
+                return;
+
+            long lastIx = list.LongLength;
+            for(long i = 0; i < lastIx; i++)
+            {
+                var inst = list[i];
+                if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && inst.operand0.BaseArray == PInvoke.cphvb_array_ptr.Null)
+                {
+                    Console.WriteLine("Shuffling list, i: {0}, inst: {1}, lastIx: {2}", i, inst, lastIx);
+                    lastIx--;
+                    var tmp = list[lastIx];
+                    list[lastIx] = inst;
+                    list[i] = tmp;
+                }
+            }
+        }
+
+        /// <summary>
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
@@ -297,6 +393,7 @@ namespace NumCIL.cphVB
             try
             {
                 PInvoke.cphvb_instruction[] instrBuffer = inst_list.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+                //ReshuffleInstructions(instrBuffer);
 
                 foreach (var inst in instrBuffer)
                 {
@@ -454,6 +551,20 @@ namespace NumCIL.cphVB
                 throw new cphVBException(e);
 
             System.Threading.Interlocked.Increment(ref m_allocatedviews);
+
+            lock (m_releaselock)
+            {
+                if (basearray == PInvoke.cphvb_array_ptr.Null)
+                {
+                    m_baseArrayRefCount.Add(res, 1);
+                }
+                else
+                {
+                    long rf = m_baseArrayRefCount[basearray];
+                    rf++;
+                    m_baseArrayRefCount[basearray] = rf;
+                }
+            }
 
             return res;
         }
