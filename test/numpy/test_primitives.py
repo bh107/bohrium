@@ -54,7 +54,6 @@ class test_ufunc(numpytest):
                     for i in xrange(1,op['nop']):
                         cmd += "in%d,"%(i)
                     cmd += "out)"
-                    print cmd
                     exec cmd 
                     yield (out,cmd)
 
