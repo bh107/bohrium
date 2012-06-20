@@ -121,7 +121,7 @@ cphvb_component *cphvb_component_setup(void)
     if(com == NULL)
     {
         fprintf(stderr, "cphvb_component_setup(): out of memory.\n");
-        exit(CPHVB_OUT_OF_MEMORY);
+        return NULL;
     }
 
     //Clear memory so we do not have any random pointers
@@ -198,17 +198,22 @@ cphvb_component *cphvb_component_setup(void)
 
     if(env == NULL)
     {
-        fprintf(stderr, "Error: cphVB could not find the config file."
+        fprintf(stderr, "Error: cphVB could not find the config file.\n"
             " The search is:\n"
             "\t* The environment variable CPHVB_CONFIG.\n"
             "\t* The home directory \"%s\".\n"
             "\t* And system-wide \"%s\".\n", homepath, syspath);
-        exit(-1);
+        free(com);
+        return NULL;
     }
 
     com->config = iniparser_load(env);
     if(com->config == NULL)
-        exit(-1);
+    {
+        fprintf(stderr, "Error: cphVB could not read the config file.\n");
+        free(com);
+        return NULL;
+    }
 
     com->type = get_type(com->config, com->name);
 
@@ -216,7 +221,8 @@ cphvb_component *cphvb_component_setup(void)
     {
         fprintf(stderr, "Error in the configuration: the root "
                         "component must be of type bridge.\n");
-        exit(-1);
+        free(com);
+        return NULL;
     }
     return com;
 }
@@ -232,20 +238,30 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
                                      cphvb_component **children[])
 {
     char tmp[CPHVB_COMPONENT_NAME_SIZE];
+    cphvb_error result;
     char *child;
+    size_t c;
     *count = 0;
     snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:children",parent->name);
     char *tchildren = iniparser_getstring(parent->config, tmp, NULL);
     if(tchildren == NULL)
-        exit(CPHVB_ERROR);
+    {
+        fprintf(stderr, "cphvb_component_setup(): children missing from config.\n");
+		return CPHVB_ERROR;
+	}
 
     *children = (cphvb_component**)malloc(CPHVB_COMPONENT_MAX_CHILDS * sizeof(cphvb_component *));
     if(*children == NULL)
     {
         fprintf(stderr, "cphvb_component_setup(): out of memory.\n");
-        exit(CPHVB_OUT_OF_MEMORY);
+        return CPHVB_OUT_OF_MEMORY;
     }
+    //Since we do not use all the data here, it is good for debugging if the rest is null pointers
+    memset(*children, 0, CPHVB_COMPONENT_MAX_CHILDS * sizeof(cphvb_component *));
 
+	//Assume all goes well
+	result = CPHVB_SUCCESS;
+	
     //Handle one child at a time.
     child = strtok(tchildren,",");
     while(child != NULL && *count < CPHVB_COMPONENT_MAX_CHILDS)
@@ -261,13 +277,16 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
         com->type = get_type(parent->config,child);
         if(com->type == CPHVB_COMPONENT_ERROR)
         {
-            exit(CPHVB_ERROR);
+	        fprintf(stderr, "cphvb_component_setup(): invalid component type: %s.\n", child);
+	        result = CPHVB_ERROR;
+	        break;
         }
 
         if(!iniparser_find_entry(com->config,child))
         {
             fprintf(stderr,"Reference \"%s\" is not declared.\n",child);
-            exit(CPHVB_ERROR);
+	        result = CPHVB_ERROR;
+	        break;
         }
 
         snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:impl", child);
@@ -275,53 +294,86 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
         if(impl == NULL)
         {
             fprintf(stderr,"In section \"%s\" impl is not set.\n",child);
-            exit(CPHVB_ERROR);
+	        result = CPHVB_ERROR;
+	        break;
         }
 
         com->lib_handle = dlopen(impl, RTLD_NOW);
         if(com->lib_handle == NULL)
         {
             fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
-            exit(CPHVB_ERROR);
+	        result = CPHVB_ERROR;
+	        break;
         }
 
         com->init = (cphvb_init)get_dlsym(com->lib_handle, child, com->type, "init");
         if(com->init == NULL)
-            exit(CPHVB_ERROR);
+        {
+			fprintf(stderr, "Failed to load init function from child %s\n", child);        
+	        result = CPHVB_ERROR;
+	        break;
+        }
 
         com->shutdown = (cphvb_shutdown)get_dlsym(com->lib_handle, child, com->type,
                                   "shutdown");
         if(com->shutdown == NULL)
-            exit(CPHVB_ERROR);
+        {
+			fprintf(stderr, "Failed to load shutdown function from child %s\n", child);        
+	        result = CPHVB_ERROR;
+	        break;
+        }
 
         com->execute = (cphvb_execute)get_dlsym(com->lib_handle, child, com->type,
                                  "execute");
         if(com->execute == NULL)
-            exit(CPHVB_ERROR);
+        {
+			fprintf(stderr, "Failed to load execute function from child %s\n", child);        
+	        result = CPHVB_ERROR;
+	        break;
+        }
 
         com->reg_func = (cphvb_reg_func)get_dlsym(com->lib_handle, child, com->type,
                                   "reg_func");
         if(com->reg_func == NULL)
-            exit(CPHVB_ERROR);
+        {
+			fprintf(stderr, "Failed to load reg_func function from child %s\n", child);        
+	        result = CPHVB_ERROR;
+	        break;
+        }
 
         if(com->type == CPHVB_VEM)//VEM functions only.
         {
             com->create_array = (cphvb_create_array)get_dlsym(com->lib_handle, child,
                                           com->type, "create_array");
             if(com->create_array == NULL)
-                exit(CPHVB_ERROR);
+			{
+				fprintf(stderr, "Failed to load create_array function from child %s\n", child);        
+				result = CPHVB_ERROR;
+				break;
+			}
         }
         child = strtok(NULL,",");
         ++(*count);
     }
 
-    if(*count == 0)//No children.
+	if (result != CPHVB_SUCCESS)
+	{
+		for(c = 0; c < CPHVB_COMPONENT_MAX_CHILDS; c++)
+			if ((*children)[c] != NULL)
+			{
+				free((*children)[c]);
+				(*children)[c] = NULL;
+			}
+		free(*children);
+		*children = NULL;
+	}
+	else if(*count == 0)//No children.
     {
         free(*children);
         *children = NULL;
     }
     
-    return CPHVB_SUCCESS;
+    return result;
 }
 
 /* Retrieves an user-defined function.

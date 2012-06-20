@@ -255,9 +255,14 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     }
     if (valid_instruction_count > 0)
     {
-        cphvb_error e = ve_execute(count, inst_list);
-        arrayManager->flush();
-        return e;
+        cphvb_error e1 = ve_execute(count, inst_list);
+		cphvb_error e2 = arrayManager->flush();
+		if (e1 != CPHVB_SUCCESS)
+	        return e1;
+	    else if (e2 != CPHVB_SUCCESS)
+	    	return e2;
+	    else
+		    return CPHVB_SUCCESS;
     }
     else
     {

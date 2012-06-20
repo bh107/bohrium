@@ -56,20 +56,6 @@ ArrayManager::~ArrayManager()
     delete arrayStore;
 }
 
-void ArrayManager::erase(cphvb_array* array)
-{
-	cphvb_array* base = cphvb_base_array(array);
-	base->ref_count--;
-
-	if (array->base == NULL && array->ref_count != 0)
-	{
-		fprintf(stderr, "Deleted base array with ref-count %lld\n", array->ref_count);
-		exit(-1);
-	}
-	
-	arrayStore->erase(array);
-}
-
 void ArrayManager::erasePending(cphvb_instruction* inst)
 {
     eraseQueue.push_back(inst);
@@ -92,7 +78,7 @@ void ArrayManager::changeOwnerPending(cphvb_instruction* inst,
     ownerChangeQueue.push_back(t);
 }
 
-void ArrayManager::flush()
+cphvb_error ArrayManager::flush()
 {
     std::deque<OwnerTicket>::iterator oit = ownerChangeQueue.begin();
 
@@ -116,13 +102,30 @@ void ArrayManager::flush()
     freeQueue.clear();
     
 
+	bool errors = false;
+	
     //Finally we delete arrays marked for deletion
     std::deque<cphvb_instruction*>::iterator eit = eraseQueue.begin();
     for (; eit != eraseQueue.end(); ++eit)
     {
     	if ((*eit)->status == CPHVB_SUCCESS)
-	        this->erase((*eit)->operand[0]);
+    	{
+    		cphvb_array* array = (*eit)->operand[0];
+			cphvb_array* base = cphvb_base_array(array);
+			base->ref_count--;
+		
+			if (array->base == NULL && array->ref_count != 0)
+			{
+				fprintf(stderr, "Deleted base array with ref-count %lld\n", array->ref_count);
+				(*eit)->status = CPHVB_ERROR;
+				errors = true;
+			}
+			else			
+				arrayStore->erase(array);
+    	}
     }
     // All erases have been dealt with, so we clear the queue
     eraseQueue.clear();
+    
+    return errors ? CPHVB_ERROR : CPHVB_SUCCESS;
 }

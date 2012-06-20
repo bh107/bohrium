@@ -55,7 +55,6 @@ private:
     std::deque<cphvb_instruction*> eraseQueue;
     std::deque<cphvb_instruction*> freeQueue;
     std::deque<OwnerTicket> ownerChangeQueue;
-    void erase(cphvb_array* base);
 
 public:
     ArrayManager();
@@ -71,7 +70,7 @@ public:
     void changeOwnerPending(cphvb_instruction* inst, 
                         cphvb_array* base,
                         owner_t owner);
-    void flush();
+    cphvb_error flush();
 };
 
 
