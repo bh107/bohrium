@@ -1479,7 +1479,7 @@
     {
         "opcode": "CPHVB_ARCSIN", 
         "doc": "Inverse sine, element-wise.", 
-        "code": "op1 = asign( op2 )", 
+        "code": "op1 = asin( op2 )", 
         "nop": 2, 
         "system_opcode": false, 
         "types": [
@@ -1513,7 +1513,7 @@
     {
         "opcode": "CPHVB_ARCTAN", 
         "doc": "Trigonometric inverse tangent, element-wise.", 
-        "code": "op1 = atan( op2, op3 )", 
+        "code": "op1 = atan( op2 )", 
         "nop": 2, 
         "system_opcode": false, 
         "types": [
@@ -1530,7 +1530,7 @@
     {
         "opcode": "CPHVB_ARCTANH", 
         "doc": "Inverse hyperbolic tangent elementwise.", 
-        "code": "op1 = atanh( op2, op3 )", 
+        "code": "op1 = atanh( op2 )", 
         "nop": 2, 
         "system_opcode": false, 
         "types": [
