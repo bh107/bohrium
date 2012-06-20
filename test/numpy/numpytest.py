@@ -125,7 +125,7 @@ def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
 
 class numpytest:
     def __init__(self):
-        self.config = {'maxerror':0.0,'dtypes':[np.float32]}
+        self.config = {'maxerror':0.0,'dtypes':["N/A"]}
         self.runtime = {}
         self.random = random.Random()
         self.random.seed(42)
@@ -136,8 +136,11 @@ class numpytest:
             total = dims
         t = dtype if dtype is not None else self.runtime['dtype']
         c = cphvb if cphvb is not None else self.runtime['cphvb']
-        res = np.arange(1,total+1,dtype=t).reshape(dims)
-        res += res == self.runtime['dtype'](0)#Remove zeros
+        if t is bool:
+            res = np.ones(dims,dtype=t)
+        else:
+            res = np.arange(1,total+1,dtype=t).reshape(dims)
+        res += res == 0#Remove zeros
         res.cphvb = c
         return res
 
@@ -192,16 +195,22 @@ if __name__ == "__main__":
                         results2  = getattr(cls_inst2,mth)()
                         for ((res1,cmd1),(res2,cmd2)) in zip(results1,results2):
                             assert cmd1 == cmd2
-                            if not _array_equal(res1, res2, cls_inst1.config['maxerror']):
-                                print _bcolors.FAIL + "[Error] %s (%s)"%(name,str(t)[7:-2])\
-                                    + _bcolors.ENDC 
-                                print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC 
-                                print _bcolors.OKGREEN + str(res1) + _bcolors.ENDC 
-                                print _bcolors.FAIL + str(res2) + _bcolors.ENDC 
-                                print 
-                                #sys.exit()
-                                skip_dtypes = True
-                                break
+                            try:
+                                cphvbbridge.flush() 
+                            except RuntimeError as error_msg:
+                                print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC
+                                print _bcolors.FAIL + str(error_msg) + _bcolors.ENDC 
+                            else:
+                                if not _array_equal(res1, res2, cls_inst1.config['maxerror']):
+                                    print _bcolors.FAIL + "[Error] %s (%s)"%(name,str(t)[7:-2])\
+                                        + _bcolors.ENDC 
+                                    print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC 
+                                    print _bcolors.OKGREEN + str(res1) + _bcolors.ENDC 
+                                    print _bcolors.FAIL + str(res2) + _bcolors.ENDC 
+                                    print 
+                                    #sys.exit()
+                                    #skip_dtypes = True
+                                    break
                         if skip_dtypes:
                             print _bcolors.WARNING + "[Warn]  Skipping the preceding dtypes",
                             print _bcolors.ENDC 
