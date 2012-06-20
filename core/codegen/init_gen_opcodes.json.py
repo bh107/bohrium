@@ -77,9 +77,9 @@ def main():
 
     #System opcodes
     FX['CPHVB_USERFUNC'] = {'opcode':"CPHVB_USERFUNC",'nop':0,'types':{},'system_opcode':True,'doc':"System instruction that represents a user-defined function registered by the Bridge."}
-    FX['CPHVB_SYNC'] = {'opcode':"CPHVB_SYNC",'nop':1,'types':{},'system_opcode':True,'doc':"System instruction that informs the child component to make data synchronized and available."}
-    FX['CPHVB_DISCARD'] = {'opcode':"CPHVB_DISCARD",'nop':1,'types':{},'system_opcode':True,'doc':"System instruction that informs the child component to forget the array."}
-    FX['CPHVB_DESTROY'] = {'opcode':"CPHVB_DESTROY",'nop':1,'types':{},'system_opcode':True,'doc':"System instruction that informs the child component to deallocate the array."}
+    FX['CPHVB_SYNC'] = {'opcode':"CPHVB_SYNC",'nop':1,'types':{},'system_opcode':True,'doc':"System instruction that informs the child component to make data synchronized and available in main memory."}
+    FX['CPHVB_DISCARD'] = {'opcode':"CPHVB_DISCARD",'nop':1,'types':{},'system_opcode':True,'doc':"and deallocate any control structures associated with the array."}
+    FX['CPHVB_FREE'] = {'opcode':"CPHVB_FREE",'nop':1,'types':{},'system_opcode':True,'doc':"System instruction that informs the child component to deallocate the storage area associated with the array."}
 
     ret = json.dumps(FX, sort_keys=True, indent=4)
 
