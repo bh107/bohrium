@@ -38,3 +38,4 @@ include/cphvb_opcode.h
 core/cphvb_opcode.c
 cphvbnumpy/build
 OpCodes.cs
+OpCodes_fix.tt
