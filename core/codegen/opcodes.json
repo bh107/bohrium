@@ -2667,8 +2667,8 @@
         "types": []
     }, 
     {
-        "opcode": "CPHVB_DESTROY", 
-        "doc": "System instruction that informs the child component to deallocate the array.", 
+        "opcode": "CPHVB_FREE", 
+        "doc": "System instruction that informs the child component to deallocate the data storage associated with the array.", 
         "code": "free(op1)", 
         "nop": 1, 
         "system_opcode": true, 
@@ -2676,7 +2676,7 @@
     }, 
     {
         "opcode": "CPHVB_DISCARD", 
-        "doc": "System instruction that informs the child component to forget the array.", 
+        "doc": "System instruction that informs the child component to forget the array and release any metadata allocated.", 
         "code": "forget(op1)", 
         "nop": 1, 
         "system_opcode": true, 
@@ -2685,7 +2685,7 @@
     {
         "opcode": "CPHVB_SYNC", 
         "doc": "System instruction that informs the child component to make data synchronized and available.", 
-        "code": "COPY", 
+        "code": "SYNC", 
         "nop": 1, 
         "system_opcode": true, 
         "types": []
