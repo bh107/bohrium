@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include <assert.h>
+
 template <typename T0, typename T1, typename T2, typename Instr>
 cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
 
@@ -395,6 +396,5 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_index start, cphvb_inde
     return CPHVB_SUCCESS;
 
 }
-
 
 
