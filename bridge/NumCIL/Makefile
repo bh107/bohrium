@@ -1,3 +1,5 @@
+INSTALLDIR?=/opt/cphvb/
+
 XBUILD?=xbuild
 TT?=mono buildsupport/TextTransform.exe
 
@@ -9,13 +11,13 @@ all: $(DLL_MAIN) $(DLL_UNSAFE) $(DLL_CPHVB)
 
 TT_OPTS?=
 T4_FILES=NumCIL/TypedArrays.tt NumCIL.Unsafe/Aggregate.tt NumCIL.Unsafe/Apply.tt NumCIL.Unsafe/Copy.tt  NumCIL.Unsafe/CreateAccessor.tt NumCIL.Unsafe/Pinner.tt NumCIL.Unsafe/Reduce.tt NumCIL.cphVB/OpCodes_fix.tt
-AUTOGEN_FILES=$(T4_FILES:.tt=.cs) NumCIL.cphVB/OpCodes.cs
+AUTOGEN_FILES=$(T4_FILES:.tt=.cs)
 
 %.cs: %.tt
 	$(TT) $< -o $@ $(TT_OPTS)
 
 NumCIL.cphVB/OpCodes_fix.tt: NumCIL.cphVB/OpCodes.tt
-	sed 's|$$(ProjectDir)..\\buildsupport\\|$(PWD)/buildsupport/|g' NumCIL.cphVB/OpCodes.tt > NumCIL.cphVB/OpCodes_fix.tt
+	sed 's|$$(ProjectDir)..\\buildsupport\\|$(PWD)/bridge/NumCIL/buildsupport/|g' NumCIL.cphVB/OpCodes.tt > NumCIL.cphVB/OpCodes_fix.tt
 
 NumCIL.cphVB/OpCodes.cs: NumCIL.cphVB/OpCodes_fix.tt
 	$(TT) NumCIL.cphVB/OpCodes_fix.tt -o $@ $(TT_OPTS)
@@ -30,7 +32,12 @@ $(DLL_CPHVB): $(DLL_UNSAFE) NumCIL.cphVB/* $(AUTOGEN_FILES) NumCIL.cphVB/OpCodes
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU NumCIL.cphVB/NumCIL.cphVB.csproj
 
 clean:
-	rm -rf NumCIL/bin NumCIL/obj NumCIL.Unsafe/bin NumCIL.Unsafe/obj NumCIL.cphVB/obj NumCIL.cphVB/bin $(AUTOGEN_FILES)
+	rm -rf NumCIL/bin NumCIL/obj NumCIL.Unsafe/bin NumCIL.Unsafe/obj NumCIL.cphVB/obj NumCIL.cphVB/bin $(AUTOGEN_FILES) NumCIL.cphVB/OpCodes.cs NumCIL.cphVB/OpCodes_fix.tt
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL/NumCIL.csproj
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.Unsafe/NumCIL.Unsafe.csproj
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.cphVB/NumCIL.cphVB.csproj
+
+install: all
+		sudo cp $(DLL_MAIN) $(INSTALLDIR)
+		sudo cp $(DLL_UNSAFE) $(INSTALLDIR)
+		sudo cp $(DLL_CPHVB) $(INSTALLDIR)

@@ -33,7 +33,7 @@ $(DLL_CPHVB): $(DLL_UNSAFE) NumCIL.cphVB\* NumCIL.cphVB/OpCodes.cs
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU NumCIL.cphVB\NumCIL.cphVB.csproj
 
 clean:
-	del /Q NumCIL\bin NumCIL\obj NumCIL.Unsafe\bin NumCIL.Unsafe\obj NumCIL.cphVB\obj NumCIL.cphVB\bin $(AUTOGEN_FILES) NumCIL.cphVB\OpCodes_tmp.tt NumCIL.cphVB\OpCodes.cs
+	del /Q NumCIL\bin NumCIL\obj NumCIL.Unsafe\bin NumCIL.Unsafe\obj NumCIL.cphVB\obj NumCIL.cphVB\bin $(AUTOGEN_FILES) NumCIL.cphVB\OpCodes_tmp.tt NumCIL.cphVB\OpCodes.cs NumCIL.cphVB\OpCodes_fix.tt
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL\NumCIL.csproj
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.Unsafe\NumCIL.Unsafe.csproj
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.cphVB\NumCIL.cphVB.csproj
