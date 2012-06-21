@@ -90,8 +90,8 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
 
     switch(poly) {
 
-        %for $case in $cases
-        %if $case.opcount == 2
+        %for $case in $data
+        %if $case.nop == 2
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
             return &traverse_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
             break;

@@ -36,6 +36,7 @@ bridge/NumCIL/NumCIL.Unsafe/Reduce.cs
 bridge/NumCIL/NumCIL/TypedArrays.cs
 include/cphvb_opcode.h
 core/cphvb_opcode.c
+core/compute/codegen/out
 cphvbnumpy/build
 OpCodes.cs
 OpCodes_fix.tt

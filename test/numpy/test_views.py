@@ -1,20 +1,33 @@
 import cphvbnumpy as np
 from numpytest import numpytest,gen_views,TYPES
-import random
 
 
-class test_function(numpytest):
+class test_flatten(numpytest):
+    
+    def init(self):
+        for t in TYPES.NORMAL:
+            for v in gen_views(3,64,6):
+                a = {}
+                exec v
+                yield (a,v)
+                
+    def test_flatten(self,a):
+        cmd = "res = np.flatten(a[0])"
+        exec cmd
+        return (res,cmd)
 
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0
-        self.config['dtypes'] = TYPES.NORMAL
+class test_diagonal(numpytest):
+    
+    def init(self):
+        for t in TYPES.NORMAL:
+            for v in gen_views(2,64,12,min_ndim=2):
+                a = {}
+                exec v
+                yield (a,v)
 
-    def test_flatten(self):
-        for (A,cmd) in gen_views(self,3,64,10):
-            yield (np.flatten(A),"%s; np.flatten(A)"%cmd)
+    def test_diagonal(self,a):
+        cmd = "res = np.diagonal(a[0])"
+        exec cmd
+        return (res,cmd)         
 
-    def test_diagonal(self):
-        for (A,cmd) in gen_views(self,2,64,10,min_ndim=2):
-            yield (np.diagonal(A),"%s; np.diagonal(A)"%cmd)
 

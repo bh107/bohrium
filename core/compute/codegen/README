@@ -1,1 +1,90 @@
-Describe how and what this does...
+README
+======
+
+The gen.*.py scripts generates the following files:
+
+ functors.hpp
+   A set of cpp functors, they are used to perform the inner-most logic of a whole-array operation. Such as: op1 = op2 + op3.
+
+ traverers.hpp
+   Contains the logic for traversing through arrays and applying functors / element-wise operations.
+
+ cphvb_compute.cpp
+   Maps opcode to traversal+functor pair, either by returning a pointer to the traversal function with an inlined functor or directly invoking the traversal function.
+
+The code-generation is based on the *.ctpl files which are c/c++ code with Python Cheetah string-template annotations.
+
+A couple of notes::
+
+The remainder functor needs an explicit type-cast on windows, it does however seem like we have scrapped this element-wise operation.
+
+template <typename T1, typename T2, typename T3>
+struct remainder_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+#ifdef _WIN32
+		//We need a typecast here so VC can pick the right version
+        *op1 = *op2 - floor((T1)(*op2 / *op3)) * *op3;
+#else
+        *op1 = *op2 - floor(*op2 / *op3) * *op3;
+#endif
+    }
+};
+
+/* IMPLEMENT TOGETHER WITH COMPLEX NUMBERS
+template <typename T1, typename T2>
+struct conj_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        // TODO: implement
+        *op1 = 100;
+    }
+};
+
+template <typename T1, typename T2>
+struct isreal_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+template <typename T1, typename T2>
+struct iscomplex_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+*/
+
+/*  THESE MIGHT NEVER BE IMPLEMENTED.
+
+template <typename T1, typename T2>
+struct ones_like_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+template <typename T1, typename T2>
+struct isfinite_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct modf_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = 100; // TODO: implement
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct frexp_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        int exponent;
+        *op1 = frexp( *op3, &exponent );
+        *op2 = (T2)exponent;
+    }
+};
+
+*/

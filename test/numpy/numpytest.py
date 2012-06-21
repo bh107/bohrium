@@ -13,14 +13,14 @@ from operator import mul
 from itertools import izip as zip
 
 class TYPES:
-    NORMAL_INT   = [np.int32,np.int64,np.uint32,np.uint64]
-    ALL_INT      = NORMAL_INT + [np.int8,np.int16,np.uint8,np.uint16]
-    NORMAL_FLOAT = [np.float32,np.float64]
-    ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
+    NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
+    ALL_INT      = NORMAL_INT + ['np.int8','np.int16','np.uint8','np.uint16']
+    NORMAL_FLOAT = ['np.float32','np.float64']
+    ALL_FLOAT    = ['np.float16'] + NORMAL_FLOAT
     NORMAL       = NORMAL_INT + NORMAL_FLOAT
     ALL          = ALL_INT + ALL_FLOAT
 
-class _bcolors:
+class _C:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -51,7 +51,7 @@ def _array_equal(A,B,maxerror=0.0):
 
     return True
 
-def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
+def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
     for ndim in xrange(min_ndim,max_ndim+1):
         shape = [1]*ndim
         if iters:
@@ -59,7 +59,7 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
             yield [max_dim]*(ndim) #Max shape
             for _ in xrange(iters):
                 for d in xrange(len(shape)):
-                    shape[d] = self.random.randint(1,max_dim)
+                    shape[d] = np.random.randint(1,max_dim)
                 yield shape
         else:       
             finished = False
@@ -78,71 +78,66 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     else:
                         break
 
-def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
-    for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
+def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
+    for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        A = self.array(shape)
-        cmd = "A = array(%s)"%(shape)
-        yield (A,cmd)
+        cmd = "a[0] = self.array(%s);"%(shape)
+        yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "B = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "1:,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with negative offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += ":-1,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with steps per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "::2,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
 class numpytest:
     def __init__(self):
-        self.config = {'maxerror':0.0,'dtypes':["N/A"]}
+        self.config = {'maxerror':0.0}
         self.runtime = {}
         self.random = random.Random()
         self.random.seed(42)
-    def array(self,dims,dtype=None,cphvb=None):
+    def init(self):
+        pass
+    def array(self,dims,dtype=None):
         try: 
             total = reduce(mul,dims)
         except TypeError:
             total = dims
-        t = dtype if dtype is not None else self.runtime['dtype']
-        c = cphvb if cphvb is not None else self.runtime['cphvb']
-        if t is bool:
-            res = np.ones(dims,dtype=t)
+        if dtype is bool:
+            res = np.random.random_integers(0,1,dims)
         else:
-            res = np.arange(1,total+1,dtype=t).reshape(dims)
-        res += res == 0#Remove zeros
-        res.cphvb = c
-        return res
+            res = np.arange(1,total+1,dtype=dtype).reshape(dims)
+            res += res == 0#Remove zeros
+        return np.asarray(res)
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
@@ -178,43 +173,33 @@ if __name__ == "__main__":
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_")]:
                 cls_obj  = getattr(m, cls)
-                cls_inst1 = cls_obj()
-                cls_inst2 = cls_obj()
-                cls_inst1.runtime['cphvb'] = False
-                cls_inst2.runtime['cphvb'] = True
+                cls_inst = cls_obj()
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
-                    skip_dtypes = False
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
                     print "Testing %s"%(name)
-                    for t in cls_inst1.config['dtypes']:
-                        print "\t%s"%(t)
-                        cls_inst1.runtime['dtype'] = t
-                        cls_inst2.runtime['dtype'] = t
-                        results1  = getattr(cls_inst1,mth)()
-                        results2  = getattr(cls_inst2,mth)()
-                        for ((res1,cmd1),(res2,cmd2)) in zip(results1,results2):
-                            assert cmd1 == cmd2
-                            try:
-                                cphvbbridge.flush() 
-                            except RuntimeError as error_msg:
-                                print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC
-                                print _bcolors.FAIL + str(error_msg) + _bcolors.ENDC 
-                            else:
-                                if not _array_equal(res1, res2, cls_inst1.config['maxerror']):
-                                    print _bcolors.FAIL + "[Error] %s (%s)"%(name,str(t)[7:-2])\
-                                        + _bcolors.ENDC 
-                                    print _bcolors.OKBLUE + "[CMD]   %s"%cmd1 + _bcolors.ENDC 
-                                    print _bcolors.OKGREEN + str(res1) + _bcolors.ENDC 
-                                    print _bcolors.FAIL + str(res2) + _bcolors.ENDC 
-                                    print 
-                                    #sys.exit()
-                                    #skip_dtypes = True
-                                    break
-                        if skip_dtypes:
-                            print _bcolors.WARNING + "[Warn]  Skipping the preceding dtypes",
-                            print _bcolors.ENDC 
-                            break
+                    for (arys,cmd) in getattr(cls_inst,"init")():
+                        for a in arys.values():
+                            a.cphvb = False
+                        (res1,cmd1) = getattr(cls_inst,mth)(arys)
+                        cphvbbridge.flush()
+                        for a in arys.values():
+                            a.cphvb = True
+                        (res2,cmd2) = getattr(cls_inst,mth)(arys)
+                        assert cmd1 == cmd2
+                        cmd += cmd1
+                        try:
+                            cphvbbridge.flush() 
+                        except RuntimeError as error_msg:
+                            print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
+                            print _C.FAIL + str(error_msg) + _C.ENDC 
+                        else:
+                            if not _array_equal(res1, res2, cls_inst.config['maxerror']):
+                                print _C.FAIL + "[Error] %s"%(name) + _C.ENDC 
+                                print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC 
+                                print _C.OKGREEN + str(res1) + _C.ENDC 
+                                print _C.FAIL + str(res2) + _C.ENDC 
+                                print 
 
     print "*"*24, "Finish", "*"*24
 
