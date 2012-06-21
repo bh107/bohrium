@@ -65,8 +65,6 @@ namespace NumCIL.Unsafe
                             long strideOuter = in1.Shape.Dimensions[0].Stride;
 
                             long ix = in1.Shape.Offset;
-                            long limitInner = strideInner * in1.Shape.Dimensions[1].Length;
-
                             long ox = @out.Shape.Offset;
                             long strideRes = @out.Shape.Dimensions[0].Stride;
 

@@ -109,8 +109,11 @@ namespace NumCIL.cphVB
         /// </summary>
         public VEM()
         {
+//Disable "Unreachable code" warning
+#pragma warning disable 0162
             if (cphvb_opcode.CPHVB_ADD == cphvb_opcode.CPHVB_SUBTRACT)
                 throw new Exception("This version of NumCIL.cphVB contains invalid opcodes!");
+#pragma warning restore
 
             m_component = PInvoke.cphvb_component_setup(out m_componentPtr);
             PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs, out m_childsPtr);

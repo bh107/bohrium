@@ -119,8 +119,8 @@ namespace NumCIL.cphVB
         [StructLayout(LayoutKind.Sequential)]
         public struct cphvb_constant
         {
-            cphvb_constant_value value;
-            cphvb_type type;
+            public cphvb_constant_value value;
+            public cphvb_type type;
 
             public cphvb_constant(cphvb_type type, object v)
             {
@@ -213,6 +213,10 @@ namespace NumCIL.cphVB
         [StructLayout(LayoutKind.Explicit)]
         public struct cphvb_data_array
         {
+//Fix compiler reporting these as unused as they are weirdly mapped,
+//and only processed from unmanaged code
+#pragma warning disable 0414 
+#pragma warning disable 0169
             [FieldOffset(0)] private cphvb_bool[]     bool8;
             [FieldOffset(0)] private cphvb_int8[]     int8;
             [FieldOffset(0)] private cphvb_int16[]    int16;
@@ -225,6 +229,8 @@ namespace NumCIL.cphVB
             [FieldOffset(0)] private cphvb_float32[]  float32;
             [FieldOffset(0)] private cphvb_float64[]  float64;
             [FieldOffset(0)] private IntPtr           voidPtr;
+#pragma warning restore 0414
+#pragma warning restore 0169
 
             public cphvb_data_array Set(cphvb_bool[] v) { this.bool8 = v; return this; }
             //public cphvb_data_array Set(cphvb_int8[] v) { this.int8 = v; return this; }

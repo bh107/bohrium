@@ -91,7 +91,7 @@ namespace NumCIL
             internal static void UnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IUnaryOp<T>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && false)
+                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;

@@ -129,7 +129,7 @@ namespace NumCIL.Generic
                 uint a2 = ((uint)Rand.Next() & 0xffffff);
                 uint a3 = ((uint)Rand.Next() & 0xffff);
 
-                return (T)(object)(ulong)((a1 << 40) | (a2 << 16) | a1);
+                return (T)(object)(ulong)((a3 << 40) | (a2 << 16) | a1);
             }
             else if (typeof(T) == typeof(float))
                 return (T)(object)(float)Rand.NextDouble();
