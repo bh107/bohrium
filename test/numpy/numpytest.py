@@ -137,10 +137,10 @@ class numpytest:
         except TypeError:
             total = dims
         if dtype is bool:
-            res = np.ones(dims,dtype=dtype)
+            res = np.random.random_integers(0,1,dims)
         else:
             res = np.arange(1,total+1,dtype=dtype).reshape(dims)
-        res += res == 0#Remove zeros
+            res += res == 0#Remove zeros
         return np.asarray(res)
 
 if __name__ == "__main__":
