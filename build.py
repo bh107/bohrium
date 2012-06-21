@@ -135,9 +135,10 @@ if __name__ == "__main__":
                   ("VE-SCORE", "ve/score", False),\
                   ("VE-MCORE", "ve/mcore", False),\
                   ("VEM-NODE", "vem/node", True),\
+                  ("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
-                  ("CPHVBNUMPY", "cphvbnumpy", True),\
+                  ("CPHVBNUMPY", "cphvbnumpy", True)
                  ]
 
     if cmd == "rebuild":
