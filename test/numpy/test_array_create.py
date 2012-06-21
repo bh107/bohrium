@@ -2,13 +2,12 @@ import cphvbnumpy as np
 from numpytest import numpytest,TYPES
 
 class test_array_create(numpytest):
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0
-        self.config['dtypes'] = TYPES.NORMAL
-        self.size = 100
+    def init(self):
+        for t in  TYPES.NORMAL:
+            a = {}
+            cmd = "a[0] = np.zeros(%d,dtype=%s)"%(100,t)
+            exec cmd
+            yield (a,cmd)
 
-    def test_zeros(self):
-        res = np.zeros(self.size, dtype=self.runtime['dtype'], cphvb=self.runtime['cphvb'])
-        cmd = "np.zeros(%d,dtype=%s)"%(self.size,res.dtype)
-        return [(res,cmd)]
+    def test_zeros(self,a):
+        return (a[0],"")

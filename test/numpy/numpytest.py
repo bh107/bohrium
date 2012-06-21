@@ -13,10 +13,10 @@ from operator import mul
 from itertools import izip as zip
 
 class TYPES:
-    NORMAL_INT   = [np.int32,np.int64,np.uint32,np.uint64]
-    ALL_INT      = NORMAL_INT + [np.int8,np.int16,np.uint8,np.uint16]
-    NORMAL_FLOAT = [np.float32,np.float64]
-    ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
+    NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
+    ALL_INT      = NORMAL_INT + ['np.int8','np.int16','np.uint8','np.uint16']
+    NORMAL_FLOAT = ['np.float32','np.float64']
+    ALL_FLOAT    = ['np.float16'] + NORMAL_FLOAT
     NORMAL       = NORMAL_INT + NORMAL_FLOAT
     ALL          = ALL_INT + ALL_FLOAT
 
