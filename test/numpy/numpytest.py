@@ -51,7 +51,7 @@ def _array_equal(A,B,maxerror=0.0):
 
     return True
 
-def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
+def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
     for ndim in xrange(min_ndim,max_ndim+1):
         shape = [1]*ndim
         if iters:
@@ -59,7 +59,7 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
             yield [max_dim]*(ndim) #Max shape
             for _ in xrange(iters):
                 for d in xrange(len(shape)):
-                    shape[d] = self.random.randint(1,max_dim)
+                    shape[d] = np.random.randint(1,max_dim)
                 yield shape
         else:       
             finished = False
@@ -78,50 +78,46 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     else:
                         break
 
-def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
-    for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
+def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
+    for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        A = self.array(shape)
-        cmd = "A = array(%s)"%(shape)
-        yield (A,cmd)
+        cmd = "a[0] = self.array(%s);"%(shape)
+        yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "B = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "1:,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with negative offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += ":-1,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with steps per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "::2,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
 class numpytest:
     def __init__(self):
