@@ -13,10 +13,10 @@ from operator import mul
 from itertools import izip as zip
 
 class TYPES:
-    NORMAL_INT   = [np.int32,np.int64,np.uint32,np.uint64]
-    ALL_INT      = NORMAL_INT + [np.int8,np.int16,np.uint8,np.uint16]
-    NORMAL_FLOAT = [np.float32,np.float64]
-    ALL_FLOAT    = [np.float16] + NORMAL_FLOAT
+    NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
+    ALL_INT      = NORMAL_INT + ['np.int8','np.int16','np.uint8','np.uint16']
+    NORMAL_FLOAT = ['np.float32','np.float64']
+    ALL_FLOAT    = ['np.float16'] + NORMAL_FLOAT
     NORMAL       = NORMAL_INT + NORMAL_FLOAT
     ALL          = ALL_INT + ALL_FLOAT
 
@@ -51,7 +51,7 @@ def _array_equal(A,B,maxerror=0.0):
 
     return True
 
-def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
+def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
     for ndim in xrange(min_ndim,max_ndim+1):
         shape = [1]*ndim
         if iters:
@@ -59,7 +59,7 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
             yield [max_dim]*(ndim) #Max shape
             for _ in xrange(iters):
                 for d in xrange(len(shape)):
-                    shape[d] = self.random.randint(1,max_dim)
+                    shape[d] = np.random.randint(1,max_dim)
                 yield shape
         else:       
             finished = False
@@ -78,50 +78,46 @@ def gen_shapes(self, max_ndim, max_dim, iters=0, min_ndim=1):
                     else:
                         break
 
-def gen_views(self, max_ndim, max_dim, iters=0, min_ndim=1):
-    for shape in gen_shapes(self,max_ndim, max_dim, iters, min_ndim):
+def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
+    for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        A = self.array(shape)
-        cmd = "A = array(%s)"%(shape)
-        yield (A,cmd)
+        cmd = "a[0] = self.array(%s);"%(shape)
+        yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "B = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "1:,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with negative offset per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += ":-1,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
         #Views with steps per dimension
         for d in xrange(len(shape)):
             if shape[d] > 1:
-                s = "A = A["
+                s = "a[0] = a[0]["
                 for _ in xrange(d):
                     s += ":,"
                 s += "::2,"
                 for _ in xrange(len(shape)-(d+1)):
                     s += ":,"
-                s = s[:-1] + "]"
-                exec s 
-                yield (B,"%s; A%s"%(cmd,s[1:]))
+                s = s[:-1] + "];"
+                yield cmd + s
 
 class numpytest:
     def __init__(self):
@@ -137,10 +133,10 @@ class numpytest:
         except TypeError:
             total = dims
         if dtype is bool:
-            res = np.ones(dims,dtype=dtype)
+            res = np.random.random_integers(0,1,dims)
         else:
             res = np.arange(1,total+1,dtype=dtype).reshape(dims)
-        res += res == 0#Remove zeros
+            res += res == 0#Remove zeros
         return np.asarray(res)
 
 if __name__ == "__main__":
