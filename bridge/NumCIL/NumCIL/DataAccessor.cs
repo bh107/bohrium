@@ -376,6 +376,15 @@ namespace NumCIL.Generic
         /// <param name="work">The list of operations to perform</param>
         public virtual void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
         {
+            DoExecute(work);
+        }
+
+        /// <summary>
+        /// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
+        /// </summary>
+        /// <param name="work">The list of operations to perform</param>
+        public static void DoExecute(IEnumerable<PendingOperation<T>> work)
+        {
             foreach (var n in work)
             {
                 if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
@@ -390,7 +399,7 @@ namespace NumCIL.Generic
                     }
 
                     genericVersion.Invoke(null, new object[] { lzop.Operation, lzop.Axis, n.Operands[1], n.Operands[0] });
-                    
+
                 }
                 else if (n.Operation is NumCIL.UFunc.LazyMatmulOperation<T>)
                 {
