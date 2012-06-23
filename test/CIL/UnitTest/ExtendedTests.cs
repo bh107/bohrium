@@ -97,10 +97,13 @@ namespace UnitTest
             if (z.Sum() != 44)
                 throw new Exception("Failure in matrix multiply");
 
+
             var x0 = Generate.Arange(20).Repeat(new long[] { 10 }, 0);
             var x1 = Generate.Arange(20).Repeat(10, 0);
-            if (x0.Sum() != 1900 || x1.Sum() != 1900)
-                throw new Exception("Failure in repeat");
+            var s1 = x1.Sum();
+            var s0 = x0.Sum();
+            if (s0 != 1900 || s1 != 1900)
+                throw new Exception(string.Format("Failure in repeat: {0}, {1}", s0, s1));
         }
     }
 }
