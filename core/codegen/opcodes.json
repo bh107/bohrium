@@ -2663,7 +2663,7 @@
         "doc": "A opcode that should be ignored.", 
         "code": "No operation.", 
         "nop": 0, 
-        "system_opcode": false, 
+        "system_opcode": true, 
         "types": []
     }, 
     {
