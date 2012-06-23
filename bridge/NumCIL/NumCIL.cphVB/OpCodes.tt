@@ -31,27 +31,30 @@ namespace NumCIL.cphVB
 				while(rd.TokenType == Newtonsoft.Json.JsonToken.Comment)
 					rd.Read();
 
-				Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Load(rd);
+				Newtonsoft.Json.Linq.JArray ja = Newtonsoft.Json.Linq.JArray.Load(rd);
 
 				long i = 0;
-				foreach (var opcode in jo.Children())
+				foreach (var opcode in ja)
 				{
-					if (opcode is Newtonsoft.Json.Linq.JProperty)
+					if (opcode is Newtonsoft.Json.Linq.JObject)
 					{
 						string comment = "";
-						try { comment = (string)((Newtonsoft.Json.Linq.JProperty)opcode).Value["doc"]; }
+						string example = "";
+						try { comment = (string)opcode["doc"]; }
+						catch { }
+						try { example = (string)opcode["code"]; }
 						catch { }
 
-						string name =  ((Newtonsoft.Json.Linq.JProperty)opcode).Name;
+						string name =  (string)opcode["opcode"];
 						long id = i++;
 
+						WriteLine("\t\t///<summary>");
 						if (!string.IsNullOrEmpty(comment))
-						{
-							WriteLine("\t\t///<summary>");
 							WriteLine("\t\t/// " + comment);
-							WriteLine("\t\t/// Integer value: " + id);
-							WriteLine("\t\t///</summary>");
-						}
+						if (!string.IsNullOrEmpty(example))
+							WriteLine("\t\t/// Example: " + example);
+						WriteLine("\t\t/// Integer value: " + id);
+						WriteLine("\t\t///</summary>");
 						WriteLine("\t\t" + name + ",");
 					}
 				}
