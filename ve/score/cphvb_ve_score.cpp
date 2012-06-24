@@ -86,10 +86,9 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     for(i=start; i <= end; i++)
     {
         cphvb_compute_apply( &instr[i] );
-        instr[i].status = CPHVB_INST_DONE;
+        instr[i].status = CPHVB_SUCCESS;
     }
     */
-
     /*
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
@@ -105,7 +104,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
-        instr[i].status = CPHVB_INST_DONE;
+        instr[i].status = CPHVB_SUCCESS;
     }
     */
 
@@ -147,11 +146,10 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
-        instr[i].status = CPHVB_INST_DONE;
+        instr[i].status = CPHVB_SUCCESS;
     }
     */
 
-    
     // Strategy Three:
     // Same as two but also slice into blocks.
     cphvb_intp  nelements,
@@ -214,7 +212,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
-        instr[i].status = CPHVB_INST_DONE;
+        instr[i].status = CPHVB_SUCCESS;
     }
     */
 
@@ -417,7 +415,6 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
-    printf("SCORE doing Matrix Multiplication!\n");
-    return CPHVB_SUCCESS;
+    return cphvb_compute_matmul( arg, ve_arg );
+    
 }
-
