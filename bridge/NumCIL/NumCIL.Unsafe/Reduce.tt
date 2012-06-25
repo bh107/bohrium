@@ -32,7 +32,7 @@ namespace NumCIL.Unsafe
                 //TODO: If both in and out use the same array, just return a reshaped in
                 long j = 0;
                 var sizes = in1.Shape.Dimensions.Where(x => j++ != axis).ToArray();
-                Apply.UFunc_Op_Inner_Unary_Flush_<#=typename#><CopyOp<System.<#=typename#>>>(new CopyOp<System.<#=typename#>>(), new NdArray<System.<#=typename#>>(in1, new Shape(sizes, in1.Shape.Offset)), ref @out);
+                Apply.UFunc_Op_Inner_Unary_Flush_<#=typename#><CopyOp<System.<#=typename#>>>(new CopyOp<System.<#=typename#>>(), in1.Reshape(new Shape(sizes, in1.Shape.Offset)), ref @out);
             }
             else
             {

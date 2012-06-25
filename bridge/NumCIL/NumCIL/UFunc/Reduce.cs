@@ -166,7 +166,7 @@ namespace NumCIL
                 //TODO: If both in and out use the same array, just return a reshaped in
                 long j = 0;
                 var sizes = in1.Shape.Dimensions.Where(x => j++ != axis).ToArray();
-                UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), new NdArray<T>(in1, new Shape(sizes, in1.Shape.Offset)), @out);
+                UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1.Reshape(new Shape(sizes, in1.Shape.Offset)), @out);
             }
             else
             {

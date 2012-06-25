@@ -82,7 +82,7 @@ namespace NumCIL
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
         /// <returns>A tupple with broadcast compatible shapes for the inputs, and an output array</returns>
-        private static Tuple<Shape, Shape, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
+        private static Tuple<NdArray<T>, NdArray<T>, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
         {
             Tuple<Shape, Shape> broadcastshapes = Shape.ToBroadcastShapes(in1.Shape, in2.Shape);
             if (@out == null)
@@ -100,7 +100,10 @@ namespace NumCIL
                         throw new Exception("Dimension size of target array is incorrect");
             }
 
-            return new Tuple<Shape, Shape, NdArray<T>>(broadcastshapes.Item1, broadcastshapes.Item2, @out);
+            var op1 = in1.Reshape(broadcastshapes.Item1);
+            var op2 = in2.Reshape(broadcastshapes.Item2);
+
+            return new Tuple<NdArray<T>, NdArray<T>, NdArray<T>>(op1, op2, @out);
         }
 
         /// <summary>
@@ -176,13 +179,13 @@ namespace NumCIL
         private static NdArray<T> Apply_Entry_Binary<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
-            Tuple<Shape, Shape, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
+            Tuple<NdArray<T>, NdArray<T>, NdArray<T>> v = SetupApplyHelper(in1, in2, @out);
             @out = v.Item3;
 
             if (@out.DataAccessor is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2));
+                ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out, v.Item1, v.Item2);
             else
-                FlushMethods.ApplyBinaryOp<T, C>(op, new NdArray<T>(in1, v.Item1), new NdArray<T>(in2, v.Item2), @out);
+                FlushMethods.ApplyBinaryOp<T, C>(op, v.Item1, v.Item2, @out);
 
             return @out;
         }

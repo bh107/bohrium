@@ -177,7 +177,10 @@ namespace NumCIL.Generic
         /// <returns>The reshaped array</returns>
         public NdArray<T> Reshape(Shape newshape)
         {
-            return new NdArray<T>(this, newshape);
+            if (newshape == null || newshape.Equals(this.Shape))
+                return this;
+            else
+                return new NdArray<T>(this, newshape);
         }
 
         /// <summary>
@@ -197,7 +200,7 @@ namespace NumCIL.Generic
             if (this.Shape.Dimensions.LongLength == 1)
             {
                 long pos = this.Shape[element];
-                return new NdArray<T>(this, new Shape(
+                return Reshape(new Shape(
                     new long[] { 1 }, //Single element
                     pos, //Offset to position
                     new long[] { this.Shape.Length - pos } //Skip the rest
@@ -209,7 +212,7 @@ namespace NumCIL.Generic
 
             //We need to modify the top dimension to skip the elements we wish to hide
             long newoffset = this.Shape[element];
-            return new NdArray<T>(this, new Shape(dims, newoffset));
+            return this.Reshape(new Shape(dims, newoffset));
         }
 
         /// <summary>
@@ -236,7 +239,7 @@ namespace NumCIL.Generic
                     Array.Copy(this.Shape.Dimensions, dim, n, dim + 1, n.LongLength - (dim + 1));
                     n[dim] = new NumCIL.Shape.ShapeDimension(1, 0);
 
-                    return new NdArray<T>(this, new Shape(n, this.Shape.Offset));
+                    return this.Reshape(new Shape(n, this.Shape.Offset));
                 }
                 else if (range.SingleElement)
                     last = first;
@@ -276,7 +279,7 @@ namespace NumCIL.Generic
             }
             
 
-            return new NdArray<T>(this, new Shape(dimensions, offset));
+            return this.Reshape(new Shape(dimensions, offset));
         }
 
         /// <summary>
@@ -378,7 +381,7 @@ namespace NumCIL.Generic
         public NdArray<T> Flatten()
         {
             NdArray<T> cp = this.Clone();
-            return new NdArray<T>(cp, new long[] { cp.Shape.Length });
+            return cp.Reshape(new long[] { cp.Shape.Length });
         }
 
         /// <summary>
@@ -484,9 +487,9 @@ namespace NumCIL.Generic
             
             //Optimal case, just reshape the array
             if (@out == null)
-                return new NdArray<T>(this, new Shape(this.Shape.Dimensions.Reverse().ToArray()));
+                return this.Reshape(new Shape(this.Shape.Dimensions.Reverse().ToArray()));
 
-            var lv = new NdArray<T>(this, new Shape(this.Shape.Dimensions.Select(x => x.Length).Reverse().ToArray()));
+            var lv = this.Reshape(new Shape(this.Shape.Dimensions.Select(x => x.Length).Reverse().ToArray()));
             UFunc.Apply<T, CopyOp<T>>(lv, @out);
             return @out;
         }
