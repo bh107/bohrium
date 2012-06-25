@@ -452,7 +452,12 @@ cphvb_error cphvb_component_free_ptr(void* data)
 cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_array *ary)
 {
     int i;
+#ifndef WIN32
     FILE *f = fopen("/tmp/cphvb_trace.ary", "a");
+#else
+	FILE *f = stderr;
+#endif
+
     fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, ary->ndim);
     for(i=0; i<ary->ndim; ++i)
         fprintf(f," %ld", ary->shape[i]);
@@ -461,7 +466,9 @@ cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_array *ary)
         fprintf(f," %ld", ary->stride[i]);
     fprintf(f,";\t start: %ld;\t base: %p;\n",ary->start, ary->base);
 
+#ifndef WIN32
     fclose(f);
+#endif
     return CPHVB_SUCCESS;
 }
 
@@ -477,7 +484,11 @@ cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction 
     cphvb_intp nop;
     cphvb_array *ops[CPHVB_MAX_NO_OPERANDS];
 
+#ifndef WIN32
     FILE *f = fopen("/tmp/cphvb_trace.inst", "a");
+#else
+    FILE *f = stderr;
+#endif
 
     fprintf(f,"%s\t", cphvb_opcode_text(inst->opcode));
 
@@ -494,11 +505,22 @@ cphvb_error cphvb_component_trace_inst(cphvb_component *self, cphvb_instruction 
             ops[i] = inst->operand[i];
     }
     for(i=0; i<nop; ++i)
+    {
+#ifndef WIN32
         fprintf(f," \t%p", ops[i]);
+#else
+        fprintf(f," %lld", (cphvb_int64)ops[i]);
+        if (ops[i] != NULL && ops[i]->base != NULL)
+	        fprintf(f," -> %lld", (cphvb_int64)ops[i]->base);
+        fprintf(f,"\t");
+#endif
+    }
 
     fprintf(f,"\n");
 
+#ifndef WIN32
     fclose(f);
+#endif
     return CPHVB_SUCCESS;
 }
 

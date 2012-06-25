@@ -47,6 +47,12 @@ cphvb_array* ArrayManager::create(cphvb_array* base,
 	if (base != NULL)
 		base->ref_count++;
 
+#ifdef CPHVB_TRACE
+	fprintf(stderr, "Created array %lld", array);
+	if (array->base != NULL)
+		fprintf(stderr, " -> %lld", array->base);
+	fprintf(stderr, "\n");
+#endif
     return array;
 }
 
@@ -113,6 +119,12 @@ cphvb_error ArrayManager::flush()
     		cphvb_array* array = (*eit)->operand[0];
 			cphvb_array* base = cphvb_base_array(array);
 			base->ref_count--;
+#ifdef CPHVB_TRACE
+			fprintf(stderr, "Deleting array %lld", array);
+			if (array->base != NULL)
+				fprintf(stderr, " -> %lld", array->base);
+			fprintf(stderr, "\n");
+#endif
 		
 			if (array->base == NULL && array->ref_count != 0)
 			{
