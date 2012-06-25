@@ -29,6 +29,7 @@ static cphvb_intp matmul_impl_id = 0;
 
 static cphvb_intp cphvb_ve_score_buffersizes = 0;
 static computeloop* cphvb_ve_score_compute_loops = NULL;
+static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
 
@@ -68,18 +69,29 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     	
     	if (cphvb_ve_score_compute_loops != NULL) {
     		free(cphvb_ve_score_compute_loops);
+    		free(cphvb_ve_score_tstates);
     		cphvb_ve_score_compute_loops = NULL;
+    		cphvb_ve_score_tstates = NULL;
     	}
     	
     	cphvb_ve_score_compute_loops = (computeloop*)malloc(sizeof(computeloop) * mcount);
+        cphvb_ve_score_tstates = (cphvb_tstate*)malloc(sizeof(cphvb_tstate)*mcount);
     	
     	if (cphvb_ve_score_compute_loops == NULL)
+    		return CPHVB_OUT_OF_MEMORY;
+    	if (cphvb_ve_score_tstates == NULL)
     		return CPHVB_OUT_OF_MEMORY;
     	
     	cphvb_ve_score_buffersizes = mcount;
     }
     
-    computeloop* compute_loops = cphvb_ve_score_compute_loops;    
+    computeloop* compute_loops = cphvb_ve_score_compute_loops;
+    cphvb_tstate* states = cphvb_ve_score_tstates;
+    
+    for(i=0; i<=end-start;i++)
+        cphvb_tstate_reset( &states[i] );
+
+    /*
     // Strategy One:
     // Consecutively execute instructions one by one applying compute-loop immediately.
     for(i=start; i <= end; i++)
@@ -87,7 +99,9 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         cphvb_compute_apply( &instr[i] );
         instr[i].status = CPHVB_SUCCESS;
     }
-    /*
+
+    */
+
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
@@ -97,14 +111,13 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start, k=0; i <= end; i++, k++)           // Execute them
     {
-        compute_loops[k]( &instr[i], 0, 0 );
+        compute_loops[k]( &instr[i], &states[k], 0 );
     }
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
         instr[i].status = CPHVB_SUCCESS;
     }
-    */
 
     /*
     // Strategy Two.Five:

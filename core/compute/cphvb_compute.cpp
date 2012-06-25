@@ -21,7 +21,7 @@
 #include "functors.hpp"
 #include "traverser.hpp"
 
-inline void cphvb_tstate_reset( cphvb_tstate *state ) {
+void cphvb_tstate_reset( cphvb_tstate *state ) {
     memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
     state->cur_e = 0;   
 }
@@ -32,8 +32,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
     cphvb_tstate state;
     cphvb_tstate_reset( &state );
     
-    if (comp == NULL)
-    {
+    if (comp == NULL) {
         return CPHVB_TYPE_NOT_SUPPORTED;
     } else {
         return comp( instr, &state, 0 );
