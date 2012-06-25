@@ -80,7 +80,6 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
     
     computeloop* compute_loops = cphvb_ve_score_compute_loops;    
-    /*
     // Strategy One:
     // Consecutively execute instructions one by one applying compute-loop immediately.
     for(i=start; i <= end; i++)
@@ -88,7 +87,6 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         cphvb_compute_apply( &instr[i] );
         instr[i].status = CPHVB_SUCCESS;
     }
-    */
     /*
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
@@ -150,6 +148,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
     */
 
+    /*
     // Strategy Three:
     // Same as two but also slice into blocks.
     cphvb_intp  nelements,
@@ -185,6 +184,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_SUCCESS;
     }
+    */
 
     /*
     // Strategy Five:

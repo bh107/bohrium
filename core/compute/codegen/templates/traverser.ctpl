@@ -26,7 +26,7 @@ directiveStartToken = %
 
 %for $traverse in $data
 template <${traverse.tsig}, typename Instr>
-cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index start, cphvb_index end ) {
+cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
@@ -54,9 +54,9 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index star
     %end for
 
     cphvb_index j,                              // Traversal variables
-                last_dim = a0->ndim-1,
-                last_e  = (end>0) ? end : cphvb_nelements( a0->ndim, a0->shape )-1,
-                cur_e;
+                last_dim    = a0->ndim-1,
+                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+
     cphvb_index off0;                           // Stride-offset
     %for $op in $traverse.ops[1:]
     %if $op[1] == 'a'
@@ -64,25 +64,7 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index star
     %end if
     %end for
 
-    cphvb_index coord[CPHVB_MAXDIM];
-    memset(coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-
-    coord[last_dim] = start % a0->shape[last_dim];      // Fast-forward coordinates
-    cur_e           = coord[last_dim];
-    for(; cur_e < start; cur_e += a0->shape[last_dim] ) // As well as coordinates for the remaining dimensions
-    {
-        for(j = last_dim-1; (j >= 0) && (cur_e<start); --j )
-        {
-            coord[j]++;
-            if (coord[j] < a0->shape[j]) {              // Still within this dimension
-                break;
-            } else {                                    // Reached the end of this dimension
-                coord[j] = 0;                           // Reset coordinate
-            }                                           // Loop then continues to increment the next dimension
-        }
-    }
-
-    while( cur_e <= last_e )
+    while( state->cur_e <= last_e )
     {
         off0 = a0->start;                           // Compute offset based on coord
         %for $op in $traverse.ops[1:]
@@ -93,15 +75,15 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index star
 
         for( j=0; j<=last_dim; ++j)
         {
-            off0 += coord[j] * a0->stride[j];
+            off0 += state->coord[j] * a0->stride[j];
             %for $op in $traverse.ops[1:]
             %if $op[1] == 'a'
-            off$op[0] += coord[j] * a$op[0]->stride[j];
+            off$op[0] += state->coord[j] * a$op[0]->stride[j];
             %end if
             %end for
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (coord[last_dim] < a0->shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
         {
             opcode_func( ${traverse.func_call} );
 
@@ -112,15 +94,15 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_index star
             %end if
             %end for
         }
-        coord[last_dim] = 0;
+        state->coord[last_dim] = 0;
 
         for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
         {
-            coord[j]++;
-            if (coord[j] < a0->shape[j]) {          // Still within this dimension
+            state->coord[j]++;
+            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
                 break;
             } else {                                // Reached the end of this dimension
-                coord[j] = 0;                       // Reset coordinate
+                state->coord[j] = 0;                // Reset coordinate
             }                                       // Loop then continues to increment the next dimension
         }
 
