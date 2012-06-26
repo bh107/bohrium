@@ -238,12 +238,9 @@ namespace NumCIL.cphVB
         /// </summary>
         private void EnsureSynced()
         {
+            this.Flush();
             if (m_data == null && m_externalData == null)
-            {
-                this.Flush();
-                if (m_data == null && m_externalData == null)
-                    base.Allocate();
-            }
+                base.Allocate();
 
             if (m_externalData != null)
                 VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData.Pointer));
