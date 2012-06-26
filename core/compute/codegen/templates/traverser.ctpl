@@ -55,7 +55,7 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
     %for $op in $traverse.ops[1:]
@@ -94,16 +94,19 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
             %end if
             %end for
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
