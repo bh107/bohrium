@@ -29,7 +29,7 @@ class test_jacobi_stencil(numpytest):
         self.size = 20
     def init(self):
         a = {}
-        cmd = "a[0] = jacobi_stencil.frezetrap({0},{0});".format(self.size)
+        cmd = "a[0] = jacobi_stencil.frezetrap({0},{0},cphvb=False);".format(self.size)
         exec cmd
         yield (a,cmd)
 
@@ -42,7 +42,7 @@ class test_gameoflife(numpytest):
     def init(self):
         for t in ['np.float32','np.float64']:
             a = {}
-            cmd  = "a[0] = gameoflife.randomstate({0},{0},dtype={1})".format(10,t)
+            cmd  = "a[0] = gameoflife.randomstate({0},{0},dtype={1},cphvb=False)".format(10,t)
             exec cmd
             yield (a,cmd)
     
