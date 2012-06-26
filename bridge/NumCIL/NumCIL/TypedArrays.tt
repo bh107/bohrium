@@ -381,6 +381,12 @@ namespace NumCIL.<#=typename#>
 
         #region Common function implementations
         /// <summary>
+        /// Copies all values from this NdArray to the output NdArray
+        /// </summary>
+        /// <param name="out">Optional target for addition, if null, a new array is created</param>
+        /// <returns>An NdArray which is a copy of this array</returns>
+        public OutArray Copy(OutArray @out = null) { return UFunc.Apply<T, NumCIL.CopyOp<T>>(this, @out); }
+        /// <summary>
         /// Adds the values of an NdArray to this NdArray and returns the result as a new NdArray
         /// </summary>
         /// <param name="op">The operand to add</param>
@@ -792,6 +798,10 @@ namespace NumCIL.<#=typename#>
         /// <summary>
         /// The addition operation
         /// </summary>
+        public static readonly CopyOp<T> Copy;
+        /// <summary>
+        /// The addition operation
+        /// </summary>
         public static readonly Add Add;
         /// <summary>
         /// The subtraction operation
@@ -872,6 +882,21 @@ namespace NumCIL.<#=typename#>
     #endregion
 
     #region Operator implementations
+    /// <summary>
+    /// The copy operator implementation
+    /// </summary>
+    public struct Copy
+    {
+        /// <summary>
+        /// Applies the copy operation to the input operand
+        /// </summary>
+        /// <param name="in1">The input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is an element-wise copy of the input view</returns>
+        public static OutArray Apply(OutArray in1, OutArray @out = null)
+        { return UFunc.Apply<T, NumCIL.CopyOp<T>>(in1, @out); }
+    }
+
     /// <summary>
     /// The addition operator implementation
     /// </summary>
