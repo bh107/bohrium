@@ -31,6 +31,12 @@ namespace Tester
             var right = full[R.Slice(2,  0),  R.Slice(1, -1) ];
             var down =  full[R.Slice(1, -1),  R.Slice(2,  0) ];
 
+            cells.Name = "cells";
+            up.Name = "up";
+            left.Name = "left";
+            right.Name = "right";
+            down.Name = "down";
+
             full[R.All, R.El(0)] += -273.5f;
             full[R.All, R.El(-1)] += -273.5f;
             full[0] += 40f;
@@ -53,6 +59,9 @@ namespace Tester
                 Mul.Apply(work, 0.2f, work);
                 
                 //This will do the same but not in-place
+                // We need to recompile the kernels to 
+                // support this
+
                 /*work += up;
                 work += left;
                 work += right;
