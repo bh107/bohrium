@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
+#include <iostream>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -102,6 +103,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     */
 
+    /*
     // Strategy Two:
     // Seperating execution into: grabbing instructions, executing them and lastly setting status.
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
@@ -118,6 +120,98 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_SUCCESS;
     }
+    */
+
+    /*
+    // Strategy T.Two:
+    // This is strategy three but without actually using the calculated offsets.
+    // This should definately isolate the performance problem.
+    //
+    cphvb_intp  nelements,
+                trav_start=0,
+                trav_end=-1;
+
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
+    {
+        compute_loops[k] = cphvb_compute_get( &instr[i] );
+    }
+                                                    // Block-size split
+    nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
+    while(nelements>0)
+    {
+        nelements -= block_size;
+        trav_start = trav_end +1;
+        if (nelements > 0) {
+            trav_end = trav_start+ block_size-1;
+        } else {
+            trav_end = trav_start+ block_size-1 +nelements;
+        }
+
+        for(i=start, k=0; i <= end; i++, k++)
+        {
+            // no actual execution here...
+        }
+    }
+
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
+    {
+        compute_loops[k]( &instr[i], &states[k], 0 );
+    }
+
+    for(i=start; i <= end; i++)                     // Set instruction status
+    {
+        instr[i].status = CPHVB_SUCCESS;
+    }
+    */
+
+    // Strategy T.Three:
+    // This is strategy three but without actually using the calculated offsets.
+    // This should definately isolate the performance problem.
+    //
+    cphvb_intp  nelements,
+                trav_end=0;
+
+    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
+    {
+        compute_loops[k] = cphvb_compute_get( &instr[i] );
+    }
+                                                    // Block-size split
+    nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
+    //block_size = instr[start].operand[0]->shape[instr[start].operand[0]->ndim-1];
+    //block_size = 10;
+    while(nelements>trav_end)
+    {
+        trav_end    += block_size;
+        if (trav_end > nelements)
+            trav_end = nelements;
+        
+        //std::cout << "Blocking! " << std::endl;
+        for(i=start, k=0; i <= end; i++, k++)
+        {
+            //cphvb_pprint_coord( states[k].coord, instr[start].operand[0]->ndim );
+            //std::cout << "[current element=" << states[k].cur_e << ",trav end=" << trav_end << std::endl;
+            //cphvb_pprint_instr( &instr[i] );
+            compute_loops[k]( &instr[i], &states[k], trav_end );
+        }
+    }
+
+    for(i=start, k=0; i <= end; i++, k++)           // Execute them
+    {
+    }
+
+    for(i=start; i <= end; i++)                     // Set instruction status
+    {
+        instr[i].status = CPHVB_SUCCESS;
+    }
+
+
+    //
+    //
+    //
+    //  Everyting below uses the old traversal interface (cphvb_instruction*, cphvb_index, cphvb_index).
+    //
+    //
+    //
 
     /*
     // Strategy Two.Five:
