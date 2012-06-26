@@ -18,6 +18,7 @@ namespace Tester
             var work = Generate.Zeroes(height, width);
             var diff = Generate.Zeroes(height, width);
             var tmpdelta = Generate.Zeroes(height);
+            var deltares = Generate.Empty(1);
 
             full.Name = "full";
             work.Name = "work";
@@ -40,10 +41,11 @@ namespace Tester
 
             int i = 0;
 
+            work[R.All] = cells;
+
             while (fixedIterations.HasValue ? (i < fixedIterations.Value) : epsilon < delta)
             {
                 i++;
-                work[R.All] = cells;
                 Add.Apply(work, up, work);
                 Add.Apply(work, left, work);
                 Add.Apply(work, right, work);
@@ -62,7 +64,7 @@ namespace Tester
                     Sub.Apply(cells, work, diff);
                     Abs.Apply(diff, diff);
                     Add.Reduce(diff, 0, tmpdelta);
-                    delta = Add.Reduce(tmpdelta).Value[0];
+                    delta = Add.Reduce(tmpdelta, 0, deltares).Value[0];
                 }
                 cells[R.All] = work;
             }
