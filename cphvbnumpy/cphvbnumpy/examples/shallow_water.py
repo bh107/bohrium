@@ -1,6 +1,6 @@
 #Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 
-import numpy as np
+import cphvbnumpy as np
 
 g = 9.80665 # gravitational acceleration
 

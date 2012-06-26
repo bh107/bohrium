@@ -22,6 +22,5 @@ def gen( opcodes, ignore ):
             del(op['types'])
             data.append(op)
         
-    pp(data)
     return data
 

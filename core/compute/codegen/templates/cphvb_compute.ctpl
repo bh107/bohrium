@@ -26,14 +26,21 @@ directiveStartToken = %
 #include "functors.hpp"
 #include "traverser.hpp"
 
+inline void cphvb_tstate_reset( cphvb_tstate *state ) {
+    memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
+    state->cur_e = 0;   
+}
+
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
     computeloop comp = cphvb_compute_get( instr );
-    if (comp == NULL)
-    {
+    cphvb_tstate state;
+    cphvb_tstate_reset( &state );
+    
+    if (comp == NULL) {
         return CPHVB_TYPE_NOT_SUPPORTED;
     } else {
-        return comp( instr, (cphvb_index)0, (cphvb_index)0 );
+        return comp( instr, &state, 0 );
     }
 
 }
@@ -41,7 +48,10 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 cphvb_error cphvb_compute_apply_unsafe( cphvb_instruction *instr ) {
 
     computeloop comp = cphvb_compute_get( instr );
-    return comp( instr, (cphvb_index)0, (cphvb_index)0 );
+    cphvb_tstate state;
+    cphvb_tstate_reset( &state );
+
+    return comp( instr, &state, 0 );
 
 }
 

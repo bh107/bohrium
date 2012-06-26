@@ -1,3 +1,4 @@
-from gameoflife import *
-from jacobi_stencil import *
-from k_nearest_neighbor import *
+import gameoflife
+import jacobi_stencil
+import k_nearest_neighbor
+import shallow_water
