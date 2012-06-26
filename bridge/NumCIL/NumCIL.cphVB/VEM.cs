@@ -587,14 +587,24 @@ namespace NumCIL.cphVB
         /// </summary>
         public void Dispose()
         {
-            Console.WriteLine("Disposing views - GC: {0} cleanups", m_cleanups.Count);
+            //Ensure all views are collected
             GC.Collect();
-            m_preventCleanup = false;
-            Console.WriteLine("Disposing views - GC done");
 
-            Console.WriteLine("Disposing views - Cleanups: {0}", m_cleanups.Count);
+            if (m_baseArrayRefs.Count > 0)
+            {
+                Console.WriteLine("WARNING: Found allocated views on shutdown");
+                foreach (var k in m_baseArrayRefs.Values.ToArray())
+                    foreach (var m in k.ToArray())
+                        m.Dispose();
+
+                GC.Collect();
+            }
+
+            if (m_baseArrayRefs.Count > 0)
+                throw new Exception("Some base arrays were stil allocated during VEM shutdown");
+
+            m_preventCleanup = false;
             ExecuteCleanups();
-            Console.WriteLine("Disposing views - Cleanups done");
 
             lock (m_executelock)
             {
