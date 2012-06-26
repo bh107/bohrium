@@ -587,6 +587,17 @@ namespace NumCIL.cphVB
                 this.constant = constant;
             }
 
+            public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, PInvoke.cphvb_constant constant, cphvb_array_ptr operand2)
+            {
+                this.status = cphvb_error.CPHVB_INST_PENDING;
+                this.opcode = opcode;
+                this.operand0 = operand1;
+                this.operand1 = cphvb_array_ptr.Null;
+                this.operand2 = operand2;
+                this.userfunc = IntPtr.Zero;
+                this.constant = constant;
+            }
+
             public cphvb_instruction(cphvb_opcode opcode, cphvb_array_ptr operand1, cphvb_array_ptr operand2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
             {
                 this.status = cphvb_error.CPHVB_INST_PENDING;

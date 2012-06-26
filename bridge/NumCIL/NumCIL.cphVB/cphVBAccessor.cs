@@ -536,16 +536,16 @@ namespace NumCIL.cphVB
                 else
                 {
                     t = ops.GetType();
-                    //We mimic the Increment and Decrement with Add(1) and Add(-1) respectively
+                    //We mimic the Increment and Decrement with Add(1) and Sub(1) respectively
                     if (t == IncrementOp)
                     {
-                        ops = new NumCIL.ScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(AddOp));
+                        ops = new NumCIL.RhsScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(AddOp));
                         t = AddOp;
                         isScalar = true;
                     }
                     else if (t == DecrementOp)
                     {
-                        ops = new NumCIL.ScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(SubOp));
+                        ops = new NumCIL.RhsScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(SubOp));
                         t = SubOp;
                         isScalar = true;
                     }
@@ -567,7 +567,12 @@ namespace NumCIL.cphVB
                         IScalarAccess<T> sa = (IScalarAccess<T>)ops;
 
                         if (sa.Operation is IBinaryOp<T>)
-                            supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
+                        {
+                            if (ops is IScalarAccessBinary<T> && ((IScalarAccessBinary<T>)ops).IsLhsOperand)
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value), operands[1]));
+                            else
+                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
+                        }
                         else
                             supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], new PInvoke.cphvb_constant(CPHVB_TYPE, sa.Value)));
                     }

@@ -74,4 +74,17 @@ namespace NumCIL
         /// </summary>
         T Value { get; }
     }
+
+    /// <summary>
+    /// Interface that enables the implementation to differentiate between
+    /// left-hand-side and right-hand-side scalar operands in binary operations
+    /// </summary>
+    /// <typeparam name="T">The type of data to operate on</typeparam>
+    public interface IScalarAccessBinary<T> : IScalarAccess<T>
+    {
+        /// <summary>
+        /// Gets a value indicating if the scalar is a left hand side operand
+        /// </summary>
+        bool IsLhsOperand { get; }
+    }
 }

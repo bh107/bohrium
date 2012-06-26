@@ -232,7 +232,22 @@ namespace NumCIL
         public static NdArray<T> Apply<T, C>(NdArray<T> in1, T scalar, NdArray<T> @out = null)
             where C : struct, IBinaryOp<T>
         {
-            return Apply_Entry_Unary<T, ScalarOp<T, C>>(new ScalarOp<T, C>(scalar, new C()), in1, @out);
+            return Apply_Entry_Unary<T, RhsScalarOp<T, C>>(new RhsScalarOp<T, C>(scalar, new C()), in1, @out);
+        }
+
+        /// <summary>
+        /// Applies the operation to the scalar value and input array
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="scalar">The right-hand-side scalar value</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output value</returns>
+        public static NdArray<T> Apply<T, C>(T scalar, NdArray<T> in1, NdArray<T> @out = null)
+            where C : struct, IBinaryOp<T>
+        {
+            return Apply_Entry_Unary<T, LhsScalarOp<T, C>>(new LhsScalarOp<T, C>(scalar, new C()), in1, @out);
         }
 
         /// <summary>
@@ -247,6 +262,20 @@ namespace NumCIL
             where C : struct, IUnaryOp<T>
         {
             return Apply_Entry_Unary<T, C>(new C(), in1, @out);
+        }
+
+        /// <summary>
+        /// Applies the operation to the input array
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output value</returns>
+        public static void Apply<T, C>(T in1, NdArray<T> @out)
+            where C : struct, IUnaryOp<T>
+        {
+            Apply_Entry_Nullary<T, ScalarValue<T, C>>(new ScalarValue<T, C>(in1, new C()), @out);
         }
 
         /// <summary>

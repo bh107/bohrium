@@ -113,6 +113,11 @@ namespace UnitTest
             if (rx9 != 22.5)
                 throw new Exception(string.Format("Failure in broadcast multiply: {0}", rx9));
 
+            var x10 = 5 - Generate.Arange(10);
+            var x11 = Generate.Arange(10) - 5;
+            if (x10.Sum() != 5 || x11.Sum() != -5)
+                throw new Exception("Failure in scalar rhs/lhs");
+
             var n0 = Generate.Arange(4);
             var n1 = n0[new Range(1, 4)];
             var n2 = n0[new Range(0, 3)];

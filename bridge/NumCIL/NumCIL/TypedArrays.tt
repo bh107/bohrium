@@ -335,35 +335,35 @@ namespace NumCIL.<#=typename#>
         /// <param name="a">One input operand</param>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of adding the two input operands</returns>
-        public static OutArray operator +(T a, OutArray b) { return UFunc.Apply<T, Add>(new NdArray(a), b, null); }
+        public static OutArray operator +(T a, OutArray b) { return UFunc.Apply<T, Add>(a, b, null); }
         /// <summary>
         /// Calculates subtraction of the two operands
         /// </summary>
         /// <param name="a">One input operand</param>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of subtracting the two input operands</returns>
-        public static OutArray operator -(T a, OutArray b) { return UFunc.Apply<T, Sub>(new NdArray(a), b, null); }
+        public static OutArray operator -(T a, OutArray b) { return UFunc.Apply<T, Sub>(a, b, null); }
         /// <summary>
         /// Calculates multiplication to the two operands
         /// </summary>
         /// <param name="a">One input operand</param>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of multiplying the two input operands</returns>
-        public static OutArray operator *(T a, OutArray b) { return UFunc.Apply<T, Mul>(new NdArray(a), b, null); }
+        public static OutArray operator *(T a, OutArray b) { return UFunc.Apply<T, Mul>(a, b, null); }
         /// <summary>
         /// Calculates division of to the two operands
         /// </summary>
         /// <param name="a">One input operand</param>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of dividing the two input operands</returns>
-        public static OutArray operator /(T a, OutArray b) { return UFunc.Apply<T, Div>(new NdArray(a), b, null); }
+        public static OutArray operator /(T a, OutArray b) { return UFunc.Apply<T, Div>(a, b, null); }
         /// <summary>
         /// Calculates modulo of the two operands
         /// </summary>
         /// <param name="a">One input operand</param>
         /// <param name="b">Another input operand</param>
         /// <returns>The modulo result of dividing the two input operands</returns>
-        public static OutArray operator %(T a, OutArray b) { return UFunc.Apply<T, Mod>(new NdArray(a), b, null); }
+        public static OutArray operator %(T a, OutArray b) { return UFunc.Apply<T, Mod>(a, b, null); }
 
         /// <summary>
         /// Calculates the incremented value of the operand
@@ -895,6 +895,15 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is an element-wise copy of the input view</returns>
         public static OutArray Apply(OutArray in1, OutArray @out = null)
         { return UFunc.Apply<T, NumCIL.CopyOp<T>>(in1, @out); }
+
+        /// <summary>
+        /// Applies the copy operation to the input operand
+        /// </summary>
+        /// <param name="in1">The input operand</param>
+        /// <param name="out">An output array where the results are stored</param>
+        /// <returns>An NdArray that is an element-wise copy of the input view</returns>
+        public static void Apply(T in1, OutArray @out)
+        { UFunc.Apply<T, NumCIL.CopyOp<T>>(in1, @out); }
     }
 
     /// <summary>
@@ -948,7 +957,18 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Add>(@in, scalar, @out); }
+
+        /// <summary>
+        /// Applies the addition operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Add>(scalar, @in, @out); }
     }
+
     /// <summary>
     /// The subtraction operator implementation
     /// </summary>
@@ -1000,7 +1020,18 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Sub>(@in, scalar, @out); }
+
+        /// <summary>
+        /// Applies the subtraction operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Sub>(scalar, @in, @out); }
     }
+
     /// <summary>
     /// The multiplication operator implementation
     /// </summary>
@@ -1052,7 +1083,18 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Mul>(@in, scalar, @out); }
+        
+		/// <summary>
+        /// Applies the multiply operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Mul>(scalar, @in, @out); }
     }
+
     /// <summary>
     /// The division operator implementation
     /// </summary>
@@ -1104,7 +1146,18 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Div>(@in, scalar, @out); }
-    }
+        
+		/// <summary>
+        /// Applies the divide operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Div>(scalar, @in, @out); } 
+	}
+
     /// <summary>
     /// The modulo operation implementation
     /// </summary>
@@ -1156,7 +1209,17 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Mod>(@in, scalar, @out); }
-    }
+        
+		/// <summary>
+        /// Applies the modulo operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Mod>(scalar, @in, @out); }
+	}
 
     /// <summary>
     /// The maximum operation implementation
@@ -1209,7 +1272,18 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Max>(@in, scalar, @out); }
+        
+		/// <summary>
+        /// Applies the maximum operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Max>(scalar, @in, @out); }
     }
+
     /// <summary>
     /// The minimum operation implementation
     /// </summary>
@@ -1261,6 +1335,16 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Min>(@in, scalar, @out); }
+        
+		/// <summary>
+        /// Applies the minimum operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Min>(scalar, @in, @out); }
     }
 
     /// <summary>
@@ -1284,6 +1368,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Inc>(@in, @out); }
     }
+
     /// <summary>
     /// The decrement operation implementation
     /// </summary>
@@ -1327,6 +1412,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Ceiling>(@in, @out); }
     }
+
     /// <summary>
     /// The floor operation implementation
     /// </summary>
@@ -1348,6 +1434,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Floor>(@in, @out); }
     }
+
     /// <summary>
     /// The round operation implementation
     /// </summary>
@@ -1369,6 +1456,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Round>(@in, @out); }
     }
+
     /// <summary>
     /// The square root operation implementation
     /// </summary>
@@ -1390,6 +1478,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Sqrt>(@in, @out); }
     }
+
     /// <summary>
     /// The exponential operation implementation
     /// </summary>
@@ -1433,6 +1522,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Negate>(@in, @out); }
     }
+
     /// <summary>
     /// The absolute operation implementation
     /// </summary>
@@ -1477,6 +1567,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Log>(@in, @out); }
     }
+
     /// <summary>
     /// The logarithmic-10 operation implementation
     /// </summary>
@@ -1498,6 +1589,7 @@ namespace NumCIL.<#=typename#>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, Log10>(@in, @out); }
     }
+
     /// <summary>
     /// The power operation implementation
     /// </summary>
@@ -1549,7 +1641,16 @@ namespace NumCIL.<#=typename#>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray @in, T scalar, OutArray @out = null)
         { return UFunc.Apply<T, Pow>(@in, scalar, @out); }
-    }
+
+		/// <summary>
+        /// Applies the power operation to the input operands
+        /// </summary>
+        /// <param name="in">One input operand</param>
+        /// <param name="scalar">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T scalar, OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Pow>(scalar, @in, @out); }    }
     #endregion
 
     #region Generate mimics
