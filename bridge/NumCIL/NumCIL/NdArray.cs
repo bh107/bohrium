@@ -722,6 +722,18 @@ namespace NumCIL.Generic
         /// Flag for debugging purposes
         /// </summary>
         public string Name;
+
+        /// <summary>
+        /// Destructor, disposes the tag if any
+        /// </summary>
+        ~NdArray()
+        {
+            if (Tag is IDisposable)
+            {
+                ((IDisposable)Tag).Dispose();
+                Tag = null;
+            }
+        }
     }
 }
 

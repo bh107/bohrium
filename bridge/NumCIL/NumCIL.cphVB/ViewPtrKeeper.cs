@@ -10,7 +10,7 @@ namespace NumCIL.cphVB
     /// This class that keeps a reference to an allocated cphvb_array_ptr,
     /// and is used to free allocated views on garbage collection
     /// </summary>
-    internal class ViewPtrKeeper : IDisposable
+    public class ViewPtrKeeper : IDisposable
     {
         /// <summary>
         /// Instance of the VEM that is used to dispose of the view
@@ -33,7 +33,14 @@ namespace NumCIL.cphVB
         /// Gets the view pointer associated with this instance
         /// </summary>
         public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
-
+        /// <summary>
+        /// Gets a value indicating if the handle is allocated
+        /// </summary>
+        public bool HasHandle { get { return m_handle.IsAllocated; } }
+        /// <summary>
+        /// Gets a value indicating if this instance has been disposed
+        /// </summary>
+        public bool IsDisposed { get { return m_isDisposed; } }
 
         /// <summary>
         /// Constructs a new instance guarding the given pointer

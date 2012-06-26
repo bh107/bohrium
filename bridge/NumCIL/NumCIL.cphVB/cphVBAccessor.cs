@@ -214,7 +214,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// The constant 1
         /// </summary>
-        protected static readonly T ONE = (T)Convert.ChangeType(1, typeof(T)); 
+        protected static readonly T ONE = (T)Convert.ChangeType(1, typeof(T));
 
         /// <summary>
         /// Constructs a new data accessor for the given size
@@ -231,82 +231,45 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A pointer to the base-array view structure
         /// </summary>
-        protected PInvoke.cphvb_array_ptr m_externalData = PInvoke.cphvb_array_ptr.Null;
+        protected ViewPtrKeeper m_externalData = null;
 
         /// <summary>
-        /// A value indicating if a CPHVB_SYNC command has been sent
+        /// Ensures that local data is synced
         /// </summary>
-        protected bool m_isSynced = false;
-
-        /// <summary>
-        /// A pointer to internally allocated data which is pinned
-        /// </summary>
-        protected GCHandle m_handle;
-
-        /// <summary>
-        /// Ensures the underlying data block is flushed and updated
-        /// </summary>
-        public override void Allocate()
+        private void EnsureSynced()
         {
-            Flush();
-
-            if (m_data != null)
+            if (m_data == null && m_externalData == null)
             {
-                cphVB_SyncAndDiscard();
-            }
-            else
-            {
-                if (m_externalData == PInvoke.cphvb_array_ptr.Null)
-                {
-                    //Data is not yet allocated, convert to external storage
-                    m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
-                }
-
-                if (m_externalData.Data == IntPtr.Zero)
-                {
-                    PInvoke.cphvb_error e = PInvoke.cphvb_data_malloc(m_externalData);
-                    if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                        throw new cphVBException(e);
-                }
+                this.Flush();
+                if (m_data == null && m_externalData == null)
+                    base.Allocate();
             }
 
+            if (m_externalData != null)
+                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData.Pointer));
         }
 
-        /// <summary>
-        /// Returns the internal data as an array
-        /// </summary>
-        /// <returns>The data as a managed array</returns>
         public override T[] AsArray()
         {
             MakeDataManaged();
-            return base.AsArray();
+            return m_data;
         }
 
-        /// <summary>
-        /// Gets a value describing if the data is allocated or not
-        /// </summary>
-        public override bool IsAllocated
-        {
-            get
-            {
-                return m_data != null || (m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value in the array
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
         public override T this[long index]
         {
             get
             {
-                Allocate();
-
-                if (m_data == null)
+                this.EnsureSynced();
+                if (m_data != null)
+                    return m_data[index];
+                else
                 {
-                    IntPtr ptr = new IntPtr(Pointer.ToInt64() + (index * NATIVE_ELEMENT_SIZE));
+                    if (m_externalData.Pointer.Data == IntPtr.Zero)
+                    {
+                        throw new Exception("Data not yet allocated?");
+                    }
+
+                    IntPtr ptr = new IntPtr(m_externalData.Pointer.Data.ToInt64() + (index * NATIVE_ELEMENT_SIZE));
                     if (typeof(T) == typeof(float))
                     {
                         T[] tmp = new T[1];
@@ -340,243 +303,28 @@ namespace NumCIL.cphVB
                     else
                         throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                 }
-                else
-                    return base[index];
             }
             set
             {
-                Allocate();
-
-                if (m_data == null)
-                {
-                    IntPtr ptr = new IntPtr(Pointer.ToInt64() + (index * NATIVE_ELEMENT_SIZE));
-                    if (typeof(T) == typeof(float))
-                    {
-                        T[] tmp = new T[] { value };
-                        if (!NumCIL.UnsafeAPI.CopyToIntPtr(tmp, ptr, 1))
-                            Marshal.Copy((float[])(object)tmp, 0, ptr, 1);
-                    }
-                    else if (typeof(T) == typeof(double))
-                    {
-                        T[] tmp = new T[] { value };
-                        if (!NumCIL.UnsafeAPI.CopyToIntPtr(tmp, ptr, 1))
-                            Marshal.Copy((double[])(object)tmp, 0, ptr, 1);
-                    }
-                    else if (typeof(T) == typeof(sbyte))
-                        Marshal.WriteByte(ptr, (byte)(object)value);
-                    else if (typeof(T) == typeof(short))
-                        Marshal.WriteInt16(ptr, (short)(object)value);
-                    else if (typeof(T) == typeof(int))
-                        Marshal.WriteInt32(ptr, (int)(object)value);
-                    else if (typeof(T) == typeof(long))
-                        Marshal.WriteInt64(ptr, (long)(object)value);
-                    else if (typeof(T) == typeof(byte))
-                        Marshal.WriteByte(ptr, (byte)(object)value);
-                    else if (typeof(T) == typeof(ushort))
-                        Marshal.WriteInt16(ptr, (short)(object)value);
-                    else if (typeof(T) == typeof(uint))
-                        Marshal.WriteInt32(ptr, (int)(object)value);
-                    else if (typeof(T) == typeof(ulong))
-                        Marshal.WriteInt64(ptr, (long)(object)value);
-                    else
-                        throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
-                }
-                else
-                    base[index] = value;
+                MakeDataManaged();
+                m_data[index] = value;
             }
         }
 
         /// <summary>
-        /// Gets a pointer to data, this will allocate data
+        /// Ensures that data is managed
         /// </summary>
-        public IntPtr Pointer
+        private void MakeDataManaged()
         {
-            get 
-            {
-                Allocate();
-                cphVB_Sync();
-
-                Pin();
-                return m_externalData.Data; 
-            }
-        }
-
-        /// <summary>
-        /// Gets a value describing if the data can be allocated as a managed array
-        /// </summary>
-        public bool CanAllocateArray
-        {
-            get { return (NATIVE_ELEMENT_SIZE * m_size) < int.MaxValue; }
-        }
-
-        /// <summary>
-        /// Sends a CPHVB_SYNC command to the VEM
-        /// </summary>
-        protected void cphVB_Sync()
-        {
-            if (!m_isSynced && m_externalData != PInvoke.cphvb_array_ptr.Null && m_externalData.Data != IntPtr.Zero)
-            {
-                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData));
-                m_isSynced = true;
-            }
-        }
-
-        /// <summary>
-        /// Sends a CPHVB_DISCARD command to the VEM
-        /// </summary>
-        protected void cphVB_Discard()
-        {
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-            {
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
-                m_externalData = PInvoke.cphvb_array_ptr.Null;
-            }
-        }
-
-        /// <summary>
-        /// Sends a CPHVB_FREE and CPHVB_SYNC command to the VEM
-        /// </summary>
-        protected void cphVB_FreeAndDiscard()
-        {
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-            {
-                System.Diagnostics.Debug.Assert(!m_handle.IsAllocated);
-
-                if (m_externalData.Data != IntPtr.Zero)
-                {
-                    VEM.ExecuteRelease(
-                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData),
-                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData)
-                    );
-                    m_externalData = PInvoke.cphvb_array_ptr.Null;
-                }
-                else
-                {
-                    cphVB_Discard();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sends a CPHVB_FREE command to the VEM as required
-        /// </summary>
-        protected void cphVB_Free()
-        {
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-                VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData));
-        }
-
-        /// <summary>
-        /// Sends a CPHVB_SYNC and CPHVB_DISCARD command to the VEM as required
-        /// </summary>
-        protected void cphVB_SyncAndDiscard()
-        {
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-            {
-                System.Diagnostics.Debug.Assert(m_data != null);
-
-                if (!m_isSynced)
-                {
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
-                    VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData));
-                    m_isSynced = true;
-                    m_externalData = PInvoke.cphvb_array_ptr.Null;
-                }
-                else
-                {
-                    cphVB_Discard();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Register a pending operation on the underlying array
-        /// </summary>
-        /// <param name="operation">The operation performed</param>
-        /// <param name="operands">The operands involved, operand 0 is the target</param>
-        public override void AddOperation(IOp<T> operation, params NdArray<T>[] operands)
-        {
-            lock (Lock)
-                PendingOperations.Add(new PendingOpCounter<T>(operation, operands));
-
-            if (PendingOpCounter<T>.PendingOpCount > HIGH_WATER_MARK)
-            {
-                this.Flush();
-            }
-        }
-
-        /// <summary>
-        /// Pins the allocated data and returns an array with the data set to the pinned pointer.
-        /// If data is not yet allocated, nothing is done
-        /// </summary>
-        /// <returns>A pinned pointer</returns>
-        internal virtual PInvoke.cphvb_array_ptr Pin()
-        {
-            Allocate();
-            
-            if (m_externalData == PInvoke.cphvb_array_ptr.Null)
-            {
-                //Internally allocated data, we need to pin it
-                if (!m_handle.IsAllocated)
-                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-
-                m_externalData = VEM.CreateArray(CPHVB_TYPE, m_size);
-                m_externalData.Data = m_handle.AddrOfPinnedObject();
-            }
-            else if (m_data != null && m_externalData.Data == IntPtr.Zero)
-            {
-                //Internally allocated data, we need to pin it
-                if (!m_handle.IsAllocated)
-                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                m_externalData.Data = m_handle.AddrOfPinnedObject();
-            }
-
-            m_isSynced = false;
-
-            return m_externalData;
-        }
-
-        /// <summary>
-        /// Unpins allocated data
-        /// </summary>
-        protected void Unpin()
-        {
-            System.Diagnostics.Debug.Assert(m_data != null);
-            cphVB_SyncAndDiscard();
-
-            if (m_handle.IsAllocated)
-            {
-                if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-                    m_externalData.Data = IntPtr.Zero;
-                m_handle.Free();
-            }
-        }
-
-        /// <summary>
-        /// Makes the data managed
-        /// </summary>
-        protected void MakeDataManaged()
-        {
-            if (m_size < 0)
-                throw new ObjectDisposedException(this.GetType().FullName);
-
-            if (m_data != null && m_externalData != PInvoke.cphvb_array_ptr.Null)
-            {
-                this.Unpin();
+            EnsureSynced();
+            if (m_data != null && m_externalData == null)
                 return;
-            }
 
-            //Allocate data internally, and flush instructions as required
-            base.Allocate();
-            T[] data = base.m_data;
-
-
-            //If data is allocated in cphVB, we need to flush it and de-allocate it
-            if (m_externalData != PInvoke.cphvb_array_ptr.Null)
+            if (m_data == null)
             {
-                cphVB_Sync();
+                base.Allocate();
 
-                IntPtr actualData = m_externalData.Data;
+                IntPtr actualData = m_externalData.Pointer.Data;
                 if (actualData == IntPtr.Zero)
                 {
                     //The array is "empty" which will be zeroes in NumCIL
@@ -584,18 +332,18 @@ namespace NumCIL.cphVB
                 else
                 {
                     //Then copy the data into the local buffer
-                    if (!NumCIL.UnsafeAPI.CopyFromIntPtr<T>(actualData, data))
+                    if (!NumCIL.UnsafeAPI.CopyFromIntPtr<T>(actualData, m_data))
                     {
                         if (m_size > int.MaxValue)
                             throw new OverflowException();
 
                         if (typeof(T) == typeof(float))
-                            Marshal.Copy(actualData, (float[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (float[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(double))
-                            Marshal.Copy(actualData, (double[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (double[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(sbyte))
                         {
-                            sbyte[] xref = (sbyte[])(object)data;
+                            sbyte[] xref = (sbyte[])(object)m_data;
                             if (m_size > int.MaxValue)
                             {
                                 IntPtr xptr = actualData;
@@ -612,16 +360,16 @@ namespace NumCIL.cphVB
                             }
                         }
                         else if (typeof(T) == typeof(short))
-                            Marshal.Copy(actualData, (short[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (short[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(int))
-                            Marshal.Copy(actualData, (int[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (int[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(long))
-                            Marshal.Copy(actualData, (long[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (long[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(byte))
-                            Marshal.Copy(actualData, (byte[])(object)data, 0, (int)m_size);
+                            Marshal.Copy(actualData, (byte[])(object)m_data, 0, (int)m_size);
                         else if (typeof(T) == typeof(ushort))
                         {
-                            ushort[] xref = (ushort[])(object)data;
+                            ushort[] xref = (ushort[])(object)m_data;
                             if (m_size > int.MaxValue)
                             {
                                 IntPtr xptr = actualData;
@@ -639,7 +387,7 @@ namespace NumCIL.cphVB
                         }
                         else if (typeof(T) == typeof(uint))
                         {
-                            uint[] xref = (uint[])(object)data;
+                            uint[] xref = (uint[])(object)m_data;
                             if (m_size > int.MaxValue)
                             {
                                 IntPtr xptr = actualData;
@@ -657,7 +405,7 @@ namespace NumCIL.cphVB
                         }
                         else if (typeof(T) == typeof(ulong))
                         {
-                            ulong[] xref = (ulong[])(object)data;
+                            ulong[] xref = (ulong[])(object)m_data;
                             if (m_size > int.MaxValue)
                             {
                                 IntPtr xptr = actualData;
@@ -676,13 +424,96 @@ namespace NumCIL.cphVB
                         else
                             throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                     }
+
+                    VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData.Pointer));
+                }
+            }
+
+            m_externalData.Dispose();
+            m_externalData = null;
+        }
+
+        /// <summary>
+        /// Allocates the data either in cphvb or in managed memory
+        /// </summary>
+        public override void Allocate()
+        {
+            this.EnsureSynced();
+        }
+
+        /// <summary>
+        /// Gets a pointer to data
+        /// </summary>
+        public IntPtr Pointer
+        {
+            get 
+            {
+                EnsureSynced();
+
+                System.Diagnostics.Debug.Assert(m_data != null || m_externalData != null);
+
+                if (m_data != null)
+                {
+                    if (m_externalData != null && !m_externalData.HasHandle)
+                    {
+                        m_externalData.Dispose();
+                        m_externalData = null;
+                    }
+
+                    if (m_externalData == null || !m_externalData.HasHandle)
+                    {
+                        GCHandle h = GCHandle.Alloc(m_data, GCHandleType.Pinned);
+                        PInvoke.cphvb_array_ptr p = VEM.CreateBaseArray(m_data);
+                        p.Data = h.AddrOfPinnedObject();
+                        m_externalData = new ViewPtrKeeper(p, h);
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(m_externalData != null && m_externalData.Pointer.Data != null);
                 }
 
-                //Release the unmanaged copy
-                cphVB_FreeAndDiscard();
+                return m_externalData.Pointer.Data;
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public PInvoke.cphvb_array_ptr BaseArrayPtr
+        {
+            get
+            {
+                if (m_data == null && m_externalData == null)
+                {
+                    m_externalData = new ViewPtrKeeper(VEM.CreateBaseArray(CPHVB_TYPE, m_size));
+                    return m_externalData.Pointer;
+                }
+
+                if (m_externalData != null)
+                    return m_externalData.Pointer;
+
+                if (m_data != null)
+                {
+                    GCHandle h = GCHandle.Alloc(m_data, GCHandleType.Pinned);
+                    PInvoke.cphvb_array_ptr p = VEM.CreateBaseArray(m_data);
+                    p.Data = h.AddrOfPinnedObject();
+                    m_externalData = new ViewPtrKeeper(p, h);
+
+                    return m_externalData.Pointer;
+                }
+
+                throw new Exception("An assumption failed");
+            }
+        }
+
+        /// <summary>
+        /// Returns a value indicating if the data can be allocated as a managed array
+        /// </summary>
+        public bool CanAllocateArray
+        {
+            get { return m_size < int.MaxValue; }
+        }
 
         /// <summary>
         /// Executes all pending operations in the list
@@ -828,47 +659,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Releases all held resources
-        /// </summary>
-        /// <param name="disposing">True if called from the Dispose method, false if invoked from the finalizer</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (m_size > 0)
-            {
-                if (m_externalData != PInvoke.cphvb_array_ptr.Null)
-                {
-                    if (m_handle.IsAllocated)
-                    {
-                        VEM.ExecuteRelease(m_externalData, m_handle);
-                    }
-                    else if (m_externalData.Data != IntPtr.Zero && m_externalData.BaseArray == PInvoke.cphvb_array_ptr.Null)
-                    {
-                        VEM.ExecuteRelease(
-                            new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData),
-                            new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData)
-                        );
-                    }
-                    else
-                    {
-                        VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_externalData));
-                    }
-                }
-                else if (m_handle.IsAllocated)
-                {
-                    m_handle.Free();
-                }
-
-                m_data = null;
-                m_size = -1;
-
-                if (disposing)
-                    GC.SuppressFinalize(this);
-            }
-
-        }
-
-        /// <summary>
-        /// Releases all held resources
+        /// Disposes all resources held by this instance
         /// </summary>
         public void Dispose()
         {
@@ -876,8 +667,20 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Destructor for non-disposed elements
+        /// Disposes all resources held by this instance
         /// </summary>
+        /// <param name="disposing">True if called from the </param>
+        protected void Dispose(bool disposing)
+        {
+            if (m_externalData != null)
+                m_externalData.Dispose();
+            m_externalData = null;
+            m_data = null;
+
+            if (disposing)
+                GC.SuppressFinalize(this);
+        }
+
         ~cphVBAccessor()
         {
             Dispose(false);

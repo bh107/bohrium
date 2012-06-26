@@ -94,7 +94,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A ref-counter for base arrays
         /// </summary>
-        private Dictionary<PInvoke.cphvb_array_ptr, long> m_baseArrayRefCount = new Dictionary<PInvoke.cphvb_array_ptr, long>();
+        private Dictionary<PInvoke.cphvb_array_ptr, List<ViewPtrKeeper>> m_baseArrayRefs = new Dictionary<PInvoke.cphvb_array_ptr, List<ViewPtrKeeper>>();
         /// <summary>
         /// Lookup table for all created userfunc structures
         /// </summary>
@@ -220,6 +220,8 @@ namespace NumCIL.cphVB
         }
 
 
+
+
         /// <summary>
         /// Registers an instruction for later execution, usually destroy calls
         /// </summary>
@@ -233,22 +235,23 @@ namespace NumCIL.cphVB
                     var ar = inst.operand0;
                     if (ar.BaseArray != PInvoke.cphvb_array_ptr.Null)
                     {
-                        ar = ar.BaseArray;
-                        
-                        //Discard the view
-                        m_cleanups.Add(inst);
-                    }
+                        var lst = m_baseArrayRefs[ar.BaseArray];
+                        for (int i = lst.Count - 1; i >= 0; i--)
+                            if (lst[i].Pointer == ar)
+                                lst.RemoveAt(i);
 
-                    long rf = m_baseArrayRefCount[ar];
-                    rf--;
-                    if (rf == 0)
-                    {
-                        m_baseArrayRefCount.Remove(ar);
-                        m_cleanups.Add(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, ar));
                     }
                     else
-                        m_baseArrayRefCount[ar] = rf;
+                    {
+                        var lst = m_baseArrayRefs[ar];
+                        while(lst.Count > 0)
+                            lst[0].Dispose();
+                        
+                        m_baseArrayRefs.Remove(ar);
+                    }
 
+                    //Discard the view
+                    m_cleanups.Add(inst);
                 }
                 else
                 {
@@ -270,22 +273,24 @@ namespace NumCIL.cphVB
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
                 lock (m_releaselock)
+                {
                     cleanup_lst = System.Threading.Interlocked.Exchange(ref m_cleanups, new List<IInstruction>());
 
-                GCHandle tmp;
-                long ix = inst_list.LongCount();
-                foreach (PInvoke.cphvb_instruction inst in cleanup_lst)
-                {
-                    if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
+                    GCHandle tmp;
+                    long ix = inst_list.LongCount();
+                    foreach (PInvoke.cphvb_instruction inst in cleanup_lst)
                     {
-                        if (handles == null)
-                            handles = new List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>>();
-                        handles.Add(new Tuple<long, PInvoke.cphvb_instruction, GCHandle>(ix, inst, tmp));
+                        if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
+                        {
+                            if (handles == null)
+                                handles = new List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>>();
+                            handles.Add(new Tuple<long, PInvoke.cphvb_instruction, GCHandle>(ix, inst, tmp));
+                        }
+                        ix++;
                     }
-                    ix++;
-                }
 
-                lst = lst.Concat(cleanup_lst);
+                    lst = lst.Concat(cleanup_lst);
+                }
             }
 
             long errorIndex = -1;
@@ -450,33 +455,9 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="d">The array to map</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray(Array d)
+        public PInvoke.cphvb_array_ptr CreateBaseArray(Array d)
         {
-            return CreateArray(
-                PInvoke.cphvb_array_ptr.Null,
-                MapType(d.GetType().GetElementType()),
-                1,
-                0,
-                new long[] { d.Length },
-                new long[] { 1 }
-                );
-        }
-
-        /// <summary>
-        /// Creates a base array with uninitialized memory
-        /// </summary>
-       /// <param name="size">The size of the generated base array</param>
-        /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_type type, long size)
-        {
-            return CreateArray(
-                PInvoke.cphvb_array_ptr.Null,
-                type,
-                1,
-                0,
-                new long[] { size },
-                new long[] { 1 }
-                );
+            return CreateBaseArray(MapType(d.GetType().GetElementType()), d.LongLength);
         }
 
         /// <summary>
@@ -485,9 +466,9 @@ namespace NumCIL.cphVB
         /// <typeparam name="T">The data type for the array</typeparam>
         /// <param name="size">The size of the generated base array</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray<T>(long size)
+        public PInvoke.cphvb_array_ptr CreateBaseArray<T>(long size)
         {
-            return CreateArray(MapType(typeof(T)), size);
+            return CreateBaseArray(MapType(typeof(T)), size);
         }
 
         public static PInvoke.cphvb_type MapType(Type t)
@@ -521,16 +502,58 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Creates a cphvb base array or view descriptor
         /// </summary>
+        /// <param name="type">The cphvb type of data in the array</param>
+        /// <param name="size">The size of the base array</param>
+        /// <returns>The pointer to the base array descriptor</returns>
+        public PInvoke.cphvb_array_ptr CreateBaseArray(PInvoke.cphvb_type type, long size)
+        {
+            var ptr = CreateArray(
+                PInvoke.cphvb_array_ptr.Null,
+                type,
+                1,
+                0,
+                new long[] { size },
+                new long[] { 1 }
+            );
+
+            lock (m_releaselock)
+                m_baseArrayRefs.Add(ptr, new List<ViewPtrKeeper>());
+
+            return ptr;
+        }
+
+        /// <summary>
+        /// Creates a cphvb view descriptor
+        /// </summary>
+        /// <param name="basearray">The base array pointer</param>
+        /// <param name="type">The cphvb type of data in the array</param>
+        /// <param name="ndim">Number of dimensions</param>
+        /// <param name="start">The offset into the base array</param>
+        /// <param name="shape">The shape values for each dimension</param>
+        /// <param name="stride">The stride values for each dimension</param>
+        /// <returns>The pointer to the array descriptor</returns>
+        public ViewPtrKeeper CreateView(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
+        {
+            if (basearray == PInvoke.cphvb_array_ptr.Null)
+                throw new ArgumentException("Base array cannot be null for a view");
+            var ptr = new ViewPtrKeeper(CreateArray(basearray, type, ndim, start, shape, stride));
+            lock (m_releaselock)
+                m_baseArrayRefs[basearray].Add(ptr);
+
+            return ptr;
+        }
+
+        /// <summary>
+        /// Creates a cphvb base array or view descriptor
+        /// </summary>
         /// <param name="basearray">The base array pointer if creating a view or IntPtr.Zero if the view is a base array</param>
         /// <param name="type">The cphvb type of data in the array</param>
         /// <param name="ndim">Number of dimensions</param>
         /// <param name="start">The offset into the base array</param>
         /// <param name="shape">The shape values for each dimension</param>
         /// <param name="stride">The stride values for each dimension</param>
-        /// <param name="has_init_value">A value indicating if the data has a initial value</param>
-        /// <param name="init_value">The initial value if any</param>
-        /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
+        /// <returns>The pointer to the array descriptor</returns>
+        protected PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
         {
             PInvoke.cphvb_error e;
             PInvoke.cphvb_array_ptr res;
@@ -555,19 +578,6 @@ namespace NumCIL.cphVB
 
             System.Threading.Interlocked.Increment(ref m_allocatedviews);
 
-            lock (m_releaselock)
-            {
-                if (basearray == PInvoke.cphvb_array_ptr.Null)
-                {
-                    m_baseArrayRefCount.Add(res, 1);
-                }
-                else
-                {
-                    long rf = m_baseArrayRefCount[basearray];
-                    rf++;
-                    m_baseArrayRefCount[basearray] = rf;
-                }
-            }
 
             return res;
         }
@@ -577,10 +587,14 @@ namespace NumCIL.cphVB
         /// </summary>
         public void Dispose()
         {
+            Console.WriteLine("Disposing views - GC: {0} cleanups", m_cleanups.Count);
             GC.Collect();
             m_preventCleanup = false;
+            Console.WriteLine("Disposing views - GC done");
 
+            Console.WriteLine("Disposing views - Cleanups: {0}", m_cleanups.Count);
             ExecuteCleanups();
+            Console.WriteLine("Disposing views - Cleanups done");
 
             lock (m_executelock)
             {
@@ -627,7 +641,7 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="view">The NdArray to create the pointer for</param>
         /// <returns>An unmanaged view pointer</returns>
-        protected PInvoke.cphvb_array_ptr CreateViewPtr<T>(NdArray<T> view)
+        protected ViewPtrKeeper CreateViewPtr<T>(NdArray<T> view)
         {
             return CreateViewPtr<T>(MapType(typeof(T)), view);
         }
@@ -639,13 +653,13 @@ namespace NumCIL.cphVB
         /// <param name="view">The NdArray to create the pointer for</param>
         /// <typeparam name="T">The datatype in the view</typeparam>
         /// <returns>An unmanaged view pointer</returns>
-        protected PInvoke.cphvb_array_ptr CreateViewPtr<T>(PInvoke.cphvb_type type, NdArray<T> view)
+        protected ViewPtrKeeper CreateViewPtr<T>(PInvoke.cphvb_type type, NdArray<T> view)
         {
             PInvoke.cphvb_array_ptr basep;
 
             if (view.DataAccessor is cphVBAccessor<T>)
             {
-                basep = ((cphVBAccessor<T>)view.DataAccessor).Pin();
+                basep = ((cphVBAccessor<T>)view.DataAccessor).BaseArrayPtr;
             }
             else
             {
@@ -656,16 +670,16 @@ namespace NumCIL.cphVB
                 else
                 {
                     GCHandle h = GCHandle.Alloc(view.DataAccessor.AsArray(), GCHandleType.Pinned);
-                    basep = CreateArray<T>(view.DataAccessor.AsArray().Length);
+                    basep = CreateBaseArray<T>(view.DataAccessor.AsArray().Length);
                     basep.Data = h.AddrOfPinnedObject();
                     view.DataAccessor.Tag = new ViewPtrKeeper(basep, h);
                 }
             }
 
-            if (view.Tag == null || ((ViewPtrKeeper)view.Tag).Pointer != basep)
-                view.Tag = new ViewPtrKeeper(CreateView(type, view.Shape, basep));
+            if (view.Tag as ViewPtrKeeper == null || ((ViewPtrKeeper)view.Tag).Pointer == PInvoke.cphvb_array_ptr.Null || ((ViewPtrKeeper)view.Tag).Pointer.BaseArray != basep)
+                view.Tag = CreateView(type, view.Shape, basep);
 
-            return ((ViewPtrKeeper)view.Tag).Pointer;
+            return (ViewPtrKeeper)view.Tag;
         }
 
         /// <summary>
@@ -675,7 +689,7 @@ namespace NumCIL.cphVB
         /// <param name="baseArray">The array to set as base array</param>
         /// <typeparam name="T">The type of data in the view</typeparam>
         /// <returns>A new view</returns>
-        public PInvoke.cphvb_array_ptr CreateView<T>(Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        public ViewPtrKeeper CreateView<T>(Shape shape, PInvoke.cphvb_array_ptr baseArray)
         {
             return CreateView(MapType(typeof(T)), shape, baseArray);
         }
@@ -687,61 +701,56 @@ namespace NumCIL.cphVB
         /// <param name="shape">The shape to create the view for</param>
         /// <param name="baseArray">The array to set as base array</param>
         /// <returns>A new view</returns>
-        public PInvoke.cphvb_array_ptr CreateView(PInvoke.cphvb_type CPHVB_TYPE, Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        public ViewPtrKeeper CreateView(PInvoke.cphvb_type CPHVB_TYPE, Shape shape, PInvoke.cphvb_array_ptr baseArray)
         {
             //Unroll, to avoid creating a Linq query for basic 3d shapes
-            if (shape.Dimensions.Length == 1)
+            switch(shape.Dimensions.Length)
             {
-                return CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length },
-                    new long[] { shape.Dimensions[0].Stride }
-                );
-            }
-            else if (shape.Dimensions.Length == 2)
-            {
-                return CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride }
-                );
-            }
-            else if (shape.Dimensions.Length == 3)
-            {
-                return CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
-                    new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride }
-                );
-            }
-            else
-            {
-                long[] lengths = new long[shape.Dimensions.LongLength];
-                long[] strides = new long[shape.Dimensions.LongLength];
-                for (int i = 0; i < lengths.LongLength; i++)
-                {
-                    var d = shape.Dimensions[i];
-                    lengths[i] = d.Length;
-                    strides[i] = d.Stride;
-                }
+                case 1:
+                    return CreateView(
+                        baseArray,
+                        CPHVB_TYPE,
+                        shape.Dimensions.Length,
+                        (int)shape.Offset,
+                        new long[] { shape.Dimensions[0].Length },
+                        new long[] { shape.Dimensions[0].Stride }
+                    );
+                case 2:
+                    return CreateView(
+                            baseArray,
+                            CPHVB_TYPE,
+                            shape.Dimensions.Length,
+                            (int)shape.Offset,
+                            new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
+                            new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride }
+                        );
+                case 3:
+                    return CreateView(
+                        baseArray,
+                        CPHVB_TYPE,
+                        shape.Dimensions.Length,
+                        (int)shape.Offset,
+                        new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
+                        new long[] { shape.Dimensions[0].Stride, shape.Dimensions[1].Stride, shape.Dimensions[2].Stride }
+                    );
+                default:
+                    long[] lengths = new long[shape.Dimensions.LongLength];
+                    long[] strides = new long[shape.Dimensions.LongLength];
+                    for (int i = 0; i < lengths.LongLength; i++)
+                    {
+                        var d = shape.Dimensions[i];
+                        lengths[i] = d.Length;
+                        strides[i] = d.Stride;
+                    }
 
-                return CreateArray(
-                    baseArray,
-                    CPHVB_TYPE,
-                    shape.Dimensions.Length,
-                    (int)shape.Offset,
-                    lengths,
-                    strides
-                );
+                    return CreateView(
+                        baseArray,
+                        CPHVB_TYPE,
+                        shape.Dimensions.Length,
+                        (int)shape.Offset,
+                        lengths,
+                        strides
+                    );
             }
         }
 
@@ -764,28 +773,28 @@ namespace NumCIL.cphVB
 
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand), constant);
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand).Pointer, constant);
         }
 
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), constant);
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, constant);
         }
 
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1), CreateViewPtr<T>(type, op2), CreateViewPtr<T>(type, op3), constant);
+            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, constant);
         }
 
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x)), constant);
+            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
         }
 
         public IInstruction ReCreateInstruction<T>(PInvoke.cphvb_type type, IInstruction instruction, IEnumerable<NdArray<T>> operands)
         {
             if (instruction is PInvoke.cphvb_instruction)
-                return new PInvoke.cphvb_instruction(instruction.OpCode, operands.Select(x => CreateViewPtr<T>(type, x)), ((PInvoke.cphvb_instruction)instruction).constant);
+                return new PInvoke.cphvb_instruction(instruction.OpCode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), ((PInvoke.cphvb_instruction)instruction).constant);
             else
                 throw new Exception("Unknown instruction type");
         }
@@ -801,7 +810,7 @@ namespace NumCIL.cphVB
             GCHandle gh = GCHandle.Alloc(
                 new PInvoke.cphvb_userfunc_random(
                     m_randomFunctionId,
-                    CreateViewPtr<T>(type, op1).BaseArray
+                    CreateViewPtr<T>(type, op1).Pointer.BaseArray
                 ), 
                 GCHandleType.Pinned
             );
@@ -826,8 +835,8 @@ namespace NumCIL.cphVB
                     m_reduceFunctionId,
                     opcode,
                     axis,
-                    CreateViewPtr<T>(type, op1),
-                    CreateViewPtr<T>(type, op2)
+                    CreateViewPtr<T>(type, op1).Pointer,
+                    CreateViewPtr<T>(type, op2).Pointer
                 ), 
                 GCHandleType.Pinned
             );
@@ -850,9 +859,9 @@ namespace NumCIL.cphVB
             GCHandle gh = GCHandle.Alloc(
                 new PInvoke.cphvb_userfunc_matmul(
                     m_matmulFunctionId,
-                    CreateViewPtr<T>(type, op1),
-                    CreateViewPtr<T>(type, op2),
-                    CreateViewPtr<T>(type, op3)
+                    CreateViewPtr<T>(type, op1).Pointer,
+                    CreateViewPtr<T>(type, op2).Pointer,
+                    CreateViewPtr<T>(type, op3).Pointer
                 ),
                 GCHandleType.Pinned
             );
