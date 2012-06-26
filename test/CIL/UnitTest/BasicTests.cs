@@ -12,6 +12,26 @@ namespace UnitTest
     {
         public static void RunTests()
         {
+            var an = Generate.Empty(2000);
+            var bn = Generate.Ones(2000);
+
+            var cn = Generate.Empty(2000);
+            var dn = Generate.Ones(2000);
+
+            var an0 = an.Value[0];
+            var bn0 = bn.Value[0];
+            if (bn0 != 1)
+                throw new Exception("Error in accessor");
+
+            cn.Value[0] = 1;
+            dn.Value[0] = 2;
+
+            var cn0 = cn.Value[0];
+            var dn0 = dn.Value[0];
+
+            if (cn0 != 1 || dn0 != 2)
+                throw new Exception("Error in accessor");
+
             var test = Generate.Arange(3) * 4;
 
             Shape s = new Shape(
