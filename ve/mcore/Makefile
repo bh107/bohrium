@@ -2,6 +2,7 @@ ROOT=../..
 LIB=libcphvb_ve_mcore.so
 CXX?=g++
 WARNOPTS=-Wall
+#LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -DDEBUG
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS=-L../../core -lcphvb -lrt -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
