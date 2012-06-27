@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
+#include <iostream>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -87,46 +88,10 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     
     computeloop* compute_loops = cphvb_ve_score_compute_loops;
     cphvb_tstate* states = cphvb_ve_score_tstates;
+    cphvb_intp  nelements, trav_end=0;
     
-    for(i=0; i<=end-start;i++)
+    for(i=0; i<=end-start;i++)                      // Reset traversal coordinates
         cphvb_tstate_reset( &states[i] );
-
-    /*
-    // Strategy One:
-    // Consecutively execute instructions one by one applying compute-loop immediately.
-    for(i=start; i <= end; i++)
-    {
-        cphvb_compute_apply( &instr[i] );
-        instr[i].status = CPHVB_SUCCESS;
-    }
-
-    */
-
-    // Strategy Two:
-    // Seperating execution into: grabbing instructions, executing them and lastly setting status.
-    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
-    {
-        compute_loops[k] = cphvb_compute_get( &instr[i] );
-    }
-
-    for(i=start, k=0; i <= end; i++, k++)           // Execute them
-    {
-        compute_loops[k]( &instr[i], &states[k], 0 );
-    }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = CPHVB_SUCCESS;
-    }
-
-    /*
-    // Strategy Two.Five:
-    // This is strategy three but without actually using the calculated offsets.
-    // This should definately isolate the performance problem.
-    //
-    cphvb_intp  nelements,
-                trav_start=0,
-                trav_end=-1;
 
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
@@ -134,62 +99,15 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
                                                     // Block-size split
     nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
-    while(nelements>0)
+    while(nelements>trav_end)
     {
-        nelements -= block_size;
-        trav_start = trav_end +1;
-        if (nelements > 0) {
-            trav_end = trav_start+ block_size-1;
-        } else {
-            trav_end = trav_start+ block_size-1 +nelements;
-        }
-
+        trav_end    += block_size;
+        if (trav_end > nelements)
+            trav_end = nelements;
+        
         for(i=start, k=0; i <= end; i++, k++)
         {
-            // no actual execution here...
-        }
-    }
-
-    for(i=start, k=0; i <= end; i++, k++)           // Execute them
-    {
-        compute_loops[k]( &instr[i], 0, 0 );
-    }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = CPHVB_SUCCESS;
-    }
-    */
-
-    /*
-    // Strategy Three:
-    // Same as two but also slice into blocks.
-    cphvb_intp  nelements,
-    trav_start=0,
-    trav_end=-1;
-
-    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
-    {
-        compute_loops[k] = cphvb_compute_get( &instr[i] );
-    }
-                                                    // Execute them
-    nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
-    //printf("Blocking up %ld elements in blocks of max  %ld!\n", nelements, block_size);
-    while(nelements>0)
-    {
-        nelements -= block_size;
-        trav_start = trav_end +1;
-        if (nelements > 0) {
-            trav_end = trav_start+ block_size-1;
-        } else {
-            trav_end = trav_start+ block_size-1 +nelements;
-        }
-
-        for(i=start, k=0; i <= end; i++, k++)
-        {
-            //printf("Instr[%ld], ELEMENTS: %ld-->%ld. \n", i, trav_start, trav_end);
-            //cphvb_pprint_instr( &instr[i] );
-            compute_loops[k]( &instr[i], trav_start, trav_end );
+            compute_loops[k]( &instr[i], &states[k], trav_end );
         }
     }
 
@@ -197,45 +115,6 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
         instr[i].status = CPHVB_SUCCESS;
     }
-    */
-
-    /*
-    // Strategy Five:
-    // No block-size splits, instead do a pseudo-split.
-    //
-
-    cphvb_intp nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
-    //cphvb_intp split = 15728640;
-    cphvb_intp split = nelements-99;
-    //cphvb_intp split = 1;
-    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
-    {
-        compute_loops[k] = cphvb_compute_get( &instr[i] );
-    }
-
-    for(i=start, k=0; i <= end; i++, k++)           // Execute them
-    {
-        compute_loops[k]( &instr[i], 0, split );
-    }
-
-    for(i=start, k=0; i <= end; i++, k++)           // Execute them
-    {
-        compute_loops[k]( &instr[i], split+1, nelements );
-    }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = CPHVB_SUCCESS;
-    }
-    */
-
-    //
-    //
-    //
-    //  THE LESSON LEARNED: COORDINATED BASED OFFSET COMPUTATION SUCKS! It is much too expensive!
-    //
-    //
-    //
     
     return CPHVB_SUCCESS;
 
@@ -253,7 +132,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
     {
         inst = &instruction_list[cur_index];
 
-        if(inst->status == CPHVB_SUCCESS)     // SKIP instruction
+        if(inst->status == CPHVB_SUCCESS)       // SKIP instruction
         {
             continue;
         }
@@ -349,7 +228,6 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bundle_start    = bin_start;
                 bundle_end      = bundle_start + bundle_size-1;
 
-				//printf("\nINSTRUCTIONS: %ld-->%ld\n", bundle_start, bundle_end);
                 block_execute( instruction_list, bundle_start, bundle_end );
                 cur_index += bundle_size-1;
         }

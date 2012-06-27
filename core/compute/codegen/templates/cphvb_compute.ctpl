@@ -26,7 +26,7 @@ directiveStartToken = %
 #include "functors.hpp"
 #include "traverser.hpp"
 
-inline void cphvb_tstate_reset( cphvb_tstate *state ) {
+void cphvb_tstate_reset( cphvb_tstate *state ) {
     memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
     state->cur_e = 0;   
 }

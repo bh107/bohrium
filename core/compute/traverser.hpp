@@ -38,7 +38,7 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
     cphvb_index off1;
@@ -65,16 +65,19 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
             off1 += a1->stride[last_dim];
             off2 += a2->stride[last_dim];
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
@@ -100,7 +103,7 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
     cphvb_index off1;
@@ -123,16 +126,19 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
             off0 += a0->stride[last_dim];
             off1 += a1->stride[last_dim];
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
@@ -158,7 +164,7 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
     cphvb_index off2;
@@ -181,16 +187,19 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
             off0 += a0->stride[last_dim];
             off2 += a2->stride[last_dim];
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
@@ -215,7 +224,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
     cphvb_index off1;
@@ -238,16 +247,19 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
             off0 += a0->stride[last_dim];
             off1 += a1->stride[last_dim];
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
@@ -270,7 +282,7 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 
     cphvb_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
 
     cphvb_index off0;                           // Stride-offset
 
@@ -289,16 +301,19 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 
             off0 += a0->stride[last_dim];
         }
-        state->coord[last_dim] = 0;
 
-        for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+        if (state->coord[last_dim] >= a0->shape[last_dim])
         {
-            state->coord[j]++;
-            if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
-                break;
-            } else {                                // Reached the end of this dimension
-                state->coord[j] = 0;                // Reset coordinate
-            }                                       // Loop then continues to increment the next dimension
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
         }
 
     }
