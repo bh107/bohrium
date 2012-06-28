@@ -93,9 +93,6 @@ ResourceManager::ResourceManager(cphvb_component* _component)
     batchBuild = 0.0;
     batchSource = 0.0;
     resourceCreateKernel = 0.0;
-    resourceBufferWrite = 0.0;
-    resourceBufferRead = 0.0;
-    resourceKernelExecute = 0.0;
 #endif
 }
 
@@ -107,9 +104,46 @@ ResourceManager::~ResourceManager()
     std::cout << "Batch building:           " << batchBuild / 1000000.0 << std::endl;
     std::cout << "Source generation:        " << batchSource / 1000000.0 << std::endl;
     std::cout << "OpenCL kernel generation: " << resourceCreateKernel / 1000000.0 << std::endl;
-    std::cout << "Writing buffers:          " << resourceBufferWrite / 1000000.0 << std::endl;
-    std::cout << "Reading buffers:          " << resourceBufferRead / 1000000.0 << std::endl;
-    std::cout << "Executing kernels:        " << resourceKernelExecute / 1000000.0 << std::endl;
+
+    double writeBuffers = 0.0;
+    std::ofstream writeFile;
+    writeFile.open("write.txt");
+    for (std::vector<cl_stat>::iterator it = resourceBufferWrite.begin(); 
+         it != resourceBufferWrite.end(); ++it)
+    {
+        writeFile << it->queued << " " << it->submit << " " <<
+            it->start << " " << it->end << std::endl;
+        writeBuffers += it->end - it->start;
+    } 
+    writeFile.close();
+    std::cout << "Writing buffers:          " << writeBuffers / 1000000000.0  << std::endl;
+
+    double readBuffers = 0.0;
+    std::ofstream readFile;
+    readFile.open("read.txt");
+    for (std::vector<cl_stat>::iterator it = resourceBufferRead.begin(); 
+         it != resourceBufferRead.end(); ++it)
+    {
+        readFile << it->queued << " " << it->submit << " " <<
+            it->start << " " << it->end << std::endl;
+        readBuffers += it->end - it->start;
+    } 
+    readFile.close();
+    std::cout << "Reading buffers:          " << readBuffers / 1000000000.0  << std::endl;
+
+    double executeKernels = 0.0;
+    std::ofstream executeFile;
+    executeFile.open("execute.txt");
+    for (std::vector<cl_stat>::iterator it = resourceKernelExecute.begin(); 
+         it != resourceKernelExecute.end(); ++it)
+    {
+        executeFile << it->queued << " " << it->submit << " " <<
+            it->start << " " << it->end << std::endl;
+        executeKernels += it->end - it->start;
+    } 
+    executeFile.close();
+    std::cout << "Executing kernels:        " << executeKernels / 1000000000.0  << std::endl;
+
 }
 #endif
 
@@ -323,14 +357,16 @@ bool ResourceManager::float64support()
 }
 
 #ifdef STATS
-void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus, void* total)
+void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus, void* statVector)
 {
     assert(eventStatus == CL_COMPLETE);
     cl::Event event(ev);
-    cl_ulong start, end;
-    start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-    end =  event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-    *(double*)total += (double)(end - start) / 1000.0;
+    cl_stat stat;
+    stat.queued = event.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>();
+    stat.submit = event.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>();
+    stat.start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    stat.end =  event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    ((std::vector<cl_stat>*)statVector)->push_back(stat);
 }
 #endif
 
