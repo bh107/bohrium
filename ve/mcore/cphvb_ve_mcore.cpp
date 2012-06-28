@@ -72,16 +72,26 @@ static void* job(void *worker_arg)
             DEBUG_PRINT("Worker %d - Error waiting for work! [ERRNO: %d]\n", my_job->id, sync_res);
         }
 
-        if( my_job->instr != NULL ) {                       // Computation job => Compute
-            DEBUG_PRINT("Worker %d - Got a job...\n", my_job->id);
-            (*my_job->loop)(my_job->instr, my_job->state, my_job->nelements);
-            DEBUG_PRINT("Worker %d - Is done!\n", my_job->id);
-            sync_res = pthread_barrier_wait( &work_sync );  // Wait for the others to finish
-            if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
-                DEBUG_PRINT("Worker %d - Error synchronizing...\n", my_job->id);
+    
+        if ( my_job->instr != NULL ) {                      // Got a job
+
+            if ( my_job->instr->opcode == CPHVB_USERFUNC ) {      // userfunc
+
+                cphvb_compute_apply( my_job->instr );
+
+            } else {                                        // built-in
+
+                DEBUG_PRINT("Worker %d - Got a job...\n", my_job->id);
+                (*my_job->loop)(my_job->instr, my_job->state, my_job->nelements);
+                DEBUG_PRINT("Worker %d - Is done!\n", my_job->id);
+                sync_res = pthread_barrier_wait( &work_sync );  // Wait for the others to finish
+                if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
+                    DEBUG_PRINT("Worker %d - Error synchronizing...\n", my_job->id);
+                }
+
             }
 
-        } else {                                            // Pseudo-job => Exit
+        } else {                                            // EXIT!
             DEBUG_PRINT("Worker %d - An exit job...\n", my_job->id);
             break;
         }
@@ -324,6 +334,108 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
 
 }
 
+
+
+cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_random( arg, ve_arg );
+}
+
+cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_matmul( arg, ve_arg );
+    
+}
+
+/**
+ * cphvb_compute_reduce
+ *
+ * Implementation of the user-defined funtion "reduce".
+ * Note that we follow the function signature defined by cphvb_userfunc_impl.
+ *
+ * This function is functionaly equivalent to cphvb_compute_reduce,
+ * the difference is in the implementation... it should be able to run
+ * faster when utilizing multiple threads of execution.
+ *
+ */
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg )
+{
+    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
+    cphvb_instruction inst;
+    cphvb_error err;
+    cphvb_intp i, j, step, axis_size;
+    cphvb_array *out, *in, tmp;
+    cphvb_index nelements;
+
+    if (cphvb_operands(a->opcode) != 3) {
+        fprintf(stderr, "Reduce only support binary operations.\n");
+        return CPHVB_ERROR;
+    }
+
+	if (cphvb_base_array(a->operand[1])->data == NULL) {
+        fprintf(stderr, "Reduce called with input set to null.\n");
+        return CPHVB_ERROR;
+	}
+                                                // Make sure that the array memory is allocated.
+    if (cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS) {
+        return CPHVB_OUT_OF_MEMORY;
+    }
+    
+    out = a->operand[0];
+    in  = a->operand[1];
+    
+    tmp         = *in;                          // Copy the input-array meta-data
+    tmp.base    = cphvb_base_array(in);
+    tmp.start   = in->start;
+
+    step = in->stride[a->axis];
+    j=0;
+    for(i=0; i<in->ndim; ++i) {                 // Remove the 'axis' dimension from in
+        if(i != a->axis) {
+            tmp.shape[j]    = in->shape[i];
+            tmp.stride[j]   = in->stride[i];
+            ++j;
+        }
+    }
+    if (tmp.ndim > 1) {                         // NOTE:    It just seems strange that it should
+        tmp.ndim--;                             //          be able to have 0 dimensions...
+    }
+    
+    inst.status = CPHVB_INST_PENDING;           // We copy the first element to the output.
+    inst.opcode = CPHVB_IDENTITY;
+    inst.operand[0] = out;
+    inst.operand[1] = &tmp;
+    inst.operand[2] = NULL;
+
+    nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
+    err         = dispatch( &inst, nelements );
+    if (err != CPHVB_SUCCESS) {
+        return err;
+    }
+    tmp.start += step;
+
+    inst.status = CPHVB_INST_PENDING;           // Reduce over the 'axis' dimension.
+    inst.opcode = a->opcode;                    // NB: the first element is already handled.
+    inst.operand[0] = out;
+    inst.operand[1] = out;
+    inst.operand[2] = &tmp;
+    
+    axis_size = in->shape[a->axis];
+
+    for(i=1; i<axis_size; ++i) {                // Execute!
+        err = cphvb_compute_apply( &inst );
+        //nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
+        //err         = dispatch( &inst, nelements );
+        //err         = dispatch( &inst, nelements );
+        if (err != CPHVB_SUCCESS) {
+            return err;
+        }
+        tmp.start += step;
+    }
+
+    return CPHVB_SUCCESS;
+}
+
 cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
 
     if(strcmp("cphvb_reduce", fun) == 0)
@@ -379,102 +491,6 @@ cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
     }
     
     return CPHVB_USERFUNC_NOT_SUPPORTED;
-}
-
-cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_random( arg, ve_arg );
-}
-
-cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_matmul( arg, ve_arg );
-    
-}
-
-/*
-cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_reduce( arg, ve_arg );
-}
-*/
-
-//Implementation of the user-defined funtion "reduce". Note that we
-//follow the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
-{
-    cphvb_reduce_type *a = (cphvb_reduce_type*) arg;
-    cphvb_instruction instr;
-    cphvb_error err;
-    cphvb_intp i,j;
-    cphvb_index nelements;
-
-    if(cphvb_operands(a->opcode) != 3)
-    {
-        fprintf(stderr, "Reduce only support binary operations.\n");
-        exit(-1);
-    }
-
-    //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
-    {
-        return CPHVB_OUT_OF_MEMORY;
-    }
-
-    cphvb_array *out = a->operand[0];           // We need a tmp copy of the array meta-data
-    cphvb_array *in  = a->operand[1];
-    cphvb_array tmp  = *in;
-    tmp.base = cphvb_base_array(in);
-
-    cphvb_intp step = in->stride[a->axis];
-    tmp.start = 0;
-    j=0;
-    for(i=0; i<in->ndim; ++i) {                 //Remove the 'axis' dimension from in
-        if(i != a->axis) {
-            tmp.shape[j] = in->shape[i];
-            tmp.stride[j] = in->stride[i];
-            j--;
-        }
-    }
-    tmp.ndim--;
-
-    //We copy the first element to the output.
-    instr.status        = CPHVB_INST_PENDING;
-    instr.opcode        = CPHVB_IDENTITY;
-    instr.operand[0]    = out;
-    instr.operand[1]    = &tmp;
-
-    nelements = cphvb_nelements( instr.operand[0]->ndim, instr.operand[0]->shape );
-    //err = dispatch( *inst, nelements );
-    //err = dispatch_bundle(inst,1,1);
-    err = cphvb_compute_apply( &instr );
-    if(err != CPHVB_SUCCESS)
-        return err;
-    tmp.start += step;
-
-    //Reduce over the 'axis' dimension.
-    //NB: the first element is already handled.
-    instr.status = CPHVB_INST_PENDING;
-    instr.opcode = a->opcode;
-    instr.operand[0] = out;
-    instr.operand[1] = out;
-    instr.operand[2] = &tmp;
-    cphvb_intp axis_size = in->shape[a->axis];
-
-    for(i=1; i<axis_size; ++i)
-    {
-        //One block per thread.
-        //nelements = cphvb_nelements( inst[0]->operand[0]->ndim, inst[0]->operand[0]->shape );
-        //err = dispatch( *inst, nelements );
-        //err = dispatch_bundle(inst,1,1);
-        err = cphvb_compute_apply( &instr );
-        if(err != CPHVB_SUCCESS)
-            return err;
-        tmp.start += step;
-    }
-
-    return CPHVB_SUCCESS;
 }
 
 
