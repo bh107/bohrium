@@ -201,7 +201,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 for(j=bin_start+1; j<instruction_count; j++)    
                 {
                     binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
-                    if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) ) {
+                    if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) || (binst->opcode == CPHVB_FREE) ) {
                         break;
                     }
 
