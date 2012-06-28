@@ -16,7 +16,7 @@ class Bugs(unittest.TestCase):
         b.cphvb = True
 
         i = 0
-        lim = 100
+        lim = 500
         cp.flush()
         start = time.time()
         while True:

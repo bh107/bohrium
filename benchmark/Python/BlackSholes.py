@@ -11,7 +11,7 @@ def CND(X):
         (a1*K + a2*(K**2) + a3*(K**3) + a4*(K**4) + a5*(K**5))
 
     mask = X<0
-    print "This is handled by the bridge since cphvb does not handle different input types!"
+    #print "This is handled by the bridge since cphvb does not handle different input types!"
     w = w * ~mask + (1.0-w)*mask
     return w
 
@@ -24,27 +24,27 @@ def BS(CallPutFlag,S,X,T,r,v):
     else:
         return X*np.exp(-r*T)*CND(-d2)-S*CND(-d1)
 
-B = util.Benchmark()
-N = B.size[0]
-year = B.size[1]
+def main():
+    B = util.Benchmark()
+    N = B.size[0]
+    year = B.size[1]
 
-S = np.random.random([N], cphvb=B.cphvb)
-S = S*4.0-2.0 + 60.0 #Price is 58-62
+    S = np.random.random([N], cphvb=B.cphvb)
+    S = S*4.0-2.0 + 60.0 #Price is 58-62
 
-X=65.0
-r=0.08
-v=0.3
+    X=65.0
+    r=0.08
+    v=0.3
 
-day=1.0/year
-T=day
+    day=1.0/year
+    T=day
 
-B.start()
-for t in xrange(year):
-    np.sum(BS('c', S, X, T, r, v))/N
-    T+=day
-B.stop()
+    B.start()
+    for t in xrange(year):
+        np.sum(BS('c', S, X, T, r, v))/N
+        T+=day
+    B.stop()
+    B.pprint()   
 
-B.pprint()
-
-
-
+if __name__ == "__main__":
+    main()
