@@ -180,13 +180,66 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
     return CPHVB_SUCCESS;
 }
 
+inline cphvb_error dispatch( cphvb_instruction* instr, cphvb_index nelements) {
+
+    int sync_res;
+    computeloop loop;
+    cphvb_intp i;
+    cphvb_index  last_dim, start, end, size;
+
+    loop     = cphvb_compute_get( instr );
+    last_dim = instr->operand[0]->ndim-1;
+    size     = nelements / worker_count;
+
+    for (i=0; i<worker_count;i++)       // tstate = (0, 0, 0, ..., 0)
+        cphvb_tstate_reset( &tstates[i] );  
+    while(tstates[worker_count-1].cur_e < nelements) {
+
+        for(i=0;i<worker_count;i++) {   // Setup workers
+
+            start   = size * i;                     // Partition input
+            end     = start + size;
+            if (i == worker_count-1) {              // Last worker gets the remainder
+                end += (nelements % worker_count);
+            }
+
+            tstates[i].cur_e = start;
+            tstates[i].coord[last_dim] = start;
+
+            worker_data[i].loop         = loop;     // Setup the remaining job-spec
+            worker_data[i].instr        = instr;
+            worker_data[i].state        = &tstates[i];
+            worker_data[i].nelements    = end;
+
+        }
+                                            
+        DEBUG_PRINT("Signaling work.\n");           // Then get to work!
+        sync_res = pthread_barrier_wait( &work_start );
+        if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
+            DEBUG_PRINT("Error when opening work-start barrier [ERRNO: %d\n", sync_res);
+        }
+                                            
+        DEBUG_PRINT("Waiting for workers.\n");      // Wait for them to finish
+        sync_res = pthread_barrier_wait( &work_sync );
+        if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
+            DEBUG_PRINT("Error when opening the work-sync barrier [ERRNO: %d\n", sync_res);
+        }
+
+        for(i=0; i<worker_count-1;i++) {
+            tstates[i] = tstates[worker_count-1];
+        }
+
+    }
+
+    return CPHVB_SUCCESS;
+
+}
+
 cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
     cphvb_intp count, nops, i;
     cphvb_instruction* inst;
-    computeloop loop;
-    int sync_res;
-    cphvb_index  nelements, last_dim, start, end, size;
+    cphvb_index  nelements;
 
     for(count=0; count < instruction_count; count++)
     {
@@ -251,53 +304,7 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 if (nelements < 1024*1024) {        // Do not bother threading...
                     inst->status = cphvb_compute_apply( inst );
                 } else {                            // DO bother!
-
-                    loop     = cphvb_compute_get( inst );
-                    last_dim = inst->operand[0]->ndim-1;
-                    size     = nelements / worker_count;
-
-                    for (i=0; i<worker_count;i++)       // tstate = (0, 0, 0, ..., 0)
-                        cphvb_tstate_reset( &tstates[i] );  
-                    while(tstates[worker_count-1].cur_e < nelements) {
-
-                        for(i=0;i<worker_count;i++) {   // Setup workers
-
-                            start   = size * i;                     // Partition input
-                            end     = start + size;
-                            if (i == worker_count-1) {              // Last worker gets the remainder
-                                end += (nelements % worker_count);
-                            }
-
-                            tstates[i].cur_e = start;
-                            tstates[i].coord[last_dim] = start;
-
-                            worker_data[i].loop         = loop;     // Setup the remaining job-spec
-                            worker_data[i].instr        = inst;
-                            worker_data[i].state        = &tstates[i];
-                            worker_data[i].nelements    = end;
-
-                        }
-                                                            
-                        DEBUG_PRINT("Signaling work.\n");           // Then get to work!
-                        sync_res = pthread_barrier_wait( &work_start );
-                        if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
-                            DEBUG_PRINT("Error when opening work-start barrier [ERRNO: %d\n", sync_res);
-                        }
-                                                            
-                        DEBUG_PRINT("Waiting for workers.\n");      // Wait for them to finish
-                        sync_res = pthread_barrier_wait( &work_sync );
-                        if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
-                            DEBUG_PRINT("Error when opening the work-sync barrier [ERRNO: %d\n", sync_res);
-                        }
-
-                        for(i=0; i<worker_count-1;i++) {
-                            tstates[i] = tstates[worker_count-1];
-                        }
-
-                    }
-
-                    inst->status = CPHVB_SUCCESS;
-
+                    inst->status = dispatch( inst, nelements );
                 }
                 
         }
@@ -315,6 +322,159 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
         return CPHVB_PARTIAL_SUCCESS;
     }
 
+}
+
+cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
+
+    if(strcmp("cphvb_reduce", fun) == 0)
+    {
+    	if (reduce_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &reduce_impl);
+			if (reduce_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			reduce_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = reduce_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_random", fun) == 0)
+    {
+    	if (random_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &random_impl);
+			if (random_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			random_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = random_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_matmul", fun) == 0)
+    {
+    	if (matmul_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &matmul_impl);
+			if (matmul_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			matmul_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = matmul_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    
+    return CPHVB_USERFUNC_NOT_SUPPORTED;
+}
+
+cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_random( arg, ve_arg );
+}
+
+cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_matmul( arg, ve_arg );
+    
+}
+
+/*
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_reduce( arg, ve_arg );
+}
+*/
+
+//Implementation of the user-defined funtion "reduce". Note that we
+//follow the function signature defined by cphvb_userfunc_impl.
+cphvb_error cphvb_reduce(cphvb_userfunc *arg, void* ve_arg)
+{
+    cphvb_reduce_type *a = (cphvb_reduce_type*) arg;
+    cphvb_instruction instr;
+    cphvb_error err;
+    cphvb_intp i,j;
+    cphvb_index nelements;
+
+    if(cphvb_operands(a->opcode) != 3)
+    {
+        fprintf(stderr, "Reduce only support binary operations.\n");
+        exit(-1);
+    }
+
+    //Make sure that the array memory is allocated.
+    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
+       cphvb_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
+    {
+        return CPHVB_OUT_OF_MEMORY;
+    }
+
+    cphvb_array *out = a->operand[0];           // We need a tmp copy of the array meta-data
+    cphvb_array *in  = a->operand[1];
+    cphvb_array tmp  = *in;
+    tmp.base = cphvb_base_array(in);
+
+    cphvb_intp step = in->stride[a->axis];
+    tmp.start = 0;
+    j=0;
+    for(i=0; i<in->ndim; ++i) {                 //Remove the 'axis' dimension from in
+        if(i != a->axis) {
+            tmp.shape[j] = in->shape[i];
+            tmp.stride[j] = in->stride[i];
+            j--;
+        }
+    }
+    tmp.ndim--;
+
+    //We copy the first element to the output.
+    instr.status        = CPHVB_INST_PENDING;
+    instr.opcode        = CPHVB_IDENTITY;
+    instr.operand[0]    = out;
+    instr.operand[1]    = &tmp;
+
+    nelements = cphvb_nelements( instr.operand[0]->ndim, instr.operand[0]->shape );
+    //err = dispatch( *inst, nelements );
+    //err = dispatch_bundle(inst,1,1);
+    err = cphvb_compute_apply( &instr );
+    if(err != CPHVB_SUCCESS)
+        return err;
+    tmp.start += step;
+
+    //Reduce over the 'axis' dimension.
+    //NB: the first element is already handled.
+    instr.status = CPHVB_INST_PENDING;
+    instr.opcode = a->opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = out;
+    instr.operand[2] = &tmp;
+    cphvb_intp axis_size = in->shape[a->axis];
+
+    for(i=1; i<axis_size; ++i)
+    {
+        //One block per thread.
+        //nelements = cphvb_nelements( inst[0]->operand[0]->ndim, inst[0]->operand[0]->shape );
+        //err = dispatch( *inst, nelements );
+        //err = dispatch_bundle(inst,1,1);
+        err = cphvb_compute_apply( &instr );
+        if(err != CPHVB_SUCCESS)
+            return err;
+        tmp.start += step;
+    }
+
+    return CPHVB_SUCCESS;
 }
 
 
@@ -534,75 +694,3 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
 
 */
 
-cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
-
-    if(strcmp("cphvb_reduce", fun) == 0)
-    {
-    	if (reduce_impl == NULL)
-    	{
-			cphvb_component_get_func(myself, fun, &reduce_impl);
-			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
-
-			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
-        }
-        else
-        {
-        	*id = reduce_impl_id;
-        	return CPHVB_SUCCESS;
-        }
-    }
-    else if(strcmp("cphvb_random", fun) == 0)
-    {
-    	if (random_impl == NULL)
-    	{
-			cphvb_component_get_func(myself, fun, &random_impl);
-			if (random_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
-
-			random_impl_id = *id;
-			return CPHVB_SUCCESS;			
-        }
-        else
-        {
-        	*id = random_impl_id;
-        	return CPHVB_SUCCESS;
-        }
-    }
-    else if(strcmp("cphvb_matmul", fun) == 0)
-    {
-    	if (matmul_impl == NULL)
-    	{
-			cphvb_component_get_func(myself, fun, &matmul_impl);
-			if (matmul_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
-
-			matmul_impl_id = *id;
-			return CPHVB_SUCCESS;			
-        }
-        else
-        {
-        	*id = matmul_impl_id;
-        	return CPHVB_SUCCESS;
-        }
-    }
-    
-    return CPHVB_USERFUNC_NOT_SUPPORTED;
-}
-
-cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_reduce( arg, ve_arg );
-}
-
-cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_random( arg, ve_arg );
-}
-
-cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
-{
-    return cphvb_compute_matmul( arg, ve_arg );
-    
-}
