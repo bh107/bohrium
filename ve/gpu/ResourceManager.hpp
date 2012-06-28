@@ -47,12 +47,13 @@ private:
     void registerExtensions(std::vector<std::string> extensions);
 public:
 #ifdef STATS
+    struct cl_stat {cl_ulong queued; cl_ulong submit; cl_ulong start; cl_ulong end;}; 
     double batchBuild;
     double batchSource;
     double resourceCreateKernel;
-    double resourceBufferWrite;
-    double resourceBufferRead;
-    double resourceKernelExecute;
+    std::vector<cl_stat> resourceBufferWrite;
+    std::vector<cl_stat> resourceBufferRead;
+    std::vector<cl_stat> resourceKernelExecute;
     ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
