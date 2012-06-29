@@ -158,7 +158,7 @@ namespace NumCIL
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
     /// <typeparam name="C">The operation type</typeparam>
-    public struct RhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : IBinaryOp<T>
+    public struct RhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : struct, IBinaryOp<T>
     {
         /// <summary>
         /// The operation
@@ -207,16 +207,16 @@ namespace NumCIL
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
     /// <typeparam name="C">The operation type</typeparam>
-    public struct LhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : IBinaryOp<T>
+    public struct LhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : struct, IBinaryOp<T>
     {
         /// <summary>
         /// The operation
         /// </summary>
-        private C m_op;
+        private readonly C m_op;
         /// <summary>
         /// The scalar value
         /// </summary>
-        private T m_value;
+        private readonly T m_value;
 
         /// <summary>
         /// Constructs a new scalar operation
@@ -261,11 +261,11 @@ namespace NumCIL
         /// <summary>
         /// The operation
         /// </summary>
-        private C m_op;
+        private readonly C m_op;
         /// <summary>
         /// The scalar value
         /// </summary>
-        private T m_value;
+        private readonly T m_value;
 
         /// <summary>
         /// Constructs a new scalar operation

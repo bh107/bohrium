@@ -212,6 +212,16 @@ namespace NumCIL.cphVB
         protected static readonly Type SubOp = OpCodeMapper.GetOp<T>("Sub");
 
         /// <summary>
+        /// Gets the type for the add operation with a right-hand-side scalar
+        /// </summary>
+        protected static readonly Type ScalarAddOp = typeof(NumCIL.RhsScalarOp<,>).MakeGenericType(typeof(T), OpCodeMapper.GetOp<T>("Add"));
+
+        /// <summary>
+        /// Gets the type for the sub operation with a right-hand-side scalar
+        /// </summary>
+        protected static readonly Type ScalarSubOp = typeof(NumCIL.RhsScalarOp<,>).MakeGenericType(typeof(T), OpCodeMapper.GetOp<T>("Sub"));
+
+        /// <summary>
         /// The constant 1
         /// </summary>
         protected static readonly T ONE = (T)Convert.ChangeType(1, typeof(T));
@@ -539,13 +549,13 @@ namespace NumCIL.cphVB
                     //We mimic the Increment and Decrement with Add(1) and Sub(1) respectively
                     if (t == IncrementOp)
                     {
-                        ops = new NumCIL.RhsScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(AddOp));
+                        ops = (NumCIL.IOp<T>)Activator.CreateInstance(ScalarAddOp, ONE, (IBinaryOp<T>)Activator.CreateInstance(AddOp));
                         t = AddOp;
                         isScalar = true;
                     }
                     else if (t == DecrementOp)
                     {
-                        ops = new NumCIL.RhsScalarOp<T, IBinaryOp<T>>(ONE, (IBinaryOp<T>)Activator.CreateInstance(SubOp));
+                        ops = (NumCIL.IOp<T>)Activator.CreateInstance(ScalarSubOp, ONE, (IBinaryOp<T>)Activator.CreateInstance(SubOp));
                         t = SubOp;
                         isScalar = true;
                     }
