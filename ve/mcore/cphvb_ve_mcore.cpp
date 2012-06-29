@@ -368,12 +368,12 @@ cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg )
     cphvb_index nelements;
 
     if (cphvb_operands(a->opcode) != 3) {
-        fprintf(stderr, "Reduce only support binary operations.\n");
+        fprintf(stderr, "ERR: Reduce only support binary operations.\n");
         return CPHVB_ERROR;
     }
 
 	if (cphvb_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "Reduce called with input set to null.\n");
+        fprintf(stderr, "ERR: Reduce called with input set to null.\n");
         return CPHVB_ERROR;
 	}
                                                 // Make sure that the array memory is allocated.
@@ -407,8 +407,9 @@ cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg )
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
 
-    nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
-    err         = dispatch( &inst, nelements );
+    //nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
+    //err         = dispatch( &inst, nelements );
+    err = cphvb_compute_apply( &inst );
     if (err != CPHVB_SUCCESS) {
         return err;
     }
