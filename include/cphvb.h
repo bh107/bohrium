@@ -21,6 +21,7 @@
 #define __CPHVB_H
 
 #include "cphvb_error.h"
+#include "cphvb_debug.h"
 #include "cphvb_opcode.h"
 #include "cphvb_type.h"
 #include "cphvb_array.h"

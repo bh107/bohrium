@@ -26,13 +26,11 @@
 extern "C" {
 #endif
 
+#define MCORE_MAX_WORKERS 32
+#define MCORE_WORKERS 4
 DLLEXPORT cphvb_error cphvb_ve_mcore_init(cphvb_component *self);
-
-DLLEXPORT cphvb_error cphvb_ve_mcore_execute(cphvb_intp instruction_count,
-                                   cphvb_instruction* instruction_list);
-
+DLLEXPORT cphvb_error cphvb_ve_mcore_execute(cphvb_intp instruction_count, cphvb_instruction* instruction_list);
 DLLEXPORT cphvb_error cphvb_ve_mcore_shutdown(void);
-
 DLLEXPORT cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id);
 
 #ifdef __cplusplus

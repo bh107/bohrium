@@ -13,77 +13,67 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     cphvb_reduce_type *a = (cphvb_reduce_type *) arg;
     cphvb_instruction inst;
     cphvb_error err;
-    cphvb_intp i,j;
-    cphvb_index coord[CPHVB_MAXDIM];
-    memset(coord, 0, a->operand[1]->ndim * sizeof(cphvb_index));
+    cphvb_intp i, j, step, axis_size;
+    cphvb_array *out, *in, tmp;
 
-    cphvb_array *out, *in, tmp; // We need a tmp copy of the arrays.
-
-    if(cphvb_operands(a->opcode) != 3)
-    {
+    if (cphvb_operands(a->opcode) != 3) {
         fprintf(stderr, "Reduce only support binary operations.\n");
         return CPHVB_ERROR;
     }
 
-	if (cphvb_base_array(a->operand[1])->data == NULL)
-	{
+	if (cphvb_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "Reduce called with input set to null.\n");
         return CPHVB_ERROR;
 	}
-
-    // Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS)
-    {
+                                                // Make sure that the array memory is allocated.
+    if (cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS) {
         return CPHVB_OUT_OF_MEMORY;
     }
-
-    //We need a tmp copy of the arrays.
-    out     = a->operand[0];
-    in      = a->operand[1];
-
-    // WARN: This can create a ndim = 0.
-    // it seems to work though...
-    tmp         = *in;
+    
+    out = a->operand[0];
+    in  = a->operand[1];
+    
+    // WARN: This can create a ndim = 0 it seems to work though...
+    tmp         = *in;                          // Copy the input-array meta-data
     tmp.base    = cphvb_base_array(in);
-    cphvb_intp step = in->stride[a->axis];
     tmp.start = in->start;
+
+    step = in->stride[a->axis];
     j=0;
-    for(i=0; i<in->ndim; ++i) //Remove the 'axis' dimension from in
-        if(i != a->axis)
-        {
+    for(i=0; i<in->ndim; ++i) {                 // Remove the 'axis' dimension from in
+        if(i != a->axis) {
             tmp.shape[j]    = in->shape[i];
             tmp.stride[j]   = in->stride[i];
             ++j;
         }
+    }
     --tmp.ndim;
-
-    //We copy the first element to the output.
-    inst.status = CPHVB_INST_PENDING;
+    
+    inst.status = CPHVB_INST_PENDING;           // We copy the first element to the output.
     inst.opcode = CPHVB_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
 
-    err = cphvb_compute_apply( &inst );    // execute the instruction...
-    if(err != CPHVB_SUCCESS)
+    err = cphvb_compute_apply( &inst );         // execute the pseudo-instruction
+    if (err != CPHVB_SUCCESS) {
         return err;
+    }
     tmp.start += step;
 
-    //Reduce over the 'axis' dimension.
-    //NB: the first element is already handled.
-    inst.status = CPHVB_INST_PENDING;
-    inst.opcode = a->opcode;
+    inst.status = CPHVB_INST_PENDING;           // Reduce over the 'axis' dimension.
+    inst.opcode = a->opcode;                    // NB: the first element is already handled.
     inst.operand[0] = out;
     inst.operand[1] = out;
     inst.operand[2] = &tmp;
-    cphvb_intp axis_size = in->shape[a->axis];
+    
+    axis_size = in->shape[a->axis];
 
-    for(i=1; i<axis_size; ++i)
-    {
-        // One block per thread.
+    for(i=1; i<axis_size; ++i) {
         err = cphvb_compute_apply( &inst );
-        if(err != CPHVB_SUCCESS)
+        if (err != CPHVB_SUCCESS) {
             return err;
+        }
         tmp.start += step;
     }
 
