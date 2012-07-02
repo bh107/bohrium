@@ -37,9 +37,9 @@ cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 
 cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
-    cphvb_intp count, nops, i, nelements, bytes;
+    cphvb_intp count;
     cphvb_instruction* inst;
-    cphvb_array* base;
+    cphvb_error res;
 
     for (count=0; count < instruction_count; count++) {
 
@@ -49,54 +49,9 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
             continue;
         }
 
-        switch (inst->opcode) {                     // Allocate memory for built-in
-
-            case CPHVB_NONE:                        // No memory operations for these
-            case CPHVB_DISCARD:
-            case CPHVB_SYNC:
-            case CPHVB_USERFUNC:
-            case CPHVB_FREE:
-                break;
-
-            default:                                    
-
-                nops = cphvb_operands(inst->opcode);    // Allocate memory for operands        
-                for(i=0; i<nops; i++)
-                {
-                    if (!cphvb_is_constant(inst->operand[i]))
-                    {
-                        //We allow allocation of the output operand only
-                        if (i == 0)
-                        {
-                            base = cphvb_base_array( inst->operand[0] );    // Reuse or allocate
-                            if (base->data == NULL) {
-
-                                nelements   = cphvb_nelements(base->ndim, base->shape);
-                                bytes       = nelements * cphvb_type_size(base->type);
-
-                                DEBUG_PRINT("Reuse or allocate...\n");
-                                base->data = cphvb_mcache_find( bytes );
-                                if (base->data == NULL) {
-                                    DEBUG_PRINT("Allocating.\n");
-                                    if (cphvb_data_malloc(inst->operand[0]) != CPHVB_SUCCESS) {
-                                        inst->status = CPHVB_OUT_OF_MEMORY;
-                                        return CPHVB_OUT_OF_MEMORY;         // EXIT
-                                    }                                   
-                                } else {
-                                    DEBUG_PRINT("Reusing=%p.\n", base->data);
-                                }
-                            }
-                        }
-                        else if(cphvb_base_array(inst->operand[i])->data == NULL) 
-                        {
-                            inst->status = CPHVB_ERROR;
-                            return CPHVB_ERROR; // EXIT
-                        }
-                    }
-
-                }
-                break;
-
+        res = cphvb_mcache_malloc( inst );          // Allocate memory for operands
+        if ( res != CPHVB_SUCCESS ) {
+            return res;
         }
                                                     
         switch (inst->opcode) {                     // Dispatch instruction
@@ -107,17 +62,7 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 inst->status = CPHVB_SUCCESS;
                 break;
             case CPHVB_FREE:                        // Store data-pointer in malloc-cache
-
-                base = cphvb_base_array( inst->operand[0] ); 
-                if (base->data != NULL) {
-                    nelements   = cphvb_nelements(base->ndim, base->shape);
-                    bytes       = nelements * cphvb_type_size(base->type);
-                    
-                    cphvb_mcache_insert( base->data, bytes );
-                }
-                inst->operand[0] = NULL;
-
-                inst->status = CPHVB_SUCCESS;
+                inst->status = cphvb_mcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                    // External libraries
