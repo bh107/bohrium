@@ -122,73 +122,13 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
 }
 
-inline cphvb_error cphvb_alore( cphvb_instruction* inst )
-{
-    cphvb_intp nops, i, nelements, bytes;
-    cphvb_array* base;
-
-    switch (inst->opcode) {                     // Allocate memory for built-in
-
-        case CPHVB_NONE:                        // No memory operations for these
-        case CPHVB_DISCARD:
-        case CPHVB_SYNC:
-        case CPHVB_USERFUNC:
-        case CPHVB_FREE:
-            break;
-
-        default:                                    
-
-            nops = cphvb_operands(inst->opcode);    // Allocate memory for operands        
-            for(i=0; i<nops; i++)
-            {
-                if (!cphvb_is_constant(inst->operand[i]))
-                {
-                    //We allow allocation of the output operand only
-                    if (i == 0)
-                    {
-                        base = cphvb_base_array( inst->operand[0] );    // Reuse or allocate
-                        if (base->data == NULL) {
-
-                            nelements   = cphvb_nelements(base->ndim, base->shape);
-                            bytes       = nelements * cphvb_type_size(base->type);
-
-                            DEBUG_PRINT("Reuse or allocate...\n");
-                            base->data = cphvb_mcache_find( bytes );
-                            if (base->data == NULL) {
-                                DEBUG_PRINT("Allocating.\n");
-                                if (cphvb_data_malloc(inst->operand[0]) != CPHVB_SUCCESS) {
-                                    inst->status = CPHVB_OUT_OF_MEMORY;
-                                    return CPHVB_OUT_OF_MEMORY;         // EXIT
-                                }                                   
-                            } else {
-                                DEBUG_PRINT("Reusing=%p.\n", base->data);
-                            }
-                        }
-                    }
-                    else if(cphvb_base_array(inst->operand[i])->data == NULL) 
-                    {
-                        inst->status = CPHVB_ERROR;
-                        return CPHVB_ERROR; // EXIT
-                    }
-                }
-
-            }
-            break;
-
-    }
-
-    return CPHVB_SUCCESS;
-
-}
-
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
     cphvb_intp cur_index,  j;
     cphvb_instruction *inst, *binst;
 
     cphvb_intp bin_start, bin_end, bin_size;
-    cphvb_intp bundle_start, bundle_end, bundle_size, nelements, bytes;
-    cphvb_array* base;
+    cphvb_intp bundle_start, bundle_end, bundle_size;
     cphvb_error res;
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
@@ -199,31 +139,8 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
         {
             continue;
         }
-        /*
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
-        for(i=0; i<nops; i++)
-        {
-            if (!cphvb_is_constant(inst->operand[i]))
-            {
-            	//We allow allocation of the output operand only
-            	if (i == 0)
-            	{
-					if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
-					{
-						inst->status = CPHVB_OUT_OF_MEMORY;
-						return CPHVB_OUT_OF_MEMORY; // EXIT
-					}
-                }
-                else if(cphvb_base_array(inst->operand[i])->data == NULL) 
-                {
-					inst->status = CPHVB_ERROR;
-					return CPHVB_ERROR; // EXIT
-                }
-            }
 
-        }*/
-
-        res = cphvb_alore( inst );              // Allocate memory for operands
+        res = cphvb_mcache_malloc( inst );      // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
             return res;
         }
@@ -236,24 +153,8 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 inst->status = CPHVB_SUCCESS;
                 break;
 
-            /*
-            case CPHVB_FREE:
-            	cphvb_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
-                break;
-            */
             case CPHVB_FREE:                        // Store data-pointer in malloc-cache
-
-                base = cphvb_base_array( inst->operand[0] ); 
-                if (base->data != NULL) {
-                    nelements   = cphvb_nelements(base->ndim, base->shape);
-                    bytes       = nelements * cphvb_type_size(base->type);
-                    
-                    cphvb_mcache_insert( base->data, bytes );
-                }
-                inst->operand[0] = NULL;
-
-                inst->status = CPHVB_SUCCESS;
+                inst->status = cphvb_mcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
@@ -293,23 +194,10 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                     }
 
                     bin_end++;                                  // The "end" index
-                    res = cphvb_alore( binst );              // Allocate memory for operands
+                    res = cphvb_mcache_malloc( binst );         // Allocate memory for operands
                     if ( res != CPHVB_SUCCESS ) {
                         return res;
                     }
-                    /*
-                    nops = cphvb_operands(binst->opcode);       // The memory part...
-                    for(i=0; i<nops; i++)
-                    {
-                        if (!cphvb_is_constant(binst->operand[i]))
-                        {
-                            if (cphvb_data_malloc(binst->operand[i]) != CPHVB_SUCCESS)
-                            {
-                                return CPHVB_OUT_OF_MEMORY;     // EXIT
-                            }
-                        }
-
-                    }*/
 
                 }
                 bin_size = bin_end - bin_start +1;              // The counting part
