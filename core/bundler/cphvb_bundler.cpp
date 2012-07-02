@@ -87,12 +87,12 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
     int opcount = 0;                                                // Per-instruction variables
     cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
 
-    for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)               // Go through the instructions...
+    for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
 
         opcount = cphvb_operands(insts[i].opcode);
                                                                     // Check for collisions
-        op      = insts[i].operand[0];                             // Look at the output-operand
+        op      = insts[i].operand[0];                              // Look at the output-operand
         base    = cphvb_base_array( op );
 
         ret = ops.equal_range( base );                              // Compare to all kernel operands.
@@ -107,12 +107,11 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
                                                                     
         for(int j=1; ((do_fuse) && (j<opcount)); j++)               // Look at the input-operands
         {
-            op      = insts[i].operand[j];
-            base    = cphvb_base_array( op );
-
-            if (!cphvb_is_constant( op )) {                         // Ignore constants
+            op = insts[i].operand[j];
+            if (cphvb_is_constant( op )) {                          // Ignore constants
                 break;
             }
+            base = cphvb_base_array( op );
 
             ret = ops_out.equal_range( base );                      // Compare to kernel-output-operands
             for(it = ret.first; it != ret.second; ++it)
@@ -130,7 +129,7 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
         {
             bundle_len++;                                           // Increment bundle
                                                                     //
-            op      = insts[i].operand[0];                         // Add operand(s) to "kernel"
+            op      = insts[i].operand[0];                          // Add operand(s) to "kernel"
             base    = cphvb_base_array( op );                       //
                                                                     // - output operand
             ops.insert(     std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
