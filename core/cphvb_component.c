@@ -458,13 +458,13 @@ cphvb_error cphvb_component_trace_array(cphvb_component *self, cphvb_array *ary)
 	FILE *f = stderr;
 #endif
 
-    fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, ary->ndim);
+    fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, (long)ary->ndim);
     for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", ary->shape[i]);
+        fprintf(f," %ld", (long)ary->shape[i]);
     fprintf(f,";\t stride:");
     for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", ary->stride[i]);
-    fprintf(f,";\t start: %ld;\t base: %p;\n",ary->start, ary->base);
+        fprintf(f," %ld", (long)ary->stride[i]);
+    fprintf(f,";\t start: %ld;\t base: %p;\n",(long)ary->start,ary->base);
 
 #ifndef WIN32
     fclose(f);

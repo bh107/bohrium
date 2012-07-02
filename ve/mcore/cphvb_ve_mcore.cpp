@@ -117,7 +117,7 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
         block_size = atoi(env);
     }
     if (block_size <= 0) {                      // Verify it
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
         return CPHVB_ERROR;
     }
 

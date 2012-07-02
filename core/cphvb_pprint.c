@@ -161,7 +161,7 @@ void cphvb_sprint_coord( char buf[], cphvb_index* coord, cphvb_index dims ) {
 
     for(j=0; j<dims; j++)
     {
-        sprintf(tmp, "%ld", coord[j]);
+        sprintf(tmp, "%ld", (long)coord[j]);
         strcat(buf, tmp);
         if (j<dims-1) {
             strcat(buf, ", ");
