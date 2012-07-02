@@ -18,7 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_simple.h"
-#include <map>
+#include <cphvb_mcache.c>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -28,13 +28,10 @@ static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
 
-static std::multimap<cphvb_intp, cphvb_data_ptr> cache;                 // Malloc-cache
-static std::multimap<cphvb_intp, cphvb_data_ptr>::iterator cache_it;
-static cphvb_intp cachesize = 0;
-
 cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 {
     myself = self;
+    cphvb_mcache_init( 10 );
     return CPHVB_SUCCESS;
 }
 
@@ -78,21 +75,15 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                                 bytes       = nelements * cphvb_type_size(base->type);
 
                                 DEBUG_PRINT("Reuse or allocate...\n");
-                                cache_it = cache.find(bytes);
-                                if (cache_it == cache.end()) {              // 1 - Allocate
-
+                                base->data = cphvb_mcache_find( bytes );
+                                if (base->data == NULL) {
                                     DEBUG_PRINT("Allocating.\n");
                                     if (cphvb_data_malloc(inst->operand[0]) != CPHVB_SUCCESS) {
                                         inst->status = CPHVB_OUT_OF_MEMORY;
                                         return CPHVB_OUT_OF_MEMORY;         // EXIT
-                                    }
-
-                                } else {                                    // 2 - Reuse
-
-                                    DEBUG_PRINT("Reusing=%p.\n", cache_it->second);
-                                    base->data = cache_it->second;
-                                    cache.erase( cache_it );
-                                    cachesize -= bytes;
+                                    }                                   
+                                } else {
+                                    DEBUG_PRINT("Reusing=%p.\n", base->data);
                                 }
                             }
                         }
@@ -121,9 +112,8 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 if (base->data != NULL) {
                     nelements   = cphvb_nelements(base->ndim, base->shape);
                     bytes       = nelements * cphvb_type_size(base->type);
-
-                    cache.insert(std::pair<cphvb_intp, cphvb_data_ptr>(bytes, base->data));
-                    cachesize += bytes;
+                    
+                    cphvb_mcache_insert( base->data, bytes );
                 }
                 inst->operand[0] = NULL;
 
@@ -174,11 +164,8 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 cphvb_error cphvb_ve_simple_shutdown( void )
 {
     // De-allocate the malloc-cache
-    cphvb_array* tmp;
-    for (cache_it = cache.begin(); cache_it != cache.end(); cache_it++) {
-        tmp = (cphvb_array*)cache_it->second;
-        cphvb_memory_free( tmp, cache_it->first );
-    }
+    cphvb_mcache_clear();
+    cphvb_mcache_delete();
 
     return CPHVB_SUCCESS;
 }
