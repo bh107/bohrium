@@ -7,7 +7,7 @@ This is done to keep the simulation simple enough for teaching purposes
 All the work is done in the calc_force, move and random_galaxy functions.
 To vectorize the code these are the functions to transform.
 """
-import numpy
+import numpy as np
 import time
 
 # By using the solar-mass as the mass unit and years as the standard time-unit
@@ -28,13 +28,13 @@ def calc_force(b):
     F = ((G m_a m_b)/r^2)/((x_b-x_a)/r)
     """
 
-    dx = b['x'] - b['x'][numpy.newaxis,:].T
+    dx = b['x'] - b['x'][np.newaxis,:].T
     fill_diagonal(dx,1.0)
-    dy = b['y'] - b['y'][numpy.newaxis,:].T
+    dy = b['y'] - b['y'][np.newaxis,:].T
     fill_diagonal(dy,1.0)
-    dz = b['z'] - b['z'][numpy.newaxis,:].T
+    dz = b['z'] - b['z'][np.newaxis,:].T
     fill_diagonal(dz,1.0)
-    pm = b['m'] * b['m'][numpy.newaxis,:].T
+    pm = b['m'] * b['m'][np.newaxis,:].T
     fill_diagonal(pm,0.0)
 
     r = ( dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
@@ -53,9 +53,9 @@ def calc_force(b):
     fill_diagonal(Fy,0)
     fill_diagonal(Fz,0)
 
-    b['vx'] += numpy.add.reduce(Fx, axis=1)/ b['m']
-    b['vy'] += numpy.add.reduce(Fy, axis=1)/ b['m']
-    b['vz'] += numpy.add.reduce(Fz, axis=1)/ b['m']
+    b['vx'] += np.add.reduce(Fx, axis=1)/ b['m']
+    b['vy'] += np.add.reduce(Fy, axis=1)/ b['m']
+    b['vz'] += np.add.reduce(Fz, axis=1)/ b['m']
 
 
 def move(galaxy):
@@ -85,13 +85,13 @@ def random_galaxy(
     # We let all bodies stand still initially
 
     return {
-        'm': numpy.random.random(n,dtype=dtype,cphvb=cphvb) * 10**6 / (4 * numpy.pi ** 2),
-        'x': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'y': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'z': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'vx': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
-        'vy': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
-        'vz': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
+        'm': np.random.random(n,dtype=dtype,cphvb=cphvb) * 10**6 / (4 * np.pi ** 2),
+        'x': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
+        'y': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
+        'z': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
+        'vx': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
+        'vy': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
+        'vz': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
         }
 
 if __name__ == '__main__':

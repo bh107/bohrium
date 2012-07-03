@@ -1,56 +1,53 @@
-import numpy
-import cphvbnumpy as cp
-import time
+import cphvbnumpy as numpy
+import util
 
-cphvb = True
+def onethree(n, m, i, b):
 
-def onethree(itt):
-    n=200**3
-    raw = numpy.ones(n+2)
-    raw.cphvb = cphvb
+    raw = numpy.ones((n**m)+2)
+    raw.cphvb = b.cphvb
     data =  raw[1:-1]
     left =  raw[ :-2]
     right = raw[2:  ]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left+right)/3
         data[:] = tmp
-    print raw
+    raw.cphvb = False
 
-def onefive(itt):
-    n=200**3
-    raw = numpy.ones(n+4)
-    raw.cphvb = cphvb
+def onefive(n, m, i, b):
+
+    raw = numpy.ones(n**m+4)
+    raw.cphvb = b.cphvb
     data =   raw[2:-2]
     left2 =  raw[ :-4]
     left1 =  raw[1:-3]
     right1 = raw[3:-1]
     right2 = raw[4:  ]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left1+right1+left2+right2)/5
         data[:] = tmp
-    print raw
+    raw.cphvb = False
 
-def twofive(itt):
-    n=4000
+def twofive(n, m, i, b):
+
     raw = numpy.ones((n+2,n+2))
-    raw.cphvb = cphvb
+    raw.cphvb = b.cphvb
     data =  raw[1:-1, 1:-1]
     left =  raw[ :-2, 1:-1]
     right = raw[2:  , 1:-1]
     up =    raw[1:-1,  :-2]
     down =  raw[1:-1, 2:  ]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left+right+up+down)/5
         data[:] = tmp
-    print raw
+    raw.cphvb = False
 
-def twonine(itt):
-    n=4000
-    raw = numpy.ones((n+4, n+4))
-    raw.cphvb=cphvb
+def twonine(n, m, i, b):
+
+    raw = numpy.ones((n+4, m+4))
+    raw.cphvb=b.cphvb
 
     data =   raw[2:-2, 2:-2]
     up2 =    raw[2:-2,  :-4]
@@ -62,15 +59,15 @@ def twonine(itt):
     right1 = raw[3:-1, 2:-2]
     right2 = raw[4:  , 2:-2]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left1+right1+left2+right2+up2+up1+down2+down1)/9
         data[:] = tmp
-    print raw
+    raw.cphvb = False
 
-def threeseven(itt):
-    n=200
+def threeseven(n, m, i, b):
+
     raw = numpy.ones((n+2,n+2, n+2))
-    raw.cphvb=cphvb
+    raw.cphvb=b.cphvb
     data =  raw[1:-1, 1:-1, 1:-1]
     left =  raw[ :-2, 1:-1, 1:-1]
     right = raw[2:  , 1:-1, 1:-1]
@@ -79,15 +76,15 @@ def threeseven(itt):
     zin =   raw[1:-1, 1:-1,  :-2]
     zout =  raw[1:-1, 1:-1, 2:  ]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left+right+up+down+zin+zout)/7
         data[:] = tmp
-    print raw
+    raw.cphvb = False
 
-def threethirtheen(itt):
-    n=200
+def threethirtheen(n, m, i, b):
+
     raw = numpy.ones((n+4, n+4, n+4))
-    raw.cphvb=cphvb
+    raw.cphvb=b.cphvb
     data =   raw[2:-2, 2:-2, 2:-2]
     up2 =    raw[2:-2,  :-4, 2:-2]
     up1 =    raw[2:-2, 1:-3, 2:-2]
@@ -102,27 +99,31 @@ def threethirtheen(itt):
     zout2 =  raw[2:-2, 2:-2, 4:  ]
     zout1 =  raw[2:-2, 2:-2, 3:-1]
 
-    for _ in xrange(itt):
+    for _ in xrange(i):
         tmp = (data+left1+right1+left2+right2+up2+up1+down2+down1)/9
         data[:] = tmp
-    print raw
-
-def benchmark(itt):
+    raw.cphvb = False
+    
+def main():
 
     benchmarks = [
-        ('1. onethree', onethree), 
-        ('2. onefive',  onefive),
-        ('3. twofive',  twofive), 
-        ('4. twonine',  twonine),
-        ('5. threeseven',       threeseven),
-        ('6. threethirtheen',   threethirtheen)
+        ('1. onethree', onethree, False), 
+        ('2. onefive',  onefive, False),
+        ('3. twofive',  twofive, False), 
+        ('4. twonine',  twonine, True),
+        ('5. threeseven',       threeseven, False),
+        ('6. threethirtheen',   threethirtheen, False)
     ]
 
-    for name, bench in benchmarks:
-        start = time.time()
-        bench(itt)
-        stop = time.time()
-        print name,': time taken',stop-start
+    b = util.Benchmark()
+    n = b.size[0]
+    m = b.size[1]
+    i = b.size[2]
 
-benchmark(1)
-    
+    b.start()
+    twonine( n, m, i, b )
+    b.stop()
+    b.pprint()
+
+if __name__ == "__main__":
+    main()
