@@ -26,7 +26,7 @@
 #define PPRINT_BUF_OPSTR_SIZE 512
 #define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*4
 
-static void operand_to_str( cphvb_array *op, char buf[] ) {
+static void cphvb_sprint_array( cphvb_array *op, char buf[] ) {
 
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
             shape[PPRINT_BUF_SHAPE_SIZE]    = "?",
@@ -56,7 +56,7 @@ static void operand_to_str( cphvb_array *op, char buf[] ) {
         }
                                             // Text of base-operand
         if (op->base != NULL) {
-            operand_to_str( op->base, tmp );
+            cphvb_sprint_array( op->base, tmp );
             sprintf( base, "%p -->\n      %s\n", op->base, tmp  );
         } else {
             sprintf( base, "%p", op->base );
@@ -71,7 +71,7 @@ static void operand_to_str( cphvb_array *op, char buf[] ) {
 
 }
 
-static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
+static void cphvb_sprint_instr( cphvb_instruction *instr, char buf[] ) {
 
     char op_str[PPRINT_BUF_OPSTR_SIZE];
     char tmp[PPRINT_BUF_OPSTR_SIZE];
@@ -81,7 +81,7 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
     for(i=0; i < op_count; i++) {
 
         if (!cphvb_is_constant(instr->operand[i]))
-            operand_to_str( instr->operand[i], op_str );
+            cphvb_sprint_array( instr->operand[i], op_str );
         else 
             sprintf(op_str, "CONSTANT");
 
@@ -93,21 +93,21 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
     {
         cphvb_userfunc* userfunc = instr->userfunc;
         for(i=0; i < userfunc->nout; i++) {
-            operand_to_str( userfunc->operand[i], op_str );
+            cphvb_sprint_array( userfunc->operand[i], op_str );
             sprintf(tmp, "  OUT%d %s\n", i, op_str);
             strcat(buf, tmp);
             if (userfunc->operand[i]->base != NULL) {
-                operand_to_str( userfunc->operand[i]->base, op_str );
+                cphvb_sprint_array( userfunc->operand[i]->base, op_str );
                 sprintf(tmp, "      %s\n", op_str);
                 strcat(buf, tmp);
             }
         }
         for(i=userfunc->nout; i < userfunc->nout + userfunc->nin; i++) {
-            operand_to_str( userfunc->operand[i], op_str );
+            cphvb_sprint_array( userfunc->operand[i], op_str );
             sprintf(tmp, "  IN%d %s\n", i, op_str);
             strcat(buf, tmp);
             if (userfunc->operand[i]->base != NULL) {
-                operand_to_str( userfunc->operand[i]->base, op_str );
+                cphvb_sprint_array( userfunc->operand[i]->base, op_str );
                 sprintf(tmp, "      %s\n", op_str);
                 strcat(buf, tmp);
             }
@@ -124,7 +124,7 @@ static void instr_to_str( cphvb_instruction *instr, char buf[] ) {
 void cphvb_pprint_instr( cphvb_instruction *instr ) {
 
     char buf[PPRINT_BUF_SIZE];
-    instr_to_str( instr, buf );
+    cphvb_sprint_instr( instr, buf );
     puts( buf );
 }
 
@@ -150,7 +150,7 @@ void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instru
 void cphvb_pprint_array( cphvb_array *array ) {
 
     char buf[PPRINT_BUF_OPSTR_SIZE];
-    operand_to_str( array, buf );
+    cphvb_sprint_array( array, buf );
     puts( buf );
 }
 
@@ -161,7 +161,7 @@ void cphvb_sprint_coord( char buf[], cphvb_index* coord, cphvb_index dims ) {
 
     for(j=0; j<dims; j++)
     {
-        sprintf(tmp, "%ld", coord[j]);
+        sprintf(tmp, "%ld", (long)coord[j]);
         strcat(buf, tmp);
         if (j<dims-1) {
             strcat(buf, ", ");

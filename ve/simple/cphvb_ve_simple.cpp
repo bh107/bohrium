@@ -18,6 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_simple.h"
+#include <cphvb_mcache.c>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -30,86 +31,68 @@ static cphvb_intp matmul_impl_id = 0;
 cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 {
     myself = self;
+    cphvb_mcache_init( 10 );
     return CPHVB_SUCCESS;
 }
 
 cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
-    cphvb_intp count, nops, i;
+    cphvb_intp count;
     cphvb_instruction* inst;
+    cphvb_error res;
 
-    for(count=0; count < instruction_count; count++)
-    {
+    for (count=0; count < instruction_count; count++) {
+
         inst = &instruction_list[count];
 
-        if(inst->status == CPHVB_SUCCESS)     // SKIP instruction
-        {
+        if (inst->status == CPHVB_SUCCESS) {        // SKIP instruction
             continue;
         }
 
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands        
-        for(i=0; i<nops; i++)
-        {
-            if (!cphvb_is_constant(inst->operand[i]))
-            {
-            	//We allow allocation of the output operand only
-            	if (i == 0)
-            	{
-					if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
-					{
-						inst->status = CPHVB_OUT_OF_MEMORY;
-						return CPHVB_OUT_OF_MEMORY; // EXIT
-					}
-                }
-                else if(cphvb_base_array(inst->operand[i])->data == NULL) 
-                {
-					inst->status = CPHVB_ERROR;
-					return CPHVB_ERROR; // EXIT
-                }
-            }
-
+        res = cphvb_mcache_malloc( inst );          // Allocate memory for operands
+        if ( res != CPHVB_SUCCESS ) {
+            return res;
         }
+                                                    
+        switch (inst->opcode) {                     // Dispatch instruction
 
-        switch(inst->opcode)                    // Dispatch instruction
-        {
-            case CPHVB_NONE:                    // NOOP.
+            case CPHVB_NONE:                        // NOOP.
             case CPHVB_DISCARD:
             case CPHVB_SYNC:
                 inst->status = CPHVB_SUCCESS;
                 break;
-
-            case CPHVB_FREE:
-            	cphvb_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
+            case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+                inst->status = cphvb_mcache_free( inst );
                 break;
 
-            case CPHVB_USERFUNC:                // External libraries
+            case CPHVB_USERFUNC:                    // External libraries
 
-                if(inst->userfunc->id == reduce_impl_id)
-                {
+                if (inst->userfunc->id == reduce_impl_id) {
+
                     inst->status = reduce_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == random_impl_id)
-                {
+
+                } else if(inst->userfunc->id == random_impl_id) {
+
                     inst->status = random_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == matmul_impl_id)
-                {
+
+                } else if(inst->userfunc->id == matmul_impl_id) {
+
                     inst->status = matmul_impl(inst->userfunc, NULL);
-                }
-                else                            // Unsupported userfunc
-                {
+
+                } else {                            // Unsupported userfunc
+                
                     inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
+
                 }
 
                 break;
 
             default:                            // Built-in operations
                 inst->status = cphvb_compute_apply( inst );
+
         }
 
-        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
-        {
+        if (inst->status != CPHVB_SUCCESS) {    // Instruction failed
             break;
         }
 
@@ -125,6 +108,10 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 
 cphvb_error cphvb_ve_simple_shutdown( void )
 {
+    // De-allocate the malloc-cache
+    cphvb_mcache_clear();
+    cphvb_mcache_delete();
+
     return CPHVB_SUCCESS;
 }
 

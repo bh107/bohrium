@@ -19,6 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <iostream>
+#include <cphvb_mcache.c>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -45,10 +46,11 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%lld) should be greater than zero!\n", (cphvb_int64)block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", block_size);
         return CPHVB_ERROR;
     }
 
+    cphvb_mcache_init( 10 );
     return CPHVB_SUCCESS;
 }
 
@@ -122,11 +124,12 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
 {
-    cphvb_intp cur_index, nops, i, j;
+    cphvb_intp cur_index,  j;
     cphvb_instruction *inst, *binst;
 
     cphvb_intp bin_start, bin_end, bin_size;
     cphvb_intp bundle_start, bundle_end, bundle_size;
+    cphvb_error res;
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
@@ -137,27 +140,9 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
             continue;
         }
 
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands        
-        for(i=0; i<nops; i++)
-        {
-            if (!cphvb_is_constant(inst->operand[i]))
-            {
-            	//We allow allocation of the output operand only
-            	if (i == 0)
-            	{
-					if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
-					{
-						inst->status = CPHVB_OUT_OF_MEMORY;
-						return CPHVB_OUT_OF_MEMORY; // EXIT
-					}
-                }
-                else if(cphvb_base_array(inst->operand[i])->data == NULL) 
-                {
-					inst->status = CPHVB_ERROR;
-					return CPHVB_ERROR; // EXIT
-                }
-            }
-
+        res = cphvb_mcache_malloc( inst );      // Allocate memory for operands
+        if ( res != CPHVB_SUCCESS ) {
+            return res;
         }
         
         switch(inst->opcode)                    // Dispatch instruction
@@ -168,9 +153,8 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 inst->status = CPHVB_SUCCESS;
                 break;
 
-            case CPHVB_FREE:
-            	cphvb_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
+            case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+                inst->status = cphvb_mcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
@@ -201,23 +185,18 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 for(j=bin_start+1; j<instruction_count; j++)    
                 {
                     binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
-                    if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) || (binst->opcode == CPHVB_FREE) ) {
+                    if ((binst->opcode == CPHVB_NONE) || \
+                        (binst->opcode == CPHVB_DISCARD) || \
+                        (binst->opcode == CPHVB_SYNC) || \
+                        (binst->opcode == CPHVB_USERFUNC) || \
+                        (binst->opcode == CPHVB_FREE) ) {
                         break;
                     }
 
                     bin_end++;                                  // The "end" index
-
-                    nops = cphvb_operands(binst->opcode);       // The memory part...
-                    for(i=0; i<nops; i++)
-                    {
-                        if (!cphvb_is_constant(binst->operand[i]))
-                        {
-                            if (cphvb_data_malloc(binst->operand[i]) != CPHVB_SUCCESS)
-                            {
-                                return CPHVB_OUT_OF_MEMORY;     // EXIT
-                            }
-                        }
-
+                    res = cphvb_mcache_malloc( binst );         // Allocate memory for operands
+                    if ( res != CPHVB_SUCCESS ) {
+                        return res;
                     }
 
                 }
@@ -249,6 +228,9 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
 cphvb_error cphvb_ve_score_shutdown( void )
 {
+    cphvb_mcache_clear();
+    cphvb_mcache_delete();
+
     return CPHVB_SUCCESS;
 }
 
