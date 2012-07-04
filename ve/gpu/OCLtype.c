@@ -55,11 +55,6 @@ OCLtype oclType(cphvb_type vbtype)
         return OCL_FLOAT32;
     case CPHVB_FLOAT64:
         return OCL_FLOAT64;
-    case CPHVB_INDEX:
-        if (sizeof(cphvb_index) == 4)
-            return OCL_INT32;
-        if (sizeof(cphvb_index) == 8)
-            return OCL_INT64;
     default:
         assert(false);
     }
