@@ -42,16 +42,6 @@ namespace NumCIL.cphVB
         private object m_releaselock = new object();
 
         /// <summary>
-        /// A counter for all allocated views
-        /// </summary>
-        private static long m_allocatedviews = 0;
-
-        /// <summary>
-        /// Gets the number of allocated views
-        /// </summary>
-        public static long AllocatedViews { get { return m_allocatedviews; } }
-
-        /// <summary>
         /// ID for the user-defined reduce operation
         /// </summary>
         private readonly long m_reduceFunctionId;
@@ -442,9 +432,6 @@ namespace NumCIL.cphVB
             }
             finally
             {
-                if (destroys > 0)
-                    System.Threading.Interlocked.Add(ref m_allocatedviews, -destroys);
-
                 foreach (var h in cleanups)
                     h.Free();
             }
@@ -565,7 +552,7 @@ namespace NumCIL.cphVB
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
             {
                 //If we get this, it can be because some of the unmanaged views are still kept in memory
-                Console.WriteLine("Ouch, forcing GC, allocated views: {0}", m_allocatedviews);
+                Console.WriteLine("Ouch, forcing GC, allocated views: {0}", m_baseArrayRefs.Count + m_baseArrayRefs.Values.Select(x => x.Count).Sum());
                 GC.Collect();
                 ExecuteCleanups();
 
@@ -575,9 +562,6 @@ namespace NumCIL.cphVB
 
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
-
-            System.Threading.Interlocked.Increment(ref m_allocatedviews);
-
 
             return res;
         }
