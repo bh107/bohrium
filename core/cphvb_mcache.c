@@ -44,8 +44,9 @@ inline void cphvb_mcache_init( int size )
 
     cphvb_mcache_cur    = 0;
     cphvb_mcache        = (cphvb_data_ptr*)malloc(sizeof(cphvb_data_ptr)*size);
+    memset(cphvb_mcache,0,sizeof(cphvb_data_ptr)*size);
     cphvb_mcache_bytes  = (cphvb_intp*)malloc(sizeof(cphvb_intp)*size);
-
+    memset(cphvb_mcache_bytes,0,sizeof(cphvb_intp)*size);
 }
 
 /**
