@@ -18,7 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_mcore.h"
-#include <cphvb_mcache.c>
+#include <cphvb_mcache.h>
 #include <iostream>
 
 #include <queue>                                        //
