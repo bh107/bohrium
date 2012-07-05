@@ -40,3 +40,5 @@ core/compute/codegen/out
 cphvbnumpy/build
 OpCodes.cs
 OpCodes_fix.tt
+Tester.userprefs
+OpCodes_fix.cs
