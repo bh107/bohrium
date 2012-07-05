@@ -6,7 +6,7 @@ from Cheetah.Template import Template
 def main():
 
     script_dir  = "."+os.sep
-    output_dir  = script_dir + "out" + os.sep
+    output_dir  = script_dir + ".." + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
     
     gens = [

@@ -15,7 +15,18 @@ def gen( opcodes, ignore ):
             op['op2'] = t[1]
             if op['nop']>2:
                 op['op3'] = t[2]
-            op['ftypes'] = ','.join(t).lower()
+           
+            #Use the C++ complex data type 
+            tmp = []
+            for tt in t:
+                if tt == "CPHVB_COMPLEX64":
+                    tt = "std::complex<float>"
+                elif tt == "CPHVB_COMPLEX128":
+                    tt = "std::complex<double>"
+                tmp += [tt]
+
+            op['ftypes'] = ','.join(tmp).lower()
+
             del(op['code'])
             del(op['doc'])
             del(op['system_opcode'])

@@ -31,7 +31,7 @@ nop
 system_opcode
   Specifies whether a given opcode is a regular arithmetic instruction or a special system instruction.
 types
-  A list of lists, where each list is a valid type-signature for the opcode. In the example above the ADD opcode can add bools, floats and unsigned short integers.
+  A list of lists, where each list is a valid type-signature for the opcode. In the example above the ADD opcode can add bools, floats and unsigned short integers. NB: the first type is the output type and the rest is the input types.
 
 NOTE:: opcodes with multiple inputs should always have identical input-data types!
 

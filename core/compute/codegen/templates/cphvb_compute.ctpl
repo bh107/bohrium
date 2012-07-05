@@ -25,6 +25,7 @@ directiveStartToken = %
 #include <cphvb_compute.h>
 #include "functors.hpp"
 #include "traverser.hpp"
+#include <complex>
 
 void cphvb_tstate_reset( cphvb_tstate *state ) {
     memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
@@ -103,20 +104,20 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         %for $case in $data
         %if $case.nop == 2
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
-            return &traverse_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
+            return &traverse_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
             break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (1 << 17):
-            return &traverse_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
+            return &traverse_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
             break;
         %else
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
-            return &traverse_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
+            return &traverse_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
             break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 18):
-            return &traverse_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
+            return &traverse_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
             break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 17):
-            return &traverse_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes}> >;
+            return &traverse_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
             break;
         %end if
         %end for

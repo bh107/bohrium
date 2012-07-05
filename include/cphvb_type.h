@@ -39,6 +39,9 @@ typedef uint64_t      cphvb_uint64;
 typedef uint16_t      cphvb_float16;
 typedef float         cphvb_float32;
 typedef double        cphvb_float64;
+typedef struct { float real, imag; } cphvb_complex64;
+typedef struct { double real, imag; } cphvb_complex128;
+
 
 /* Codes for data types */
 enum /* cphvb_type */
@@ -55,6 +58,8 @@ enum /* cphvb_type */
     CPHVB_FLOAT16,
     CPHVB_FLOAT32,
     CPHVB_FLOAT64,
+    CPHVB_COMPLEX64,
+    CPHVB_COMPLEX128,
     CPHVB_UNKNOWN
 };
 
@@ -67,18 +72,20 @@ typedef void*      cphvb_data_ptr;
 
 typedef union /* cphvb_constant_value */
 {
-    cphvb_bool     bool8;
-    cphvb_int8     int8;
-    cphvb_int16    int16;
-    cphvb_int32    int32;
-    cphvb_int64    int64;
-    cphvb_uint8    uint8;
-    cphvb_uint16   uint16;
-    cphvb_uint32   uint32;
-    cphvb_uint64   uint64;
-    cphvb_float16  float16;
-    cphvb_float32  float32;
-    cphvb_float64  float64;
+    cphvb_bool       bool8;
+    cphvb_int8       int8;
+    cphvb_int16      int16;
+    cphvb_int32      int32;
+    cphvb_int64      int64;
+    cphvb_uint8      uint8;
+    cphvb_uint16     uint16;
+    cphvb_uint32     uint32;
+    cphvb_uint64     uint64;
+    cphvb_float16    float16;
+    cphvb_float32    float32;
+    cphvb_float64    float64;
+    cphvb_complex64  complex64;
+    cphvb_complex128 complex128;
 } cphvb_constant_value;
 
 typedef struct

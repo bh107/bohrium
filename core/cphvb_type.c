@@ -58,6 +58,10 @@ int cphvb_type_size(cphvb_type type)
         return 4;
     case CPHVB_FLOAT64:
         return 8;
+    case CPHVB_COMPLEX64:
+        return 8;
+    case CPHVB_COMPLEX128:
+        return 16;
     case CPHVB_UNKNOWN:
         return -1;
     default:
@@ -98,6 +102,10 @@ const char* cphvb_type_text(cphvb_type type)
         return "CPHVB_FLOAT32";
     case CPHVB_FLOAT64:
         return "CPHVB_FLOAT64";
+    case CPHVB_COMPLEX64:
+        return "CPHVB_COMPLEX64";
+    case CPHVB_COMPLEX128:
+        return "CPHVB_COMPLEX128";
     case CPHVB_UNKNOWN:
         return "CPHVB_UNKNOWN";
     default:
