@@ -22,4 +22,4 @@ install: all
 	@-(echo 'Done.')
 
 clean:
-	rm -rf *.o *~
+	rm -rf *.o *~ *.so *.dylib
