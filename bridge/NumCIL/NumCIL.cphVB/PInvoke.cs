@@ -436,13 +436,18 @@ namespace NumCIL.cphVB
             [FieldOffset(0)]
             public cphvb_userfunc_reduce reduce;
 
+            [FieldOffset(0)]
+            public cphvb_userfunc_matmul matmul;
+
             public cphvb_userfunc_union(cphvb_userfunc_plain arg) : this() { plain = arg; }
             public cphvb_userfunc_union(cphvb_userfunc_reduce arg) : this() { reduce = arg; }
             public cphvb_userfunc_union(cphvb_userfunc_random arg) : this() { random = arg; }
+            public cphvb_userfunc_union(cphvb_userfunc_matmul arg) : this() { matmul = arg; }
 
             public static implicit operator cphvb_userfunc_union(cphvb_userfunc_plain arg) { return new cphvb_userfunc_union(arg); }
             public static implicit operator cphvb_userfunc_union(cphvb_userfunc_reduce arg) { return new cphvb_userfunc_union(arg); }
             public static implicit operator cphvb_userfunc_union(cphvb_userfunc_random arg) { return new cphvb_userfunc_union(arg); }
+            public static implicit operator cphvb_userfunc_union(cphvb_userfunc_matmul arg) { return new cphvb_userfunc_union(arg); }
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
