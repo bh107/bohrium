@@ -6,7 +6,7 @@ WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -shared  -Wl,-dylib_install_name,$(LIB)
-SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c
+SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c cphvb_mcache.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/opt/cphvb/
 
@@ -19,7 +19,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) $(ROOT)/core/compute/cphvb_compute.o $(ROOT)/core/compute/cphvb_compute_random.o $(ROOT)/core/compute/cphvb_compute_reduce.o $(ROOT)/core/compute/cphvb_compute_matmul.o $(ROOT)/core/bundler/cphvb_bundler.o $(ROOT)/iniparser/libiniparser.a -o $@ $(LDFLAGS)
 
 clean:
-		rm -rf *.o *~ $(LIB)
+		rm -rf *.o *~ *.so *.dylib
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)

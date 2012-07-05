@@ -18,7 +18,7 @@
  */
 #include <cphvb.h>
 #include "cphvb_ve_simple.h"
-#include <cphvb_mcache.c>
+#include <cphvb_mcache.h>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;

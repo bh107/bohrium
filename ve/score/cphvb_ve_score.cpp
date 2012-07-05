@@ -19,7 +19,7 @@
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <iostream>
-#include <cphvb_mcache.c>
+#include <cphvb_mcache.h>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -46,7 +46,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%lld) should be greater than zero!\n", (cphvb_int64)block_size);
         return CPHVB_ERROR;
     }
 

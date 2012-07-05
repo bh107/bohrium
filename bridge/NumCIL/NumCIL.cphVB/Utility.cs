@@ -28,28 +28,34 @@ namespace NumCIL.cphVB
                 if (!eq(System.IO.Path.GetFileName(basepath)))
                     throw new Exception(string.Format("Unable to find a directory named {0}, in path {1}, searched until {2}", "'" + string.Join("', '", allowednames) + "'", System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), basepath));
 
-                string binary_lookup_path = System.IO.Path.Combine(basepath, "core") + System.IO.Path.PathSeparator + System.IO.Path.Combine(basepath, "vem", "node") + System.IO.Path.PathSeparator;
+                string binary_lookup_path = System.IO.Path.Combine(basepath, "core") + System.IO.Path.PathSeparator;
 
                 //Bad OS detection :)
                 if (System.IO.Path.PathSeparator == ':')
                 {
-                    string ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? "";
-                    string dyldpath = Environment.GetEnvironmentVariable("DYLD_LIBRARY_PATH") ?? "";
-
-                    Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", binary_lookup_path + ldpath);
-                    Environment.SetEnvironmentVariable("DYLD_LIBRARY_PATH", binary_lookup_path + dyldpath);
-
                     bool isOsx = false;
                     try
                     {
-                        isOsx = string.Equals("Darwin", System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("uname") { UseShellExecute = false, RedirectStandardOutput = true }).StandardOutput.ReadToEnd());
+                        isOsx = string.Equals("Darwin", System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("uname") { UseShellExecute = false, RedirectStandardOutput = true }).StandardOutput.ReadToEnd().Trim());
                     }
                     catch { }
 
-                    if (isOsx)
-                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.osx.ini"));
-                    else
-                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.ini"));
+					string configpath = Environment.GetEnvironmentVariable("CPHVB_CONFIG") ?? "";
+					if (string.IsNullOrEmpty(configpath))
+					{
+	                    if (isOsx)
+						{
+		                    string dyldpath = Environment.GetEnvironmentVariable("DYLD_LIBRARY_PATH") ?? "";
+		                    Environment.SetEnvironmentVariable("DYLD_LIBRARY_PATH", binary_lookup_path + dyldpath);
+	                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.osx.ini"));
+						}
+	                    else
+						{
+		                    string ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? "";
+		                    Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", binary_lookup_path + ldpath);
+	                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.ini"));
+						}
+					}
                 }
                 else
                 {

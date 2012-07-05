@@ -34,7 +34,7 @@ $(LIB): $(OBJECTS)
 		$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-		rm -rf *.o  *.oo *~ *.gch *.orig $(LIB)
+		rm -rf *.o  *.oo *~ *.gch *.orig *.so *.dylib
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)

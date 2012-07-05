@@ -7,7 +7,7 @@ LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -L../../core -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
-OBJ=$(SRC:.c=.o)
+OBJ=$(SRC:.c=.o) $(SRC:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
@@ -22,7 +22,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(CFLAGS)
 
 clean:
-		rm -rf *.o *~ *.so
+		rm -rf *.o *~ *.so *.dylib
 
 install: all
 		sudo cp $(LIB) $(INSTALLDIR)

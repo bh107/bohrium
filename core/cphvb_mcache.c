@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <cphvb.h>
-
+#include <cphvb_mcache.h>
 //
 // C-Friendly version of the mcache.
 // 
@@ -37,7 +36,7 @@ static int          cphvb_mcache_cur;
  *  counter is incremented.
  *
  */
-inline void cphvb_mcache_init( int size )
+void cphvb_mcache_init( int size )
 {
     cphvb_mcache_size           = size;
     cphvb_mcache_bytes_total    = 0;
@@ -52,7 +51,7 @@ inline void cphvb_mcache_init( int size )
 /**
  * Deallocates mcache arrays.
  */
-inline void cphvb_mcache_delete()
+void cphvb_mcache_delete()
 {
     free( cphvb_mcache );
     free( cphvb_mcache_bytes );
@@ -61,7 +60,7 @@ inline void cphvb_mcache_delete()
 /**
  * Remove all entries from mcache and de-allocate them
  */
-inline void cphvb_mcache_clear()
+void cphvb_mcache_clear()
 {
     int i;
     for (i=0; i<cphvb_mcache_size; i++) {
@@ -78,7 +77,7 @@ inline void cphvb_mcache_clear()
  *
  * @return null If none exists.
  */
-inline cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
+cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
 {
     int i;
     for (i=0; i<cphvb_mcache_size; i++) {
@@ -98,7 +97,7 @@ inline cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-inline void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
+void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
 {
 
     if (cphvb_mcache[cphvb_mcache_cur] != NULL) {
@@ -112,7 +111,7 @@ inline void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
     cphvb_mcache_bytes_total += size;
 }
 
-inline cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
+cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
 {
     cphvb_array* base;
     cphvb_intp nelements, bytes;
@@ -129,7 +128,7 @@ inline cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
     return CPHVB_SUCCESS;
 }
 
-inline cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst )
+cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst )
 {
     cphvb_array* base;
     cphvb_intp nops, i, nelements, bytes;
