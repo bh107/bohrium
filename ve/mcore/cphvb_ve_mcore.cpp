@@ -25,6 +25,10 @@
 #include <pthread.h>                                    // MULTICORE libraries
 #include <semaphore.h>                                  //
 
+#if _POSIX_BARRIERS <= 0
+#error This system does not support POSIX barriers
+#else
+
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
 static cphvb_intp reduce_impl_id = 0;
@@ -728,3 +732,4 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
 
 */
 
+#endif /*_POSIX_BARRIERS <= 0*/
