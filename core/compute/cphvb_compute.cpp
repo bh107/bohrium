@@ -195,6 +195,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_ADD + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_uint32,cphvb_uint32,cphvb_uint32, add_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_ADD + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<std::complex<float>,std::complex<float>,std::complex<float>, add_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_ADD + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<float>,std::complex<float>,std::complex<float>, add_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_ADD + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<float>,std::complex<float>,std::complex<float>, add_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_ADD + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<std::complex<double>,std::complex<double>,std::complex<double>, add_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_ADD + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<double>,std::complex<double>,std::complex<double>, add_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_ADD + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<double>,std::complex<double>,std::complex<double>, add_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_ARCTAN2 + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16):
             return &traverse_aaa<cphvb_float32,cphvb_float32,cphvb_float32, arctan2_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
             break;
@@ -546,6 +564,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_DIVIDE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_uint32,cphvb_uint32,cphvb_uint32, divide_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<std::complex<float>,std::complex<float>,std::complex<float>, divide_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<float>,std::complex<float>,std::complex<float>, divide_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<float>,std::complex<float>,std::complex<float>, divide_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<std::complex<double>,std::complex<double>,std::complex<double>, divide_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<double>,std::complex<double>,std::complex<double>, divide_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_DIVIDE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<double>,std::complex<double>,std::complex<double>, divide_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_bool,cphvb_int8,cphvb_int8, equal_functor<cphvb_bool,cphvb_int8,cphvb_int8 > >;
             break;
@@ -644,6 +680,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_bool,cphvb_uint32,cphvb_uint32, equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32 > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<cphvb_bool,std::complex<float>,std::complex<float>, equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<cphvb_bool,std::complex<float>,std::complex<float>, equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<cphvb_bool,std::complex<float>,std::complex<float>, equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<cphvb_bool,std::complex<double>,std::complex<double>, equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<cphvb_bool,std::complex<double>,std::complex<double>, equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<cphvb_bool,std::complex<double>,std::complex<double>, equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_GREATER + (CPHVB_BOOL << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_bool,cphvb_int8,cphvb_int8, greater_functor<cphvb_bool,cphvb_int8,cphvb_int8 > >;
@@ -1833,6 +1887,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_MULTIPLY + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_uint32,cphvb_uint32,cphvb_uint32, multiply_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<std::complex<float>,std::complex<float>,std::complex<float>, multiply_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<float>,std::complex<float>,std::complex<float>, multiply_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<float>,std::complex<float>,std::complex<float>, multiply_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<std::complex<double>,std::complex<double>,std::complex<double>, multiply_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<double>,std::complex<double>,std::complex<double>, multiply_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_MULTIPLY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<double>,std::complex<double>,std::complex<double>, multiply_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_bool,cphvb_int8,cphvb_int8, not_equal_functor<cphvb_bool,cphvb_int8,cphvb_int8 > >;
             break;
@@ -1931,6 +2003,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_bool,cphvb_uint32,cphvb_uint32, not_equal_functor<cphvb_bool,cphvb_uint32,cphvb_uint32 > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<cphvb_bool,std::complex<float>,std::complex<float>, not_equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<cphvb_bool,std::complex<float>,std::complex<float>, not_equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<cphvb_bool,std::complex<float>,std::complex<float>, not_equal_functor<cphvb_bool,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<cphvb_bool,std::complex<double>,std::complex<double>, not_equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<cphvb_bool,std::complex<double>,std::complex<double>, not_equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<cphvb_bool,std::complex<double>,std::complex<double>, not_equal_functor<cphvb_bool,std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_POWER + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_int8,cphvb_int8,cphvb_int8, power_functor<cphvb_int8,cphvb_int8,cphvb_int8 > >;
@@ -2193,6 +2283,24 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_SUBTRACT + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_uint32,cphvb_uint32,cphvb_uint32, subtract_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16):
+            return &traverse_aaa<std::complex<float>,std::complex<float>,std::complex<float>, subtract_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<float>,std::complex<float>,std::complex<float>, subtract_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (CPHVB_COMPLEX64 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<float>,std::complex<float>,std::complex<float>, subtract_functor<std::complex<float>,std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16):
+            return &traverse_aaa<std::complex<double>,std::complex<double>,std::complex<double>, subtract_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 18):
+            return &traverse_aac<std::complex<double>,std::complex<double>,std::complex<double>, subtract_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SUBTRACT + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
+            return &traverse_aca<std::complex<double>,std::complex<double>,std::complex<double>, subtract_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_ABSOLUTE + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
             return &traverse_aa<cphvb_int8,cphvb_int8, absolute_functor<cphvb_int8,cphvb_int8 > >;
             break;
@@ -2355,6 +2463,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_COS + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, cos_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_COS + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, cos_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_COS + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, cos_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_COS + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, cos_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_COS + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, cos_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_COSH + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, cosh_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -2367,6 +2487,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_COSH + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, cosh_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_COSH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, cosh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_COSH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, cosh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_COSH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, cosh_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_COSH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, cosh_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_EXP + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, exp_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -2378,6 +2510,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_EXP + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, exp_functor<cphvb_float64,cphvb_float64 > >;
+            break;
+        case CPHVB_EXP + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, exp_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_EXP + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, exp_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_EXP + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, exp_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_EXP + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, exp_functor<std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_EXP2 + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, exp2_functor<cphvb_float32,cphvb_float32 > >;
@@ -3141,6 +3285,162 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_IDENTITY + (CPHVB_FLOAT64 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_uint32, identity_functor<cphvb_float64,cphvb_uint32 > >;
             break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, identity_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, identity_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, identity_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, identity_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_BOOL <<12):
+            return &traverse_aa<std::complex<float>,cphvb_bool, identity_functor<std::complex<float>,cphvb_bool > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_BOOL <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_bool, identity_functor<std::complex<float>,cphvb_bool > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_BOOL <<12):
+            return &traverse_aa<std::complex<double>,cphvb_bool, identity_functor<std::complex<double>,cphvb_bool > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_BOOL <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_bool, identity_functor<std::complex<double>,cphvb_bool > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT8 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_int8, identity_functor<std::complex<float>,cphvb_int8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT8 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_int8, identity_functor<std::complex<float>,cphvb_int8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT8 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_int8, identity_functor<std::complex<double>,cphvb_int8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT8 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_int8, identity_functor<std::complex<double>,cphvb_int8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT8 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_uint8, identity_functor<std::complex<float>,cphvb_uint8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT8 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_uint8, identity_functor<std::complex<float>,cphvb_uint8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT8 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_uint8, identity_functor<std::complex<double>,cphvb_uint8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT8 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_uint8, identity_functor<std::complex<double>,cphvb_uint8 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT16 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_int16, identity_functor<std::complex<float>,cphvb_int16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT16 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_int16, identity_functor<std::complex<float>,cphvb_int16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT16 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_int16, identity_functor<std::complex<double>,cphvb_int16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT16 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_int16, identity_functor<std::complex<double>,cphvb_int16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT16 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_uint16, identity_functor<std::complex<float>,cphvb_uint16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT16 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_uint16, identity_functor<std::complex<float>,cphvb_uint16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT16 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_uint16, identity_functor<std::complex<double>,cphvb_uint16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT16 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_uint16, identity_functor<std::complex<double>,cphvb_uint16 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT32 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_int32, identity_functor<std::complex<float>,cphvb_int32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_int32, identity_functor<std::complex<float>,cphvb_int32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT32 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_int32, identity_functor<std::complex<double>,cphvb_int32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_int32, identity_functor<std::complex<double>,cphvb_int32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT32 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_uint32, identity_functor<std::complex<float>,cphvb_uint32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_uint32, identity_functor<std::complex<float>,cphvb_uint32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT32 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_uint32, identity_functor<std::complex<double>,cphvb_uint32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_uint32, identity_functor<std::complex<double>,cphvb_uint32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT64 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_int64, identity_functor<std::complex<float>,cphvb_int64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_INT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_int64, identity_functor<std::complex<float>,cphvb_int64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT64 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_int64, identity_functor<std::complex<double>,cphvb_int64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_INT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_int64, identity_functor<std::complex<double>,cphvb_int64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT64 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_uint64, identity_functor<std::complex<float>,cphvb_uint64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_UINT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_uint64, identity_functor<std::complex<float>,cphvb_uint64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT64 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_uint64, identity_functor<std::complex<double>,cphvb_uint64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_UINT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_uint64, identity_functor<std::complex<double>,cphvb_uint64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_FLOAT32 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_float32, identity_functor<std::complex<float>,cphvb_float32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_float32, identity_functor<std::complex<float>,cphvb_float32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_FLOAT32 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_float32, identity_functor<std::complex<double>,cphvb_float32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_float32, identity_functor<std::complex<double>,cphvb_float32 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_FLOAT64 <<12):
+            return &traverse_aa<std::complex<float>,cphvb_float64, identity_functor<std::complex<float>,cphvb_float64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,cphvb_float64, identity_functor<std::complex<float>,cphvb_float64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_FLOAT64 <<12):
+            return &traverse_aa<std::complex<double>,cphvb_float64, identity_functor<std::complex<double>,cphvb_float64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,cphvb_float64, identity_functor<std::complex<double>,cphvb_float64 > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<float>, identity_functor<std::complex<double>,std::complex<float> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<float>, identity_functor<std::complex<double>,std::complex<float> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<double>, identity_functor<std::complex<float>,std::complex<double> > >;
+            break;
+        case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<double>, identity_functor<std::complex<float>,std::complex<double> > >;
+            break;
         case CPHVB_INVERT + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
             return &traverse_aa<cphvb_int8,cphvb_int8, invert_functor<cphvb_int8,cphvb_int8 > >;
             break;
@@ -3207,6 +3507,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_LOG + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, log_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_LOG + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, log_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_LOG + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, log_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_LOG + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, log_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_LOG + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, log_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_LOG10 + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, log10_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -3218,6 +3530,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_LOG10 + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, log10_functor<cphvb_float64,cphvb_float64 > >;
+            break;
+        case CPHVB_LOG10 + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, log10_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_LOG10 + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, log10_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_LOG10 + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, log10_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_LOG10 + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, log10_functor<std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_LOG1P + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, log1p_functor<cphvb_float32,cphvb_float32 > >;
@@ -3375,6 +3699,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_NEGATIVE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
             return &traverse_ac<cphvb_uint32,cphvb_uint32, negative_functor<cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_NEGATIVE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, negative_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_NEGATIVE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, negative_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_NEGATIVE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, negative_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_NEGATIVE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, negative_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_RECIPROCAL + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
             return &traverse_aa<cphvb_int8,cphvb_int8, reciprocal_functor<cphvb_int8,cphvb_int8 > >;
             break;
@@ -3531,6 +3867,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_SIN + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, sin_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_SIN + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, sin_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SIN + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, sin_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SIN + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, sin_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SIN + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, sin_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_SINH + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, sinh_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -3543,6 +3891,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_SINH + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, sinh_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_SINH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, sinh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SINH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, sinh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SINH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, sinh_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SINH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, sinh_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_SQRT + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, sqrt_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -3554,6 +3914,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_SQRT + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, sqrt_functor<cphvb_float64,cphvb_float64 > >;
+            break;
+        case CPHVB_SQRT + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, sqrt_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SQRT + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, sqrt_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SQRT + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, sqrt_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SQRT + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, sqrt_functor<std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_SQUARE + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
             return &traverse_aa<cphvb_int8,cphvb_int8, square_functor<cphvb_int8,cphvb_int8 > >;
@@ -3615,6 +3987,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_SQUARE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
             return &traverse_ac<cphvb_uint32,cphvb_uint32, square_functor<cphvb_uint32,cphvb_uint32 > >;
             break;
+        case CPHVB_SQUARE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, square_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SQUARE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, square_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_SQUARE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, square_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_SQUARE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, square_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_TAN + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, tan_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -3627,6 +4011,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_TAN + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, tan_functor<cphvb_float64,cphvb_float64 > >;
             break;
+        case CPHVB_TAN + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, tan_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_TAN + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, tan_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_TAN + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, tan_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_TAN + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, tan_functor<std::complex<double>,std::complex<double> > >;
+            break;
         case CPHVB_TANH + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, tanh_functor<cphvb_float32,cphvb_float32 > >;
             break;
@@ -3638,6 +4034,18 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_TANH + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
             return &traverse_ac<cphvb_float64,cphvb_float64, tanh_functor<cphvb_float64,cphvb_float64 > >;
+            break;
+        case CPHVB_TANH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
+            return &traverse_aa<std::complex<float>,std::complex<float>, tanh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_TANH + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<float>,std::complex<float>, tanh_functor<std::complex<float>,std::complex<float> > >;
+            break;
+        case CPHVB_TANH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
+            return &traverse_aa<std::complex<double>,std::complex<double>, tanh_functor<std::complex<double>,std::complex<double> > >;
+            break;
+        case CPHVB_TANH + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
+            return &traverse_ac<std::complex<double>,std::complex<double>, tanh_functor<std::complex<double>,std::complex<double> > >;
             break;
         case CPHVB_TRUNC + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, trunc_functor<cphvb_float32,cphvb_float32 > >;
