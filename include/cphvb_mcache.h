@@ -36,17 +36,17 @@ extern "C" {
  *  counter is incremented.
  *
  */
-void cphvb_mcache_init( int size );
+DLLEXPORT void cphvb_mcache_init( int size );
 
 /**
  * Deallocates mcache arrays.
  */
-void cphvb_mcache_delete();
+DLLEXPORT void cphvb_mcache_delete();
 
 /**
  * Remove all entries from mcache and de-allocate them
  */
-void cphvb_mcache_clear();
+DLLEXPORT void cphvb_mcache_clear();
 
 /**
  * Return and remove a pointer of size 'size' from mcache.
@@ -55,7 +55,7 @@ void cphvb_mcache_clear();
  *
  * @return null If none exists.
  */
-cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes );
+DLLEXPORT cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes );
 
 /**
  * Add an element to mcache.
@@ -63,9 +63,9 @@ cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes );
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size );
-cphvb_error cphvb_mcache_free( cphvb_instruction* inst );
-cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst );
+DLLEXPORT void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size );
+DLLEXPORT cphvb_error cphvb_mcache_free( cphvb_instruction* inst );
+DLLEXPORT cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst );
 
 #ifdef __cplusplus
 }
