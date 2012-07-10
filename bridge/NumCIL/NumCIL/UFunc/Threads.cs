@@ -15,6 +15,11 @@ namespace NumCIL
         public static class Threads
         {
             /// <summary>
+            /// A value controlling if single workblock should use a single thread or run directly
+            /// </summary>
+            private const bool SINGLE_CORE_THREAD = false;
+
+            /// <summary>
             /// The number of work blocks
             /// </summary>
             private static int _no_blocks = Math.Max(2, Environment.ProcessorCount * 2);
@@ -59,7 +64,7 @@ namespace NumCIL
             internal static void BinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
                 where C : struct, IBinaryOp<T>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
@@ -91,7 +96,7 @@ namespace NumCIL
             internal static void UnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IUnaryOp<T>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
@@ -124,7 +129,7 @@ namespace NumCIL
             internal static void NullaryOp<T, C>(C op, NdArray<T> @out)
                 where C : struct, INullaryOp<T>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
@@ -156,7 +161,7 @@ namespace NumCIL
             internal static void UnaryConvOp<Ta, Tb, C>(IUnaryConvOp<Ta, Tb> op, NdArray<Ta> in1, NdArray<Tb> @out)
                 where C : struct, IUnaryConvOp<Ta, Tb>
             {
-                if (_no_blocks > 1 && @out.Shape.Dimensions[0].Length >= _no_blocks && (@out.Shape.Elements / _no_blocks) > 128)
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
