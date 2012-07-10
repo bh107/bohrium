@@ -60,7 +60,6 @@ void generateInstructionSource(cphvb_opcode opcode,
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)cphvb_operands(opcode));
-    const char* type_str = oclTypeStr(returnType);
     switch(opcode)
     {
     case CPHVB_ADD:
@@ -82,7 +81,10 @@ void generateInstructionSource(cphvb_opcode opcode,
         source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
     case CPHVB_MOD:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
+        if (isFloat(returnType))
+            source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
+        else
+            source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
         break;
     case CPHVB_ABSOLUTE:
         if (isFloat(returnType))
@@ -227,9 +229,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         break;
     case CPHVB_SIGNBIT:
         source << "\t" << parameters[0] << " = " << parameters[1] << " < 0;\n";
-        break;
-    case CPHVB_LDEXP:
-        source << "\t" << parameters[0] << " = ldexp(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
     case CPHVB_FLOOR:
         source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";
