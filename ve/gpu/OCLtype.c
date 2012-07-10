@@ -55,6 +55,10 @@ OCLtype oclType(cphvb_type vbtype)
         return OCL_FLOAT32;
     case CPHVB_FLOAT64:
         return OCL_FLOAT64;
+    case CPHVB_COMPLEX64:
+        return OCL_COMPLEX64;
+    case CPHVB_COMPLEX128:
+        return OCL_COMPLEX128;
     default:
         assert(false);
     }
@@ -76,6 +80,8 @@ const char* oclTypeStr(OCLtype type)
     case OCL_FLOAT16: return "half";
     case OCL_FLOAT32: return "float";
     case OCL_FLOAT64: return "double";
+    case OCL_COMPLEX64: return "float2";
+    case OCL_COMPLEX128: return "double2";
     case OCL_UNKNOWN: return "void";
     default: assert(false);
         
@@ -97,6 +103,8 @@ const char* oclAPItypeStr(OCLtype type)
     case OCL_FLOAT16: return "cl_half";
     case OCL_FLOAT32: return "cl_float";
     case OCL_FLOAT64: return "cl_double";
+    case OCL_COMPLEX64: return "cl_float2";
+    case OCL_COMPLEX128: return "cl_double2";
     default: assert(false);
         
     }
@@ -128,6 +136,10 @@ size_t oclSizeOf(OCLtype type)
         return sizeof(cl_float);
     case OCL_FLOAT64:
         return sizeof(cl_double);
+    case OCL_COMPLEX64:
+        return sizeof(cl_float2);
+    case OCL_COMPLEX128:
+        return sizeof(cl_double2);
     default:
         assert(false);
     }
@@ -140,6 +152,18 @@ bool isFloat(OCLtype type)
     case OCL_FLOAT16:
     case OCL_FLOAT32:
     case OCL_FLOAT64:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isComplex(OCLtype type)
+{
+    switch (type)
+    {
+    case OCL_COMPLEX64:
+    case OCL_COMPLEX128:
         return true;
     default:
         return false;

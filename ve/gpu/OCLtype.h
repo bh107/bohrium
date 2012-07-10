@@ -39,13 +39,17 @@ typedef enum
     OCL_FLOAT16,
     OCL_FLOAT32,
     OCL_FLOAT64,
+    OCL_COMPLEX64,
+    OCL_COMPLEX128,
     OCL_UNKNOWN
 } OCLtype;
 
 OCLtype oclType(cphvb_type vbtype);
 const char* oclTypeStr(OCLtype type);
+const char* oclAPItypeStr(OCLtype type);
 size_t oclSizeOf(OCLtype type);
 bool isFloat(OCLtype type);
+bool isComplex(OCLtype type);
 
 #ifdef __cplusplus
 }
