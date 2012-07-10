@@ -37,6 +37,11 @@ class _C:
         self.ENDC = ''
 
 def _array_equal(A,B,maxerror=0.0):
+    if type(A) != type(B):
+        return False 
+    if np.isscalar(A):
+        return A == B
+
     cphvbbridge.unhandle_array(A)
     cphvbbridge.unhandle_array(B)
     A = A.flatten()

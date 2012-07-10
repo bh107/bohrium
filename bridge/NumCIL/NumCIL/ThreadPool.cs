@@ -198,7 +198,7 @@ namespace NumCIL
                         WorkToken work = (WorkToken)token;
                         work.func(work.arg);
                     }
-                    catch(ThreadAbortException)
+                    catch (ThreadAbortException)
                     {
                         Thread.ResetAbort();
                     }
@@ -210,6 +210,10 @@ namespace NumCIL
 #endif
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("A thread crashed!!!{0}{1}", Environment.NewLine, ex.ToString());
             }
             finally
             {

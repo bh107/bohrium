@@ -12,7 +12,7 @@ if cphvb then
     version <- "cphVB"
 
 let timer = new UnitTest.DispTimer("BlackSholes F#, " + version)
-let res = BlackScholesSolver.Solve(3200000L, 36)
+let res = BlackScholesSolver.Solve(3200000L, 10)
 timer.Dispose()
 
 printfn "result: %f" res
