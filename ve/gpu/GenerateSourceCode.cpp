@@ -60,189 +60,221 @@ void generateInstructionSource(cphvb_opcode opcode,
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)cphvb_operands(opcode));
-    switch(opcode)
+    if (isComplex(returnType))
     {
-    case CPHVB_ADD:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
-        break;
-    case CPHVB_SUBTRACT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
-        break;
-    case CPHVB_MULTIPLY:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
-        break;
-    case CPHVB_DIVIDE:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
-        break;
-    case CPHVB_NEGATIVE:
-        source << "\t" << parameters[0] << " = -" << parameters[1] << ";\n";
-        break;
-    case CPHVB_POWER:
-        if (isFloat(returnType))
-            source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
-        else
-            source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
-        break;
-    case CPHVB_MOD:
-        if (isFloat(returnType))
-            source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
-        else
-            source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
-        break;
-    case CPHVB_ABSOLUTE:
-        if (isFloat(returnType))
-            source << "\t" << parameters[0] << " = fabs(" << parameters[1] << ");\n";
-        else
-            source << "\t" << parameters[0] << " = abs(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_RINT:
-        source << "\t" << parameters[0] << " = rint(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_SIGN:
-        source << "\t" << parameters[0] << " = " << parameters[1] << "<0?-1:1;\n";
-        break;
-    case CPHVB_EXP:
-        source << "\t" << parameters[0] << " = exp(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_EXP2:
-        source << "\t" << parameters[0] << " = exp2(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_LOG:
-        source << "\t" << parameters[0] << " = log(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_LOG10:
-        source << "\t" << parameters[0] << " = log10(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_EXPM1:
-        source << "\t" << parameters[0] << " = expm1(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_LOG1P:
-        source << "\t" << parameters[0] << " = log1p(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_SQRT:
-        source << "\t" << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_SQUARE:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
-        break;
-    case CPHVB_SIN:
-        source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_COS:
-        source << "\t" << parameters[0] << " = cos(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_TAN:
-        source << "\t" << parameters[0] << " = tan(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCSIN:
-        source << "\t" << parameters[0] << " = asin(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCCOS:
-        source << "\t" << parameters[0] << " = acos(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCTAN:
-        source << "\t" << parameters[0] << " = atan(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCTAN2:
-        source << "\t" << parameters[0] << " = atan2(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_HYPOT:
-        source << "\t" << parameters[0] << " = hypot(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_SINH:
-        source << "\t" << parameters[0] << " = sinh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_COSH:
-        source << "\t" << parameters[0] << " = cosh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_TANH:
-        source << "\t" << parameters[0] << " = tanh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCSINH:
-        source << "\t" << parameters[0] << " = asinh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCCOSH:
-        source << "\t" << parameters[0] << " = acosh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_ARCTANH:
-        source << "\t" << parameters[0] << " = atanh(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_BITWISE_AND:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
-        break;
-    case CPHVB_BITWISE_OR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
-        break;
-    case CPHVB_BITWISE_XOR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_NOT:
-        source << "\t" << parameters[0] << " = !" << parameters[1] << ";\n";
-        break;
-    case CPHVB_LOGICAL_AND:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_OR:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LOGICAL_XOR:
-        source << "\t" << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
-        break;
-    case CPHVB_INVERT:
-        source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
-        break;
-    case CPHVB_LEFT_SHIFT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
-        break;
-    case CPHVB_RIGHT_SHIFT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
-        break;
-    case CPHVB_GREATER:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
-        break;
-    case CPHVB_GREATER_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LESS:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
-        break;
-    case CPHVB_LESS_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
-        break;
-    case CPHVB_NOT_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
-        break;
-    case CPHVB_EQUAL:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
-        break;
-    case CPHVB_MAXIMUM:
-        source << "\t" << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_MINIMUM:
-        source << "\t" << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
-        break;
-    case CPHVB_IDENTITY:
-        source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
-        break;
-    case CPHVB_SIGNBIT:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " < 0;\n";
-        break;
-    case CPHVB_FLOOR:
-        source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_CEIL:
-        source << "\t" << parameters[0] << " = ceil(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_TRUNC:
-        source << "\t" << parameters[0] << " = trunc(" << parameters[1] << ");\n";
-        break;
-    case CPHVB_LOG2:
-        source << "\t" << parameters[0] << " = log2(" << parameters[1] << ");\n";
-        break;
-    default:
+        switch(opcode)
+        {
+        case CPHVB_ADD:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+            break;
+        case CPHVB_SUBTRACT:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
+            break;
+        case CPHVB_MULTIPLY:
+            source << "\t" << parameters[0] << ".s0 = " << parameters[1] << ".s0 * " << parameters[2] << ".s0" 
+                   << " - " << parameters[1] << ".s1 * " << parameters[2] << ".s1; "
+                   << parameters[0] << ".s1 = " << parameters[1] << ".s1 * " << parameters[2] << ".s0" 
+                   << " + " << parameters[1] << ".s0 * " << parameters[2] << ".s1;\n";
+            break;
+        case CPHVB_DIVIDE:
+            source << "\t" << oclTypeStr(returnType) << " " << parameters[0] << "d = " 
+                   << parameters[2] << " * " << parameters[2] << "; "
+                   << parameters[0] << ".s0 = " << parameters[1] << ".s0 * " << parameters[2] << ".s0" 
+                   << " + " << parameters[1] << ".s1 * " << parameters[2] << ".s1; "
+                   << parameters[0] << ".s1 = " << parameters[1] << ".s1 * " << parameters[2] << ".s0" 
+                   << " - " << parameters[1] << ".s0 * " << parameters[2] << ".s1; "
+                   << parameters[0] << " = " << parameters[0] << " / " << parameters[0] << "d;\n";   
+                   break;
+        default:
 #ifdef DEBUG
-        std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
+            std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
 #endif
-        throw std::runtime_error("Instruction not supported.");
+            throw std::runtime_error("Instruction not supported.");
+        }
+    }
+    else // Non complex returntype
+    {
+        switch(opcode)
+        {
+        case CPHVB_ADD:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+            break;
+        case CPHVB_SUBTRACT:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
+            break;
+        case CPHVB_MULTIPLY:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
+            break;
+        case CPHVB_DIVIDE:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
+            break;
+        case CPHVB_POWER:
+            if (isFloat(returnType))
+                source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+            else
+                source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
+            break;
+        case CPHVB_MOD:
+            if (isFloat(returnType))
+                source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
+            else
+                source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
+            break;
+        case CPHVB_ABSOLUTE:
+            if (isFloat(returnType))
+                source << "\t" << parameters[0] << " = fabs(" << parameters[1] << ");\n";
+            else
+                source << "\t" << parameters[0] << " = abs(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_RINT:
+            source << "\t" << parameters[0] << " = rint(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_SIGN:
+            source << "\t" << parameters[0] << " = " << parameters[1] << "<0?-1:1;\n";
+            break;
+        case CPHVB_EXP:
+            source << "\t" << parameters[0] << " = exp(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_EXP2:
+            source << "\t" << parameters[0] << " = exp2(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_LOG:
+            source << "\t" << parameters[0] << " = log(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_LOG10:
+            source << "\t" << parameters[0] << " = log10(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_EXPM1:
+            source << "\t" << parameters[0] << " = expm1(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_LOG1P:
+            source << "\t" << parameters[0] << " = log1p(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_SQRT:
+            source << "\t" << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_SQUARE:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
+            break;
+        case CPHVB_SIN:
+            source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_COS:
+            source << "\t" << parameters[0] << " = cos(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_TAN:
+            source << "\t" << parameters[0] << " = tan(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCSIN:
+            source << "\t" << parameters[0] << " = asin(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCCOS:
+            source << "\t" << parameters[0] << " = acos(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCTAN:
+            source << "\t" << parameters[0] << " = atan(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCTAN2:
+            source << "\t" << parameters[0] << " = atan2(" << parameters[1] << ", " << parameters[2] << ");\n";
+            break;
+        case CPHVB_HYPOT:
+            source << "\t" << parameters[0] << " = hypot(" << parameters[1] << ", " << parameters[2] << ");\n";
+            break;
+        case CPHVB_SINH:
+            source << "\t" << parameters[0] << " = sinh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_COSH:
+            source << "\t" << parameters[0] << " = cosh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_TANH:
+            source << "\t" << parameters[0] << " = tanh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCSINH:
+            source << "\t" << parameters[0] << " = asinh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCCOSH:
+            source << "\t" << parameters[0] << " = acosh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ARCTANH:
+            source << "\t" << parameters[0] << " = atanh(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_BITWISE_AND:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
+            break;
+        case CPHVB_BITWISE_OR:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
+            break;
+        case CPHVB_BITWISE_XOR:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
+            break;
+        case CPHVB_LOGICAL_NOT:
+            source << "\t" << parameters[0] << " = !" << parameters[1] << ";\n";
+            break;
+        case CPHVB_LOGICAL_AND:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
+            break;
+        case CPHVB_LOGICAL_OR:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
+            break;
+        case CPHVB_LOGICAL_XOR:
+            source << "\t" << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
+            break;
+        case CPHVB_INVERT:
+            source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
+            break;
+        case CPHVB_LEFT_SHIFT:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
+            break;
+        case CPHVB_RIGHT_SHIFT:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
+            break;
+        case CPHVB_GREATER:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
+            break;
+        case CPHVB_GREATER_EQUAL:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
+            break;
+        case CPHVB_LESS:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
+            break;
+        case CPHVB_LESS_EQUAL:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
+            break;
+        case CPHVB_NOT_EQUAL:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
+            break;
+        case CPHVB_EQUAL:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
+            break;
+        case CPHVB_MAXIMUM:
+            source << "\t" << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
+            break;
+        case CPHVB_MINIMUM:
+            source << "\t" << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
+            break;
+        case CPHVB_IDENTITY:
+            source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
+            break;
+        case CPHVB_SIGNBIT:
+            source << "\t" << parameters[0] << " = " << parameters[1] << " < 0;\n";
+            break;
+        case CPHVB_FLOOR:
+            source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_CEIL:
+            source << "\t" << parameters[0] << " = ceil(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_TRUNC:
+            source << "\t" << parameters[0] << " = trunc(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_LOG2:
+            source << "\t" << parameters[0] << " = log2(" << parameters[1] << ");\n";
+            break;
+        default:
+#ifdef DEBUG
+            std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
+#endif
+            throw std::runtime_error("Instruction not supported.");
+        }
     }
 }
