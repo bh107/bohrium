@@ -545,25 +545,6 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_LDEXP", 
-        "doc": "Calculate ``x1 * 2**x2`` for all elements in the array.", 
-        "code": "op1 = op2 * pow(2, op3)", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
         "opcode": "CPHVB_LEFT_SHIFT", 
         "doc": "Shift the bits of an integer to the left.", 
         "code": "op1 = (op2) << (op3)", 

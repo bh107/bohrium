@@ -915,24 +915,6 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_HYPOT + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16) + (1 << 17):
             return &traverse_aca<cphvb_float64,cphvb_float64,cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
             break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16):
-            return &traverse_aaa<cphvb_float32,cphvb_float32,cphvb_float32, ldexp_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16) + (1 << 18):
-            return &traverse_aac<cphvb_float32,cphvb_float32,cphvb_float32, ldexp_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16) + (1 << 17):
-            return &traverse_aca<cphvb_float32,cphvb_float32,cphvb_float32, ldexp_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16):
-            return &traverse_aaa<cphvb_float64,cphvb_float64,cphvb_float64, ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16) + (1 << 18):
-            return &traverse_aac<cphvb_float64,cphvb_float64,cphvb_float64, ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_LDEXP + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16) + (1 << 17):
-            return &traverse_aca<cphvb_float64,cphvb_float64,cphvb_float64, ldexp_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
-            break;
         case CPHVB_LEFT_SHIFT + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_int8,cphvb_int8,cphvb_int8, left_shift_functor<cphvb_int8,cphvb_int8,cphvb_int8 > >;
             break;
