@@ -81,7 +81,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
     for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        cmd = "a[0] = self.array(%s);"%(shape)
+        cmd = "a[0] = self.array(%s,np.float32);"%(shape)
         yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):
@@ -127,16 +127,21 @@ class numpytest:
         self.random.seed(42)
     def init(self):
         pass
-    def array(self,dims,dtype=None):
+    def array(self,dims,dtype,floating=False):
         try: 
             total = reduce(mul,dims)
         except TypeError:
             total = dims
+            dims = (dims,)
         if dtype is bool:
             res = np.random.random_integers(0,1,dims)
+        elif floating: 
+            res = dtype(np.random.random(size=dims))
         else:
-            res = np.arange(1,total+1,dtype=dtype).reshape(dims)
-            res += res == 0#Remove zeros
+            res = dtype(np.random.random_integers(1,8,size=dims))
+        if len(res.shape) == 0:#Make sure scalars is arrays.
+            res = np.asarray(res)
+            res.shape = dims
         return np.asarray(res)
 
 if __name__ == "__main__":

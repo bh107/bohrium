@@ -8,11 +8,9 @@ class test_matmul(numpytest):
             for m in range(1,maxdim+1):
                 for n in range(1,maxdim+1):
                     for k in range(1,maxdim+1):
-                        A = self.array((m,k))
-                        B = self.array((k,n))
                         a = {}
-                        cmd  = "a[0] = self.array((%d,%d),dtype=%s);"%(m,k,t)
-                        cmd += "a[1] = self.array((%d,%d),dtype=%s);"%(k,n,t)
+                        cmd  = "a[0] = self.array((%d,%d),%s);"%(m,k,t)
+                        cmd += "a[1] = self.array((%d,%d),%s);"%(k,n,t)
                         exec cmd
                         yield (a,cmd) 
 
