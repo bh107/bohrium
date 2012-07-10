@@ -133,16 +133,16 @@ class numpytest:
         except TypeError:
             total = dims
             dims = (dims,)
-        if dtype is bool:
+        if dtype is np.bool:
             res = np.random.random_integers(0,1,dims)
         elif floating: 
-            res = dtype(np.random.random(size=dims))
+            res = np.random.random(size=dims)
         else:
-            res = dtype(np.random.random_integers(1,8,size=dims))
+            res = np.random.random_integers(1,8,size=dims)
         if len(res.shape) == 0:#Make sure scalars is arrays.
             res = np.asarray(res)
             res.shape = dims
-        return np.asarray(res)
+        return np.asarray(res, dtype=dtype)
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
