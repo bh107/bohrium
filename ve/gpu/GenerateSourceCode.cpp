@@ -60,7 +60,6 @@ void generateInstructionSource(cphvb_opcode opcode,
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)cphvb_operands(opcode));
-    const char* type_str = oclTypeStr(returnType);
     switch(opcode)
     {
     case CPHVB_ADD:
@@ -79,10 +78,16 @@ void generateInstructionSource(cphvb_opcode opcode,
         source << "\t" << parameters[0] << " = -" << parameters[1] << ";\n";
         break;
     case CPHVB_POWER:
-        source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+        if (isFloat(returnType))
+            source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+        else
+            source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
         break;
     case CPHVB_MOD:
-        source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
+        if (isFloat(returnType))
+            source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
+        else
+            source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
         break;
     case CPHVB_ABSOLUTE:
         if (isFloat(returnType))
@@ -119,12 +124,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         break;
     case CPHVB_SQUARE:
         source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
-        break;
-    case CPHVB_RECIPROCAL:
-        if (returnType == OCL_FLOAT16)
-            source << "\t" << parameters[0] << " = half_recip(" << parameters[1] << ");\n";
-        else
-            source << "\t" << parameters[0] << " = native_recip(" << parameters[1] << ");\n";
         break;
     case CPHVB_SIN:
         source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
@@ -227,9 +226,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         break;
     case CPHVB_SIGNBIT:
         source << "\t" << parameters[0] << " = " << parameters[1] << " < 0;\n";
-        break;
-    case CPHVB_LDEXP:
-        source << "\t" << parameters[0] << " = ldexp(" << parameters[1] << ", " << parameters[2] << ");\n";
         break;
     case CPHVB_FLOOR:
         source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";

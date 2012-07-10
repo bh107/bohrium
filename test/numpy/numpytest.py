@@ -37,6 +37,11 @@ class _C:
         self.ENDC = ''
 
 def _array_equal(A,B,maxerror=0.0):
+    if type(A) != type(B):
+        return False 
+    if np.isscalar(A):
+        return A == B
+
     cphvbbridge.unhandle_array(A)
     cphvbbridge.unhandle_array(B)
     A = A.flatten()
@@ -81,7 +86,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
     for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        cmd = "a[0] = self.array(%s);"%(shape)
+        cmd = "a[0] = self.array(%s,np.float32);"%(shape)
         yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):
@@ -127,17 +132,22 @@ class numpytest:
         self.random.seed(42)
     def init(self):
         pass
-    def array(self,dims,dtype=None):
+    def array(self,dims,dtype,floating=False):
         try: 
             total = reduce(mul,dims)
         except TypeError:
             total = dims
-        if dtype is bool:
+            dims = (dims,)
+        if dtype is np.bool:
             res = np.random.random_integers(0,1,dims)
+        elif floating: 
+            res = np.random.random(size=dims)
         else:
-            res = np.arange(1,total+1,dtype=dtype).reshape(dims)
-            res += res == 0#Remove zeros
-        return np.asarray(res)
+            res = np.random.random_integers(1,8,size=dims)
+        if len(res.shape) == 0:#Make sure scalars is arrays.
+            res = np.asarray(res)
+            res.shape = dims
+        return np.asarray(res, dtype=dtype)
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions

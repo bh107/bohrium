@@ -1,4 +1,5 @@
-import cphvbnumpy as np
+import numpy as np
+import numpy
 from numpytest import numpytest,gen_views,TYPES
 import random
 import os
@@ -13,7 +14,8 @@ def load_opcodes():
     f.close()
     return ret
 
- 
+def type_cphvb2numpy(cphvb_type):
+    return "np.%s"%cphvb_type[6:].lower()
 
 
 class test_ufunc(numpytest):
@@ -27,14 +29,19 @@ class test_ufunc(numpytest):
         for op in self.ops:
             self.name = op['opcode']
             self.nops = op['nop']
-            if op['system_opcode'] or self.name in ["CPHVB_IDENTITY","CPHVB_LDEXP","CPHVB_POWER","CPHVB_ARCSIN","CPHVB_ARCTANH","CPHVB_ARCCOS"]:
+
+            if op['system_opcode'] or self.name in ["CPHVB_IDENTITY"]:
                 continue
             for t in op['types']:
                 a = {}
+                if self.name in ["CPHVB_ARCSIN","CPHVB_ARCTANH","CPHVB_ARCCOS"]:
+                    floating = ",floating=True"
+                else:
+                    floating = "" 
                 cmd = ""
                 for i in xrange(len(t)):
-                    tname = "np.%s"%t[i][6:].lower() if t[i] != "CPHVB_BOOL" else "bool"
-                    cmd += "a[%d] = self.array((10),dtype=%s);"%(i,tname)
+                    tname = type_cphvb2numpy(t[i])
+                    cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,floating)
                 exec cmd
                 yield (a,cmd)
                 

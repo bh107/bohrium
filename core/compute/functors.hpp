@@ -81,13 +81,6 @@ struct hypot_functor {
 };
 
 template <typename T1, typename T2, typename T3>
-struct ldexp_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 * pow(2, *op3);
-    }
-};
-
-template <typename T1, typename T2, typename T3>
 struct left_shift_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
         *op1 = (*op2) << (*op3);
@@ -336,13 +329,6 @@ template <typename T1, typename T2>
 struct negative_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = -*op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct reciprocal_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = 1.0 / *op2;
     }
 };
 

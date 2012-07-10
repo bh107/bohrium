@@ -545,25 +545,6 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_LDEXP", 
-        "doc": "Calculate ``x1 * 2**x2`` for all elements in the array.", 
-        "code": "op1 = op2 * pow(2, op3)", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
         "opcode": "CPHVB_LEFT_SHIFT", 
         "doc": "Shift the bits of an integer to the left.", 
         "code": "op1 = (op2) << (op3)", 
@@ -2584,55 +2565,6 @@
             [
                 "CPHVB_COMPLEX128", 
                 "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_RECIPROCAL", 
-        "doc": "Return the reciprocal of the argument, element-wise.", 
-        "code": "op1 = 1.0 / op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
             ]
         ]
     }, 

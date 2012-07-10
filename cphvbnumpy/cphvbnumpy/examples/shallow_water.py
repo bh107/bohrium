@@ -4,6 +4,10 @@ import cphvbnumpy as np
 
 g = 9.80665 # gravitational acceleration
 
+def setup(matrix_shape, dtype=np.float32, cphvb=False):
+   assert len(matrix_shape) == 2
+   return np.ones(matrix_shape,dtype=dtype,cphvb=cphvb)   
+ 
 def step(H, U, V, dt=0.02, dx=1.0, dy=1.0):
     # Reflecting boundary conditions
     H[:,0] = H[:,1]   ; U[:,0] = U[:,1]     ; V[:,0] = -V[:,1]

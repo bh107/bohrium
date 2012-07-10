@@ -5,11 +5,10 @@ from numpytest import numpytest,gen_views,TYPES
 class test_flatten(numpytest):
     
     def init(self):
-        for t in TYPES.NORMAL:
-            for v in gen_views(3,64,6):
-                a = {}
-                exec v
-                yield (a,v)
+        for v in gen_views(3,64,6):
+            a = {}
+            exec v
+            yield (a,v)
                 
     def test_flatten(self,a):
         cmd = "res = np.flatten(a[0])"
@@ -19,11 +18,10 @@ class test_flatten(numpytest):
 class test_diagonal(numpytest):
     
     def init(self):
-        for t in TYPES.NORMAL:
-            for v in gen_views(2,64,12,min_ndim=2):
-                a = {}
-                exec v
-                yield (a,v)
+        for v in gen_views(2,64,12,min_ndim=2):
+            a = {}
+            exec v
+            yield (a,v)
 
     def test_diagonal(self,a):
         cmd = "res = np.diagonal(a[0])"
