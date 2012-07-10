@@ -78,7 +78,10 @@ void generateInstructionSource(cphvb_opcode opcode,
         source << "\t" << parameters[0] << " = -" << parameters[1] << ";\n";
         break;
     case CPHVB_POWER:
-        source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+        if (isFloat(returnType))
+            source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+        else
+            source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
         break;
     case CPHVB_MOD:
         if (isFloat(returnType))
