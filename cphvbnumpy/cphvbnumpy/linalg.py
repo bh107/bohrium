@@ -19,7 +19,7 @@ def solve(A ,b):
 def jacobi(A, b, tol=0.0005):
     # solve Ax=b via the Jacobi method
     x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
-    D = np.reciprocal(np.diag(A))
+    D = 1/np.diag(A)
     R = np.diag(np.diag(A)) - A
     T = D[:,np.newaxis]*R
     C = D*b

@@ -333,13 +333,6 @@ struct negative_functor {
 };
 
 template <typename T1, typename T2>
-struct reciprocal_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = 1.0 / *op2;
-    }
-};
-
-template <typename T1, typename T2>
 struct rint_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = (*op2 > 0.0) ? floor(*op2 + 0.5) : ceil(*op2 - 0.5);

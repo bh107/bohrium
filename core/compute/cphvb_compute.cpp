@@ -3693,66 +3693,6 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_NEGATIVE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
             return &traverse_ac<std::complex<double>,std::complex<double>, negative_functor<std::complex<double>,std::complex<double> > >;
             break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
-            return &traverse_aa<cphvb_int8,cphvb_int8, reciprocal_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int8,cphvb_int8, reciprocal_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12):
-            return &traverse_aa<cphvb_float64,cphvb_float64, reciprocal_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float64,cphvb_float64, reciprocal_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12):
-            return &traverse_aa<cphvb_uint16,cphvb_uint16, reciprocal_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint16,cphvb_uint16, reciprocal_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12):
-            return &traverse_aa<cphvb_uint64,cphvb_uint64, reciprocal_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint64,cphvb_uint64, reciprocal_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12):
-            return &traverse_aa<cphvb_int16,cphvb_int16, reciprocal_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int16,cphvb_int16, reciprocal_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
-            return &traverse_aa<cphvb_float32,cphvb_float32, reciprocal_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float32,cphvb_float32, reciprocal_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12):
-            return &traverse_aa<cphvb_int32,cphvb_int32, reciprocal_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int32,cphvb_int32, reciprocal_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12):
-            return &traverse_aa<cphvb_uint8,cphvb_uint8, reciprocal_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint8,cphvb_uint8, reciprocal_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12):
-            return &traverse_aa<cphvb_int64,cphvb_int64, reciprocal_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int64,cphvb_int64, reciprocal_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12):
-            return &traverse_aa<cphvb_uint32,cphvb_uint32, reciprocal_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
-        case CPHVB_RECIPROCAL + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint32,cphvb_uint32, reciprocal_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
         case CPHVB_RINT + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
             return &traverse_aa<cphvb_float32,cphvb_float32, rint_functor<cphvb_float32,cphvb_float32 > >;
             break;
