@@ -102,6 +102,10 @@ namespace NumCIL
         /// Cache of compiled unsafe copy methods bound to a particular type
         /// </summary>
         private static readonly Dictionary<Type, MethodInfo> _createAccessorDataMethodCache = new Dictionary<Type, MethodInfo>();
+        /// <summary>
+        /// The lock that prevents multiple instances from updating the method caches
+        /// </summary>
+        private static readonly object _cacheLock = new object();
 
         /// <summary>
         /// Static constructor, loads the unsafe dll and probes for support,
@@ -210,13 +214,15 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_binaryMethodCache.TryGetValue(op, out mi))
-            {
-                MethodInfo mix = (MethodInfo)_getBinaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                if (mix != null)
-                    mi = mix.MakeGenericMethod(typeof(C));
-                
-                _binaryMethodCache[op] = mi;
-            }
+                lock (_cacheLock)
+                    if (!_binaryMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getBinaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
+
+                        _binaryMethodCache[op] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -242,13 +248,15 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_unaryMethodCache.TryGetValue(op, out mi))
-            {
-                MethodInfo mix = (MethodInfo)_getUnaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                if (mix != null)
-                    mi = mix.MakeGenericMethod(typeof(C));
+                lock(_cacheLock)
+                    if (!_unaryMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getUnaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
 
-                _unaryMethodCache[op] = mi;
-            }
+                        _unaryMethodCache[op] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -273,13 +281,15 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_nullaryMethodCache.TryGetValue(op, out mi))
-            {
-                MethodInfo mix = (MethodInfo)_getNullaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                if (mix != null)
-                    mi = mix.MakeGenericMethod(typeof(C));
+                lock(_cacheLock)
+                    if (!_nullaryMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getNullaryApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
 
-                _nullaryMethodCache[op] = mi;
-            }
+                        _nullaryMethodCache[op] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -308,13 +318,15 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_aggregateMethodCache.TryGetValue(op, out mi))
-            {
-                MethodInfo mix = (MethodInfo)_getAggregate.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                if (mix != null)
-                    mi = mix.MakeGenericMethod(typeof(C));
+                lock(_cacheLock)
+                    if (!_aggregateMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getAggregate.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
 
-                _aggregateMethodCache[op] = mi;
-            }
+                        _aggregateMethodCache[op] = mi;
+                    }
 
             if (mi == null)
             {
@@ -344,13 +356,15 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_reduceMethodCache.TryGetValue(op, out mi))
-            {
-                MethodInfo mix = (MethodInfo)_getReduce.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                if (mix != null)
-                    mi = mix.MakeGenericMethod(typeof(C));
+                lock(_cacheLock)
+                    if (!_reduceMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getReduce.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
 
-                _reduceMethodCache[op] = mi;
-            }
+                        _reduceMethodCache[op] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -375,10 +389,12 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_copyFromManagedMethodCache.TryGetValue(typeof(T), out mi))
-            {
-                mi = (MethodInfo)_getCopyFromManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                _copyFromManagedMethodCache[typeof(T)] = mi;
-            }
+                lock(_cacheLock)
+                    if (!_copyFromManagedMethodCache.TryGetValue(typeof(T), out mi))
+                    {
+                        mi = (MethodInfo)_getCopyFromManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        _copyFromManagedMethodCache[typeof(T)] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -406,10 +422,12 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_copyToManagedMethodCache.TryGetValue(typeof(T), out mi))
-            {
-                mi = (MethodInfo)_getCopyToManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                _copyToManagedMethodCache[typeof(T)] = mi;
-            }
+                lock(_cacheLock)
+                    if (!_copyToManagedMethodCache.TryGetValue(typeof(T), out mi))
+                    {
+                        mi = (MethodInfo)_getCopyToManaged.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        _copyToManagedMethodCache[typeof(T)] = mi;
+                    }
 
             if (mi == null)
                 return false;
@@ -434,10 +452,12 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_createAccessorSizeMethodCache.TryGetValue(typeof(T), out mi))
-            {
-                mi = (MethodInfo)_getCreateAccessorSize.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                _createAccessorSizeMethodCache[typeof(T)] = mi;
-            }
+                lock(_cacheLock)
+                    if (!_createAccessorSizeMethodCache.TryGetValue(typeof(T), out mi))
+                    {
+                        mi = (MethodInfo)_getCreateAccessorSize.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        _createAccessorSizeMethodCache[typeof(T)] = mi;
+                    }
 
             if (mi == null)
                 return null;
@@ -458,10 +478,12 @@ namespace NumCIL
 
             MethodInfo mi;
             if (!_createAccessorDataMethodCache.TryGetValue(typeof(T), out mi))
-            {
-                mi = (MethodInfo)_getCreateAccessorData.MakeGenericMethod(typeof(T)).Invoke(null, null);
-                _createAccessorDataMethodCache[typeof(T)] = mi;
-            }
+                lock(_cacheLock)
+                    if (!_createAccessorDataMethodCache.TryGetValue(typeof(T), out mi))
+                    {
+                        mi = (MethodInfo)_getCreateAccessorData.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        _createAccessorDataMethodCache[typeof(T)] = mi;
+                    }
 
             if (mi == null)
                 return null;
