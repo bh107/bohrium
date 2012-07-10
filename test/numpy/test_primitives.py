@@ -1,4 +1,5 @@
-import cphvbnumpy as np
+import numpy as np
+import numpy
 from numpytest import numpytest,gen_views,TYPES
 import random
 import os
@@ -14,10 +15,7 @@ def load_opcodes():
     return ret
 
 def type_cphvb2numpy(cphvb_type):
-    if cphvb_type == "CPHVB_BOOL":
-        return "bool"
-    else:
-        return "np.%s"%cphvb_type[6:].lower()
+    return "np.%s"%cphvb_type[6:].lower()
 
 
 class test_ufunc(numpytest):
