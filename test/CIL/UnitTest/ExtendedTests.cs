@@ -104,6 +104,12 @@ namespace UnitTest
             var s0 = x0.Sum();
             if (s0 != 1900 || s1 != 1900)
                 throw new Exception(string.Format("Failure in repeat: {0}, {1}", s0, s1));
+
+			var t0 = Generate.Arange(new long[] { 101, 100 });
+			var t1 = t0.Reduce<Add>(0);
+			var t2 = t0.Reduce<Add>(1);
+			if (t1.Shape.Dimensions[0].Length != 100 || t2.Shape.Dimensions[0].Length != 101 || t1.Value[0] != 505000 || t2.Value[0] != 4950)
+				throw new Exception("Irregular reduction failed?");
         }
     }
 }
