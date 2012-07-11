@@ -88,10 +88,10 @@ namespace NumCIL
             /// <param name="axis">The axis to reduce</param>
             /// <param name="out">The output target</param>
             /// <returns>The output target</returns>
-            public static NdArray<T> Reduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+            public static void Reduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IBinaryOp<T>
             {
-                return UFunc.UFunc_Reduce_Inner_Flush<T, C>(op, axis, in1, @out);
+                Threads.Reduce<T, C>(op, axis, in1, @out);
             }
 
             /// <summary>

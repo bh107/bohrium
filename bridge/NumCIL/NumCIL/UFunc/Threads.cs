@@ -47,16 +47,16 @@ namespace NumCIL
             /// <param name="blockno">The index of this block</param>
             /// <param name="nblocks">The total number of blocks</param>
             /// <returns>A reshaped array</returns>
-            private static NdArray<T> Reshape<T>(NdArray<T> arg, int blockno, int nblocks)
+            private static NdArray<T> Reshape<T>(NdArray<T> arg, int blockno, int nblocks, long dimension = 0)
             {
                 //This reshapes over dimension zero, and does not really work if the array has an extra first dimension
                 long blockoffset = blockno == 0 ? 0 :
-                    ((arg.Shape.Dimensions[0].Length / nblocks) * blockno) +
-                    arg.Shape.Dimensions[0].Length % nblocks;
+                    ((arg.Shape.Dimensions[dimension].Length / nblocks) * blockno) +
+                    arg.Shape.Dimensions[dimension].Length % nblocks;
 
                 long[] lengths = arg.Shape.Dimensions.Select(x => x.Length).ToArray();
-                long offset = arg.Shape.Offset + (blockoffset * arg.Shape.Dimensions[0].Stride);
-                lengths[0] = (arg.Shape.Dimensions[0].Length / nblocks) + (blockno == 0 ? arg.Shape.Dimensions[0].Length % nblocks : 0);
+                long offset = arg.Shape.Offset + (blockoffset * arg.Shape.Dimensions[dimension].Stride);
+                lengths[dimension] = (arg.Shape.Dimensions[dimension].Length / nblocks) + (blockno == 0 ? arg.Shape.Dimensions[dimension].Length % nblocks : 0);
 
                 return new NdArray<T>(arg.DataAccessor, new Shape(lengths, offset, arg.Shape.Dimensions.Select(x => x.Stride).ToArray()));
             }
@@ -122,6 +122,76 @@ namespace NumCIL
                 else
                 {
                     UFunc.UFunc_Op_Inner_Unary_Flush(op, in1, @out);
+                }
+
+            }
+
+            internal static void Reduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+                where C : struct, IBinaryOp<T>
+            {
+				bool largeInput = in1.Shape.Dimensions[0].Length >= _no_blocks;
+				bool largeOutput = @out.Shape.Dimensions[0].Length >= _no_blocks && @out.Shape.Dimensions[Math.Max(0, axis-1)].Length >= _no_blocks;
+				bool scalarReduction = axis == 0 && in1.Shape.Dimensions.LongLength == 1;
+				bool doubleLargeInput = in1.Shape.Dimensions[0].Length >= (_no_blocks * 2);
+
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && ((largeInput && largeOutput) || (doubleLargeInput && scalarReduction)))
+                {
+                    AutoResetEvent cond = new AutoResetEvent(false);
+                    int blocksdone = 0;
+                    int totalblocks = _no_blocks;
+                    @out.DataAccessor.Allocate();
+
+					//Special handling required for 1D to scalar
+	                if (axis == 0 && in1.Shape.Dimensions.LongLength == 1)
+					{
+						//Allocate some temp storage
+						T[] tmpout = new T[totalblocks];
+	                    for (int i = 0; i < totalblocks; i++)
+	                    {
+	                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
+	                        {
+	                            int block = (int)args;
+
+								UFunc.UFunc_Reduce_Inner_Flush(op, axis, Reshape(in1, block, totalblocks), new NdArray<T>(tmpout, new Shape(new long[] { 1 }, block)));
+
+	                            Interlocked.Increment(ref blocksdone);
+	                            cond.Set();
+	                        }, i);
+	                    }
+
+	                    while (blocksdone < totalblocks)
+	                        cond.WaitOne();
+
+						//Make the final reduction on the thread results
+						T r = tmpout[0];
+						for(int i = 1; i < totalblocks; i++)
+							r = op.Op(r, tmpout[i]);
+
+						@out.Value[@out.Shape.Offset] = r;
+					}
+					else
+					{
+	                    for (int i = 0; i < totalblocks; i++)
+	                    {
+	                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
+	                        {
+	                            int block = (int)args;
+								var v1 = Reshape(in1, block, totalblocks, axis == 0 ? 1 : axis - 1);
+								var v2 = Reshape(@out, block, totalblocks, axis == 0 ? 0 : axis - 1);
+	                            UFunc.UFunc_Reduce_Inner_Flush(op, axis, v1, v2);
+
+	                            Interlocked.Increment(ref blocksdone);
+	                            cond.Set();
+	                        }, i);
+	                    }
+
+	                    while (blocksdone < totalblocks)
+	                        cond.WaitOne();
+					}
+                }
+                else
+                {
+                    UFunc.UFunc_Reduce_Inner_Flush(op, axis, in1, @out);
                 }
 
             }
