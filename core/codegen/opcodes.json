@@ -74,24 +74,1278 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_ARCTAN2", 
-        "doc": "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.", 
-        "code": "op1 = atan2( op2, op3 )", 
+        "opcode": "CPHVB_SUBTRACT", 
+        "doc": "Subtract arguments, element-wise.", 
+        "code": "op1 = op2 - op3", 
         "nop": 3, 
         "system_opcode": false, 
         "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
             [
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
             ]
         ]
     }, 
+    {
+        "opcode": "CPHVB_MULTIPLY", 
+        "doc": "Multiply arguments element-wise.", 
+        "code": "op1 = op2 * op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_DIVIDE", 
+        "doc": "Divide arguments element-wise.", 
+        "code": "op1 = op2 / op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_SQUARE", 
+        "doc": "Return the element-wise square of the input.", 
+        "code": "op1 = op2 * op2", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    },  
+    {
+        "opcode": "CPHVB_POWER", 
+        "doc": "First array elements raised to powers from second array, element-wise.", 
+        "code": "op1 = pow( op2, op3 )", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ABSOLUTE", 
+        "doc": "Calculate the absolute value element-wise.", 
+        "code": "op1 = op2 < 0.0 ? -op2: op2", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_NEGATIVE", 
+        "doc": "Returns an array with the negative of each element of the original array.", 
+        "code": "op1 = -op2", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_SIGN", 
+        "doc": "Returns an element-wise indication of the sign of a number.", 
+        "code": "op1 = op2 > 0.0 ? 1.0 : (op2 == 0 ? 0 : -1)", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_GREATER", 
+        "doc": "Return the truth value of (x1 > x2) element-wise.", 
+        "code": "op1 = op2 > op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_GREATER_EQUAL", 
+        "doc": "Return the truth value of (x1 >= x2) element-wise.", 
+        "code": "op1 = op2 >= op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LESS", 
+        "doc": "Return the truth value of (x1 < x2) element-wise.", 
+        "code": "op1 = op2 < op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LESS_EQUAL", 
+        "doc": "Return the truth value of (x1 =< x2) element-wise.", 
+        "code": "op1 = op2 <= op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_EQUAL", 
+        "doc": "Return (x1 == x2) element-wise.", 
+        "code": "op1 = op2 == op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_NOT_EQUAL", 
+        "doc": "Return (x1 != x2) element-wise.", 
+        "code": "op1 = op2 != op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LOGICAL_AND", 
+        "doc": "Compute the truth value of x1 AND x2 elementwise.", 
+        "code": "op1 = op2 && op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LOGICAL_OR", 
+        "doc": "Compute the truth value of x1 OR x2 elementwise.", 
+        "code": "op1 = op2 || op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_LOGICAL_XOR", 
+        "doc": "Compute the truth value of x1 XOR x2, element-wise.", 
+        "code": "op1 = (!op2 != !op3)", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_LOGICAL_NOT", 
+        "doc": "Compute the truth value of NOT x elementwise.", 
+        "code": "op1 = !op2", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    },  
+    {
+        "opcode": "CPHVB_MAXIMUM", 
+        "doc": "Element-wise maximum of array elements.", 
+        "code": "op1 = op2 < op3 ? op3 : op2", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_MINIMUM", 
+        "doc": "Element-wise minimum of array elements.", 
+        "code": "op1 = op2 < op3 ? op2 : op3", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_INT8", 
+                "CPHVB_INT8", 
+                "CPHVB_INT8"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16", 
+                "CPHVB_UINT16"
+            ], 
+            [
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64", 
+                "CPHVB_UINT64"
+            ], 
+            [
+                "CPHVB_INT16", 
+                "CPHVB_INT16", 
+                "CPHVB_INT16"
+            ], 
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL", 
+                "CPHVB_BOOL"
+            ], 
+            [
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
+            ], 
+            [
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8", 
+                "CPHVB_UINT8"
+            ], 
+            [
+                "CPHVB_INT64", 
+                "CPHVB_INT64", 
+                "CPHVB_INT64"
+            ], 
+            [
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
+            ]
+        ]
+    },
     {
         "opcode": "CPHVB_BITWISE_AND", 
         "doc": "Compute the bit-wise AND of two arrays element-wise.", 
@@ -255,296 +1509,51 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_DIVIDE", 
-        "doc": "Divide arguments element-wise.", 
-        "code": "op1 = op2 / op3", 
-        "nop": 3, 
+        "opcode": "CPHVB_INVERT", 
+        "doc": "Compute bit-wise inversion, or bit-wise NOT, element-wise.", 
+        "code": "op1 = ~op2", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
                 "CPHVB_INT8", 
-                "CPHVB_INT8", 
                 "CPHVB_INT8"
             ], 
             [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
                 "CPHVB_UINT16", 
                 "CPHVB_UINT16"
             ], 
             [
                 "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
                 "CPHVB_UINT64"
             ], 
             [
                 "CPHVB_INT16", 
-                "CPHVB_INT16", 
                 "CPHVB_INT16"
             ], 
             [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_EQUAL", 
-        "doc": "Return (x1 == x2) element-wise.", 
-        "code": "op1 = op2 == op3", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_BOOL", 
                 "CPHVB_BOOL"
             ], 
             [
-                "CPHVB_BOOL", 
                 "CPHVB_INT32", 
                 "CPHVB_INT32"
             ], 
             [
-                "CPHVB_BOOL", 
                 "CPHVB_UINT8", 
                 "CPHVB_UINT8"
             ], 
             [
-                "CPHVB_BOOL", 
                 "CPHVB_INT64", 
                 "CPHVB_INT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_GREATER", 
-        "doc": "Return the truth value of (x1 > x2) element-wise.", 
-        "code": "op1 = op2 > op3", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_UINT32", 
                 "CPHVB_UINT32"
             ]
         ]
     }, 
-    {
-        "opcode": "CPHVB_GREATER_EQUAL", 
-        "doc": "Return the truth value of (x1 >= x2) element-wise.", 
-        "code": "op1 = op2 >= op3", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_HYPOT", 
-        "doc": "Given the \"legs\" of a right triangle, return its hypotenuse.", 
-        "code": "op1 = sqrt( pow(op2, 2) + pow(op3, 2) )", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
+     {
         "opcode": "CPHVB_LEFT_SHIFT", 
         "doc": "Shift the bits of an integer to the left.", 
         "code": "op1 = (op2) << (op3)", 
@@ -594,450 +1603,558 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_LESS", 
-        "doc": "Return the truth value of (x1 < x2) element-wise.", 
-        "code": "op1 = op2 < op3", 
+        "opcode": "CPHVB_RIGHT_SHIFT", 
+        "doc": "Shift the bits of an integer to the right.", 
+        "code": "op1 = (op2) >> (op3)", 
         "nop": 3, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_BOOL", 
+                "CPHVB_INT8", 
                 "CPHVB_INT8", 
                 "CPHVB_INT8"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
+                "CPHVB_UINT16", 
                 "CPHVB_UINT16", 
                 "CPHVB_UINT16"
             ], 
             [
-                "CPHVB_BOOL", 
+                "CPHVB_UINT64", 
                 "CPHVB_UINT64", 
                 "CPHVB_UINT64"
             ], 
             [
-                "CPHVB_BOOL", 
+                "CPHVB_INT16", 
                 "CPHVB_INT16", 
                 "CPHVB_INT16"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32", 
+                "CPHVB_UINT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
+                "CPHVB_UINT8", 
                 "CPHVB_UINT8", 
                 "CPHVB_UINT8"
             ], 
             [
-                "CPHVB_BOOL", 
+                "CPHVB_INT64", 
                 "CPHVB_INT64", 
                 "CPHVB_INT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_INT32", 
+                "CPHVB_INT32", 
+                "CPHVB_INT32"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_LESS_EQUAL", 
-        "doc": "Return the truth value of (x1 =< x2) element-wise.", 
-        "code": "op1 = op2 <= op3", 
-        "nop": 3, 
+        "opcode": "CPHVB_COS", 
+        "doc": "Cosine elementwise.", 
+        "code": "op1 = cos( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_LOGICAL_AND", 
-        "doc": "Compute the truth value of x1 AND x2 elementwise.", 
-        "code": "op1 = op2 && op3", 
-        "nop": 3, 
+        "opcode": "CPHVB_SIN", 
+        "doc": "Trigonometric sine, element-wise.", 
+        "code": "op1 = sin( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_LOGICAL_OR", 
-        "doc": "Compute the truth value of x1 OR x2 elementwise.", 
-        "code": "op1 = op2 || op3", 
-        "nop": 3, 
+        "opcode": "CPHVB_TAN", 
+        "doc": "Compute tangent element-wise.", 
+        "code": "op1 = tan( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_COSH", 
+        "doc": "Hyperbolic cosine, element-wise.", 
+        "code": "op1 = cosh( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    },  
+    {
+        "opcode": "CPHVB_SINH", 
+        "doc": "Hyperbolic sine, element-wise.", 
+        "code": "op1 = sinh( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_LOGICAL_XOR", 
-        "doc": "Compute the truth value of x1 XOR x2, element-wise.", 
-        "code": "op1 = (!op2 != !op3)", 
-        "nop": 3, 
+        "opcode": "CPHVB_TANH", 
+        "doc": "Compute hyperbolic tangent element-wise.", 
+        "code": "op1 = tanh( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_MAXIMUM", 
-        "doc": "Element-wise maximum of array elements.", 
-        "code": "op1 = op2 < op3 ? op3 : op2", 
-        "nop": 3, 
+        "opcode": "CPHVB_ARCSIN", 
+        "doc": "Inverse sine, element-wise.", 
+        "code": "op1 = asin( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ]
         ]
     }, 
     {
-        "opcode": "CPHVB_MINIMUM", 
-        "doc": "Element-wise minimum of array elements.", 
-        "code": "op1 = op2 < op3 ? op2 : op3", 
-        "nop": 3, 
+        "opcode": "CPHVB_ARCCOS", 
+        "doc": "Trigonometric inverse cosine, element-wise.", 
+        "code": "op1 = acos( op2 )", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_FLOAT64", 
                 "CPHVB_FLOAT64", 
                 "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ARCTAN", 
+        "doc": "Trigonometric inverse tangent, element-wise.", 
+        "code": "op1 = atan( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ARCSINH", 
+        "doc": "Inverse hyperbolic sine elementwise.", 
+        "code": "op1 = asinh( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ARCCOSH", 
+        "doc": "Inverse hyperbolic cosine, elementwise.", 
+        "code": "op1 = acosh( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ARCTANH", 
+        "doc": "Inverse hyperbolic tangent elementwise.", 
+        "code": "op1 = atanh( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ARCTAN2", 
+        "doc": "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.", 
+        "code": "op1 = atan2( op2, op3 )", 
+        "nop": 3, 
+        "system_opcode": false, 
+        "types": [
             [
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_EXP", 
+        "doc": "Calculate the exponential of all elements in the input array.", 
+        "code": "op1 = exp( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ], 
             [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
             ], 
             [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_EXP2", 
+        "doc": "Calculate `2**p` for all `p` in the input array.", 
+        "code": "op1 = pow( 2, op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_EXPM1", 
+        "doc": "Calculate ``exp(x) - 1`` for all elements in the array.", 
+        "code": "op1 = expm1( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    },
+    {
+        "opcode": "CPHVB_LOG", 
+        "doc": "Natural logarithm, element-wise.", 
+        "code": "op1 = log( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LOG2", 
+        "doc": "Base-2 logarithm of `x`.", 
+        "code": "op1 = log2( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LOG10", 
+        "doc": "Return the base 10 logarithm of the input array, element-wise.", 
+        "code": "op1 = log10( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_LOG1P", 
+        "doc": "Return the natural logarithm of one plus the input array, element-wise.", 
+        "code": "op1 = log1p( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_SQRT", 
+        "doc": "Return the positive square-root of an array, element-wise.", 
+        "code": "op1 = sqrt( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ], 
+            [
+                "CPHVB_COMPLEX64", 
+                "CPHVB_COMPLEX64"
+            ], 
+            [
+                "CPHVB_COMPLEX128", 
+                "CPHVB_COMPLEX128"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_CEIL", 
+        "doc": "Return the ceiling of the input, element-wise.", 
+        "code": "op1 = ceil( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_TRUNC", 
+        "doc": "Return the truncated value of the input, element-wise.", 
+        "code": "op1 = trunc( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_FLOOR", 
+        "doc": "Return the floor of the input, element-wise.", 
+        "code": "op1 = floor( op2 )", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_RINT", 
+        "doc": "Round elements of the array to the nearest integer.", 
+        "code": "op1 = (op2 > 0.0) ? floor(op2 + 0.5) : ceil(op2 - 0.5)", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
             ]
         ]
     }, 
@@ -1101,628 +2218,19 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_MULTIPLY", 
-        "doc": "Multiply arguments element-wise.", 
-        "code": "op1 = op2 * op3", 
+        "opcode": "CPHVB_HYPOT", 
+        "doc": "Given the \"legs\" of a right triangle, return its hypotenuse.", 
+        "code": "op1 = sqrt( pow(op2, 2) + pow(op3, 2) )", 
         "nop": 3, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_NOT_EQUAL", 
-        "doc": "Return (x1 != x2) element-wise.", 
-        "code": "op1 = op2 != op3", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
                 "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_POWER", 
-        "doc": "First array elements raised to powers from second array, element-wise.", 
-        "code": "op1 = pow( op2, op3 )", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_RIGHT_SHIFT", 
-        "doc": "Shift the bits of an integer to the right.", 
-        "code": "op1 = (op2) >> (op3)", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SUBTRACT", 
-        "doc": "Subtract arguments, element-wise.", 
-        "code": "op1 = op2 - op3", 
-        "nop": 3, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ABSOLUTE", 
-        "doc": "Calculate the absolute value element-wise.", 
-        "code": "op1 = op2 < 0.0 ? -op2: op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCCOS", 
-        "doc": "Trigonometric inverse cosine, element-wise.", 
-        "code": "op1 = acos( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCCOSH", 
-        "doc": "Inverse hyperbolic cosine, elementwise.", 
-        "code": "op1 = acosh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCSIN", 
-        "doc": "Inverse sine, element-wise.", 
-        "code": "op1 = asin( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCSINH", 
-        "doc": "Inverse hyperbolic sine elementwise.", 
-        "code": "op1 = asinh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCTAN", 
-        "doc": "Trigonometric inverse tangent, element-wise.", 
-        "code": "op1 = atan( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_ARCTANH", 
-        "doc": "Inverse hyperbolic tangent elementwise.", 
-        "code": "op1 = atanh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_CEIL", 
-        "doc": "Return the ceiling of the input, element-wise.", 
-        "code": "op1 = ceil( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_COS", 
-        "doc": "Cosine elementwise.", 
-        "code": "op1 = cos( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_COSH", 
-        "doc": "Hyperbolic cosine, element-wise.", 
-        "code": "op1 = cosh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_EXP", 
-        "doc": "Calculate the exponential of all elements in the input array.", 
-        "code": "op1 = exp( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_EXP2", 
-        "doc": "Calculate `2**p` for all `p` in the input array.", 
-        "code": "op1 = pow( 2, op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_EXPM1", 
-        "doc": "Calculate ``exp(x) - 1`` for all elements in the array.", 
-        "code": "op1 = expm1( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_FLOOR", 
-        "doc": "Return the floor of the input, element-wise.", 
-        "code": "op1 = floor( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
                 "CPHVB_FLOAT64", 
                 "CPHVB_FLOAT64"
             ]
@@ -2326,315 +2834,6 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_INVERT", 
-        "doc": "Compute bit-wise inversion, or bit-wise NOT, element-wise.", 
-        "code": "op1 = ~op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_LOG", 
-        "doc": "Natural logarithm, element-wise.", 
-        "code": "op1 = log( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_LOG10", 
-        "doc": "Return the base 10 logarithm of the input array, element-wise.", 
-        "code": "op1 = log10( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_LOG1P", 
-        "doc": "Return the natural logarithm of one plus the input array, element-wise.", 
-        "code": "op1 = log1p( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_LOG2", 
-        "doc": "Base-2 logarithm of `x`.", 
-        "code": "op1 = log2( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_LOGICAL_NOT", 
-        "doc": "Compute the truth value of NOT x elementwise.", 
-        "code": "op1 = !op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_NEGATIVE", 
-        "doc": "Returns an array with the negative of each element of the original array.", 
-        "code": "op1 = -op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_RINT", 
-        "doc": "Round elements of the array to the nearest integer.", 
-        "code": "op1 = (op2 > 0.0) ? floor(op2 + 0.5) : ceil(op2 - 0.5)", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SIGN", 
-        "doc": "Returns an element-wise indication of the sign of a number.", 
-        "code": "op1 = op2 > 0.0 ? 1.0 : (op2 == 0 ? 0 : -1)", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
         "opcode": "CPHVB_SIGNBIT", 
         "doc": "Returns element-wise True where signbit is set (less than zero).", 
         "code": "op1 = op2 < 0", 
@@ -2647,205 +2846,6 @@
             ], 
             [
                 "CPHVB_BOOL", 
-                "CPHVB_FLOAT64"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SIN", 
-        "doc": "Trigonometric sine, element-wise.", 
-        "code": "op1 = sin( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SINH", 
-        "doc": "Hyperbolic sine, element-wise.", 
-        "code": "op1 = sinh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SQRT", 
-        "doc": "Return the positive square-root of an array, element-wise.", 
-        "code": "op1 = sqrt( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SQUARE", 
-        "doc": "Return the element-wise square of the input.", 
-        "code": "op1 = op2 * op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_TAN", 
-        "doc": "Compute tangent element-wise.", 
-        "code": "op1 = tan( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_TANH", 
-        "doc": "Compute hyperbolic tangent element-wise.", 
-        "code": "op1 = tanh( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_TRUNC", 
-        "doc": "Return the truncated value of the input, element-wise.", 
-        "code": "op1 = trunc( op2 )", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
                 "CPHVB_FLOAT64"
             ]
         ]
