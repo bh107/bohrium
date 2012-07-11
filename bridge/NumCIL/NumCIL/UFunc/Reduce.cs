@@ -248,14 +248,14 @@ namespace NumCIL
                     NdArray<T> vl = @out.Subview(Range.NewAxis, axis);
 
                     //Initially we just copy the value
-                    FlushMethods.ApplyUnaryOp<T, CopyOp<T>>(new CopyOp<T>(), in1.Subview(Range.El(0), axis), vl);
+                    UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1.Subview(Range.El(0), axis), vl);
                     
                     //If there is more than one element in the dimension to reduce, apply the operation accumulatively
                     for (long j = 1; j < size; j++)
                     {
                         //Select the new dimension
                         //Apply the operation
-                        FlushMethods.ApplyBinaryOp<T, C>(op, vl, in1.Subview(Range.El(j), axis), vl);
+                        UFunc_Op_Inner_Binary_Flush<T, C>(op, vl, in1.Subview(Range.El(j), axis), vl);
                     }
                 }
             }
