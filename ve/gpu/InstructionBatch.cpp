@@ -160,6 +160,15 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
     // OK so we can accept the instruction
     instructions.push_back(inst);
     // Register unknow parameters
+    //catch when same input is used twice
+    if (operands.size() == 3 && cphvb_base_array(inst->operand[1]) == cphvb_base_array(inst->operand[2]))
+    {
+        if(sameView(inst->operand[1], inst->operand[2]))
+        {
+            inst->operand[2] = inst->operand[1];
+            known[2] = true;
+        }
+    }
     for (size_t op = 0; op < operands.size(); ++op)
     {
         if (!known[op])
