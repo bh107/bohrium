@@ -17,7 +17,7 @@ namespace Tester
             var full = Generate.Zeroes(height + 2, width + 2);
             var work = Generate.Zeroes(height, width);
             var diff = Generate.Zeroes(height, width);
-            var tmpdelta = Generate.Zeroes(height);
+            var tmpdelta = Generate.Zeroes(width);
             var deltares = Generate.Empty(1);
 
             full.Name = "full";
