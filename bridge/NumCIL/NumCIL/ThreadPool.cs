@@ -180,8 +180,16 @@ namespace NumCIL
                 while (true)
                 {
                     //Grab a work token
-                    IWorkToken token = queue.Take();
-                    if (token == null || token is StopToken || queue.IsCompleted)
+                    IWorkToken token = null;
+					try { token = queue.Take(); }
+					catch (InvalidOperationException) 
+					{
+						//Upon completion the queue will throw InvalidOperationException
+						if (!queue.IsCompleted) 
+							throw;
+					}
+
+                    if (token == null || token is StopToken)
                     {
                         if (token is StopToken)
                             failureExit = false;
