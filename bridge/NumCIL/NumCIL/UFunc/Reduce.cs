@@ -182,7 +182,7 @@ namespace NumCIL
 
                     T value = d[ix];
 
-                    for (long i = ix + stride; i < ix + limit; i += stride)
+                    for (long i = ix + stride; i < limit; i += stride)
                         value = op.Op(value, d[i]);
 
                     vd[@out.Shape.Offset] = value;
