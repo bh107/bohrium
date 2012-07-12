@@ -59,7 +59,7 @@ namespace Tester
             long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolver {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size);
+                count = JacobiSolver.Solve(size, size, true, 10);
 
             Console.WriteLine("Count: " + count.ToString());
         }
@@ -69,7 +69,7 @@ namespace Tester
             long size = 10000;
             long count;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, 118);
+                count = JacobiSolver.Solve(size, size, false, 10);
 
             Console.WriteLine("Count: " + count.ToString());
         }
@@ -77,7 +77,7 @@ namespace Tester
         private static void TimeScholes()
         {
             long size = 3200000;
-            long years = 36;
+            long years = 10;
             double result;
 
             using (new DispTimer(string.Format("BlackSholes {0}x{1}", size, years)))

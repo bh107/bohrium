@@ -12,8 +12,11 @@ namespace Tester
 
     public static class JacobiSolver
     {
-        public static long Solve(long width, long height, long? fixedIterations = null)
+        public static long Solve(long width, long height, bool calculateDelta, long? fixedIterations = null)
         {
+            if (fixedIterations == null)
+                calculateDelta = true;
+
             var full = Generate.Zeroes(height + 2, width + 2);
             var work = Generate.Zeroes(height, width);
             var diff = Generate.Zeroes(height, width);
@@ -68,7 +71,7 @@ namespace Tester
                 work += down;
                 work *= 0.2f;*/
 
-                if (!fixedIterations.HasValue)
+                if (calculateDelta)
                 {
                     Sub.Apply(cells, work, diff);
                     Abs.Apply(diff, diff);
