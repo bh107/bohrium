@@ -1662,7 +1662,7 @@ namespace NumCIL.<#=typename#>
         /// <summary>
         /// The factory class that produces the NdArray instances
         /// </summary>
-        public static NumCIL.Generic.Generator<T> Generator = new NumCIL.Generic.Generator<T>();
+        public static NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=tpn#>> Generator = new NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=tpn#>>();
 
         /// <summary>
         /// Creates a range sequential integers, starting with zero

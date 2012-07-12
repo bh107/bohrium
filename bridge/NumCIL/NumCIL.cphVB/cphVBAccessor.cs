@@ -116,7 +116,11 @@ namespace NumCIL.cphVB
             res[typeof(NumCIL.CopyOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
             res[typeof(NumCIL.GenerateOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
             if (VEM.Instance.SupportsRandom)
-                res[typeof(NumCIL.Generic.RandomGeneratorOp<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+			{
+                res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = cphvb_opcode.CPHVB_USERFUNC; }
+				catch {}
+			}
             if (VEM.Instance.SupportsReduce)
                 res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
@@ -592,7 +596,7 @@ namespace NumCIL.cphVB
 
                         if (opcode == cphvb_opcode.CPHVB_USERFUNC)
                         {
-                            if (VEM.SupportsRandom && ops is NumCIL.Generic.RandomGeneratorOp<T>)
+                            if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
                             {
                                 //cphVB only supports random for plain arrays
                                 if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].DataAccessor.Length)

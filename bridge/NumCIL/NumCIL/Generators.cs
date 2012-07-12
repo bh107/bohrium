@@ -82,69 +82,168 @@ namespace NumCIL.Generic
         NdArray<T> Random(Shape shape);
     }
 
-    /// <summary>
-    /// Implementation of a basic random number generator
-    /// </summary>
-    /// <typeparam name="T">The type of data to generate</typeparam>
-    public struct RandomGeneratorOp<T> : INullaryOp<T>
-    {
-        /// <summary>
-        /// Private reference to an initialized random number generator
-        /// </summary>
+	/// <summary>
+	/// Marker interface for random ops
+	/// </summary>
+	public interface IRandomGeneratorOp<T> : INullaryOp<T>
+	{ }
+
+	/// <summary>
+	/// Random generator for sbyte.
+	/// </summary>
+	public struct RandomGeneratorOpSByte : IRandomGeneratorOp<sbyte>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
 
-        /// <summary>
-        /// Returns a random number appropriate for the basic numeric types
-        /// </summary>
+	    /// <summary>Returns a random number</summary>
         /// <returns>A random number</returns>
-        public T Op()
-        {
-            if (typeof(T) == typeof(sbyte))
-                return (T)(object)(sbyte)(Rand.Next() & 0x7f);
-            else if (typeof(T) == typeof(short))
-                return (T)(object)(short)(Rand.Next() & 0x7fff);
-            else if (typeof(T) == typeof(int))
-                return (T)(object)(int)(Rand.Next() & 0x7fffffff);
-            else if (typeof(T) == typeof(long))
-            {
-                ulong upper = (ulong)(Rand.Next() & 0x7ffffff);
-                ulong lower = (ulong)(Rand.Next());
+        public sbyte Op() { return (sbyte)(Rand.Next() & 0x7f); }
+	}
 
-                return (T)(object)(long)((upper << 32) | lower);
-            }
-            else if (typeof(T) == typeof(byte))
-                return (T)(object)(byte)(Rand.Next() & 0xff);
-            else if (typeof(T) == typeof(ushort))
-                return (T)(object)(ushort)(Rand.Next() & 0xffff);
-            else if (typeof(T) == typeof(uint))
-            {
-                uint upper = ((uint)Rand.Next() & 0xffff);
-                uint lower = ((uint)Rand.Next() & 0xffff);
+	/// <summary>
+	/// Random generator for byte.
+	/// </summary>
+	public struct RandomGeneratorOpByte : IRandomGeneratorOp<byte>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
 
-                return (T)(object)(uint)((upper << 16) | lower);
-            }
-            else if (typeof(T) == typeof(ulong))
-            {
-                uint a1 = ((uint)Rand.Next() & 0xffffff);
-                uint a2 = ((uint)Rand.Next() & 0xffffff);
-                uint a3 = ((uint)Rand.Next() & 0xffff);
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public byte Op() { return (byte)(Rand.Next() & 0xff); }
+	}
 
-                return (T)(object)(ulong)((a3 << 40) | (a2 << 16) | a1);
-            }
-            else if (typeof(T) == typeof(float))
-                return (T)(object)(float)Rand.NextDouble();
-            else if (typeof(T) == typeof(double))
-                return (T)(object)(double)Rand.NextDouble();
-            else
-                throw new Exception(string.Format("Unable to generate random numbers for {0}", typeof(T).FullName));
-        }
-    }
+	/// <summary>
+	/// Random generator for short.
+	/// </summary>
+	public struct RandomGeneratorOpInt16 : IRandomGeneratorOp<short>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public short Op() { return (short)(Rand.Next() & 0x7fff); }
+	}
+
+	/// <summary>
+	/// Random generator for ushort.
+	/// </summary>
+	public struct RandomGeneratorOpUInt16 : IRandomGeneratorOp<ushort>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public ushort Op() { return (ushort)(Rand.Next() & 0xffff); }
+	}
+
+	/// <summary>
+	/// Random generator for int.
+	/// </summary>
+	public struct RandomGeneratorOpInt32 : IRandomGeneratorOp<int>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public int Op() { return (int)(Rand.Next() & 0x7fffffff); }
+	}
+
+	/// <summary>
+	/// Random generator for uint.
+	/// </summary>
+	public struct RandomGeneratorOpUInt32 : IRandomGeneratorOp<uint>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public uint Op() 
+		{
+            uint upper = ((uint)Rand.Next() & 0xffff);
+            uint lower = ((uint)Rand.Next() & 0xffff);
+
+            return (uint)((upper << 16) | lower);
+		}
+	}
+
+	/// <summary>
+	/// Random generator for long.
+	/// </summary>
+	public struct RandomGeneratorOpInt64 : IRandomGeneratorOp<long>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public long Op() 
+		{
+	        ulong upper = (ulong)(Rand.Next() & 0x7ffffff);
+	        ulong lower = (ulong)(Rand.Next());
+
+	        return (long)((upper << 32) | lower);
+		}
+	}
+
+	/// <summary>
+	/// Random generator for ulong.
+	/// </summary>
+	public struct RandomGeneratorOpUInt64 : IRandomGeneratorOp<ulong>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public ulong Op() 
+		{
+	        uint a1 = ((uint)Rand.Next() & 0xffffff);
+	        uint a2 = ((uint)Rand.Next() & 0xffffff);
+	        uint a3 = ((uint)Rand.Next() & 0xffff);
+
+	        return (ulong)((a3 << 40) | (a2 << 16) | a1);
+		}
+	}
+
+	/// <summary>
+	/// Random generator for float.
+	/// </summary>
+	public struct RandomGeneratorOpSingle : IRandomGeneratorOp<float>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public float Op() { return (float)Rand.NextDouble(); }
+	}
+
+	/// <summary>
+	/// Random generator for double.
+	/// </summary>
+	public struct RandomGeneratorOpDouble : IRandomGeneratorOp<double>
+	{
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+	    /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public double Op() { return (double)Rand.NextDouble(); }
+	}
 
     /// <summary>
     /// Basic generator implementation that just calls "Set(x)" on the NdArray
     /// </summary>
     /// <typeparam name="T">The type of data to generate</typeparam>
-    public class Generator<T> : IGenerator<T>
+	/// <typeparam name="C">The random number generator to use</typeparam>
+    public class Generator<T, C> : IGenerator<T>
+		where C : struct, IRandomGeneratorOp<T>
     {
         /// <summary>
         /// Generates an NdArray with sequential integers, starting with zero
@@ -182,10 +281,10 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with all elements set to a random value</returns>
-        public NdArray<T> Random(long size) 
+        public virtual NdArray<T> Random(long size) 
         {
             var x = new NdArray<T>(new Shape(size));
-            UFunc.Apply<T, RandomGeneratorOp<T>>(new RandomGeneratorOp<T>(), x);
+            UFunc.Apply<T, C>(new C(), x);
             return x;
         }
 
@@ -225,10 +324,10 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="shape">The shape of the generated array</param>
         /// <returns>An NdArray with all elements set to a random value</returns>
-        public NdArray<T> Random(Shape shape)
+        public virtual NdArray<T> Random(Shape shape)
         {
             var x = new NdArray<T>(shape);
-            UFunc.Apply<T, RandomGeneratorOp<T>>(new RandomGeneratorOp<T>(), x);
+            UFunc.Apply<T, C>(new C(), x);
             return x;
         }
 
