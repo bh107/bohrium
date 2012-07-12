@@ -20,7 +20,7 @@ Get the source, compile and install it::
   wget ...
   sudo mkdir /opt/cphvb
   sudo chown jane:jane
-  ./build install
+  ./build.py install
 
 
 MacOSX
