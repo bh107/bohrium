@@ -192,6 +192,7 @@ if __name__ == "__main__":
                         for a in arys.values():
                             a.cphvb = False
                         (res1,cmd1) = getattr(cls_inst,mth)(arys)
+                        res1 = res1.copy()
                         cphvbbridge.flush()
                         for a in arys.values():
                             a.cphvb = True
