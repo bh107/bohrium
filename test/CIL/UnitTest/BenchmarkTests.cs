@@ -12,7 +12,7 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var jacobiResult = Tester.JacobiSolver.Solve(100, 100);
+            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true);
             if (jacobiResult != 8349)
                 throw new Exception(string.Format("Jacobi solver failed: {0}", jacobiResult));
 

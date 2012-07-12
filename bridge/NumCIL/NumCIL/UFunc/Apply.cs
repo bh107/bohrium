@@ -829,7 +829,7 @@ namespace NumCIL
         /// <typeparam name="Ta">The type of input data to operate on</typeparam>
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="in1">The input argument</param>
+        /// <param name="scalar">The input scalar</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_UnaryConv_Scalar<Ta, Tb, C>(Ta scalar, NdArray<Tb> @out)
             where C : struct, IUnaryConvOp<Ta, Tb>
@@ -844,7 +844,7 @@ namespace NumCIL
         /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
-        /// <param name="in1">The input argument</param>
+        /// <param name="scalar">The input scalar</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_Unary_Flush_Scalar<T, C>(C op, T scalar, NdArray<T> @out)
             where C : struct, IUnaryOp<T>
@@ -862,7 +862,7 @@ namespace NumCIL
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
-        /// <param name="in1">The input argument</param>
+        /// <param name="scalar">The input scalar</param>
         /// <param name="out">The output target</param>
         private static void UFunc_Op_Inner_UnaryConv_Flush_Scalar<Ta, Tb, C>(C op, Ta scalar, NdArray<Tb> @out)
             where C : IUnaryConvOp<Ta, Tb>

@@ -46,6 +46,7 @@ namespace NumCIL
             /// <param name="arg">The argument to reshape</param>
             /// <param name="blockno">The index of this block</param>
             /// <param name="nblocks">The total number of blocks</param>
+            /// <param name="dimension">The dimension to reshape</param>
             /// <returns>A reshaped array</returns>
             private static NdArray<T> Reshape<T>(NdArray<T> arg, int blockno, int nblocks, long dimension = 0)
             {
