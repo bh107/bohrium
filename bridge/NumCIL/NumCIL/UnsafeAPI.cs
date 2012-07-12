@@ -34,9 +34,21 @@ namespace NumCIL
         /// </summary>
         private static readonly MethodInfo _getBinaryApply;
         /// <summary>
+        /// The method used to retrieve binary lhs scalar apply methods
+        /// </summary>
+        private static readonly MethodInfo _getBinaryLhsScalarApply;
+        /// <summary>
+        /// The method used to retrieve binary rhs scalar apply methods
+        /// </summary>
+        private static readonly MethodInfo _getBinaryRhsScalarApply;
+        /// <summary>
         /// The method used to retrieve unary apply methods
         /// </summary>
         private static readonly MethodInfo _getUnaryApply;
+        /// <summary>
+        /// The method used to retrieve unary apply scalar methods
+        /// </summary>
+        private static readonly MethodInfo _getUnaryScalarApply;
         /// <summary>
         /// The method used to retrieve nullary apply methods
         /// </summary>
@@ -71,9 +83,21 @@ namespace NumCIL
         /// </summary>
         private static readonly Dictionary<object, MethodInfo> _binaryMethodCache = new Dictionary<object, MethodInfo>();
         /// <summary>
+        /// Cache of compiled unsafe binary methods bound to a particular operator
+        /// </summary>
+        private static readonly Dictionary<object, MethodInfo> _binaryLhsScalarMethodCache = new Dictionary<object, MethodInfo>();
+        /// <summary>
+        /// Cache of compiled unsafe binary methods bound to a particular operator
+        /// </summary>
+        private static readonly Dictionary<object, MethodInfo> _binaryRhsScalarMethodCache = new Dictionary<object, MethodInfo>();
+        /// <summary>
         /// Cache of compiled unsafe unary methods bound to a particular operator
         /// </summary>
         private static readonly Dictionary<object, MethodInfo> _unaryMethodCache = new Dictionary<object, MethodInfo>();
+        /// <summary>
+        /// Cache of compiled unsafe unary methods bound to a particular operator using a scalar
+        /// </summary>
+        private static readonly Dictionary<object, MethodInfo> _unaryScalarMethodCache = new Dictionary<object, MethodInfo>();
         /// <summary>
         /// Cache of compiled unsafe nullary methods bound to a particular operator
         /// </summary>
@@ -115,7 +139,10 @@ namespace NumCIL
         {
             bool unsafeSupported = false;
             MethodInfo supportsBinaryApply = null;
+            MethodInfo supportsBinaryLhsScalarApply = null;
+            MethodInfo supportsBinaryRhsScalarApply = null;
             MethodInfo supportsUnaryApply = null;
+            MethodInfo supportsUnaryScalarApply = null;
             MethodInfo supportsNullaryApply = null;
             MethodInfo supportsAggregate = null;
             MethodInfo supportsReduce = null;
@@ -134,7 +161,10 @@ namespace NumCIL
                 if (unsafeSupported)
                 {
                     supportsBinaryApply = utilityType.GetMethod("GetBinaryApply");
+                    supportsBinaryLhsScalarApply = utilityType.GetMethod("GetBinaryLhsScalarApply");
+                    supportsBinaryRhsScalarApply = utilityType.GetMethod("GetBinaryRhsScalarApply");
                     supportsUnaryApply = utilityType.GetMethod("GetUnaryApply");
+                    supportsUnaryScalarApply = utilityType.GetMethod("GetUnaryScalarApply");
                     supportsNullaryApply = utilityType.GetMethod("GetNullaryApply");
                     supportsAggregate = utilityType.GetMethod("GetAggregate");
                     supportsReduce = utilityType.GetMethod("GetReduce");
@@ -143,7 +173,10 @@ namespace NumCIL
                     supportsCreateAccessorSize = utilityType.GetMethod("GetCreateAccessorSize");
                     supportsCreateAccessorData = utilityType.GetMethod("GetCreateAccessorData");
                     unsafeSupported &= supportsBinaryApply != null;
+                    unsafeSupported &= supportsBinaryLhsScalarApply != null;
+                    unsafeSupported &= supportsBinaryRhsScalarApply != null;
                     unsafeSupported &= supportsUnaryApply != null;
+                    unsafeSupported &= supportsUnaryScalarApply != null;
                     unsafeSupported &= supportsNullaryApply != null;
                     unsafeSupported &= supportsAggregate != null;
                     unsafeSupported &= supportsReduce != null;
@@ -161,7 +194,10 @@ namespace NumCIL
             if (IsUnsafeSupported)
             {
                 _getBinaryApply = supportsBinaryApply;
+                _getBinaryLhsScalarApply = supportsBinaryLhsScalarApply;
+                _getBinaryRhsScalarApply = supportsBinaryRhsScalarApply;
                 _getUnaryApply = supportsUnaryApply;
+                _getUnaryScalarApply = supportsUnaryScalarApply;
                 _getNullaryApply = supportsNullaryApply;
                 _getAggregate = supportsAggregate;
                 _getReduce = supportsReduce;
@@ -173,7 +209,10 @@ namespace NumCIL
             else
             {
                 _getBinaryApply = null;
+                _getBinaryLhsScalarApply = null;
+                _getBinaryRhsScalarApply = null;
                 _getUnaryApply = null;
+				_getUnaryScalarApply = null;
                 _getNullaryApply = null;
                 _getAggregate = null;
                 _getReduce = null;
@@ -230,6 +269,75 @@ namespace NumCIL
             mi.Invoke(null, new object[] { op, in1, in2, @out });
             return true;
         }
+        /// <summary>
+        /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side argument</param>
+        /// <param name="scalar">The right-handside scalar</param>
+        /// <param name="out">The output target</param>
+        /// <returns>True if the operation was supported and executed, false otherwise</returns>
+        internal static bool UFunc_Op_Inner_Binary_RhsScalar_Flush_Unsafe<T, C>(C op, NdArray<T> in1, T scalar, ref NdArray<T> @out)
+            where C : struct, IBinaryOp<T>
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_binaryRhsScalarMethodCache.TryGetValue(op, out mi))
+                lock (_cacheLock)
+                    if (!_binaryRhsScalarMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getBinaryRhsScalarApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
+
+                        _binaryRhsScalarMethodCache[op] = mi;
+                    }
+
+            if (mi == null)
+                return false;
+
+            mi.Invoke(null, new object[] { op, in1, scalar, @out });
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="scalar">The left-hand-side scalar</param>
+        /// <param name="in2">The right-handside argument</param>
+        /// <param name="out">The output target</param>
+        /// <returns>True if the operation was supported and executed, false otherwise</returns>
+        internal static bool UFunc_Op_Inner_Binary_LhsScalar_Flush_Unsafe<T, C>(C op, T scalar, NdArray<T> in2, ref NdArray<T> @out)
+            where C : struct, IBinaryOp<T>
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_binaryLhsScalarMethodCache.TryGetValue(op, out mi))
+                lock (_cacheLock)
+                    if (!_binaryLhsScalarMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getBinaryLhsScalarApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
+
+                        _binaryLhsScalarMethodCache[op] = mi;
+                    }
+
+            if (mi == null)
+                return false;
+
+            mi.Invoke(null, new object[] { op, scalar, in2, @out });
+            return true;
+        }
 
         /// <summary>
         /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
@@ -265,6 +373,39 @@ namespace NumCIL
             return true;
         }
 
+        /// <summary>
+        /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="scalar">The input scalar</param>
+        /// <param name="out">The output target</param>
+        /// <returns>True if the operation was supported and executed, false otherwise</returns>
+        internal static bool UFunc_Op_Inner_Unary_Scalar_Flush_Unsafe<T, C>(C op, T scalar, ref NdArray<T> @out)
+            where C : struct, IUnaryOp<T>
+        {
+            if (DisableUnsafeAPI || !IsUnsafeSupported)
+                return false;
+
+            MethodInfo mi;
+            if (!_unaryScalarMethodCache.TryGetValue(op, out mi))
+                lock(_cacheLock)
+                    if (!_unaryScalarMethodCache.TryGetValue(op, out mi))
+                    {
+                        MethodInfo mix = (MethodInfo)_getUnaryScalarApply.MakeGenericMethod(typeof(T)).Invoke(null, null);
+                        if (mix != null)
+                            mi = mix.MakeGenericMethod(typeof(C));
+
+                        _unaryScalarMethodCache[op] = mi;
+                    }
+
+            if (mi == null)
+                return false;
+
+            mi.Invoke(null, new object[] { op, scalar, @out });
+            return true;
+        }
         /// <summary>
         /// Attempts to load an unsafe method, compile it for the given type and operator and then execute it with the gicen operands
         /// </summary>

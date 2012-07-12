@@ -45,6 +45,36 @@ namespace NumCIL.Unsafe
             return typeof(NumCIL.Unsafe.Apply).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
 
+		/// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the apply operation, bound to the data type, but unbound in the operand type.
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, but unbound in the operand type, or null if no such method exists</returns>
+        public static MethodInfo GetBinaryLhsScalarApply<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "UFunc_Op_Inner_Binary_LhsScalar_Flush_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.Apply).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+		/// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the apply operation, bound to the data type, but unbound in the operand type.
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, but unbound in the operand type, or null if no such method exists</returns>
+        public static MethodInfo GetBinaryRhsScalarApply<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "UFunc_Op_Inner_Binary_RhsScalar_Flush_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.Apply).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
         /// <summary>
         /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the apply operation, bound to the data type, but unbound in the operand type.
         /// Returns null if the data type is not supported.
@@ -57,6 +87,21 @@ namespace NumCIL.Unsafe
                 return null;
 
             string name = "UFunc_Op_Inner_Unary_Flush_" + typeof(T).Name.Replace(".", "_");
+            return typeof(NumCIL.Unsafe.Apply).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+		/// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for the apply operation, bound to the data type, but unbound in the operand type.
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, but unbound in the operand type, or null if no such method exists</returns>
+        public static MethodInfo GetUnaryScalarApply<T>()
+        {
+            if (!typeof(T).IsPrimitive || !SupportsUnsafe)
+                return null;
+
+            string name = "UFunc_Op_Inner_Unary_Scalar_Flush_" + typeof(T).Name.Replace(".", "_");
             return typeof(NumCIL.Unsafe.Apply).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
 
