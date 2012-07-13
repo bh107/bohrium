@@ -31,12 +31,13 @@ namespace NumCIL
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
     public interface IUnaryOp<T> : IUnaryConvOp<T, T> { };
+
     /// <summary>
     /// Describes an operation that takes an input argument and produce an ouput
     /// </summary>
     /// <typeparam name="Ta">The input data type</typeparam>
     /// <typeparam name="Tb">The output data type</typeparam>
-    public interface IUnaryConvOp<Ta, Tb> : IOp<Ta>
+    public interface IUnaryConvOp<Ta, Tb> : IOp<Tb>
     {
         /// <summary>
         /// Performs the operation

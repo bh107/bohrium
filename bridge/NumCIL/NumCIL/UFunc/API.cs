@@ -326,10 +326,14 @@ namespace NumCIL
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
         public static NdArray<Tb> Apply<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Tb> @out = null)
-            where C : struct, IUnaryConvOp<Ta, Tb>
+            where C : struct, IUnaryConvOp<Ta, Tb>, IOp<Tb>
         {
             NdArray<Tb> v = SetupApplyHelper(in1, @out);
-            UFunc_Op_Inner_UnaryConv<Ta, Tb, C>(in1, v);
+
+            if (v.DataAccessor is ILazyAccessor<Tb>)
+                ((ILazyAccessor<Tb>)v.DataAccessor).AddConversionOperation<Ta>(new C(), v, in1);
+            else
+                FlushMethods.ApplyUnaryConvOp<Ta, Tb, C>(new C(), in1, v);
 
             return v;
         }

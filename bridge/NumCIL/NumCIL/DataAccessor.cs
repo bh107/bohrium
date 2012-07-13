@@ -75,6 +75,14 @@ namespace NumCIL.Generic
         /// <param name="operands">The operands involved, operand 0 is the target</param>
         void AddOperation(IOp<T> operation, params NdArray<T>[] operands);
 
+		/// <summary>
+        /// Register a pending operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="operands">The operands involved, operand 0 is the target</param>
+		/// <typeparam name="Tb">The source data type</typeparam>
+        void AddConversionOperation<Tb>(IOp<T> operation, NdArray<T> output, NdArray<Tb> input);
+
         /// <summary>
         /// Gets a list of registered pending operations on the accessor
         /// </summary>
@@ -226,6 +234,10 @@ namespace NumCIL.Generic
         /// Cache of the generic template method
         /// </summary>
         protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Matmul", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+		/// <summary>
+		/// Cache of the generic template method
+		/// </summary>
+		protected static readonly System.Reflection.MethodInfo conversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyUnaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of instantiated template methods
         /// </summary>
@@ -278,6 +290,17 @@ namespace NumCIL.Generic
         {
             lock (Lock)
                 PendingOperations.Add(new PendingOperation<T>(operation, operands));
+        }
+
+		/// <summary>
+        /// Register a pending conversion operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="operands">The operands involved, operand 0 is the target</param>
+        public virtual void AddConversionOperation<Ta>(IOp<T> operation, NdArray<T>output, NdArray<Ta> input)
+        {
+            lock (Lock)
+                PendingOperations.Add(new PendingConversionOperation<T, Ta>(operation, output, input));
         }
 
         /// <summary>
@@ -387,7 +410,20 @@ namespace NumCIL.Generic
         {
             foreach (var n in work)
             {
-                if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
+				if (n is IPendingConversionOp)
+				{
+					Type inputType = n.GetType().GetGenericArguments()[1];
+
+					System.Reflection.MethodInfo genericVersion;
+                    if (!specializedMethods.TryGetValue(n.Operation, out genericVersion))
+                    {
+                        genericVersion = conversionBaseMethodType.MakeGenericMethod(inputType, typeof(T), n.Operation.GetType());
+                        specializedMethods[n.Operation] = genericVersion;
+                    }
+
+                    genericVersion.Invoke(null, new object[] { n.Operation, ((IPendingConversionOp)n).InputOperand, n.Operands[0] });
+				}
+				else if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
                 {
                     NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)n.Operation;
 
@@ -529,6 +565,63 @@ namespace NumCIL.Generic
             this.OperandIndex = indx;
         }
     }
+
+	/// <summary>
+	/// Marker interface for quick recognition of conversion operations
+	/// </summary>
+	public interface IPendingConversionOp 
+	{
+		object InputOperand { get; }
+	}
+
+	/// <summary>
+	/// Representation of a pending conversion operation.
+	/// </summary>
+	public class PendingConversionOperation<Ta, Tb> : PendingOperation<Ta>, IPendingConversionOp
+	{
+		/// <summary>
+		/// The input operand.
+		/// </summary>
+		public readonly NdArray<Tb> InputOperand;
+
+		/// <summary>
+		/// he size of pending operations after the execution.
+		/// </summary>
+		public readonly long InputOperandIndex;
+
+        /// <summary>
+        /// Constructs a new pending operation
+        /// </summary>
+        /// <param name="operation">The operation to perform</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        public PendingConversionOperation(IOp<Ta> operation, NdArray<Ta> output, NdArray<Tb> input)
+			: base(operation, output)
+		{
+			InputOperand = input;
+            if (input.DataAccessor is ILazyAccessor<Tb>)
+            {
+                ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)input.DataAccessor;
+                InputOperandIndex = (lz.PendingOperations.Count + lz.PendignOperationOffset);
+            }
+            else
+                InputOperandIndex = 0;
+		}
+
+		#region IPendingConversionOp implementation
+		/// <summary>
+		/// Gets the input operand as an untyped object.
+		/// </summary>
+		object IPendingConversionOp.InputOperand
+		{
+			get
+			{
+				return InputOperand;
+			}
+		}
+		#endregion
+
+	}
 
     /// <summary>
     /// Default factory for creating data accessors
