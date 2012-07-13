@@ -22,7 +22,7 @@ class test_ufunc(numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
+        self.config['maxerror'] = 0.0001
         self.ops = load_opcodes()
 
     def init(self):
