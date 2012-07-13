@@ -40,11 +40,10 @@ class test_jacobi_stencil(numpytest):
 
 class test_gameoflife(numpytest):
     def init(self):
-        for t in ['np.float32','np.float64']:
-            a = {}
-            cmd  = "a[0] = exp.gameoflife.randomstate({0},{0},dtype={1},cphvb=False);".format(10,t)
-            exec cmd
-            yield (a,cmd)
+        a = {}
+        cmd  = "a[0] = exp.gameoflife.randomstate({0},{0},cphvb=False);".format(10)
+        exec cmd
+        yield (a,cmd)
     
     def test_gameoflife(self,a):
         cmd = "res = exp.gameoflife.play(a[0], 50);"
