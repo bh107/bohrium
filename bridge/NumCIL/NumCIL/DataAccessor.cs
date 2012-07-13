@@ -79,8 +79,9 @@ namespace NumCIL.Generic
         /// Register a pending operation on the underlying array
         /// </summary>
         /// <param name="operation">The operation performed</param>
-        /// <param name="operands">The operands involved, operand 0 is the target</param>
-		/// <typeparam name="Tb">The source data type</typeparam>
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        /// <typeparam name="Tb">The source data type</typeparam>
         void AddConversionOperation<Tb>(IOp<T> operation, NdArray<T> output, NdArray<Tb> input);
 
         /// <summary>
@@ -296,8 +297,9 @@ namespace NumCIL.Generic
         /// Register a pending conversion operation on the underlying array
         /// </summary>
         /// <param name="operation">The operation performed</param>
-        /// <param name="operands">The operands involved, operand 0 is the target</param>
-        public virtual void AddConversionOperation<Ta>(IOp<T> operation, NdArray<T>output, NdArray<Ta> input)
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        public virtual void AddConversionOperation<Ta>(IOp<T> operation, NdArray<T> output, NdArray<Ta> input)
         {
             lock (Lock)
                 PendingOperations.Add(new PendingConversionOperation<T, Ta>(operation, output, input));
