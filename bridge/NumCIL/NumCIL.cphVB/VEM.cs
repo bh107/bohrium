@@ -790,6 +790,11 @@ namespace NumCIL.cphVB
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
         }
 
+		public IInstruction CreateConversionInstruction<Ta, Tb>(PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> input)
+        {
+            return new PInvoke.cphvb_instruction(NumCIL.cphVB.cphvb_opcode.CPHVB_IDENTITY, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(input).Pointer);
+        }
+
         public IInstruction ReCreateInstruction<T>(PInvoke.cphvb_type type, IInstruction instruction, IEnumerable<NdArray<T>> operands)
         {
             if (instruction is PInvoke.cphvb_instruction)

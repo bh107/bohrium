@@ -225,6 +225,11 @@ namespace NumCIL.cphVB
         /// </summary>
         protected static readonly Type ScalarSubOp = typeof(NumCIL.RhsScalarOp<,>).MakeGenericType(typeof(T), OpCodeMapper.GetOp<T>("Sub"));
 
+		/// <summary>
+		/// Gets the the generic template used to create conversion instructions
+		/// </summary>
+		protected static readonly System.Reflection.MethodInfo VEMConversionMethod = typeof(VEM).GetMethod("CreateConversionInstruction");
+
         /// <summary>
         /// The constant 1
         /// </summary>
@@ -642,6 +647,13 @@ namespace NumCIL.cphVB
                         }
                     }
                 }
+				else if (op is IPendingConversionOp)
+				{
+					Type inputType = ((IPendingConversionOp)op).InputOperand.GetType().GetGenericArguments()[0];
+					IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] {CPHVB_TYPE, operands[0], ((IPendingConversionOp)op).InputOperand});
+
+                    supported.Add(inst);
+				}
                 else
                 {
                     if (supported.Count > 0)
