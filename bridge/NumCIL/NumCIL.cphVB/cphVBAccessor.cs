@@ -481,7 +481,7 @@ namespace NumCIL.cphVB
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(m_externalData != null && m_externalData.Pointer.Data != null);
+                    System.Diagnostics.Debug.Assert(m_externalData != null && m_externalData.Pointer.Data != IntPtr.Zero);
                 }
 
                 return m_externalData.Pointer.Data;
