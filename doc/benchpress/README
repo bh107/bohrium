@@ -1,0 +1,464 @@
+Benchmarks Published
+~~~~~~~~~~~~~~~~~~~~
+
+The SciPy2012 article used the data below.
+
+The source-code was a revision: 530f689ec96d.
+The machine was a ASUS P31SD.
+The data-set used was: benchmark-a3hOEj.
+
+# cat /proc/cpuinfo 
+processor   : 0
+vendor_id   : GenuineIntel
+cpu family  : 6
+model       : 42
+model name  : Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+stepping    : 7
+microcode   : 0x18
+cpu MHz     : 800.000
+cache size  : 3072 KB
+physical id : 0
+siblings    : 4
+core id     : 0
+cpu cores   : 2
+apicid      : 0
+initial apicid  : 0
+fpu     : yes
+fpu_exception   : yes
+cpuid level : 13
+wp      : yes
+flags       : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm ida arat epb xsaveopt pln pts dts tpr_shadow vnmi flexpriority ept vpid
+bogomips    : 4589.66
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+processor   : 1
+vendor_id   : GenuineIntel
+cpu family  : 6
+model       : 42
+model name  : Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+stepping    : 7
+microcode   : 0x18
+cpu MHz     : 800.000
+cache size  : 3072 KB
+physical id : 0
+siblings    : 4
+core id     : 1
+cpu cores   : 2
+apicid      : 2
+initial apicid  : 2
+fpu     : yes
+fpu_exception   : yes
+cpuid level : 13
+wp      : yes
+flags       : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm ida arat epb xsaveopt pln pts dts tpr_shadow vnmi flexpriority ept vpid
+bogomips    : 4589.55
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+processor   : 2
+vendor_id   : GenuineIntel
+cpu family  : 6
+model       : 42
+model name  : Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+stepping    : 7
+microcode   : 0x18
+cpu MHz     : 800.000
+cache size  : 3072 KB
+physical id : 0
+siblings    : 4
+core id     : 0
+cpu cores   : 2
+apicid      : 1
+initial apicid  : 1
+fpu     : yes
+fpu_exception   : yes
+cpuid level : 13
+wp      : yes
+flags       : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm ida arat epb xsaveopt pln pts dts tpr_shadow vnmi flexpriority ept vpid
+bogomips    : 4589.55
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+processor   : 3
+vendor_id   : GenuineIntel
+cpu family  : 6
+model       : 42
+model name  : Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+stepping    : 7
+microcode   : 0x18
+cpu MHz     : 800.000
+cache size  : 3072 KB
+physical id : 0
+siblings    : 4
+core id     : 1
+cpu cores   : 2
+apicid      : 3
+initial apicid  : 3
+fpu     : yes
+fpu_exception   : yes
+cpuid level : 13
+wp      : yes
+flags       : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm ida arat epb xsaveopt pln pts dts tpr_shadow vnmi flexpriority ept vpid
+bogomips    : 4589.55
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+
+
+
+# sudo lshw
+
+afl-p31sd                
+    description: Notebook
+    product: U31SD ()
+    vendor: ASUSTeK Computer Inc.
+    version: 1.0
+    serial: B6NXAS087917239
+    width: 64 bits
+    capabilities: smbios-2.6 dmi-2.6 vsyscall32
+    configuration: boot=normal chassis=notebook family=U uuid=008761AC-E890-E081-22C2-F46D045990EF
+  *-core
+       description: Motherboard
+       product: U31SD
+       vendor: ASUSTeK Computer Inc.
+       physical id: 0
+       version: 1.0
+       serial: BSN12345678901234567
+       slot: MIDDLE
+     *-firmware
+          description: BIOS
+          vendor: American Megatrends Inc.
+          physical id: 0
+          version: U31SD.204
+          date: 07/06/2011
+          size: 64KiB
+          capacity: 2496KiB
+          capabilities: pci upgrade shadowing cdboot bootselect edd int13floppy1200 int13floppy720 int13floppy2880 int5printscreen int9keyboard int14serial int17printer acpi usb smartbattery biosbootspecification
+     *-cpu
+          description: CPU
+          product: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+          vendor: Intel Corp.
+          physical id: 4
+          bus info: cpu@0
+          version: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+          serial: To Be Filled By O.E.M.
+          slot: CPU 1
+          size: 800MHz
+          capacity: 4GHz
+          width: 64 bits
+          clock: 100MHz
+          capabilities: x86-64 fpu fpu_exception wp vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm ida arat epb xsaveopt pln pts tpr_shadow vnmi flexpriority ept vpid cpufreq
+          configuration: cores=2 enabledcores=1 threads=2
+        *-cache:0
+             description: L1 cache
+             physical id: 5
+             slot: L1-Cache
+             size: 32KiB
+             capacity: 32KiB
+             capabilities: internal write-back unified
+        *-cache:1
+             description: L2 cache
+             physical id: 6
+             slot: L2-Cache
+             size: 256KiB
+             capacity: 256KiB
+             capabilities: internal varies unified
+        *-cache:2
+             description: L3 cache
+             physical id: 7
+             slot: L3-Cache
+             size: 3MiB
+             capacity: 3MiB
+             capabilities: internal varies unified
+     *-memory
+          description: System Memory
+          physical id: 40
+          slot: System board or motherboard
+          size: 4GiB
+        *-bank:0
+             description: SODIMM DDR3 Synchronous 1333 MHz (0.8 ns)
+             product: HMT351S6BFR8C-H9
+             vendor: Hynix/Hyundai
+             physical id: 0
+             serial: 633A648B
+             slot: ChannelA-DIMM0
+             size: 4GiB
+             width: 64 bits
+             clock: 1333MHz (0.8ns)
+        *-bank:1
+             description: DIMM [empty]
+             product: [Empty]
+             vendor: [Empty]
+             physical id: 1
+             serial: [Empty]
+             slot: ChannelA-DIMM1
+        *-bank:2
+             description: DIMM [empty]
+             product: [Empty]
+             vendor: [Empty]
+             physical id: 2
+             serial: [Empty]
+             slot: ChannelB-DIMM0
+        *-bank:3
+             description: DIMM [empty]
+             product: [Empty]
+             vendor: [Empty]
+             physical id: 3
+             serial: [Empty]
+             slot: ChannelB-DIMM1
+     *-pci
+          description: Host bridge
+          product: 2nd Generation Core Processor Family DRAM Controller
+          vendor: Intel Corporation
+          physical id: 100
+          bus info: pci@0000:00:00.0
+          version: 09
+          width: 32 bits
+          clock: 33MHz
+          configuration: driver=agpgart-intel
+          resources: irq:0
+        *-pci:0
+             description: PCI bridge
+             product: Xeon E3-1200/2nd Generation Core Processor Family PCI Express Root Port
+             vendor: Intel Corporation
+             physical id: 1
+             bus info: pci@0000:00:01.0
+             version: 09
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm msi pciexpress normal_decode bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:40 ioport:d000(size=4096) memory:dc000000-dd0fffff ioport:c0000000(size=301989888)
+           *-generic UNCLAIMED
+                description: Unassigned class
+                product: Illegal Vendor ID
+                vendor: Illegal Vendor ID
+                physical id: 0
+                bus info: pci@0000:01:00.0
+                version: ff
+                width: 32 bits
+                clock: 66MHz
+                capabilities: bus_master vga_palette cap_list
+                configuration: latency=255 maxlatency=255 mingnt=255
+                resources: memory:dc000000-dcffffff memory:c0000000-cfffffff memory:d0000000-d1ffffff ioport:d000(size=128) memory:dd000000-dd07ffff
+        *-pci:1
+             description: PCI bridge
+             product: Xeon E3-1200/2nd Generation Core Processor Family PCI Express Root Port
+             vendor: Intel Corporation
+             physical id: 1.1
+             bus info: pci@0000:00:01.1
+             version: 09
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm msi pciexpress normal_decode bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:41
+        *-display
+             description: VGA compatible controller
+             product: 2nd Generation Core Processor Family Integrated Graphics Controller
+             vendor: Intel Corporation
+             physical id: 2
+             bus info: pci@0000:00:02.0
+             version: 09
+             width: 64 bits
+             clock: 33MHz
+             capabilities: msi pm vga_controller bus_master cap_list rom
+             configuration: driver=i915 latency=0
+             resources: irq:43 memory:dd400000-dd7fffff memory:b0000000-bfffffff ioport:e000(size=64)
+        *-communication
+             description: Communication controller
+             product: 6 Series/C200 Series Chipset Family MEI Controller #1
+             vendor: Intel Corporation
+             physical id: 16
+             bus info: pci@0000:00:16.0
+             version: 04
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi bus_master cap_list
+             configuration: driver=mei latency=0
+             resources: irq:44 memory:df60b000-df60b00f
+        *-usb:0
+             description: USB controller
+             product: 6 Series/C200 Series Chipset Family USB Enhanced Host Controller #2
+             vendor: Intel Corporation
+             physical id: 1a
+             bus info: pci@0000:00:1a.0
+             version: 05
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pm debug ehci bus_master cap_list
+             configuration: driver=ehci_hcd latency=0
+             resources: irq:16 memory:df608000-df6083ff
+        *-multimedia
+             description: Audio device
+             product: 6 Series/C200 Series Chipset Family High Definition Audio Controller
+             vendor: Intel Corporation
+             physical id: 1b
+             bus info: pci@0000:00:1b.0
+             version: 05
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi pciexpress bus_master cap_list
+             configuration: driver=snd_hda_intel latency=0
+             resources: irq:45 memory:df600000-df603fff
+        *-pci:2
+             description: PCI bridge
+             product: 6 Series/C200 Series Chipset Family PCI Express Root Port 1
+             vendor: Intel Corporation
+             physical id: 1c
+             bus info: pci@0000:00:1c.0
+             version: b5
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm normal_decode bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:16 ioport:c000(size=4096) memory:dec00000-df5fffff ioport:d3700000(size=10485760)
+        *-pci:3
+             description: PCI bridge
+             product: 6 Series/C200 Series Chipset Family PCI Express Root Port 2
+             vendor: Intel Corporation
+             physical id: 1c.1
+             bus info: pci@0000:00:1c.1
+             version: b5
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm normal_decode bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:17 ioport:b000(size=4096) memory:de200000-debfffff ioport:d2c00000(size=10485760)
+           *-network
+                description: Wireless interface
+                product: AR9285 Wireless Network Adapter (PCI-Express)
+                vendor: Atheros Communications Inc.
+                physical id: 0
+                bus info: pci@0000:04:00.0
+                logical name: wlan0
+                version: 01
+                serial: e0:b9:a5:c7:59:3c
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm msi pciexpress bus_master cap_list ethernet physical wireless
+                configuration: broadcast=yes driver=ath9k driverversion=3.2.0-26-generic firmware=N/A latency=0 link=no multicast=yes wireless=IEEE 802.11bgn
+                resources: irq:17 memory:de200000-de20ffff
+        *-pci:4
+             description: PCI bridge
+             product: 6 Series/C200 Series Chipset Family PCI Express Root Port 6
+             vendor: Intel Corporation
+             physical id: 1c.5
+             bus info: pci@0000:00:1c.5
+             version: b5
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm normal_decode bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:17 ioport:a000(size=4096) memory:dd800000-de1fffff ioport:d2100000(size=10485760)
+           *-network
+                description: Ethernet interface
+                product: AR8151 v2.0 Gigabit Ethernet
+                vendor: Atheros Communications Inc.
+                physical id: 0
+                bus info: pci@0000:05:00.0
+                logical name: eth0
+                version: c0
+                serial: f4:6d:04:59:90:ef
+                size: 100Mbit/s
+                capacity: 1Gbit/s
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm msi pciexpress vpd bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+                configuration: autonegotiation=on broadcast=yes driver=atl1c driverversion=1.0.1.0-NAPI duplex=full firmware=N/A ip=172.24.16.32 latency=0 link=yes multicast=yes port=twisted pair speed=100Mbit/s
+                resources: irq:46 memory:dd800000-dd83ffff ioport:a000(size=128)
+        *-usb:1
+             description: USB controller
+             product: 6 Series/C200 Series Chipset Family USB Enhanced Host Controller #1
+             vendor: Intel Corporation
+             physical id: 1d
+             bus info: pci@0000:00:1d.0
+             version: 05
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pm debug ehci bus_master cap_list
+             configuration: driver=ehci_hcd latency=0
+             resources: irq:23 memory:df607000-df6073ff
+        *-isa
+             description: ISA bridge
+             product: HM65 Express Chipset Family LPC Controller
+             vendor: Intel Corporation
+             physical id: 1f
+             bus info: pci@0000:00:1f.0
+             version: 05
+             width: 32 bits
+             clock: 33MHz
+             capabilities: isa bus_master cap_list
+             configuration: latency=0
+        *-storage
+             description: SATA controller
+             product: 6 Series/C200 Series Chipset Family 6 port SATA AHCI Controller
+             vendor: Intel Corporation
+             physical id: 1f.2
+             bus info: pci@0000:00:1f.2
+             logical name: scsi0
+             version: 05
+             width: 32 bits
+             clock: 66MHz
+             capabilities: storage msi pm ahci_1.0 bus_master cap_list emulated
+             configuration: driver=ahci latency=0
+             resources: irq:42 ioport:e0b0(size=8) ioport:e0a0(size=4) ioport:e090(size=8) ioport:e080(size=4) ioport:e060(size=32) memory:df606000-df6067ff
+           *-disk
+                description: ATA Disk
+                product: INTEL SSDSA2MH08
+                physical id: 0.0.0
+                bus info: scsi@0:0.0.0
+                logical name: /dev/sda
+                version: 045C
+                serial: CVEM8486018E080DGN
+                size: 74GiB (80GB)
+                capabilities: partitioned partitioned:dos
+                configuration: ansiversion=5 signature=0009ad13
+              *-volume:0
+                   description: EXT4 volume
+                   vendor: Linux
+                   physical id: 1
+                   bus info: scsi@0:0.0.0,1
+                   logical name: /dev/sda1
+                   logical name: /
+                   version: 1.0
+                   serial: e6871ae8-932c-400e-bf60-06f6e45f0003
+                   size: 70GiB
+                   capacity: 70GiB
+                   capabilities: primary bootable journaled extended_attributes large_files huge_files dir_nlink recover extents ext4 ext2 initialized
+                   configuration: created=2012-05-12 00:16:57 filesystem=ext4 lastmountpoint=/ modified=2012-05-12 00:26:39 mount.fstype=ext4 mount.options=rw,relatime,errors=remount-ro,user_xattr,barrier=1,data=ordered mounted=2012-07-03 13:18:21 state=mounted
+              *-volume:1
+                   description: Extended partition
+                   physical id: 2
+                   bus info: scsi@0:0.0.0,2
+                   logical name: /dev/sda2
+                   size: 4007MiB
+                   capacity: 4007MiB
+                   capabilities: primary extended partitioned partitioned:extended
+                 *-logicalvolume
+                      description: Linux swap / Solaris partition
+                      physical id: 5
+                      logical name: /dev/sda5
+                      capacity: 4007MiB
+                      capabilities: nofs
+        *-serial UNCLAIMED
+             description: SMBus
+             product: 6 Series/C200 Series Chipset Family SMBus Controller
+             vendor: Intel Corporation
+             physical id: 1f.3
+             bus info: pci@0000:00:1f.3
+             version: 05
+             width: 64 bits
+             clock: 33MHz
+             configuration: latency=0
+             resources: memory:df605000-df6050ff ioport:e040(size=32)
+
