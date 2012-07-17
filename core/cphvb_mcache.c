@@ -122,6 +122,7 @@ cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
         bytes       = nelements * cphvb_type_size(base->type);
         
         cphvb_mcache_insert( base->data, bytes );
+		base->data = NULL;
     }
     inst->operand[0] = NULL;
 
