@@ -23,6 +23,21 @@ Get the source, compile and install it::
   ./build.py install
 
 
+OpenCL
+~~~~~~
+
+You might just need this::
+
+  sudo apt-get install -y rpm alien libnuma1
+  tar zxf intel_sdk_for_ocl_applications_2012_x64.tgz
+  sudo apt-get install -y rpm alien libnuma1
+  fakeroot alien --to-deb intel_ocl_sdk_2012_x64.rpm
+  sudo dpkg -i intel-ocl-sdk_2.0-31361_amd64.deb
+  sudo ln -s /usr/lib64/libOpenCL.so /usr/lib/libOpenCL.so
+  sudo ldconfig
+
+...
+
 MacOSX
 ~~~~~~
 
