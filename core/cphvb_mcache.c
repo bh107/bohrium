@@ -100,7 +100,7 @@ cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
 void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
 {
 
-    if (cphvb_mcache[cphvb_mcache_cur] != NULL) {
+    if (cphvb_mcache_bytes[cphvb_mcache_cur] > 0) {
         cphvb_memory_free( cphvb_mcache[cphvb_mcache_cur], cphvb_mcache_bytes[cphvb_mcache_cur] );
     }
 
