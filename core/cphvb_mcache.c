@@ -99,8 +99,8 @@ cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
  */
 void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
 {
-
     if (cphvb_mcache_bytes[cphvb_mcache_cur] > 0) {
+		DEBUG_PRINT("Free=%p\n", cphvb_mcache[cphvb_mcache_cur]);
         cphvb_memory_free( cphvb_mcache[cphvb_mcache_cur], cphvb_mcache_bytes[cphvb_mcache_cur] );
     }
 
@@ -121,6 +121,7 @@ cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
         nelements   = cphvb_nelements(base->ndim, base->shape);
         bytes       = nelements * cphvb_type_size(base->type);
         
+		DEBUG_PRINT("Deallocate=%p\n", base->data);
         cphvb_mcache_insert( base->data, bytes );
 		base->data = NULL;
     }
@@ -162,11 +163,11 @@ cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst )
                             DEBUG_PRINT("Reuse or allocate...\n");
                             base->data = cphvb_mcache_find( bytes );
                             if (base->data == NULL) {
-                                DEBUG_PRINT("Allocating.\n");
                                 if (cphvb_data_malloc(inst->operand[0]) != CPHVB_SUCCESS) {
                                     inst->status = CPHVB_OUT_OF_MEMORY;
                                     return CPHVB_OUT_OF_MEMORY;         // EXIT
                                 }                                   
+                                DEBUG_PRINT("Allocated=%p\n", base->data);
                             } else {
                                 DEBUG_PRINT("Reusing=%p.\n", base->data);
                             }
