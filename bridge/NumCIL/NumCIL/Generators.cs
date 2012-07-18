@@ -91,7 +91,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for sbyte.
 	/// </summary>
-	public struct RandomGeneratorOpSByte : IRandomGeneratorOp<sbyte>
+	public struct RandomGeneratorOpInt8 : IRandomGeneratorOp<sbyte>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -104,7 +104,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for byte.
 	/// </summary>
-	public struct RandomGeneratorOpByte : IRandomGeneratorOp<byte>
+	public struct RandomGeneratorOpUInt8 : IRandomGeneratorOp<byte>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -214,7 +214,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for float.
 	/// </summary>
-	public struct RandomGeneratorOpSingle : IRandomGeneratorOp<float>
+	public struct RandomGeneratorOpFloat : IRandomGeneratorOp<float>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -236,6 +236,32 @@ namespace NumCIL.Generic
         /// <returns>A random number</returns>
         public double Op() { return (double)Rand.NextDouble(); }
 	}
+
+    /// <summary>
+    /// Random generator for Complex64.
+    /// </summary>
+    public struct RandomGeneratorOpComplex64 : IRandomGeneratorOp<NumCIL.Complex64.DataType>
+    {
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+        /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public NumCIL.Complex64.DataType Op() { return (NumCIL.Complex64.DataType)(float)Rand.NextDouble(); }
+    }
+
+    /// <summary>
+    /// Random generator for Complex128.
+    /// </summary>
+    public struct RandomGeneratorOpComplex128 : IRandomGeneratorOp<System.Numerics.Complex>
+    {
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+        /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public System.Numerics.Complex Op() { return (System.Numerics.Complex)Rand.NextDouble(); }
+    }
 
     /// <summary>
     /// Basic generator implementation that just calls "Set(x)" on the NdArray

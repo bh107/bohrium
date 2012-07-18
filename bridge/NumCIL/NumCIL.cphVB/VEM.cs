@@ -482,6 +482,10 @@ namespace NumCIL.cphVB
                 return PInvoke.cphvb_type.CPHVB_FLOAT32;
             else if (t == typeof(double))
                 return PInvoke.cphvb_type.CPHVB_FLOAT64;
+            else if (t == typeof(NumCIL.Complex64.DataType))
+                return PInvoke.cphvb_type.CPHVB_COMPLEX64;
+            else if (t == typeof(System.Numerics.Complex))
+                return PInvoke.cphvb_type.CPHVB_COMPLEX128;
             else
                 throw new cphVBException(string.Format("Unsupported data type: " + t.FullName));
         }

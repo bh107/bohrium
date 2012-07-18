@@ -23,8 +23,14 @@ using cphvb_uint8 = System.Byte;
 using cphvb_uint16 = System.UInt16;
 using cphvb_uint32 = System.UInt32;
 using cphvb_uint64 = System.UInt64;
+
+//CPHVB floating point types
 using cphvb_float32 = System.Single;
 using cphvb_float64 = System.Double;
+
+//CPHVB complex types
+using cphvb_complex64 = NumCIL.Complex64.DataType;
+using cphvb_complex128 = System.Numerics.Complex;
 
 namespace NumCIL.cphVB
 {
@@ -101,6 +107,8 @@ namespace NumCIL.cphVB
             CPHVB_FLOAT16,
             CPHVB_FLOAT32,
             CPHVB_FLOAT64,
+            CPHVB_COMPLEX64,
+            CPHVB_COMPLEX128,
             CPHVB_UNKNOWN
         }
 
@@ -169,6 +177,8 @@ namespace NumCIL.cphVB
             [FieldOffset(0)] public cphvb_uint64   uint64;
             [FieldOffset(0)] public cphvb_float32  float32;
             [FieldOffset(0)] public cphvb_float64  float64;
+            [FieldOffset(0)] public cphvb_complex64  complex64;
+            [FieldOffset(0)] public cphvb_complex128  complex128;
 
             public cphvb_constant_value Set(cphvb_bool v) { this.bool8 = v; return this; }
             //public cphvb_constant Set(cphvb_int8 v) { this.int8 = v; return this; }

@@ -93,6 +93,12 @@ namespace NumCIL.cphVB
                 return typeof(NumCIL.Float.NdArray);
             else if (typeof(T) == typeof(double))
                 return typeof(NumCIL.Double.NdArray);
+            else if (typeof(T) == typeof(double))
+                return typeof(NumCIL.Double.NdArray);
+            else if (typeof(T) == typeof(NumCIL.Complex64.DataType))
+                return typeof(NumCIL.Complex64.NdArray);
+            else if (typeof(T) == typeof(System.Numerics.Complex))
+                return typeof(NumCIL.Complex128.NdArray);
             else
                 throw new Exception("Unexpected type: " + (typeof(T)).FullName);            
         }
@@ -316,6 +322,20 @@ namespace NumCIL.cphVB
                         return (T)(object)(sbyte)Marshal.ReadInt32(ptr);
                     else if (typeof(T) == typeof(ulong))
                         return (T)(object)(sbyte)Marshal.ReadInt64(ptr);
+                    else if (typeof(T) == typeof(NumCIL.Complex64.DataType))
+                    {
+                        float[] tmp = new float[2];
+                        if (!NumCIL.UnsafeAPI.CopyFromIntPtr(ptr, tmp, 2))
+                            Marshal.Copy(ptr, tmp, 0, 2);
+                        return (T)(object)new NumCIL.Complex64.DataType(tmp[0], tmp[1]);
+                    }
+                    else if (typeof(T) == typeof(System.Numerics.Complex))
+                    {
+                        double[] tmp = new double[2];
+                        if (!NumCIL.UnsafeAPI.CopyFromIntPtr(ptr, tmp, 2))
+                            Marshal.Copy(ptr, tmp, 0, 2);
+                        return (T)(object)new System.Numerics.Complex(tmp[0], tmp[1]);
+                    }
                     else
                         throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                 }
@@ -435,6 +455,30 @@ namespace NumCIL.cphVB
                             {
                                 for (int i = 0; i < m_size; i++)
                                     xref[i] = (ulong)Marshal.ReadInt64(actualData);
+                            }
+                        }
+                        else if (typeof(T) == typeof(NumCIL.Complex64.DataType))
+                        {
+                            NumCIL.Complex64.DataType[] xref = (NumCIL.Complex64.DataType[])(object)m_data;
+                            float[] tmp = new float[2];
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                Marshal.Copy(xptr, tmp, 0, (int)2);
+                                xref[i] = new NumCIL.Complex64.DataType(tmp[0], tmp[1]);
+                                xptr = IntPtr.Add(xptr, NATIVE_ELEMENT_SIZE);
+                            }
+                        }
+                        else if (typeof(T) == typeof(System.Numerics.Complex))
+                        {
+                            System.Numerics.Complex[] xref = (System.Numerics.Complex[])(object)m_data;
+                            double[] tmp = new double[2];
+                            IntPtr xptr = actualData;
+                            for (long i = 0; i < m_size; i++)
+                            {
+                                Marshal.Copy(xptr, tmp, 0, (int)2);
+                                xref[i] = new System.Numerics.Complex(tmp[0], tmp[1]);
+                                xptr = IntPtr.Add(xptr, NATIVE_ELEMENT_SIZE);
                             }
                         }
                         else
