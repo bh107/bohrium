@@ -573,6 +573,9 @@ namespace NumCIL.Generic
 	/// </summary>
 	public interface IPendingConversionOp 
 	{
+        /// <summary>
+        /// Gets the untyped input operand
+        /// </summary>
 		object InputOperand { get; }
 	}
 
