@@ -57,6 +57,16 @@ namespace NumCIL.cphVB
             _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG, "Log");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG10, "Log10");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_POWER, "Pow");
+
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_COS, "Cos");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_SIN, "Sin");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_TAN, "Tan");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCCOS, "Acos");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCSIN, "Asin");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCTAN, "Atan");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_COSH, "Cosh");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_SINH, "Sinh");
+            _opcode_func_name.Add(cphvb_opcode.CPHVB_TANH, "Tanh");
         }
 
         /// <summary>

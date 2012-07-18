@@ -900,6 +900,42 @@ namespace NumCIL.<#=typename#>
         /// The power operation
         /// </summary>
         public static readonly Pow Pow;
+        /// <summary>
+        /// The arc cosine operation
+        /// </summary>
+        public static readonly Acos Acos;
+        /// <summary>
+        /// The arc sine operation
+        /// </summary>
+        public static readonly Asin Asin;
+        /// <summary>
+        /// The arc tangent operation
+        /// </summary>
+        public static readonly Atan Atan;
+        /// <summary>
+        /// The cosine operation
+        /// </summary>
+        public static readonly Cos Cos;
+        /// <summary>
+        /// The sine operation
+        /// </summary>
+        public static readonly Sin Sin;
+        /// <summary>
+        /// The tangent operation
+        /// </summary>
+        public static readonly Tan Tan;
+        /// <summary>
+        /// The hyperbolic cosine operation
+        /// </summary>
+        public static readonly Cosh Cosh;
+        /// <summary>
+        /// The hyperbolic sine operation
+        /// </summary>
+        public static readonly Sinh Sihn;
+        /// <summary>
+        /// The hyperbolic tangent operation
+        /// </summary>
+        public static readonly Tanh Tanh;
     }
     #endregion
 
@@ -1570,6 +1606,204 @@ namespace NumCIL.<#=typename#>
         { return UFunc.Apply<T, Abs>(@in, @out); }
     }
 <# } #>
+
+    /// <summary>
+    /// The arc cosine operation implementation
+    /// </summary>
+    public struct Acos : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the arc cosine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The absolute value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Acos(a); }
+
+        /// <summary>
+        /// Applies the arc cosine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Acos>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The arc sine operation implementation
+    /// </summary>
+    public struct Asin : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the arc sine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The absolute value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Asin(a); }
+
+        /// <summary>
+        /// Applies the arc sine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Asin>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The arc tangent operation implementation
+    /// </summary>
+    public struct Atan : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the arc tangent operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The absolute value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Atan(a); }
+
+        /// <summary>
+        /// Applies the arc tangent operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Atan>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The cosine operation implementation
+    /// </summary>
+    public struct Cos : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the cosine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The cosine value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Cos(a); }
+
+        /// <summary>
+        /// Applies the cosine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Cos>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The hyperbolic cosine operation implementation
+    /// </summary>
+    public struct Cosh : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the hyperbolic cosine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The hyperbolic cosine value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Cosh(a); }
+
+        /// <summary>
+        /// Applies the hyperbolic cosine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Cosh>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The sine operation implementation
+    /// </summary>
+    public struct Sin : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the sine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The sine value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Sin(a); }
+
+        /// <summary>
+        /// Applies the sine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Sin>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The hyperbolic sine operation implementation
+    /// </summary>
+    public struct Sinh : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the hyperbolic sine operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The hyperbolic sine value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Sinh(a); }
+
+        /// <summary>
+        /// Applies the hyperbolic sine operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Sinh>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The tangent operation implementation
+    /// </summary>
+    public struct Tan : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the tangent operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The tangent value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Tan(a); }
+
+        /// <summary>
+        /// Applies the tangent operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Tan>(@in, @out); }
+    }
+
+    /// <summary>
+    /// The hyperbolic tangent operation implementation
+    /// </summary>
+    public struct Tanh : IUnaryOp<T>
+    {
+        /// <summary>
+        /// Implementation of the hyperbolic tangent operation
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The hyperbolic tagent value of the operand</returns>
+        public T Op(T a) { return (T)<#=mathlib#>.Tanh(a); }
+
+        /// <summary>
+        /// Applies the hyperbolic tangent operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(OutArray @in, OutArray @out = null)
+        { return UFunc.Apply<T, Tanh>(@in, @out); }
+    }
 
     /// <summary>
     /// The logarithmic operation implementation
