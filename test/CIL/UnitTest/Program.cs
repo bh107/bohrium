@@ -54,11 +54,19 @@ namespace UnitTest
             using (new DispTimer("Lookup tests"))
                 TypeLookupTests.RunTests();
 
-            Console.WriteLine("Running extended tests" + name);
-            using (new DispTimer("Extended tests"))
-                ExtendedTests.RunTests();
+            Console.WriteLine("Running repeat tests" + name);
+            using (new DispTimer("Repeat tests"))
+                RepeatTests.RunTests();
 
-            Console.WriteLine("Running benchmark tests" + name);
+            Console.WriteLine("Running complex tests" + name);
+            using (new DispTimer("Complex tests"))
+                ComplexTests.RunTests();
+
+            Console.WriteLine("Running logical tests" + name);
+            using (new DispTimer("Logical tests"))
+                LogicalTests.RunTests();
+
+			Console.WriteLine("Running benchmark tests" + name);
             using (new DispTimer("benchmark tests"))
                 BenchmarkTests.RunTests();
         }

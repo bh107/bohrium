@@ -399,7 +399,9 @@ namespace NumCIL.Generic
         /// <param name="value">The value to set the elements to</param>
         public void Set(T value)
         {
-            UFunc.Apply<T, GenerateOp<T>>(new GenerateOp<T>(value), this);
+            var tmp = new NdArray<T>(value);
+            tmp = tmp.Reshape(Shape.ToBroadcastShapes(tmp.Shape, this.Shape).Item1);
+            UFunc.Apply<T, CopyOp<T>>(tmp, this);
         }
 
         #region IEnumerable<NdArray<T>> Members

@@ -6,71 +6,6 @@ using NumCIL.Generic;
 
 namespace NumCIL
 {
-    //Support for .Net 3.5
-    /// <summary>
-    /// Tupple data type for containing a single typesafe element
-    /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    public class Tuple<T1>
-    {
-        /// <summary>
-        /// The first element in the tupple
-        /// </summary>
-        public T1 Item1;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1&gt;"/> class.
-        /// </summary>
-        /// <param name="t1">The value of the first element</param>
-        public Tuple(T1 t1) { Item1 = t1; }
-    }
-
-    /// <summary>
-    /// Tupple data type for containing a two typesafe elements
-    /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    /// <typeparam name="T2">The type of element 2</typeparam>
-    public class Tuple<T1, T2> : Tuple<T1> 
-    { 
-        /// <summary>
-        /// The second element in the tupple
-        /// </summary>
-        public T2 Item2;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1, T2&gt;"/> class.
-        /// </summary>
-        /// <param name="t1">The value of the first tupple element</param>
-        /// <param name="t2">The value of the second tupple element</param>
-        public Tuple(T1 t1, T2 t2)
-            : base(t1)
-        { Item2 = t2; }
-    }
-
-    /// <summary>
-    /// Tupple data type for containing a three typesafe elements
-    /// </summary>
-    /// <typeparam name="T1">The type of element 1</typeparam>
-    /// <typeparam name="T2">The type of element 2</typeparam>
-    /// <typeparam name="T3">The type of element 3</typeparam>
-    public class Tuple<T1, T2, T3> : Tuple<T1, T2>
-    {
-        /// <summary>
-        /// The third element in the tupple
-        /// </summary>
-        public T3 Item3;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tuple&lt;T1, T2, T3&gt;"/> class.
-        /// </summary>
-        /// <param name="t1">The value of the first tupple element</param>
-        /// <param name="t2">The value of the second tupple element</param>
-        /// <param name="t3">The value of the third tupple element</param>
-        public Tuple(T1 t1, T2 t2, T3 t3)
-            : base(t1, t2)
-        { Item3 = t3; }
-    }
-
     public partial class UFunc
     {
         /// <summary>
@@ -82,13 +17,13 @@ namespace NumCIL
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
         /// <returns>A tupple with broadcast compatible shapes for the inputs, and an output array</returns>
-        private static Tuple<NdArray<T>, NdArray<T>, NdArray<T>> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
+        private static Tuple<NdArray<Ta>, NdArray<Ta>, NdArray<Tb>> SetupApplyHelper<Ta, Tb>(NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out)
         {
             Tuple<Shape, Shape> broadcastshapes = Shape.ToBroadcastShapes(in1.Shape, in2.Shape);
             if (@out == null)
             {
                 //We allocate a new array
-                @out = new NdArray<T>(broadcastshapes.Item1.Plain);
+                @out = new NdArray<Tb>(broadcastshapes.Item1.Plain);
             }
             else
             {
@@ -103,35 +38,7 @@ namespace NumCIL
             var op1 = in1.Reshape(broadcastshapes.Item1);
             var op2 = in2.Reshape(broadcastshapes.Item2);
 
-            return new Tuple<NdArray<T>, NdArray<T>, NdArray<T>>(op1, op2, @out);
-        }
-
-        /// <summary>
-        /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
-        /// If no output array is given, a compatible output array is created
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="in1">The input array</param>
-        /// <param name="out">The output target</param>
-        /// <returns>A compatible output array or throws an exception</returns>
-        private static NdArray<T> SetupApplyHelper<T>(NdArray<T> in1, NdArray<T> @out)
-        {
-            if (@out == null)
-            {
-                //We allocate a new array
-                @out = new NdArray<T>(in1.Shape.Plain);
-            }
-            else
-            {
-                if (@out.Shape.Dimensions.Length != in1.Shape.Dimensions.Length)
-                    throw new Exception("Target array does not have the right number of dimensions");
-
-                for (long i = 0; i < @out.Shape.Dimensions.Length; i++)
-                    if (@out.Shape.Dimensions[i].Length != in1.Shape.Dimensions[i].Length)
-                        throw new Exception("Dimension size of target array is incorrect");
-            }
-
-            return @out;
+            return new Tuple<NdArray<Ta>, NdArray<Ta>, NdArray<Tb>>(op1, op2, @out);
         }
 
         /// <summary>
@@ -191,6 +98,32 @@ namespace NumCIL
         }
 
         /// <summary>
+        /// Function that is used as the entry point for applying a binary conversion operator.
+        /// It will setup the output array and then call the evaluation method
+        /// It has a unique name because it is faster to look up the method through reflection,
+        /// if there is only one version of it.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="in2">The right-hand-side input argument</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output value</returns>
+        private static NdArray<Tb> Apply_Entry_BinaryConv<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out = null)
+            where C : struct, IBinaryConvOp<Ta, Tb>
+        {
+            Tuple<NdArray<Ta>, NdArray<Ta>, NdArray<Tb>> v = SetupApplyHelper(in1, in2, @out);
+            @out = v.Item3;
+
+            if (@out.DataAccessor is ILazyAccessor<Tb>)
+                ((ILazyAccessor<Tb>)@out.DataAccessor).AddConversionOperation(op, @out, v.Item1, v.Item2);
+            else
+                FlushMethods.ApplyBinaryConvOp<Ta, Tb, C>(op, v.Item1, v.Item2, @out);
+
+            return @out;
+        }
+        /// <summary>
         /// Applies the operation to the input arrays
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
@@ -209,6 +142,21 @@ namespace NumCIL
         /// Applies the operation to the input arrays
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="in1">The left-hand-side input argument</param>
+        /// <param name="in2">The right-hand-side input argument</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output value</returns>
+        public static NdArray<Tb> Apply<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out = null)
+            where C : struct, IBinaryConvOp<Ta, Tb>
+        {
+            return Apply_Entry_BinaryConv<Ta, Tb, C>(new C(), in1, in2, @out);
+        }
+
+        /// <summary>
+        /// Applies the operation to the input arrays
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
         /// <param name="op">The operation instance to use</param>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
@@ -221,33 +169,18 @@ namespace NumCIL
         }
 
         /// <summary>
-        /// Applies the operation to the input array and scalar value
+        /// Applies the operation to the input arrays
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance to use</param>
         /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="scalar">The right-hand-side scalar value</param>
+        /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T, C>(NdArray<T> in1, T scalar, NdArray<T> @out = null)
-            where C : struct, IBinaryOp<T>
+        public static NdArray<Tb> Apply<Ta, Tb>(IBinaryConvOp<Ta, Tb> op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out = null)
         {
-            return Apply_Entry_Unary<T, RhsScalarOp<T, C>>(new RhsScalarOp<T, C>(scalar, new C()), in1, @out);
-        }
-
-        /// <summary>
-        /// Applies the operation to the scalar value and input array
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="in1">The left-hand-side input argument</param>
-        /// <param name="scalar">The right-hand-side scalar value</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static NdArray<T> Apply<T, C>(T scalar, NdArray<T> in1, NdArray<T> @out = null)
-            where C : struct, IBinaryOp<T>
-        {
-            return Apply_Entry_Unary<T, LhsScalarOp<T, C>>(new LhsScalarOp<T, C>(scalar, new C()), in1, @out);
+            var method = typeof(UFunc).GetMethod("Apply_Entry_BinaryConv", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var gm = method.MakeGenericMethod(typeof(Ta), typeof(Tb), op.GetType());
+            return (NdArray<Tb>)gm.Invoke(null, new object[] { op, in1, in2, @out });
         }
 
         /// <summary>
@@ -265,20 +198,6 @@ namespace NumCIL
         }
 
         /// <summary>
-        /// Applies the operation to the input array
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to perform</typeparam>
-        /// <param name="in1">The input argument</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output value</returns>
-        public static void Apply<T, C>(T in1, NdArray<T> @out)
-            where C : struct, IUnaryOp<T>
-        {
-            Apply_Entry_Nullary<T, ScalarValue<T, C>>(new ScalarValue<T, C>(in1, new C()), @out);
-        }
-
-        /// <summary>
         /// Function that is used as the entry point for applying a unary operator.
         /// It will setup the output array and then call the evaluation method
         /// It has a unique name because it is faster to look up the method through reflection,
@@ -293,7 +212,7 @@ namespace NumCIL
         private static NdArray<T> Apply_Entry_Unary<T, C>(C op, NdArray<T> in1, NdArray<T> @out = null)
             where C : struct, IUnaryOp<T>
         {
-            NdArray<T> v = SetupApplyHelper<T>(in1, @out);
+            NdArray<T> v = SetupApplyHelper(in1, @out);
 
             if (v.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)v.DataAccessor).AddOperation(op, v, in1);
@@ -323,17 +242,63 @@ namespace NumCIL
         /// <typeparam name="Ta">The type of input data to operate on</typeparam>
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
         /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <param name="op">The operation to perform</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        public static NdArray<Tb> Apply<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out = null)
+            where C : struct, IUnaryConvOp<Ta, Tb>
+        {
+            return Apply_Entry_Unary_Conv<Ta, Tb, C>(op, in1, @out);
+        }
+
+        /// <summary>
+        /// Applies the operation to the input array
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>
         public static NdArray<Tb> Apply<Ta, Tb, C>(NdArray<Ta> in1, NdArray<Tb> @out = null)
-            where C : struct, IUnaryConvOp<Ta, Tb>, IOp<Tb>
+            where C : struct, IUnaryConvOp<Ta, Tb>
+        {
+            return Apply_Entry_Unary_Conv<Ta, Tb, C>(new C(), in1, @out);
+        }
+
+        /// <summary>
+        /// Applies the operation to the input array
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <param name="op">The operation to perform</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        public static NdArray<Tb> Apply<Ta, Tb>(IUnaryConvOp<Ta, Tb> op, NdArray<Ta> in1, NdArray<Tb> @out = null)
+        {
+            var method = typeof(UFunc).GetMethod("Apply_Entry_UnaryConv", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var gm = method.MakeGenericMethod(typeof(Ta), typeof(Tb), op.GetType());
+            return (NdArray<Tb>)gm.Invoke(null, new object[] { op, in1, @out });
+        }
+
+        /// <summary>
+        /// Applies the operation to the input array
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The operation type to perform</typeparam>
+        /// <param name="op">The operation to perform</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        private static NdArray<Tb> Apply_Entry_Unary_Conv<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out = null)
+            where C : struct, IUnaryConvOp<Ta, Tb>
         {
             NdArray<Tb> v = SetupApplyHelper(in1, @out);
 
             if (v.DataAccessor is ILazyAccessor<Tb>)
-                ((ILazyAccessor<Tb>)v.DataAccessor).AddConversionOperation<Ta>(new C(), v, in1);
+                ((ILazyAccessor<Tb>)v.DataAccessor).AddConversionOperation<Ta>(op, v, in1);
             else
-                FlushMethods.ApplyUnaryConvOp<Ta, Tb, C>(new C(), in1, v);
+                FlushMethods.ApplyUnaryConvOp<Ta, Tb, C>(op, in1, v);
 
             return v;
         }

@@ -42,6 +42,12 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="CPHVB_CONFIG" value="/Users/kenneth/Udvikler/cphvb/config.osx.ini" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -80,6 +86,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -89,12 +96,14 @@
   <ItemGroup>
     <Compile Include="BasicTests.cs" />
     <Compile Include="BenchmarkTests.cs" />
+    <Compile Include="ComplexTests.cs" />
     <Compile Include="CustomTimer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Profiling.cs" />
-    <Compile Include="ExtendedTests.cs" />
+    <Compile Include="RepeatTests.cs" />
     <Compile Include="TypeLookupTests.cs" />
+    <Compile Include="LogicalTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\benchmark\CIL\Tester\Tester.csproj">

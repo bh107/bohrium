@@ -70,6 +70,8 @@ namespace NumCIL
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
+                    in1.DataAccessor.Allocate();
+                    in2.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
@@ -94,6 +96,39 @@ namespace NumCIL
                 }
             }
 
+            internal static void BinaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out)
+                where C : struct, IBinaryConvOp<Ta, Tb>
+            {
+                if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
+                {
+                    AutoResetEvent cond = new AutoResetEvent(false);
+                    int blocksdone = 0;
+                    int totalblocks = _no_blocks;
+                    in1.DataAccessor.Allocate();
+                    in2.DataAccessor.Allocate();
+                    @out.DataAccessor.Allocate();
+
+                    for (int i = 0; i < totalblocks; i++)
+                    {
+                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
+                        {
+                            int block = (int)args;
+
+                            UFunc.UFunc_Op_Inner_BinaryConv_Flush(op, Reshape(in1, block, totalblocks), Reshape(in2, block, totalblocks), Reshape(@out, block, totalblocks));
+
+                            Interlocked.Increment(ref blocksdone);
+                            cond.Set();
+                        }, i);
+                    }
+
+                    while (blocksdone < totalblocks)
+                        cond.WaitOne();
+                }
+                else
+                {
+                    UFunc.UFunc_Op_Inner_BinaryConv_Flush(op, in1, in2, @out);
+                }
+            }
             internal static void UnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IUnaryOp<T>
             {
@@ -102,6 +137,7 @@ namespace NumCIL
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
+                    in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
@@ -140,6 +176,7 @@ namespace NumCIL
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
+                    in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
 					//Special handling required for 1D to scalar
@@ -237,6 +274,7 @@ namespace NumCIL
                     AutoResetEvent cond = new AutoResetEvent(false);
                     int blocksdone = 0;
                     int totalblocks = _no_blocks;
+                    in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
                     for (int i = 0; i < totalblocks; i++)
