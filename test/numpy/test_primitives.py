@@ -18,7 +18,7 @@ def type_cphvb2numpy(cphvb_type):
     return "np.%s"%cphvb_type[6:].lower()
 
 
-class test_ufunc(numpytest):
+class test_cphvb_opcodes(numpytest):#Ufuncs directly mappable to cphVB
 
     def __init__(self):
         numpytest.__init__(self)
@@ -52,5 +52,60 @@ class test_ufunc(numpytest):
         cmd += "a[0])"
         exec cmd
         return (a[0],cmd)
+
+
+class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.ops = [{'opcode':'floor_divide'},\
+                    {'opcode':'true_divide'},\
+                    {'opcode':'conjugate'},\
+                    {'opcode':'fmod'},\
+                    {'opcode':'reciprocal', 'nop':2, 'types':[['CPHVB_FLOAT32','CPHVB_FLOAT32']]},\
+                    {'opcode':'ones_like'},\
+                    {'opcode':'_args'},\
+                    {'opcode':'fmax'},\
+                    {'opcode':'fmin'},\
+                    {'opcode':'logaddexp'},\
+                    {'opcode':'logaddexp2'},\
+                    {'opcode':'degrees'},\
+                    {'opcode':'rad2deg'},\
+                    {'opcode':'radians'},\
+                    {'opcode':'deg2rad'},\
+                    {'opcode':'fabs'},\
+                    {'opcode':'isnan'},\
+                    {'opcode':'isinf'},\
+                    {'opcode':'isfinite'},\
+                    {'opcode':'copysign'},\
+                    {'opcode':'nextafter'},\
+                    {'opcode':'spacing'},\
+                    {'opcode':'modf'}] 
+
+    def init(self):
+        for op in self.ops:
+            if op['opcode'] not in ["reciprocal"]:
+                continue
+
+            self.name = op['opcode']
+            self.nops = op['nop']
+            for t in op['types']:
+                a = {}
+                cmd = ""
+                for i in xrange(len(t)):
+                    tname = type_cphvb2numpy(t[i])
+                    cmd += "a[%d] = self.array((10),%s);"%(i,tname)
+                exec cmd
+                yield (a,cmd)
+                
+    def test_ufunc(self,a):
+        cmd = "%s("%("np.%s"%self.name)
+        for i in xrange(1,self.nops):
+            cmd += "a[%d],"%(i)
+        cmd += "a[0])"
+        exec cmd
+        return (a[0],cmd)
+
 
 
