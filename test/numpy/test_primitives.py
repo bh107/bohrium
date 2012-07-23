@@ -54,8 +54,35 @@ class test_cphvb_opcodes(numpytest):#Ufuncs directly mappable to cphVB
         return (a[0],cmd)
 
 
-class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
 
+def get_type_sig(nop, dtype_in, dtype_out):
+    sig = [dtype_out]
+    for i in xrange(nop-1):
+        sig += [dtype_in]
+    return sig 
+
+def type_float(nop):
+    sig = []
+    for t in ['CPHVB_FLOAT32','CPHVB_FLOAT64']:
+        sig += [get_type_sig(nop,t,t)]
+    return sig 
+
+def type_int(nop):
+    sig = []
+    for t in ['CPHVB_INT8','CPHVB_INT16','CPHVB_INT32','CPHVB_INT64']:
+        sig += [get_type_sig(nop,t,t)]
+    for t in ['CPHVB_UINT8','CPHVB_UINT16','CPHVB_UINT32','CPHVB_UINT64']:
+        sig += [get_type_sig(nop,t,t)]
+    return sig 
+
+def type_bool(nop):
+    return [get_type_sig(nop,'CPHVB_BOOL','CPHVB_BOOL')]
+
+def type_all(nop):
+    return type_float(nop) + type_int(nop) + type_bool(nop) 
+
+
+class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.0001
@@ -63,7 +90,8 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
                     {'opcode':'true_divide'},\
                     {'opcode':'conjugate'},\
                     {'opcode':'fmod'},\
-                    {'opcode':'reciprocal', 'nop':2, 'types':[['CPHVB_FLOAT32','CPHVB_FLOAT32']]},\
+                    {'opcode':'reciprocal', 'nop':2, 'types':type_int(2)+type_float(2)},\
+                    {'opcode':'negative', 'nop':2, 'types':type_all(2)},\
                     {'opcode':'ones_like'},\
                     {'opcode':'_args'},\
                     {'opcode':'fmax'},\
@@ -85,7 +113,7 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
 
     def init(self):
         for op in self.ops:
-            if op['opcode'] not in ["reciprocal"]:
+            if op['opcode'] not in ["reciprocal", "negative"]:
                 continue
 
             self.name = op['opcode']
