@@ -7,7 +7,7 @@ using NumCIL;
 
 namespace UnitTest
 {
-    public static class ExtendedTests
+    public static class RepeatTests
     {
         public static void RunTests()
         {

@@ -25,7 +25,8 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
         fprintf(stderr, "Reduce called with input set to null.\n");
         return CPHVB_ERROR;
 	}
-                                                // Make sure that the array memory is allocated.
+    
+    // Make sure that the array memory is allocated.
     if (cphvb_data_malloc(a->operand[0]) != CPHVB_SUCCESS) {
         return CPHVB_OUT_OF_MEMORY;
     }

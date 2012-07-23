@@ -482,6 +482,10 @@ namespace NumCIL.cphVB
                 return PInvoke.cphvb_type.CPHVB_FLOAT32;
             else if (t == typeof(double))
                 return PInvoke.cphvb_type.CPHVB_FLOAT64;
+            else if (t == typeof(NumCIL.Complex64.DataType))
+                return PInvoke.cphvb_type.CPHVB_COMPLEX64;
+            else if (t == typeof(System.Numerics.Complex))
+                return PInvoke.cphvb_type.CPHVB_COMPLEX128;
             else
                 throw new cphVBException(string.Format("Unsupported data type: " + t.FullName));
         }
@@ -775,27 +779,67 @@ namespace NumCIL.cphVB
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, constant);
         }
 
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        {
+            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
+            else
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, new PInvoke.cphvb_constant());
+        }
+
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, PInvoke.cphvb_constant constant, NdArray<T> op2)
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, constant, CreateViewPtr<T>(type, op2).Pointer);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        {
+            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
+            else if (op3.DataAccessor.Length == 1 && op3.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op3.DataAccessor[0]));
+            else
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant());
+        }
+
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant)
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, constant);
         }
 
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant)
         {
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
         }
 
-        public IInstruction ReCreateInstruction<T>(PInvoke.cphvb_type type, IInstruction instruction, IEnumerable<NdArray<T>> operands)
+        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
         {
-            if (instruction is PInvoke.cphvb_instruction)
-                return new PInvoke.cphvb_instruction(instruction.OpCode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), ((PInvoke.cphvb_instruction)instruction).constant);
+            bool constantUsed = false;
+            PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant();
+
+            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => {
+                if (!constantUsed && x.DataAccessor.Length == 1 && x.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                {
+                    constant = new PInvoke.cphvb_constant(type, x.DataAccessor[0]);
+                    return PInvoke.cphvb_array_ptr.Null;
+                }
+                else
+                    return CreateViewPtr<T>(type, x).Pointer;
+            }), constant);
+        }
+
+        public IInstruction CreateConversionInstruction<Ta, Tb>(NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
+        {
+            in1.DataAccessor.Allocate();
+            if (in2 != null)
+                in2.DataAccessor.Allocate();
+
+            if (in1.DataAccessor.Length == 1 && in1.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
+            else if (in2 != null && in2.DataAccessor.Length == 1 && in2.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.cphvb_constant(in2.DataAccessor[0]));
             else
-                throw new Exception("Unknown instruction type");
+                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
         }
 
         public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)

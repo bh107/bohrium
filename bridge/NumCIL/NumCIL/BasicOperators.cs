@@ -9,7 +9,7 @@ namespace NumCIL
     /// An operation that outputs the same value for each input
     /// </summary>
     /// <typeparam name="T">The type of data to produce</typeparam>
-    public struct GenerateOp<T> : INullaryOp<T>, IScalarAccess<T>
+    public struct GenerateOp<T> : INullaryOp<T>
     {
         /// <summary>
         /// The value all elements are assigned
@@ -25,22 +25,6 @@ namespace NumCIL
         /// </summary>
         /// <returns>The result value to assign</returns>
         public T Op() { return Value; }
-
-        /// <summary>
-        /// Returns the operation performed
-        /// </summary>
-        IOp<T> IScalarAccess<T>.Operation
-        {
-            get { return new CopyOp<T>(); }
-        }
-
-        /// <summary>
-        /// Returns the value to set
-        /// </summary>
-        T IScalarAccess<T>.Value
-        {
-            get { return Value; }
-        }
     }
 
     /// <summary>
@@ -150,147 +134,5 @@ namespace NumCIL
         /// <param name="op">The lambda function</param>
         /// <returns>A UnaryConvLambdaOp that wraps the function</returns>
         public static implicit operator UnaryConvLambdaOp<Ta, Tb>(Func<Ta, Tb> op) { return new UnaryConvLambdaOp<Ta, Tb>(op); }
-    }
-
-    /// <summary>
-    /// A scalar operation, that is a single binary operation with a scalar value embedded
-    /// The operation is performed with the scalar value as the right-hand-side argument
-    /// </summary>
-    /// <typeparam name="T">The type of data to operate on</typeparam>
-    /// <typeparam name="C">The operation type</typeparam>
-    public struct RhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : struct, IBinaryOp<T>
-    {
-        /// <summary>
-        /// The operation
-        /// </summary>
-        private C m_op;
-        /// <summary>
-        /// The scalar value
-        /// </summary>
-        private T m_value;
-
-        /// <summary>
-        /// Constructs a new scalar operation
-        /// </summary>
-        /// <param name="value">The scalar value</param>
-        /// <param name="op">The binary operation</param>
-        public RhsScalarOp(T value, C op)
-        {
-            m_value = value;
-            m_op = op;
-        }
-
-        /// <summary>
-        /// Executes the binary operation with the scalar value and the input.
-        /// </summary>
-        /// <param name="value">The input value</param>
-        /// <returns>The results of applying the operation to the scalar value and the input</returns>
-        public T Op(T value) { return m_op.Op(value, m_value); }
-
-        /// <summary>
-        /// Hidden implementation of the ScalarAccess interface
-        /// </summary>
-        IOp<T> IScalarAccess<T>.Operation { get { return m_op; } }
-        /// <summary>
-        /// Hidden implementation of the ScalarAccess interface
-        /// </summary>
-        T IScalarAccess<T>.Value { get { return m_value; } }
-        /// <summary>
-        /// Hidden implemenation of the IScalarAccessBinary interface
-        /// </summary>
-        bool IScalarAccessBinary<T>.IsLhsOperand { get { return false; } }
-    }
-
-    /// <summary>
-    /// A scalar operation, that is a single binary operation with a scalar value embedded.
-    /// The operation is performed with the scalar value as the left-hand-side argument.
-    /// </summary>
-    /// <typeparam name="T">The type of data to operate on</typeparam>
-    /// <typeparam name="C">The operation type</typeparam>
-    public struct LhsScalarOp<T, C> : IUnaryOp<T>, IScalarAccessBinary<T> where C : struct, IBinaryOp<T>
-    {
-        /// <summary>
-        /// The operation
-        /// </summary>
-        private readonly C m_op;
-        /// <summary>
-        /// The scalar value
-        /// </summary>
-        private readonly T m_value;
-
-        /// <summary>
-        /// Constructs a new scalar operation
-        /// </summary>
-        /// <param name="value">The scalar value</param>
-        /// <param name="op">The binary operation</param>
-        public LhsScalarOp(T value, C op)
-        {
-            m_value = value;
-            m_op = op;
-        }
-
-        /// <summary>
-        /// Executes the binary operation with the scalar value and the input
-        /// </summary>
-        /// <param name="value">The input value</param>
-        /// <returns>The results of applying the operation to the scalar value and the input</returns>
-        public T Op(T value) { return m_op.Op(m_value, value); }
-
-        /// <summary>
-        /// Hidden implementation of the IScalarAccess interface
-        /// </summary>
-        IOp<T> IScalarAccess<T>.Operation { get { return m_op; } }
-        /// <summary>
-        /// Hidden implementation of the IScalarAccess interface
-        /// </summary>
-        T IScalarAccess<T>.Value { get { return m_value; } }
-        /// <summary>
-        /// Hidden implemenation of the IScalarAccessBinary interface
-        /// </summary>
-        bool IScalarAccessBinary<T>.IsLhsOperand { get { return true; } }
-    }
-
-    /// <summary>
-    /// A scalar operation, that is a single binary operation with a scalar value embedded
-    /// The operation is performed with the scalar value as the right-hand-side argument
-    /// </summary>
-    /// <typeparam name="T">The type of data to operate on</typeparam>
-    /// <typeparam name="C">The operation type</typeparam>
-    public struct ScalarValue<T, C> : INullaryOp<T>, IScalarAccess<T> where C : IUnaryOp<T>
-    {
-        /// <summary>
-        /// The operation
-        /// </summary>
-        private readonly C m_op;
-        /// <summary>
-        /// The scalar value
-        /// </summary>
-        private readonly T m_value;
-
-        /// <summary>
-        /// Constructs a new scalar operation
-        /// </summary>
-        /// <param name="value">The scalar value</param>
-        /// <param name="op">The binary operation</param>
-        public ScalarValue(T value, C op)
-        {
-            m_value = value;
-            m_op = op;
-        }
-
-        /// <summary>
-        /// Executes the binary operation with the scalar value and the input.
-        /// </summary>
-        /// <returns>The results of applying the operation to the scalar value and the input</returns>
-        public T Op() { return m_value; }
-
-        /// <summary>
-        /// Hidden implementation of the ScalarAccess interface
-        /// </summary>
-        IOp<T> IScalarAccess<T>.Operation { get { return m_op; } }
-        /// <summary>
-        /// Hidden implementation of the ScalarAccess interface
-        /// </summary>
-        T IScalarAccess<T>.Value { get { return m_value; } }
     }
 }

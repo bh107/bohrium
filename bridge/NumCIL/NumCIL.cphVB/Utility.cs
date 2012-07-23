@@ -86,7 +86,9 @@ namespace NumCIL.cphVB
             Activate<ushort>();
             Activate<uint>();
             Activate<ulong>();
-
+			Activate<bool>();
+			Activate<NumCIL.Complex64.DataType>();
+			Activate<System.Numerics.Complex>();
         }
 
         public static void Deactivate()
@@ -101,9 +103,12 @@ namespace NumCIL.cphVB
             Deactivate<ushort>();
             Deactivate<uint>();
             Deactivate<ulong>();
+			Deactivate<bool>();
+			Deactivate<NumCIL.Complex64.DataType>();
+			Deactivate<System.Numerics.Complex>();
         }
 
-        public static void Activate<T>()
+		public static void Activate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new cphVBAccessorFactory<T>();
         }

@@ -91,7 +91,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for sbyte.
 	/// </summary>
-	public struct RandomGeneratorOpSByte : IRandomGeneratorOp<sbyte>
+	public struct RandomGeneratorOpInt8 : IRandomGeneratorOp<sbyte>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -104,7 +104,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for byte.
 	/// </summary>
-	public struct RandomGeneratorOpByte : IRandomGeneratorOp<byte>
+	public struct RandomGeneratorOpUInt8 : IRandomGeneratorOp<byte>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -214,7 +214,7 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Random generator for float.
 	/// </summary>
-	public struct RandomGeneratorOpSingle : IRandomGeneratorOp<float>
+	public struct RandomGeneratorOpFloat : IRandomGeneratorOp<float>
 	{
         /// <summary>Private reference to an initialized random number generator</summary>
         private static readonly System.Random Rand = new System.Random();
@@ -238,31 +238,71 @@ namespace NumCIL.Generic
 	}
 
     /// <summary>
+    /// Random generator for bool.
+    /// </summary>
+    public struct RandomGeneratorOpBoolean : IRandomGeneratorOp<bool>
+    {
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+        /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public bool Op() { return (Rand.Next() & 0x1) == 1; }
+    }
+
+    /// <summary>
+    /// Random generator for Complex64.
+    /// </summary>
+    public struct RandomGeneratorOpComplex64 : IRandomGeneratorOp<NumCIL.Complex64.DataType>
+    {
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+        /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public NumCIL.Complex64.DataType Op() { return (NumCIL.Complex64.DataType)(float)Rand.NextDouble(); }
+    }
+
+    /// <summary>
+    /// Random generator for Complex128.
+    /// </summary>
+    public struct RandomGeneratorOpComplex128 : IRandomGeneratorOp<System.Numerics.Complex>
+    {
+        /// <summary>Private reference to an initialized random number generator</summary>
+        private static readonly System.Random Rand = new System.Random();
+
+        /// <summary>Returns a random number</summary>
+        /// <returns>A random number</returns>
+        public System.Numerics.Complex Op() { return (System.Numerics.Complex)Rand.NextDouble(); }
+    }
+
+    /// <summary>
     /// Basic generator implementation that just calls "Set(x)" on the NdArray
     /// </summary>
     /// <typeparam name="T">The type of data to generate</typeparam>
 	/// <typeparam name="C">The random number generator to use</typeparam>
-    public class Generator<T, C> : IGenerator<T>
-		where C : struct, IRandomGeneratorOp<T>
+    public class Generator<T, TRand, TConv> : IGenerator<T>
+		where TRand : struct, IRandomGeneratorOp<T>
+        where TConv : struct, INumberConverter<T>
     {
         /// <summary>
         /// Generates an NdArray with sequential integers, starting with zero
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with sequential integers, starting with zero</returns>
-        public NdArray<T> Arange(long size) { return RangeGenerator<T>.Generate(size); }
+        public NdArray<T> Arange(long size) { return RangeGenerator<T, TConv>.Generate(size); }
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with all elements set to the value 1</returns>
-        public NdArray<T> Ones(long size) { return GenerateSame(size, (T)Convert.ChangeType(1, typeof(T))); }
+        public NdArray<T> Ones(long size) { return GenerateSame(size, new TConv().Convert(1)); }
         /// <summary>
         /// Generates an NdArray with all elements set to the value 0
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with all elements set to the value 0</returns>
-        public NdArray<T> Zeroes(long size) { return GenerateSame(size, (T)Convert.ChangeType(0, typeof(T))); ; }
+        public NdArray<T> Zeroes(long size) { return GenerateSame(size, new TConv().Convert(0)); }
         /// <summary>
         /// Generates an NdArray with all elements set to the given value
         /// </summary>
@@ -284,7 +324,7 @@ namespace NumCIL.Generic
         public virtual NdArray<T> Random(long size) 
         {
             var x = new NdArray<T>(new Shape(size));
-            UFunc.Apply<T, C>(new C(), x);
+            UFunc.Apply<T, TRand>(new TRand(), x);
             return x;
         }
 
@@ -293,7 +333,7 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="shape">The shape of the generated array</param>
         /// <returns>A shaped NdArray with sequential integers, starting with zero</returns>
-        public NdArray<T> Arange(Shape shape) { return RangeGenerator<T>.Generate(shape); }
+        public NdArray<T> Arange(Shape shape) { return RangeGenerator<T, TConv>.Generate(shape); }
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
@@ -327,7 +367,7 @@ namespace NumCIL.Generic
         public virtual NdArray<T> Random(Shape shape)
         {
             var x = new NdArray<T>(shape);
-            UFunc.Apply<T, C>(new C(), x);
+            UFunc.Apply<T, TRand>(new TRand(), x);
             return x;
         }
 
@@ -379,10 +419,168 @@ namespace NumCIL.Generic
     }
 
     /// <summary>
+    /// Interfaces that describes a single function for converting a long to another type
+    /// </summary>
+    /// <typeparam name="T">The type to convert to</typeparam>
+    public interface INumberConverter<T>
+    {
+        /// <summary>
+        /// Converts the value to a type
+        /// </summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        T Convert(long value);
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to sbyte
+    /// </summary>
+    public struct NumberConverterInt8 : INumberConverter<sbyte>
+    {
+        /// <summary>Converts the value to a <see cref="System.SByte"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public sbyte Convert(long value) { return (sbyte)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to byte
+    /// </summary>
+    public struct NumberConverterUInt8 : INumberConverter<byte>
+    {
+        /// <summary>Converts the value to a <see cref="System.Byte"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public byte Convert(long value) { return (byte)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to short
+    /// </summary>
+    public struct NumberConverterInt16 : INumberConverter<short>
+    {
+        /// <summary>Converts the value to a <see cref="System.Int16"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public short Convert(long value) { return (short)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to ushort
+    /// </summary>
+    public struct NumberConverterUInt16 : INumberConverter<ushort>
+    {
+        /// <summary>Converts the value to a <see cref="System.UInt16"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public ushort Convert(long value) { return (ushort)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to int
+    /// </summary>
+    public struct NumberConverterInt32 : INumberConverter<int>
+    {
+        /// <summary>Converts the value to a <see cref="System.Int32"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public int Convert(long value) { return (int)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to uint
+    /// </summary>
+    public struct NumberConverterUInt32 : INumberConverter<uint>
+    {
+        /// <summary>Converts the value to a <see cref="System.UInt32"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public uint Convert(long value) { return (uint)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to long
+    /// </summary>
+    public struct NumberConverterInt64 : INumberConverter<long>
+    {
+        /// <summary>Converts the value to a <see cref="System.Int64"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public long Convert(long value) { return value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to ulong
+    /// </summary>
+    public struct NumberConverterUInt64 : INumberConverter<ulong>
+    {
+        /// <summary>Converts the value to a <see cref="System.UInt64"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public ulong Convert(long value) { return (ulong)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to float
+    /// </summary>
+    public struct NumberConverterFloat : INumberConverter<float>
+    {
+        /// <summary>Converts the value to a <see cref="System.Single"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public float Convert(long value) { return (float)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to double
+    /// </summary>
+    public struct NumberConverterDouble : INumberConverter<double>
+    {
+        /// <summary>Converts the value to a <see cref="System.Double"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public double Convert(long value) { return (double)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to bool
+    /// </summary>
+    public struct NumberConverterBoolean : INumberConverter<bool>
+    {
+        /// <summary>Converts the value to a <see cref="System.Boolean"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public bool Convert(long value) { return !(value == 0); }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to complex64
+    /// </summary>
+    public struct NumberConverterComplex64 : INumberConverter<NumCIL.Complex64.DataType>
+    {
+        /// <summary>Converts the value to a <see cref="NumCIL.Complex64.DataType"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public NumCIL.Complex64.DataType Convert(long value) { return (NumCIL.Complex64.DataType)value; }
+    }
+
+    /// <summary>
+    /// Implementation of a number conversion to complex128
+    /// </summary>
+    public struct NumberConverterComplex128 : INumberConverter<System.Numerics.Complex>
+    {
+        /// <summary>Converts the value to a <see cref="System.Numerics.Complex"/></summary>
+        /// <param name="value">The number to convert</param>
+        /// <returns>The converted value</returns>
+        public System.Numerics.Complex Convert(long value) { return (System.Numerics.Complex)value; }
+    }
+
+    /// <summary>
     /// Basic implementation of the range generator
     /// </summary>
     /// <typeparam name="T">The type of data to generate</typeparam>
-    public class RangeGenerator<T> : IGeneratorImplementation<T>
+    public class RangeGenerator<T, TConv> : IGeneratorImplementation<T>
+        where TConv : struct, INumberConverter<T>
     {
         /// <summary>
         /// Generates an NdArray with sequential integers, starting with 0
@@ -402,18 +600,10 @@ namespace NumCIL.Generic
         public static NdArray<T> Generate(long size)
         {
             T[] a = new T[size];
-            long value = 0;
+            TConv c = new TConv();
 
-            if (size <= int.MaxValue)
-            {
-                for (int i = 0; i < a.Length; i++)
-                    a[i] = (T)Convert.ChangeType(value++, typeof(T));
-            }
-            else
-            {
-                for (long i = 0; i < a.LongLength; i++)
-                    a[i] = (T)Convert.ChangeType(value++, typeof(T));
-            }
+            for (long i = 0; i < a.LongLength; i++)
+                a[i] = c.Convert(i);
 
             return new NdArray<T>(a);
         }
@@ -427,7 +617,7 @@ namespace NumCIL.Generic
         /// <returns>An NdArray with sequential integers, starting with 0</returns>
         NdArray<T> NumCIL.Generic.IGeneratorImplementation<T>.Generate(long size)
         {
-            return RangeGenerator<T>.Generate(size);
+            return RangeGenerator<T, TConv>.Generate(size);
         }
 
         /// <summary>
@@ -437,7 +627,7 @@ namespace NumCIL.Generic
         /// <returns>A shaped NdArray with sequential integers, starting with 0</returns>
         NdArray<T> NumCIL.Generic.IGeneratorImplementation<T>.Generate(Shape shape)
         {
-            return RangeGenerator<T>.Generate(shape);
+            return RangeGenerator<T, TConv>.Generate(shape);
         }
 
         #endregion

@@ -23,8 +23,14 @@ using cphvb_uint8 = System.Byte;
 using cphvb_uint16 = System.UInt16;
 using cphvb_uint32 = System.UInt32;
 using cphvb_uint64 = System.UInt64;
+
+//CPHVB floating point types
 using cphvb_float32 = System.Single;
 using cphvb_float64 = System.Double;
+
+//CPHVB complex types
+using cphvb_complex64 = NumCIL.Complex64.DataType;
+using cphvb_complex128 = System.Numerics.Complex;
 
 namespace NumCIL.cphVB
 {
@@ -101,6 +107,8 @@ namespace NumCIL.cphVB
             CPHVB_FLOAT16,
             CPHVB_FLOAT32,
             CPHVB_FLOAT64,
+            CPHVB_COMPLEX64,
+            CPHVB_COMPLEX128,
             CPHVB_UNKNOWN
         }
 
@@ -150,6 +158,10 @@ namespace NumCIL.cphVB
                     this.type = cphvb_type.CPHVB_FLOAT32;
                 else if (v is cphvb_float64)
                     this.type = cphvb_type.CPHVB_FLOAT64;
+                else if (v is cphvb_complex64)
+                    this.type = cphvb_type.CPHVB_COMPLEX64;
+                else if (v is cphvb_complex128)
+                    this.type = cphvb_type.CPHVB_COMPLEX128;
                 else
                     throw new NotSupportedException();
             }
@@ -169,6 +181,8 @@ namespace NumCIL.cphVB
             [FieldOffset(0)] public cphvb_uint64   uint64;
             [FieldOffset(0)] public cphvb_float32  float32;
             [FieldOffset(0)] public cphvb_float64  float64;
+            [FieldOffset(0)] public cphvb_complex64  complex64;
+            [FieldOffset(0)] public cphvb_complex128  complex128;
 
             public cphvb_constant_value Set(cphvb_bool v) { this.bool8 = v; return this; }
             //public cphvb_constant Set(cphvb_int8 v) { this.int8 = v; return this; }
@@ -181,6 +195,8 @@ namespace NumCIL.cphVB
             public cphvb_constant_value Set(cphvb_uint64 v) { this.uint64 = v; return this; }
             public cphvb_constant_value Set(cphvb_float32 v) { this.float32 = v; return this; }
             public cphvb_constant_value Set(cphvb_float64 v) { this.float64 = v; return this; }
+            public cphvb_constant_value Set(cphvb_complex64 v) { this.complex64 = v; return this; }
+            public cphvb_constant_value Set(cphvb_complex128 v) { this.complex128 = v; return this; }
             public cphvb_constant_value Set(object v) 
             {
                 if (v is cphvb_bool)
@@ -203,6 +219,10 @@ namespace NumCIL.cphVB
                     return Set((cphvb_float32)v);
                 else if (v is cphvb_float64)
                     return Set((cphvb_float64)v);
+                else if (v is cphvb_complex64)
+                    return Set((cphvb_complex64)v);
+                else if (v is cphvb_complex128)
+                    return Set((cphvb_complex128)v);
 
                 throw new NotSupportedException(); 
             }                
@@ -226,7 +246,10 @@ namespace NumCIL.cphVB
             [FieldOffset(0)] private cphvb_uint64[]   uint64;
             [FieldOffset(0)] private cphvb_float32[]  float32;
             [FieldOffset(0)] private cphvb_float64[]  float64;
-            [FieldOffset(0)] private IntPtr           voidPtr;
+            [FieldOffset(0)] private cphvb_complex64[] complex64;
+            [FieldOffset(0)] private cphvb_complex128[] complex128;
+            [FieldOffset(0)]
+            private IntPtr voidPtr;
 #pragma warning restore 0414
 #pragma warning restore 0169
 
@@ -241,6 +264,8 @@ namespace NumCIL.cphVB
             public cphvb_data_array Set(cphvb_uint64[] v) { this.uint64 = v; return this; }
             public cphvb_data_array Set(cphvb_float32[] v) { this.float32 = v; return this; }
             public cphvb_data_array Set(cphvb_float64[] v) { this.float64 = v; return this; }
+            public cphvb_data_array Set(cphvb_complex64[] v) { this.complex64 = v; return this; }
+            public cphvb_data_array Set(cphvb_complex128[] v) { this.complex128 = v; return this; }
             public cphvb_data_array Set(IntPtr v) { this.voidPtr = v; return this; }
             public cphvb_data_array Set(object v) { throw new NotSupportedException(); }
         }
