@@ -47,7 +47,6 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
         if (inst->status == CPHVB_SUCCESS) {        // SKIP instruction
             continue;
         }
-//cphvb_pprint_instr(inst);
 
         res = cphvb_mcache_malloc( inst );          // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
