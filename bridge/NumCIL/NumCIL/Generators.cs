@@ -280,7 +280,8 @@ namespace NumCIL.Generic
     /// Basic generator implementation that just calls "Set(x)" on the NdArray
     /// </summary>
     /// <typeparam name="T">The type of data to generate</typeparam>
-	/// <typeparam name="C">The random number generator to use</typeparam>
+	/// <typeparam name="TRand">The random number generator to use</typeparam>
+    /// <typeparam name="TConv">The conversion operator to use</typeparam>
     public class Generator<T, TRand, TConv> : IGenerator<T>
 		where TRand : struct, IRandomGeneratorOp<T>
         where TConv : struct, INumberConverter<T>
@@ -579,6 +580,7 @@ namespace NumCIL.Generic
     /// Basic implementation of the range generator
     /// </summary>
     /// <typeparam name="T">The type of data to generate</typeparam>
+    /// <typeparam name="TConv">The conversion operator to use</typeparam>
     public class RangeGenerator<T, TConv> : IGeneratorImplementation<T>
         where TConv : struct, INumberConverter<T>
     {

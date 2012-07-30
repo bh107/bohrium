@@ -12,7 +12,8 @@ namespace NumCIL
         /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
         /// If no output array is given, a compatible output array is created
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
@@ -103,7 +104,8 @@ namespace NumCIL
         /// It has a unique name because it is faster to look up the method through reflection,
         /// if there is only one version of it.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
@@ -141,7 +143,8 @@ namespace NumCIL
         /// <summary>
         /// Applies the operation to the input arrays
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
@@ -171,7 +174,8 @@ namespace NumCIL
         /// <summary>
         /// Applies the operation to the input arrays
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <param name="op">The operation instance to use</param>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
@@ -270,7 +274,6 @@ namespace NumCIL
         /// </summary>
         /// <typeparam name="Ta">The type of input data to operate on</typeparam>
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
-        /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="op">The operation to perform</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>

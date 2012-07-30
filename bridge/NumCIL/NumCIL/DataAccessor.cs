@@ -89,7 +89,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation performed</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         /// <typeparam name="Tb">The source data type</typeparam>
         void AddConversionOperation<Tb>(IBinaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> in1, NdArray<Tb> in2);
 
@@ -323,7 +324,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation performed</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         public virtual void AddConversionOperation<Ta>(IBinaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> in1, NdArray<Ta> in2)
         {
             lock (Lock)
@@ -678,7 +680,7 @@ namespace NumCIL.Generic
 
 	}
 
-
+    /// <summary>
 	/// Representation of a pending binary conversion operation.
 	/// </summary>
     public class PendingBinaryConversionOperation<Ta, Tb> : PendingUnaryConversionOperation<Ta, Tb>, IPendingBinaryConversionOp
@@ -698,7 +700,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation to perform</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         public PendingBinaryConversionOperation(IOp<Ta> operation, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
             :base(operation, output, in1)
         {

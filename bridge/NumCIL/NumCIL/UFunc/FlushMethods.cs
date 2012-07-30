@@ -37,7 +37,8 @@ namespace NumCIL
             /// Applies a binary operation using the two operands without lazy evaluation.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
-            /// <typeparam name="T">The type of data to operate on</typeparam>
+            /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+            /// <typeparam name="Tb">The type of output data to operate on</typeparam>
             /// <typeparam name="C">The type of operation to perform</typeparam>
             /// <param name="op">The operation to use</param>
             /// <param name="in1">One input operand</param>
