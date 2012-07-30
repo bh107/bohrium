@@ -53,7 +53,6 @@ namespace NumCIL.cphVB
             _opcode_func_name.Add(cphvb_opcode.CPHVB_ABSOLUTE, "Abs");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_SQRT, "Sqrt");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_EXP, "Exp");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_NEGATIVE, "Negate");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG, "Log");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG10, "Log10");
             _opcode_func_name.Add(cphvb_opcode.CPHVB_POWER, "Pow");

@@ -44,13 +44,13 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
     for (count=0; count < instruction_count; count++) {
 
         inst = &instruction_list[count];
-
         if (inst->status == CPHVB_SUCCESS) {        // SKIP instruction
             continue;
         }
 
         res = cphvb_mcache_malloc( inst );          // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
+            printf("Unhandled error returned by cphvb_mcache_malloc() called from cphvb_ve_simple_execute()\n");
             return res;
         }
                                                     
