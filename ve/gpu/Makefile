@@ -5,17 +5,18 @@ LIB=libcphvb_ve_gpu.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS) -DSTATS #-DDEBUG
+LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS)  #-DDEBUG #-DSTATS
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lcphvb -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce StringHasher
+		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce \
+		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
-INSTALLDIR=/opt/cphvb/
+INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 
@@ -35,6 +36,6 @@ clean:
 		rm -rf *.o  *.oo *~ *.gch *.orig $(LIB)
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
-		sudo cp -r ocl_source $(INSTALLDIR)/lib/
+		cp $(LIB) $(INSTALLDIR)
+		cp -r ocl_source $(INSTALLDIR)/lib/
 
