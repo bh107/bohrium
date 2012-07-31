@@ -54,11 +54,11 @@ def clean(components):
         except KeyboardInterrupt:
             p.terminate()
 
-def install(components):
+def install(components,prefix):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "install"], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename, "install","INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -100,12 +100,14 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"d",["debug"])
+        opts, args = getopt.getopt(sys.argv[1:],"d",["debug","prefix="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
     for o, a in opts:
-        if o in ("-d", "--debug"):
+        if o in ("--prefix"):
+            prefix = a
+        elif o in ("-p", "--prefix"):
             debug = True
         else:
             assert False, "unhandled option"
@@ -148,9 +150,9 @@ if __name__ == "__main__":
     elif cmd == "clean":
         clean(components)        
     elif cmd == "install":
-        if not exists("/opt/cphvb"):
-            os.mkdir("/opt/cphvb")
-        install(components)        
+        if not exists(prefix):
+            os.mkdir(prefix)
+        install(components,prefix)        
         install_config();
     else:
         print "Unknown command: '%s'."%cmd
