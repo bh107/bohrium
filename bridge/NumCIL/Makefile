@@ -38,6 +38,6 @@ clean:
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.cphVB/NumCIL.cphVB.csproj
 
 install: all
-		sudo cp $(DLL_MAIN) $(INSTALLDIR)
-		sudo cp $(DLL_UNSAFE) $(INSTALLDIR)
-		sudo cp $(DLL_CPHVB) $(INSTALLDIR)
+		cp $(DLL_MAIN) $(INSTALLDIR)
+		cp $(DLL_UNSAFE) $(INSTALLDIR)
+		cp $(DLL_CPHVB) $(INSTALLDIR)

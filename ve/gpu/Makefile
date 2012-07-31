@@ -36,6 +36,6 @@ clean:
 		rm -rf *.o  *.oo *~ *.gch *.orig $(LIB)
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
-		sudo cp -r ocl_source $(INSTALLDIR)/lib/
+		cp $(LIB) $(INSTALLDIR)
+		cp -r ocl_source $(INSTALLDIR)/lib/
 

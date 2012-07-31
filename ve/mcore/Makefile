@@ -26,5 +26,5 @@ clean:
 		rm -rf *.o *~ *.so
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)
 

@@ -44,7 +44,7 @@ char _expand_buffer2[MAX_PATH];
 #include <limits.h>
 
 #define HOME_INI_PATH "~/.cphvb/config.ini"
-#define SYSTEM_INI_PATH "/opt/cphvb/config.ini"
+#define SYSTEM_INI_PATH "/etc/cphvb/config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer[PATH_MAX];

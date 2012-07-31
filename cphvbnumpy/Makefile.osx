@@ -9,4 +9,4 @@ clean:
 
 install:
 	$(PYTHON) setup.py build
-	sudo $(PYTHON) setup.py install --prefix $(INSTALLDIR)
+	$(PYTHON) setup.py install --prefix $(INSTALLDIR)

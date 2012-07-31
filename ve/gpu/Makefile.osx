@@ -16,7 +16,7 @@ CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter Ba
 		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
-INSTALLDIR=/opt/cphvb/
+INSTALLDIR?=/opt/cphvb/
 KERNELDIR=/usr/local/cphvb/
 
 all: $(LIB)
@@ -37,4 +37,4 @@ clean:
 		rm -rf *.o  *.oo *~ *.gch *.orig *.so *.dylib
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)
