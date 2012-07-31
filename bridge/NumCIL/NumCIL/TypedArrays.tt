@@ -823,6 +823,26 @@ namespace NumCIL.<#=typename#>
         public static NumCIL.Boolean.NdArray operator <=(OutArray a, OutArray b) { return UFunc.Apply<T, bool, LessThanOrEqual>(a, b, null); }
 <# } #>
 		#endregion
+
+		#region System.Object overrides
+		/// <summary>
+		/// Compares this object to another
+		/// </summary>
+		/// <returns>A value indicating if the two elements are equal</returns>
+		public override bool Equals(object o)
+		{
+			return this == o;
+		}
+
+		/// <summary>
+		/// Returns a hashcode for comparing this object to others
+		/// </summary>
+		/// <returns>A hash code for this instance</returns>
+		public override int GetHashCode()
+		{
+			return value.GetHashCode();
+		}
+		#endregion
     }
 
     #region Struct instances for common operations

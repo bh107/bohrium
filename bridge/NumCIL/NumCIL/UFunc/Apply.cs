@@ -515,7 +515,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
@@ -746,7 +747,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="scalar">The left-hand-side scalar argument</param>
@@ -937,7 +939,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
