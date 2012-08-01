@@ -617,7 +617,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// 
+        /// Gets a pointer to the base array
         /// </summary>
         public PInvoke.cphvb_array_ptr BaseArrayPtr
         {
@@ -655,19 +655,45 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Continues exectuion started on another type
+        /// </summary>
+        /// <param name="i">The execution so far was started on</param>
+        internal void ContinueExecution(List<IInstruction> i)
+        {
+            lock (Lock)
+            {
+                var lst = UnrollWorkList(this);
+                PendingOperations.Clear();
+                ExecuteOperations(lst, i);
+            }
+        }
+
+        /// <summary>
         /// Executes all pending operations in the list
         /// </summary>
         /// <param name="work">The list of operations to execute</param>
         public override void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
         {
+            ExecuteOperations(work, null);
+        }
+
+        /// <summary>
+        /// Executes all pending operations in the list
+        /// </summary>
+        /// <param name="work">The list of operations to execute</param>
+        private void ExecuteOperations(IEnumerable<PendingOperation<T>> work, List<IInstruction> supported)
+        {
             List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
-            List<IInstruction> supported = new List<IInstruction>();
+            bool isContinuation = supported != null;
+
+            if (supported == null)
+                supported = new List<IInstruction>();
 
             foreach (var op in work)
             {
                 IOp<T> ops = op.Operation;
                 NdArray<T>[] operands = op.Operands;
-
+                
                 cphvb_opcode opcode;
                 if (OpcodeMap.TryGetValue(ops.GetType(), out opcode))
                 {
@@ -722,7 +748,7 @@ namespace NumCIL.cphVB
                             object unop = ((IPendingUnaryConversionOp)op).InputOperand;
 
                             Type inputType = unop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] {opcode,  CPHVB_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode,  CPHVB_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
 
                             supported.Add(inst);
                         }
@@ -733,7 +759,7 @@ namespace NumCIL.cphVB
                             object rhsop = ((IPendingBinaryConversionOp)op).InputOperand;
 
                             Type inputType = lhsop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { opcode, CPHVB_TYPE, operands[0], lhsop, rhsop });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode, CPHVB_TYPE, operands[0], lhsop, rhsop });
 
                             supported.Add(inst);
                         } 
@@ -765,10 +791,9 @@ namespace NumCIL.cphVB
             if (unsupported.Count > 0)
                 base.ExecuteOperations(unsupported);
 
-            if (supported.Count > 0)
+            if (supported.Count > 0 && !isContinuation)
             {
                 ExecuteWithFailureDetection(supported);
-
             }
         }
 

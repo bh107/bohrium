@@ -828,11 +828,20 @@ namespace NumCIL.cphVB
             }), constant);
         }
 
-        public IInstruction CreateConversionInstruction<Ta, Tb>(NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
+        public IInstruction CreateConversionInstruction<Ta, Tb>(List<IInstruction> supported, NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
         {
-            in1.DataAccessor.Allocate();
+            if (in1.DataAccessor is cphVBAccessor<Tb>)
+                ((cphVBAccessor<Tb>)in1.DataAccessor).ContinueExecution(supported);
+            else
+                in1.DataAccessor.Allocate();
+
             if (in2 != null)
-                in2.DataAccessor.Allocate();
+            {
+                if (in2.DataAccessor is cphVBAccessor<Tb>)
+                    ((cphVBAccessor<Tb>)in2.DataAccessor).ContinueExecution(supported);
+                else
+                    in2.DataAccessor.Allocate();
+            }
 
             if (in1.DataAccessor.Length == 1 && in1.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);

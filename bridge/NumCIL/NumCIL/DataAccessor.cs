@@ -339,9 +339,12 @@ namespace NumCIL.Generic
         {
             if (PendingOperations.Count > 0)
             {
-                var lst = UnrollWorkList(this);
-                ExecuteOperations(lst);
-                PendingOperations.Clear();
+                lock (Lock)
+                {
+                    var lst = UnrollWorkList(this);
+                    PendingOperations.Clear();
+                    ExecuteOperations(lst);
+                }
             }
         }
 
