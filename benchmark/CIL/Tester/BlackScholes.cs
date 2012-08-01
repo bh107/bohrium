@@ -20,8 +20,8 @@ namespace Tester
             var K = 1.0f / (1.0f + 0.2316419f * L);
             var w = 1.0f - 1.0f / ((DATA)Math.Sqrt(2 * Math.PI)) * (-L * L / 2.0f).Exp() * (a1 * K + a2 * (K.Pow(2)) + a3 * (K.Pow(3)) + a4 * (K.Pow(4)) + a5 * (K.Pow(5)));
             
-            var mask1 = X.Apply<LessThan>();
-            var mask2 = X.Apply<GreaterThanOrEqual>();
+            var mask1 = (NdArray)(X < 0);
+            var mask2 = (NdArray)(X >= 0);
 
             w = w * mask2 + (1.0f - w) * mask1;
             return w;
