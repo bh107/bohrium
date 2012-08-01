@@ -12,9 +12,9 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true);
-            if (jacobiResult != 8349)
-                throw new Exception(string.Format("Jacobi solver failed: {0}", jacobiResult));
+            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true, 10);
+            if (Math.Abs(jacobiResult - 6529.6474649484189) > 0.01)
+                throw new Exception(string.Format("Jacobi solver failed: {0}, diff: {1}", jacobiResult, Math.Abs(jacobiResult - 6529.6474649484189)));
 
             var blackScholesResult = Tester.BlackScholesSolver.Solve(36000, 10, false);
             if (Math.Abs(blackScholesResult - 51.855494520660294) > 0.01)
