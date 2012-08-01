@@ -288,6 +288,14 @@ namespace NumCIL.<#=typename#>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of subtracting the two input operands</returns>
         public static OutArray operator -(OutArray a, OutArray b) { return UFunc.Apply<T, Sub>(a, b, null); }
+<# if (typename[0] != 'U') { #>
+        /// <summary>
+        /// Calculates negation of the operand
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The result of subtracting the two input operands</returns>
+        public static OutArray operator -(OutArray a) { return UFunc.Apply<T, Sub>(new OutArray((T)0), a, null); }
+<# } #>
         /// <summary>
         /// Calculates multiplication to the two operands
         /// </summary>
@@ -424,12 +432,6 @@ namespace NumCIL.<#=typename#>
         /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
         /// <returns>An NdArray with all absolute values</returns>
         public OutArray Abs(OutArray @out = null) { return UFunc.Apply<T, Abs>(this, @out); }
-        /// <summary>
-        /// Returns a new NdArray with the negated value of all elements in this NdArray
-        /// </summary>
-        /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
-        /// <returns>An NdArray with all values negated</returns>
-        public OutArray Negate(OutArray @out = null) { return UFunc.Apply<T, Negate>(this, @out); }
 <# } #>
         /// <summary>
         /// Returns a new NdArray that is the result of calculating the logarithmic value of all the elements in this NdArray
@@ -905,10 +907,6 @@ namespace NumCIL.<#=typename#>
         /// The absolute operation
         /// </summary>
         public static readonly Abs Abs;
-        /// <summary>
-        /// The negate operation
-        /// </summary>
-        public static readonly Negate Negate;
 <# } #>
         /// <summary>
         /// The square root operation
@@ -1127,7 +1125,7 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
 
 	#region Unary operations implementation
 <#
-foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Negate", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not"}) 
+foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not"}) 
 {
 	if (opname == "Not" && fulltypename != "System.Boolean")
 		continue;
@@ -1138,7 +1136,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 	if ((opname == "Ceiling" || opname == "Floor" || opname == "Round" || opname == "Not" || opname == "Invert") && typename.StartsWith("Complex"))
 		continue;
 
-	if ((opname == "Negate" || opname == "Abs") && typename.StartsWith("U"))
+	if ((opname == "Abs") && typename.StartsWith("U"))
 		continue;
 
 	if ((opname == "Round" || opname == "Ceiling" || opname == "Floor") && (typename.StartsWith("U") || typename.StartsWith("I")))
@@ -1163,7 +1161,6 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 		<# } else if (opname == "Round")   { #>{ return (T)Math.Round(a); }
 		<# } else if (opname == "Sqrt")    { #>{ return (T)<#=mathlib#>.Sqrt(a); }
 		<# } else if (opname == "Exp")     { #>{ return (T)<#=mathlib#>.Exp(a); }
-		<# } else if (opname == "Negate")  { #>{ return (T)(-a); }
 		<# } else if (opname == "Abs")     { #>{ return (T)<#=mathlib#>.Abs(a); }
 		<# } else if (opname == "Sin")     { #>{ return (T)<#=mathlib#>.Sin(a); }
 		<# } else if (opname == "Cos")     { #>{ return (T)<#=mathlib#>.Cos(a); }

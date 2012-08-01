@@ -18,7 +18,7 @@ namespace Tester
             DATA a1 = 0.31938153f, a2 = -0.356563782f, a3 = 1.781477937f, a4 = -1.821255978f, a5 = 1.330274429f;
             var L = X.Abs();
             var K = 1.0f / (1.0f + 0.2316419f * L);
-            var w = 1.0f - 1.0f / ((DATA)Math.Sqrt(2 * Math.PI)) * (L.Negate() * L / 2.0f).Exp() * (a1 * K + a2 * (K.Pow(2)) + a3 * (K.Pow(3)) + a4 * (K.Pow(4)) + a5 * (K.Pow(5)));
+            var w = 1.0f - 1.0f / ((DATA)Math.Sqrt(2 * Math.PI)) * (-L * L / 2.0f).Exp() * (a1 * K + a2 * (K.Pow(2)) + a3 * (K.Pow(3)) + a4 * (K.Pow(4)) + a5 * (K.Pow(5)));
             
             var mask1 = X.Apply<LessThan>();
             var mask2 = X.Apply<GreaterThanOrEqual>();
@@ -35,7 +35,7 @@ namespace Tester
             if (callputflag)
                 return S * CND(d1) - X * (DATA)Math.Exp(-r * T) * CND(d2);
             else
-                return X * (DATA)Math.Exp(-r * T) * CND(d2.Negate()) - S * CND(d1.Negate());
+                return X * (DATA)Math.Exp(-r * T) * CND(-d2) - S * CND(-d1);
         }
 
         public static DATA Solve(long size, long years, bool randomdata = true)
