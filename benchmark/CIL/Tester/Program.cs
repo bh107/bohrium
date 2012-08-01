@@ -57,21 +57,21 @@ namespace Tester
         private static void TimeJacobi()
         {
             long size = 10000;
-            long count;
+            double delta;
             using (new DispTimer(string.Format("JacobiSolver {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, true, 10);
+                delta = JacobiSolver.Solve(size, size, true, 10);
 
-            Console.WriteLine("Count: " + count.ToString());
+            Console.WriteLine("Delta: " + delta.ToString());
         }
 
         private static void TimeJacobiFixed()
         {
             long size = 10000;
-            long count;
+            double chk;
             using (new DispTimer(string.Format("JacobiSolverFixed {0}x{0}", size)))
-                count = JacobiSolver.Solve(size, size, false, 10);
+                chk = JacobiSolver.Solve(size, size, false, 10);
 
-            Console.WriteLine("Count: " + count.ToString());
+            Console.WriteLine("Check: " + chk.ToString());
         }
 
         private static void TimeScholes()
