@@ -589,7 +589,11 @@ namespace NumCIL.cphVB
             }
 
             if (m_baseArrayRefs.Count > 0)
+#if DEBUG
+                Console.WriteLine("WARNING: Some base arrays were stil allocated during VEM shutdown");
+#else
                 throw new Exception("Some base arrays were stil allocated during VEM shutdown");
+#endif
 
             m_preventCleanup = false;
             ExecuteCleanups();
