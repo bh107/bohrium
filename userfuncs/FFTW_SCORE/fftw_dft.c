@@ -18,7 +18,6 @@
  */
 #include <cphvb.h>
 #include <fftw3.h>
-#include <omp.h>
 
 /* ONE DIMENSIONAL TRANSFORMATIONS START */
 
@@ -31,8 +30,6 @@ cphvb_error do_fft_complex64(cphvb_array* in, cphvb_array* out){
   cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
   
 
-  fftwf_init_threads();
-  fftwf_plan_with_nthreads(omp_get_max_threads());
   fftwf_plan p;
   if ( in->ndim == 1)
     p = fftwf_plan_dft_1d(in->shape[0], (fftwf_complex*) in_data, (fftwf_complex*) out_data, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -48,7 +45,6 @@ cphvb_error do_fft_complex64(cphvb_array* in, cphvb_array* out){
     return CPHVB_ERROR;
   fftwf_execute(p);
   fftwf_destroy_plan(p);
-  fftwf_cleanup_threads();
   
   return CPHVB_SUCCESS;
 }
@@ -62,8 +58,6 @@ cphvb_error do_fft_complex128(cphvb_array* in, cphvb_array* out){
   cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
   
 
-  fftw_init_threads();
-  fftw_plan_with_nthreads(omp_get_max_threads());
   fftw_plan p;
   int n = in->ndim == 1 ? in->shape[0] : in->shape[1];
   int how_many = in->ndim == 1 ? 1 : in->shape[0];
@@ -80,7 +74,6 @@ cphvb_error do_fft_complex128(cphvb_array* in, cphvb_array* out){
 
   fftw_execute(p);
   fftw_destroy_plan(p);
-  fftw_cleanup_threads();
   
   return CPHVB_SUCCESS;
 }
@@ -124,15 +117,11 @@ cphvb_error do_fft2_complex64(cphvb_array* in, cphvb_array* out){
   cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
   cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
   
-
-  fftwf_init_threads();
-  fftwf_plan_with_nthreads(omp_get_max_threads());
   fftwf_plan p;
   p = fftwf_plan_dft_2d(in->shape[0], in->shape[1], (fftwf_complex*)in_data, (fftwf_complex*)out_data, FFTW_FORWARD, FFTW_ESTIMATE);
 
   fftwf_execute(p);
   fftwf_destroy_plan(p);
-  fftwf_cleanup_threads();
   
   return CPHVB_SUCCESS;
 }
@@ -145,15 +134,11 @@ cphvb_error do_fft2_complex128(cphvb_array* in, cphvb_array* out){
   cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
   cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
   
-
-  fftw_init_threads();
-  fftw_plan_with_nthreads(omp_get_max_threads());
   fftw_plan p;
   p = fftw_plan_dft_2d(in->shape[0], in->shape[1], (fftw_complex*)in_data, (fftw_complex*)out_data, FFTW_FORWARD, FFTW_ESTIMATE);
 
   fftw_execute(p);
   fftw_destroy_plan(p);
-  fftw_cleanup_threads();
   
   return CPHVB_SUCCESS;
 }
@@ -185,4 +170,4 @@ cphvb_error cphvb_fft2(cphvb_userfunc *arg, void* ve_arg)
 	}  
 }
 
-/* ONE DIMENSIONAL TRANSFORMATIONS END */
+/* TWO DIMENSIONAL TRANSFORMATIONS END */
