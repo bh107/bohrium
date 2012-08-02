@@ -5,8 +5,16 @@ using System.Text;
 
 namespace NumCIL.cphVB
 {
+    /// <summary>
+    /// Utility class for cphVB
+    /// </summary>
     public static class Utility
     {
+        /// <summary>
+        /// Attempts to set up cphVB by looking for the cphvb checkout folder.
+        /// This simplifies using cphVB directly from the build folder,
+        /// without installing cphVB first
+        /// </summary>
         public static void SetupDebugEnvironmentVariables()
         {
             try
@@ -71,6 +79,9 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// Activates cphVB for all supported datatypes
+        /// </summary>
         public static void Activate()
         {
             //Activate the instance so timings are more accurate when profiling
@@ -91,6 +102,9 @@ namespace NumCIL.cphVB
 			Activate<System.Numerics.Complex>();
         }
 
+        /// <summary>
+        /// Deactivates cphVB for all supported datatypes
+        /// </summary>
         public static void Deactivate()
         {
             Deactivate<float>();
@@ -107,17 +121,28 @@ namespace NumCIL.cphVB
 			Deactivate<NumCIL.Complex64.DataType>();
 			Deactivate<System.Numerics.Complex>();
         }
-
+        
+        /// <summary>
+        /// Activates cphVB for a specific datatype
+        /// </summary>
+        /// <typeparam name="T">The datatype to activate cphVB for</typeparam>
 		public static void Activate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new cphVBAccessorFactory<T>();
         }
 
+        /// <summary>
+        /// Deactivates cphVB for a specific datatype
+        /// </summary>
+        /// <typeparam name="T">The datatype to deactivate cphVB for</typeparam>
         public static void Deactivate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new NumCIL.Generic.DefaultAccessorFactory<T>();
         }
 
+        /// <summary>
+        /// Flushes pending operations in the VEM, note that this does not flush all pending instructions
+        /// </summary>
         public static void Flush()
         {
             VEM.Instance.Flush();

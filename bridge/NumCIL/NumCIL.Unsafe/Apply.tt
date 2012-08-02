@@ -784,7 +784,7 @@ namespace NumCIL.Unsafe
         /// </summary>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
-        /// <param name="in1">The input argument</param>
+        /// <param name="scalar">The input scalar argument</param>
         /// <param name="out">The output target</param>
         internal static void UFunc_Op_Inner_Unary_Scalar_Flush_<#=typename#><C>(C op, System.<#=typename#> scalar, ref NdArray<System.<#=typename#>> @out)
             where C : IUnaryOp<System.<#=typename#>>
