@@ -2,27 +2,6 @@
 
 open NumCIL.Double
 
-(* These are two custom NumCIL operators *)
-[<Struct>]
-type LessThan =
-    interface NumCIL.IUnaryOp<double> with
-        member x.Op(a:double) =
-            match a < 0.0 with
-            | true -> 
-                1.0
-            | false -> 
-                0.0
-
-[<Struct>]
-type GreaterThanOrEqual =
-    interface NumCIL.IUnaryOp<double> with
-        member x.Op(a:double) =
-            match a >= 0.0 with
-            | true -> 
-                1.0
-            | false -> 
-                0.0
-
 let CND(X:NdArray) =
     let a1 = 0.31938153
     let a2 = -0.356563782
@@ -32,10 +11,12 @@ let CND(X:NdArray) =
 
     let L = X.Abs()
     let K = 1.0 / (1.0 + 0.2316419 * L)
-    let w = 1.0 - 1.0 / ((double(sqrt(2.0 * System.Math.PI)))) * (L.Negate() * L / 2.0).Exp() * (a1 * K + a2 * (K.Pow(2.0)) + a3 * (K.Pow(3.0)) + a4 * (K.Pow(4.0)) + a5 * (K.Pow(5.0)));
-            
-    let mask1 = X.Apply<LessThan>()
-    let mask2 = X.Apply<GreaterThanOrEqual>()
+    let w = 1.0 - 1.0 / ((double(sqrt(2.0 * System.Math.PI)))) * (-L * L / 2.0).Exp() * (a1 * K + a2 * (K.Pow(2.0)) + a3 * (K.Pow(3.0)) + a4 * (K.Pow(4.0)) + a5 * (K.Pow(5.0)));
+    
+    //F# has a bug/problem/inconsistency, it allows you to define comparison operators
+    // but it will not use them, so we have to use this slightly ugly variation: 
+    let mask1 = NdArray.op_LessThan(X, 0.0).ToDouble()
+    let mask2 = NdArray.op_GreaterThanOrEqual(X, 0.0).ToDouble()
 
     w * mask2 + (NdArray(1.0) - w) * mask1
  
@@ -49,7 +30,7 @@ let BlackSholes (callputflag:bool, S:NdArray, X:double, T:double, r:double, v:do
         | true ->
             S * CND(d1) - X * (double(exp(-r * T))) * CND(d2)
         | false -> 
-            X * double(exp(-r * T)) * CND(d2.Negate()) - S * CND(d1.Negate())
+            X * double(exp(-r * T)) * CND(-d2) - S * CND(-d1)
 
     res
 
