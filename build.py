@@ -32,7 +32,7 @@ def build(components):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -58,7 +58,7 @@ def install(components,prefix):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "install","INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename, "install","INSTALLDIR=%s"%prefix, "PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()

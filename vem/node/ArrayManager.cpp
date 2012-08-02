@@ -128,7 +128,7 @@ cphvb_error ArrayManager::flush()
 		
 			if (array->base == NULL && array->ref_count != 0)
 			{
-				fprintf(stderr, "Deleted base array with ref-count %lld\n", array->ref_count);
+				fprintf(stderr, "Deleted base array with ref-count %ld\n", array->ref_count);
 				(*eit)->status = CPHVB_ERROR;
 				errors = true;
 			}

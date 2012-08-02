@@ -7,5 +7,6 @@ This is the prefered module to use when utlizing cphVB
 
 """
 from core import *
-import cphvbbridge as bridge
 import linalg
+
+from numpy import bool8 as bool
