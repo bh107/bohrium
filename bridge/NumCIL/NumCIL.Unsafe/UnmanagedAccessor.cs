@@ -69,11 +69,38 @@ namespace NumCIL.Unsafe
         {
             get
             {
-                throw new InvalidOperationException();
+                if (index < 0 || index >= m_size)
+                    throw new ArgumentOutOfRangeException("index");
+                Allocate();
+                if (m_data != null)
+                {
+                    return m_data[index];
+                }
+                else
+                {
+                    if (m_dataPtr == IntPtr.Zero)
+                        Allocate();
+
+                    T[] tmp = new T[1];
+                    COPYTOMANAGED.Invoke(null, new object[] { tmp, m_dataPtr, 1 });
+                    return tmp[0];
+                }
             }
             set
             {
-                throw new InvalidOperationException();
+                if (index < 0 || index >= m_size)
+                    throw new ArgumentOutOfRangeException("index");
+
+                if (m_data != null)
+                {
+                    m_data[index] = value;
+                }
+                else
+                {
+                    if (m_dataPtr == IntPtr.Zero)
+                        Allocate();
+                    COPYTOMANAGED.Invoke(null, new object[] { m_dataPtr, new T[] { value }, 1 });
+                }
             }
         }
 
