@@ -8,13 +8,28 @@ using System.Runtime.InteropServices;
 
 namespace NumCIL.Unsafe
 {
+	/// <summary>
+	/// Container for all copy methods
+	/// </summary>
     public static class Copy
     {
 <# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) 
 { 
 	int elsize = System.Runtime.InteropServices.Marshal.SizeOf(Type.GetType("System." + typename));
 #>
+		/// <summary>
+		///	Copies data from source to target
+		/// </summary>
+		/// <param name="target">The data destination</param>
+		/// <param name="source">The data source</param>
+		/// <param name="count">The number of elements to copy</param>
         public static void Memcpy(System.<#=typename#>[] target, IntPtr source, long count) { unsafe { fixed (System.<#=typename#>* t = target) { Inner.Memcpy(t, source.ToPointer(), <#=elsize#>, count); } } }
+		/// <summary>
+		///	Copies data from source to target
+		/// </summary>
+		/// <param name="target">The data destination</param>
+		/// <param name="source">The data source</param>
+		/// <param name="count">The number of elements to copy</param>
         public static void Memcpy(IntPtr target, System.<#=typename#>[] source, long count) { unsafe { fixed (System.<#=typename#>* s = source) { Inner.Memcpy(target.ToPointer(), s, <#=elsize#>, count); } } }
 <# 
 } 

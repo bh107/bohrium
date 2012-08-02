@@ -6,30 +6,65 @@ using System.Runtime.InteropServices;
 
 namespace NumCIL.Unsafe
 {
+    /// <summary>
+    /// Accessor for manually allocated memory, can be used to allocate memory blocks larger than the 2GB limit imposed by .NET
+    /// </summary>
+    /// <typeparam name="T">The datatype to represent</typeparam>
     public class UnmanagedAccessorBase<T> : NumCIL.Generic.DefaultAccessor<T>, NumCIL.Generic.IUnmanagedDataAccessor<T>
     {
+        /// <summary>
+        /// The pointer to allocated data
+        /// </summary>
         protected IntPtr m_dataPtr = IntPtr.Zero;
+        /// <summary>
+        /// The GCHandle used for pinning the pointer
+        /// </summary>
         protected GCHandle m_handle;
+        /// <summary>
+        /// Cached size of a single dataelement
+        /// </summary>
         protected static readonly long DATA_ELEMENT_SIZE = Marshal.SizeOf(typeof(T));
+        /// <summary>
+        /// Cached handle for the memcopy method
+        /// </summary>
         protected static readonly System.Reflection.MethodInfo COPYFROMMANAGED = Utility.GetCopyFromManaged<T>();
+        /// <summary>
+        /// Cached handle for the memcopy method
+        /// </summary>
         protected static readonly System.Reflection.MethodInfo COPYTOMANAGED = Utility.GetCopyToManaged<T>();
 
+        /// <summary>
+        /// Static initializer, used to verify that the type can be used
+        /// </summary>
         static UnmanagedAccessorBase()
         {
             if (COPYFROMMANAGED == null || COPYTOMANAGED == null)
                 throw new NotSupportedException(string.Format("The type '{0}' is not supported by the unsafe implementation", typeof(T).FullName));
         }
 
+        /// <summary>
+        /// Creates a new accessor for the given size
+        /// </summary>
+        /// <param name="size">The number of elements to represent</param>
         public UnmanagedAccessorBase(long size)
             : base(size)
         {
         }
 
+        /// <summary>
+        /// Creates a new accessor for the allocated array
+        /// </summary>
+        /// <param name="data">The allocated data</param>
         public UnmanagedAccessorBase(T[] data)
             : base(data)
         {
         }
 
+        /// <summary>
+        /// Gets or sets an element in the array, not supported
+        /// </summary>
+        /// <param name="index">The index of the element to access</param>
+        /// <returns></returns>
         public override T this[long index]
         {
             get
@@ -42,6 +77,10 @@ namespace NumCIL.Unsafe
             }
         }
 
+        /// <summary>
+        /// Returns the data as an array
+        /// </summary>
+        /// <returns>The data as an array</returns>
         public override T[] AsArray()
         {
             if (m_dataPtr != IntPtr.Zero && m_data == null)
@@ -57,12 +96,18 @@ namespace NumCIL.Unsafe
             return base.AsArray();
         }
 
+        /// <summary>
+        /// Allocates data
+        /// </summary>
         public override void Allocate()
         {
             if (m_data == null && m_dataPtr == IntPtr.Zero)
                 m_dataPtr = Marshal.AllocHGlobal(new IntPtr(m_size * DATA_ELEMENT_SIZE));
         }
 
+        /// <summary>
+        /// Gets a pointer to the data
+        /// </summary>
         public IntPtr Pointer
         {
             get 
@@ -78,6 +123,9 @@ namespace NumCIL.Unsafe
             }
         }
 
+        /// <summary>
+        /// Returns a value indicating if the data is allocated
+        /// </summary>
         public override bool IsAllocated
         {
             get
@@ -86,11 +134,17 @@ namespace NumCIL.Unsafe
             }
         }
 
+        /// <summary>
+        /// Returns a value indicating if it is possible to allocate the data as an array
+        /// </summary>
         public bool CanAllocateArray
         {
             get { return m_size * DATA_ELEMENT_SIZE < int.MaxValue; }
         }
 
+        /// <summary>
+        /// Finalizer for releasing resources
+        /// </summary>
         ~UnmanagedAccessorBase()
         {
             if (m_data != null)
