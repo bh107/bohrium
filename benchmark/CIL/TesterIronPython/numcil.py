@@ -40,6 +40,11 @@ int32 = System.Int32
 uint32 = System.UInt32
 int64 = System.Int64
 uint64 = System.UInt64
+complex64 = NumCIL.Complex64.DataType
+bool = System.Boolean
+
+clr.AddReference("System.Numerics")
+complex128 = System.Numerics.Complex
 
 newaxis = NumCIL.Range.NewAxis
 
@@ -60,6 +65,12 @@ def GetNdClass(dtype):
         return NumCIL.Int64
     elif dtype == uint64 or isinstance(dtype, NumCIL.UInt64.NdArray):
         return NumCIL.UInt64
+    elif dtype == complex64 or isinstance(dtype, NumCIL.Complex64.NdArray):
+        return NumCIL.Complex64
+    elif dtype == complex128 or isinstance(dtype, NumCIL.Complex128.NdArray):
+        return NumCIL.Complex128
+    elif dtype == bool or isinstance(dtype, NumCIL.Boolean.NdArray):
+        return NumCIL.Boolean
     elif isinstance(dtype, ndarray):
         return dtype.cls
     else:
@@ -206,6 +217,18 @@ class ndarray:
             self.dtype = uint64
             self.cls = NumCIL.UInt64
             self.parent = p
+        elif isinstance(p, NumCIL.Complex64.NdArray):
+            self.dtype = complex64
+            self.cls = NumCIL.Complex64
+            self.parent = p
+        elif isinstance(p, NumCIL.Complex128.NdArray):
+            self.dtype = complex128
+            self.cls = NumCIL.Complex128
+            self.parent = p
+        elif isinstance(p, NumCIL.Boolean.NdArray):
+            self.dtype = bool
+            self.cls = NumCIL.Boolean
+            self.parent = p
         elif isinstance(p, NumCIL.Generic.NdArray[float32]):
             self.dtype = float32
             self.cls = NumCIL.Float
@@ -238,6 +261,18 @@ class ndarray:
             self.dtype = uint64
             self.cls = NumCIL.UInt64
             self.parent = NumCIL.UInt64.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[complex64]):
+            self.dtype = complex64
+            self.cls = NumCIL.Complex64
+            self.parent = NumCIL.Complex64.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[complex128]):
+            self.dtype = complex128
+            self.cls = NumCIL.Complex128
+            self.parent = NumCIL.Complex128.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[bool]):
+            self.dtype = bool
+            self.cls = NumCIL.Boolean
+            self.parent = NumCIL.Boolean.NdArray(p)
         elif isinstance(p, ndarray):
             self.dtype = p.dtype
             self.cls = p.cls
@@ -398,7 +433,7 @@ class ndarray:
         return self
 
     def __neg__ (self):
-        return self.owncls(self.parent.Negate())
+        return self.owncls(0 - self.parent)
 
     def __abs__ (self):
         return self.owncls(self.parent.Abs())
