@@ -438,6 +438,29 @@ class ndarray:
     def __abs__ (self):
         return self.owncls(self.parent.Abs())
 
+    def __eq__(self, other):
+        if other == None:
+            return False
+        return equal(self, other)
+
+    def __lt__(self, other):
+        return lessthan(self, other)
+
+    def __le__(self, other):
+        return lessthanorequal(self, other)
+
+    def __gt__(self, other):
+        return greaterthan(self, other)
+
+    def __ge__(self, other):
+        return greaterthanorequak(self, other)
+
+    def __ne__(self, other):
+        if other == None:
+            return True
+        return notequal(self, other)
+
+
     def __str__(self):
         return self.parent.ToString()
 
@@ -526,13 +549,11 @@ class ufunc:
             raise Exception("The operation " + self.name + " accepts only 1 input operand")
 
         cls = None
+        outcls = None
         owncls = ndarray
         dtype = float32
-        if out != None and isinstance(out, ndarray):
-            cls = out.cls
-            owncls = out.owncls
-            dtype = out.dtype
-        elif isinstance(a, ndarray):
+
+        if isinstance(a, ndarray):
             cls = a.cls
             owncls = a.owncls
             dtype = a.dtype
@@ -543,7 +564,15 @@ class ufunc:
             cls = b.cls
             owncls = b.owncls
             dtype = b.dtype
+        elif out != None and isinstance(out, ndarray):
+            cls = out.cls
+            owncls = out.owncls
+            dtype = out.dtype
 
+        if out != None and isinstance(out, ndarray):
+            outcls = out.owncls
+        else:
+            outcls = owncls
 
         if cls == None:
             raise Exception("Apply not supported for scalars")
@@ -561,9 +590,9 @@ class ufunc:
                 out = out.parent
 
             if self.nin == 2:
-                return owncls(f.Apply(a, b, out))
+                return outcls(f.Apply(a, b, out))
             else:
-                return owncls(f.Apply(a, out))
+                return outcls(f.Apply(a, out))
 
 add = ufunc("Add", "add")
 subtract = ufunc("Sub", "subtract")
@@ -577,6 +606,13 @@ log = ufunc("Log", "log", nin = 1, nargs = 2)
 sqrt = ufunc("Sqrt", "sqrt", nin = 1, nargs = 2)
 rint = ufunc("Round", "rint", nin = 1, nargs = 2)
 power = ufunc("Pow", "power")
+
+equal = ufunc("Equal", "equal")
+notequal = ufunc("NotEqual", "notequal")
+lessthan = ufunc("LessThan", "lessthan")
+lessthanorequal = ufunc("LessThanOrEqual", "lessthanorequal")
+greaterthan = ufunc("GreaterThan", "greaterthan")
+greaterthanorequal = ufunc("GreaterThanOrEqual", "greaterthanorequal")
 
 def array(p):
     return ndarray(p)
