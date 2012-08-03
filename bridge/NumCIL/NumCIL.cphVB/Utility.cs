@@ -34,7 +34,15 @@ namespace NumCIL.cphVB
                     basepath = System.IO.Path.GetDirectoryName(basepath);
 
                 if (!eq(System.IO.Path.GetFileName(basepath)))
-                    throw new Exception(string.Format("Unable to find a directory named {0}, in path {1}, searched until {2}", "'" + string.Join("', '", allowednames) + "'", System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), basepath));
+                {
+                    basepath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    while (basepath != root && !System.IO.Directory.EnumerateFiles(basepath, "build.py").Any())
+                        basepath = System.IO.Path.GetDirectoryName(basepath);
+
+                    if (!System.IO.Directory.EnumerateFiles(basepath, "build.py").Any())
+                        throw new Exception(string.Format("Unable to find a directory named {0}, in path {1}, searched until {2}", "'" + string.Join("', '", allowednames) + "'", System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), basepath));
+                }
+
 
                 string binary_lookup_path = System.IO.Path.Combine(basepath, "core") + System.IO.Path.PathSeparator;
 
