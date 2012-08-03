@@ -28,6 +28,12 @@ static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
+static cphvb_userfunc_impl lu_impl = NULL;
+static cphvb_intp lu_impl_id = 0;
+static cphvb_userfunc_impl fft_impl = NULL;
+static cphvb_intp fft_impl_id = 0;
+static cphvb_userfunc_impl fft2_impl = NULL;
+static cphvb_intp fft2_impl_id = 0;
 
 static cphvb_intp cphvb_ve_score_buffersizes = 0;
 static computeloop* cphvb_ve_score_compute_loops = NULL;
@@ -171,6 +177,18 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 {
                     inst->status = matmul_impl(inst->userfunc, NULL);
                 }
+                else if(inst->userfunc->id == lu_impl_id)
+                {
+                    inst->status = lu_impl(inst->userfunc, NULL);
+                }
+                else if(inst->userfunc->id == fft_impl_id)
+                {
+                    inst->status = fft_impl(inst->userfunc, NULL);
+                }
+                else if(inst->userfunc->id == fft2_impl_id)
+                {
+                    inst->status = fft2_impl(inst->userfunc, NULL);
+                }
                 else                            // Unsupported userfunc
                 {
                     inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
@@ -284,6 +302,57 @@ cphvb_error cphvb_ve_score_reg_func(char *fun, cphvb_intp *id) {
         else
         {
         	*id = matmul_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_lu", fun) == 0)
+    {
+    	if (lu_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &lu_impl);
+			if (lu_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			lu_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = lu_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_fft", fun) == 0)
+    {
+    	if (fft_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &fft_impl);
+			if (fft_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			fft_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = fft_impl_id;
+        	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_fft2", fun) == 0)
+    {
+    	if (fft2_impl == NULL)
+    	{
+			cphvb_component_get_func(myself, fun, &fft2_impl);
+			if (fft2_impl == NULL)
+				return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+			fft2_impl_id = *id;
+			return CPHVB_SUCCESS;			
+        }
+        else
+        {
+        	*id = fft2_impl_id;
         	return CPHVB_SUCCESS;
         }
     }
