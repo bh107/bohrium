@@ -40,6 +40,11 @@ int32 = System.Int32
 uint32 = System.UInt32
 int64 = System.Int64
 uint64 = System.UInt64
+complex64 = NumCIL.Complex64.DataType
+bool = System.Boolean
+
+clr.AddReference("System.Numerics")
+complex128 = System.Numerics.Complex
 
 newaxis = NumCIL.Range.NewAxis
 
@@ -60,6 +65,12 @@ def GetNdClass(dtype):
         return NumCIL.Int64
     elif dtype == uint64 or isinstance(dtype, NumCIL.UInt64.NdArray):
         return NumCIL.UInt64
+    elif dtype == complex64 or isinstance(dtype, NumCIL.Complex64.NdArray):
+        return NumCIL.Complex64
+    elif dtype == complex128 or isinstance(dtype, NumCIL.Complex128.NdArray):
+        return NumCIL.Complex128
+    elif dtype == bool or isinstance(dtype, NumCIL.Boolean.NdArray):
+        return NumCIL.Boolean
     elif isinstance(dtype, ndarray):
         return dtype.cls
     else:
@@ -206,6 +217,18 @@ class ndarray:
             self.dtype = uint64
             self.cls = NumCIL.UInt64
             self.parent = p
+        elif isinstance(p, NumCIL.Complex64.NdArray):
+            self.dtype = complex64
+            self.cls = NumCIL.Complex64
+            self.parent = p
+        elif isinstance(p, NumCIL.Complex128.NdArray):
+            self.dtype = complex128
+            self.cls = NumCIL.Complex128
+            self.parent = p
+        elif isinstance(p, NumCIL.Boolean.NdArray):
+            self.dtype = bool
+            self.cls = NumCIL.Boolean
+            self.parent = p
         elif isinstance(p, NumCIL.Generic.NdArray[float32]):
             self.dtype = float32
             self.cls = NumCIL.Float
@@ -238,6 +261,18 @@ class ndarray:
             self.dtype = uint64
             self.cls = NumCIL.UInt64
             self.parent = NumCIL.UInt64.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[complex64]):
+            self.dtype = complex64
+            self.cls = NumCIL.Complex64
+            self.parent = NumCIL.Complex64.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[complex128]):
+            self.dtype = complex128
+            self.cls = NumCIL.Complex128
+            self.parent = NumCIL.Complex128.NdArray(p)
+        elif isinstance(p, NumCIL.Generic.NdArray[bool]):
+            self.dtype = bool
+            self.cls = NumCIL.Boolean
+            self.parent = NumCIL.Boolean.NdArray(p)
         elif isinstance(p, ndarray):
             self.dtype = p.dtype
             self.cls = p.cls
@@ -398,10 +433,33 @@ class ndarray:
         return self
 
     def __neg__ (self):
-        return self.owncls(self.parent.Negate())
+        return self.owncls(0 - self.parent)
 
     def __abs__ (self):
         return self.owncls(self.parent.Abs())
+
+    def __eq__(self, other):
+        if other == None:
+            return False
+        return equal(self, other)
+
+    def __lt__(self, other):
+        return lessthan(self, other)
+
+    def __le__(self, other):
+        return lessthanorequal(self, other)
+
+    def __gt__(self, other):
+        return greaterthan(self, other)
+
+    def __ge__(self, other):
+        return greaterthanorequak(self, other)
+
+    def __ne__(self, other):
+        if other == None:
+            return True
+        return notequal(self, other)
+
 
     def __str__(self):
         return self.parent.ToString()
@@ -491,13 +549,11 @@ class ufunc:
             raise Exception("The operation " + self.name + " accepts only 1 input operand")
 
         cls = None
+        outcls = None
         owncls = ndarray
         dtype = float32
-        if out != None and isinstance(out, ndarray):
-            cls = out.cls
-            owncls = out.owncls
-            dtype = out.dtype
-        elif isinstance(a, ndarray):
+
+        if isinstance(a, ndarray):
             cls = a.cls
             owncls = a.owncls
             dtype = a.dtype
@@ -508,7 +564,15 @@ class ufunc:
             cls = b.cls
             owncls = b.owncls
             dtype = b.dtype
+        elif out != None and isinstance(out, ndarray):
+            cls = out.cls
+            owncls = out.owncls
+            dtype = out.dtype
 
+        if out != None and isinstance(out, ndarray):
+            outcls = out.owncls
+        else:
+            outcls = owncls
 
         if cls == None:
             raise Exception("Apply not supported for scalars")
@@ -526,9 +590,9 @@ class ufunc:
                 out = out.parent
 
             if self.nin == 2:
-                return owncls(f.Apply(a, b, out))
+                return outcls(f.Apply(a, b, out))
             else:
-                return owncls(f.Apply(a, out))
+                return outcls(f.Apply(a, out))
 
 add = ufunc("Add", "add")
 subtract = ufunc("Sub", "subtract")
@@ -542,6 +606,13 @@ log = ufunc("Log", "log", nin = 1, nargs = 2)
 sqrt = ufunc("Sqrt", "sqrt", nin = 1, nargs = 2)
 rint = ufunc("Round", "rint", nin = 1, nargs = 2)
 power = ufunc("Pow", "power")
+
+equal = ufunc("Equal", "equal")
+notequal = ufunc("NotEqual", "notequal")
+lessthan = ufunc("LessThan", "lessthan")
+lessthanorequal = ufunc("LessThanOrEqual", "lessthanorequal")
+greaterthan = ufunc("GreaterThan", "greaterthan")
+greaterthanorequal = ufunc("GreaterThanOrEqual", "greaterthanorequal")
 
 def array(p):
     return ndarray(p)

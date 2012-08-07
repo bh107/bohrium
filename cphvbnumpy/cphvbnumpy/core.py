@@ -92,6 +92,37 @@ def matmul(A,B):
         return C
     else:
 	return np.dot(A,B)
+	
+def lu(A):
+    if A.dtype != np.float32 and A.dtype != np.float64:
+        raise ValueError("Input must be floating point numbers")
+    if A.ndim != 2 or A.shape[0] != A.shape[1]:
+        raise ValueError("Input must be square 2-d.")
+    if A.cphvb:
+        LU = A.copy() #do not overwrite original A
+        P = empty((A.shape[0],), dtype=np.int32)
+        bridge.lu(LU,P)
+        return (LU, P)
+    else:
+	    raise ValueError("LU not supported for non cphvb numpy")
+	    
+def fft(A):
+    if A.cphvb and A.ndim <= 2:
+      if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
+        B = empty(A.shape,dtype=A.dtype)
+        bridge.fft(A,B)
+        return B
+    
+	return np.fft.fft(A)
+	
+def fft2(A):
+    if A.cphvb and A.ndim == 2:
+      if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
+        B = empty(A.shape,dtype=A.dtype)
+        bridge.fft2(A,B)
+        return B
+    
+	return np.fft.fft2(A)
 
 def rad2deg(x, out=None):
     if out == None:

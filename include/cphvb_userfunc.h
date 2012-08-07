@@ -64,6 +64,25 @@ typedef struct
 
 DLLEXPORT cphvb_error cphvb_matmul(cphvb_userfunc* arg, void* ve_arg);
 
+//The type of the user-defined lu factorization function.
+typedef struct
+{
+    //User-defined function header with two operands.
+    CPHVB_USER_FUNC_HEADER(2)
+} cphvb_lu_type;
+
+DLLEXPORT cphvb_error cphvb_lu(cphvb_userfunc* arg, void* ve_arg);
+
+//The type of the user-defined fft function.
+typedef struct
+{
+    //User-defined function header with two operands.
+    CPHVB_USER_FUNC_HEADER(2)
+} cphvb_fft_type;
+
+DLLEXPORT cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg);
+DLLEXPORT cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg);
+
 #ifdef __cplusplus
 }
 #endif

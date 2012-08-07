@@ -74,15 +74,15 @@ namespace Tester
                 // Reflecting boundary conditions
                 H[ALL, FIRST] = H[ALL, SECOND];
                 U[ALL, FIRST] = U[ALL, SECOND];
-                V[ALL, FIRST] = V[ALL, SECOND].Negate();
+                V[ALL, FIRST] = -V[ALL, SECOND];
                 H[ALL, RN1] = H[ALL, RN];
                 U[ALL, RN1] = U[ALL, RN];
-                V[ALL, RN1] = V[ALL, RN].Negate();
+                V[ALL, RN1] = -V[ALL, RN];
                 H[FIRST, ALL] = H[SECOND, ALL];
-                U[FIRST, ALL] = U[SECOND, ALL].Negate();
+                U[FIRST, ALL] = -U[SECOND, ALL];
                 V[FIRST, ALL] = V[SECOND, ALL];
                 H[RN1, ALL] = H[RN, ALL];
-                U[RN1, ALL] = U[RN, ALL].Negate();
+                U[RN1, ALL] = -U[RN, ALL];
                 V[RN1, ALL] = V[RN, ALL];
 
                 //First half-step

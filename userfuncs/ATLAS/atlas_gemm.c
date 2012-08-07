@@ -17,7 +17,9 @@
  * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <cphvb.h>
+extern "C" {
 #include <cblas.h>
+}
 
 
 cphvb_error do_matmul_float32(cphvb_array *A, cphvb_array *B, cphvb_array *C)
@@ -68,7 +70,7 @@ cphvb_error do_matmul_float64(cphvb_array *A, cphvb_array *B, cphvb_array *C)
 }
 
 cphvb_error cphvb_matmul(cphvb_userfunc *arg, void* ve_arg)
-{
+{   
     cphvb_matmul_type *m_arg = (cphvb_matmul_type *) arg;
     cphvb_array *C = m_arg->operand[0];
     cphvb_array *A = m_arg->operand[1];

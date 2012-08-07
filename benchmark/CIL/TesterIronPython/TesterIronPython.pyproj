@@ -60,5 +60,12 @@
     <Folder Include="cphhpc\" />
     <Folder Include="cphhpc\signal\" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <Name>System.Numerics</Name>
+      <AssemblyName>System.Numerics.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Numerics.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

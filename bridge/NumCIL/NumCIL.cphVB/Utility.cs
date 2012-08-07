@@ -5,8 +5,16 @@ using System.Text;
 
 namespace NumCIL.cphVB
 {
+    /// <summary>
+    /// Utility class for cphVB
+    /// </summary>
     public static class Utility
     {
+        /// <summary>
+        /// Attempts to set up cphVB by looking for the cphvb checkout folder.
+        /// This simplifies using cphVB directly from the build folder,
+        /// without installing cphVB first
+        /// </summary>
         public static void SetupDebugEnvironmentVariables()
         {
             try
@@ -26,7 +34,15 @@ namespace NumCIL.cphVB
                     basepath = System.IO.Path.GetDirectoryName(basepath);
 
                 if (!eq(System.IO.Path.GetFileName(basepath)))
-                    throw new Exception(string.Format("Unable to find a directory named {0}, in path {1}, searched until {2}", "'" + string.Join("', '", allowednames) + "'", System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), basepath));
+                {
+                    basepath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    while (basepath != root && !System.IO.Directory.EnumerateFiles(basepath, "build.py").Any())
+                        basepath = System.IO.Path.GetDirectoryName(basepath);
+
+                    if (!System.IO.Directory.EnumerateFiles(basepath, "build.py").Any())
+                        throw new Exception(string.Format("Unable to find a directory named {0}, in path {1}, searched until {2}", "'" + string.Join("', '", allowednames) + "'", System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), basepath));
+                }
+
 
                 string binary_lookup_path = System.IO.Path.Combine(basepath, "core") + System.IO.Path.PathSeparator;
 
@@ -71,6 +87,9 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// Activates cphVB for all supported datatypes
+        /// </summary>
         public static void Activate()
         {
             //Activate the instance so timings are more accurate when profiling
@@ -86,9 +105,14 @@ namespace NumCIL.cphVB
             Activate<ushort>();
             Activate<uint>();
             Activate<ulong>();
-
+			Activate<bool>();
+			Activate<NumCIL.Complex64.DataType>();
+			Activate<System.Numerics.Complex>();
         }
 
+        /// <summary>
+        /// Deactivates cphVB for all supported datatypes
+        /// </summary>
         public static void Deactivate()
         {
             Deactivate<float>();
@@ -101,18 +125,32 @@ namespace NumCIL.cphVB
             Deactivate<ushort>();
             Deactivate<uint>();
             Deactivate<ulong>();
+			Deactivate<bool>();
+			Deactivate<NumCIL.Complex64.DataType>();
+			Deactivate<System.Numerics.Complex>();
         }
-
-        public static void Activate<T>()
+        
+        /// <summary>
+        /// Activates cphVB for a specific datatype
+        /// </summary>
+        /// <typeparam name="T">The datatype to activate cphVB for</typeparam>
+		public static void Activate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new cphVBAccessorFactory<T>();
         }
 
+        /// <summary>
+        /// Deactivates cphVB for a specific datatype
+        /// </summary>
+        /// <typeparam name="T">The datatype to deactivate cphVB for</typeparam>
         public static void Deactivate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new NumCIL.Generic.DefaultAccessorFactory<T>();
         }
 
+        /// <summary>
+        /// Flushes pending operations in the VEM, note that this does not flush all pending instructions
+        /// </summary>
         public static void Flush()
         {
             VEM.Instance.Flush();

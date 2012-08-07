@@ -75,6 +75,25 @@ namespace NumCIL.Generic
         /// <param name="operands">The operands involved, operand 0 is the target</param>
         void AddOperation(IOp<T> operation, params NdArray<T>[] operands);
 
+		/// <summary>
+        /// Register a pending operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        /// <typeparam name="Tb">The source data type</typeparam>
+        void AddConversionOperation<Tb>(IUnaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> input);
+
+        /// <summary>
+        /// Register a pending operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
+        /// <typeparam name="Tb">The source data type</typeparam>
+        void AddConversionOperation<Tb>(IBinaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> in1, NdArray<Tb> in2);
+
         /// <summary>
         /// Gets a list of registered pending operations on the accessor
         /// </summary>
@@ -226,6 +245,14 @@ namespace NumCIL.Generic
         /// Cache of the generic template method
         /// </summary>
         protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Matmul", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+		/// <summary>
+		/// Cache of the generic template method
+		/// </summary>
+		protected static readonly System.Reflection.MethodInfo unaryConversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyUnaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        /// <summary>
+        /// Cache of the generic template method
+        /// </summary>
+        protected static readonly System.Reflection.MethodInfo binaryConversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyBinaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of instantiated template methods
         /// </summary>
@@ -280,6 +307,31 @@ namespace NumCIL.Generic
                 PendingOperations.Add(new PendingOperation<T>(operation, operands));
         }
 
+		/// <summary>
+        /// Register a pending conversion operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        public virtual void AddConversionOperation<Ta>(IUnaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> input)
+        {
+            lock (Lock)
+                PendingOperations.Add(new PendingUnaryConversionOperation<T, Ta>(operation, output, input));
+        }
+
+        /// <summary>
+        /// Register a pending conversion operation on the underlying array
+        /// </summary>
+        /// <param name="operation">The operation performed</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
+        public virtual void AddConversionOperation<Ta>(IBinaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> in1, NdArray<Ta> in2)
+        {
+            lock (Lock)
+                PendingOperations.Add(new PendingBinaryConversionOperation<T, Ta>(operation, output, in1, in2));
+        }
+
         /// <summary>
         /// Execute all operations that are pending to obtain the result array
         /// </summary>
@@ -287,9 +339,12 @@ namespace NumCIL.Generic
         {
             if (PendingOperations.Count > 0)
             {
-                var lst = UnrollWorkList(this);
-                ExecuteOperations(lst);
-                PendingOperations.Clear();
+                lock (Lock)
+                {
+                    var lst = UnrollWorkList(this);
+                    PendingOperations.Clear();
+                    ExecuteOperations(lst);
+                }
             }
         }
 
@@ -387,7 +442,33 @@ namespace NumCIL.Generic
         {
             foreach (var n in work)
             {
-                if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
+                if (n is IPendingBinaryConversionOp)
+                {
+                    Type inputType = n.GetType().GetGenericArguments()[1];
+
+                    System.Reflection.MethodInfo genericVersion;
+                    if (!specializedMethods.TryGetValue(n.Operation, out genericVersion))
+                    {
+                        genericVersion = binaryConversionBaseMethodType.MakeGenericMethod(inputType, typeof(T), n.Operation.GetType());
+                        specializedMethods[n.Operation] = genericVersion;
+                    }
+
+                    genericVersion.Invoke(null, new object[] { n.Operation, ((IPendingUnaryConversionOp)n).InputOperand, ((IPendingBinaryConversionOp)n).InputOperand, n.Operands[0] });
+                }
+                else if (n is IPendingUnaryConversionOp)
+                {
+                    Type inputType = n.GetType().GetGenericArguments()[1];
+
+                    System.Reflection.MethodInfo genericVersion;
+                    if (!specializedMethods.TryGetValue(n.Operation, out genericVersion))
+                    {
+                        genericVersion = unaryConversionBaseMethodType.MakeGenericMethod(inputType, typeof(T), n.Operation.GetType());
+                        specializedMethods[n.Operation] = genericVersion;
+                    }
+
+                    genericVersion.Invoke(null, new object[] { n.Operation, ((IPendingUnaryConversionOp)n).InputOperand, n.Operands[0] });
+                }
+                else if (n.Operation is NumCIL.UFunc.LazyReduceOperation<T>)
                 {
                     NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)n.Operation;
 
@@ -528,6 +609,124 @@ namespace NumCIL.Generic
             this.Operands = operands;
             this.OperandIndex = indx;
         }
+    }
+
+	/// <summary>
+	/// Marker interface for quick recognition of conversion operations
+	/// </summary>
+	public interface IPendingUnaryConversionOp 
+	{
+        /// <summary>
+        /// Gets the untyped input operand
+        /// </summary>
+		object InputOperand { get; }
+	}
+
+    /// <summary>
+    /// Marker interface for quick recognition of conversion operations
+    /// </summary>
+    public interface IPendingBinaryConversionOp
+    {
+        /// <summary>
+        /// Gets the untyped input operand
+        /// </summary>
+        object InputOperand { get; }
+    }
+
+	/// <summary>
+	/// Representation of a pending unary conversion operation.
+	/// </summary>
+	public class PendingUnaryConversionOperation<Ta, Tb> : PendingOperation<Ta>, IPendingUnaryConversionOp
+	{
+		/// <summary>
+		/// The first input operand.
+		/// </summary>
+		public readonly NdArray<Tb> InputOperand;
+
+		/// <summary>
+		/// The size of pending operations after the execution.
+		/// </summary>
+		public readonly long InputOperandIndex;
+
+        /// <summary>
+        /// Constructs a new pending unary operation
+        /// </summary>
+        /// <param name="operation">The operation to perform</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="input">The input operand</param>
+        public PendingUnaryConversionOperation(IOp<Ta> operation, NdArray<Ta> output, NdArray<Tb> input)
+            : base(operation, output)
+        {
+            InputOperand = input;
+            if (input.DataAccessor is ILazyAccessor<Tb>)
+            {
+                ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)input.DataAccessor;
+                InputOperandIndex = (lz.PendingOperations.Count + lz.PendignOperationOffset);
+            }
+            else
+                InputOperandIndex = 0;
+        }
+
+
+		#region IPendingUnaryConversionOp implementation
+		/// <summary>
+		/// Gets the input operand as an untyped object.
+		/// </summary>
+		object IPendingUnaryConversionOp.InputOperand
+		{
+			get
+			{
+				return InputOperand;
+			}
+		}
+		#endregion
+
+	}
+
+    /// <summary>
+	/// Representation of a pending binary conversion operation.
+	/// </summary>
+    public class PendingBinaryConversionOperation<Ta, Tb> : PendingUnaryConversionOperation<Ta, Tb>, IPendingBinaryConversionOp
+    {
+        /// <summary>
+        /// The first input operand.
+        /// </summary>
+        public readonly NdArray<Tb> InputOperandRhs;
+
+        /// <summary>
+        /// The size of pending operations after the execution.
+        /// </summary>
+        public readonly long InputOperandIndexRhs;
+
+        /// <summary>
+        /// Constructs a new pending binary operation
+        /// </summary>
+        /// <param name="operation">The operation to perform</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
+        public PendingBinaryConversionOperation(IOp<Ta> operation, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
+            :base(operation, output, in1)
+        {
+            InputOperandRhs = in2;
+            if (in2.DataAccessor is ILazyAccessor<Tb>)
+            {
+                ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)in2.DataAccessor;
+                InputOperandIndexRhs = (lz.PendingOperations.Count + lz.PendignOperationOffset);
+            }
+            else
+                InputOperandIndexRhs = 0;
+        }
+
+        #region IPendingBinaryConversionOp implementation
+        /// <summary>
+        /// Gets the input operand as an untyped object.
+        /// </summary>
+        object IPendingBinaryConversionOp.InputOperand
+        {
+            get { return this.InputOperandRhs; }
+        }
+        #endregion
     }
 
     /// <summary>

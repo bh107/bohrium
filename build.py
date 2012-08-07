@@ -32,7 +32,7 @@ def build(components):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -54,11 +54,11 @@ def clean(components):
         except KeyboardInterrupt:
             p.terminate()
 
-def install(components):
+def install(components,prefix):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "install"], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename, "install","INSTALLDIR=%s"%prefix, "PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -73,21 +73,31 @@ def install(components):
 
 def ldconfig():
     print "***Configure ldconfig***"
-    print "sudo ldconfig"
+    print "ldconfig"
     try:
-        p = subprocess.Popen(["sudo", "ldconfig"], cwd=join(install_dir))
+        p = subprocess.Popen(["ldconfig"], cwd=join(install_dir))
         err = p.wait()
     except KeyboardInterrupt:
         p.terminate()
 
-def install_config():
-    HOME_CONFIG = join(join(expanduser("~"),".cphvb"))
+def install_config(prefix):
+    if os.geteuid() == 0:#Root user
+        HOME_CONFIG = "/etc/cphvb"
+    else: 
+        HOME_CONFIG = join(join(expanduser("~"),".cphvb"))
     if not exists(HOME_CONFIG):
         os.mkdir(HOME_CONFIG)
-        dst = join(HOME_CONFIG, "config.ini")
-        src = join(install_dir,"config.ini.example")
-        shutil.copy(src,dst)
-        print "cp %s %s"%(src,dst)
+    dst = join(HOME_CONFIG, "config.ini")
+    src = join(install_dir,"config.ini.example")
+    if not exists(dst):
+        src_file = open(src, "r")
+        src_str = src_file.read()
+        src_file.close()
+        dst_str = src_str.replace("/opt/cphvb",prefix)  
+        dst_file = open(dst,"w")
+        dst_file.write(dst_str)
+        dst_file.close()
+        print "Write default config file to %s"%(dst)
 
 
 if __name__ == "__main__":
@@ -100,13 +110,15 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"d",["debug"])
+        opts, args = getopt.gnu_getopt(sys.argv[1:],"d",["debug","prefix="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
     for o, a in opts:
-        if o in ("-d", "--debug"):
+        if o in ("-d","--debug"):
             debug = True
+        elif o in ("--prefix"):
+            prefix = a
         else:
             assert False, "unhandled option"
 
@@ -148,10 +160,13 @@ if __name__ == "__main__":
     elif cmd == "clean":
         clean(components)        
     elif cmd == "install":
-        if not exists("/opt/cphvb"):
-            os.mkdir("/opt/cphvb")
-        install(components)        
-        install_config();
+        prefix = os.path.abspath(prefix)
+        if exists(prefix):
+            assert os.path.isdir(prefix),"The prefix points to an existing file"
+        else:            
+            os.mkdir(prefix)
+        install(components,prefix)        
+        install_config(prefix);
     else:
         print "Unknown command: '%s'."%cmd
         print ""

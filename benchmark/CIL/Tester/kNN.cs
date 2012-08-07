@@ -13,20 +13,19 @@ namespace Tester
     {
         private static NdArray ComputeTargets(NdArray src, NdArray targets)
         {
-            var b1 = src[R.All, R.NewAxis, R.All];
-            var d1 = (b1 - targets).Pow(2);
-            var d2 = Add.Reduce(d1, 2);
-            var d3 = d2.Sqrt();
-            var r = Max.Reduce(d2, 1);
-            return r;
+            var @base = src[R.All, R.NewAxis];
+            var target = src[R.All, R.All, R.NewAxis];
+
+            var tmp = (@base - target).Pow(2);
+            tmp = Add.Reduce(tmp);
+            Sqrt.Apply(tmp, tmp);
+
+            return Max.Reduce(tmp);
         }
 
         private static NdArray kNN(NdArray input)
         {
-            var src = input.Clone();
-            var targets = input.Clone();
-
-            return ComputeTargets(src, input);
+            return ComputeTargets(input, input.Clone());
         }
 
         public static NdArray Solve(long size, long dimensions, long k, bool randomdata = true)

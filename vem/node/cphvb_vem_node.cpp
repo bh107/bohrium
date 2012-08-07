@@ -40,9 +40,6 @@ static cphvb_component *vem_node_myself;
 //Number of user-defined functions registered.
 static cphvb_intp vem_userfunc_count = 0;
 
-#define PLAININST (1)
-#define REDUCEINST (2)
-
 ArrayManager* arrayManager;
 
 /* Initialize the VEM
@@ -71,8 +68,7 @@ cphvb_error cphvb_vem_node_init(cphvb_component *self)
     ve_reg_func = vem_node_components[0]->reg_func;
 
     //Let us initiate the simple VE and register what it supports.
-    err = ve_init(vem_node_components[0]);
-    if(err)
+    if((err = ve_init(vem_node_components[0])) != 0)
         return err;
 
     try
@@ -98,10 +94,10 @@ cphvb_error cphvb_vem_node_shutdown(void)
     cphvb_error err;
     err = ve_shutdown();
     cphvb_component_free(vem_node_components[0]);//Only got one child.
-    ve_init = NULL;
-    ve_execute = NULL;
+    ve_init     = NULL;
+    ve_execute  = NULL;
     ve_shutdown = NULL;
-    ve_reg_func= NULL;
+    ve_reg_func = NULL;
     cphvb_component_free_ptr(vem_node_components);
     vem_node_components = NULL;
     delete arrayManager;
@@ -129,7 +125,6 @@ cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
                                         cphvb_index    stride[CPHVB_MAXDIM],
                                         cphvb_array**  new_array)
 {
-
     try
     {
         *new_array = arrayManager->create(base, type, ndim, start, shape, stride);

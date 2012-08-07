@@ -12,7 +12,7 @@ namespace Tester
 
     public static class JacobiSolver
     {
-        public static long Solve(long width, long height, bool calculateDelta, long? fixedIterations = null)
+        public static T Solve(long width, long height, bool calculateDelta, long? fixedIterations = null)
         {
             if (fixedIterations == null)
                 calculateDelta = true;
@@ -81,13 +81,11 @@ namespace Tester
                 cells[R.All] = work;
             }
 
-            if (fixedIterations.HasValue)
-            {
+            if (calculateDelta)
+                return delta;
+            else
                 //Access the data to ensure it is flushed
-                var token = full.Value[0];
-            }
-
-            return i;
+                return full.Value[0];
         }
     }
 }

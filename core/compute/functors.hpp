@@ -18,30 +18,16 @@ struct add_functor {
 };
 
 template <typename T1, typename T2, typename T3>
-struct arctan2_functor {
+struct subtract_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = atan2( *op2, *op3 );
+        *op1 = *op2 - *op3;
     }
 };
 
 template <typename T1, typename T2, typename T3>
-struct bitwise_and_functor {
+struct multiply_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 & *op3;
-    }
-};
-
-template <typename T1, typename T2, typename T3>
-struct bitwise_or_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 | *op3;
-    }
-};
-
-template <typename T1, typename T2, typename T3>
-struct bitwise_xor_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 ^ *op3;
+        *op1 = *op2 * *op3;
     }
 };
 
@@ -52,10 +38,31 @@ struct divide_functor {
     }
 };
 
+template <typename T1, typename T2>
+struct square_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = *op2 * *op2;
+    }
+};
+
 template <typename T1, typename T2, typename T3>
-struct equal_functor {
+struct power_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 == *op3;
+        *op1 = pow( *op2, *op3 );
+    }
+};
+
+template <typename T1, typename T2>
+struct absolute_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = *op2 < 0.0 ? -*op2: *op2;
+    }
+};
+
+template <typename T1, typename T2>
+struct sign_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = *op2 > 0.0 ? 1.0 : (*op2 == 0 ? 0 : -1);
     }
 };
 
@@ -74,20 +81,6 @@ struct greater_equal_functor {
 };
 
 template <typename T1, typename T2, typename T3>
-struct hypot_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = sqrt( pow(*op2, 2) + pow(*op3, 2) );
-    }
-};
-
-template <typename T1, typename T2, typename T3>
-struct left_shift_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = (*op2) << (*op3);
-    }
-};
-
-template <typename T1, typename T2, typename T3>
 struct less_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
         *op1 = *op2 < *op3;
@@ -98,6 +91,20 @@ template <typename T1, typename T2, typename T3>
 struct less_equal_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
         *op1 = *op2 <= *op3;
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct equal_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = *op2 == *op3;
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct not_equal_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = *op2 != *op3;
     }
 };
 
@@ -122,6 +129,13 @@ struct logical_xor_functor {
     }
 };
 
+template <typename T1, typename T2>
+struct logical_not_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = !*op2;
+    }
+};
+
 template <typename T1, typename T2, typename T3>
 struct maximum_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
@@ -137,30 +151,37 @@ struct minimum_functor {
 };
 
 template <typename T1, typename T2, typename T3>
-struct mod_functor {
+struct bitwise_and_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 - floor(*op2 / *op3) * *op3;
+        *op1 = *op2 & *op3;
     }
 };
 
 template <typename T1, typename T2, typename T3>
-struct multiply_functor {
+struct bitwise_or_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 * *op3;
+        *op1 = *op2 | *op3;
     }
 };
 
 template <typename T1, typename T2, typename T3>
-struct not_equal_functor {
+struct bitwise_xor_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 != *op3;
+        *op1 = *op2 ^ *op3;
+    }
+};
+
+template <typename T1, typename T2>
+struct invert_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = ~*op2;
     }
 };
 
 template <typename T1, typename T2, typename T3>
-struct power_functor {
+struct left_shift_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = pow( *op2, *op3 );
+        *op1 = (*op2) << (*op3);
     }
 };
 
@@ -168,69 +189,6 @@ template <typename T1, typename T2, typename T3>
 struct right_shift_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
         *op1 = (*op2) >> (*op3);
-    }
-};
-
-template <typename T1, typename T2, typename T3>
-struct subtract_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = *op2 - *op3;
-    }
-};
-
-template <typename T1, typename T2>
-struct absolute_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 < 0.0 ? -*op2: *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct arccos_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = acos( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct arccosh_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = acosh( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct arcsin_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = asin( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct arcsinh_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = asinh( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct arctan_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = atan( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct arctanh_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = atanh( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct ceil_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = ceil( *op2 );
     }
 };
 
@@ -242,9 +200,86 @@ struct cos_functor {
 };
 
 template <typename T1, typename T2>
+struct sin_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = sin( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct tan_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = tan( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
 struct cosh_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = cosh( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct sinh_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = sinh( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct tanh_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = tanh( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arcsin_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = asin( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arccos_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = acos( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arctan_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = atan( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arcsinh_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = asinh( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arccosh_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = acosh( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct arctanh_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = atanh( *op2 );
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct arctan2_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = atan2( *op2, *op3 );
     }
 };
 
@@ -270,30 +305,16 @@ struct expm1_functor {
 };
 
 template <typename T1, typename T2>
-struct floor_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = floor( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct identity_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct invert_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = ~*op2;
-    }
-};
-
-template <typename T1, typename T2>
 struct log_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = log( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct log2_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = log2( *op2 );
     }
 };
 
@@ -312,23 +333,30 @@ struct log1p_functor {
 };
 
 template <typename T1, typename T2>
-struct log2_functor {
+struct sqrt_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = log2( *op2 );
+        *op1 = sqrt( *op2 );
     }
 };
 
 template <typename T1, typename T2>
-struct logical_not_functor {
+struct ceil_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = !*op2;
+        *op1 = ceil( *op2 );
     }
 };
 
 template <typename T1, typename T2>
-struct negative_functor {
+struct trunc_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = -*op2;
+        *op1 = trunc( *op2 );
+    }
+};
+
+template <typename T1, typename T2>
+struct floor_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = floor( *op2 );
     }
 };
 
@@ -339,10 +367,24 @@ struct rint_functor {
     }
 };
 
+template <typename T1, typename T2, typename T3>
+struct mod_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = *op2 - floor(*op2 / *op3) * *op3;
+    }
+};
+
+template <typename T1, typename T2, typename T3>
+struct hypot_functor {
+    void operator()(T1 *op1, T2 *op2, T3 *op3) {
+        *op1 = sqrt( pow(*op2, 2) + pow(*op3, 2) );
+    }
+};
+
 template <typename T1, typename T2>
-struct sign_functor {
+struct identity_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 > 0.0 ? 1.0 : (*op2 == 0 ? 0 : -1);
+        *op1 = *op2;
     }
 };
 
@@ -350,55 +392,6 @@ template <typename T1, typename T2>
 struct signbit_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = *op2 < 0;
-    }
-};
-
-template <typename T1, typename T2>
-struct sin_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = sin( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct sinh_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = sinh( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct sqrt_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = sqrt( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct square_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 * *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct tan_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = tan( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct tanh_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = tanh( *op2 );
-    }
-};
-
-template <typename T1, typename T2>
-struct trunc_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = trunc( *op2 );
     }
 };
 

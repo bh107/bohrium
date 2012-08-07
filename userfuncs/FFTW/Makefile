@@ -1,15 +1,15 @@
 ROOT=../..
-LIB=libcphvb_atlas.so
+LIB=libcphvb_fftw.so
+FFTWDIR?=/usr/local
 CXX?=g++
 WARNOPTS=-Wall
-ATLASDIR?=/usr/local/atlas
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ATLASDIR)/include
-LDFLAGS= -L$(ATLASDIR)/lib -ltatlas -fopenmp -L$(ROOT)/core -lcphvb -lrt -shared -Wl,-soname
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(FFTWDIR)/include
+LDFLAGS= -L$(ROOT)/core -lcphvb -lrt -shared -L$(FFTWDIR)/lib -lfftw3_omp -lfftw3 -lfftw3f_omp -lfftw3f -lm -fopenmp -Wl,-soname
 HEADER=$(ROOT)/include/*  
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
-INSTALLDIR?=/opt/cphvb/
+INSTALLDIR?=/opt/cphvb
 
 all: $(LIB)
 

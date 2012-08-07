@@ -25,5 +25,5 @@ clean:
 		rm -rf *.o *~ *.so *.dylib
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)
 

@@ -178,6 +178,12 @@ namespace NumCIL.Unsafe
             return typeof(NumCIL.Unsafe.Copy).GetMethod("Memcpy", new Type[] { typeof(IntPtr), typeof(T[]), typeof(long) });
         }
 
+        /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for creating an accessor based on size, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
         public static MethodInfo GetCreateAccessorSize<T>()
         {
             if (!typeof(T).IsPrimitive || !SupportsUnsafe)
@@ -188,6 +194,12 @@ namespace NumCIL.Unsafe
         }
 
 
+        /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for creating an accessor based on an array, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
         public static MethodInfo GetCreateAccessorData<T>()
         {
             if (!typeof(T).IsPrimitive || !SupportsUnsafe)

@@ -25,8 +25,8 @@ namespace UnitTest
             a = a.Add(1);
             a = a.Sub(new NdArray(1));
             a = Add.Apply(a, 1);
-            a = a.Negate();
-            a = Inc.Apply(a);
+            a = -a;
+            a = ++a;
             a = Abs.Apply(a);
 
             a = a.Reduce(Ops.Add);

@@ -20,4 +20,4 @@ clean:
 		rm -rf *.o *~ $(LIB)
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)

@@ -83,6 +83,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -91,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicOperators.cs" />
+    <Compile Include="Complex64DataType.cs" />
     <Compile Include="DataAccessor.cs" />
     <Compile Include="Generators.cs" />
     <Compile Include="ThreadPool.cs" />
