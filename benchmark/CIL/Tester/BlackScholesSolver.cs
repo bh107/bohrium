@@ -27,7 +27,7 @@ namespace Tester
             return w;
         }
 
-        private static NdArray BlackSholes(bool callputflag, NdArray S, DATA X, DATA T, DATA r, DATA v)
+        private static NdArray BlackScholes(bool callputflag, NdArray S, DATA X, DATA T, DATA r, DATA v)
         {
             var d1 = ((S / X).Log() + (r + v * v / 2.0f) * T) / (v * (DATA)Math.Sqrt(T));
             var d2 = d1 - v * (DATA)Math.Sqrt(T);
@@ -54,7 +54,7 @@ namespace Tester
 
             for (long i = 0; i < years; i++)
             {
-                total += Add.Reduce(BlackSholes(true, S, X, T, r, v)).Value[0] / size;
+                total += Add.Reduce(BlackScholes(true, S, X, T, r, v)).Value[0] / size;
                 T += day;
             }
 
