@@ -92,8 +92,8 @@ namespace Tester
 
         private static void TimekNN()
         {
-            long size = 2000;
-            long dims = 64;
+            long size = 10000;
+            long dims = 120;
             long k = 4;
             NdArray result;
 
