@@ -87,8 +87,8 @@ def random_galaxy(
     return {
         'm': np.random.random(n,dtype=dtype,cphvb=cphvb) * 10**6 / (4 * np.pi ** 2),
         'x': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'y': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'z': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
+        'y': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*y_max-y_max,
+        'z': np.random.random(n,dtype=dtype,cphvb=cphvb)*2*z_max-z_max,
         'vx': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
         'vy': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
         'vz': np.empty(n,dtype=dtype,cphvb=cphvb) * 0.0,
