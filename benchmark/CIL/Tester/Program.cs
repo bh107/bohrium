@@ -37,6 +37,9 @@ namespace Tester
                 TimekNN();
                 Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
                 NumCIL.ThreadPool.TicksExecuted = 0;
+                TimenBody();
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadPool.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadPool.TicksExecuted = 0;
 
                 //NumCIL.cphVB.Utility.Activate();
 
@@ -45,6 +48,7 @@ namespace Tester
                 //TimeScholes();
                 //TimeShallowWater();
                 //TimekNN();
+                //TimenBody();
                 return;
             }
             catch (Exception ex)
@@ -97,6 +101,15 @@ namespace Tester
                 result = kNNSolver.Solve(size, dims, k);
 
             Console.WriteLine("Result: " + result.ToString());
+        }
+
+		private static void TimenBody()
+        {
+            long size = 5000;
+            long steps = 10;
+
+			using (new DispTimer(string.Format("nBody {0}x{1}", size, steps)))
+                nBodySolver.Solve(size, steps);
         }
 
         private static void TimeShallowWater()
