@@ -13,7 +13,7 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+            //NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
 
             Console.WriteLine("Tester execution with {0} workblock{1}", NumCIL.UFunc.Threads.BlockCount, NumCIL.UFunc.Threads.BlockCount == 1 ? "" : "s");
             Console.WriteLine("Tester UnsafeAPI is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported ? "ENABLED" : "DISABLED");
