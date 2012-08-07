@@ -21,7 +21,7 @@ namespace UnitTest
                 throw new Exception(string.Format("BlackScholes solver failed: {0}, diff: {1}", blackScholesResult, Math.Abs(blackScholesResult - 51.855494520660294)));
 
             var kNNResult = Tester.kNNSolver.Solve(100, 64, 4, false).Sum();
-            if (Math.Abs(kNNResult - 9969336320) > 0.01)
+            if (Math.Abs(kNNResult - 2460) > 0.01)
                 throw new Exception(string.Format("kNN solver failed: {0}, diff: {1}", kNNResult, Math.Abs(kNNResult - 9969336320)));
 
             var shallowWaterResult = Tester.ShallowWaterSolver.Solve(200, 4);
