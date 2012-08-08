@@ -28,6 +28,7 @@ namespace UnitTest
             if (Math.Abs(shallowWaterResult - 204.04741883859941) > 0.01)
                 throw new Exception(string.Format("ShallowWater solver failed: {0}, diff {1}", shallowWaterResult, Math.Abs(shallowWaterResult - 204.04741883859941)));
 
+            Tester.nBodySolver.Solve(100, 2);
         }
     }
 }
