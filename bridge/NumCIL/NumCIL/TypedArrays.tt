@@ -1198,7 +1198,7 @@ foreach(var opname in new string[] {"Equal", "GreaterThan", "LessThan", "Greater
     /// <summary>
     /// The equal <#=opname#> implementation
     /// </summary>
-    public struct <#=opname#> : IBinaryCompareOp<T>
+    public struct <#=opname#> : IBinaryCompareOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of <#=opname#> test
@@ -1263,7 +1263,7 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
     /// <summary>
     /// The <#=opname#> operator implementation
     /// </summary>
-    public struct <#=opname#> : IBinaryOp<T>
+    public struct <#=opname#> : IBinaryOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of <#=opname#> with two numbers
@@ -1362,7 +1362,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
     /// <summary>
     /// The <#=opname#> operation implementation
     /// </summary>
-    public struct <#=opname#> : IUnaryOp<T>
+    public struct <#=opname#> : IUnaryOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of the <#=opname#> operation
@@ -1520,7 +1520,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 <# } if (fulltypename != "System.Int64")  { #>        IUnaryConvOp<long, T>, 
 <# } if (fulltypename != "System.UInt64") { #>        IUnaryConvOp<ulong, T>,
 <# } #>
-        IOp<T>
+		NumCIL.Generic.Operators.ITypeConversion
     {
 
 <#   if (fulltypename != "System.Double") { #>
@@ -1869,7 +1869,8 @@ namespace NumCIL.<#=typename#>
         IUnaryConvOp<int, T>, 
         IUnaryConvOp<uint,T>, 
         IUnaryConvOp<long, T>, 
-        IUnaryConvOp<ulong, T>
+        IUnaryConvOp<ulong, T>,
+		NumCIL.Generic.Operators.ITypeConversion
     {
 <# if (typename == "Complex64") { #>
         /// <summary>
@@ -1956,7 +1957,7 @@ namespace NumCIL.<#=typename#>
     /// <summary>
     /// Operator for extracting the real component
     /// </summary>
-    public struct Real : IUnaryConvOp<T, TComp>
+    public struct Real : IUnaryConvOp<T, TComp>, NumCIL.Generic.Operators.IRealValue
     {
         /// <summary>
         /// Extracts the real component
@@ -1969,7 +1970,7 @@ namespace NumCIL.<#=typename#>
     /// <summary>
     /// Operator for extracting the imaginary component
     /// </summary>
-    public struct Imaginary : IUnaryConvOp<T, TComp>
+    public struct Imaginary : IUnaryConvOp<T, TComp>, NumCIL.Generic.Operators.IImaginaryValue
     {
         /// <summary>
         /// Extracts the imaginary component
@@ -2167,7 +2168,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Single"/>
     /// </summary>
-    public struct ToFloat : IUnaryConvOp<T, float> 
+    public struct ToFloat : IUnaryConvOp<T, float>, NumCIL.Generic.Operators.ITypeConversion 
     { 
         /// <summary>
         /// Converts the input value to <see cref="System.Single"/>
@@ -2180,7 +2181,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Double"/>
     /// </summary>
-    public struct ToDouble : IUnaryConvOp<T, double> 
+    public struct ToDouble : IUnaryConvOp<T, double>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Double"/>
@@ -2193,7 +2194,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.SByte"/>
     /// </summary>
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> 
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.SByte"/>
@@ -2206,7 +2207,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int16"/>
     /// </summary>
-    public struct ToInt16 : IUnaryConvOp<T, short> 
+    public struct ToInt16 : IUnaryConvOp<T, short>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int16"/>
@@ -2219,7 +2220,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int32"/>
     /// </summary>
-    public struct ToInt32 : IUnaryConvOp<T, int> 
+    public struct ToInt32 : IUnaryConvOp<T, int>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int32"/>
@@ -2232,7 +2233,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int64"/>
     /// </summary>
-    public struct ToInt64 : IUnaryConvOp<T, long> 
+    public struct ToInt64 : IUnaryConvOp<T, long>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int64"/>
@@ -2245,7 +2246,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Byte"/>
     /// </summary>
-    public struct ToUInt8 : IUnaryConvOp<T, byte> 
+    public struct ToUInt8 : IUnaryConvOp<T, byte>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Byte"/>
@@ -2258,7 +2259,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt16"/>
     /// </summary>
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> 
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt16"/>
@@ -2271,7 +2272,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt32"/>
     /// </summary>
-    public struct ToUInt32 : IUnaryConvOp<T, uint> 
+    public struct ToUInt32 : IUnaryConvOp<T, uint>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt32"/>
@@ -2284,7 +2285,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt64"/>
     /// </summary>
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> 
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt64"/>

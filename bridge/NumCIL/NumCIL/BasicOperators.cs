@@ -9,7 +9,7 @@ namespace NumCIL
     /// An operation that outputs the same value for each input
     /// </summary>
     /// <typeparam name="T">The type of data to produce</typeparam>
-    public struct GenerateOp<T> : INullaryOp<T>
+    public struct GenerateOp<T> : INullaryOp<T>, NumCIL.Generic.Operators.ICopyOperation
     {
         /// <summary>
         /// The value all elements are assigned
@@ -31,7 +31,7 @@ namespace NumCIL
     /// An operation that copies data from one element to another, aka the identity operation
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
-    public struct CopyOp<T> : IUnaryOp<T>
+    public struct CopyOp<T> : IUnaryOp<T>, NumCIL.Generic.Operators.ICopyOperation
     {
         /// <summary>
         /// Returns the input value
