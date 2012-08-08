@@ -1331,7 +1331,14 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
         /// <param name="out">An optional output array, use to perform the operation in-place</param>
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray in1, T in2, OutArray @out = null)
-        { return UFunc.Apply<T, <#=opname#>>(in1, (OutArray)in2, @out); }
+		<# if (opname == "Pow") { #>{ 
+			if (in2 == (T)2)
+				return UFunc.Apply<T, Mul>(in1, in1, @out);
+			else
+				return UFunc.Apply<T, Pow>(in1, (OutArray)in2, @out);
+		}
+		<# } else { #>{ return UFunc.Apply<T, <#=opname#>>(in1, (OutArray)in2, @out); }<# } #>
+
     }
 
 <# } #>
