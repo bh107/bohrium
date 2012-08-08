@@ -10,9 +10,6 @@ namespace Tester
 
     public static class BlackScholesSolver
     {
-        private struct LessThan : NumCIL.IUnaryOp<DATA> { public DATA Op(DATA a) { return a < 0 ? 1 : 0; } }
-        private struct GreaterThanOrEqual : NumCIL.IUnaryOp<DATA> { public DATA Op(DATA a) { return a >= 0 ? 1 : 0; } }
-
         private static NdArray CND(NdArray X)
         {
             DATA a1 = 0.31938153f, a2 = -0.356563782f, a3 = 1.781477937f, a4 = -1.821255978f, a5 = 1.330274429f;
