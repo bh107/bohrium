@@ -8,7 +8,7 @@ using NumCIL.Generic;
 
 namespace NumCIL.Unsafe
 {
-    internal static class oldCreateAccessor
+    internal static class CreateAccessor
     {
 <# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
         private static IDataAccessor<System.<#=typename#>> CreateFromSize_<#=typename#>(long size) { return new UnmanagedAccessor<#=typename#>(size); }

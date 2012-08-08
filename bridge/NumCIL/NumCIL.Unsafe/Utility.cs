@@ -190,7 +190,7 @@ namespace NumCIL.Unsafe
                 return null;
 
             string name = "CreateFromSize_" + typeof(T).Name.Replace(".", "_");
-            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+            return typeof(NumCIL.Unsafe.CreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
 
 
@@ -206,7 +206,7 @@ namespace NumCIL.Unsafe
                 return null;
 
             string name = "CreateFromData_" + typeof(T).Name.Replace(".", "_");
-            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+            return typeof(NumCIL.Unsafe.CreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
         
         /// <summary>
