@@ -60,13 +60,13 @@ namespace Tester
 			galaxy["z"] += galaxy["vz"];
 		}
 
-		private static Dictionary<string, NdArray> RandomGalaxy(long n, DATA x_max, DATA y_max, DATA z_max)
+		private static Dictionary<string, NdArray> RandomGalaxy(long n, DATA xMax, DATA yMax, DATA zMax)
 		{
-			Dictionary<string, NdArray> res = new Dictionary<string, NdArray>();
+			var res = new Dictionary<string, NdArray>();
 			res["m"] = Generate.Random(n) * Math.Pow(10, 6) / (4 * Math.PI * Math.PI);
-			res["x"] = Generate.Random(n) * 2 * x_max - x_max;
-			res["y"] = Generate.Random(n) * 2 * y_max - y_max;
-			res["z"] = Generate.Random(n) * 2 * z_max - z_max;
+			res["x"] = Generate.Random(n) * 2 * xMax - xMax;
+			res["y"] = Generate.Random(n) * 2 * yMax - yMax;
+			res["z"] = Generate.Random(n) * 2 * zMax - zMax;
 			res["vx"] = Generate.Zeroes(n);
 			res["vy"] = Generate.Zeroes(n);
 			res["vz"] = Generate.Zeroes(n);
