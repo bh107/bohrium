@@ -102,6 +102,7 @@ def install_config(prefix):
 
 if __name__ == "__main__":
     debug = False
+    interactive = False
     prefix = "/opt/cphvb"
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))
@@ -110,7 +111,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     try:
-        opts, args = getopt.gnu_getopt(sys.argv[1:],"d",["debug","prefix="])
+        opts, args = getopt.gnu_getopt(sys.argv[1:],"d",["debug","prefix=","interactive"])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
@@ -119,6 +120,8 @@ if __name__ == "__main__":
             debug = True
         elif o in ("--prefix"):
             prefix = a
+        elif o in ("--interactive"):
+            interactive = True
         else:
             assert False, "unhandled option"
 
@@ -127,6 +130,17 @@ if __name__ == "__main__":
         makefilename="Makefile.win"
     elif sys.platform.startswith('darwin'):
         makefilename="Makefile.osx"
+    
+    if interactive:
+        import readline, glob
+        def complete(text, state):#For autocomplete 
+            return (glob.glob(text+'*')+[None])[state]
+        readline.set_completer_delims(' \t\n;')
+        readline.parse_and_bind("tab: complete")
+        readline.set_completer(complete)
+
+        print "Please specify the installation directory:"
+        prefix = raw_input("[%s] "%prefix)
 
     try:
         cmd = args[0]
