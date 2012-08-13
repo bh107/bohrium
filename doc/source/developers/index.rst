@@ -207,7 +207,9 @@ gpu
 Writing Documentation
 =====================
 
-The documentation is written in Sphinx, you will need the to install::
+The documentation is written in Sphinx.
+
+You will need the following to write/build the documentation::
 
   sudo apt-get install doxygen python-sphinx python-docutils python-setuptools
 
@@ -217,10 +219,10 @@ As well as a python-package "breathe" for integrating doxygen-docs with Sphinx::
 
 Overview of the documentatation files::
 
-  cphvb/doc                 # Doc-root
-  cphvb/doc/source          # This is where you write
-  cphvb/doc/build           # This is where what you have written is "rendered" and stored.
-  cphvb/doc/Makefile        # This file instructs how to "render" the documentation.
+  cphvb/doc                 # Root folder of the documentation.
+  cphvb/doc/source          # Write / Edit the documentation here.
+  cphvb/doc/build           # Documentation is "rendered" and stored here.
+  cphvb/doc/Makefile        # This file instructs Sphinx on how to "render" the documentation.
   cphvb/doc/make.bat        # ---- || ----, on Windows
   cphvb/doc/deploy_doc.sh   # This script pushes the rendered docs to http://cphvb.bitbucket.org
 
