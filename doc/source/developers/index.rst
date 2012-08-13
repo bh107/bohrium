@@ -231,6 +231,10 @@ Most used commands
 
 These commands assume that your current working dir is cphvb/doc.
 
+Initiate doxygen::
+ 
+  make doxy
+
 Render a html version of the docs::
 
   make html
