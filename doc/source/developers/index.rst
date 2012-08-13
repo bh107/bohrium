@@ -204,3 +204,42 @@ gpu
 
 ...
 
+Writing Documentation
+~~~~~~~~~~~~~~~~~~~~~
+
+The documentation is written in Sphinx, you will need the to install::
+
+  sudo apt-get install doxygen python-sphinx python-docutils python-setuptools
+
+As well as a python-package "breate" for integrating doxy-gen generated docs with Sphinx.
+
+
+  sudo easy_install breathe
+
+Overview of the documentatation files::
+
+  cphvb/doc                 # Doc-root
+  cphvb/doc/source          # This is where you write
+  cphvb/doc/build           # This is where what you have written is "rendered" and stored.
+  cphvb/doc/Makefile        # This file instructs how to "render" the documentation.
+  cphvb/doc/make.bat        # ---- || ----, on Windows
+  cphvb/doc/deploy_doc.sh   # This script pushes the rendered docs to http://cphvb.bitbucket.org
+
+Most used commands
+==================
+
+These commands assume that your current working dir is cphvb/doc.
+
+Render a html version of the docs::
+
+  make html
+
+Push the html to http://cphvb.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
+
+  ./deploy_doc.sh
+
+Create doxygen docs from source-code::
+
+  doxygen Doxyfile
+
+The docs still needs a neat way to integrate a full API-documentation of the cphVB core, managers and engines.
