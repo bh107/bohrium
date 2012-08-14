@@ -140,7 +140,7 @@ if __name__ == "__main__":
         readline.set_completer(complete)
 
         print "Please specify the installation directory:"
-        prefix = raw_input("[%s] "%prefix)
+        prefix = expanduser(raw_input("[%s] "%prefix))
 
     try:
         cmd = args[0]
