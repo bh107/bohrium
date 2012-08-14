@@ -6,7 +6,7 @@ from cphvbnumpy import examples as exp
 class test_jacobi(numpytest):
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
+        self.config['maxerror'] = 0.0001
         self.size = 20
     def init(self):
         for t in ['np.float32','np.float64']:
