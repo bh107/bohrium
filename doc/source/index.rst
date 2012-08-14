@@ -28,7 +28,7 @@ Get Started!
 .. toctree::
    :maxdepth: 2
 
-   quickstart
+   installation/index
    users/index
    developers/index
 

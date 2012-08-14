@@ -1,7 +1,7 @@
 History and License
 ===================
 
-cphVB is an active research project started by Brian Vinter and Troels Blum at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ at the `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
+cphVB is an active research project started by Mads R. B. Kristensen, Troels Blum and Brian Vinter at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ at the `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
 
     * Troels Blum
     * Brian Vinter
