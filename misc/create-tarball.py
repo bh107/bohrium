@@ -29,7 +29,6 @@ if __name__ == "__main__":
     except NameError:
         print "This script cannot run interactively."
         sys.exit(-1)
-    print root
 
     VERSION = "v0.1"
     NAME = "cphvb-%s"%VERSION
