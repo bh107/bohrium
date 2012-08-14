@@ -71,15 +71,6 @@ def install(components,prefix):
             if err != 0:
                 print "A build error in %s is not fatal. Continuing."%name
 
-def ldconfig():
-    print "***Configure ldconfig***"
-    print "ldconfig"
-    try:
-        p = subprocess.Popen(["ldconfig"], cwd=join(install_dir))
-        err = p.wait()
-    except KeyboardInterrupt:
-        p.terminate()
-
 def install_config(prefix):
     if os.geteuid() == 0:#Root user
         HOME_CONFIG = "/etc/cphvb"
@@ -140,8 +131,9 @@ if __name__ == "__main__":
         readline.set_completer(complete)
 
         print "Please specify the installation directory:"
-        prefix = expanduser(raw_input("[%s] "%prefix))
-
+        answer = raw_input("[%s] "%prefix)
+        if answer != "":
+            prefix = expanduser(answer)
     try:
         cmd = args[0]
     except IndexError:
