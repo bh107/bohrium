@@ -19,16 +19,16 @@ Build and install::
   make install
 
 .. note:: The installation will prompt you for the installation path. 
-          The default path is /opt/cphvb which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
+          The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
-Finally, you need to set the PYTHONPATH and the LD_LIBRARY_PATH environment variables.
-The PYTHONPATH should include the path to the newly installed cphVB Python module. This will also make sure that Python uses the NumPy module included in cphVB::
+Finally, you need to set the ``PYTHONPATH`` and the ``LD_LIBRARY_PATH`` environment variables.
+The ``PYTHONPATH`` should include the path to the newly installed cphVB Python module. This will also make sure that Python uses the NumPy module included in cphVB::
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
   #Example
   export PYTHONPATH=/opt/cphvb/lib/python2.7/site-packages:$PYTHONPATH
 
-The LD_LIBRARY_PATH should include the path to the installation directory::
+The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
 
   export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
   #Example
