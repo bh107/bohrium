@@ -18,27 +18,23 @@ The default configuration file looks like this::
     children = node
 
     [node]
-    impl = /home/madsbk/repos/cphvb-installed/libcphvb_vem_node.so
+    impl = /opt/cphvb/libcphvb_vem_node.so
     children = simple
     type = vem
 
     [simple]
-    impl = /home/madsbk/repos/cphvb-installed/libcphvb_ve_simple.so
+    impl = /opt/cphvb/libcphvb_ve_simple.so
     type = ve
 
     [score]
-    impl = /home/madsbk/repos/cphvb-installed/libcphvb_ve_score.so
+    impl = /opt/cphvb/libcphvb_ve_score.so
     type = ve
 
     [mcore]
-    impl = /home/madsbk/repos/cphvb-installed/libcphvb_ve_mcore.so
+    impl = /opt/cphvb/libcphvb_ve_mcore.so
     type = ve
 
     [gpu]
-    impl = /home/madsbk/repos/cphvb-installed/libcphvb_ve_gpu.so
+    impl = /opt/cphvb/libcphvb_ve_gpu.so
     type = ve
-    ocldir = /home/madsbk/repos/cphvb-installed/lib/ocl_source
-
-
-
-
+    ocldir = /opt/cphvb/lib/ocl_source
