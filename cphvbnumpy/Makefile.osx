@@ -1,12 +1,12 @@
-PYTHON?=python
+CPHVB_PYTHON?=python
 INSTALLDIR?=/opt/cphvb/
 
 all:
-	$(PYTHON) setup.py build
+	$(CPHVB_PYTHON) setup.py build
 
 clean:
 	rm -Rf build
 
 install:
-	$(PYTHON) setup.py build
-	$(PYTHON) setup.py install --prefix $(INSTALLDIR)
+	$(CPHVB_PYTHON) setup.py build
+	$(CPHVB_PYTHON) setup.py install --prefix $(INSTALLDIR)

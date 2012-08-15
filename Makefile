@@ -1,8 +1,10 @@
+CPHVB_PYTHON?=python
+
 all:
-	./build.py build
+	$(CPHVB_PYTHON) build.py build
 
 clean:
-	./build.py clean
+	$(CPHVB_PYTHON) build.py clean
 
 install:
-	./build.py install --interactive
+	$(CPHVB_PYTHON) build.py install --interactive
