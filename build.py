@@ -28,11 +28,11 @@ import subprocess
 makecommand = "make"
 makefilename = "Makefile"
 
-def build(components):
+def build(components,interpreter):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"CPHVB_PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"CPHVB_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -54,11 +54,11 @@ def clean(components):
         except KeyboardInterrupt:
             p.terminate()
 
-def install(components,prefix):
+def install(components,prefix,interpreter):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "install","INSTALLDIR=%s"%prefix, "CPHVB_PYTHON=%s"%sys.executable], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"install","CPHVB_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -97,6 +97,7 @@ if __name__ == "__main__":
     debug = False
     interactive = False
     prefix = "/opt/cphvb"
+    interpreter = sys.executable
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))
     except NameError:
@@ -104,7 +105,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     try:
-        opts, args = getopt.gnu_getopt(sys.argv[1:],"d",["debug","prefix=","interactive"])
+        opts, args = getopt.gnu_getopt(sys.argv[1:],"d",["debug","prefix=","interactive","interpreter="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
@@ -115,6 +116,8 @@ if __name__ == "__main__":
             prefix = a
         elif o in ("--interactive"):
             interactive = True
+        elif o in ("--interpreter"):
+            interpreter = a
         else:
             assert False, "unhandled option"
 
@@ -164,7 +167,7 @@ if __name__ == "__main__":
     if cmd == "rebuild":
         clean(components)        
     if cmd == "build" or cmd == "rebuild":
-        build(components)        
+        build(components,interpreter)        
     elif cmd == "clean":
         clean(components)        
     elif cmd == "install":
@@ -173,7 +176,7 @@ if __name__ == "__main__":
             assert os.path.isdir(prefix),"The prefix points to an existing file"
         else:            
             os.mkdir(prefix)
-        install(components,prefix)        
+        install(components,prefix,interpreter)        
         install_config(prefix);
     else:
         print "Unknown command: '%s'."%cmd

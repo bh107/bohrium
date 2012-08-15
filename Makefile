@@ -1,10 +1,10 @@
 CPHVB_PYTHON?=python
 
 all:
-	$(CPHVB_PYTHON) build.py build
+	./build.py build --interpreter=$(CPHVB_PYTHON)
 
 clean:
-	$(CPHVB_PYTHON) build.py clean
+	./build.py clean
 
 install:
-	$(CPHVB_PYTHON) build.py install --interactive
+	./build.py install --interactive --interpreter=$(CPHVB_PYTHON)
