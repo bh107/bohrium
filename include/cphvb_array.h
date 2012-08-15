@@ -29,57 +29,35 @@ extern "C" {
 
 #define CPHVB_MAXDIM (16)
 
-#define CPHVB_MAX_EXTRA_META_DATA (1024)
-
-// Memory layout of an array
-/*
-    Field used by VEM to manage ownership
-    cphvb_intp       owner;
-
-    Pointer to the base array. If NULL this is a base array
-    cphvb_array*     base;
-
-    The type of data in the array
-    cphvb_type       type;
-
-    Number of dimentions
-    cphvb_intp       ndim;
-
-    Index of the start element (always 0 for base-array)
-    cphvb_index      start;
-
-    Number of elements in each dimention
-    cphvb_index      shape[CPHVB_MAXDIM];
-
-    The stride for each dimention
-    cphvb_index      stride[CPHVB_MAXDIM];
-
-    Pointer to the actual data. Ignored for views
-    cphvb_data_ptr   data;
-
-    Ref Count
-    cphvb_intp       ref_count;
-
-    Space reserved for extra meta data.
-    (Not persistent at ownership change)
-    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
-*/
-#define CPHVB_ARRAY_HEAD                   \
-    cphvb_intp       owner;                \
-    cphvb_array*     base;                 \
-    cphvb_type       type;                 \
-    cphvb_intp       ndim;                 \
-    cphvb_index      start;                \
-    cphvb_index      shape[CPHVB_MAXDIM];  \
-    cphvb_index      stride[CPHVB_MAXDIM]; \
-    cphvb_data_ptr   data;                 \
-    cphvb_intp       ref_count;
-
 typedef struct cphvb_array cphvb_array;
 struct cphvb_array
 {
-    CPHVB_ARRAY_HEAD
-    char             extra_meta_data[CPHVB_MAX_EXTRA_META_DATA];
+    //Field used by VEM to manage ownership
+    cphvb_intp       owner;
+
+    //Pointer to the base array. If NULL this is a base array
+    cphvb_array*     base;
+
+    //The type of data in the array
+    cphvb_type       type;
+
+    //Number of dimentions
+    cphvb_intp       ndim;
+
+    //Index of the start element (always 0 for base-array)
+    cphvb_index      start;
+
+    //Number of elements in each dimention
+    cphvb_index      shape[CPHVB_MAXDIM];
+
+    //The stride for each dimention
+    cphvb_index      stride[CPHVB_MAXDIM];
+
+    //Pointer to the actual data. Ignored for views
+    cphvb_data_ptr   data;
+
+    //Ref Count
+    cphvb_intp       ref_count;
 };
 
 #ifdef __cplusplus
