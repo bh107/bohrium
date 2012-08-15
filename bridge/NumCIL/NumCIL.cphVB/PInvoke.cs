@@ -48,10 +48,6 @@ namespace NumCIL.cphVB
         /// </summary>
         public const int CPHVB_MAXDIM = 16;
         /// <summary>
-        /// The hack-on extra chunk of data added to each allocated array
-        /// </summary>
-        public const int CPHVB_MAX_EXTRA_META_DATA = 1024;
-        /// <summary>
         /// The statically defined maximum number of operands for built-in cphVB instructions
         /// </summary>
         public const int CPHVB_MAX_NO_OPERANDS = 3;
@@ -824,11 +820,6 @@ namespace NumCIL.cphVB
             /// A reference counter
             /// </summary>
             public cphvb_intp ref_count;
-            /// <summary>
-            /// A hack with extra metadata used for storing extra info by cphVB (should be removed soon)
-            /// </summary>
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst=CPHVB_MAX_EXTRA_META_DATA)]
-            public byte[] extra_meta_data;
         }
 
         /// <summary>
