@@ -84,7 +84,9 @@ def install_config(prefix):
         src_file = open(src, "r")
         src_str = src_file.read()
         src_file.close()
-        dst_str = src_str.replace("/opt/cphvb",prefix)  
+        dst_str = src_str.replace("/opt/cphvb",prefix)
+        if sys.platform.startswith('darwin'):
+            dst_str = dst_str.replace(".so",".dylib")
         dst_file = open(dst,"w")
         dst_file.write(dst_str)
         dst_file.close()
