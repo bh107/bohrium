@@ -1,2 +1,10 @@
 Windows
 -------
+
+The follow explains how to get cphVB installed on Windows. The cphVB package is distributed as a zip archive, that you can get from here:
+https://cphvb.org/download
+
+Simply extract the contents of the folder.
+
+You can either place the dll files in the folder of the project you are working on, or place them somewhere on your machine, and change your PATH environment variable to include this location. See the guide `How to change your path environment variable <http://www.computerhope.com/issues/ch000549.htm>`_.
+
