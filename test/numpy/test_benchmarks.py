@@ -46,7 +46,7 @@ class test_gameoflife(numpytest):
         yield (a,cmd)
     
     def test_gameoflife(self,a):
-        cmd = "res = exp.gameoflife.play(a[0], 50);"
+        cmd = "res = exp.gameoflife.play(a[0].copy(), 50);"
         exec cmd
         return (res,cmd)
 
