@@ -178,7 +178,7 @@ if __name__ == "__main__":
         if exists(prefix):
             assert os.path.isdir(prefix),"The prefix points to an existing file"
         else:            
-            os.mkdir(prefix)
+            os.makedirs(prefix)
         install(components,prefix,interpreter)        
         install_config(prefix);
     else:
