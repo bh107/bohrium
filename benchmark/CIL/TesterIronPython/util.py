@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Benchmarks for DistNumPy.
+#Benchmarks for NumPy.
 #This is collection of help functions for the numpy/NumCIL benchmarks.
 
 import numcil as np

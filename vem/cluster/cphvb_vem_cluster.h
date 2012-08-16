@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-//#define DISTNUMPY_DEBUG
 //#define DNPY_STATISTICS
 //#define DNDY_TIME
 //#define DNPY_SPMD

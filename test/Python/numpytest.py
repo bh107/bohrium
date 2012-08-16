@@ -1,4 +1,4 @@
-#Test and demonstration of DistNumPy.
+#Test and demonstration of the NumPuy Bridge.
 import numpy as np
 import cphvbbridge
 import sys
