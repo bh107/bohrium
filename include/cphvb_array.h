@@ -27,6 +27,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include "cphvb_type.h"
+#include "cphvb_win.h"
 
 #define CPHVB_MAXDIM (16)
 
@@ -66,7 +67,7 @@ struct cphvb_array
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_create_array(cphvb_array*   base,
+DLLEXPORT cphvb_error cphvb_create_array(cphvb_array*   base,
                                cphvb_type     type,
                                cphvb_intp     ndim,
                                cphvb_index    start,
@@ -79,7 +80,7 @@ cphvb_error cphvb_create_array(cphvb_array*   base,
  * @array The array to destroy
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_error cphvb_destroy_array(cphvb_array* array);
+DLLEXPORT cphvb_error cphvb_destroy_array(cphvb_array* array);
 
 
 #ifdef __cplusplus
