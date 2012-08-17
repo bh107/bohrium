@@ -94,10 +94,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlackScholes.cs" />
+    <Compile Include="BlackScholesSolver.cs" />
     <Compile Include="CustomTimer.cs" />
     <Compile Include="JacobiSolver.cs" />
-    <Compile Include="kNN.cs" />
+    <Compile Include="kNNSolver.cs" />
+    <Compile Include="nBodySolver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShallowWaterSolver.cs" />

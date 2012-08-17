@@ -342,17 +342,6 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
 	        break;
         }
 
-        if(com->type == CPHVB_VEM)//VEM functions only.
-        {
-            com->create_array = (cphvb_create_array)get_dlsym(com->lib_handle, child,
-                                          com->type, "create_array");
-            if(com->create_array == NULL)
-			{
-				fprintf(stderr, "Failed to load create_array function from child %s\n", child);        
-				result = CPHVB_ERROR;
-				break;
-			}
-        }
         child = strtok(NULL,",");
         ++(*count);
     }

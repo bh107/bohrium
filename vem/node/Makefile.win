@@ -6,10 +6,10 @@ LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
 WARNOPTS=#-Wall
-HEADER=.\*.hpp .\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+HEADER=*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
 CFLAGS=$(WARNOPTS) /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
-SRC=cphvb_vem_node.cpp ArrayManager.cpp
+SRC=cphvb_vem_node.cpp
 OBJ=$(SRC:.cpp=.obj)
 INSTALLDIR=/opt/cphvb/
 
@@ -21,9 +21,6 @@ all: $(DLLNAME)
 cphvb_vem_node.obj: cphvb_vem_node.cpp $(HEADER)
 		$(CC) $(CFLAGS) cphvb_vem_node.cpp /Fo$@
 
-ArrayManager.obj: ArrayManager.cpp $(HEADER)
-		$(CC) $(CFLAGS) ArrayManager.cpp /Fo$@
-
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
 		
@@ -32,3 +29,4 @@ $(DLLNAME): $(LIBNAME)
 
 clean:
 		del *.obj *.lib *.dll *.exp *.pdb *.ilk
+

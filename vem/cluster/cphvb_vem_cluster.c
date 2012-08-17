@@ -110,7 +110,6 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp instruction_count,
                 //The owner is downsteam so send the sync down
                 //and take ownership
                 inst->operand[0] = base;
-                arrayManager->changeOwnerPending(base,CPHVB_SELF);
             }
             break;
         }

@@ -24,7 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 
 #include "cphvb_vem_node.h"
-#include "ArrayManager.hpp"
 
 //Function pointers to the VE.
 static cphvb_init ve_init;
@@ -40,8 +39,6 @@ static cphvb_component *vem_node_myself;
 
 //Number of user-defined functions registered.
 static cphvb_intp vem_userfunc_count = 0;
-
-ArrayManager* arrayManager;
 
 /* Initialize the VEM
  *
@@ -72,16 +69,6 @@ cphvb_error cphvb_vem_node_init(cphvb_component *self)
     if((err = ve_init(vem_node_components[0])) != 0)
         return err;
 
-    try
-    {
-        arrayManager = new ArrayManager();
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        return CPHVB_ERROR;
-    }
-
     return CPHVB_SUCCESS;
 }
 
@@ -101,45 +88,9 @@ cphvb_error cphvb_vem_node_shutdown(void)
     ve_reg_func = NULL;
     cphvb_component_free_ptr(vem_node_components);
     vem_node_components = NULL;
-    delete arrayManager;
-    arrayManager = NULL;
     return err;
 }
 
-
-/* Create an array, which are handled by the VEM.
- *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimensions
- * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
-                                        cphvb_type     type,
-                                        cphvb_intp     ndim,
-                                        cphvb_index    start,
-                                        cphvb_index    shape[CPHVB_MAXDIM],
-                                        cphvb_index    stride[CPHVB_MAXDIM],
-                                        cphvb_array**  new_array)
-{
-    try
-    {
-        *new_array = arrayManager->create(base, type, ndim, start, shape, stride);
-    }
-    catch(std::exception& e)
-    {
-        return CPHVB_OUT_OF_MEMORY;
-    }
-    #ifdef CPHVB_TRACE
-        cphvb_component_trace_array(vem_node_myself, *new_array);
-    #endif
-
-    return CPHVB_SUCCESS;
-}
 
 /* Register a new user-defined function.
  *
@@ -183,82 +134,16 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 {
     cphvb_intp i;
     
-	if (count <= 0)
-		return CPHVB_SUCCESS;
+    if (count <= 0)
+        return CPHVB_SUCCESS;
     
-    for(i=0; i<count; ++i)
-    {
-        cphvb_instruction* inst = &inst_list[i];
-        #ifdef CPHVB_TRACE
-            cphvb_component_trace_inst(vem_node_myself, inst);
-        #endif
-        switch(inst->opcode)
+    #ifdef CPHVB_TRACE
+        for(i=0; i<count; ++i)
         {
-        	//Special handling
-			case CPHVB_FREE:
-			case CPHVB_SYNC:
-			case CPHVB_DISCARD:
-			{
-				switch(inst->opcode)
-				{
-					case CPHVB_FREE:
-						assert(inst->operand[0]->base == NULL);
-						arrayManager->freePending(inst);
-						break;
-					case CPHVB_DISCARD:
-						arrayManager->erasePending(inst);
-						break;
-					case CPHVB_SYNC:
-						arrayManager->changeOwnerPending(inst, cphvb_base_array(inst->operand[0]), CPHVB_SELF);
-						break;
-					default:
-						assert(false);
-				}
-				break;
-			}
-			case CPHVB_USERFUNC:
-			{
-				cphvb_userfunc *uf = inst->userfunc;
-				//The children should own the output arrays.
-				for(int j = 0; j < uf->nout; ++j)
-				{
-					cphvb_array* base = cphvb_base_array(uf->operand[j]);
-					base->owner = CPHVB_CHILD;
-				}
-				//We should own the input arrays.
-				for(int j = uf->nout; j < uf->nout + uf->nin; ++j)
-				{
-					cphvb_array* base = cphvb_base_array(uf->operand[j]);
-					if(base->owner == CPHVB_PARENT)
-					{
-						base->owner = CPHVB_SELF;
-					}
-				}
-				break;
-			}
-			default:
-			{
-				cphvb_array* base = cphvb_base_array(inst->operand[0]);
-				// "Regular" operation: set ownership and send down stream
-				base->owner = CPHVB_CHILD;//The child owns the output ary.
-				for (int j = 1; j < cphvb_operands(inst->opcode); ++j)
-				{
-					if(!cphvb_is_constant(inst->operand[j]) &&
-					   cphvb_base_array(inst->operand[j])->owner == CPHVB_PARENT)
-					{
-						cphvb_base_array(inst->operand[j])->owner = CPHVB_SELF;
-					}
-				}
-			}
+            cphvb_instruction* inst = &inst_list[i];
+            cphvb_component_trace_inst(vem_node_myself, inst);
         }
-    }
+    #endif
 
-	cphvb_error e1 = ve_execute(count, inst_list);
-	cphvb_error e2 = arrayManager->flush();
-	if (e1 != CPHVB_SUCCESS)
-		return e1;
-	else if (e2 != CPHVB_SUCCESS)
-		return e2;
-	else
-		return CPHVB_SUCCESS;
+    return ve_execute(count, inst_list);
 }

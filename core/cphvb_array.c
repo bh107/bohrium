@@ -18,43 +18,7 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_ARRAY_H
-#define __CPHVB_ARRAY_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdbool.h>
-#include "cphvb_type.h"
-#include "cphvb_win.h"
-
-#define CPHVB_MAXDIM (16)
-
-typedef struct cphvb_array cphvb_array;
-struct cphvb_array
-{
-    //Pointer to the base array. If NULL this is a base array
-    cphvb_array*     base;
-
-    //The type of data in the array
-    cphvb_type       type;
-
-    //Number of dimentions
-    cphvb_intp       ndim;
-
-    //Index of the start element (always 0 for base-array)
-    cphvb_index      start;
-
-    //Number of elements in each dimention
-    cphvb_index      shape[CPHVB_MAXDIM];
-
-    //The stride for each dimention
-    cphvb_index      stride[CPHVB_MAXDIM];
-
-    //Pointer to the actual data. Ignored for views
-    cphvb_data_ptr   data;
-};
+#include <cphvb.h>
 
 /* Create a new array.
  *
@@ -67,24 +31,44 @@ struct cphvb_array
  * @new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-DLLEXPORT cphvb_error cphvb_create_array(cphvb_array*   base,
+cphvb_error cphvb_create_array(cphvb_array*   base,
                                cphvb_type     type,
                                cphvb_intp     ndim,
                                cphvb_index    start,
                                cphvb_index    shape[CPHVB_MAXDIM],
                                cphvb_index    stride[CPHVB_MAXDIM],
-                               cphvb_array**  new_array);
+                               cphvb_array**  new_array)
+{
+    cphvb_array *ary = (cphvb_array *) malloc(sizeof(cphvb_array));
+    if(ary == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+
+    ary->base  = base;
+    ary->type  = type;
+    ary->ndim  = ndim;
+    ary->start = start;
+    ary->data  = NULL;
+    memcpy(ary->shape, shape, ndim * sizeof(cphvb_index));
+    memcpy(ary->stride, stride, ndim * sizeof(cphvb_index));
+
+#ifdef CPHVB_TRACE
+    fprintf(stderr, "Created array %lld", array);
+    if (array->base != NULL)
+        fprintf(stderr, " -> %lld", array->base);
+    fprintf(stderr, "\n");
+#endif
+    
+    *new_array = ary;
+    return CPHVB_SUCCESS;
+}
 
 /* Destroy array.
  *
  * @array The array to destroy
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-DLLEXPORT cphvb_error cphvb_destroy_array(cphvb_array* array);
-
-
-#ifdef __cplusplus
+cphvb_error cphvb_destroy_array(cphvb_array* array)
+{
+    free(array);
+    return CPHVB_SUCCESS;
 }
-#endif
-
-#endif

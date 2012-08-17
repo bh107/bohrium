@@ -164,7 +164,16 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     DEBUG_PRINT("[worker_count=%d, block_size=%lu]\n", worker_count, block_size);
 
     for(i=0; i<worker_count; i++) {                 // Worker-threads for job computation
+#ifdef _WIN32
+	worker_data[i].id = i;
+	worker_data[i].loop = NULL;
+	worker_data[i].instr = NULL;
+	worker_data[i].state = NULL;
+	worker_data[i].nelements = 0;
+	
+#else
         worker_data[i] = (worker_data_t){ i, NULL, NULL, NULL, 0 };
+#endif
         if (pthread_create( &worker[i], NULL, job, &worker_data[i] ) != 0) {
             res = CPHVB_ERROR;
             break;

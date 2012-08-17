@@ -657,11 +657,6 @@ namespace NumCIL.cphVB
             /// The userfunc registration function
             /// </summary>
             public cphvb_reg_func reg_func;
-            /// <summary>
-            /// The function used to create arrays and views
-            /// </summary>
-            public cphvb_create_array create_array; //Only for VEMs
-
 #if DEBUG
             /// <summary>
             /// Converts the Asciiz name to a string, used for debugging only
@@ -722,7 +717,7 @@ namespace NumCIL.cphVB
                         throw new ArgumentNullException();
                     
                     return new cphvb_array_ptr() { 
-                        m_ptr = Marshal.ReadIntPtr(m_ptr, INTP_SIZE)
+                        m_ptr = Marshal.ReadIntPtr(m_ptr, 0)
                     };
                 }
             }
@@ -805,10 +800,6 @@ namespace NumCIL.cphVB
         public struct cphvb_array
         {
             /// <summary>
-            /// A number describing the owner of the array
-            /// </summary>
-            public cphvb_intp owner;
-            /// <summary>
             /// The base array if this is a view, null otherwise
             /// </summary>
             public cphvb_array_ptr basearray;
@@ -838,10 +829,6 @@ namespace NumCIL.cphVB
             /// A pointer to the actual data elements
             /// </summary>
             public cphvb_data_array data;
-            /// <summary>
-            /// A reference counter
-            /// </summary>
-            public cphvb_intp ref_count;
         }
 
         /// <summary>
@@ -1372,6 +1359,7 @@ namespace NumCIL.cphVB
         /// <returns>A status code</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate cphvb_error cphvb_reg_func(string fun, ref cphvb_intp id);
+        
         /// <summary>
         /// Creates a new base array or view in cphVB
         /// </summary>
@@ -1383,8 +1371,8 @@ namespace NumCIL.cphVB
         /// <param name="stride">The stride of each dimension</param>
         /// <param name="new_array">The allocated array</param>
         /// <returns>A status code</returns>
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate cphvb_error cphvb_create_array(
+        [DllImport("libcphvb", EntryPoint = "cphvb_create_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_create_array(
                                    cphvb_array_ptr basearray,
                                    cphvb_type     type,
                                    cphvb_intp     ndim,
@@ -1392,6 +1380,14 @@ namespace NumCIL.cphVB
                                    cphvb_index[]    shape,
                                    cphvb_index[]    stride,
                                    out cphvb_array_ptr new_array);
+
+        /// <summary>
+        /// Deallocates metadata for a base array or view
+        /// </summary>
+        /// <param name="array">The array to deallocate</param>
+        /// <returns>A status code</returns>
+        [DllImport("libcphvb", EntryPoint = "cphvb_destroy_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        public extern static cphvb_error cphvb_destroy_array(cphvb_array_ptr array);
 
         /// <summary>
         /// Setup the root component, which normally is the bridge.
