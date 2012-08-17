@@ -6,7 +6,7 @@ LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
 WARNOPTS=#-Wall
-HEADER=.\*.hpp .\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+HEADER=*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
 CFLAGS=$(WARNOPTS) /EHsc /TP /c /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 SRC=cphvb_vem_node.cpp
