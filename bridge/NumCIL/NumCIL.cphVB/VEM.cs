@@ -457,6 +457,11 @@ namespace NumCIL.cphVB
                     throw new cphVBException(e);
                 }
 
+                if (destroys > 0)
+                    foreach (var inst in instrBuffer.Where(x => x.opcode == cphvb_opcode.CPHVB_DISCARD))
+                        PInvoke.cphvb_destroy_array(inst.operand0);
+
+
             }
             finally
             {
@@ -583,7 +588,7 @@ namespace NumCIL.cphVB
             PInvoke.cphvb_array_ptr res;
             lock (m_executelock)
             {
-                e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
+                e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
@@ -594,7 +599,7 @@ namespace NumCIL.cphVB
                 ExecuteCleanups();
 
                 lock (m_executelock)
-                    e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
+                    e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
