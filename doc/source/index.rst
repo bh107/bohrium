@@ -30,7 +30,8 @@ Get Started!
 
    installation/index
    users/index
-   developers/index
+   developers/guide
+   developers/tools
 
 .. toctree::
    :maxdepth: 1

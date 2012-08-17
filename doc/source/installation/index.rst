@@ -1,7 +1,7 @@
 Installation
 ============
 
-cphVB support linux, Mac OSX and Windows.
+cphVB supports linux, Mac OSX and Windows.
 
 
 .. toctree::

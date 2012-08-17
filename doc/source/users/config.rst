@@ -7,8 +7,8 @@ In order to configure the runtime setup of cphVB you must provide a configuratio
 At runtime cphVB will search through the following prioritized list in order to find the configuration file:
 
 * The environment variable ``CPHVB_CONFIG``
-* The home directory config ``~/.cphvb/config.ini``
-* The system-wide config ``/etc/cphvb/config.ini``
+* The home directory config ``~/.cphvb/config.ini`` (Windows: %APPDATA%\cphvb\config.ini)
+* The system-wide config ``/etc/cphvb/config.ini`` (Windows: %PROGRAMFILES%\cphvb\config.ini)
 
 
 The default configuration file looks like this::
