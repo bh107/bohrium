@@ -1,0 +1,26 @@
+[bridge]
+type = bridge
+children = node
+
+[node]
+impl = libcphvb_vem_node.dll
+children = simple
+type = vem
+
+[simple]
+impl = libcphvb_ve_simple.dll
+type = ve
+
+[score]
+impl = libcphvb_ve_score.dll
+type = ve
+
+[mcore]
+impl = libcphvb_ve_mcore.dll
+type = ve
+
+[gpu]
+impl = libcphvb_ve_gpu.dll
+type = ve
+ocldir = C:\ocl_source
+
