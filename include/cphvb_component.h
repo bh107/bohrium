@@ -65,25 +65,6 @@ typedef cphvb_error (*cphvb_shutdown)(void);
 typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
                                      cphvb_instruction inst_list[]);
 
-/* Create an array, which are handled by the component.
- *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimentions
- * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array (output)
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-typedef cphvb_error (*cphvb_create_array)(cphvb_array*   base,
-                                          cphvb_type     type,
-                                          cphvb_intp     ndim,
-                                          cphvb_index    start,
-                                          cphvb_index    shape[CPHVB_MAXDIM],
-                                          cphvb_index    stride[CPHVB_MAXDIM],
-                                          cphvb_array**  new_array);
-
 /* Registre a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
@@ -128,7 +109,6 @@ struct cphvb_component_struct
     cphvb_shutdown shutdown;
     cphvb_execute execute;
     cphvb_reg_func reg_func;
-    cphvb_create_array create_array; //Only for VEMs
 };
 
 

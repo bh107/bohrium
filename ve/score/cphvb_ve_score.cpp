@@ -48,7 +48,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%lld) should be greater than zero!\n", (cphvb_int64)block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
         return CPHVB_ERROR;
     }
 
