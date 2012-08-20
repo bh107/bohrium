@@ -1,5 +1,7 @@
 Python/NumPy
 ------------
+* :ref:`modindex`
+* :ref:`genindex`
 
 .. automodule:: cphvbnumpy
    :members:
@@ -32,10 +34,4 @@ Python/NumPy
 .. automodule:: cphvbnumpy.examples.shallow_water
    :members:
    :undoc-members:
-
-Indices and tables
-------------------
- 
-* :ref:`genindex`
-* :ref:`modindex`
 
