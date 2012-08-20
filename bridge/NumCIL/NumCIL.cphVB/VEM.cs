@@ -408,17 +408,17 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
-        /// <param name="inst_list">The list of instructions to execute</param>
+        /// <param name="instList">The list of instructions to execute</param>
         /// <param name="errorIndex">A return value for the instruction that caused an error</param>
-        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list, out long errorIndex)
+        private void ExecuteWithoutLocks(IEnumerable<IInstruction> instList, out long errorIndex)
         {
-            List<GCHandle> cleanups = new List<GCHandle>();
+            var cleanups = new List<GCHandle>();
             long destroys = 0;
             errorIndex = -1;
 
             try
             {
-                PInvoke.cphvb_instruction[] instrBuffer = inst_list.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+                PInvoke.cphvb_instruction[] instrBuffer = instList.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
                 //ReshuffleInstructions(instrBuffer);
 
                 foreach (var inst in instrBuffer)
@@ -886,7 +886,7 @@ namespace NumCIL.cphVB
         /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
         {
-            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            if (IsScalar(op2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, new PInvoke.cphvb_constant());
@@ -919,9 +919,9 @@ namespace NumCIL.cphVB
         /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
         {
-            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            if (IsScalar(op2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
-            else if (op3.DataAccessor.Length == 1 && op3.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            else if (IsScalar(op3))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op3.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant());
@@ -971,7 +971,7 @@ namespace NumCIL.cphVB
             PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant();
 
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => {
-                if (!constantUsed && x.DataAccessor.Length == 1 && x.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                if (!constantUsed && IsScalar(x))
                 {
                     constant = new PInvoke.cphvb_constant(type, x.DataAccessor[0]);
                     return PInvoke.cphvb_array_ptr.Null;
@@ -1008,9 +1008,9 @@ namespace NumCIL.cphVB
                     in2.DataAccessor.Allocate();
             }
 
-            if (in1.DataAccessor.Length == 1 && in1.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+            if (IsScalar(in1))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
-            else if (in2 != null && in2.DataAccessor.Length == 1 && in2.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+            else if (IsScalar(in2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.cphvb_constant(in2.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
@@ -1117,6 +1117,23 @@ namespace NumCIL.cphVB
                 cphvb_opcode.CPHVB_USERFUNC,
                 adr
             );
+        }
+
+        /// <summary>
+        /// Returns a value indicating if a value is a scalar
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ar"></param>
+        /// <returns></returns>
+        private static bool IsScalar<T>(NdArray<T> ar)
+        {
+            if (ar.DataAccessor.Length == 1)
+                if (ar.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                    return true;
+                else if (ar.DataAccessor.GetType() == typeof(cphVBAccessor<T>) && ar.DataAccessor.IsAllocated && ((cphVBAccessor<T>)ar.DataAccessor).PendingOperations.Count == 0)
+                    return true;
+
+            return false;
         }
 
         /// <summary>

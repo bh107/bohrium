@@ -40,7 +40,7 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="size">The size of the array</param>
         /// <returns>An accessor</returns>
-        public IDataAccessor<T> Create(long size) { return new cphVBAccessor<T>(size); }
+        public IDataAccessor<T> Create(long size) { return size == 1 ? new cphVBAccessor<T>(new T[1]) : new cphVBAccessor<T>(size); }
         /// <summary>
         /// Creates a new accessor for a preallocated array
         /// </summary>
