@@ -408,17 +408,17 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
-        /// <param name="inst_list">The list of instructions to execute</param>
+        /// <param name="instList">The list of instructions to execute</param>
         /// <param name="errorIndex">A return value for the instruction that caused an error</param>
-        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list, out long errorIndex)
+        private void ExecuteWithoutLocks(IEnumerable<IInstruction> instList, out long errorIndex)
         {
-            List<GCHandle> cleanups = new List<GCHandle>();
+            var cleanups = new List<GCHandle>();
             long destroys = 0;
             errorIndex = -1;
 
             try
             {
-                PInvoke.cphvb_instruction[] instrBuffer = inst_list.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+                PInvoke.cphvb_instruction[] instrBuffer = instList.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
                 //ReshuffleInstructions(instrBuffer);
 
                 foreach (var inst in instrBuffer)
