@@ -1,8 +1,8 @@
 """
 Core
-````
+~~~~
 
-So what is this module about?
+The ``core`` module provide the essential functions, such as all the array creation functions, diagonal and matrix multiplication.
 
 """
 import numpy as np

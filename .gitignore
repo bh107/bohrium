@@ -23,6 +23,7 @@ bridge/numpy/build/*
 *.gen
 *.log
 doc/doxygen
+doc/build
 */NumCIL/*/obj/*
 */NumCIL/*/bin/*
 */CIL/*/bin/*

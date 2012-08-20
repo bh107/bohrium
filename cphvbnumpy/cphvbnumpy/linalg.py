@@ -1,19 +1,46 @@
 """
 LinAlg
-``````
+~~~~~~
 
-So what is this module about?
+Common linear algebra functions
 
 """
 import cphvbnumpy as np
 import numpy.linalg as la
 from numpy.linalg import *
 
-def solve(A ,b):
-    """Please doc me."""
+def solve(a, b):
+    """
+    Solve a linear matrix equation, or system of linear scalar equations
+    using Gausian elimination.
 
-    # solve Ax=b via Gausian elimination
-    W = np.hstack((A,b[:,np.newaxis]))
+    :param a: Coefficient matrix
+    :type a:  array_like, shape (M, M)
+    :param b: Ordinate or "dependent variable" values
+    :type b:  array_like, shape (M,) or (M, N)
+
+    :return:  Solution to the system a x = b
+    :rtype:   ndarray, shape (M,) or (M, N) depending on b
+    
+    :raises: :py:exc:`LinAlgError` If `a` is singular or not square.
+
+    **Examples:**
+    Solve the system of equations ``3 * x0 + x1 = 9`` and ``x0 + 2 * x1 = 8``:
+
+    >>> import cphvbnumpy as np
+    >>> a = np.array([[3,1], [1,2]])
+    >>> b = np.array([9,8])
+    >>> x = np.linalg.solve(a, b)
+    >>> x
+    array([ 2.,  3.])
+
+    Check that the solution is correct:
+
+    >>> (np.dot(a, x) == b).all()
+    True 
+    """
+
+    W = np.hstack((a,b[:,np.newaxis]))
     for p in xrange(W.shape[0]-1):
         for r in xrange(p+1,W.shape[0]):
             W[r] = W[r] - W[p]*(W[r,p]/W[p,p])
@@ -25,13 +52,39 @@ def solve(A ,b):
     x[0] = W[0,c]/W[0,0]
     return x
 
-def jacobi(A, b, tol=0.0005):
-    """Please doc me."""
+def jacobi(a, b, tol=0.0005):
+    """
+    Solve a linear matrix equation, or system of linear scalar equations
+    using the Jacobi Method.
 
-    # solve Ax=b via the Jacobi method
+    :param a: Coefficient matrix
+    :type a:  array_like, shape (M, M)
+    :param b: Ordinate or "dependent variable" values
+    :type b:  array_like, shape (M,) or (M, N)
+
+    :return:  Solution to the system a x = b
+    :rtype:   ndarray, shape (M,) or (M, N) depending on b
+    
+    :raises: :py:exc:`LinAlgError` If `a` is singular or not square.
+
+    **Examples:**
+    Solve the system of equations ``3 * x0 + x1 = 9`` and ``x0 + 2 * x1 = 8``:
+
+    >>> import cphvbnumpy as np
+    >>> a = np.array([[3,1], [1,2]])
+    >>> b = np.array([9,8])
+    >>> x = np.linalg.jacobi(a, b)
+    >>> x
+    array([ 2.,  3.])
+
+    Check that the solution is correct:
+
+    >>> (np.dot(a, x) == b).all()
+    True 
+    """
     x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
-    D = 1/np.diag(A)
-    R = np.diag(np.diag(A)) - A
+    D = 1/np.diag(a)
+    R = np.diag(np.diag(a)) - a
     T = D[:,np.newaxis]*R
     C = D*b
     error = tol + 1
