@@ -1,5 +1,11 @@
-#Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
+"""
+Shallow Water
+-------------
 
+So what does this code example illustrate?
+
+Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
+"""
 import cphvbnumpy as np
 
 g = 9.80665 # gravitational acceleration

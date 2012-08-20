@@ -1,8 +1,17 @@
+"""
+LinAlg
+``````
+
+So what is this module about?
+
+"""
 import cphvbnumpy as np
 import numpy.linalg as la
 from numpy.linalg import *
 
 def solve(A ,b):
+    """Please doc me."""
+
     # solve Ax=b via Gausian elimination
     W = np.hstack((A,b[:,np.newaxis]))
     for p in xrange(W.shape[0]-1):
@@ -17,6 +26,8 @@ def solve(A ,b):
     return x
 
 def jacobi(A, b, tol=0.0005):
+    """Please doc me."""
+
     # solve Ax=b via the Jacobi method
     x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
     D = 1/np.diag(A)

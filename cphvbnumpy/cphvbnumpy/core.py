@@ -1,21 +1,36 @@
+"""
+Core
+````
+
+So what is this module about?
+
+"""
 import numpy as np
 from numpy import *
 import cphvbbridge as bridge
 
 def empty(shape, dtype=float, cphvb=True):
+    """Please to fix!"""
+
     return np.empty(shape, dtype=dtype, cphvb=cphvb)
 
 def ones(shape, dtype=float, cphvb=True):
+    """Please gif root"""
+
     A = empty(shape, dtype=dtype, cphvb=cphvb)
     A[:] = 1
     return A
 
 def zeros(shape, dtype=float, cphvb=True):
+    """Pleas doc me."""
+
     A = empty(shape, dtype=dtype, cphvb=cphvb)
     A[:] = 0
     return A
 
 def empty_like(a, dtype=None, cphvb=None):
+    """Pleas doc me."""
+
     if dtype == None:
         dtype = a.dtype
     if cphvb == None:
@@ -23,19 +38,27 @@ def empty_like(a, dtype=None, cphvb=None):
     return empty(a.shape, dtype, cphvb)
 
 def zeros_like(a, dtype=None, cphvb=None):
+    """Pleas doc me."""
+
     b = empty_like(a, dtype=dtype, cphvb=cphvb)
     b[:] = 0
     return b
 
 def ones_like(a, dtype=None, cphvb=None):
+    """Pleas doc me."""
+
     b = empty_like(a, dtype=dtype, cphvb=cphvb)
     b[:] = 1
     return b
 
 def flatten(A):
+    """Pleas doc me."""
+
     return A.reshape(np.multiply.reduce(np.asarray(A.shape)))
 
 def diagonal(A,offset=0):
+    """Pleas doc me."""
+
     if A.ndim !=2 :
         raise Exception("diagonal only supports 2 dimensions\n")
     if offset < 0:
@@ -53,6 +76,8 @@ def diagonal(A,offset=0):
     return d
 
 def diagflat(d,k=0):
+    """Pleas doc me."""
+
     d = np.asarray(d)
     d = flatten(d) 
     size = d.size+abs(k)
@@ -62,6 +87,8 @@ def diagflat(d,k=0):
     return A
 
 def diag(A,k=0):
+    """Pleas doc me."""
+
     if A.ndim == 1:
         return diagflat(A,k)
     elif A.ndim == 2:
@@ -70,6 +97,8 @@ def diag(A,k=0):
         raise ValueError("Input must be 1- or 2-d.")
 
 def dot(A,B):
+    """Pleas doc me."""
+
     if A.cphvb or B.cphvb:
         bridge.handle_array(A)
         bridge.handle_array(B)
@@ -80,6 +109,8 @@ def dot(A,B):
     return add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
 
 def matmul(A,B):
+    """Pleas doc me."""
+
     if A.dtype != B.dtype:
         raise ValueError("Input must be of same type")
     if A.ndim != 2 and B.ndim != 2:
@@ -94,6 +125,8 @@ def matmul(A,B):
 	return np.dot(A,B)
 	
 def lu(A):
+    """Pleas doc me."""
+
     if A.dtype != np.float32 and A.dtype != np.float64:
         raise ValueError("Input must be floating point numbers")
     if A.ndim != 2 or A.shape[0] != A.shape[1]:
@@ -107,6 +140,8 @@ def lu(A):
 	    raise ValueError("LU not supported for non cphvb numpy")
 	    
 def fft(A):
+    """Pleas doc me."""
+
     if A.cphvb and A.ndim <= 2:
       if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
@@ -116,6 +151,8 @@ def fft(A):
 	return np.fft.fft(A)
 	
 def fft2(A):
+    """Pleas doc me."""
+
     if A.cphvb and A.ndim == 2:
       if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
@@ -125,6 +162,8 @@ def fft2(A):
 	return np.fft.fft2(A)
 
 def rad2deg(x, out=None):
+    """Pleas doc me."""
+
     if out == None:
         out = 180 * x / pi
     else:
@@ -132,6 +171,8 @@ def rad2deg(x, out=None):
     return out
 
 def deg2rad(x, out=None):
+    """Pleas doc me."""
+
     if out == None:
         out = x * pi / 180
     else:
@@ -139,6 +180,8 @@ def deg2rad(x, out=None):
     return out
         
 def logaddexp(x1, x2, out=None):
+    """Pleas doc me."""
+
     if out == None:
         out = log(exp(x1) + exp(x2))
     else:
@@ -146,6 +189,8 @@ def logaddexp(x1, x2, out=None):
     return out
     
 def logaddexp2(x1, x2, out=None):
+    """Pleas doc me."""
+
     if out == None:
         out = log2(exp2(x1) + exp2(x2))
     else:
@@ -153,6 +198,8 @@ def logaddexp2(x1, x2, out=None):
     return out
     
 def modf(x, out1=None, out2=None):
+    """Pleas doc me."""
+
     if out1 == None:
         out1 = mod(x,1.0)
     else:
