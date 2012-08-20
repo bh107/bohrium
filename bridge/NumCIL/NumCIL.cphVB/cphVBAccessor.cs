@@ -40,13 +40,13 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="size">The size of the array</param>
         /// <returns>An accessor</returns>
-        public IDataAccessor<T> Create(long size) { return size == 1 ? new DefaultAccessor<T>(1) : new cphVBAccessor<T>(size); }
+        public IDataAccessor<T> Create(long size) { return size == 1 ? new cphVBAccessor<T>(new T[1]) : new cphVBAccessor<T>(size); }
         /// <summary>
         /// Creates a new accessor for a preallocated array
         /// </summary>
         /// <param name="data">The data to wrap</param>
         /// <returns>An accessor</returns>
-        public IDataAccessor<T> Create(T[] data) { return data.LongLength == 1 ? new DefaultAccessor<T>(data) : new cphVBAccessor<T>(data); }
+        public IDataAccessor<T> Create(T[] data) { return new cphVBAccessor<T>(data); }
     }
     
     /// <summary>
