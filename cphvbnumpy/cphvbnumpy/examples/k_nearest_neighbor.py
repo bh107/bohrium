@@ -1,6 +1,10 @@
+"""
+k-Nearest Neighbor
+------------------
+
+So what does this code example illustrate?
+"""
 import cphvbnumpy as np
-
-
 
 def classify(sample, training, group=None, k=1):
     assert sample.ndim == 2
