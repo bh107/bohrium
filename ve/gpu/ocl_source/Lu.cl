@@ -1,23 +1,23 @@
 #define BLOCK_SIZE 32
 
     
-    __kernel void find_pivot(__global float *A, long k, __global int* piv, long n){
+    __kernel void pivot(__global float *A, long k, __global int* piv, long n){
       
       int tid = get_local_id(0);
       
       float max = 0;
-      int p = tid+k;
+      int p = 0;
       
-      for(int i = k+tid; i < n; i+=get_local_size(0)){
-        if( fabs(A[i*n + k]) > max){
+      for(int i = tid; i < n; i+=get_local_size(0)){
+        if( i >= k && fabs(A[i*n + k]) > max){
           max = fabs(A[i * n +k]);
           p = i;
         }
       }
       
       
-      __local float local_max[BLOCK_SIZE];
-      __local int local_p[BLOCK_SIZE];
+      __local float local_max[256];
+      __local int local_p[256];
       
       local_max[tid] = max;
       local_p[tid] = p;
@@ -25,7 +25,7 @@
       barrier(CLK_LOCAL_MEM_FENCE);
       
       if(tid == 0){
-        for(int i = 0; i < BLOCK_SIZE; i++){
+        for(int i = 0; i < 256; i++){
           if( fabs(local_max[i]) > max){
             max = fabs(local_max[i]);
             p = local_p[i];
@@ -33,19 +33,15 @@
         }
         piv[k] = p;
       }
+      barrier(CLK_GLOBAL_MEM_FENCE);
       
-    }
-    
-
-    __kernel void pivot(__global float *A, long k, __global int* piv, long n){
-      unsigned int col = get_global_id(0);
-      
-      if(col < n){
-        float temp = A[k*n + col];
-        A[k*n + col] = A[piv[k]*n + col];
-        A[piv[k]*n + col] = temp;
-      }    
-    }
+      //I both find, and pivot in one work-group, as it is cheaper than invoking several kernels
+      for(int i = tid; i < n; i+=get_local_size(0)){
+         float temp = A[k*n + i];
+         A[k*n + i] = A[piv[k]*n + i];
+         A[piv[k]*n + i] = temp;
+      }
+    } 
     
     __kernel void update_col(__global float *A, long k, long n){
       unsigned int row = get_global_id(0);

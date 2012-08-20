@@ -43,27 +43,25 @@ UserFunctionLu::UserFunctionLu(ResourceManager* rm)
     : resourceManager(rm)
 {   
     std::vector<std::string> kernelNames;
-    kernelNames.push_back("find_pivot");
     kernelNames.push_back("pivot");
     kernelNames.push_back("update_col");
     kernelNames.push_back("update_rest");
     kernelNames.push_back("update_block_col");
     kernelNames.push_back("update_block_row");
     kernelNames.push_back("mm");
-    std::vector<cphvb_intp> ndims(7,1);
+    std::vector<cphvb_intp> ndims(6,1);
+    ndims[2] = 2;
     ndims[3] = 2;
-    ndims[4] = 2;
-    ndims[6] = 2;
+    ndims[5] = 2;
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       resourceManager->getKernelPath() + "/Lu.cl", kernelNames);
-    kernelMap.insert(std::make_pair("find_pivot", kernels[0]));
-    kernelMap.insert(std::make_pair("pivot", kernels[1]));
-    kernelMap.insert(std::make_pair("update_col", kernels[2]));
-    kernelMap.insert(std::make_pair("update_rest", kernels[3]));
-    kernelMap.insert(std::make_pair("update_block_col", kernels[4]));
-    kernelMap.insert(std::make_pair("update_block_row", kernels[5]));
-    kernelMap.insert(std::make_pair("mm", kernels[6]));
+    kernelMap.insert(std::make_pair("pivot", kernels[0]));
+    kernelMap.insert(std::make_pair("update_col", kernels[1]));
+    kernelMap.insert(std::make_pair("update_rest", kernels[2]));
+    kernelMap.insert(std::make_pair("update_block_col", kernels[3]));
+    kernelMap.insert(std::make_pair("update_block_row", kernels[4]));
+    kernelMap.insert(std::make_pair("mm", kernels[5]));
 }
 
 
@@ -96,7 +94,7 @@ cphvb_error UserFunctionLu::lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg)
         Scalar K(k);
         
         //find pivot
-        kit = kernelMap.find("find_pivot");
+        kit = kernelMap.find("pivot");
         if (kit == kernelMap.end())
           return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
@@ -105,19 +103,9 @@ cphvb_error UserFunctionLu::lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg)
         parameters.push_back(std::make_pair(P, true));
         parameters.push_back(std::make_pair(&N, false));
         
-        localShape1d[0] = block_size;
-        globalShape1d[0] = block_size;
+        localShape1d[0] = 256;
+        globalShape1d[0] = 256;
         kit->second.call(parameters, globalShape1d, localShape1d);
-        
-        
-        //pivot rows
-        kit = kernelMap.find("pivot");
-        if (kit == kernelMap.end())
-          return CPHVB_TYPE_NOT_SUPPORTED;
-          
-        localShape1d[0] = block_size;
-        globalShape1d[0] = n_roof;
-        kit->second.call(parameters, globalShape1d, localShape1d); //same parameters as find pivot
         
         
         //update the column under k
@@ -156,7 +144,7 @@ cphvb_error UserFunctionLu::lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg)
             parameters.clear();        
         
             //find pivot
-            kit = kernelMap.find("find_pivot");
+            kit = kernelMap.find("pivot");
             if (kit == kernelMap.end())
                 return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
@@ -165,19 +153,11 @@ cphvb_error UserFunctionLu::lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg)
             parameters.push_back(std::make_pair(P, true));
             parameters.push_back(std::make_pair(&N, false));
         
-            localShape1d[0] = block_size;
-            globalShape1d[0] = block_size;
+            localShape1d[0] = 256;
+            globalShape1d[0] = 256;
             kit->second.call(parameters, globalShape1d, localShape1d);
         
-            //pivot
-            kit = kernelMap.find("pivot");
-            if (kit == kernelMap.end())
-                return CPHVB_TYPE_NOT_SUPPORTED;
-          
-            localShape1d[0] = block_size;
-            globalShape1d[0] = n_roof;
-            kit->second.call(parameters, globalShape1d, localShape1d); //same parameters as find pivot
-        
+                    
             //update column under k
             kit = kernelMap.find("update_col");
                 if (kit == kernelMap.end())
