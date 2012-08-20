@@ -1,5 +1,5 @@
 Mac OSX
------
+-------
 
 The following explains how to get going on Mac OSX. cphVB and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install cphVB.
 

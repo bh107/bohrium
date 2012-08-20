@@ -1,3 +1,9 @@
+"""
+Jacobi Stencil
+--------------
+
+So what does this code example illustrate?
+"""
 import cphvbnumpy as np
 
 def frezetrap(height, width, dtype=np.float32, cphvb=True):
