@@ -209,3 +209,118 @@ def modf(x, out1=None, out2=None):
     else: 
         out2[:] = floor(x)
     return (out1, out2)
+
+def square(x, out=None):
+    """
+    Return the element-wise square of the input.
+
+    Parameters
+    ----------
+    x : array_like
+        Input data.
+
+    Returns
+    -------
+    out : ndarray
+        Element-wise `x*x`, of the same shape and dtype as `x`.
+
+    Examples
+    --------
+    >>> np.square([2, 1])
+    array([4,  1])
+
+    """
+    return multiply(x,x,out)
+
+def sign(x, out=None):
+    """
+    Returns an element-wise indication of the sign of a number.
+
+    The `sign` function returns ``-1 if x < 0, 0 if x==0, 1 if x > 0``.
+
+    Parameters
+    ----------
+    x : array_like
+      Input values.
+
+    Returns
+    -------
+    y : ndarray
+      The sign of `x`.
+
+    Examples
+    --------
+    >>> np.sign([-5., 4.5])
+    array([-1.,  1.])
+    >>> np.sign(0)
+    0
+
+    """
+    return add(multiply(less(x,0),-1),multiply(greater(x,0),1),out) 
+
+def signbit(x, out=None):
+    """
+    Returns element-wise True where signbit is set (less than zero).
+
+    Parameters
+    ----------
+    x: array_like
+        The input value(s).
+    out : ndarray, optional
+        Array into which the output is placed. Its type is preserved
+        and it must be of the right shape to hold the output.
+        See `doc.ufuncs`.
+
+    Returns
+    -------
+    result : ndarray of bool
+        Output array, or reference to `out` if that was supplied.
+
+    Examples
+    --------
+    >>> np.signbit(-1.2)
+    True
+    >>> np.signbit(np.array([1, -2.3, 2.1]))
+    array([False,  True, False], dtype=bool)
+
+    """
+    return less(x,0,out)
+
+def hypot(x1, x2, out=None):
+    """
+    Given the "legs" of a right triangle, return its hypotenuse.
+
+    Equivalent to ``sqrt(x1**2 + x2**2)``, element-wise.  If `x1` or
+    `x2` is scalar_like (i.e., unambiguously cast-able to a scalar type),
+    it is broadcast for use with each element of the other argument.
+    (See Examples)
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+        Leg of the triangle(s).
+    out : ndarray, optional
+        Array into which the output is placed. Its type is preserved and it
+        must be of the right shape to hold the output. See doc.ufuncs.
+
+    Returns
+    -------
+    z : ndarray
+        The hypotenuse of the triangle(s).
+
+    Examples
+    --------
+    >>> np.hypot(3*np.ones((3, 3)), 4*np.ones((3, 3)))
+    array([[ 5.,  5.,  5.],
+           [ 5.,  5.,  5.],
+           [ 5.,  5.,  5.]])
+
+    Example showing broadcast of scalar_like argument:
+
+    >>> np.hypot(3*np.ones((3, 3)), [4])
+    array([[ 5.,  5.,  5.],
+           [ 5.,  5.,  5.],
+           [ 5.,  5.,  5.]])
+
+    """
+    return sqrt(add(multiply(x1,x1),multiply(x2,bx2),out),out)
