@@ -96,7 +96,7 @@ You will need the following to write/build the documentation::
 
 As well as a python-package "breathe" for integrating doxygen-docs with Sphinx::
 
-  sudo easy_install breathe
+  sudo easy_install breathe numpydoc
 
 Overview of the documentatation files::
 
