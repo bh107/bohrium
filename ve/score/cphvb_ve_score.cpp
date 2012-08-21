@@ -93,6 +93,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     computeloop* compute_loops = cphvb_ve_score_compute_loops;
     cphvb_tstate* states = cphvb_ve_score_tstates;
     cphvb_intp  nelements, trav_end=0;
+    cphvb_error ret_errcode = CPHVB_SUCCESS;
     
     for(i=0; i<=end-start;i++)                      // Reset traversal coordinates
         cphvb_tstate_reset( &states[i] );
@@ -100,6 +101,15 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );
+        if(compute_loops[k] == NULL)
+        {
+            end = start + k - 1;
+            instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
+            ret_errcode = CPHVB_PARTIAL_SUCCESS;
+            break;
+        }
+        else
+            instr[i].status = CPHVB_SUCCESS;
     }
                                                     // Block-size split
     nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
@@ -114,14 +124,8 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
             compute_loops[k]( &instr[i], &states[k], trav_end );
         }
     }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = CPHVB_SUCCESS;
-    }
     
-    return CPHVB_SUCCESS;
-
+    return ret_errcode;
 }
 
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )
