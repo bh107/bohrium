@@ -1010,7 +1010,7 @@ namespace NumCIL.cphVB
 
             if (IsScalar(in1))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
-            else if (IsScalar(in2))
+            else if (in2 != null && IsScalar(in2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.cphvb_constant(in2.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
@@ -1122,9 +1122,9 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Returns a value indicating if a value is a scalar
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="ar"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of data in the array</typeparam>
+        /// <param name="ar">The array to examine</param>
+        /// <returns>True if the alue can be represented as a cphVB constant, false otherwise</returns>
         private static bool IsScalar<T>(NdArray<T> ar)
         {
             if (ar.DataAccessor.Length == 1)
