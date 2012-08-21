@@ -210,28 +210,6 @@ def modf(x, out1=None, out2=None):
         out2[:] = floor(x)
     return (out1, out2)
 
-def square(x, out=None):
-    """
-    Return the element-wise square of the input.
-
-    Parameters
-    ----------
-    x : array_like
-        Input data.
-
-    Returns
-    -------
-    out : ndarray
-        Element-wise `x*x`, of the same shape and dtype as `x`.
-
-    Examples
-    --------
-    >>> np.square([2, 1])
-    array([4,  1])
-
-    """
-    return multiply(x,x,out)
-
 def sign(x, out=None):
     """
     Returns an element-wise indication of the sign of a number.
