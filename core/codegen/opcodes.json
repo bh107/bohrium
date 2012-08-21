@@ -2053,7 +2053,7 @@
     {
         "opcode": "CPHVB_ISNAN", 
         "doc": "Test for NaN values.", 
-        "code": "op1 = std::isnan(op2)", 
+        "code": "op1 = cphvb_isnan(op2)", 
         "nop": 2, 
         "system_opcode": false, 
         "types": [
@@ -2070,7 +2070,7 @@
     {
         "opcode": "CPHVB_ISINF", 
         "doc": "Test for infinity values.", 
-        "code": "op1 = std::isinf(op2)", 
+        "code": "op1 = cphvb_isinf(op2)", 
         "nop": 2, 
         "system_opcode": false, 
         "types": [

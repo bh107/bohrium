@@ -6,6 +6,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#if _WIN32
+    #include <float.h>
+    #define cphvb_isnan(x) (_isnan(x))
+    #define cphvb_isinf(x) (!_isnan(x) || !_finite(x))
+#else
+    #define cphvb_isnan(x) (std::isnan(x))
+    #define cphvb_isinf(x) (std::isinf(x))
+#endif
+
 #define DEG_CIR 360.0
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
@@ -363,14 +372,14 @@ struct mod_functor {
 template <typename T1, typename T2>
 struct isnan_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = std::isnan(*op2);
+        *op1 = cphvb_isnan(*op2);
     }
 };
 
 template <typename T1, typename T2>
 struct isinf_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = std::isinf(*op2);
+        *op1 = cphvb_isinf(*op2);
     }
 };
 
