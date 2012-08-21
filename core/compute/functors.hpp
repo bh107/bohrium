@@ -38,13 +38,6 @@ struct divide_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct square_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 * *op2;
-    }
-};
-
 template <typename T1, typename T2, typename T3>
 struct power_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
@@ -56,13 +49,6 @@ template <typename T1, typename T2>
 struct absolute_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = *op2 < 0.0 ? -*op2: *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct sign_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 > 0.0 ? 1.0 : (*op2 == 0 ? 0 : -1);
     }
 };
 
@@ -374,10 +360,17 @@ struct mod_functor {
     }
 };
 
-template <typename T1, typename T2, typename T3>
-struct hypot_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = sqrt( pow(*op2, 2) + pow(*op3, 2) );
+template <typename T1, typename T2>
+struct isnan_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = std::isnan(*op2);
+    }
+};
+
+template <typename T1, typename T2>
+struct isinf_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = std::isinf(*op2);
     }
 };
 
@@ -385,13 +378,6 @@ template <typename T1, typename T2>
 struct identity_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct signbit_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 < 0;
     }
 };
 
