@@ -2051,6 +2051,40 @@
         ]
     }, 
     {
+        "opcode": "CPHVB_ISNAN", 
+        "doc": "Test for NaN values.", 
+        "code": "op1 = isnan(op2)", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ISINF", 
+        "doc": "Test for infinity values.", 
+        "code": "op1 = isinf(op2)", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_FLOAT32", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_FLOAT64", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
         "opcode": "CPHVB_IDENTITY", 
         "doc": "The identity function that returns the input value converted to the output data type.", 
         "code": "op1 = op2", 
