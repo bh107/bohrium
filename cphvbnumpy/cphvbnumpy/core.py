@@ -5,7 +5,7 @@ Core
 The ``core`` module provide the essential functions, such as all the array creation functions, diagonal and matrix multiplication.
 
 """
-import numpyp
+import numpy
 from numpy import *
 import cphvbbridge as bridge
 
