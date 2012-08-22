@@ -71,13 +71,21 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     kernelNames.push_back("htrand_int32");
     kernelNames.push_back("htrand_uint32");
     kernelNames.push_back("htrand_float32");
-    std::vector<cphvb_intp> ndims(3,1);
+    kernelNames.push_back("htrand_int64");
+    kernelNames.push_back("htrand_uint64");
+    if (resourceManager->float64support()) 
+        kernelNames.push_back("htrand_float64");
+    std::vector<cphvb_intp> ndims(kernelNames.size(),1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
     kernelMap.insert(std::make_pair(OCL_INT32, kernels[0]));
     kernelMap.insert(std::make_pair(OCL_UINT32, kernels[1]));
     kernelMap.insert(std::make_pair(OCL_FLOAT32, kernels[2]));    
+    kernelMap.insert(std::make_pair(OCL_INT64, kernels[3]));
+    kernelMap.insert(std::make_pair(OCL_UINT64, kernels[4]));
+    if (resourceManager->float64support()) 
+        kernelMap.insert(std::make_pair(OCL_FLOAT64, kernels[5]));    
 }
 
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)

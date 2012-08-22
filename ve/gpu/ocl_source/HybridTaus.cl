@@ -76,3 +76,50 @@ __kernel void htrand_float32(__global float* res, long size, __global uint4* sta
     }
     state[gidx] = z;
 }
+
+__kernel void htrand_uint64(__global ulong* res, long size, __global uint4* state)
+{
+    
+    const size_t gsize = get_global_size(0);
+    uint gidx = get_global_id(0);
+    uint4 z = state[gidx];
+    for (size_t i = gidx; i < size; i += gsize) 
+    {
+        ulong r = HybridTaus(&z);
+        res[i] = (r << 32) | HybridTaus(&z);
+    }
+    state[gidx] = z;
+}
+
+__kernel void htrand_int64(__global long* res, long size, __global uint4* state)
+{
+    
+    const size_t gsize = get_global_size(0);
+    uint gidx = get_global_id(0);
+    uint4 z = state[gidx];
+    for (size_t i = gidx; i < size; i += gsize) 
+    {
+        long r = (HybridTaus(&z) >> 1);
+        res[i] = (r << 32) | HybridTaus(&z);
+    }
+    state[gidx] = z;
+}
+
+#ifdef cl_khr_fp64
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+__kernel void htrand_float64(__global double* res, long size, __global uint4* state)
+{
+    
+    const size_t gsize = get_global_size(0);
+    uint gidx = get_global_id(0);
+    uint4 z = state[gidx];
+    for (size_t i = gidx; i < size; i += gsize) 
+    {
+        /* shifts : 67108864 = 0x4000000, 9007199254740992 = 0x20000000000000 */
+        long r1 = (HybridTaus(&z) >> 5);
+        long r2 = (HybridTaus(&z) >> 6);
+        res[i] = (r1 * 67108864.0 + r2) / 9007199254740992.0;
+    }
+    state[gidx] = z;
+}
+#endif
