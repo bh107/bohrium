@@ -46,7 +46,7 @@ namespace NumCIL
             /// </summary>
             private static int _no_blocks = Math.Max(2, Environment.ProcessorCount * 2);
 
-            private static ThreadParallel _threads;
+            private static ThreadRunner _threads;
 
             /// <summary>
             /// Static constructor, used to extract blocksize from environment variable
@@ -56,12 +56,12 @@ namespace NumCIL
                 int p;
                 if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_BLOCKSIZE"), out p))
                 {
-                    _threads = new ThreadParallel(p);
+                    _threads = new ThreadRunner(p);
                     BlockCount = p;
                 }
                 else
                 {
-                    _threads = new ThreadParallel(_no_blocks);
+                    _threads = new ThreadRunner(_no_blocks);
                 }
 
             }
