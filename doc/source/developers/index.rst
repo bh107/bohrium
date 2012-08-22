@@ -1,10 +1,10 @@
-Developers
-----------
+Developer Guide
+---------------
 
 .. toctree::
    :maxdepth: 2
 
-   guide
+   overview
 
 .. toctree::
    :maxdepth: 2
@@ -15,10 +15,4 @@ Developers
    :maxdepth: 2
 
    reference
-
-.. toctree::
-   :maxdepth: 1
-
-   benchmarking/index
-   roadmap
 
