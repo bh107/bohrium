@@ -1,11 +1,5 @@
-Developer Guide
-===============
-
-...
-
-
 Overview
---------
+========
 
 ...
 
@@ -59,12 +53,13 @@ Component Configuration
 
 ...
 
+.. 
 
 Core
-----
+====
 
 Bridges / Language frontends
-----------------------------
+============================
 
 ...
 
@@ -78,13 +73,9 @@ Microsoft CIL: C# / F# / VB.NET
 
 ...
 
-NDArray: C++
-~~~~~~~~~~~~
-
-...
 
 Vector Engine Managers
-----------------------
+======================
 
 ...
 
@@ -99,7 +90,7 @@ cluster
 ...
 
 Vector Engines
---------------
+==============
 
 ...
 
