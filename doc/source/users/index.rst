@@ -5,6 +5,5 @@ User Guide
    
    pythonnumpy
    cil
-   cpp
    config
 
