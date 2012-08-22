@@ -24,6 +24,7 @@ bridge/numpy/build/*
 *.log
 doc/doxygen
 doc/build
+doc/source/users/pythonnumpygen
 */NumCIL/*/obj/*
 */NumCIL/*/bin/*
 */CIL/*/bin/*
