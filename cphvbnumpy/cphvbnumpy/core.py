@@ -623,6 +623,40 @@ def matmul(a,b):
         return c
     else:
     	return numpy.dot(a,b)
+    	
+def lu(A):
+    """
+    Compute the LU decomposition.
+
+    This function computes the LU decomposition.
+
+    Parameters
+    ----------
+    A : array_like
+        Input array.
+
+    Returns
+    -------
+    lu : 2darray
+         2d array containing L in the over triangular part, except the unit
+         diagonal, and U in the upper triangular part
+    
+    p : 1d array
+        Contains the row pivots used by the decomposition. Row i have been swaped with p[i]
+
+    
+    """
+    if A.dtype != numpy.float32 and A.dtype != numpy.float64:
+        raise ValueError("Input must be floating point numbers")
+    if A.ndim != 2 or A.shape[0] != A.shape[1]:
+        raise ValueError("Input must be square 2-d.")
+    if A.cphvb:
+        LU = A.copy() #do not overwrite original A
+        P = empty((A.shape[0],), dtype=numpy.int32)
+        bridge.lu(LU,P)
+        return (LU, P)
+    else:
+	    raise ValueError("LU not supported for non cphvb numpy")
 	    
 def fft(A):
     """
