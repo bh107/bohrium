@@ -31,6 +31,22 @@ cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg)
     cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
+    if(fftDef->operand[1]->ndim != 1){
+        return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    
+    int s0 = fftDef->operand[1]->shape[0];
+    
+    //check power of 2
+    if(s0 & (s0 - 1)){
+        return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    //currently only support simple strides
+    if(fftDef->operand[1]->stride[0] != 1){
+       return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    
+    
     if (userFunctionFft == NULL)
     {
         userFunctionFft = new UserFunctionFft(userFuncArg->resourceManager);
@@ -45,7 +61,22 @@ cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg)
     cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
-    //TODO asserts size and strides
+    if(fftDef->operand[1]->ndim != 2){
+        return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    
+    int s0 = fftDef->operand[1]->shape[0];
+    int s1 = fftDef->operand[1]->shape[1];
+    
+    //check power of 2
+    if((s0 & (s0 - 1)) || (s1 & (s1 - 1))){
+        return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    //currently only support simple strides
+    if(fftDef->operand[1]->stride[1] != 1 || fftDef->operand[1]->stride[0] != fftDef->operand[0]->shape[1]){
+       return CPHVB_TYPE_NOT_SUPPORTED;
+    }
+    
     if (userFunctionFft == NULL)
     {
         userFunctionFft = new UserFunctionFft(userFuncArg->resourceManager);
