@@ -625,8 +625,50 @@ def matmul(a,b):
     	return numpy.dot(a,b)
 	    
 def fft(A):
-    """Pleas doc me."""
+    """
+    Compute the one-dimensional discrete Fourier Transform.
 
+    This function computes the one-dimensional discrete Fourier
+    Transform (DFT).
+
+    Parameters
+    ----------
+    A : array_like
+        Input array, can be complex.
+
+    Returns
+    -------
+    out : complex ndarray
+        The truncated or zero-padded input transformed.
+
+    See Also
+    --------
+    fft2 : The two-dimensional FFT.
+
+    Examples
+    --------
+    >>> np.fft.fft(np.exp(2j * np.pi * np.arange(8) / 8))
+    array([ -3.44505240e-16 +1.14383329e-17j,
+             8.00000000e+00 -5.71092652e-15j,
+             2.33482938e-16 +1.22460635e-16j,
+             1.64863782e-15 +1.77635684e-15j,
+             9.95839695e-17 +2.33482938e-16j,
+             0.00000000e+00 +1.66837030e-15j,
+             1.14383329e-17 +1.22460635e-16j,
+             -1.64863782e-15 +1.77635684e-15j])
+
+    >>> import matplotlib.pyplot as plt
+    >>> t = np.arange(256)
+    >>> sp = np.fft.fft(np.sin(t))
+    >>> freq = np.fft.fftfreq(t.shape[-1])
+    >>> plt.plot(freq, sp.real, freq, sp.imag)
+    [<matplotlib.lines.Line2D object at 0x...>, <matplotlib.lines.Line2D object at 0x...>]
+    >>> plt.show()
+
+    In this example, real input has an FFT which is Hermitian, i.e., symmetric
+    in the real part and anti-symmetric in the imaginary part, as described in
+    the `numpy.fft` documentation.
+    """
     if A.cphvb and A.ndim <= 2:
       if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
@@ -636,7 +678,48 @@ def fft(A):
 	return numpy.fft.fft(A)
 	
 def fft2(A):
-    """Pleas doc me."""
+    """
+    Compute the 2-dimensional discrete Fourier Transform
+
+    This function computes the *n*-dimensional discrete Fourier Transform
+    over any axes in an *M*-dimensional array by means of the
+    Fast Fourier Transform (FFT).  By default, the transform is computed over
+    the last two axes of the input array, i.e., a 2-dimensional FFT.
+
+    Parameters
+    ----------
+    A : array_like
+        Input array, can be complex
+
+    Returns
+    -------
+    out : complex ndarray
+        The truncated or zero-padded input, transformed along the axes
+        indicated by `axes`, or the last two axes if `axes` is not given.
+
+    See Also
+    --------
+    fft : The one-dimensional FFT.
+
+    Notes
+    -----
+    The output, analogously to `fft`, contains the term for zero frequency in
+    the low-order corner of the transformed axes, the positive frequency terms
+    in the first half of these axes, the term for the Nyquist frequency in the
+    middle of the axes and the negative frequency terms in the second half of
+    the axes, in order of decreasingly negative frequency.
+
+    Examples
+    --------
+    >>> a = np.mgrid[:5, :5][0]
+    >>> np.fft.fft2(a)
+    array([[  0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j],
+           [  5.+0.j,   0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j],
+           [ 10.+0.j,   0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j],
+           [ 15.+0.j,   0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j],
+           [ 20.+0.j,   0.+0.j,   0.+0.j,   0.+0.j,   0.+0.j]])
+
+    """
 
     if A.cphvb and A.ndim == 2:
       if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
