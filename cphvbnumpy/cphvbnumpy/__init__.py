@@ -79,3 +79,6 @@ from core import *
 import linalg
 
 from numpy import bool8 as bool
+from numpy import amin as min
+from numpy import amax as max
+
