@@ -5,7 +5,7 @@ Core
 The ``core`` module provide the essential functions, such as all the array creation functions, diagonal and matrix multiplication.
 
 """
-import numpy as np
+import numpyp
 from numpy import *
 import cphvbbridge as bridge
 
@@ -47,7 +47,7 @@ def empty(shape, dtype=float, cphvb=True):
 
     """
 
-    return np.empty(shape, dtype=dtype, cphvb=cphvb)
+    return numpy.empty(shape, dtype=dtype, cphvb=cphvb)
 
 def ones(shape, dtype=float, cphvb=True):
     """
@@ -333,7 +333,7 @@ def flatten(A):
     array([1, 2, 3, 4])
     """
 
-    return A.reshape(np.multiply.reduce(np.asarray(A.shape)))
+    return A.reshape(numpy.multiply.reduce(numpy.asarray(A.shape)))
 
 def diagonal(A,offset=0):
     """
@@ -443,7 +443,7 @@ def diagflat(d,k=0):
            [0, 0, 0]])
 
     """
-    d = np.asarray(d)
+    d = numpy.asarray(d)
     d = flatten(d) 
     size = d.size+abs(k)
     A = zeros((size,size), dtype=d.dtype, cphvb=d.cphvb)
@@ -507,70 +507,144 @@ def diag(v, k=0):
     else:
         raise ValueError("Input must be 1- or 2-d.")
 
-def dot(A,B):
-    """Pleas doc me."""
+def dot(a,b):
+    """
+    Dot product of two arrays.
 
-    if A.cphvb or B.cphvb:
-        bridge.handle_array(A)
-        bridge.handle_array(B)
-    if B.ndim == 1:
-        return np.add.reduce(A*B,-1)
-    if A.ndim == 1:
-        return add.reduce(A*np.transpose(B),-1)
-    return add.reduce(A[:,np.newaxis]*np.transpose(B),-1)
+    For 2-D arrays it is equivalent to matrix multiplication, and for 1-D
+    arrays to inner product of vectors (without complex conjugation). For
+    N dimensions it is a sum product over the last axis of `a` and
+    the second-to-last of `b`::
 
-def matmul(A,B):
-    """Pleas doc me."""
+        dot(a, b)[i,j,k,m] = sum(a[i,j,:] * b[k,:,m])
 
-    if A.dtype != B.dtype:
+    Parameters
+    ----------
+    a : array_like
+        First argument.
+    b : array_like
+        Second argument.
+
+    Returns
+    -------
+    output : ndarray
+        Returns the dot product of `a` and `b`.  If `a` and `b` are both
+        scalars or both 1-D arrays then a scalar is returned; otherwise
+        an array is returned.
+
+    Raises
+    ------
+    ValueError
+        If the last dimension of `a` is not the same size as
+        the second-to-last dimension of `b`.
+
+    See Also
+    --------
+    vdot : Complex-conjugating dot product.
+    tensordot : Sum products over arbitrary axes.
+    einsum : Einstein summation convention.
+
+    Examples
+    --------
+    >>> np.dot(3, 4)
+    12
+
+    Neither argument is complex-conjugated:
+
+    >>> np.dot([2j, 3j], [2j, 3j])
+    (-13+0j)
+
+    For 2-D arrays it's the matrix product:
+
+    >>> a = [[1, 0], [0, 1]]
+    >>> b = [[4, 1], [2, 2]]
+    >>> np.dot(a, b)
+    array([[4, 1],
+           [2, 2]])
+
+    >>> a = np.arange(3*4*5*6).reshape((3,4,5,6))
+    >>> b = np.arange(3*4*5*6)[::-1].reshape((5,4,6,3))
+    >>> np.dot(a, b)[2,3,2,1,2,2]
+    499128
+    >>> sum(a[2,3,2,:] * b[1,2,:,2])
+    499128
+
+    """
+    if a.cphvb or b.cphvb:
+        bridge.handle_array(a)
+        bridge.handle_array(b)
+    if b.ndim == 1:
+        return numpy.add.reduce(a*b,-1)
+    if a.ndim == 1:
+        return add.reduce(a*numpy.transpose(b),-1)
+    return add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)
+
+def matmul(a,b):
+    """
+    Matrix multiplication of two 2-D arrays.
+
+    Parameters
+    ----------
+    a : array_like
+        First argument.
+    b : array_like
+        Second argument.
+
+    Returns
+    -------
+    output : ndarray
+        Returns the matrix multiplication of `a` and `b`. 
+
+    Raises
+    ------
+    ValueError
+        If the last dimension of `a` is not the same size as
+        the second-to-last dimension of `b`.
+
+    See Also
+    --------
+    dot : Dot product of two arrays.
+
+    Examples
+    --------
+    >>> np.matmul(np.array([[1,2],[3,4]]),np.array([[5,6],[7,8]]))
+    array([[19, 22],
+           [43, 50]])
+    """
+    if a.dtype != b.dtype:
         raise ValueError("Input must be of same type")
-    if A.ndim != 2 and B.ndim != 2:
-        raise ValueError("Input must be 2-d.")
-    if A.cphvb or B.cphvb:
-        A.cphvb=True
-        B.cphvb=True
-        C = empty((A.shape[0],B.shape[1]),dtype=A.dtype)
-        bridge.matmul(A,B,C)
-        return C
+    if a.ndim != 2 and b.ndim != 2:
+        raise ValueError("Input must be 2-D.")
+    if a.cphvb or b.cphvb:
+        a.cphvb=True
+        b.cphvb=True
+        c = empty((a.shape[0],b.shape[1]),dtype=a.dtype)
+        bridge.matmul(a,b,c)
+        return c
     else:
-	return np.dot(A,B)
-	
-def lu(A):
-    """Pleas doc me."""
-
-    if A.dtype != np.float32 and A.dtype != np.float64:
-        raise ValueError("Input must be floating point numbers")
-    if A.ndim != 2 or A.shape[0] != A.shape[1]:
-        raise ValueError("Input must be square 2-d.")
-    if A.cphvb:
-        LU = A.copy() #do not overwrite original A
-        P = empty((A.shape[0],), dtype=np.int32)
-        bridge.lu(LU,P)
-        return (LU, P)
-    else:
-	    raise ValueError("LU not supported for non cphvb numpy")
+    	return numpy.dot(a,b)
 	    
 def fft(A):
     """Pleas doc me."""
 
     if A.cphvb and A.ndim <= 2:
-      if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
+      if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft(A,B)
         return B
     
-	return np.fft.fft(A)
+	return numpy.fft.fft(A)
 	
 def fft2(A):
     """Pleas doc me."""
 
     if A.cphvb and A.ndim == 2:
-      if A.dtype == np.complex64 or A.dtype == np.complex128: #maybe do type conversions for others
+      if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft2(A,B)
         return B
     
-	return np.fft.fft2(A)
+	return numpy.fft.fft2(A)
 
 def rad2deg(x, out=None):
     """Pleas doc me."""
