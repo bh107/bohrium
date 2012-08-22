@@ -1,5 +1,27 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
+#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +30,28 @@ using System.Runtime.InteropServices;
 
 namespace NumCIL.Unsafe
 {
+	/// <summary>
+	/// Container for all copy methods
+	/// </summary>
     public static class Copy
     {
 <# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) 
 { 
 	int elsize = System.Runtime.InteropServices.Marshal.SizeOf(Type.GetType("System." + typename));
 #>
+		/// <summary>
+		///	Copies data from source to target
+		/// </summary>
+		/// <param name="target">The data destination</param>
+		/// <param name="source">The data source</param>
+		/// <param name="count">The number of elements to copy</param>
         public static void Memcpy(System.<#=typename#>[] target, IntPtr source, long count) { unsafe { fixed (System.<#=typename#>* t = target) { Inner.Memcpy(t, source.ToPointer(), <#=elsize#>, count); } } }
+		/// <summary>
+		///	Copies data from source to target
+		/// </summary>
+		/// <param name="target">The data destination</param>
+		/// <param name="source">The data source</param>
+		/// <param name="count">The number of elements to copy</param>
         public static void Memcpy(IntPtr target, System.<#=typename#>[] source, long count) { unsafe { fixed (System.<#=typename#>* s = source) { Inner.Memcpy(target.ToPointer(), s, <#=elsize#>, count); } } }
 <# 
 } 

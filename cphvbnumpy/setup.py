@@ -3,10 +3,10 @@
 from distutils.core import setup
 
 setup(name='cphVB NumPy',
-      version='1.0',
+      version='0.1',
       description='cphVB NumPy',
       author='The cphVB Team',
-      author_email='madsbk@gmail.com',
-      url='https://bitbucket.org/cphvb',
+      author_email='contact@cphvb.org',
+      url='http://www.cphvb.org',
       packages=['cphvbnumpy','cphvbnumpy.examples'],
      )

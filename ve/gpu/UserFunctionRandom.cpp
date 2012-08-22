@@ -1,21 +1,22 @@
 /*
- * Copyright 2012 Troels Blum <troels@blum.dk>
- *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cassert>
 #include <stdexcept>
@@ -70,13 +71,21 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     kernelNames.push_back("htrand_int32");
     kernelNames.push_back("htrand_uint32");
     kernelNames.push_back("htrand_float32");
-    std::vector<cphvb_intp> ndims(3,1);
+    kernelNames.push_back("htrand_int64");
+    kernelNames.push_back("htrand_uint64");
+    if (resourceManager->float64support()) 
+        kernelNames.push_back("htrand_float64");
+    std::vector<cphvb_intp> ndims(kernelNames.size(),1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
     kernelMap.insert(std::make_pair(OCL_INT32, kernels[0]));
     kernelMap.insert(std::make_pair(OCL_UINT32, kernels[1]));
     kernelMap.insert(std::make_pair(OCL_FLOAT32, kernels[2]));    
+    kernelMap.insert(std::make_pair(OCL_INT64, kernels[3]));
+    kernelMap.insert(std::make_pair(OCL_UINT64, kernels[4]));
+    if (resourceManager->float64support()) 
+        kernelMap.insert(std::make_pair(OCL_FLOAT64, kernels[5]));    
 }
 
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)

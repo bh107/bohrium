@@ -4,7 +4,7 @@ CC=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include
 LDFLAGS=-shared -Wl,-soname,$(LIB)
-SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c cphvb_mcache.c
+SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c cphvb_mcache.c cphvb_array.c
 OBJ=$(SRC:.c=.o)
 INSTALLDIR?=/opt/cphvb/
 
@@ -20,4 +20,4 @@ clean:
 		rm -rf *.o *~ $(LIB)
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)

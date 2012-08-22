@@ -6,8 +6,8 @@ WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(ARCHOPTS) $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
-SRC=cphvb_vem_node.cpp ArrayManager.cpp
-HEADER=ArrayManager.hpp cphvb_vem_node.h
+SRC=cphvb_vem_node.cpp
+HEADER=cphvb_vem_node.h
 OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
@@ -23,4 +23,4 @@ clean:
 		rm -rf *.o *~ *.so *.dylib
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)

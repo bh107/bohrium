@@ -1,4 +1,26 @@
-﻿//Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+//Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 
 using System;
 using System.Collections.Generic;
@@ -74,15 +96,15 @@ namespace Tester
                 // Reflecting boundary conditions
                 H[ALL, FIRST] = H[ALL, SECOND];
                 U[ALL, FIRST] = U[ALL, SECOND];
-                V[ALL, FIRST] = V[ALL, SECOND].Negate();
+                V[ALL, FIRST] = -V[ALL, SECOND];
                 H[ALL, RN1] = H[ALL, RN];
                 U[ALL, RN1] = U[ALL, RN];
-                V[ALL, RN1] = V[ALL, RN].Negate();
+                V[ALL, RN1] = -V[ALL, RN];
                 H[FIRST, ALL] = H[SECOND, ALL];
-                U[FIRST, ALL] = U[SECOND, ALL].Negate();
+                U[FIRST, ALL] = -U[SECOND, ALL];
                 V[FIRST, ALL] = V[SECOND, ALL];
                 H[RN1, ALL] = H[RN, ALL];
-                U[RN1, ALL] = U[RN, ALL].Negate();
+                U[RN1, ALL] = -U[RN, ALL];
                 V[RN1, ALL] = V[RN, ALL];
 
                 //First half-step

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Benchmarks for DistNumPy.
+#Benchmarks for NumPy.
 #This is collection of help functions for the numpy/NumCIL benchmarks.
 
 import numcil as np
@@ -13,6 +13,7 @@ import subprocess
 import pickle
 import System
 import numcil
+import clr
 
 class Benchmark:
     """This class should handle the presentation of benchmark results.
@@ -75,11 +76,17 @@ class Benchmark:
         #cphvbbridge.flush()
         self.info['totaltime'] = time.time() - self.info['totaltime']
 
+    def print_profile(self):
+        for p in clr.GetProfilerData():
+            print '%s\t%d\t%d\t%d' % (p.Name, p.InclusiveTime, p.ExclusiveTime, p.Calls)
+
     def pprint(self):
         if self.batch_mode:
             print "%s"%pickle.dumps(self.info)
         else:
             print "%s - cphvb: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['cphvb'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
+
+        self.print_profile()
 
 
 def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
@@ -166,4 +173,3 @@ if __name__ == "__main__":
                 uid = do(nthd, nblocks, jobsize, filename, True, savedir, uid)
                 nblocks *= 2
             nthd *= 2
-

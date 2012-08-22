@@ -6,6 +6,9 @@ TT?=mono buildsupport/TextTransform.exe
 DLL_MAIN=NumCIL/bin/Release/NumCIL.dll
 DLL_UNSAFE=NumCIL.Unsafe/bin/Release/NumCIL.Unsafe.dll
 DLL_CPHVB=NumCIL.cphVB/bin/Release/NumCIL.cphVB.dll
+XML_MAIN=NumCIL/bin/Release/NumCIL.XML
+XML_UNSAFE=NumCIL.Unsafe/bin/Release/NumCIL.Unsafe.XML
+XML_CPHVB=NumCIL.cphVB/bin/Release/NumCIL.cphVB.XML
 
 all: $(DLL_MAIN) $(DLL_UNSAFE) $(DLL_CPHVB)
 
@@ -38,6 +41,9 @@ clean:
 	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.cphVB/NumCIL.cphVB.csproj
 
 install: all
-		sudo cp $(DLL_MAIN) $(INSTALLDIR)
-		sudo cp $(DLL_UNSAFE) $(INSTALLDIR)
-		sudo cp $(DLL_CPHVB) $(INSTALLDIR)
+		cp $(DLL_MAIN) $(INSTALLDIR)
+		cp $(DLL_UNSAFE) $(INSTALLDIR)
+		cp $(DLL_CPHVB) $(INSTALLDIR)
+		cp $(XML_MAIN) $(INSTALLDIR)
+		cp $(XML_UNSAFE) $(INSTALLDIR)
+		cp $(XML_CPHVB) $(INSTALLDIR)

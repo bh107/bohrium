@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -515,7 +537,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
@@ -746,7 +769,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="scalar">The left-hand-side scalar argument</param>
@@ -937,7 +961,8 @@ namespace NumCIL
         /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
         /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>

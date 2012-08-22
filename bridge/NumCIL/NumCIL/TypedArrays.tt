@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -288,6 +310,14 @@ namespace NumCIL.<#=typename#>
         /// <param name="b">Another input operand</param>
         /// <returns>The result of subtracting the two input operands</returns>
         public static OutArray operator -(OutArray a, OutArray b) { return UFunc.Apply<T, Sub>(a, b, null); }
+<# if (typename[0] != 'U') { #>
+        /// <summary>
+        /// Calculates negation of the operand
+        /// </summary>
+        /// <param name="a">The input operand</param>
+        /// <returns>The result of subtracting the two input operands</returns>
+        public static OutArray operator -(OutArray a) { return UFunc.Apply<T, Sub>(new OutArray((T)0), a, null); }
+<# } #>
         /// <summary>
         /// Calculates multiplication to the two operands
         /// </summary>
@@ -424,12 +454,6 @@ namespace NumCIL.<#=typename#>
         /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
         /// <returns>An NdArray with all absolute values</returns>
         public OutArray Abs(OutArray @out = null) { return UFunc.Apply<T, Abs>(this, @out); }
-        /// <summary>
-        /// Returns a new NdArray with the negated value of all elements in this NdArray
-        /// </summary>
-        /// <param name="out">Optional target for the operation, use to perform the operation in-place</param>
-        /// <returns>An NdArray with all values negated</returns>
-        public OutArray Negate(OutArray @out = null) { return UFunc.Apply<T, Negate>(this, @out); }
 <# } #>
         /// <summary>
         /// Returns a new NdArray that is the result of calculating the logarithmic value of all the elements in this NdArray
@@ -473,6 +497,200 @@ namespace NumCIL.<#=typename#>
         #endregion
 <# } #>
 
+
+        #region F# support for missing implicit operators
+<# if (!fulltypename.StartsWith("System.Boolean")) { #>
+        /// <summary>
+        /// Calculates addition to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of adding the two input operands</returns>
+        public static OutArray operator +(T a, OutArray b) { return UFunc.Apply<T, Add>((OutArray)a, b, null); }
+        /// <summary>
+        /// Calculates addition to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of adding the two input operands</returns>
+        public static OutArray operator +(OutArray a, T b) { return UFunc.Apply<T, Add>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Calculates subtraction of the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of subtracting the two input operands</returns>
+        public static OutArray operator -(T a, OutArray b) { return UFunc.Apply<T, Sub>((OutArray)a, b, null); }
+        /// <summary>
+        /// Calculates subtraction of the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of subtracting the two input operands</returns>
+        public static OutArray operator -(OutArray a, T b) { return UFunc.Apply<T, Sub>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Calculates multiplication to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of multiplying the two input operands</returns>
+        public static OutArray operator *(T a, OutArray b) { return UFunc.Apply<T, Mul>((OutArray)a, b, null); }
+        /// <summary>
+        /// Calculates multiplication to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of multiplying the two input operands</returns>
+        public static OutArray operator *(OutArray a, T b) { return UFunc.Apply<T, Mul>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Calculates division of to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of dividing the two input operands</returns>
+        public static OutArray operator /(T a, OutArray b) { return UFunc.Apply<T, Div>((OutArray)a, b, null); }
+        /// <summary>
+        /// Calculates division of to the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of dividing the two input operands</returns>
+        public static OutArray operator /(OutArray a, T b) { return UFunc.Apply<T, Div>(a, (OutArray)b, null); }
+<# if (!typename.StartsWith("Complex")) { #>
+        /// <summary>
+        /// Calculates modulo of the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The modulo result of dividing the two input operands</returns>
+        public static OutArray operator %(T a, OutArray b) { return UFunc.Apply<T, Mod>((OutArray)a, b, null); }
+        /// <summary>
+        /// Calculates modulo of the two operands
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The modulo result of dividing the two input operands</returns>
+        public static OutArray operator %(OutArray a, T b) { return UFunc.Apply<T, Mod>(a, (OutArray)b, null); }
+<# } #>
+
+        /// <summary>
+        /// Adds the values of an NdArray to this NdArray and returns the result as a new NdArray
+        /// </summary>
+        /// <param name="op">The operand to add</param>
+        /// <param name="out">Optional target for addition, use to perform in-place addition</param>
+        /// <returns>An NdArray which is the result of adding the two NdArrays</returns>
+        public OutArray Add(T op, OutArray @out = null) { return UFunc.Apply<T, Add>(this, (OutArray)op, @out); }
+        /// <summary>
+        /// Subtracts the values of an NdArray from this NdArray and returns the result as a new NdArray
+        /// </summary>
+        /// <param name="op">The operand to subtract</param>
+        /// <param name="out">Optional target for addition, use to perform in-place subtraction</param>
+        /// <returns>An NdArray which is the result of subtracting the two NdArrays</returns>
+        public OutArray Sub(T op, OutArray @out = null) { return UFunc.Apply<T, Sub>(this, (OutArray)op, @out); }
+        /// <summary>
+        /// Multiplies the values of an NdArray to this NdArray and returns the result as a new NdArray
+        /// </summary>
+        /// <param name="op">The operand to multiply with</param>
+        /// <param name="out">Optional target for multiplication, use to perform in-place multiplication</param>
+        /// <returns>An NdArray which is the result of multiplying the two NdArrays</returns>
+        public OutArray Mul(T op, OutArray @out = null) { return UFunc.Apply<T, Mul>(this, (OutArray)op, @out); }
+        /// <summary>
+        /// Divides the values of an NdArray with this NdArray and returns the result as a new NdArray
+        /// </summary>
+        /// <param name="op">The operand to divide with</param>
+        /// <param name="out">Optional target for division, use to perform in-place division</param>
+        /// <returns>An NdArray which is the result of dividing the two NdArrays</returns>
+        public OutArray Div(T op, OutArray @out = null) { return UFunc.Apply<T, Div>(this, (OutArray)op, @out); }
+<# } #>
+
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator ==(T a, OutArray b) { return UFunc.Apply<T, bool, Equal>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator ==(OutArray a, T b) { return UFunc.Apply<T, bool, Equal>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is not equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator !=(T a, OutArray b) { return UFunc.Apply<T, bool, NotEqual>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is not equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator !=(OutArray a, T b) { return UFunc.Apply<T, bool, NotEqual>(a, (OutArray)b, null); }
+
+<# if (!typename.StartsWith("Complex") && fulltypename != "System.Boolean") {	#>
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is greater than b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator >(T a, OutArray b) { return UFunc.Apply<T, bool, GreaterThan>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is greater than b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator >(OutArray a, T b) { return UFunc.Apply<T, bool, GreaterThan>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is less than b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator <(T a, OutArray b) { return UFunc.Apply<T, bool, LessThan>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is less than b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator <(OutArray a, T b) { return UFunc.Apply<T, bool, LessThan>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is greater than or equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator >=(T a, OutArray b) { return UFunc.Apply<T, bool, GreaterThanOrEqual>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is greater than or equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator >=(OutArray a, T b) { return UFunc.Apply<T, bool, GreaterThanOrEqual>(a, (OutArray)b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is less than or equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator <=(T a, OutArray b) { return UFunc.Apply<T, bool, LessThanOrEqual>((OutArray)a, b, null); }
+        /// <summary>
+        /// Compares the operands and returns a value indicating if a is less than or equal to b
+        /// </summary>
+        /// <param name="a">One input operand</param>
+        /// <param name="b">Another input operand</param>
+        /// <returns>The result of comparing the two input operands</returns>
+        public static NumCIL.Boolean.NdArray operator <=(OutArray a, T b) { return UFunc.Apply<T, bool, LessThanOrEqual>(a, (OutArray)b, null); }
+<# } #>
+        #endregion
 
         #region Appliers for custom UFuncs
         /// <summary>
@@ -823,6 +1041,26 @@ namespace NumCIL.<#=typename#>
         public static NumCIL.Boolean.NdArray operator <=(OutArray a, OutArray b) { return UFunc.Apply<T, bool, LessThanOrEqual>(a, b, null); }
 <# } #>
 		#endregion
+
+		#region System.Object overrides
+		/// <summary>
+		/// Compares this object to another
+		/// </summary>
+		/// <returns>A value indicating if the two elements are equal</returns>
+		public override bool Equals(object o)
+		{
+			return this == o;
+		}
+
+		/// <summary>
+		/// Returns a hashcode for comparing this object to others
+		/// </summary>
+		/// <returns>A hash code for this instance</returns>
+		public override int GetHashCode()
+		{
+			return value.GetHashCode();
+		}
+		#endregion
     }
 
     #region Struct instances for common operations
@@ -885,10 +1123,6 @@ namespace NumCIL.<#=typename#>
         /// The absolute operation
         /// </summary>
         public static readonly Abs Abs;
-        /// <summary>
-        /// The negate operation
-        /// </summary>
-        public static readonly Negate Negate;
 <# } #>
         /// <summary>
         /// The square root operation
@@ -986,7 +1220,7 @@ foreach(var opname in new string[] {"Equal", "GreaterThan", "LessThan", "Greater
     /// <summary>
     /// The equal <#=opname#> implementation
     /// </summary>
-    public struct <#=opname#> : IBinaryCompareOp<T>
+    public struct <#=opname#> : IBinaryCompareOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of <#=opname#> test
@@ -1051,7 +1285,7 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
     /// <summary>
     /// The <#=opname#> operator implementation
     /// </summary>
-    public struct <#=opname#> : IBinaryOp<T>
+    public struct <#=opname#> : IBinaryOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of <#=opname#> with two numbers
@@ -1100,6 +1334,33 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
         /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
         public static OutArray Apply(OutArray in1, OutArray in2, OutArray @out = null)
         { return UFunc.Apply<T, <#=opname#>>(in1, in2, @out); }
+
+        /// <summary>
+        /// Applies the <#=opname#> operation to the input operands
+        /// </summary>
+        /// <param name="in1">One input operand</param>
+        /// <param name="in2">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(T in1, OutArray in2, OutArray @out = null)
+        { return UFunc.Apply<T, <#=opname#>>((OutArray)in1, in2, @out); }
+
+        /// <summary>
+        /// Applies the <#=opname#> operation to the input operands
+        /// </summary>
+        /// <param name="in1">One input operand</param>
+        /// <param name="in2">Another input operand</param>
+        /// <param name="out">An optional output array, use to perform the operation in-place</param>
+        /// <returns>An NdArray that is the result of applying the operation to the two input operands</returns>
+        public static OutArray Apply(OutArray in1, T in2, OutArray @out = null)
+		<# if (opname == "Pow") { #>{ 
+			if (in2 == (T)2)
+				return UFunc.Apply<T, Mul>(in1, in1, @out);
+			else
+				return UFunc.Apply<T, Pow>(in1, (OutArray)in2, @out);
+		}
+		<# } else { #>{ return UFunc.Apply<T, <#=opname#>>(in1, (OutArray)in2, @out); }<# } #>
+
     }
 
 <# } #>
@@ -1107,7 +1368,7 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
 
 	#region Unary operations implementation
 <#
-foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Negate", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not"}) 
+foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not"}) 
 {
 	if (opname == "Not" && fulltypename != "System.Boolean")
 		continue;
@@ -1118,7 +1379,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 	if ((opname == "Ceiling" || opname == "Floor" || opname == "Round" || opname == "Not" || opname == "Invert") && typename.StartsWith("Complex"))
 		continue;
 
-	if ((opname == "Negate" || opname == "Abs") && typename.StartsWith("U"))
+	if ((opname == "Abs") && typename.StartsWith("U"))
 		continue;
 
 	if ((opname == "Round" || opname == "Ceiling" || opname == "Floor") && (typename.StartsWith("U") || typename.StartsWith("I")))
@@ -1130,7 +1391,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
     /// <summary>
     /// The <#=opname#> operation implementation
     /// </summary>
-    public struct <#=opname#> : IUnaryOp<T>
+    public struct <#=opname#> : IUnaryOp<T>, NumCIL.Generic.Operators.I<#=opname#>
     {
         /// <summary>
         /// Implementation of the <#=opname#> operation
@@ -1143,7 +1404,6 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 		<# } else if (opname == "Round")   { #>{ return (T)Math.Round(a); }
 		<# } else if (opname == "Sqrt")    { #>{ return (T)<#=mathlib#>.Sqrt(a); }
 		<# } else if (opname == "Exp")     { #>{ return (T)<#=mathlib#>.Exp(a); }
-		<# } else if (opname == "Negate")  { #>{ return (T)(-a); }
 		<# } else if (opname == "Abs")     { #>{ return (T)<#=mathlib#>.Abs(a); }
 		<# } else if (opname == "Sin")     { #>{ return (T)<#=mathlib#>.Sin(a); }
 		<# } else if (opname == "Cos")     { #>{ return (T)<#=mathlib#>.Cos(a); }
@@ -1168,6 +1428,15 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
         /// <returns>The result of applying the operation to the input array</returns>
         public static OutArray Apply(OutArray @in, OutArray @out = null)
         { return UFunc.Apply<T, <#=opname#>>(@in, @out); }
+
+        /// <summary>
+        /// Applies the <#=opname#> operation to the operand
+        /// </summary>
+        /// <param name="in">The input operand</param>
+        /// <param name="out">An optional output operand, use to perform the operation in-place</param>
+        /// <returns>The result of applying the operation to the input array</returns>
+        public static OutArray Apply(T @in, OutArray @out = null)
+        { return UFunc.Apply<T, <#=opname#>>((OutArray)@in, @out); }
     }
 
 <# } #>
@@ -1280,7 +1549,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 <# } if (fulltypename != "System.Int64")  { #>        IUnaryConvOp<long, T>, 
 <# } if (fulltypename != "System.UInt64") { #>        IUnaryConvOp<ulong, T>,
 <# } #>
-        IOp<T>
+		NumCIL.Generic.Operators.ITypeConversion
     {
 
 <#   if (fulltypename != "System.Double") { #>
@@ -1629,7 +1898,8 @@ namespace NumCIL.<#=typename#>
         IUnaryConvOp<int, T>, 
         IUnaryConvOp<uint,T>, 
         IUnaryConvOp<long, T>, 
-        IUnaryConvOp<ulong, T>
+        IUnaryConvOp<ulong, T>,
+		NumCIL.Generic.Operators.ITypeConversion
     {
 <# if (typename == "Complex64") { #>
         /// <summary>
@@ -1716,7 +1986,7 @@ namespace NumCIL.<#=typename#>
     /// <summary>
     /// Operator for extracting the real component
     /// </summary>
-    public struct Real : IUnaryConvOp<T, TComp>
+    public struct Real : IUnaryConvOp<T, TComp>, NumCIL.Generic.Operators.IRealValue
     {
         /// <summary>
         /// Extracts the real component
@@ -1729,7 +1999,7 @@ namespace NumCIL.<#=typename#>
     /// <summary>
     /// Operator for extracting the imaginary component
     /// </summary>
-    public struct Imaginary : IUnaryConvOp<T, TComp>
+    public struct Imaginary : IUnaryConvOp<T, TComp>, NumCIL.Generic.Operators.IImaginaryValue
     {
         /// <summary>
         /// Extracts the imaginary component
@@ -1858,13 +2128,76 @@ namespace NumCIL.Boolean
         /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
         public static explicit operator NumCIL.UInt64.NdArray(OutArray a) { return UFunc.Apply<T, ulong, ToUInt64>(a); }
 		#endregion
+
+		#region Conversion methods
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Double"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Double"/></returns>
+        public NumCIL.Double.NdArray ToDouble(NumCIL.Double.NdArray @out = null) { return UFunc.Apply<T, double, ToDouble>(this, @out); }
+        /// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Single"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Single"/></returns>
+        public NumCIL.Float.NdArray ToFloat(NumCIL.Float.NdArray @out = null) { return UFunc.Apply<T, float, ToFloat>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.SByte"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.SByte"/></returns>
+        public NumCIL.Int8.NdArray ToInt8(NumCIL.Int8.NdArray @out = null) { return UFunc.Apply<T, sbyte, ToInt8>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int16"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Int16"/></returns>
+        public NumCIL.Int16.NdArray ToInt16(NumCIL.Int16.NdArray @out = null) { return UFunc.Apply<T, short, ToInt16>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int32"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Int32"/></returns>
+        public NumCIL.Int32.NdArray ToInt32(NumCIL.Int32.NdArray @out = null) { return UFunc.Apply<T, int, ToInt32>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Int64"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Int64"/></returns>
+        public NumCIL.Int64.NdArray ToInt64(NumCIL.Int64.NdArray @out = null) { return UFunc.Apply<T, long, ToInt64>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.Byte"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.Byte"/></returns>
+        public NumCIL.UInt8.NdArray ToUInt8(NumCIL.UInt8.NdArray @out = null) { return UFunc.Apply<T, byte, ToUInt8>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt16"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.UInt16"/></returns>
+        public NumCIL.UInt16.NdArray ToUInt16(NumCIL.UInt16.NdArray @out = null) { return UFunc.Apply<T, ushort, ToUInt16>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt32"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.UInt32"/></returns>
+        public NumCIL.UInt32.NdArray ToUInt32(NumCIL.UInt32.NdArray @out = null) { return UFunc.Apply<T, uint, ToUInt32>(this, @out); }
+		/// <summary>
+        /// Converts all elements in the input NdArray to <see cref="System.UInt64"/>
+        /// </summary>
+        /// <param name="out">An optional output array</param>
+        /// <returns>An NdArray of <see cref="System.UInt64"/></returns>
+        public NumCIL.UInt64.NdArray ToUInt64(NumCIL.UInt64.NdArray @out = null) { return UFunc.Apply<T, ulong, ToUInt64>(this, @out); }
+		#endregion	
 	}
 		
 	#region Conversion operators
     /// <summary>
     /// Operator for converting a value to <see cref="System.Single"/>
     /// </summary>
-    public struct ToFloat : IUnaryConvOp<T, float> 
+    public struct ToFloat : IUnaryConvOp<T, float>, NumCIL.Generic.Operators.ITypeConversion 
     { 
         /// <summary>
         /// Converts the input value to <see cref="System.Single"/>
@@ -1877,7 +2210,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Double"/>
     /// </summary>
-    public struct ToDouble : IUnaryConvOp<T, double> 
+    public struct ToDouble : IUnaryConvOp<T, double>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Double"/>
@@ -1890,7 +2223,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.SByte"/>
     /// </summary>
-    public struct ToInt8 : IUnaryConvOp<T, sbyte> 
+    public struct ToInt8 : IUnaryConvOp<T, sbyte>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.SByte"/>
@@ -1903,7 +2236,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int16"/>
     /// </summary>
-    public struct ToInt16 : IUnaryConvOp<T, short> 
+    public struct ToInt16 : IUnaryConvOp<T, short>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int16"/>
@@ -1916,7 +2249,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int32"/>
     /// </summary>
-    public struct ToInt32 : IUnaryConvOp<T, int> 
+    public struct ToInt32 : IUnaryConvOp<T, int>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int32"/>
@@ -1929,7 +2262,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Int64"/>
     /// </summary>
-    public struct ToInt64 : IUnaryConvOp<T, long> 
+    public struct ToInt64 : IUnaryConvOp<T, long>, NumCIL.Generic.Operators.ITypeConversion
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Int64"/>
@@ -1942,7 +2275,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.Byte"/>
     /// </summary>
-    public struct ToUInt8 : IUnaryConvOp<T, byte> 
+    public struct ToUInt8 : IUnaryConvOp<T, byte>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.Byte"/>
@@ -1955,7 +2288,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt16"/>
     /// </summary>
-    public struct ToUInt16 : IUnaryConvOp<T, ushort> 
+    public struct ToUInt16 : IUnaryConvOp<T, ushort>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt16"/>
@@ -1968,7 +2301,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt32"/>
     /// </summary>
-    public struct ToUInt32 : IUnaryConvOp<T, uint> 
+    public struct ToUInt32 : IUnaryConvOp<T, uint>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt32"/>
@@ -1981,7 +2314,7 @@ namespace NumCIL.Boolean
     /// <summary>
     /// Operator for converting a value to <see cref="System.UInt64"/>
     /// </summary>
-    public struct ToUInt64 : IUnaryConvOp<T, ulong> 
+    public struct ToUInt64 : IUnaryConvOp<T, ulong>, NumCIL.Generic.Operators.ITypeConversion 
     {
         /// <summary>
         /// Converts the input value to <see cref="System.UInt64"/>

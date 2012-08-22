@@ -1,21 +1,22 @@
 /*
- * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
- *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cphvb.h>
 #include <iniparser.h>
@@ -44,7 +45,7 @@ char _expand_buffer2[MAX_PATH];
 #include <limits.h>
 
 #define HOME_INI_PATH "~/.cphvb/config.ini"
-#define SYSTEM_INI_PATH "/opt/cphvb/config.ini"
+#define SYSTEM_INI_PATH "/etc/cphvb/config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer[PATH_MAX];
@@ -341,17 +342,6 @@ cphvb_error cphvb_component_children(cphvb_component *parent, cphvb_intp *count,
 	        break;
         }
 
-        if(com->type == CPHVB_VEM)//VEM functions only.
-        {
-            com->create_array = (cphvb_create_array)get_dlsym(com->lib_handle, child,
-                                          com->type, "create_array");
-            if(com->create_array == NULL)
-			{
-				fprintf(stderr, "Failed to load create_array function from child %s\n", child);        
-				result = CPHVB_ERROR;
-				break;
-			}
-        }
         child = strtok(NULL,",");
         ++(*count);
     }

@@ -6,6 +6,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#if _WIN32
+    #include <float.h>
+    #define cphvb_isnan(x) (_isnan(x))
+    #define cphvb_isinf(x) (!_isnan(x) || !_finite(x))
+#else
+    #define cphvb_isnan(x) (std::isnan(x))
+    #define cphvb_isinf(x) (std::isinf(x))
+#endif
+
 #define DEG_CIR 360.0
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
@@ -38,13 +47,6 @@ struct divide_functor {
     }
 };
 
-template <typename T1, typename T2>
-struct square_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 * *op2;
-    }
-};
-
 template <typename T1, typename T2, typename T3>
 struct power_functor {
     void operator()(T1 *op1, T2 *op2, T3 *op3) {
@@ -56,13 +58,6 @@ template <typename T1, typename T2>
 struct absolute_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = *op2 < 0.0 ? -*op2: *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct sign_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 > 0.0 ? 1.0 : (*op2 == 0 ? 0 : -1);
     }
 };
 
@@ -374,10 +369,17 @@ struct mod_functor {
     }
 };
 
-template <typename T1, typename T2, typename T3>
-struct hypot_functor {
-    void operator()(T1 *op1, T2 *op2, T3 *op3) {
-        *op1 = sqrt( pow(*op2, 2) + pow(*op3, 2) );
+template <typename T1, typename T2>
+struct isnan_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = cphvb_isnan(*op2);
+    }
+};
+
+template <typename T1, typename T2>
+struct isinf_functor {
+    void operator()(T1 *op1, T2 *op2) {
+        *op1 = cphvb_isinf(*op2);
     }
 };
 
@@ -385,13 +387,6 @@ template <typename T1, typename T2>
 struct identity_functor {
     void operator()(T1 *op1, T2 *op2) {
         *op1 = *op2;
-    }
-};
-
-template <typename T1, typename T2>
-struct signbit_functor {
-    void operator()(T1 *op1, T2 *op2) {
-        *op1 = *op2 < 0;
     }
 };
 

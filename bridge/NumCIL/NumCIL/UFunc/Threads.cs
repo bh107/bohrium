@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +46,8 @@ namespace NumCIL
             /// </summary>
             private static int _no_blocks = Math.Max(2, Environment.ProcessorCount * 2);
 
+            private static ThreadRunner _threads;
+
             /// <summary>
             /// Static constructor, used to extract blocksize from environment variable
             /// </summary>
@@ -31,13 +55,21 @@ namespace NumCIL
             {
                 int p;
                 if (int.TryParse(Environment.GetEnvironmentVariable("NUMCIL_BLOCKSIZE"), out p))
+                {
+                    _threads = new ThreadRunner(p);
                     BlockCount = p;
+                }
+                else
+                {
+                    _threads = new ThreadRunner(_no_blocks);
+                }
+
             }
 
             /// <summary>
             /// Gets or sets the number of work blocks processed by threads
             /// </summary>
-            public static int BlockCount { get { return _no_blocks; } set { _no_blocks = Math.Max(1, value); } }
+            public static int BlockCount { get { return _no_blocks; } set { _no_blocks = Math.Max(1, value); _threads.Threads = _no_blocks; } }
 
             /// <summary>
             /// Reshapes an array suitable for parallel evaluation
@@ -67,28 +99,19 @@ namespace NumCIL
             {
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     in1.DataAccessor.Allocate();
                     in2.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
-                    for (int i = 0; i < totalblocks; i++)
-                    {
-                        NumCIL.ThreadPool.QueueUserWorkItem((args) => 
-                        {
-                            int block = (int)args;
-
-                            UFunc.UFunc_Op_Inner_Binary_Flush(op, Reshape(in1, block, totalblocks), Reshape(in2, block, totalblocks), Reshape(@out, block, totalblocks));
-
-                            Interlocked.Increment(ref blocksdone);
-                            cond.Set();    
-                        }, i);
-                    }
-
-                    while (blocksdone < totalblocks) 
-                        cond.WaitOne();
+                    _threads.RunParallel((block) => 
+                        UFunc.UFunc_Op_Inner_Binary_Flush(
+                            op, 
+                            Reshape(in1, block, totalblocks), 
+                            Reshape(in2, block, totalblocks), 
+                            Reshape(@out, block, totalblocks)
+                        )
+                    );
                 }
                 else
                 {
@@ -101,28 +124,19 @@ namespace NumCIL
             {
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     in1.DataAccessor.Allocate();
                     in2.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
-                    for (int i = 0; i < totalblocks; i++)
-                    {
-                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-                        {
-                            int block = (int)args;
-
-                            UFunc.UFunc_Op_Inner_BinaryConv_Flush(op, Reshape(in1, block, totalblocks), Reshape(in2, block, totalblocks), Reshape(@out, block, totalblocks));
-
-                            Interlocked.Increment(ref blocksdone);
-                            cond.Set();
-                        }, i);
-                    }
-
-                    while (blocksdone < totalblocks)
-                        cond.WaitOne();
+                    _threads.RunParallel((block) => 
+                        UFunc.UFunc_Op_Inner_BinaryConv_Flush(
+                            op, 
+                            Reshape(in1, block, totalblocks), 
+                            Reshape(in2, block, totalblocks), 
+                            Reshape(@out, block, totalblocks)
+                        )
+                    );
                 }
                 else
                 {
@@ -134,27 +148,17 @@ namespace NumCIL
             {
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
-                    for (int i = 0; i < totalblocks; i++)
-                    {
-                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-                        {
-                            int block = (int)args;
-
-                            UFunc.UFunc_Op_Inner_Unary_Flush(op, Reshape(in1, block, totalblocks), Reshape(@out, block, totalblocks));
-
-                            Interlocked.Increment(ref blocksdone);
-                            cond.Set();
-                        }, i);
-                    }
-
-                    while (blocksdone < totalblocks)
-                        cond.WaitOne();
+                    _threads.RunParallel((block) =>
+                        UFunc.UFunc_Op_Inner_Unary_Flush(
+                            op, 
+                            Reshape(in1, block, totalblocks), 
+                            Reshape(@out, block, totalblocks)
+                        )
+                    );
                 }
                 else
                 {
@@ -173,8 +177,6 @@ namespace NumCIL
 
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && ((largeInput && largeOutput) || (doubleLargeInput && scalarReduction)))
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
@@ -184,47 +186,30 @@ namespace NumCIL
 					{
 						//Allocate some temp storage
 						T[] tmpout = new T[totalblocks];
-	                    for (int i = 0; i < totalblocks; i++)
-	                    {
-	                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-	                        {
-	                            int block = (int)args;
-
-								UFunc.UFunc_Reduce_Inner_Flush(op, axis, Reshape(in1, block, totalblocks), new NdArray<T>(tmpout, new Shape(new long[] { 1 }, block)));
-
-	                            Interlocked.Increment(ref blocksdone);
-	                            cond.Set();
-	                        }, i);
-	                    }
-
-	                    while (blocksdone < totalblocks)
-	                        cond.WaitOne();
+                        _threads.RunParallel((block) =>
+						    UFunc.UFunc_Reduce_Inner_Flush(
+                                op, 
+                                axis, 
+                                Reshape(in1, block, totalblocks), 
+                                new NdArray<T>(tmpout, new Shape(new long[] { 1 }, block))
+                            )
+                        );
 
 						//Make the final reduction on the thread results
 						T r = tmpout[0];
-						for(int i = 1; i < totalblocks; i++)
+						for(var i = 1; i < totalblocks; i++)
 							r = op.Op(r, tmpout[i]);
 
 						@out.Value[@out.Shape.Offset] = r;
 					}
 					else
 					{
-	                    for (int i = 0; i < totalblocks; i++)
-	                    {
-	                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-	                        {
-	                            int block = (int)args;
-								var v1 = Reshape(in1, block, totalblocks, axis == 0 ? 1 : axis - 1);
-								var v2 = Reshape(@out, block, totalblocks, axis == 0 ? 0 : axis - 1);
-	                            UFunc.UFunc_Reduce_Inner_Flush(op, axis, v1, v2);
-
-	                            Interlocked.Increment(ref blocksdone);
-	                            cond.Set();
-	                        }, i);
-	                    }
-
-	                    while (blocksdone < totalblocks)
-	                        cond.WaitOne();
+                        _threads.RunParallel((block) =>
+                        {
+                            var v1 = Reshape(in1, block, totalblocks, axis == 0 ? 1 : axis - 1);
+                            var v2 = Reshape(@out, block, totalblocks, axis == 0 ? 0 : axis - 1);
+                            UFunc.UFunc_Reduce_Inner_Flush(op, axis, v1, v2);
+                        });
 					}
                 }
                 else
@@ -239,26 +224,12 @@ namespace NumCIL
             {
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     @out.DataAccessor.Allocate();
 
-                    for (int i = 0; i < totalblocks; i++)
-                    {
-                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-                        {
-                            int block = (int)args;
-
-                            UFunc.UFunc_Op_Inner_Nullary_Flush(op, Reshape(@out, block, totalblocks));
-
-                            Interlocked.Increment(ref blocksdone);
-                            cond.Set();
-                        }, i);
-                    }
-
-                    while (blocksdone < totalblocks)
-                        cond.WaitOne();
+                    _threads.RunParallel((block) =>
+                        UFunc.UFunc_Op_Inner_Nullary_Flush(op, Reshape(@out, block, totalblocks))
+                    );
                 }
                 else
                 {
@@ -271,27 +242,17 @@ namespace NumCIL
             {
                 if ((SINGLE_CORE_THREAD || _no_blocks > 1) && @out.Shape.Dimensions[0].Length >= _no_blocks)
                 {
-                    AutoResetEvent cond = new AutoResetEvent(false);
-                    int blocksdone = 0;
                     int totalblocks = _no_blocks;
                     in1.DataAccessor.Allocate();
                     @out.DataAccessor.Allocate();
 
-                    for (int i = 0; i < totalblocks; i++)
-                    {
-                        NumCIL.ThreadPool.QueueUserWorkItem((args) =>
-                        {
-                            int block = (int)args;
-
-                            UFunc.UFunc_Op_Inner_UnaryConv_Flush(op, Reshape(in1, block, totalblocks), Reshape(@out, block, totalblocks));
-
-                            Interlocked.Increment(ref blocksdone);
-                            cond.Set();
-                        }, i);
-                    }
-
-                    while (blocksdone < totalblocks)
-                        cond.WaitOne();
+                    _threads.RunParallel((block) =>
+                        UFunc.UFunc_Op_Inner_UnaryConv_Flush(
+                            op, 
+                            Reshape(in1, block, totalblocks), 
+                            Reshape(@out, block, totalblocks)
+                        )
+                    );
                 }
                 else
                 {

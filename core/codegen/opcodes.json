@@ -291,63 +291,6 @@
         ]
     },
     {
-        "opcode": "CPHVB_SQUARE", 
-        "doc": "Return the element-wise square of the input.", 
-        "code": "op1 = op2 * op2", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ], 
-            [
-                "CPHVB_COMPLEX64", 
-                "CPHVB_COMPLEX64"
-            ], 
-            [
-                "CPHVB_COMPLEX128", 
-                "CPHVB_COMPLEX128"
-            ]
-        ]
-    },  
-    {
         "opcode": "CPHVB_POWER", 
         "doc": "First array elements raised to powers from second array, element-wise.", 
         "code": "op1 = pow( op2, op3 )", 
@@ -440,55 +383,6 @@
             [
                 "CPHVB_BOOL", 
                 "CPHVB_BOOL"
-            ], 
-            [
-                "CPHVB_INT32", 
-                "CPHVB_INT32"
-            ], 
-            [
-                "CPHVB_UINT8", 
-                "CPHVB_UINT8"
-            ], 
-            [
-                "CPHVB_INT64", 
-                "CPHVB_INT64"
-            ], 
-            [
-                "CPHVB_UINT32", 
-                "CPHVB_UINT32"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SIGN", 
-        "doc": "Returns an element-wise indication of the sign of a number.", 
-        "code": "op1 = op2 > 0.0 ? 1.0 : (op2 == 0 ? 0 : -1)", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_INT8", 
-                "CPHVB_INT8"
-            ], 
-            [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64"
-            ], 
-            [
-                "CPHVB_UINT16", 
-                "CPHVB_UINT16"
-            ], 
-            [
-                "CPHVB_UINT64", 
-                "CPHVB_UINT64"
-            ], 
-            [
-                "CPHVB_INT16", 
-                "CPHVB_INT16"
-            ], 
-            [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32"
             ], 
             [
                 "CPHVB_INT32", 
@@ -2157,20 +2051,35 @@
         ]
     }, 
     {
-        "opcode": "CPHVB_HYPOT", 
-        "doc": "Given the \"legs\" of a right triangle, return its hypotenuse.", 
-        "code": "op1 = sqrt( pow(op2, 2) + pow(op3, 2) )", 
-        "nop": 3, 
+        "opcode": "CPHVB_ISNAN", 
+        "doc": "Test for NaN values.", 
+        "code": "op1 = cphvb_isnan(op2)", 
+        "nop": 2, 
         "system_opcode": false, 
         "types": [
             [
-                "CPHVB_FLOAT32", 
-                "CPHVB_FLOAT32", 
+                "CPHVB_BOOL", 
                 "CPHVB_FLOAT32"
             ], 
             [
-                "CPHVB_FLOAT64", 
-                "CPHVB_FLOAT64", 
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT64"
+            ]
+        ]
+    }, 
+    {
+        "opcode": "CPHVB_ISINF", 
+        "doc": "Test for infinity values.", 
+        "code": "op1 = cphvb_isinf(op2)", 
+        "nop": 2, 
+        "system_opcode": false, 
+        "types": [
+            [
+                "CPHVB_BOOL", 
+                "CPHVB_FLOAT32"
+            ], 
+            [
+                "CPHVB_BOOL", 
                 "CPHVB_FLOAT64"
             ]
         ]
@@ -2769,23 +2678,6 @@
             [
                 "CPHVB_COMPLEX64", 
                 "CPHVB_COMPLEX128"
-            ]
-        ]
-    }, 
-    {
-        "opcode": "CPHVB_SIGNBIT", 
-        "doc": "Returns element-wise True where signbit is set (less than zero).", 
-        "code": "op1 = op2 < 0", 
-        "nop": 2, 
-        "system_opcode": false, 
-        "types": [
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT32"
-            ], 
-            [
-                "CPHVB_BOOL", 
-                "CPHVB_FLOAT64"
             ]
         ]
     }, 

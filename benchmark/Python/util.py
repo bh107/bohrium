@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#Benchmarks for DistNumPy.
-#This is collection of help functions for the DistNumPy benchmarks.
+#Benchmarks for NumPy.
+#This is collection of help functions for the NumPy benchmarks.
 
 import numpy as np
 import cphvbbridge

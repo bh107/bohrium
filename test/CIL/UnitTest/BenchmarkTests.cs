@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,22 +34,23 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true);
-            if (jacobiResult != 8349)
-                throw new Exception(string.Format("Jacobi solver failed: {0}", jacobiResult));
+            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true, 10);
+            if (Math.Abs(jacobiResult - 6529.6474649484189) > 0.01)
+                throw new Exception(string.Format("Jacobi solver failed: {0}, diff: {1}", jacobiResult, Math.Abs(jacobiResult - 6529.6474649484189)));
 
             var blackScholesResult = Tester.BlackScholesSolver.Solve(36000, 10, false);
             if (Math.Abs(blackScholesResult - 51.855494520660294) > 0.01)
                 throw new Exception(string.Format("BlackScholes solver failed: {0}, diff: {1}", blackScholesResult, Math.Abs(blackScholesResult - 51.855494520660294)));
 
             var kNNResult = Tester.kNNSolver.Solve(100, 64, 4, false).Sum();
-            if (Math.Abs(kNNResult - 9969336320) > 0.01)
+            if (Math.Abs(kNNResult - 2460) > 0.01)
                 throw new Exception(string.Format("kNN solver failed: {0}, diff: {1}", kNNResult, Math.Abs(kNNResult - 9969336320)));
 
             var shallowWaterResult = Tester.ShallowWaterSolver.Solve(200, 4);
             if (Math.Abs(shallowWaterResult - 204.04741883859941) > 0.01)
                 throw new Exception(string.Format("ShallowWater solver failed: {0}, diff {1}", shallowWaterResult, Math.Abs(shallowWaterResult - 204.04741883859941)));
 
+            Tester.nBodySolver.Solve(100, 2);
         }
     }
 }

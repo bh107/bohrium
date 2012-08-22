@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -178,23 +200,35 @@ namespace NumCIL.Unsafe
             return typeof(NumCIL.Unsafe.Copy).GetMethod("Memcpy", new Type[] { typeof(IntPtr), typeof(T[]), typeof(long) });
         }
 
+        /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for creating an accessor based on size, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
         public static MethodInfo GetCreateAccessorSize<T>()
         {
             if (!typeof(T).IsPrimitive || !SupportsUnsafe)
                 return null;
 
             string name = "CreateFromSize_" + typeof(T).Name.Replace(".", "_");
-            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+            return typeof(NumCIL.Unsafe.CreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
 
 
+        /// <summary>
+        /// Gets a <see cref="System.Reflection.MethodInfo"/> instance for creating an accessor based on an array, bound for the data type
+        /// Returns null if the data type is not supported.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <returns>A <see cref="System.Reflection.MethodInfo"/> instance, bound to the data type, or null if no such method exists</returns>
         public static MethodInfo GetCreateAccessorData<T>()
         {
             if (!typeof(T).IsPrimitive || !SupportsUnsafe)
                 return null;
 
             string name = "CreateFromData_" + typeof(T).Name.Replace(".", "_");
-            return typeof(NumCIL.Unsafe.oldCreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+            return typeof(NumCIL.Unsafe.CreateAccessor).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         }
         
         /// <summary>

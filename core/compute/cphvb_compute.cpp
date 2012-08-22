@@ -1,21 +1,22 @@
 /*
- * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
- *
- * This file is part of cphVB.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 #include <cphvb.h>
 #include <cphvb_compute.h>
 #include "functors.hpp"
@@ -555,78 +556,6 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_DIVIDE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (CPHVB_COMPLEX128 <<16) + (1 << 17):
             return &traverse_aca<std::complex<double>,std::complex<double>,std::complex<double>, divide_functor<std::complex<double>,std::complex<double>,std::complex<double> > >;
             break;
-        case CPHVB_SQUARE + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
-            return &traverse_aa<cphvb_int8,cphvb_int8, square_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int8,cphvb_int8, square_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12):
-            return &traverse_aa<cphvb_float64,cphvb_float64, square_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float64,cphvb_float64, square_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12):
-            return &traverse_aa<cphvb_uint16,cphvb_uint16, square_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint16,cphvb_uint16, square_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12):
-            return &traverse_aa<cphvb_uint64,cphvb_uint64, square_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint64,cphvb_uint64, square_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12):
-            return &traverse_aa<cphvb_int16,cphvb_int16, square_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int16,cphvb_int16, square_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
-            return &traverse_aa<cphvb_float32,cphvb_float32, square_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float32,cphvb_float32, square_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12):
-            return &traverse_aa<cphvb_int32,cphvb_int32, square_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int32,cphvb_int32, square_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12):
-            return &traverse_aa<cphvb_uint8,cphvb_uint8, square_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint8,cphvb_uint8, square_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12):
-            return &traverse_aa<cphvb_int64,cphvb_int64, square_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int64,cphvb_int64, square_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12):
-            return &traverse_aa<cphvb_uint32,cphvb_uint32, square_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint32,cphvb_uint32, square_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12):
-            return &traverse_aa<std::complex<float>,std::complex<float>, square_functor<std::complex<float>,std::complex<float> > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX64 <<12) + (1 << 17):
-            return &traverse_ac<std::complex<float>,std::complex<float>, square_functor<std::complex<float>,std::complex<float> > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12):
-            return &traverse_aa<std::complex<double>,std::complex<double>, square_functor<std::complex<double>,std::complex<double> > >;
-            break;
-        case CPHVB_SQUARE + (CPHVB_COMPLEX128 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
-            return &traverse_ac<std::complex<double>,std::complex<double>, square_functor<std::complex<double>,std::complex<double> > >;
-            break;
         case CPHVB_POWER + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_int8,cphvb_int8,cphvb_int8, power_functor<cphvb_int8,cphvb_int8,cphvb_int8 > >;
             break;
@@ -782,66 +711,6 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_ABSOLUTE + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
             return &traverse_ac<cphvb_uint32,cphvb_uint32, absolute_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12):
-            return &traverse_aa<cphvb_int8,cphvb_int8, sign_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT8 << 8) +(CPHVB_INT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int8,cphvb_int8, sign_functor<cphvb_int8,cphvb_int8 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12):
-            return &traverse_aa<cphvb_float64,cphvb_float64, sign_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float64,cphvb_float64, sign_functor<cphvb_float64,cphvb_float64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12):
-            return &traverse_aa<cphvb_uint16,cphvb_uint16, sign_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT16 << 8) +(CPHVB_UINT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint16,cphvb_uint16, sign_functor<cphvb_uint16,cphvb_uint16 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12):
-            return &traverse_aa<cphvb_uint64,cphvb_uint64, sign_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT64 << 8) +(CPHVB_UINT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint64,cphvb_uint64, sign_functor<cphvb_uint64,cphvb_uint64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12):
-            return &traverse_aa<cphvb_int16,cphvb_int16, sign_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT16 << 8) +(CPHVB_INT16 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int16,cphvb_int16, sign_functor<cphvb_int16,cphvb_int16 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12):
-            return &traverse_aa<cphvb_float32,cphvb_float32, sign_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_float32,cphvb_float32, sign_functor<cphvb_float32,cphvb_float32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12):
-            return &traverse_aa<cphvb_int32,cphvb_int32, sign_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT32 << 8) +(CPHVB_INT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int32,cphvb_int32, sign_functor<cphvb_int32,cphvb_int32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12):
-            return &traverse_aa<cphvb_uint8,cphvb_uint8, sign_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT8 << 8) +(CPHVB_UINT8 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint8,cphvb_uint8, sign_functor<cphvb_uint8,cphvb_uint8 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12):
-            return &traverse_aa<cphvb_int64,cphvb_int64, sign_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_INT64 << 8) +(CPHVB_INT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_int64,cphvb_int64, sign_functor<cphvb_int64,cphvb_int64 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12):
-            return &traverse_aa<cphvb_uint32,cphvb_uint32, sign_functor<cphvb_uint32,cphvb_uint32 > >;
-            break;
-        case CPHVB_SIGN + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_uint32,cphvb_uint32, sign_functor<cphvb_uint32,cphvb_uint32 > >;
             break;
         case CPHVB_GREATER + (CPHVB_BOOL << 8) +(CPHVB_INT8 <<12) + (CPHVB_INT8 <<16):
             return &traverse_aaa<cphvb_bool,cphvb_int8,cphvb_int8, greater_functor<cphvb_bool,cphvb_int8,cphvb_int8 > >;
@@ -2991,23 +2860,29 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         case CPHVB_MOD + (CPHVB_UINT32 << 8) +(CPHVB_UINT32 <<12) + (CPHVB_UINT32 <<16) + (1 << 17):
             return &traverse_aca<cphvb_uint32,cphvb_uint32,cphvb_uint32, mod_functor<cphvb_uint32,cphvb_uint32,cphvb_uint32 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16):
-            return &traverse_aaa<cphvb_float32,cphvb_float32,cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
+        case CPHVB_ISNAN + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12):
+            return &traverse_aa<cphvb_bool,cphvb_float32, isnan_functor<cphvb_bool,cphvb_float32 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16) + (1 << 18):
-            return &traverse_aac<cphvb_float32,cphvb_float32,cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
+        case CPHVB_ISNAN + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
+            return &traverse_ac<cphvb_bool,cphvb_float32, isnan_functor<cphvb_bool,cphvb_float32 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT32 << 8) +(CPHVB_FLOAT32 <<12) + (CPHVB_FLOAT32 <<16) + (1 << 17):
-            return &traverse_aca<cphvb_float32,cphvb_float32,cphvb_float32, hypot_functor<cphvb_float32,cphvb_float32,cphvb_float32 > >;
+        case CPHVB_ISNAN + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12):
+            return &traverse_aa<cphvb_bool,cphvb_float64, isnan_functor<cphvb_bool,cphvb_float64 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16):
-            return &traverse_aaa<cphvb_float64,cphvb_float64,cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
+        case CPHVB_ISNAN + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
+            return &traverse_ac<cphvb_bool,cphvb_float64, isnan_functor<cphvb_bool,cphvb_float64 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16) + (1 << 18):
-            return &traverse_aac<cphvb_float64,cphvb_float64,cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
+        case CPHVB_ISINF + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12):
+            return &traverse_aa<cphvb_bool,cphvb_float32, isinf_functor<cphvb_bool,cphvb_float32 > >;
             break;
-        case CPHVB_HYPOT + (CPHVB_FLOAT64 << 8) +(CPHVB_FLOAT64 <<12) + (CPHVB_FLOAT64 <<16) + (1 << 17):
-            return &traverse_aca<cphvb_float64,cphvb_float64,cphvb_float64, hypot_functor<cphvb_float64,cphvb_float64,cphvb_float64 > >;
+        case CPHVB_ISINF + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
+            return &traverse_ac<cphvb_bool,cphvb_float32, isinf_functor<cphvb_bool,cphvb_float32 > >;
+            break;
+        case CPHVB_ISINF + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12):
+            return &traverse_aa<cphvb_bool,cphvb_float64, isinf_functor<cphvb_bool,cphvb_float64 > >;
+            break;
+        case CPHVB_ISINF + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
+            return &traverse_ac<cphvb_bool,cphvb_float64, isinf_functor<cphvb_bool,cphvb_float64 > >;
             break;
         case CPHVB_IDENTITY + (CPHVB_BOOL << 8) +(CPHVB_INT8 <<12):
             return &traverse_aa<cphvb_bool,cphvb_int8, identity_functor<cphvb_bool,cphvb_int8 > >;
@@ -3890,18 +3765,6 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
             break;
         case CPHVB_IDENTITY + (CPHVB_COMPLEX64 << 8) +(CPHVB_COMPLEX128 <<12) + (1 << 17):
             return &traverse_ac<std::complex<float>,std::complex<double>, identity_functor<std::complex<float>,std::complex<double> > >;
-            break;
-        case CPHVB_SIGNBIT + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12):
-            return &traverse_aa<cphvb_bool,cphvb_float32, signbit_functor<cphvb_bool,cphvb_float32 > >;
-            break;
-        case CPHVB_SIGNBIT + (CPHVB_BOOL << 8) +(CPHVB_FLOAT32 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_bool,cphvb_float32, signbit_functor<cphvb_bool,cphvb_float32 > >;
-            break;
-        case CPHVB_SIGNBIT + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12):
-            return &traverse_aa<cphvb_bool,cphvb_float64, signbit_functor<cphvb_bool,cphvb_float64 > >;
-            break;
-        case CPHVB_SIGNBIT + (CPHVB_BOOL << 8) +(CPHVB_FLOAT64 <<12) + (1 << 17):
-            return &traverse_ac<cphvb_bool,cphvb_float64, signbit_functor<cphvb_bool,cphvb_float64 > >;
             break;
 
         default:

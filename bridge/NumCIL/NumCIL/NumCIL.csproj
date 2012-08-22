@@ -95,7 +95,8 @@
     <Compile Include="Complex64DataType.cs" />
     <Compile Include="DataAccessor.cs" />
     <Compile Include="Generators.cs" />
-    <Compile Include="ThreadPool.cs" />
+    <Compile Include="OperationInterfaces.cs" />
+    <Compile Include="ThreadRunner.cs" />
     <Compile Include="NdArray.cs" />
     <Compile Include="OperatorInterfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

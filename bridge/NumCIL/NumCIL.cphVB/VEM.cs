@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -198,6 +220,11 @@ namespace NumCIL.cphVB
                     ExecuteRelease((PInvoke.cphvb_instruction)i);
         }
 
+        /// <summary>
+        /// Registers a release instruction for later execution, including a handle that must be disposed
+        /// </summary>
+        /// <param name="array">The array to discard</param>
+        /// <param name="handle">The handle to dispose after discarding the array</param>
         public void ExecuteRelease(PInvoke.cphvb_array_ptr array, GCHandle handle)
         {
             lock (m_releaselock)
@@ -381,16 +408,17 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
-        /// <param name="inst_list">The list of instructions to execute</param>
-        private void ExecuteWithoutLocks(IEnumerable<IInstruction> inst_list, out long errorIndex)
+        /// <param name="instList">The list of instructions to execute</param>
+        /// <param name="errorIndex">A return value for the instruction that caused an error</param>
+        private void ExecuteWithoutLocks(IEnumerable<IInstruction> instList, out long errorIndex)
         {
-            List<GCHandle> cleanups = new List<GCHandle>();
+            var cleanups = new List<GCHandle>();
             long destroys = 0;
             errorIndex = -1;
 
             try
             {
-                PInvoke.cphvb_instruction[] instrBuffer = inst_list.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+                PInvoke.cphvb_instruction[] instrBuffer = instList.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
                 //ReshuffleInstructions(instrBuffer);
 
                 foreach (var inst in instrBuffer)
@@ -429,6 +457,11 @@ namespace NumCIL.cphVB
                     throw new cphVBException(e);
                 }
 
+                if (destroys > 0)
+                    foreach (var inst in instrBuffer.Where(x => x.opcode == cphvb_opcode.CPHVB_DISCARD))
+                        PInvoke.cphvb_destroy_array(inst.operand0);
+
+
             }
             finally
             {
@@ -458,6 +491,11 @@ namespace NumCIL.cphVB
             return CreateBaseArray(MapType(typeof(T)), size);
         }
 
+        /// <summary>
+        /// Maps the element type to the cphVB datatype
+        /// </summary>
+        /// <param name="t">The element type to look up</param>
+        /// <returns>The cphVB datatype</returns>
         public static PInvoke.cphvb_type MapType(Type t)
         {
             if (t == typeof(bool))
@@ -550,7 +588,7 @@ namespace NumCIL.cphVB
             PInvoke.cphvb_array_ptr res;
             lock (m_executelock)
             {
-                e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
+                e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
@@ -561,7 +599,7 @@ namespace NumCIL.cphVB
                 ExecuteCleanups();
 
                 lock (m_executelock)
-                    e = m_childs[0].create_array(basearray, type, ndim, start, shape, stride, out res);
+                    e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
@@ -589,7 +627,11 @@ namespace NumCIL.cphVB
             }
 
             if (m_baseArrayRefs.Count > 0)
+#if DEBUG
+                Console.WriteLine("WARNING: Some base arrays were stil allocated during VEM shutdown");
+#else
                 throw new Exception("Some base arrays were stil allocated during VEM shutdown");
+#endif
 
             m_preventCleanup = false;
             ExecuteCleanups();
@@ -752,73 +794,184 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="operand">The output operand</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operand);
         }
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">The input operand</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2);
         }
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">An input operand</param>
+        /// <param name="op3">Another input operand</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2, op3);
         }
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="operands">A list of operands</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operands);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="operand">The output operand</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand).Pointer, constant);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">The input operand</param>
+        /// <param name="constant">An optional constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, constant);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">The input operand</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
         {
-            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            if (IsScalar(op2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, new PInvoke.cphvb_constant());
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="constant">An left-hand-side constant value</param>
+        /// <param name="op2">The input operand</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, PInvoke.cphvb_constant constant, NdArray<T> op2)
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, constant, CreateViewPtr<T>(type, op2).Pointer);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">An input operand</param>
+        /// <param name="op3">Another input operand</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
         {
-            if (op2.DataAccessor.Length == 1 && op2.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            if (IsScalar(op2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
-            else if (op3.DataAccessor.Length == 1 && op3.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+            else if (IsScalar(op3))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op3.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant());
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">An input operand</param>
+        /// <param name="op3">Another input operand</param>
+        /// <param name="constant">A constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant)
         {
             return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, constant);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="operands">A list of operands</param>
+        /// <param name="constant">A constant value</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant)
         {
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
         }
 
+        /// <summary>
+        /// Creates a new instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data used in the instruction</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="operands">A list of operands</param>
+        /// <returns>The new instruction</returns>
         public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
         {
             bool constantUsed = false;
             PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant();
 
             return new PInvoke.cphvb_instruction(opcode, operands.Select(x => {
-                if (!constantUsed && x.DataAccessor.Length == 1 && x.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                if (!constantUsed && IsScalar(x))
                 {
                     constant = new PInvoke.cphvb_constant(type, x.DataAccessor[0]);
                     return PInvoke.cphvb_array_ptr.Null;
@@ -828,20 +981,48 @@ namespace NumCIL.cphVB
             }), constant);
         }
 
-        public IInstruction CreateConversionInstruction<Ta, Tb>(NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
+        /// <summary>
+        /// Creates a new instruction that convers from Tb to Ta
+        /// </summary>
+        /// <typeparam name="Ta">The output element datatype</typeparam>
+        /// <typeparam name="Tb">The input element datatype</typeparam>
+        /// <param name="supported">A list of accumulated instructions</param>
+        /// <param name="opcode">The instruction opcode</param>
+        /// <param name="typea">The cphVB datatype for the output</param>
+        /// <param name="output">The output operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">Another input operand</param>
+        /// <returns>A new instruction</returns>
+        public IInstruction CreateConversionInstruction<Ta, Tb>(List<IInstruction> supported, NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
         {
-            in1.DataAccessor.Allocate();
-            if (in2 != null)
-                in2.DataAccessor.Allocate();
+            if (in1.DataAccessor is cphVBAccessor<Tb>)
+                ((cphVBAccessor<Tb>)in1.DataAccessor).ContinueExecution(supported);
+            else
+                in1.DataAccessor.Allocate();
 
-            if (in1.DataAccessor.Length == 1 && in1.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+            if (in2 != null)
+            {
+                if (in2.DataAccessor is cphVBAccessor<Tb>)
+                    ((cphVBAccessor<Tb>)in2.DataAccessor).ContinueExecution(supported);
+                else
+                    in2.DataAccessor.Allocate();
+            }
+
+            if (IsScalar(in1))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
-            else if (in2 != null && in2.DataAccessor.Length == 1 && in2.DataAccessor.GetType() == typeof(DefaultAccessor<Tb>))
+            else if (in2 != null && IsScalar(in2))
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.cphvb_constant(in2.DataAccessor[0]));
             else
                 return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
         }
 
+        /// <summary>
+        /// Creates a new random userfunc instruction
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="op1">The output operand</param>
+        /// <returns>A new instruction</returns>
         public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)
         {
             if (!SupportsRandom)
@@ -868,6 +1049,16 @@ namespace NumCIL.cphVB
             );
         }
 
+        /// <summary>
+        /// Creates a new reduce instruction
+        /// </summary>
+        /// <typeparam name="T">The data type to operate on</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The opcode used for the reduction</param>
+        /// <param name="axis">The axis to reduce over</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">The input operand</param>
+        /// <returns>A new instruction</returns>
         public IInstruction CreateReduceInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
         {
             if (!SupportsReduce)
@@ -894,6 +1085,15 @@ namespace NumCIL.cphVB
             );
         }
 
+        /// <summary>
+        /// Creats a new matmul userfunc
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">An input operand</param>
+        /// <param name="op3">Another input operand</param>
+        /// <returns>A new instruction</returns>
         public IInstruction CreateMatmulInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
         {
             if (!SupportsMatmul)
@@ -917,6 +1117,23 @@ namespace NumCIL.cphVB
                 cphvb_opcode.CPHVB_USERFUNC,
                 adr
             );
+        }
+
+        /// <summary>
+        /// Returns a value indicating if a value is a scalar
+        /// </summary>
+        /// <typeparam name="T">The type of data in the array</typeparam>
+        /// <param name="ar">The array to examine</param>
+        /// <returns>True if the alue can be represented as a cphVB constant, false otherwise</returns>
+        private static bool IsScalar<T>(NdArray<T> ar)
+        {
+            if (ar.DataAccessor.Length == 1)
+                if (ar.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
+                    return true;
+                else if (ar.DataAccessor.GetType() == typeof(cphVBAccessor<T>) && ar.DataAccessor.IsAllocated && ((cphVBAccessor<T>)ar.DataAccessor).PendingOperations.Count == 0)
+                    return true;
+
+            return false;
         }
 
         /// <summary>

@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +31,7 @@ namespace NumCIL
     /// An operation that outputs the same value for each input
     /// </summary>
     /// <typeparam name="T">The type of data to produce</typeparam>
-    public struct GenerateOp<T> : INullaryOp<T>
+    public struct GenerateOp<T> : INullaryOp<T>, NumCIL.Generic.Operators.ICopyOperation
     {
         /// <summary>
         /// The value all elements are assigned
@@ -31,7 +53,7 @@ namespace NumCIL
     /// An operation that copies data from one element to another, aka the identity operation
     /// </summary>
     /// <typeparam name="T">The type of data to operate on</typeparam>
-    public struct CopyOp<T> : IUnaryOp<T>
+    public struct CopyOp<T> : IUnaryOp<T>, NumCIL.Generic.Operators.ICopyOperation
     {
         /// <summary>
         /// Returns the input value

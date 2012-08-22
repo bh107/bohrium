@@ -1,21 +1,22 @@
 /*
- * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
- *
- * This file is part of cphVB.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 #include <cphvb.h>
 #include "cphvb_ve_mcore.h"
 #include <cphvb_mcache.h>
@@ -163,7 +164,16 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     DEBUG_PRINT("[worker_count=%d, block_size=%lu]\n", worker_count, block_size);
 
     for(i=0; i<worker_count; i++) {                 // Worker-threads for job computation
+#ifdef _WIN32
+	worker_data[i].id = i;
+	worker_data[i].loop = NULL;
+	worker_data[i].instr = NULL;
+	worker_data[i].state = NULL;
+	worker_data[i].nelements = 0;
+	
+#else
         worker_data[i] = (worker_data_t){ i, NULL, NULL, NULL, 0 };
+#endif
         if (pthread_create( &worker[i], NULL, job, &worker_data[i] ) != 0) {
             res = CPHVB_ERROR;
             break;

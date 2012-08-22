@@ -1,21 +1,22 @@
 /*
- * Copyright 2011 Mads R. B. Kristensen <madsbk@gmail.com>
- *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef __CPHVB_INTERFACE_H
 #define __CPHVB_INTERFACE_H
@@ -64,25 +65,6 @@ typedef cphvb_error (*cphvb_shutdown)(void);
 typedef cphvb_error (*cphvb_execute)(cphvb_intp count,
                                      cphvb_instruction inst_list[]);
 
-/* Create an array, which are handled by the component.
- *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimentions
- * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array (output)
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-typedef cphvb_error (*cphvb_create_array)(cphvb_array*   base,
-                                          cphvb_type     type,
-                                          cphvb_intp     ndim,
-                                          cphvb_index    start,
-                                          cphvb_index    shape[CPHVB_MAXDIM],
-                                          cphvb_index    stride[CPHVB_MAXDIM],
-                                          cphvb_array**  new_array);
-
 /* Registre a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
@@ -127,7 +109,6 @@ struct cphvb_component_struct
     cphvb_shutdown shutdown;
     cphvb_execute execute;
     cphvb_reg_func reg_func;
-    cphvb_create_array create_array; //Only for VEMs
 };
 
 

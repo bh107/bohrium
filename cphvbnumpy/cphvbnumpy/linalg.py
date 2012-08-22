@@ -1,10 +1,46 @@
+"""
+LinAlg
+~~~~~~
+
+Common linear algebra functions
+
+"""
 import cphvbnumpy as np
 import numpy.linalg as la
 from numpy.linalg import *
 
-def solve(A ,b):
-    # solve Ax=b via Gausian elimination
-    W = np.hstack((A,b[:,np.newaxis]))
+def solve(a, b):
+    """
+    Solve a linear matrix equation, or system of linear scalar equations
+    using Gausian elimination.
+
+    :param a: Coefficient matrix
+    :type a:  array_like, shape (M, M)
+    :param b: Ordinate or "dependent variable" values
+    :type b:  array_like, shape (M,) or (M, N)
+
+    :return:  Solution to the system a x = b
+    :rtype:   ndarray, shape (M,) or (M, N) depending on b
+    
+    :raises: :py:exc:`LinAlgError` If `a` is singular or not square.
+
+    **Examples:**
+    Solve the system of equations ``3 * x0 + x1 = 9`` and ``x0 + 2 * x1 = 8``:
+
+    >>> import cphvbnumpy as np
+    >>> a = np.array([[3,1], [1,2]])
+    >>> b = np.array([9,8])
+    >>> x = np.linalg.solve(a, b)
+    >>> x
+    array([ 2.,  3.])
+
+    Check that the solution is correct:
+
+    >>> (np.dot(a, x) == b).all()
+    True 
+    """
+
+    W = np.hstack((a,b[:,np.newaxis]))
     for p in xrange(W.shape[0]-1):
         for r in xrange(p+1,W.shape[0]):
             W[r] = W[r] - W[p]*(W[r,p]/W[p,p])
@@ -16,11 +52,39 @@ def solve(A ,b):
     x[0] = W[0,c]/W[0,0]
     return x
 
-def jacobi(A, b, tol=0.0005):
-    # solve Ax=b via the Jacobi method
+def jacobi(a, b, tol=0.0005):
+    """
+    Solve a linear matrix equation, or system of linear scalar equations
+    using the Jacobi Method.
+
+    :param a: Coefficient matrix
+    :type a:  array_like, shape (M, M)
+    :param b: Ordinate or "dependent variable" values
+    :type b:  array_like, shape (M,) or (M, N)
+
+    :return:  Solution to the system a x = b
+    :rtype:   ndarray, shape (M,) or (M, N) depending on b
+    
+    :raises: :py:exc:`LinAlgError` If `a` is singular or not square.
+
+    **Examples:**
+    Solve the system of equations ``3 * x0 + x1 = 9`` and ``x0 + 2 * x1 = 8``:
+
+    >>> import cphvbnumpy as np
+    >>> a = np.array([[3,1], [1,2]])
+    >>> b = np.array([9,8])
+    >>> x = np.linalg.jacobi(a, b)
+    >>> x
+    array([ 2.,  3.])
+
+    Check that the solution is correct:
+
+    >>> (np.dot(a, x) == b).all()
+    True 
+    """
     x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
-    D = 1/np.diag(A)
-    R = np.diag(np.diag(A)) - A
+    D = 1/np.diag(a)
+    R = np.diag(np.diag(a)) - a
     T = D[:,np.newaxis]*R
     C = D*b
     error = tol + 1
@@ -29,3 +93,46 @@ def jacobi(A, b, tol=0.0005):
         x = np.add.reduce(T*x,-1) + C
         error = norm(x-xo)/norm(x)
     return x
+
+def lu(A):
+    """
+    Compute pivoted LU decompostion of a matrix.
+
+    The decomposition is::
+
+        A = P L U
+
+    where P is a permutation matrix, L lower triangular with unit
+    diagonal elements, and U upper triangular.
+
+    Parameters
+    ----------
+    A : array, shape (M, N)
+        Array to decompose
+
+    Returns
+    -------
+    p : array, shape (M, M)
+        Permutation matrix
+    lu : array, shape (M, N)
+        Lower triangular or trapezoidal matrix and 
+        upper triangular or trapezoidal matrix
+
+    Notes
+    -----
+    This function only supports cphvb-enabled arrays.
+
+    """
+
+    if A.dtype != np.float32 and A.dtype != np.float64:
+        raise ValueError("Input must be floating point numbers")
+    if A.ndim != 2 or A.shape[0] != A.shape[1]:
+        raise ValueError("Input must be square 2-d.")
+    if A.cphvb:
+        LU = A.copy() #do not overwrite original A
+        P = empty((A.shape[0],), dtype=np.int32)
+        bridge.lu(LU,P)
+        return (LU, P)
+    else:
+        raise ValueError("LU is only supported for cphvb-enabled arrays")
+

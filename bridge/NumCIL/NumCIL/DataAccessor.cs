@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -89,7 +111,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation performed</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         /// <typeparam name="Tb">The source data type</typeparam>
         void AddConversionOperation<Tb>(IBinaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> in1, NdArray<Tb> in2);
 
@@ -323,7 +346,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation performed</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         public virtual void AddConversionOperation<Ta>(IBinaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> in1, NdArray<Ta> in2)
         {
             lock (Lock)
@@ -337,9 +361,12 @@ namespace NumCIL.Generic
         {
             if (PendingOperations.Count > 0)
             {
-                var lst = UnrollWorkList(this);
-                ExecuteOperations(lst);
-                PendingOperations.Clear();
+                lock (Lock)
+                {
+                    var lst = UnrollWorkList(this);
+                    PendingOperations.Clear();
+                    ExecuteOperations(lst);
+                }
             }
         }
 
@@ -678,7 +705,7 @@ namespace NumCIL.Generic
 
 	}
 
-
+    /// <summary>
 	/// Representation of a pending binary conversion operation.
 	/// </summary>
     public class PendingBinaryConversionOperation<Ta, Tb> : PendingUnaryConversionOperation<Ta, Tb>, IPendingBinaryConversionOp
@@ -698,7 +725,8 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="operation">The operation to perform</param>
         /// <param name="output">The output operand</param>
-        /// <param name="input">The input operand</param>
+        /// <param name="in1">An input operand</param>
+        /// <param name="in2">An input operand</param>
         public PendingBinaryConversionOperation(IOp<Ta> operation, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
             :base(operation, output, in1)
         {

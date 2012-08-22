@@ -48,7 +48,7 @@ def main():
     t2 = time.time()
     print "Sobel time: %s secs" % (t2-t1)
         
-    output = (rint(result)).astype(output_data_type)
+    output = (result).astype(output_data_type)
     output.tofile(output_file)
 
 if __name__ == "__main__":

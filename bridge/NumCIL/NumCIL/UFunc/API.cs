@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +34,8 @@ namespace NumCIL
         /// Setup function for shaping the input and output arrays to broadcast compatible shapes.
         /// If no output array is given, a compatible output array is created
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
         /// <param name="out">The output target</param>
@@ -103,7 +126,8 @@ namespace NumCIL
         /// It has a unique name because it is faster to look up the method through reflection,
         /// if there is only one version of it.
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="op">The operation instance</param>
         /// <param name="in1">The left-hand-side input argument</param>
@@ -141,7 +165,8 @@ namespace NumCIL
         /// <summary>
         /// Applies the operation to the input arrays
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <typeparam name="C">The type of operation to perform</typeparam>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
@@ -171,7 +196,8 @@ namespace NumCIL
         /// <summary>
         /// Applies the operation to the input arrays
         /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to operate on</typeparam>
         /// <param name="op">The operation instance to use</param>
         /// <param name="in1">The left-hand-side input argument</param>
         /// <param name="in2">The right-hand-side input argument</param>
@@ -270,7 +296,6 @@ namespace NumCIL
         /// </summary>
         /// <typeparam name="Ta">The type of input data to operate on</typeparam>
         /// <typeparam name="Tb">The type of output data to generate</typeparam>
-        /// <typeparam name="C">The operation type to perform</typeparam>
         /// <param name="op">The operation to perform</param>
         /// <param name="in1">The input argument</param>
         /// <param name="out">The output target</param>

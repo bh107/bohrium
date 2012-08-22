@@ -1,8 +1,0 @@
-all:
-	python gen.py
-
-clean:
-	del /Q .\out\cphvb_compute.cpp .\out\traverser.hpp .\out\functors
-
-install: all
-	

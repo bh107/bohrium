@@ -1,21 +1,23 @@
 /*
- * Copyright 2011 Simon A. F. Lund <safl@safl.dk>
- *
- * This file is part of cphVB.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <iostream>
@@ -52,7 +54,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%lld) should be greater than zero!\n", (cphvb_int64)block_size);
+        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
         return CPHVB_ERROR;
     }
 
@@ -97,6 +99,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     computeloop* compute_loops = cphvb_ve_score_compute_loops;
     cphvb_tstate* states = cphvb_ve_score_tstates;
     cphvb_intp  nelements, trav_end=0;
+    cphvb_error ret_errcode = CPHVB_SUCCESS;
     
     for(i=0; i<=end-start;i++)                      // Reset traversal coordinates
         cphvb_tstate_reset( &states[i] );
@@ -104,6 +107,15 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         compute_loops[k] = cphvb_compute_get( &instr[i] );
+        if(compute_loops[k] == NULL)
+        {
+            end = start + k - 1;
+            instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
+            ret_errcode = CPHVB_PARTIAL_SUCCESS;
+            break;
+        }
+        else
+            instr[i].status = CPHVB_SUCCESS;
     }
                                                     // Block-size split
     nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
@@ -118,14 +130,8 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
             compute_loops[k]( &instr[i], &states[k], trav_end );
         }
     }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = CPHVB_SUCCESS;
-    }
     
-    return CPHVB_SUCCESS;
-
+    return ret_errcode;
 }
 
 cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruction* instruction_list )

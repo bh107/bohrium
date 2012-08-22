@@ -1,21 +1,22 @@
 /*
- * Copyright 2012 Troels Blum <troels@blum.dk>
- *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
- *
- * cphVB is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * cphVB is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cassert>
 #include <stdexcept>
@@ -129,9 +130,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         case CPHVB_RINT:
             source << "\t" << parameters[0] << " = rint(" << parameters[1] << ");\n";
             break;
-        case CPHVB_SIGN:
-            source << "\t" << parameters[0] << " = " << parameters[1] << "<0?-1:1;\n";
-            break;
         case CPHVB_EXP:
             source << "\t" << parameters[0] << " = exp(" << parameters[1] << ");\n";
             break;
@@ -153,9 +151,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         case CPHVB_SQRT:
             source << "\t" << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
             break;
-        case CPHVB_SQUARE:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[1] << ";\n";
-            break;
         case CPHVB_SIN:
             source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
             break;
@@ -176,9 +171,6 @@ void generateInstructionSource(cphvb_opcode opcode,
             break;
         case CPHVB_ARCTAN2:
             source << "\t" << parameters[0] << " = atan2(" << parameters[1] << ", " << parameters[2] << ");\n";
-            break;
-        case CPHVB_HYPOT:
-            source << "\t" << parameters[0] << " = hypot(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case CPHVB_SINH:
             source << "\t" << parameters[0] << " = sinh(" << parameters[1] << ");\n";
@@ -255,9 +247,6 @@ void generateInstructionSource(cphvb_opcode opcode,
         case CPHVB_IDENTITY:
             source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
             break;
-        case CPHVB_SIGNBIT:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " < 0;\n";
-            break;
         case CPHVB_FLOOR:
             source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";
             break;
@@ -269,6 +258,12 @@ void generateInstructionSource(cphvb_opcode opcode,
             break;
         case CPHVB_LOG2:
             source << "\t" << parameters[0] << " = log2(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ISNAN:
+            source << "\t" << parameters[0] << " = isnan(" << parameters[1] << ");\n";
+            break;
+        case CPHVB_ISINF:
+            source << "\t" << parameters[0] << " = isinf(" << parameters[1] << ");\n";
             break;
         default:
 #ifdef DEBUG

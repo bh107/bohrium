@@ -1,4 +1,26 @@
-﻿using System;
+﻿#region Copyright
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,10 +35,20 @@ namespace NumCIL.cphVB
     /// <typeparam name="T">The type of data kept in the underlying array</typeparam>
     public class cphVBAccessorFactory<T> : NumCIL.Generic.IAccessorFactory<T>
     {
-        public IDataAccessor<T> Create(long size) { return new cphVBAccessor<T>(size); }
+        /// <summary>
+        /// Creates a new accessor for a data chunk of the given size
+        /// </summary>
+        /// <param name="size">The size of the array</param>
+        /// <returns>An accessor</returns>
+        public IDataAccessor<T> Create(long size) { return size == 1 ? new cphVBAccessor<T>(new T[1]) : new cphVBAccessor<T>(size); }
+        /// <summary>
+        /// Creates a new accessor for a preallocated array
+        /// </summary>
+        /// <param name="data">The data to wrap</param>
+        /// <returns>An accessor</returns>
         public IDataAccessor<T> Create(T[] data) { return new cphVBAccessor<T>(data); }
     }
-
+    
     /// <summary>
     /// Code to map from NumCIL operations to cphVB operations
     /// </summary>
@@ -83,6 +115,11 @@ namespace NumCIL.cphVB
             catch { return null; }
         }
 
+        /// <summary>
+        /// Returns the specialized NdArray class given the input element type
+        /// </summary>
+        /// <typeparam name="T">The input element type</typeparam>
+        /// <returns>The type of the specialized NdArray</returns>
         protected static Type GetBasicClass<T>()
         {
             if (typeof(T) == typeof(sbyte))
@@ -230,41 +267,6 @@ namespace NumCIL.cphVB
         }
     }
 
-    public class PendingOpCounter<T> : PendingOperation<T>, IDisposable
-    {
-        private static long _pendingOpCount = 0;
-        public static long PendingOpCount { get { return _pendingOpCount; } }
-        private bool m_isDisposed = false;
-
-        public PendingOpCounter(IOp<T> operation, params NdArray<T>[] operands)
-            : base(operation, operands)
-        {
-            System.Threading.Interlocked.Increment(ref _pendingOpCount);
-        }
-
-        protected void Dispose(bool disposing)
-        {
-            if (!m_isDisposed)
-            {
-                System.Threading.Interlocked.Decrement(ref _pendingOpCount);
-                m_isDisposed = true;
-
-                if (disposing)
-                    GC.SuppressFinalize(this);
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        ~PendingOpCounter()
-        {
-            Dispose(false);
-        }
-    }
-
     /// <summary>
     /// Basic accessor for a cphVB array
     /// </summary>
@@ -346,16 +348,28 @@ namespace NumCIL.cphVB
                 VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData.Pointer));
         }
 
+        /// <summary>
+        /// Flushes all pending instructions, allocates data region and returns the contents as an array
+        /// </summary>
+        /// <returns></returns>
         public override T[] AsArray()
         {
             MakeDataManaged();
             return m_data;
         }
 
+        /// <summary>
+        /// Accesses an element, this method ensures that all pending instructions are flushed
+        /// </summary>
+        /// <param name="index">The element to accesss</param>
+        /// <returns>The element at the specified address</returns>
         public override T this[long index]
         {
             get
             {
+                if (index < 0 || index >= m_size)
+                    throw new ArgumentOutOfRangeException("index");
+
                 this.EnsureSynced();
                 if (m_data != null)
                     return m_data[index];
@@ -617,7 +631,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// 
+        /// Gets a pointer to the base array
         /// </summary>
         public PInvoke.cphvb_array_ptr BaseArrayPtr
         {
@@ -655,19 +669,46 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Continues exectuion started on another type
+        /// </summary>
+        /// <param name="i">The execution so far was started on</param>
+        internal void ContinueExecution(List<IInstruction> i)
+        {
+            lock (Lock)
+            {
+                var lst = UnrollWorkList(this);
+                PendingOperations.Clear();
+                ExecuteOperations(lst, i);
+            }
+        }
+
+        /// <summary>
         /// Executes all pending operations in the list
         /// </summary>
         /// <param name="work">The list of operations to execute</param>
         public override void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
         {
+            ExecuteOperations(work, null);
+        }
+
+        /// <summary>
+        /// Executes all pending operations in the list
+        /// </summary>
+        /// <param name="work">The list of operations to execute</param>
+        /// <param name="supported">A list of supported instructions that is produced from another context</param>
+        private void ExecuteOperations(IEnumerable<PendingOperation<T>> work, List<IInstruction> supported)
+        {
             List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
-            List<IInstruction> supported = new List<IInstruction>();
+            bool isContinuation = supported != null;
+
+            if (supported == null)
+                supported = new List<IInstruction>();
 
             foreach (var op in work)
             {
                 IOp<T> ops = op.Operation;
                 NdArray<T>[] operands = op.Operands;
-
+                
                 cphvb_opcode opcode;
                 if (OpcodeMap.TryGetValue(ops.GetType(), out opcode))
                 {
@@ -722,7 +763,7 @@ namespace NumCIL.cphVB
                             object unop = ((IPendingUnaryConversionOp)op).InputOperand;
 
                             Type inputType = unop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] {opcode,  CPHVB_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode,  CPHVB_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
 
                             supported.Add(inst);
                         }
@@ -733,7 +774,7 @@ namespace NumCIL.cphVB
                             object rhsop = ((IPendingBinaryConversionOp)op).InputOperand;
 
                             Type inputType = lhsop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { opcode, CPHVB_TYPE, operands[0], lhsop, rhsop });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode, CPHVB_TYPE, operands[0], lhsop, rhsop });
 
                             supported.Add(inst);
                         } 
@@ -765,13 +806,16 @@ namespace NumCIL.cphVB
             if (unsupported.Count > 0)
                 base.ExecuteOperations(unsupported);
 
-            if (supported.Count > 0)
+            if (supported.Count > 0 && !isContinuation)
             {
                 ExecuteWithFailureDetection(supported);
-
             }
         }
 
+        /// <summary>
+        /// Performs GC-gen0 collection and then executes the instrucions in the list
+        /// </summary>
+        /// <param name="instructions">The list of instructions to execute</param>
         protected void ExecuteWithFailureDetection(List<IInstruction> instructions)
         {
             //Reclaim everything in gen 0
@@ -805,6 +849,9 @@ namespace NumCIL.cphVB
                 GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Finializes this object
+        /// </summary>
         ~cphVBAccessor()
         {
             Dispose(false);

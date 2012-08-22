@@ -13,15 +13,14 @@ WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 
-HEADER=./*.hpp ./*.h $(ROOT)/include/* $(ROOT)/pthread_win32/*.h
-SRC=cphvb_ve_mcore.c dispatch.c random.c
-OBJTMP=$(SRC:.cpp=.obj)
-OBJ=$(OBJTMP:.c=.obj)
+HEADER=*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+SRC=cphvb_ve_mcore.cpp
+OBJ=cphvb_ve_mcore.obj
 
 all: $(DLLNAME)
 
-%.obj: %.c $(HEADER)
-		$(CXX) $(CFLAGS) $< /Fo$@
+cphvb_ve_mcore.obj: cphvb_ve_mcore.cpp $(HEADER)
+		$(CXX) $(CFLAGS) cphvb_ve_mcore.cpp /Fo$@
 
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib

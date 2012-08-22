@@ -23,6 +23,8 @@ bridge/numpy/build/*
 *.gen
 *.log
 doc/doxygen
+doc/build
+doc/source/users/pythonnumpygen
 */NumCIL/*/obj/*
 */NumCIL/*/bin/*
 */CIL/*/bin/*
@@ -42,3 +44,5 @@ OpCodes.cs
 OpCodes_fix.tt
 Tester.userprefs
 OpCodes_fix.cs
+cphvb-release
+cphVB.zip
