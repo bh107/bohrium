@@ -13,7 +13,7 @@ LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lcphvb -shared -Wl,-s
 CSRC = OCLtype
 CPPSRC = ResourceManager cphvb_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
 		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce \
-		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
+		UserFunctionMatmul UserFunctionLu StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR?=/opt/cphvb/
