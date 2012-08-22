@@ -57,16 +57,36 @@ And you should see a result similar to this::
     ************************ Finish ************************
 
 
-OpenCL
-~~~~~~
+OpenCL / GPU Engine
+~~~~~~~~~~~~~~~~~~~
 
-In order to support the OpenCL backend you might just need this::
+The GPU vector engine requires OpenCL compatible hardware as well as functioning drivers.
+Configuring your GPU with you operating system is out of scope of this documentation.
+
+Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages.
+
+**Packages**::
 
   sudo apt-get install -y rpm alien libnuma1
+
+**SDK for OpenCL**
+
+Go to http://software.intel.com/en-us/articles/vcsource-tools-opencl-sdk/ and download *Intel SDK for OpenCL 2012 -- Linux*.
+
+The download-button is in the upper right corner next to select-box with the text *Select version...*.
+
+The download area is hard to spot, so take a look at the red arrow on the picture below:
+
+.. image:: opencl_download.png
+   :scale: 50 %
+   :alt: Download location.
+
+Once downloaded, install the SDK with the following commands::
+
   tar zxf intel_sdk_for_ocl_applications_2012_x64.tgz
-  sudo apt-get install -y rpm alien libnuma1
   fakeroot alien --to-deb intel_ocl_sdk_2012_x64.rpm
   sudo dpkg -i intel-ocl-sdk_2.0-31361_amd64.deb
   sudo ln -s /usr/lib64/libOpenCL.so /usr/lib/libOpenCL.so
   sudo ldconfig
 
+You should now have everything you need to utilize the GPU engine.
