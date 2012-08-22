@@ -1,9 +1,37 @@
-Developer Tools
-===============
+Tools
+=====
 
 Tools of the trade::
 
   sudo apt-get install git valgrind g++
+
+Building and Installing
+-----------------------
+
+In addition to the tools described above, the following must be present::
+
+  # Essential dependencies
+  sudo apt-get install python-dev mpi-default-dev
+
+  # Code and documentation generator-tools
+  sudo apt-get install python-pip python-cheetah python-sphinx doxygen
+  sudo pip install breathe
+
+Get the source-code::
+
+  git clone git@bitbucket.org:cphvb/cphvb-priv.git
+  cd cphvb-priv
+  git submodule init
+  git submodule update
+
+Build and install it::
+
+  ./build.py install
+
+.. note:: To compile to a custom Python (with valgrind debug support for example),
+   set the $PYTHON variable naming the binary of your custom compiled Python::
+
+     PYTHON=dython ./build.py install
 
 Valgrind and Python
 -------------------
@@ -42,48 +70,6 @@ Then run valgrind with the flag::
 Invoking valgrind to determine cache-utilization::
 
   --tool=callgrind --simulate-cache=yes <PROG> <PROG_PARAM>
-
-Building and Installing
------------------------
-
-In addition to the tools described above, the following must be present::
-
-  # Essential dependencies
-  sudo apt-get install python-dev mpi-default-dev
-
-  # Code and documentation generator-tools
-  sudo apt-get install python-pip python-cheetah python-sphinx doxygen
-  sudo pip install breathe
-
-Get the source-code::
-
-  git clone git@bitbucket.org:cphvb/cphvb-priv.git
-  cd cphvb-priv
-  git submodule init
-  git submodule update
-
-Build and install it::
-
-  ./build.py install
-
-.. note:: To compile to a custom Python (with valgrind debug support for example),
-   set the $PYTHON variable naming the binary of your custom compiled Python::
-
-     PYTHON=dython ./build.py install
-
-Automated Build / Jenkins
--------------------------
-
-https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu
-Setup jenkins::
-
-  wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
-  sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
-  sudo apt-get update
-  sudo apt-get install jenkins
-
-Then configure it via web-interface.
-
 
 Writing Documentation
 ---------------------
@@ -129,3 +115,17 @@ Create doxygen docs from source-code::
   doxygen Doxyfile
 
 The docs still needs a neat way to integrate a full API-documentation of the cphVB core, managers and engines.
+
+Continuous Integration
+----------------------
+
+https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu
+Setup jenkins::
+
+  wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+  sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+  sudo apt-get update
+  sudo apt-get install jenkins
+
+Then configure it via web-interface.
+

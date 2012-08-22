@@ -1,37 +1,22 @@
 Python/NumPy
 ------------
-* :ref:`modindex`
-* :ref:`genindex`
+
 
 .. automodule:: cphvbnumpy
    :members:
    :undoc-members:
 
-.. automodule:: cphvbnumpy.core
-   :members:
-   :undoc-members:
+Library Reference
+~~~~~~~~~~~~~~~~~
 
-.. automodule:: cphvbnumpy.linalg
-   :members:
-   :undoc-members:
+.. autosummary::
+   :toctree: pythonnumpygen
 
-.. automodule:: cphvbnumpy.examples
-   :members:
-   :undoc-members:
+   cphvbnumpy.core
+   cphvbnumpy.linalg
+   cphvbnumpy.examples
 
-.. automodule:: cphvbnumpy.examples.gameoflife
-   :members:
-   :undoc-members:
+Glossary
+~~~~~~~~
 
-.. automodule:: cphvbnumpy.examples.jacobi_stencil
-   :members:
-   :undoc-members:
-
-.. automodule:: cphvbnumpy.examples.k_nearest_neighbor
-   :members:
-   :undoc-members:
-
-.. automodule:: cphvbnumpy.examples.shallow_water
-   :members:
-   :undoc-members:
-
+* :ref:`genindex`
