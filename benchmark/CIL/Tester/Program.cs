@@ -45,23 +45,23 @@ namespace Tester
             try
             {
                 TimeJacobi();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
                 TimeJacobiFixed();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
                 TimeScholes();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
                 TimeShallowWater();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
                 TimekNN();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
                 TimenBody();
-                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadParallel.TicksExecuted).TotalSeconds);
-                NumCIL.ThreadParallel.TicksExecuted = 0;
+                Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
+                NumCIL.ThreadRunner.TicksExecuted = 0;
 
                 //NumCIL.cphVB.Utility.Activate();
 

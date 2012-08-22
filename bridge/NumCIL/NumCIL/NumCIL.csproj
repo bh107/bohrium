@@ -96,7 +96,7 @@
     <Compile Include="DataAccessor.cs" />
     <Compile Include="Generators.cs" />
     <Compile Include="OperationInterfaces.cs" />
-    <Compile Include="ThreadParallel.cs" />
+    <Compile Include="ThreadRunner.cs" />
     <Compile Include="NdArray.cs" />
     <Compile Include="OperatorInterfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

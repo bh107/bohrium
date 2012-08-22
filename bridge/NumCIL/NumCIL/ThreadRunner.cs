@@ -11,7 +11,7 @@ namespace NumCIL
     /// <summary>
     /// Class that simplifies running parallel tasks
     /// </summary>
-    public class ThreadParallel : IDisposable
+    public class ThreadRunner : IDisposable
     {
         /// <summary>
         /// The list of active threads
@@ -42,7 +42,7 @@ namespace NumCIL
         /// Constructs a new instance of the ThreadParallel class
         /// </summary>
         /// <param name="count">The number of parallel threads</param>
-        public ThreadParallel(int count)
+        public ThreadRunner(int count)
         {
             ResizePool(count);
         }
@@ -64,9 +64,10 @@ namespace NumCIL
             m_thread = new Thread[count];
             for (var i = 0; i < count; i++)
             {
-                m_thread[i] = new Thread(ThreadExecute);
-                m_thread[i].Name = "ThreadParallel Worker #" + i;
-                m_thread[i].IsBackground = true;
+                m_thread[i] = new Thread(ThreadExecute) {
+                    Name = "ThreadParallel Worker #" + i, 
+                    IsBackground = true
+                };
                 m_thread[i].Start(i);
             }
         }
