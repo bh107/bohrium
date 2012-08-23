@@ -3,8 +3,8 @@ API Reference
 
 Bla bla bla
 
-Arrays
-------
+Core
+----
 
 .. doxygenstruct:: cphvb_array
    :project: cphVB
@@ -17,12 +17,30 @@ Arrays
 
 
 Utilities
----------
+~~~~~~~~~
+
+...
 
 Printing
-~~~~~~~~
+::::::::
 
 .. doxygensummary:: cphvb_pprint.h
    :project: cphVB
+
+Bridges / Language Frontends
+----------------------------
+
+numpy / CIL / C++
+
+
+Vector Engine Managers
+----------------------
+
+node / cluster
+
+Vector Engines
+--------------
+
+simple / score / mcore /gpu
 
 

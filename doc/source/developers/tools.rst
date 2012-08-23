@@ -1,3 +1,5 @@
+.. _developer_tools:
+
 Tools
 =====
 
@@ -74,13 +76,13 @@ Invoking valgrind to determine cache-utilization::
 Writing Documentation
 ---------------------
 
-The documentation is written in Sphinx.
+The documentation is written in `Sphinx <http://sphinx.pocoo.org/>`_.
 
 You will need the following to write/build the documentation::
 
   sudo apt-get install doxygen python-sphinx python-docutils python-setuptools
 
-As well as a python-package "breathe" for integrating doxygen-docs with Sphinx::
+As well as a python-packages **breathe** and **numpydoc** for integrating doxygen-docs with Sphinx::
 
   sudo easy_install breathe numpydoc
 
@@ -96,7 +98,7 @@ Overview of the documentatation files::
 Most used commands
 ~~~~~~~~~~~~~~~~~~
 
-These commands assume that your current working dir is cphvb/doc.
+These commands assume that your current working dir is **cphvb/doc**.
 
 Initiate doxygen::
  
@@ -106,20 +108,19 @@ Render a html version of the docs::
 
   make html
 
-Push the html to http://cphvb.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
+Push the html-rendered docs to http://cphvb.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
 
-  ./deploy_doc.sh
-
-Create doxygen docs from source-code::
-
-  doxygen Doxyfile
+  make deploy
 
 The docs still needs a neat way to integrate a full API-documentation of the cphVB core, managers and engines.
 
 Continuous Integration
 ----------------------
 
-https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu
+At some point a proper automated build/deploy/test/benchmark system will be setup/configured.
+
+The basis of which will probably be `Jenkins <https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu>`_.
+
 Setup jenkins::
 
   wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
