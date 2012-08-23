@@ -44,8 +44,13 @@ namespace NumCIL
             /// <summary>
             /// The number of work blocks
             /// </summary>
-            private static int _no_blocks = Math.Max(2, Environment.ProcessorCount * 2);
+            private static int _no_blocks = 1; 
+            //We make this fixed to one because the gain is currently very limited,
+            // as we are very memory bound Math.Max(2, Environment.ProcessorCount * 2);
 
+            /// <summary>
+            /// The thread runner
+            /// </summary>
             private static ThreadRunner _threads;
 
             /// <summary>
