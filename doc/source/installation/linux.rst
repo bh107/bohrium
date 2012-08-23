@@ -9,7 +9,7 @@ You need to install all packages required to build NumPy::
 
 Download and extract the source code::
   
-  wget http://cphvb.org/cphvb-v0.1.tgz
+  wget https://bitbucket.org/cphvb/cphvb-priv/downloads/cphvb-v0.1.tgz
   tar -xzf cphvb-v0.1.tgz
 
 Build and install::

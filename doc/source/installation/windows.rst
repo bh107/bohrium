@@ -4,7 +4,7 @@ Windows
 The follow explains how to get cphVB installed on Windows. Note that only 64bit Windows is supported by the cphVB binaries (the NumCIL binaries are 32bit and 64bit compatible).
 
 The cphVB package is distributed as a zip archive, that you can get from here:
-https://cphvb.org/download
+https://bitbucket.org/cphvb/cphvb-priv/downloads/cphvb-v0.1.zip
 
 Simply extract the contents of the folder. If you run your program from the folder where the files reside it will work correctly.
 
