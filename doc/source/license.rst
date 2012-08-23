@@ -6,7 +6,6 @@ cphVB is an active research project started by Mads R. B. Kristensen, Troels Blu
     * Troels Blum
     * Brian Vinter
     * Kenneth Skovhede
-    * Simon Broeng Jensen
     * Simon Andreas Frimann Lund
     * Mads Ruben Burgdorff Kristensen
 
