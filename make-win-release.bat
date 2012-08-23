@@ -14,6 +14,7 @@ copy "bridge\NumCIL\NumCIL.cphVB\bin\Release\NumCIL.cphVB.dll" "%INSTALL_TARGET%
 copy "bridge\NumCIL\NumCIL.cphVB\bin\Release\NumCIL.cphVB.XML" "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL.Unsafe\bin\Release\NumCIL.Unsafe.dll" "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL.Unsafe\bin\Release\NumCIL.Unsafe.XML" "%INSTALL_TARGET%"
+copy "benchmark\CIL\TesterIronPython\numcil.py" "%INSTALL_TARGET%"
 
 copy "core\libcphvb.dll" "%INSTALL_TARGET%"
 copy "core\libcphvb.lib" "%INSTALL_TARGET%"
