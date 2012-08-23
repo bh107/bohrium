@@ -9,6 +9,12 @@ Developer Guide
 .. toctree::
    :maxdepth: 2
 
+   contributing
+   extending
+
+.. toctree::
+   :maxdepth: 2
+
    tools
 
 .. toctree::

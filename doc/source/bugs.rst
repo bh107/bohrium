@@ -1,10 +1,6 @@
 Reporting Bugs
 ==============
 
-We do our best to bla bla bla please help is make cphVB even better by submitting bugs or request to us!
+Please help us make cphVB even better by submitting bugs and/or feature requests to us via the issue-tracker on bitbucket: https://bitbucket.org/cphvb/cphvb/issues
 
-Using the issue tracker
------------------------
-
-bla bla bla github bla bla bla
 
