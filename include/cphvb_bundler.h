@@ -25,10 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-/* Calculates the bundleable instructions.
+/** Calculates the bundleable instructions.
  *
- * @inst The instruction list
- * @size Size of the instruction list
+ * @param inst The instruction list
+ * @param start of the bundle
+ * @param end of the bundle
  * @return Number of consecutive bundeable instruction
  */
 cphvb_intp cphvb_inst_bundle(cphvb_instruction* insts, cphvb_intp start, cphvb_intp end);

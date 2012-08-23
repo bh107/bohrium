@@ -28,28 +28,39 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-/* Pretty print an array.
+/** Print a cphvb_array.
  *
- * @param instr The array in question
+ * @param array The array to print.
  */
 DLLEXPORT void cphvb_pprint_array( cphvb_array *array );
 
-/* Pretty print an instruction.
+/** Print a single cphvb_instruction.
  *
- * @param instr The instruction in question.
+ * @param instr The instruction to print.
  */
 DLLEXPORT void cphvb_pprint_instr( cphvb_instruction *instr );
 
+/** Print a list of cphvb_instructions, prefixes with text.
+ * 
+ * @param instruction_list List of instructions to print.
+ * @param instruction_count Number of cphvb_instruction in list.
+ * @param txt String to prefix the printed output.
+ */
 DLLEXPORT void cphvb_pprint_instr_list( cphvb_instruction* instruction_list, cphvb_intp instruction_count, const char* txt );
 
-/**
- * Pretty print a list of instructions
+/** Print a bundle of cphvb_instructions.
+ * 
  * @param instruction_count Number of instruction in list.
  * @param instruction_list Array of instructions.
  */
 DLLEXPORT void cphvb_pprint_bundle( cphvb_instruction* instruction_list, cphvb_intp instruction_count );
 
-//void cphvb_pprint_coord( cphvb_index* coord[CPHVB_MAXDIM], cphvb_index dims );
+/** Print a coordinate.
+ *
+ * @param coord The coordinate to print
+ * @param dims The number of dimensions in the coordinate.
+ *
+ */
 DLLEXPORT void cphvb_pprint_coord( cphvb_index* coord, cphvb_index dims );
 
 #ifdef __cplusplus

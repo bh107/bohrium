@@ -34,37 +34,37 @@ extern "C" {
 typedef struct cphvb_array cphvb_array;
 struct cphvb_array
 {
-    //Pointer to the base array. If NULL this is a base array
+    /// Pointer to the base array. If NULL this is a base array
     cphvb_array*     base;
 
-    //The type of data in the array
+    /// The type of data in the array
     cphvb_type       type;
 
-    //Number of dimentions
+    /// Number of dimentions
     cphvb_intp       ndim;
 
-    //Index of the start element (always 0 for base-array)
+    /// Index of the start element (always 0 for base-array)
     cphvb_index      start;
 
-    //Number of elements in each dimention
+    /// Number of elements in each dimention
     cphvb_index      shape[CPHVB_MAXDIM];
 
-    //The stride for each dimention
+    /// The stride for each dimention
     cphvb_index      stride[CPHVB_MAXDIM];
 
-    //Pointer to the actual data. Ignored for views
+    /// Pointer to the actual data. Ignored for views
     cphvb_data_ptr   data;
 };
 
-/* Create a new array.
+/** Create a new array.
  *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimensions
- * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array
+ * @param base Pointer to the base array. If NULL this is a base array
+ * @param type The type of data in the array
+ * @param ndim Number of dimensions
+ * @param start Index of the start element (always 0 for base-array)
+ * @param shape[CPHVB_MAXDIM] Number of elements in each dimention
+ * @param stride[CPHVB_MAXDIM] The stride for each dimention
+ * @param new_array The handler for the newly created array
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
 DLLEXPORT cphvb_error cphvb_create_array(cphvb_array*   base,
@@ -75,9 +75,9 @@ DLLEXPORT cphvb_error cphvb_create_array(cphvb_array*   base,
                                cphvb_index    stride[CPHVB_MAXDIM],
                                cphvb_array**  new_array);
 
-/* Destroy array.
+/** Destroy array.
  *
- * @array The array to destroy
+ * @param array The array to destroy
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
 DLLEXPORT cphvb_error cphvb_destroy_array(cphvb_array* array);
