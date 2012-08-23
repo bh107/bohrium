@@ -3,7 +3,7 @@ Common Intermediate Language (CIL)
 
 The purpose of NumCIL is to provide a library that provides any CIL language with an n-dimensional array class and perform operations on these. Using the notion of a n-dimensional array, it becomes possible to express many common scientific computations.
 
-The NdArray in NumCIL work like the ndarray from NumPy. You can slice, transpose, broadcast elements. You can run your programs entirely in CIL or use cphVB to offload computation. If you include the cphVB.Unsafe.dll in your project, NumCIL will seamlessly optimize computation in a manner not normally allowed by CIL. Including the dll will usually make your program run faster, and will just be disabled if your security settings prevent this.
+The NdArray in NumCIL work like the ndarray from NumPy. You can slice, transpose, broadcast elements. You can run your programs entirely in CIL or use cphVB to offload computation. If you include the NumCIL.Unsafe.dll in your project, NumCIL will seamlessly optimize computation in a manner not normally allowed by CIL. Including the dll will usually make your program run faster, and will just be disabled if your security settings prevent this.
 
 To use cphVB to do the computation, you need to include the NumCIL.cphVB.dll, as well as have a working setup of cphVB (see the installation section). After this, simply call NumCIL.cphVB.Utility.Activate() as one of the first lines of your program and all execution will be performed with cphVB. If cphVB is not correctly installed, the call will generate an error.
 
