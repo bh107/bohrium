@@ -25,6 +25,8 @@ Features
 Get Started!
 ------------
 
+* `Downloads <https://bitbucket.org/cphvb/cphvb/downloads/>`_ 
+
 .. toctree::
    :maxdepth: 2
 
