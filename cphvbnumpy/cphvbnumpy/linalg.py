@@ -94,9 +94,10 @@ def jacobi(a, b, tol=0.0005):
         error = norm(x-xo)/norm(x)
     return x
 
+
 def lu(A):
     """
-    Compute pivoted LU decompostion of a matrix.
+    Compute the LU decomposition.
 
     The decomposition is::
 
@@ -107,30 +108,27 @@ def lu(A):
 
     Parameters
     ----------
-    A : array, shape (M, N)
+    A : array, shape (M, M)
         Array to decompose
 
     Returns
     -------
-    p : array, shape (M, M)
-        Permutation matrix
-    lu : array, shape (M, N)
-        Lower triangular or trapezoidal matrix and 
-        upper triangular or trapezoidal matrix
-
-    Notes
-    -----
-    This function only supports cphvb-enabled arrays.
-
+    lu : array, shape (M, M)
+         2d array containing L in the over triangular part, except the unit
+         diagonal, and U in the upper triangular part
+    
+    p : array, shape (M)
+        Contains the row pivots used by the decomposition. 
+        Row i have been swaped with p[i]
     """
 
-    if A.dtype != np.float32 and A.dtype != np.float64:
+    if A.dtype != numpy.float32 and A.dtype != numpy.float64:
         raise ValueError("Input must be floating point numbers")
     if A.ndim != 2 or A.shape[0] != A.shape[1]:
         raise ValueError("Input must be square 2-d.")
     if A.cphvb:
         LU = A.copy() #do not overwrite original A
-        P = empty((A.shape[0],), dtype=np.int32)
+        P = empty((A.shape[0],), dtype=numpy.int32)
         bridge.lu(LU,P)
         return (LU, P)
     else:
