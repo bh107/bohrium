@@ -19,8 +19,8 @@ In addition to the tools described above, the following must be present::
 
 Get the source-code::
 
-  git clone git@bitbucket.org:cphvb/cphvb-priv.git
-  cd cphvb-priv
+  git clone git@bitbucket.org:cphvb/cphvb.git
+  cd cphvb
   git submodule init
   git submodule update
 
