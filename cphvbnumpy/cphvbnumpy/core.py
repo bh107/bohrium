@@ -624,40 +624,6 @@ def matmul(a,b):
     else:
     	return numpy.dot(a,b)
     	
-def lu(A):
-    """
-    Compute the LU decomposition.
-
-    This function computes the LU decomposition.
-
-    Parameters
-    ----------
-    A : array_like
-        Input array.
-
-    Returns
-    -------
-    lu : 2darray
-         2d array containing L in the over triangular part, except the unit
-         diagonal, and U in the upper triangular part
-    
-    p : 1d array
-        Contains the row pivots used by the decomposition. Row i have been swaped with p[i]
-
-    
-    """
-    if A.dtype != numpy.float32 and A.dtype != numpy.float64:
-        raise ValueError("Input must be floating point numbers")
-    if A.ndim != 2 or A.shape[0] != A.shape[1]:
-        raise ValueError("Input must be square 2-d.")
-    if A.cphvb:
-        LU = A.copy() #do not overwrite original A
-        P = empty((A.shape[0],), dtype=numpy.int32)
-        bridge.lu(LU,P)
-        return (LU, P)
-    else:
-	    raise ValueError("LU not supported for non cphvb numpy")
-	    
 def fft(A):
     """
     Compute the one-dimensional discrete Fourier Transform.
@@ -764,8 +730,42 @@ def fft2(A):
 	return numpy.fft.fft2(A)
 
 def rad2deg(x, out=None):
-    """Pleas doc me."""
+    """
+    Convert angles from radians to degrees.
 
+    Parameters
+    ----------
+    x : array_like
+        Input array in radians.
+    out : ndarray, optional
+        Output array of same shape as x.
+
+    Returns
+    -------
+    y : ndarray of floats
+        The corresponding degree values; if `out` was supplied this is a
+        reference to it.
+
+    See Also
+    --------
+    rad2deg : equivalent function
+
+    Examples
+    --------
+    Convert a radian array to degrees
+
+    >>> rad = np.arange(12.)*np.pi/6
+    >>> np.degrees(rad)
+    array([   0.,   30.,   60.,   90.,  120.,  150.,  180.,  210.,  240.,
+            270.,  300.,  330.])
+
+    >>> out = np.zeros((rad.shape))
+    >>> r = degrees(rad, out)
+    >>> np.all(r == out)
+    True
+
+    """
+    
     if out == None:
         out = 180 * x / pi
     else:
@@ -773,7 +773,34 @@ def rad2deg(x, out=None):
     return out
 
 def deg2rad(x, out=None):
-    """Pleas doc me."""
+    """
+    Convert angles from degrees to radians.
+
+    Parameters
+    ----------
+    x : array_like
+        Angles in degrees.
+
+    Returns
+    -------
+    y : ndarray
+        The corresponding angle in radians.
+
+    See Also
+    --------
+    rad2deg : Convert angles from radians to degrees.
+    unwrap : Remove large jumps in angle by wrapping.
+
+    Notes
+    -----
+    ``deg2rad(x)`` is ``x * pi / 180``.
+
+    Examples
+    --------
+    >>> np.deg2rad(180)
+    3.1415926535897931
+
+    """
 
     if out == None:
         out = x * pi / 180
@@ -782,7 +809,39 @@ def deg2rad(x, out=None):
     return out
         
 def logaddexp(x1, x2, out=None):
-    """Pleas doc me."""
+    """
+    Logarithm of the sum of exponentiations of the inputs.
+
+    Calculates ``log(exp(x1) + exp(x2))``. This function is useful in
+    statistics where the calculated probabilities of events may be so small
+    as to exceed the range of normal floating point numbers.  In such cases
+    the logarithm of the calculated probability is stored. This function
+    allows adding probabilities stored in such a fashion.
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+        Input values.
+
+    Returns
+    -------
+    result : ndarray
+        Logarithm of ``exp(x1) + exp(x2)``.
+
+    See Also
+    --------
+    logaddexp2: Logarithm of the sum of exponentiations of inputs in base-2.
+
+    Examples
+    --------
+    >>> prob1 = np.log(1e-50)
+    >>> prob2 = np.log(2.5e-50)
+    >>> prob12 = np.logaddexp(prob1, prob2)
+    >>> prob12
+    -113.87649168120691
+    >>> np.exp(prob12)
+    3.5000000000000057e-50
+    """
 
     if out == None:
         out = log(exp(x1) + exp(x2))
@@ -791,7 +850,42 @@ def logaddexp(x1, x2, out=None):
     return out
     
 def logaddexp2(x1, x2, out=None):
-    """Pleas doc me."""
+    """
+    Logarithm of the sum of exponentiations of the inputs in base-2.
+
+    Calculates ``log2(2**x1 + 2**x2)``. This function is useful in machine
+    learning when the calculated probabilities of events may be so small
+    as to exceed the range of normal floating point numbers.  In such cases
+    the base-2 logarithm of the calculated probability can be used instead.
+    This function allows adding probabilities stored in such a fashion.
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+        Input values.
+    out : ndarray, optional
+        Array to store results in.
+
+    Returns
+    -------
+    result : ndarray
+        Base-2 logarithm of ``2**x1 + 2**x2``.
+
+    See Also
+    --------
+    logaddexp: Logarithm of the sum of exponentiations of the inputs.
+
+    Examples
+    --------
+    >>> prob1 = np.log2(1e-50)
+    >>> prob2 = np.log2(2.5e-50)
+    >>> prob12 = np.logaddexp2(prob1, prob2)
+    >>> prob1, prob2, prob12
+    (-166.09640474436813, -164.77447664948076, -164.28904982231052)
+    >>> 2**prob12
+    3.4999999999999914e-50
+
+    """
 
     if out == None:
         out = log2(exp2(x1) + exp2(x2))
@@ -800,7 +894,36 @@ def logaddexp2(x1, x2, out=None):
     return out
     
 def modf(x, out1=None, out2=None):
-    """Pleas doc me."""
+    """
+    Return the fractional and integral parts of an array, element-wise.
+
+    The fractional and integral parts are negative if the given number is
+    negative.
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+
+    Returns
+    -------
+    y1 : ndarray
+        Fractional part of `x`.
+    y2 : ndarray
+        Integral part of `x`.
+
+    Notes
+    -----
+    For integer input the return values are floats.
+
+    Examples
+    --------
+    >>> np.modf([0, 3.5])
+    (array([ 0. ,  0.5]), array([ 0.,  3.]))
+    >>> np.modf(-0.5)
+    (-0.5, -0)
+
+    """
 
     if out1 == None:
         out1 = mod(x,1.0)
