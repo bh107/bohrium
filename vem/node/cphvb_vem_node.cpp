@@ -132,12 +132,11 @@ cphvb_error cphvb_vem_node_reg_func(char *fun, cphvb_intp *id)
 cphvb_error cphvb_vem_node_execute(cphvb_intp count,
                                    cphvb_instruction inst_list[])
 {
-    cphvb_intp i;
-    
     if (count <= 0)
         return CPHVB_SUCCESS;
     
     #ifdef CPHVB_TRACE
+        cphvb_intp i;
         for(i=0; i<count; ++i)
         {
             cphvb_instruction* inst = &inst_list[i];
