@@ -382,6 +382,11 @@ cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
     char *lib_paths = cphvb_component_config_lookup(self,"libs");
     if(lib_paths != NULL)
     {
+        //Lets make a working copy
+        lib_paths = strdup(lib_paths);
+        if(lib_paths == NULL)
+            return CPHVB_OUT_OF_MEMORY;
+    
         //Handle one library path at a time.
         char *path = strtok(lib_paths,",");
         while(path != NULL)
@@ -397,6 +402,7 @@ cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
             }
             path = strtok(NULL,",");
         }
+        free(lib_paths);
     }
     dlerror();//Clear old errors.
     *ret_func = (cphvb_userfunc_impl)dlsym(self->lib_handle, func);
