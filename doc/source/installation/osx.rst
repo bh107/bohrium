@@ -9,7 +9,7 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/tech
 
 Download and extract the source code::
   
-  wget https://bitbucket.org/cphvb/cphvb-priv/downloads/cphvb-v0.1.zip
+  wget https://bitbucket.org/cphvb/cphvb/downloads/cphvb-v0.1.tgz
   tar -xzf cphvb-v0.1.tgz
 
 When building and install cphVB we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
