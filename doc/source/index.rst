@@ -31,6 +31,10 @@ Get Started!
    :maxdepth: 2
 
    installation/index
+
+.. toctree::
+   :maxdepth: 2
+
    users/index
 
 .. toctree::
