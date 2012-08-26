@@ -7,31 +7,6 @@ Tools of the trade::
 
   sudo apt-get install git valgrind g++
 
-Building and Installing
------------------------
-
-In addition to the tools described above, the following must be present::
-
-  # Essential dependencies
-  sudo apt-get install python-dev mpi-default-dev
-
-  # Code and documentation generator-tools
-  sudo apt-get install python-pip python-cheetah python-sphinx doxygen
-  sudo pip install breathe
-
-Get the source-code::
-
-  git clone git@bitbucket.org:cphvb/cphvb.git
-  cd cphvb
-  git submodule init
-  git submodule update
-
-Build and install it::
-
-  make CPHVB_PYTHON=dython
-  make install
-
-.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, CPHVB_PYTHON, naming the binary of your custom compiled Python.
   
 
 Valgrind and Python
@@ -50,6 +25,17 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
+
+Build cphVB with custom Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Build and install it::
+
+  sudo make CPHVB_PYTHON=dython
+  sudo make install
+
+Most Used Commands
+~~~~~~~~~~~~~~~~~~
 
 Valgrind can be used to detect memory errors by invoking it with::
 

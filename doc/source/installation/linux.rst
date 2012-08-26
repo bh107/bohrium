@@ -7,6 +7,11 @@ You need to install all packages required to build NumPy::
   
   sudo apt-get build-dep python-numpy  
 
+And some additional packages::
+
+  sudo apt-get install g++ python-dev mpi-default-dev python-pip python-cheetah python-sphinx doxygen
+  sudo pip install breathe numpydoc
+
 Download and extract the source code::
   
   wget https://bitbucket.org/cphvb/cphvb/downloads/cphvb-v0.1.tgz
@@ -20,6 +25,8 @@ Build and install::
 
 .. note:: The installation will prompt you for the installation path. 
           The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
+
+.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, CPHVB_PYTHON, naming the binary of your custom compiled Python.
 
 Finally, you need to set the ``PYTHONPATH`` and the ``LD_LIBRARY_PATH`` environment variables.
 The ``PYTHONPATH`` should include the path to the newly installed cphVB Python module. This will also make sure that Python uses the NumPy module included in cphVB::
