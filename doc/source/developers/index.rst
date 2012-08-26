@@ -8,6 +8,11 @@ Currently only the :ref:`developer_tools` section contains useful and maintained
 .. toctree::
    :maxdepth: 2
 
+   tools
+
+.. toctree::
+   :maxdepth: 2
+
    overview
 
 .. toctree::
@@ -15,11 +20,6 @@ Currently only the :ref:`developer_tools` section contains useful and maintained
 
    contributing
    extending
-
-.. toctree::
-   :maxdepth: 2
-
-   tools
 
 .. toctree::
    :maxdepth: 2

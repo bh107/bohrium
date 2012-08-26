@@ -28,12 +28,11 @@ Get the source-code::
 
 Build and install it::
 
-  ./build.py install
+  make CPHVB_PYTHON=dython
+  make install
 
-.. note:: To compile to a custom Python (with valgrind debug support for example),
-   set the $PYTHON variable naming the binary of your custom compiled Python::
-
-     PYTHON=dython ./build.py install
+.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, CPHVB_PYTHON, naming the binary of your custom compiled Python.
+  
 
 Valgrind and Python
 -------------------
