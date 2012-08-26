@@ -1,3 +1,5 @@
+.. _developer_extending:
+
 Extending cphVB
 ===============
 

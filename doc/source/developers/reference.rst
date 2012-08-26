@@ -1,3 +1,5 @@
+.. _developer_reference:
+
 API Reference
 =============
 

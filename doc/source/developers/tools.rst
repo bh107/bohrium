@@ -3,12 +3,6 @@
 Tools
 =====
 
-Tools of the trade::
-
-  sudo apt-get install git valgrind g++
-
-  
-
 Valgrind and Python
 -------------------
 

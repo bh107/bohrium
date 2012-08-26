@@ -1,7 +1,6 @@
 Python/NumPy
 ------------
 
-
 .. automodule:: cphvbnumpy
    :members:
    :undoc-members:

@@ -12,7 +12,13 @@ If you just want read-access then simply clone the repos::
   git submodule init
   git submodule update
 
-This developer guide is very much work-in-progress. Currently only the :ref:`developer_tools` section contains useful and maintained information.
+Continue by taking a look at :ref:`installation` on how to build / install cphVB.
+
+The rest of the developer guide contains an :ref:`developer_overview` of the cphVB system. A documentation on :ref:`developer_extending` and notes on the setup/use of various :ref:`developer_tools` as well as a :ref:`developer_reference` for the cphVB backend-system.
+
+.. note::
+
+   The developer guide is very much work-in-progress. Currently only this and the :ref:`developer_tools` section contains useful and maintained information.
 
 .. toctree::
    :maxdepth: 2

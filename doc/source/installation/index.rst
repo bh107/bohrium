@@ -1,8 +1,9 @@
+.. _installation:
+
 Installation
 ============
 
 cphVB supports linux, Mac OSX and Windows.
-
 
 .. toctree::
    :maxdepth: 1
