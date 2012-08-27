@@ -1,0 +1,30 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%for $operator in $data
+%if $operator[2] == "operator.in"
+template <typename T>
+Vector<T>& Vector<T>::operator $operator[0] ( const T rhs )
+{
+    %if $operator[1] != "CUSTOM"
+    std::cout << *this << " operator[0] " << rhs << std::endl;
+    enqueue_ac( (cphvb_opcode)operator[1], *this, rhs );
+    return *this;
+    %end if
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator $operator[0] ( Vector<T> & rhs )
+{
+    %if $operator[1] != "CUSTOM"
+    std::cout << *this << " $operator[0] " << rhs << std::endl;
+    enqueue_aa( (cphvb_opcode)$operator[1], *this, rhs );
+    return *this;
+    %end if
+}
+
+%end if
+%end for
+
