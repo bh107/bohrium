@@ -1,7 +1,7 @@
 .. cphVB documentation master file
 
 Welcome!
-=================================
+========
 
 cphVB provides a runtime environment for efficiently executing vectorized applications using your favorourite programming languange Python/NumPy, C#, F# on Linux, Windows and MacOSX.
 
