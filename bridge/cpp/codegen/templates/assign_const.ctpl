@@ -1,0 +1,20 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+template <typename T>
+inline
+void assign_const_type( cphvb_constant* instr, T value );
+// NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
+
+%for $type in $data
+template <>
+inline
+void assign_const_type( cphvb_constant* constant, $type[1] value )
+{
+    constant->value.$type[2] = value;
+    constant->type = $type[3];
+}
+
+%end for
