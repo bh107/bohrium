@@ -1,0 +1,20 @@
+[
+["unsigned_char", "cphvb_bool", "bool8", "CPHVB_BOOL"],
+
+["int8_t",  "cphvb_int8", "int8", "CPHVB_INT8"],
+["int16_t", "cphvb_int16", "int16", "CPHVB_INT16"],
+["int32_t", "cphvb_int32", "int32", "CPHVB_INT32"],
+["int64_t", "cphvb_int64", "int64", "CPHVB_INT64"],
+
+["uint8_t",     "cphvb_uint8", "uint8", "CPHVB_UINT8"],
+["uint16_t",    "cphvb_uint16", "uint16", "CPHVB_UINT16"],
+["uint32_t",    "cphvb_uint32", "uint32", "CPHVB_UINT32"],
+["uint64_t",    "cphvb_uint64", "uint64", "CPHVB_UINT64"],
+
+["uint16_t",    "cphvb_float16", "float16", "CPHVB_FLOAT16"],
+["float",       "cphvb_float32", "float32", "CPHVB_FLOAT32"],
+["double",      "cphvb_float64", "float64", "CPHVB_FLOAT64"],
+
+["struct { float real, imag; }", "cphvb_complex64", "complex64", "CPHVB_COMPLEX64"]
+["struct { double real, imag; }", "cphvb_complex128", "complex128", "CPHVB_COMPLEX128"],
+]
