@@ -1,0 +1,18 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%for $function in $data
+%if $function[2] == "fun"
+
+template <typename T>
+Vector<T> & $function[0] ( Vector<T> & vector )
+{
+    std::cout << vector << std::endl;
+    enqueue_aa( (cphvb_opcode) $function[1], vector, vector );
+    return vector;
+}
+
+%end if
+%end for

@@ -1,0 +1,50 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%for $operator in $data
+%if $operator[2] == "operator.out"
+%if $operator[1] != "CUSTOM"
+%if $operator[3] == 3
+template <typename T>
+Vector<T> & operator $operator[0] ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    enqueue_aaa( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $operator[0] ( Vector<T> & lhs, T const& rhs )
+{
+    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    enqueue_aac( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $operator[0] ( T const& lhs, Vector<T> & rhs )
+{
+    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    enqueue_aca( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    return *vector;
+}
+
+%else
+template <typename T>
+Vector<T> & operator $operator[0] ( Vector<T> & vector )
+{
+    std::cout << vector << " $operator[0] " << std::endl;
+    enqueue_ac( (cphvb_opcode)$operator[1], vector, vector );
+    return vector;
+}
+
+%end if
+%end if
+%end if
+%end for
+
