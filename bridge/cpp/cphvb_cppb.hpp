@@ -33,9 +33,13 @@ public:
     Vector( int d0 );
     Vector( int d0, int d1 );
 
-    // Operators: =, [], (), -> must be nonstatic member functions.
-    // These are defined in cphvb_cppb_vector.hpp 
-    // The remaining are defined externally in *_operators.hpp
+    // Operators: 
+    //
+    // =, [], (), -> must be "internal" (nonstatic member functions),
+    // these are defined in cphvb_cppb_vector.hpp
+    //
+    // The remaining operators are defined "externally" in: cphvb_cppb_operators.hpp
+    //
     Vector& operator=( const T rhs );
     Vector& operator=( Vector & rhs );
 
@@ -43,10 +47,12 @@ public:
 
 }
 
-#include "cphvb_cppb_state.hpp"
-#include "cphvb_cppb_traits.hpp"
-#include "cphvb_cppb_operators.hpp"
-#include "cphvb_cppb_functions.hpp"
-#include "cphvb_cppb_vector.hpp"
+#include "cphvb_cppb_state.hpp"         // Communication with cphVB runtime
+#include "cphvb_cppb_traits.hpp"        // Traits for assigning constants and arrays.
+#include "cphvb_cppb_operators.hpp"     // Vector operations via operator-overloads, auto-generated:
+                                        // see ./codegen/* on how.
+#include "cphvb_cppb_functions.hpp"     // Vector operations via functions, auto-generated:
+                                        // see ./codegen/* on how.
+#include "cphvb_cppb_vector.hpp"        // (De)Constructor, "internal" operator overloads.
 
 #endif
