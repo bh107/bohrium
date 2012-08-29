@@ -52,3 +52,13 @@ Each component has a number of attributes that defines the component:
 
 Additionally, a component may have attributes that are specific for the component. For example the ``ocldir`` attributes is only relevant for the gpu component. 
 
+Environment Variables
+---------------------
+
+The various engines can be manipulated by environment variables::
+
+  CPHVB_VE_SCORE_BLOCKSIZE - Adjusts size of cache-tiling.
+  CPHVB_VE_MCORE_BLOCKSIZE - Adjusts size of work-splits and cache-tiling.
+  CPHVB_VE_MCORE_NTHREADS - Adjusts the number of threads used.
+
+Experiment with values to obtain optimimal results.
