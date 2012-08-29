@@ -47,14 +47,14 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
     myself = self;                              // Assign config container.
 
-    char *env = getenv("CPHVB_VE_BLOCKSIZE");   // Override block_size from environment-variable.
+    char *env = getenv("CPHVB_VE_SCORE_BLOCKSIZE");   // Override block_size from environment-variable.
     if(env != NULL)
     {
         block_size = atoi(env);
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
+        fprintf(stderr, "CPHVB_VE_SCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
         return CPHVB_ERROR;
     }
 

@@ -123,25 +123,25 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     cphvb_error res = CPHVB_SUCCESS;
     myself = self;                              // Assign config container.
 
-    env = getenv("CPHVB_VE_BLOCKSIZE");         // Override block_size from ENVVAR
+    env = getenv("CPHVB_VE_MCORE_BLOCKSIZE");         // Override block_size from ENVVAR
     if (env != NULL) {
         block_size = atoi(env);
     }
     if (block_size <= 0) {                      // Verify it
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
+        fprintf(stderr, "CPHVB_VE_MCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
         return CPHVB_ERROR;
     }
 
-    env = getenv("CPHVB_NUM_THREADS");          // Override worker_count with ENVVAR
+    env = getenv("CPHVB_VE_MCORE_NTHREADS");          // Override worker_count with ENVVAR
     if (env != NULL) {
         worker_count = atoi(env);
     }
 
     if (worker_count > MCORE_MAX_WORKERS) {     // Verify worker count
-        fprintf(stderr,"CPHVB_NUM_THREADS capped to %i.\n", MCORE_MAX_WORKERS);
+        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to %i.\n", MCORE_MAX_WORKERS);
         worker_count = MCORE_MAX_WORKERS;
     } else if (worker_count < 1) {
-        fprintf(stderr,"CPHVB_NUM_THREADS capped to default %i.\n", MCORE_WORKERS);
+        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to default %i.\n", MCORE_WORKERS);
         worker_count = MCORE_WORKERS;
     }
 
@@ -158,8 +158,6 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     if (pthread_barrier_init( &work_sync, NULL, worker_count+1) != 0) {
         return CPHVB_ERROR;
     }
-
-
 
     DEBUG_PRINT("[worker_count=%d, block_size=%lu]\n", worker_count, block_size);
 
