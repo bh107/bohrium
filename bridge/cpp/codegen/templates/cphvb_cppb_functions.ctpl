@@ -4,7 +4,7 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 %for $function in $data
-%if $function[2] == "fun"
+%if $function[2] == "operator.fun"
 
 template <typename T>
 Vector<T> & $function[0] ( Vector<T> & vector )
@@ -16,3 +16,7 @@ Vector<T> & $function[0] ( Vector<T> & vector )
 
 %end if
 %end for
+
+
+HEJSAS
+

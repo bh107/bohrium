@@ -15,6 +15,6 @@
 ["float",       "cphvb_float32", "float32", "CPHVB_FLOAT32"],
 ["double",      "cphvb_float64", "float64", "CPHVB_FLOAT64"],
 
-["struct { float real, imag; }", "cphvb_complex64", "complex64", "CPHVB_COMPLEX64"]
-["struct { double real, imag; }", "cphvb_complex128", "complex128", "CPHVB_COMPLEX128"],
+["struct { float real, imag; }", "cphvb_complex64", "complex64", "CPHVB_COMPLEX64"],
+["struct { double real, imag; }", "cphvb_complex128", "complex128", "CPHVB_COMPLEX128"]
 ]
