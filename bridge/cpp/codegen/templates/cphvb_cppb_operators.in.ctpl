@@ -5,6 +5,7 @@ directiveStartToken = %
 %slurp
 %for $operator in $data
 %if $operator[2] == "operator.in"
+
 template <typename T>
 Vector<T>& Vector<T>::operator $operator[0] ( const T rhs )
 {

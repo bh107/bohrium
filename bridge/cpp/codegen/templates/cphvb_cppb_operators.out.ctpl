@@ -3,43 +3,44 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-%for $operator in $data
-%if $operator[2] == "operator.out"
-%if $operator[1] != "CUSTOM"
-%if $operator[3] == 3
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.ext"
+%if $opcode != "CUSTOM"
+%if $opcount == 3
+
 template <typename T>
-Vector<T> & operator $operator[0] ( Vector<T> & lhs, Vector<T> & rhs )
+Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aaa( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    enqueue_aaa( (cphvb_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
 }
 
 template <typename T>
-Vector<T> & operator $operator[0] ( Vector<T> & lhs, T const& rhs )
+Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 {
-    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aac( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    enqueue_aac( (cphvb_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
 }
 
 template <typename T>
-Vector<T> & operator $operator[0] ( T const& lhs, Vector<T> & rhs )
+Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 {
-    std::cout << lhs << " $operator[0] " << rhs << std::endl;
+    std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
-    enqueue_aca( (cphvb_opcode)$operator[1], *vector, lhs, rhs );
+    enqueue_aca( (cphvb_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
 }
 
 %else
 template <typename T>
-Vector<T> & operator $operator[0] ( Vector<T> & vector )
+Vector<T> & operator $op ( Vector<T> & vector )
 {
-    std::cout << vector << " $operator[0] " << std::endl;
-    enqueue_ac( (cphvb_opcode)$operator[1], vector, vector );
+    std::cout << vector << " $op " << std::endl;
+    enqueue_ac( (cphvb_opcode)$opcode, vector, vector );
     return vector;
 }
 
