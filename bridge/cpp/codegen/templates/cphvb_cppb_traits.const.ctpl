@@ -8,13 +8,13 @@ inline
 void assign_const_type( cphvb_constant* instr, T value );
 // NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
 
-%for $type in $data
+%for $ctype, $cphvb_atype, $cphvb_ctype, $cphvb_enum in $data
 template <>
 inline
-void assign_const_type( cphvb_constant* constant, $type[1] value )
+void assign_const_type( cphvb_constant* constant, $cphvb_atype value )
 {
-    constant->value.$type[2] = value;
-    constant->type = $type[3];
+    constant->value.$cphvb_ctype = value;
+    constant->type = $cphvb_enum;
 }
 
 %end for

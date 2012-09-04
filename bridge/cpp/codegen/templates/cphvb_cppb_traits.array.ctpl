@@ -8,12 +8,12 @@ inline
 void assign_array_type( cphvb_array* array );
 // NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
 
-%for $type in $data
+%for $ctype, $cphvb_atype, $cphvb_ctype, $cphvb_enum in $data
 template <>
 inline
-void assign_array_type<$type[1]>( cphvb_array* array )
+void assign_array_type<$cphvb_atype>( cphvb_array* array )
 {
-    array->type = $type[3];
+    array->type = $cphvb_enum;
 }
 
 %end for
