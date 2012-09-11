@@ -64,6 +64,9 @@ inline bool ops_aligned( cphvb_array_ptr op_l, cphvb_array_ptr op_r) {
 /**
  * Calculates the bundleable instructions.
  *
+ * WARN: This function ignores sys-ops by simply incrementing the bundle-size when sys-ops are encountered.
+ * It is the responsibility of the caller to handle the sys-ops.
+ *
  * @param inst A list of instructions.
  * @param start Start from and with instruction with index 'start'.
  * @param end Stop at and with instruction with index 'end'.
@@ -88,8 +91,18 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
     int opcount = 0;                                                // Per-instruction variables
     cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
 
+
     for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
+        switch(insts[i].opcode) {                                   // Ignore sys-ops
+            CPHVB_DISCARD:
+            CPHVB_FREE:
+            CPHVB_SYNC:
+            CPHVB_NONE:
+            CPHVB_USERFUNC:
+                bundle_len++;
+                continue;
+        }
 
         opcount = cphvb_operands(insts[i].opcode);
                                                                     // Check for collisions
