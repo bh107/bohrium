@@ -1,0 +1,338 @@
+[
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        false, 
+        "simple", 
+        1, 
+        4.055748
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        false, 
+        "simple", 
+        2, 
+        4.176857
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        false, 
+        "simple", 
+        3, 
+        4.083016
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "simple", 
+        1, 
+        3.892027
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "simple", 
+        2, 
+        3.917202
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "simple", 
+        3, 
+        3.890478
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "score", 
+        1, 
+        2.72865
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "score", 
+        2, 
+        2.743199
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "score", 
+        3, 
+        2.742576
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "mcore", 
+        1, 
+        2.193748
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "mcore", 
+        2, 
+        1.969605
+    ], 
+    [
+        "jacobi_fixed.py --size=7168*7168*4", 
+        true, 
+        "mcore", 
+        3, 
+        1.884891
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        false, 
+        "simple", 
+        1, 
+        7.530977
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        false, 
+        "simple", 
+        2, 
+        7.636928
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        false, 
+        "simple", 
+        3, 
+        7.530641
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "simple", 
+        1, 
+        7.880918
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "simple", 
+        2, 
+        7.772402
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "simple", 
+        3, 
+        7.738239
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "score", 
+        1, 
+        7.761524
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "score", 
+        2, 
+        7.816779
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "score", 
+        3, 
+        7.736269
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "mcore", 
+        1, 
+        4.289228
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "mcore", 
+        2, 
+        4.455496
+    ], 
+    [
+        "swater.py --size=3600*1", 
+        true, 
+        "mcore", 
+        3, 
+        4.298808
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        false, 
+        "simple", 
+        1, 
+        6.050435
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        false, 
+        "simple", 
+        2, 
+        6.152564
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        false, 
+        "simple", 
+        3, 
+        6.842326
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "simple", 
+        1, 
+        4.397456
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "simple", 
+        2, 
+        4.36586
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "simple", 
+        3, 
+        4.490232
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "score", 
+        1, 
+        4.139051
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "score", 
+        2, 
+        4.082816
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "score", 
+        3, 
+        4.074499
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "mcore", 
+        1, 
+        2.129622
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "mcore", 
+        2, 
+        2.079272
+    ], 
+    [
+        "stencil.py --size=10240*1024*10", 
+        true, 
+        "mcore", 
+        3, 
+        2.143998
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        false, 
+        "simple", 
+        1, 
+        5.588968
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        false, 
+        "simple", 
+        2, 
+        5.636003
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        false, 
+        "simple", 
+        3, 
+        5.357166
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "simple", 
+        1, 
+        12.170242
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "simple", 
+        2, 
+        12.190461
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "simple", 
+        3, 
+        12.128198
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "score", 
+        1, 
+        12.159377
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "score", 
+        2, 
+        12.138976
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "score", 
+        3, 
+        12.102308
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "mcore", 
+        1, 
+        4.652687
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "mcore", 
+        2, 
+        4.550835
+    ], 
+    [
+        "kNN.py --size=10000*120", 
+        true, 
+        "mcore", 
+        3, 
+        5.105274
+    ]
+]

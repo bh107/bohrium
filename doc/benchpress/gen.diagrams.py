@@ -75,7 +75,8 @@ def main( argv ):
             ylabel('%s in relation to NumPy' % graph)
             xticks(pos, lbl)
             xlabel('Vector Engine')
-            title(names[mark])
+            name = names[mark] if mark in names else mark
+            title(name)
             grid(True)
             
             savefig("%s/%s_%s.pdf" % ( output, mark.lower(), graph.lower() ))
