@@ -3,6 +3,7 @@ import math
 
 class array:
     def pprint(self):
+        print "rank:   %d"%self.rank
         print "offset: %d"%self.offset
         print "dim:    %s"%self.dim
         print "stride: %s"%self.stride
@@ -18,7 +19,7 @@ class array:
             p = self.offset
             for d in xrange(len(self.dim)):
                 p += coord[d] * self.stride[d]
-            ret[p*2] = "*"
+            ret[2*(p+localsize*self.rank)] = "*"
             #Next coord
             for d in xrange(len(self.dim)):
                 coord[d] += 1
@@ -41,22 +42,23 @@ class array:
 
 NPROC = 2
 
-
 def find_largest_chuck(stride, dims, offset, max_dims, d=0):
     totalsize = reduce(mul,base.dim)
     localsize = totalsize / NPROC
 
-    dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
-    while dims[d] <= 0:#Overflow at most significant dimension
-        dims[d] = 1
-        d += 1
-        if d < len(dims):
-            dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
+    #Find a the largest possible dimension size
+    while 1:
+        dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
+        if dims[d] > max_dims[d]:#Overflow of the max dimension size
+            dims[d] = max_dims[d]
+            break
+        elif dims[d] <= 0:#Overflow of the local dimension size
+            dims[d] = 1
+            d += 1
+            if d >= len(dims):#All dimensions are overflowing
+                return None
         else:
-            return None    
-
-    if dims[d] > max_dims[d]:#Overflow of global dimension
-        dims[d] = max_dims[d]
+            break
     
     if d+1 >= len(dims):#No more dims
         return dims    
@@ -88,6 +90,7 @@ def local_array(ary, rank=0, offset=-1):
         return []    
 
     A = array()
+    A.rank = rank
     A.offset = offset
     A.stride = ary.stride
     A.base = ary.base
@@ -106,16 +109,34 @@ def local_array(ary, rank=0, offset=-1):
     offset += A.dim[incomplete_dim] * ary.stride[incomplete_dim]
     return [A] + local_array(ary, rank, offset)
 
-def local_array2(ary, pre_rank_last_view):
+def local_array2(ary, pre):
     totalsize = reduce(mul,base.dim)
     localsize = totalsize / NPROC
-    print pre_rank_last_view
-    for d in xrange(len(ary.dim)-1,-1,-1):
-        if pre_rank_last_view.dim[d] != ary.dim[d]:#Dimension was not completed by previous rank
-            offset = ary.offset
-            #for i in xrange(dim
-            #dim = find_largest_chuck(list(ary.stride),list(ary.dim),offset,list(ary.dim))
 
+    ret = []
+    incomplete_dim = 0
+    for d in xrange(len(ary.dim)-1,-1,-1):
+        if pre.dim[d] != ary.dim[d]:
+            incomplete_dim = d
+            offset = pre.offset + pre.dim[incomplete_dim] * pre.stride[incomplete_dim] - localsize
+            
+            max_dim = [1]*len(ary.dim)
+            max_dim[incomplete_dim] = ary.dim[incomplete_dim] - pre.dim[incomplete_dim]
+            for d in xrange(incomplete_dim+1,len(max_dim)):
+                max_dim[d] = ary.dim[d]
+
+            dim = find_largest_chuck(list(ary.stride),list(max_dim),offset,max_dim,incomplete_dim)
+            print dim, offset
+            
+            A = array()
+            A.rank = 1
+            A.offset = offset
+            A.stride = ary.stride
+            A.base = ary.base
+            A.dim = dim
+            ret.append(A)
+
+    return ret
     
     
 base = array()
@@ -128,7 +149,7 @@ base.stride = [1]
 A = array()
 A.base = base
 A.dim = [2,2,2]
-A.offset = 0
+A.offset = 1
 A.stride = [14,3,1]
 
 print "RANK 0:"
@@ -139,8 +160,6 @@ for i in xrange(len(ret)):
 
 print "RANK 1:"
 ret = local_array2(A,ret[-1])
-"""
 for i in xrange(len(ret)):
     print "chunk:  %d"%i
     print ret[i].pprint()
-"""
