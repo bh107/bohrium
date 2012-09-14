@@ -42,40 +42,40 @@ class array:
 NPROC = 2
 
 
-def find_largest_chuck(ary, dims, offset, d=0):
+def find_largest_chuck(stride, dims, offset, max_dims, d=0):
     totalsize = reduce(mul,base.dim)
     localsize = totalsize / NPROC
 
-    dims[d] = int(math.ceil((localsize - offset) / float(ary.stride[d])))
+    dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
     while dims[d] <= 0:#Overflow at most significant dimension
         dims[d] = 1
         d += 1
         if d < len(dims):
-            dims[d] = int(math.ceil((localsize - offset) / float(ary.stride[d])))
+            dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
         else:
             return None    
 
-    if dims[d] > ary.dim[d]:#Overflow of global dimension
-        dims[d] = ary.dim[d]
+    if dims[d] > max_dims[d]:#Overflow of global dimension
+        dims[d] = max_dims[d]
     
     if d+1 >= len(dims):#No more dims
         return dims    
 
     end_elem = offset
     for i in xrange(len(dims)):
-        end_elem += (dims[i]-1) * ary.stride[i]
+        end_elem += (dims[i]-1) * stride[i]
     if end_elem >= localsize:#Overflow of last element
         dims[d] -= 1
     
     if dims[d] <= 0:
         dims[d] = 1
-        return find_largest_chuck(ary,dims,offset,d=d+1)
+        return find_largest_chuck(stride,dims,offset,max_dims,d=d+1)
     else:
         return dims
 
 
 def local_array(ary, rank=0, offset=-1):
-    totalsize = reduce(mul,base.dim)
+    totalsize = reduce(mul,ary.base.dim)
     localsize = totalsize / NPROC
 
     #TODO: sort strides and dim
@@ -83,7 +83,7 @@ def local_array(ary, rank=0, offset=-1):
     if offset == -1:
         offset = ary.offset
     
-    dim = find_largest_chuck(ary,list(ary.dim),offset)
+    dim = find_largest_chuck(list(ary.stride),list(ary.dim),offset,list(ary.dim))
     if dim == None:
         return []    
 
@@ -96,15 +96,27 @@ def local_array(ary, rank=0, offset=-1):
     if reduce(mul,A.dim) == reduce(mul,ary.dim):
         return [A]
 
-    d = 0
-    while d < len(A.dim) and offset + (A.dim[d]-1) * ary.stride[d] >= localsize:
-        d += 1
-    if d < len(A.dim):
-        return [A] + local_array(ary, rank, offset + A.dim[d] * ary.stride[d])
-    else:
-        return [A]
+    #Find the least significant dimension not completely included in the last chuck
+    incomplete_dim = 0
+    for d in xrange(len(ary.dim)-1,-1,-1):
+        if A.dim[d] != ary.dim[d]:
+            incomplete_dim = d
+            break
+    
+    offset += A.dim[incomplete_dim] * ary.stride[incomplete_dim]
+    return [A] + local_array(ary, rank, offset)
 
- 
+def local_array2(ary, pre_rank_last_view):
+    totalsize = reduce(mul,base.dim)
+    localsize = totalsize / NPROC
+    print pre_rank_last_view
+    for d in xrange(len(ary.dim)-1,-1,-1):
+        if pre_rank_last_view.dim[d] != ary.dim[d]:#Dimension was not completed by previous rank
+            offset = ary.offset
+            #for i in xrange(dim
+            #dim = find_largest_chuck(list(ary.stride),list(ary.dim),offset,list(ary.dim))
+
+    
     
 base = array()
 base.offset = 0
@@ -119,7 +131,16 @@ A.dim = [2,2,2]
 A.offset = 0
 A.stride = [14,3,1]
 
+print "RANK 0:"
 ret = local_array(A)
 for i in xrange(len(ret)):
     print "chunk:  %d"%i
     print ret[i].pprint()
+
+print "RANK 1:"
+ret = local_array2(A,ret[-1])
+"""
+for i in xrange(len(ret)):
+    print "chunk:  %d"%i
+    print ret[i].pprint()
+"""
