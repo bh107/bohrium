@@ -47,7 +47,7 @@ def find_largest_chuck(ary, dims, offset, d=0):
     localsize = totalsize / NPROC
 
     dims[d] = int(math.ceil((localsize - offset) / float(ary.stride[d])))
-    while dims[d] <= 0:
+    while dims[d] <= 0:#Overflow at most significant dimension
         dims[d] = 1
         d += 1
         if d < len(dims):
@@ -55,14 +55,16 @@ def find_largest_chuck(ary, dims, offset, d=0):
         else:
             return None    
 
-    if dims[d] > ary.dim[d]:
+    if dims[d] > ary.dim[d]:#Overflow of global dimension
         dims[d] = ary.dim[d]
     
     if d+1 >= len(dims):#No more dims
         return dims    
 
-    end_elem = offset + (dims[d]-1) * ary.stride[d] + (ary.dim[d+1]-1) * ary.stride[d+1]
-    if end_elem >= localsize:
+    end_elem = offset
+    for i in xrange(len(dims)):
+        end_elem += (dims[i]-1) * ary.stride[i]
+    if end_elem >= localsize:#Overflow of last element
         dims[d] -= 1
     
     if dims[d] <= 0:
@@ -91,6 +93,9 @@ def local_array(ary, rank=0, offset=-1):
     A.base = ary.base
     A.dim = dim
 
+    if reduce(mul,A.dim) == reduce(mul,ary.dim):
+        return [A]
+
     d = 0
     while d < len(A.dim) and offset + (A.dim[d]-1) * ary.stride[d] >= localsize:
         d += 1
@@ -104,15 +109,15 @@ def local_array(ary, rank=0, offset=-1):
 base = array()
 base.offset = 0
 base.base = None
-base.dim = [28]
+base.dim = [36]
 base.stride = [1]
 
 
 A = array()
 A.base = base
-A.dim = [3,2]
-A.offset = 7
-A.stride = [6,2]
+A.dim = [2,2,2]
+A.offset = 0
+A.stride = [14,3,1]
 
 ret = local_array(A)
 for i in xrange(len(ret)):
