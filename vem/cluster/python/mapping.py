@@ -2,7 +2,7 @@ from operator import mul
 import math
 from array import array
 
-def find_largest_chuck(localsize, stride, dims, offset, max_dims, d=0):
+def find_largest_chunk_dim(localsize, stride, dims, offset, max_dims, d=0):
     dims = list(dims)
 
     #Find a the largest possible dimension size
@@ -30,17 +30,13 @@ def find_largest_chuck(localsize, stride, dims, offset, max_dims, d=0):
     
     if dims[d] <= 0:
         dims[d] = 1
-        return find_largest_chuck(localsize,stride,dims,offset,max_dims,d=d+1)
+        return find_largest_chunk_dim(localsize,stride,dims,offset,max_dims,d=d+1)
     else:
         return dims
 
 
 
-def local_array(nproc, ary, dim_offset=None):
-
-    if dim_offset is None:
-        dim_offset = [0]*len(ary.dim)
-    
+def get_largest_chunk(nproc, ary, dim_offset=None):
     rank = 0
     incomplete_dim = 0
     totalsize = reduce(mul,ary.base.dim)
@@ -70,8 +66,8 @@ def local_array(nproc, ary, dim_offset=None):
 
     assert reduce(mul,max_dim) > 0
     
-    #Find largest chuck
-    dim = find_largest_chuck(localsize, ary.stride,max_dim,offset,max_dim,incomplete_dim)
+    #Find largest chunk
+    dim = find_largest_chunk_dim(localsize, ary.stride,max_dim,offset,max_dim,incomplete_dim)
     if dim == None:
         assert False
 
@@ -98,11 +94,22 @@ def local_array(nproc, ary, dim_offset=None):
             dim_offset[d] = 0
             if d == 0:
 #                print "EXIT - dim_offset: %s, max_dim: %s, dim: %s"%(dim_offset, max_dim, dim)
-                return [A]
+                return (A,dim_offset) # [A]
         else:
             break 
 
 #    print "dim_offset: %s, max_dim: %s, dim: %s, offset: %d"%(dim_offset, max_dim, dim, offset)
 
-    return [A] + local_array(nproc, ary, dim_offset)
+    return (A,dim_offset) # + local_array(nproc, ary, dim_offset)
 
+
+
+def local_arrays(nproc, ary):
+    ret = []
+    dim_offset = [0]*len(ary.dim)
+    while True:
+        (chunk,dim_offset) = get_largest_chunk(nproc, ary, dim_offset)
+        ret.append(chunk)
+        if sum(dim_offset) == 0:
+            break
+    return ret

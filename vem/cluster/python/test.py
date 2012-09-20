@@ -1,6 +1,6 @@
 import math
 from array import array
-from mapping import local_array
+from mapping import local_arrays
 from gen_instructions import gen_instructions
 
 
@@ -19,7 +19,7 @@ A.offset = 5
 A.stride = [7,1]
 
 print "ARRAY A"
-ret = local_array(NPROC,A)
+ret = local_arrays(NPROC,A)
 for i in xrange(len(ret)):
     print ret[i].pprint()
 
@@ -30,7 +30,7 @@ B.offset = 4
 B.stride = [7,1]
 
 print "ARRAY B"
-ret = local_array(NPROC,B)
+ret = local_arrays(NPROC,B)
 for i in xrange(len(ret)):
     print ret[i].pprint()
 
