@@ -30,7 +30,7 @@ def find_largest_chuck(localsize, stride, dims, offset, max_dims, d=0):
     
     if dims[d] <= 0:
         dims[d] = 1
-        return find_largest_chuck(stride,dims,offset,max_dims,d=d+1)
+        return find_largest_chuck(localsize,stride,dims,offset,max_dims,d=d+1)
     else:
         return dims
 
