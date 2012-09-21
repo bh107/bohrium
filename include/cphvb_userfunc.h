@@ -84,6 +84,22 @@ typedef struct
 DLLEXPORT cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg);
 DLLEXPORT cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg);
 
+//The type of the user-defined nselect (maxn, minn, etc.) function.
+typedef struct
+{
+    //User-defined function header with three operands 
+    //(one input and two outputs).
+    CPHVB_USER_FUNC_HEADER(3)
+    //The 'n' in n-select.
+    cphvb_intp   n;
+    //The axis to n-select.
+    cphvb_intp   axis;
+    //The opcode to use with n-select.
+    cphvb_opcode  opcode;
+} cphvb_nselect_type;
+
+DLLEXPORT cphvb_error cphvb_nselect(cphvb_userfunc* arg, void* ve_arg);
+
 #ifdef __cplusplus
 }
 #endif
