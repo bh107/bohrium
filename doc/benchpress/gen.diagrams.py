@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import matplotlib
+matplotlib.use('Agg')
+
 from pylab import *
 import json
 import sys
