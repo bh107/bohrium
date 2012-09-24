@@ -39,6 +39,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
 cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg);
 cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg);
 cphvb_error cphvb_compute_matmul(cphvb_userfunc *arg, void* ve_arg);
+cphvb_error cphvb_compute_nselect(cphvb_userfunc *arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

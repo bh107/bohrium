@@ -28,6 +28,8 @@ static cphvb_userfunc_impl random_impl = NULL;
 static cphvb_intp random_impl_id = 0;
 static cphvb_userfunc_impl matmul_impl = NULL;
 static cphvb_intp matmul_impl_id = 0;
+static cphvb_userfunc_impl nselect_impl = NULL;
+static cphvb_intp nselect_impl_id = 0;
 
 cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 {
@@ -79,6 +81,10 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 } else if(inst->userfunc->id == matmul_impl_id) {
 
                     inst->status = matmul_impl(inst->userfunc, NULL);
+
+                } else if(inst->userfunc->id == nselect_impl_id) {
+
+                    inst->status = nselect_impl(inst->userfunc, NULL);
 
                 } else {                            // Unsupported userfunc
                 
@@ -169,6 +175,23 @@ cphvb_error cphvb_ve_simple_reg_func(char *fun, cphvb_intp *id)
         	return CPHVB_SUCCESS;
         }
     }
+    else if(strcmp("cphvb_nselect", fun) == 0)
+    {
+        if (nselect_impl == NULL)
+        {
+            cphvb_component_get_func(myself, fun, &nselect_impl);
+            if (nselect_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
+            
+            nselect_impl_id = *id;
+            return CPHVB_SUCCESS;
+        }
+        else
+        {
+            *id = nselect_impl_id;
+            return CPHVB_SUCCESS;
+        }
+    }
     
     return CPHVB_USERFUNC_NOT_SUPPORTED;
 }
@@ -186,5 +209,10 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
     return cphvb_compute_matmul( arg, ve_arg );
-    
 }
+
+cphvb_error cphvb_nselect( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_nselect( arg, ve_arg );
+}
+
