@@ -41,26 +41,6 @@ DLLEXPORT cphvb_error cphvb_vem_node_init(cphvb_component *self);
 DLLEXPORT cphvb_error cphvb_vem_node_shutdown(void);
 
 
-/* Create an array, which are handled by the VEM.
- *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimentions
- * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
- */
-DLLEXPORT cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
-                                        cphvb_type     type,
-                                        cphvb_intp     ndim,
-                                        cphvb_index    start,
-                                        cphvb_index    shape[CPHVB_MAXDIM],
-                                        cphvb_index    stride[CPHVB_MAXDIM],
-                                        cphvb_array**  new_array);
-
-
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
  *
@@ -68,7 +48,7 @@ DLLEXPORT cphvb_error cphvb_vem_node_create_array(cphvb_array*   base,
  * @return Error codes (CPHVB_SUCCESS)
  */
 DLLEXPORT cphvb_error cphvb_vem_node_execute(cphvb_intp count,
-                                   cphvb_instruction inst_list[]);
+                                             cphvb_instruction inst_list[]);
 
 /* Registre a new user-defined function.
  *
