@@ -114,11 +114,10 @@ def local_arrays(nproc, ops):
     dim_offset = [0]*len(ops[0].dim)
     ret = []
     while True:
-        print dim_offset
         #Get largest chunks
         chunk = [None]*len(ops)
         for i in xrange(len(ops)):
-            chunk[i] = get_largest_chunk(nproc, ops[i], list(dim_offset))
+            chunk[i] = get_largest_chunk(nproc, ops[i], dim_offset)
         
         #Find the greates dimensions included by all operands
         min_dim_size = list(chunk[0].dim)

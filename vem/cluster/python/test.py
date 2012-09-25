@@ -1,7 +1,6 @@
 import math
 from array import array
 from mapping import local_array, local_arrays
-from gen_instructions import gen_instructions
 
 
 NPROC = 4
