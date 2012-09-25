@@ -35,8 +35,7 @@ def find_largest_chunk_dim(localsize, stride, dims, offset, max_dims, d=0):
         return dims
 
 
-
-def get_largest_chunk(nproc, ary, dim_offset=None):
+def get_largest_chunk(nproc, ary, dim_offset):
     rank = 0
     incomplete_dim = 0
     totalsize = reduce(mul,ary.base.dim)
@@ -80,36 +79,78 @@ def get_largest_chunk(nproc, ary, dim_offset=None):
     A.base = ary.base
     A.dim = dim
     A.dim_offset = list(dim_offset)
-
-    #Find the least significant dimension not completely included in the last chuck
-    for d in xrange(len(ary.dim)-1,-1,-1):
-        if dim[d] != ary.dim[d]:
-            incomplete_dim = d
-            break
-
-    #Update the dimension offsets
-    for d in xrange(incomplete_dim,-1,-1):
-        dim_offset[d] += dim[d]
-        if dim_offset[d] >= ary.dim[d]:
-            dim_offset[d] = 0
-            if d == 0:
-#                print "EXIT - dim_offset: %s, max_dim: %s, dim: %s"%(dim_offset, max_dim, dim)
-                return (A,dim_offset) # [A]
-        else:
-            break 
-
-#    print "dim_offset: %s, max_dim: %s, dim: %s, offset: %d"%(dim_offset, max_dim, dim, offset)
-
-    return (A,dim_offset) # + local_array(nproc, ary, dim_offset)
+    return A 
 
 
 
-def local_arrays(nproc, ary):
+def local_array(nproc, ary):
     ret = []
     dim_offset = [0]*len(ary.dim)
     while True:
-        (chunk,dim_offset) = get_largest_chunk(nproc, ary, dim_offset)
+        chunk = get_largest_chunk(nproc, ary, list(dim_offset))
         ret.append(chunk)
-        if sum(dim_offset) == 0:
-            break
+
+        #Find the least significant dimension not completely included in the last chuck
+        incomplete_dim = -1
+        for d in xrange(len(ary.dim)-1,-1,-1):
+            if chunk.dim[d] != ary.dim[d]:
+                incomplete_dim = d
+                break
+        if incomplete_dim == -1:
+            return ret
+
+        #Update the dimension offsets
+        for d in xrange(incomplete_dim,-1,-1):
+            dim_offset[d] += chunk.dim[d]
+            if dim_offset[d] >= ary.dim[d]:
+                dim_offset[d] = 0
+                if d == 0:
+                    return ret
+            else:
+                break
     return ret
+
+def local_arrays(nproc, ops):
+    dim_offset = [0]*len(ops[0].dim)
+    ret = []
+    while True:
+        print dim_offset
+        #Get largest chunks
+        chunk = [None]*len(ops)
+        for i in xrange(len(ops)):
+            chunk[i] = get_largest_chunk(nproc, ops[i], list(dim_offset))
+        
+        #Find the greates dimensions included by all operands
+        min_dim_size = list(chunk[0].dim)
+        for i in xrange(1,len(ops)):
+            for d in xrange(len(chunk[0].dim)):
+                if chunk[i].dim[d] < min_dim_size[d]:
+                    min_dim_size[d] = chunk[i].dim[d] 
+
+        #Set the new dimension sizes.
+        for i in xrange(len(ops)):
+            for d in xrange(len(chunk[0].dim)):
+                chunk[i].dim[d] = min_dim_size[d] 
+
+        #Find the least significant dimension not completely included in the last chuck
+        incomplete_dim = -1
+        for d in xrange(len(ops[0].dim)-1,-1,-1):
+            if min_dim_size[d] != ops[0].dim[d]:
+                incomplete_dim = d
+                break
+
+        ret.append(chunk)
+
+        if incomplete_dim == -1:
+            return ret
+    
+        #Update the dimension offsets
+        for d in xrange(incomplete_dim,-1,-1):
+            dim_offset[d] += min_dim_size[d]
+            if dim_offset[d] >= ops[0].dim[d]:
+                dim_offset[d] = 0
+                if d == 0:
+                    return ret
+            else:
+                break 
+
