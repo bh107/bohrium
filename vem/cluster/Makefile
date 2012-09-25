@@ -1,24 +1,25 @@
 ROOT=../..
 LIB=libcphvb_vem_cluster.so
-CC=mpicc
+CC?=gcc
+CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
-SRC=cphvb_vem_cluster.c process_grid.c
-HEADER=cphvb_vem_cluster.h process_grid.h
-OBJ=$(SRC:.c=.o)
+SRC=cphvb_vem_cluster.cpp 
+HEADER=cphvb_vem_cluster.h
+OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
 all: $(LIB)
 
-%.o: %.c $(HEADER)
-		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+%.o: %.cpp $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CC) $(OBJ) -o $@ $(LDFLAGS)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
 		rm -rf *.o *~ $(LIB)
 
 install: all
-		sudo cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)

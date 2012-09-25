@@ -1,0 +1,26 @@
+ROOT=../..
+LIB=libcphvb_vem_cluster.dylib
+CC?=gcc
+CXX?=g++
+WARNOPTS=-Wall
+ARCHOPTS?=-arch i386 -arch x86_64
+LCFLAGS= $(ARCHOPTS) $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
+SRC=cphvb_vem_cluster.cpp
+HEADER=cphvb_vem_cluster.h
+OBJ=$(SRC:.cpp=.o)
+INSTALLDIR?=/opt/cphvb/
+
+all: $(LIB)
+
+%.o: %.cpp $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+
+$(LIB): $(OBJ)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+
+clean:
+		rm -rf *.o *~ *.so *.dylib
+
+install: all
+		cp $(LIB) $(INSTALLDIR)
