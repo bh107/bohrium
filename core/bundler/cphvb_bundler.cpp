@@ -95,11 +95,11 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
     for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
         switch(insts[i].opcode) {                                   // Ignore sys-ops
-            CPHVB_DISCARD:
-            CPHVB_FREE:
-            CPHVB_SYNC:
-            CPHVB_NONE:
-            CPHVB_USERFUNC:
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+            case CPHVB_USERFUNC:
                 bundle_len++;
                 continue;
         }

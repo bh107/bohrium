@@ -25,7 +25,12 @@ def onefive(n, m, i, b):
     right2 = raw[4:  ]
 
     for _ in xrange(i):
-        tmp = (data+left1+right1+left2+right2)/5
+        tmp = data
+        tmp += left1
+        tmp += right1
+        tmp += left2
+        tmp += right2
+        tmp /= 5
         data[:] = tmp
     raw.cphvb = False
 

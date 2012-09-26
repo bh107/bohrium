@@ -17,19 +17,31 @@ def main(config):
         ('simple', 'numpy',         False,3, None),
         ('simple', 'simple',        True, 3, None),
         ('score',  'score_1',       True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"1"}),
-        ('score',  'score_32',      True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"32"}),
+        ('score',  'score_16',      True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"32"}),
         ('score',  'score_64',      True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"64"}),
-        ('score',  'score_128',     True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"128"}),
         ('score',  'score_512',     True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"512"}),
         ('score',  'score_1024',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"1024"}),
-        ('mcore',  'mcore',         True, 3, None)
+        ('score',  'score_2048',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"2048"}),
+        ('score',  'score_4096',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"2048"}),
+        ('score',  'score_8192',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"8192"}),
+        ('score',  'score_16384',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"16384"}),
+        ('score',  'score_32768',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"32768"}),
+        ('score',  'score_65536',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"65536"}),
+        ('score',  'score_131072',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"131072"}),
+        ('score',  'score_262144',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"262144"}),
+        ('score',  'score_524288',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"524288"}),
+        ('score',  'score_1048576',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"1048576"}),
+        ('score',  'score_2097152',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"2097152"}),
+        ('score',  'score_4194304',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"4194304"}),
     ]
     bench   = [
+        ('simplest.py',     '--size=100000000*1'),
         ('cache.py',        '--size=10485760*10*1'),
         ('jacobi_fixed.py', '--size=7168*7168*4'),
         ('MonteCarlo.py',   '--size=100000000*1'),
         ('swater.py',       '--size=3600*1'),
         ('stencil.py',      '--size=10240*1024*10'),
+        ('twonine.py',      '--size=10240*1024*10'),
         ('kNN.py',          '--size=10000*120')
     ]
     
