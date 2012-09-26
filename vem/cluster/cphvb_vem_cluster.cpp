@@ -21,9 +21,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <vector>
 #include <cphvb.h>
 
 #include "cphvb_vem_cluster.h"
+#include "exchange.h"
 
 //Function pointers to the Node VEM.
 static cphvb_init vem_init;
@@ -46,7 +48,7 @@ static cphvb_intp userfunc_count = 0;
  */
 cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
-    printf("CLUSTER HEJ\n");
+    printf("CLUSTER INIT\n");
     cphvb_intp children_count;
     cphvb_error err;
     myself = self;
@@ -132,17 +134,42 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
+    std::vector<cphvb_instruction> local_inst;
+    local_inst.assign(inst_list, inst_list + count);//Local copy of the instruction list
+    
     if (count <= 0)
         return CPHVB_SUCCESS;
     
     #ifdef CPHVB_TRACE
-        cphvb_intp i;
-        for(i=0; i<count; ++i)
+        for(cphvb_intp i=0; i<count; ++i)
         {
             cphvb_instruction* inst = &inst_list[i];
             cphvb_component_trace_inst(myself, inst);
         }
     #endif
 
-    return vem_execute(count, inst_list);
+    exchange_inst_list(count, &local_inst.front());
+
+    cphvb_pprint_instr_list(&local_inst.front(), count, "");
+
+
+    return CPHVB_SUCCESS;
+
+/*
+    for(i=0; i<count; ++i)
+    {
+        cphvb_instruction *inst = &inst_list[i];
+        switch(insts[i].opcode) 
+        {
+            CPHVB_DISCARD:
+                
+            CPHVB_FREE:
+            CPHVB_SYNC:
+            CPHVB_NONE:
+            CPHVB_USERFUNC:
+            default: 
+        }
+    } 
+*/
+//    return vem_execute(count, inst_list);
 }

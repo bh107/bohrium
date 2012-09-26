@@ -5,8 +5,8 @@ CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS=-shared -L../../core -lcphvb -Wl,-soname,$(LIB)
-SRC=cphvb_vem_cluster.cpp 
-HEADER=cphvb_vem_cluster.h
+HEADER=./*.h $(ROOT)/include/*
+SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 

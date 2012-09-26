@@ -24,9 +24,9 @@
 #include <stdexcept>
 #include <deque>
 #include <list>
+#include <iostream>
 
 #ifdef DEBUG
-#include <iostream>
 #include <typeinfo>
 #endif
 
@@ -39,7 +39,7 @@ class StaticStoreException : public std::exception {};
 template <typename T>
 class StaticStore
 {
-private:
+  private:
     T* buffer;
     T* nextElement;
     size_t bufferSize;
