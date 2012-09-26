@@ -57,7 +57,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
         fprintf(stderr, "CPHVB_VE_SCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
         return CPHVB_ERROR;
     }
-
+    //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
     cphvb_mcache_init( 10 );
     return CPHVB_SUCCESS;
 }
@@ -106,16 +106,27 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
-        compute_loops[k] = cphvb_compute_get( &instr[i] );
-        if(compute_loops[k] == NULL)
-        {
-            end = start + k - 1;
-            instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
-            ret_errcode = CPHVB_PARTIAL_SUCCESS;
-            break;
+        switch(instr[i].opcode) {                   // Ignore sys-ops
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+            case CPHVB_USERFUNC:
+                break;
+
+            default:
+                compute_loops[k] = cphvb_compute_get( &instr[i] );
+                if(compute_loops[k] == NULL)
+                {
+                    end = start + k - 1;
+                    instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
+                    ret_errcode = CPHVB_PARTIAL_SUCCESS;
+                    break;
+                }
+                else
+                    instr[i].status = CPHVB_SUCCESS;
         }
-        else
-            instr[i].status = CPHVB_SUCCESS;
+
     }
                                                     // Block-size split
     nelements = cphvb_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
@@ -127,7 +138,17 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         
         for(i=start, k=0; i <= end; i++, k++)
         {
-            compute_loops[k]( &instr[i], &states[k], trav_end );
+            switch(instr[i].opcode) {                   // Ignore sys-ops
+                case CPHVB_DISCARD:
+                case CPHVB_FREE:
+                case CPHVB_SYNC:
+                case CPHVB_NONE:
+                case CPHVB_USERFUNC:
+                    break;
+
+                default:
+                    compute_loops[k]( &instr[i], &states[k], trav_end );
+            }
         }
     }
     
@@ -142,6 +163,12 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
     cphvb_intp bin_start, bin_end, bin_size;
     cphvb_intp bundle_start, bundle_end, bundle_size;
     cphvb_error res;
+
+    for(cur_index=0; cur_index < instruction_count; cur_index++)
+    {
+        inst = &instruction_list[cur_index];
+        //cphvb_pprint_instr(inst);
+    }
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
@@ -206,15 +233,21 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                                                                 // -={[ BINNING ]}=-
                 bin_start   = cur_index;                        // Count built-ins and their start/end indexes and allocate memory for them.
                 bin_end     = cur_index;
+                bool has_sys = false;
                 for(j=bin_start+1; j<instruction_count; j++)    
                 {
-                    binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
+                    binst = &instruction_list[j];               
+
+                    
+                    if (binst->opcode == CPHVB_USERFUNC) {      // Stop bundle, userfunc encountered.
+                        break;
+                    }
+                                                                // Delay sys-op
                     if ((binst->opcode == CPHVB_NONE) || \
                         (binst->opcode == CPHVB_DISCARD) || \
                         (binst->opcode == CPHVB_SYNC) || \
-                        (binst->opcode == CPHVB_USERFUNC) || \
                         (binst->opcode == CPHVB_FREE) ) {
-                        break;
+                        has_sys = true;
                     }
 
                     bin_end++;                                  // The "end" index
@@ -230,9 +263,35 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bundle_size     = (bin_size > 1) ? cphvb_inst_bundle( instruction_list, bin_start, bin_end ) : 1;
                 bundle_start    = bin_start;
                 bundle_end      = bundle_start + bundle_size-1;
+                //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
+                if (bundle_size > 1) { 
+                    block_execute( instruction_list, bundle_start, bundle_end );
+                    if (has_sys) {
+                        for(j=bundle_start; j <= bundle_end; j++) {
+                            inst = &instruction_list[j];
+                            switch(inst->opcode)                    // Dispatch instruction
+                            {
+                                case CPHVB_NONE:                    // NOOP.
+                                case CPHVB_DISCARD:
+                                case CPHVB_SYNC:
+                                    inst->status = CPHVB_SUCCESS;
+                                    break;
 
-                block_execute( instruction_list, bundle_start, bundle_end );
+                                case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+                                    inst->status = cphvb_mcache_free( inst );
+                                    break;
+
+                                       
+                            }
+                        }
+                    }
+
+                } else {
+                    inst = &instruction_list[bundle_start];
+                    inst->status = cphvb_compute_apply( inst );
+                }
                 cur_index += bundle_size-1;
+
         }
 
         if (inst->status != CPHVB_SUCCESS)    // Instruction failed
