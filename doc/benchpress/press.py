@@ -19,6 +19,7 @@ def main(config):
         ('simple', 'simple',        True, 3, None),
         ('score',  'score_1',       True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"1"}),
         ('score',  'score_16',      True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"32"}),
+        ('mcore',  'mcore',         True, 3, None)
         ('score',  'score_64',      True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"64"}),
         ('score',  'score_512',     True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"512"}),
         ('score',  'score_1024',    True, 3, {"CPHVB_VE_SCORE_BLOCKSIZE":"1024"}),
