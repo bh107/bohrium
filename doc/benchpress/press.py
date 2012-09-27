@@ -62,7 +62,7 @@ def main(config):
                 envs.update(env)
 
             args = ['python', script_path+bench[r][0], bench[r][1], '--cphvb=%s' % cphvb ]
-            print '-{[',engine,',', cphvb,',',' '.join(args[1:]), '.'
+            print '-{[',engine,',',engine_str,',', cphvb,',',' '.join(args[1:]), '.'
             for i in xrange(1,runs+1):
                 try:
                     p = Popen(
