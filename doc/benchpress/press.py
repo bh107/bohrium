@@ -45,12 +45,8 @@ def main(config):
         ('kNN.py',          '--size=10000*120')
     ]
     
-    run     = [0]
-    using   = [0,1,2,3]
-    #run = [0,2,3,4]
-
-    # Not running monte-carlo since it is cphvb_reduce cannot currently handle
-    # the mixed type operation which it generates.
+    run     = [0,1,2,3,4,5,6,7]
+    using   = [0,1,2,3,4]
 
     times = []
 
