@@ -22,16 +22,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <StaticStore.hpp>
 #include <map>
 
+//Local array information and storage
 static std::map<cphvb_intp, cphvb_array*> ary_map;
-static StaticStore<cphvb_array> ary_store;
+static StaticStore<cphvb_array> ary_store(512);
 
 void exchange_inst_list(cphvb_intp count,
                         cphvb_instruction inst_list[])
 {
 
-
     //TODO: Send the instruction list to all slave processes
-
 
     
     for(cphvb_intp i=0; i<count; ++i)
@@ -43,11 +42,11 @@ void exchange_inst_list(cphvb_intp count,
         {
             cphvb_array *bridge_a = inst->operand[j];
             cphvb_array *vem_a;
-            if((vem_a = ary_map[(cphvb_intp)bridge_a]) != NULL)
+            if((vem_a = ary_map[(cphvb_intp)bridge_a]) != NULL)//We know the operand
             {
                 inst->operand[j] = vem_a;
             }
-            else
+            else//We don't know the operand
             {
                 inst->operand[j] = ary_store.c_next();
                 *inst->operand[j] = *bridge_a;
