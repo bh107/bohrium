@@ -31,7 +31,6 @@
 #endif
 
 
-#define __SC_DEFAULT_BUFFER_SIZE (4096)
 
 class StaticStoreException : public std::exception {};
 
@@ -77,12 +76,6 @@ StaticStore<T>::StaticStore(size_t initialSize) :
     std::cout << "\n  bufferSize: " << bufferSize;
     std::cout << "\n  dataSize: " << bufferSize*sizeof(T) << std::endl;
 #endif
-}
-
-template <typename T>
-StaticStore<T>::StaticStore()
-{
-    StaticStore(__SC_DEFAULT_BUFFER_SIZE);
 }
 
 template <typename T>
