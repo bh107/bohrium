@@ -45,12 +45,8 @@ def main(config):
         ('kNN.py',          '--size=10000*120')
     ]
     
-    run     = [0]
-    using   = [0,1,2,3]
-    #run = [0,2,3,4]
-
-    # Not running monte-carlo since it is cphvb_reduce cannot currently handle
-    # the mixed type operation which it generates.
+    run     = [0,1,2,3,4,5,6,7]
+    using   = [0,1,2,3,4]
 
     times = []
 
@@ -67,17 +63,19 @@ def main(config):
             args = ['python', script_path+bench[r][0], bench[r][1], '--cphvb=%s' % cphvb ]
             print '-{[',engine,',', cphvb,',',' '.join(args[1:]), '.'
             for i in xrange(1,runs+1):
-                p = Popen(
-                    args,
-                    stdin=PIPE,
-                    stdout=PIPE,
-                    env=envs
-                )
-                out, err = p.communicate()
-                print "RUN",i, out, err, out.split(' ')[-1]
-                text = ' '.join(bench[r])
-                times.append( (text, cphvb, engine, i, float(out.split(' ')[-1] .rstrip()) ))
-
+                try:
+                    p = Popen(
+                        args,
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        env=envs
+                    )
+                    out, err = p.communicate()
+                    print "RUN",i, out, err, out.split(' ')[-1]
+                    text = ' '.join(bench[r])
+                    times.append( (text, cphvb, engine, i, float(out.split(' ')[-1] .rstrip()) ))
+                except:
+                    print "Error running benchmark:", sys.exc_info()[0]
             print "]}-"
 
     f = tempfile.NamedTemporaryFile(delete=False, dir=out_path, prefix='benchmark-')
