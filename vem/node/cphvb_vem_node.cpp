@@ -38,7 +38,7 @@ static cphvb_component **vem_node_components;
 static cphvb_component *vem_node_myself;
 
 //Number of user-defined functions registered.
-static cphvb_intp vem_userfunc_count = 0;
+static cphvb_intp userfunc_count = 0;
 
 /* Initialize the VEM
  *
@@ -103,23 +103,10 @@ cphvb_error cphvb_vem_node_shutdown(void)
  */
 cphvb_error cphvb_vem_node_reg_func(char *fun, cphvb_intp *id)
 {
-	cphvb_error e;
-	cphvb_intp tmpid;
-    
     if(*id == 0)//Only if parent didn't set the ID.
-        tmpid = vem_userfunc_count + 1;
+        *id = userfunc_count + 1;
 
-    e = ve_reg_func(fun, &tmpid);
-
-    //If the call succeeded, register the id as taken and return it
-    if (e == CPHVB_SUCCESS)
-    {
-	    if (tmpid > vem_userfunc_count)
-	    	vem_userfunc_count = tmpid;
-    	*id = tmpid;
-    }
-    
-    return e;
+    return ve_reg_func(fun, id);
 }
 
 

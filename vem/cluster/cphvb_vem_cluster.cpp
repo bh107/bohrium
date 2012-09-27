@@ -106,22 +106,10 @@ cphvb_error cphvb_vem_cluster_shutdown(void)
  */
 cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
-	cphvb_error e;
-	cphvb_intp tmpid;
-    
     if(*id == 0)//Only if parent didn't set the ID.
-        tmpid = userfunc_count + 1;
+        *id = userfunc_count + 1;
 
-    e = vem_reg_func(fun, &tmpid);
-
-    //If the call succeeded, register the id as taken and return it
-    if (e == CPHVB_SUCCESS)
-    {
-	    if (tmpid > userfunc_count)
-	    	userfunc_count = tmpid;
-    	*id = tmpid;
-    }
-    return e;
+    return vem_reg_func(fun, id);
 }
 
 
@@ -134,8 +122,9 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
+    //Local copy of the instruction list
     std::vector<cphvb_instruction> local_inst;
-    local_inst.assign(inst_list, inst_list + count);//Local copy of the instruction list
+    local_inst.assign(inst_list, inst_list + count);
     
     if (count <= 0)
         return CPHVB_SUCCESS;
