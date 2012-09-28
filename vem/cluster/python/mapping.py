@@ -2,9 +2,7 @@ from operator import mul
 import math
 from array import array
 
-def find_largest_chunk_dim(localsize, stride, dims, offset, max_dims, d=0):
-    dims = list(dims)
-
+def find_largest_chunk_dim(localsize, stride, offset, max_dims, d, dims):
     #Find a the largest possible dimension size
     while 1:
         dims[d] = int(math.ceil((localsize - offset) / float(stride[d])))
@@ -15,12 +13,12 @@ def find_largest_chunk_dim(localsize, stride, dims, offset, max_dims, d=0):
             dims[d] = 1
             d += 1
             if d >= len(dims):#All dimensions are overflowing
-                return None
+                return False
         else:
             break
     
     if d+1 >= len(dims):#No more dims
-        return dims    
+        return True    
 
     end_elem = offset
     for i in xrange(len(dims)):
@@ -30,9 +28,9 @@ def find_largest_chunk_dim(localsize, stride, dims, offset, max_dims, d=0):
     
     if dims[d] <= 0:
         dims[d] = 1
-        return find_largest_chunk_dim(localsize,stride,dims,offset,max_dims,d=d+1)
+        return find_largest_chunk_dim(localsize,stride,offset,max_dims,d+1,dims)
     else:
-        return dims
+        return True
 
 
 def get_largest_chunk(nproc, ary, dim_offset):
@@ -66,12 +64,11 @@ def get_largest_chunk(nproc, ary, dim_offset):
     assert reduce(mul,max_dim) > 0
     
     #Find largest chunk
-    dim = find_largest_chunk_dim(localsize, ary.stride,max_dim,offset,max_dim,incomplete_dim)
-    if dim == None:
+    dim = list(max_dim)
+    e = find_largest_chunk_dim(localsize, ary.stride,offset,max_dim,incomplete_dim,dim)
+    if e == None:
         assert False
 
-    assert reduce(mul,dim) > 0
- 
     A = array(nproc)
     A.rank = rank
     A.offset = offset
