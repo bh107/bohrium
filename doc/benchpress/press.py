@@ -61,18 +61,22 @@ def main(config):
 
         ('Cache Synth',     'cache.py',        '--size=10485760*10*1'),
         ('Stencil Synth2',  'twonine.py',      '--size=10240*1024*10'),
-        ('Stencil Synth3',  'simplest.py',     '--size=100000000*1')
+        ('1D 4way Stencil',  'simplest.py',     '--size=100000000*1')
     ]
     
-    benchmark = {                   # Define a benchmark which runs
-        'scripts': [7],             # these scripts
-        'engines': [12]             # using these engines
-    }   
                                     # DEFAULT BENCHMARK
-    benchmark = {                   # Define a benchmark which runs
+    default = {                     # Define a benchmark which runs
         'scripts': [0,1,2,3,4],     # these scripts
         'engines': [0,1,2,3]        # using these engines
     } 
+
+    cache_tiling = {
+        'scripts': [7],
+        'engines': [0,1]+ range(4, len(engines))
+    }
+
+    benchmark = default
+    #benchmark = cache_tiling
 
     parser = SafeConfigParser()     # Parser to modify the cphvb configuration file.
     parser.read(config)             # Read current configuration
