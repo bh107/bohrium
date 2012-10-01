@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import matplotlib
+matplotlib.use('Agg')
 
 
 from pylab import *
@@ -11,15 +12,20 @@ def stats( times ):
     
     return (sum(times)/float(len(times)), max(times), min(times), 0.0)
 
-def intify( text ):
+def lintify( text ):
 
-    str_as_int = 0
+    insts = None
     try:
-        str_as_int = int(text)
+        ints = int(text)
     except:
         pass
 
-    return str_as_int
+    try:
+        ints = [ord(x) for x in text[:4]]
+    except:
+        print "error in lintification!"
+
+    return ints
 
 def main( argv ):
 
@@ -47,19 +53,19 @@ def main( argv ):
     for mark in bench:
                                                     # Runtime in relation to baseline
         rt = [(engine_lbl, 1/(bases[mark]/bench[mark][engine_lbl])) for engine_lbl in (bench[mark]) ]
-        rt.sort(key=lambda x: [intify(y) for y in x[0].split('_')])
+        rt.sort(key=lambda x: [lintify(y) for y in x[0].split('_')])
         rt = [('numpy', bases[mark]/bases[mark])] + rt
 
                                                     # Speed-up in relation to baseline
         su = [(engine_lbl, (bases[mark]/bench[mark][engine_lbl])) for engine_lbl in (bench[mark]) ]
-        su.sort(key=lambda x: [intify(y) for y in x[0].split('_')])
+        su.sort(key=lambda x: [lintify(y) for y in x[0].split('_')])
         su = [('numpy', bases[mark]/bases[mark])] + su
 
         graphs = [
             ('Runtime', rt),
             ('Speedup', su),
         ]
-
+        print graphs
         for graph, data in graphs:
 
             lbl = [engine_lbl for engine_lbl, time in data]
