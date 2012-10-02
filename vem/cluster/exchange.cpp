@@ -42,6 +42,9 @@ void exchange_inst_list(cphvb_intp count,
         {
             cphvb_array *bridge_a = inst->operand[j];
             cphvb_array *vem_a;
+            if(cphvb_is_constant(bridge_a))
+                continue;//No need to exchange constants
+
             if((vem_a = ary_map[(cphvb_intp)bridge_a]) != NULL)//We know the operand
             {
                 inst->operand[j] = vem_a;

@@ -184,9 +184,12 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                     cphvb_instruction new_inst = *inst;
                     for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
                     {
-                        int c = j+k*nchunks_per_operand;
-                        chunks[c].start += size * chunks_ext[c].rank; 
-                        new_inst.operand[k] = &chunks[c];
+                        if(!cphvb_is_constant(inst->operand[k]))
+                        {
+                            int c = j+k*nchunks_per_operand;
+                            chunks[c].start += size * chunks_ext[c].rank; 
+                            new_inst.operand[k] = &chunks[c];
+                        }
                     }
                     cphvb_error e = vem_execute(1, &new_inst);
                     if(e != CPHVB_SUCCESS)

@@ -134,6 +134,17 @@ cphvb_error local_array(int NPROC,
 {
     cphvb_error ret;
     cphvb_intp dim_offset[CPHVB_MAXDIM];
+    
+    if(cphvb_is_constant(ary))
+    {
+        //Inset empty chunk as placeholder
+        cphvb_array chunk;
+        darray_ext chunk_ext;
+        chunks->push_back(chunk);
+        chunks_ext->push_back(chunk_ext);
+        return CPHVB_SUCCESS;
+    }
+
     memset(dim_offset, 0, ary->ndim * sizeof(cphvb_intp));
     
     //Compute total array base size
