@@ -26,6 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "cphvb_vem_cluster.h"
 #include "exchange.h"
+#include "mapping.h"
+#include "darray_extension.h"
 
 //Function pointers to the Node VEM.
 static cphvb_init vem_init;
@@ -48,7 +50,6 @@ static cphvb_intp userfunc_count = 0;
  */
 cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
-    printf("CLUSTER INIT\n");
     cphvb_intp children_count;
     cphvb_error err;
     myself = self;
@@ -125,6 +126,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //Local copy of the instruction list
     std::vector<cphvb_instruction> local_inst;
     local_inst.assign(inst_list, inst_list + count);
+    int NPROC = 2;
     
     if (count <= 0)
         return CPHVB_SUCCESS;
@@ -136,29 +138,66 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             cphvb_component_trace_inst(myself, inst);
         }
     #endif
-
+    
+    //Exchange the instruction list between all processes and
+    //update all operand pointers to local pointers
     exchange_inst_list(count, &local_inst.front());
 
-    cphvb_pprint_instr_list(&local_inst.front(), count, "");
 
+    cphvb_pprint_instr_list(&local_inst.front(), count, "CLUSTER");
+
+
+    for(cphvb_intp i=0; i < count; ++i)
+    {
+        cphvb_instruction* inst = &inst_list[i];
+        switch(inst->opcode) 
+        {
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+            case CPHVB_USERFUNC:
+            {
+                inst_list[i].status = vem_execute(1, inst);
+                if(inst_list[i].status != CPHVB_SUCCESS)
+                    return inst_list[i].status;
+                break;
+            }
+            default:
+            {   
+                std::vector<cphvb_array> chunks;
+                std::vector<darray_ext> chunks_ext;
+                local_array(NPROC, inst->operand[0], &chunks, &chunks_ext);
+                int nchunks_per_operand = (int) chunks.size();
+                for(cphvb_intp j=1; j < cphvb_operands_in_instruction(inst); ++j)
+                {
+                    local_array(NPROC, inst->operand[j], &chunks, &chunks_ext);
+                }
+                
+                for(cphvb_intp j=0; j < nchunks_per_operand; ++j)
+                {
+                    cphvb_intp size=1;
+                    for(cphvb_intp k=0; k<cphvb_base_array(inst->operand[0])->ndim; ++k)
+                        size *= cphvb_base_array(inst->operand[0])->shape[k];
+                    size = size / NPROC;
+
+                    cphvb_instruction new_inst = *inst;
+                    for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
+                    {
+                        int c = j+k*nchunks_per_operand;
+                        chunks[c].start += size * chunks_ext[c].rank; 
+                        new_inst.operand[k] = &chunks[c];
+                    }
+                    cphvb_error e = vem_execute(1, &new_inst);
+                    if(e != CPHVB_SUCCESS)
+                    {
+                        return e;
+                    }
+                }
+                break;
+            }
+        }
+    }
 
     return CPHVB_SUCCESS;
-
-/*
-    for(i=0; i<count; ++i)
-    {
-        cphvb_instruction *inst = &inst_list[i];
-        switch(insts[i].opcode) 
-        {
-            CPHVB_DISCARD:
-                
-            CPHVB_FREE:
-            CPHVB_SYNC:
-            CPHVB_NONE:
-            CPHVB_USERFUNC:
-            default: 
-        }
-    } 
-*/
-//    return vem_execute(count, inst_list);
 }

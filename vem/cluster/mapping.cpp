@@ -116,7 +116,7 @@ cphvb_error get_largest_chunk(cphvb_intp localsize,
  
     //Save chunk
     dary->rank   = rank;
-    chunk->base  = ary->base;
+    chunk->base  = cphvb_base_array(ary);
     chunk->type  = ary->type;
     chunk->ndim  = ary->ndim;
     chunk->data  = NULL;
@@ -138,8 +138,8 @@ cphvb_error local_array(int NPROC,
     
     //Compute total array base size
     cphvb_intp totalsize=1;
-    for(cphvb_intp i=0; i<ary->base->ndim; ++i)
-        totalsize *= ary->base->shape[i];
+    for(cphvb_intp i=0; i<cphvb_base_array(ary)->ndim; ++i)
+        totalsize *= cphvb_base_array(ary)->shape[i];
 
     //Compute local array base size
     cphvb_intp localsize = totalsize / NPROC;
