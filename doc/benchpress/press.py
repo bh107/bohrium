@@ -8,11 +8,21 @@ import os
 
 def meta():
 
-    return {
+    p = Popen(              # Try grabbing the repos-revision
+        ["git", "log", "--pretty=format:'%H'", "-n", "1"],
+        stdin=PIPE,
+        stdout=PIPE,
+    )
+    out, err = p.communicate()
+
+    info = {
         'date': str(datetime.now()),
         'cpu':  open('/proc/cpuinfo','r').read(),
-        'os':   open('/proc/version','r').read()
+        'os':   open('/proc/version','r').read(),
+        'rev':  out if out else 'Unknown'
     }
+
+    return info
 
 def main(config):
 
@@ -61,7 +71,7 @@ def main(config):
 
         ('Cache Synth',     'cache.py',        '--size=10485760*10*1'),
         ('Stencil Synth2',  'twonine.py',      '--size=10240*1024*10'),
-        ('1D 4way Stencil',  'simplest.py',     '--size=100000000*1')
+        ('1D 4way Stencil', 'simplest.py',     '--size=100000000*1')
     ]
     
                                     # DEFAULT BENCHMARK
@@ -75,8 +85,14 @@ def main(config):
         'engines': [0,1]+ range(4, len(engines))
     }
 
-    benchmark = default
+    test = {
+        'scripts': [0],
+        'engines': [0]
+    }
+
+    #benchmark = test
     #benchmark = cache_tiling
+    benchmark = default
 
     parser = SafeConfigParser()     # Parser to modify the cphvb configuration file.
     parser.read(config)             # Read current configuration
