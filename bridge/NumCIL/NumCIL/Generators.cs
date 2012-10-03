@@ -107,8 +107,13 @@ namespace NumCIL.Generic
 	/// <summary>
 	/// Marker interface for random ops
 	/// </summary>
-	public interface IRandomGeneratorOp<T> : INullaryOp<T>
+    public interface IRandomGeneratorOp<T> : INullaryOp<T>, IRandomOp
 	{ }
+
+    /// <summary>
+    /// Non-generic marker interface for random operators
+    /// </summary>
+    public interface IRandomOp { }
 
 	/// <summary>
 	/// Random generator for sbyte.
