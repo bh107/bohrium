@@ -126,7 +126,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //Local copy of the instruction list
     std::vector<cphvb_instruction> local_inst;
     local_inst.assign(inst_list, inst_list + count);
-    int NPROC = 2;
+    int NPROC = 1;
     
     if (count <= 0)
         return CPHVB_SUCCESS;
@@ -149,7 +149,8 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
 
     for(cphvb_intp i=0; i < count; ++i)
     {
-        cphvb_instruction* inst = &inst_list[i];
+        cphvb_instruction* inst = &local_inst[i];
+        assert(inst->opcode >= 0);
         switch(inst->opcode) 
         {
             case CPHVB_DISCARD:
@@ -158,12 +159,13 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             case CPHVB_NONE:
             case CPHVB_USERFUNC:
             {
-                inst_list[i].status = vem_execute(1, inst);
-                if(inst_list[i].status != CPHVB_SUCCESS)
-                    return inst_list[i].status;
+                local_inst[i].status = vem_execute(1, inst);
+                if(local_inst[i].status != CPHVB_SUCCESS)
+                    return local_inst[i].status;
                 break;
             }
             default:
+            if(0)
             {   
                 std::vector<cphvb_array> chunks;
                 std::vector<darray_ext> chunks_ext;
@@ -198,6 +200,18 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                     }
                 }
                 break;
+            }
+            {
+                std::vector<cphvb_array> chunks;
+                std::vector<darray_ext> chunks_ext;
+                cphvb_error e = local_arrays(NPROC, inst, chunks, chunks_ext);
+                if(e != CPHVB_SUCCESS)
+                    return e;
+                
+                
+                
+
+                break; 
             }
         }
     }
