@@ -209,13 +209,25 @@ cphvb_error local_arrays(int NPROC,
     //Handle one chunk at a time
     while(1)
     {
-        std::vector<cphvb_array>::size_type first_chunk = chunks.size();
+        cphvb_intp first_chunk = 0;
+        cphvb_intp op_is_constant = -1;
+
         for(cphvb_intp o=0; o < cphvb_operands_in_instruction(inst); ++o)
         {
             cphvb_array chunk;
             darray_ext chunk_ext;
             cphvb_array *ary = inst->operand[o];
-            assert(ary != NULL);           
+
+            if(cphvb_is_constant(ary))
+            {
+                //Inset empty chunk as placeholder
+                cphvb_array chunk;
+                darray_ext chunk_ext;
+                chunks.push_back(chunk);
+                chunks_ext.push_back(chunk_ext);
+                op_is_constant = o;
+                continue;
+            }
  
             //Compute total array base size
             cphvb_intp totalsize=1;
@@ -235,6 +247,9 @@ cphvb_error local_arrays(int NPROC,
         //Find the greates dimensions included by all operands
         for(cphvb_intp o=1; o < cphvb_operands_in_instruction(inst); ++o)
         {
+            if(op_is_constant == o)
+                continue;
+            
             cphvb_array *ary = &chunks[first_chunk + o];
             for(cphvb_intp i=0; i < ary->ndim; ++i)
             {
@@ -242,13 +257,20 @@ cphvb_error local_arrays(int NPROC,
                     min_dim_size[i] = ary->shape[i];
             }
         }
+    
         //Set the new dimension sizes
         for(cphvb_intp o=0; o < cphvb_operands_in_instruction(inst); ++o)
         {
-            cphvb_array *ary = inst->operand[o];
+            if(op_is_constant == o)
+                continue;
+
+            cphvb_array *ary = &chunks[first_chunk + o];
             for(cphvb_intp i=0; i < ary->ndim; ++i)
                 ary->shape[i] = min_dim_size[i];
         }
+
+        //New "first chunk" for the next iteration
+        first_chunk += cphvb_operands_in_instruction(inst);
 
         //Find the least significant dimension not completely included in the last chuck
         cphvb_intp incomplete_dim = -1;

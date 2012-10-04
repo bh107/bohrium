@@ -126,7 +126,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //Local copy of the instruction list
     std::vector<cphvb_instruction> local_inst;
     local_inst.assign(inst_list, inst_list + count);
-    int NPROC = 1;
+    int NPROC = 2;
     
     if (count <= 0)
         return CPHVB_SUCCESS;
@@ -143,9 +143,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //update all operand pointers to local pointers
     exchange_inst_list(count, &local_inst.front());
 
-
-    cphvb_pprint_instr_list(&local_inst.front(), count, "CLUSTER");
-
+//    cphvb_pprint_instr_list(&local_inst.front(), count, "CLUSTER");
 
     for(cphvb_intp i=0; i < count; ++i)
     {
@@ -207,10 +205,34 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                 cphvb_error e = local_arrays(NPROC, inst, chunks, chunks_ext);
                 if(e != CPHVB_SUCCESS)
                     return e;
-                
-                
-                
 
+                for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();
+                    c += cphvb_operands_in_instruction(inst))
+                {
+                    cphvb_instruction new_inst = *inst;
+                    for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
+                    {
+                        if(!cphvb_is_constant(inst->operand[k]))
+                        {
+                            cphvb_array *ary = &chunks[k+c];
+                            //Only for the local test.
+                            {
+                                cphvb_intp totalsize=1;
+                                for(cphvb_intp d=0; d < cphvb_base_array(ary)->ndim; ++d)
+                                    totalsize *= cphvb_base_array(ary)->shape[d];
+                                cphvb_intp localsize = totalsize / NPROC;
+                                ary->start += localsize * chunks_ext[k+c].rank;
+                            } 
+                            new_inst.operand[k] = ary;
+                        }
+                    }
+                    cphvb_error e = vem_execute(1, &new_inst);
+                    if(e != CPHVB_SUCCESS)
+                    {
+                        return e;
+                    }
+//                    cphvb_pprint_instr(&new_inst);
+                }
                 break; 
             }
         }
