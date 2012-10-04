@@ -87,7 +87,7 @@ __NOPS__
  * @inst Instruction
  * @return Number of operands
  */
-int cphvb_operands_in_instruction(cphvb_instruction *inst)
+int cphvb_operands_in_instruction(const cphvb_instruction *inst)
 {
     if (inst->opcode == CPHVB_USERFUNC)
         return inst->userfunc->nin + inst->userfunc->nout;
