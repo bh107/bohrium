@@ -148,11 +148,11 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
  * @view   Array/view in question
  * @return The Base array
  */
-cphvb_array* cphvb_base_array(cphvb_array* view)
+cphvb_array* cphvb_base_array(const cphvb_array* view)
 {
     if(view->base == NULL)
     {
-        return view;
+        return (cphvb_array*)view;
     }
     else
     {
@@ -292,7 +292,7 @@ cphvb_error cphvb_data_free(cphvb_array* array)
  * @operand_no Number of the operand in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
+cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
     if (cphvb_is_constant(instruction->operand[operand_no]))
@@ -310,7 +310,7 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
+bool cphvb_array_conflict(const cphvb_array *a, const cphvb_array *b)
 {
     cphvb_intp i;
     if (a == NULL || b == NULL)
@@ -343,7 +343,7 @@ bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
  * @array The array
  * @return The boolean answer
  */
-bool cphvb_is_scalar(cphvb_array* array)
+bool cphvb_is_scalar(const cphvb_array* array)
 {
     return (cphvb_base_array(array)->ndim == 0) ||
         (cphvb_base_array(array)->ndim == 1 && cphvb_base_array(array)->shape[0] == 1);
@@ -354,7 +354,7 @@ bool cphvb_is_scalar(cphvb_array* array)
  * @o The operand
  * @return The boolean answer
  */
-bool cphvb_is_constant(cphvb_array* o)
+bool cphvb_is_constant(const cphvb_array* o)
 {
     return (o == NULL);
 }
