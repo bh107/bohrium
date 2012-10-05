@@ -142,8 +142,8 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //update all operand pointers to local pointers
     exchange_inst_bridge2vem(count, inst_list, local_inst);
 
-    cphvb_pprint_instr_list(inst_list, count, "CLUSTER GLOBAL");
-    cphvb_pprint_instr_list(local_inst, count, "CLUSTER LOCAL");
+//    cphvb_pprint_instr_list(inst_list, count, "CLUSTER GLOBAL");
+//    cphvb_pprint_instr_list(local_inst, count, "CLUSTER LOCAL");
 
     for(cphvb_intp i=0; i < count; ++i)
     {
@@ -153,12 +153,22 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
         {
             case CPHVB_DISCARD:
             case CPHVB_FREE:
-            case CPHVB_SYNC:
             case CPHVB_NONE:
             {
                 local_inst[i].status = vem_execute(1, inst);
                 if(local_inst[i].status != CPHVB_SUCCESS)
                     return local_inst[i].status;
+                break;
+            }
+            case CPHVB_SYNC:
+            {
+                //Tell the NODE VEM
+                local_inst[i].status = vem_execute(1, inst);
+                if(local_inst[i].status != CPHVB_SUCCESS)
+                    return local_inst[i].status;
+                
+                //Update the Bridge's instruction list
+                exchange_inst_vem2bridge(1,inst,&inst_list[i]);                
                 break;
             }
             case CPHVB_USERFUNC:
@@ -203,6 +213,5 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             }
         }
     }
-
     return CPHVB_SUCCESS;
 }
