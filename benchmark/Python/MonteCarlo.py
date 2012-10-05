@@ -1,4 +1,4 @@
-import numpy as np
+import cphvbnumpy as np
 import cphvbbridge as cnp
 import util
 
