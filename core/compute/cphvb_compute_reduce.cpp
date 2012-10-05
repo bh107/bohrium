@@ -53,6 +53,46 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     out = a->operand[0];
     in  = a->operand[1];
     
+	if (in->ndim == 1)
+    {
+	    cphvb_index shape[CPHVB_MAXDIM];
+	    cphvb_index stride[CPHVB_MAXDIM];
+
+		// Create a new view with a single element, mapped to the output
+	    shape[0] = in->shape[0]-1;
+	    stride[0] = 0;
+	    cphvb_array *tt;
+    	cphvb_create_array(cphvb_base_array(out), out->type, 1, out->start, shape, stride, &tt);
+
+		// Create a new view hides the first element
+	    cphvb_array *tt2;
+		shape[0] = in->shape[0]-1;
+		stride[0] = in->stride[0];
+    	cphvb_create_array(cphvb_base_array(in), in->type, 1, in->start+in->stride[0], shape, stride, &tt2);
+    	
+    	// Copy the first element to the output
+    	memcpy((char*)cphvb_base_array(out)->data + out->start, (char*)cphvb_base_array(in)->data + in->start * cphvb_type_size(in->type), cphvb_type_size(in->type));
+
+		// Prepare a instruction for execution
+		inst.status = CPHVB_INST_PENDING;
+		inst.opcode = a->opcode;
+		inst.operand[0] = tt;
+		inst.operand[1] = tt2;
+		inst.operand[2] = tt;
+    	
+    	// Apply the operation
+		err = cphvb_compute_apply( &inst );
+
+		// Cleanup
+    	cphvb_destroy_array(tt);
+    	cphvb_destroy_array(tt2);
+
+        if (err != CPHVB_SUCCESS)
+            return err;    	
+    	
+    	return CPHVB_SUCCESS;
+    }
+    
     // WARN: This can create a ndim = 0 it seems to work though...
     tmp         = *in;                          // Copy the input-array meta-data
     tmp.base    = cphvb_base_array(in);
