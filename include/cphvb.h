@@ -125,7 +125,7 @@ DLLEXPORT int cphvb_operands(cphvb_opcode opcode);
  * @inst Instruction
  * @return Number of operands
  */
-DLLEXPORT int cphvb_operands_in_instruction(cphvb_instruction *inst);
+DLLEXPORT int cphvb_operands_in_instruction(const cphvb_instruction *inst);
 
 /* Text string for operation
  *
@@ -164,7 +164,7 @@ DLLEXPORT const char* cphvb_error_text(cphvb_error error);
  * @view   Array/view in question
  * @return The Base array
  */
-DLLEXPORT cphvb_array* cphvb_base_array(cphvb_array* view);
+DLLEXPORT cphvb_array* cphvb_base_array(const cphvb_array* view);
 
 /* Set the data pointer for the array.
  * Can only set to non-NULL if the data ptr is already NULL
@@ -208,8 +208,8 @@ DLLEXPORT cphvb_error cphvb_data_free(cphvb_array* array);
  * @operand_no Number of the operand in question
  * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
  */
-DLLEXPORT cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
-                              cphvb_intp operand_no);
+DLLEXPORT cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
+                                        cphvb_intp operand_no);
 
 /* Determines whether two arrays conflicts.
  *
@@ -217,21 +217,21 @@ DLLEXPORT cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+DLLEXPORT bool cphvb_array_conflict(const cphvb_array *a, const cphvb_array *b);
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
  * @a The array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_is_scalar(cphvb_array *array);
+DLLEXPORT bool cphvb_is_scalar(const cphvb_array *array);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_is_constant(cphvb_array* o);
+DLLEXPORT bool cphvb_is_constant(const cphvb_array* o);
 
 
 #ifdef __cplusplus
