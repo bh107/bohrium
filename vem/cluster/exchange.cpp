@@ -21,40 +21,53 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include <StaticStore.hpp>
 #include <map>
+#include <cassert>
 
 //Local array information and storage
-static std::map<cphvb_intp, cphvb_array*> ary_map;
+static std::map<cphvb_intp, cphvb_array*> bridge2vem;
+static std::map<cphvb_intp, cphvb_array*> vem2bridge;
 static StaticStore<cphvb_array> ary_store(512);
 
-void exchange_inst_list(cphvb_intp count,
-                        cphvb_instruction inst_list[])
+void exchange_inst_bridge2vem(cphvb_intp count,
+                              const cphvb_instruction bridge_inst[],
+                              cphvb_instruction vem_inst[])
 {
 
     //TODO: Send the instruction list to all slave processes
 
+    //TODO: We also need to exchange the array-bases
     
     for(cphvb_intp i=0; i<count; ++i)
     {
-        cphvb_instruction *inst = &inst_list[i];
-        int nop = cphvb_operands_in_instruction(inst);
-
+        const cphvb_instruction *bridge = &bridge_inst[i];
+        cphvb_instruction *vem = &vem_inst[i];
+        *vem = *bridge;
+        int nop = cphvb_operands_in_instruction(bridge);
+        assert(nop == cphvb_operands_in_instruction(vem));
         for(cphvb_intp j=0; j<nop; ++j)
         {
-            cphvb_array *bridge_a = inst->operand[j];
-            cphvb_array *vem_a;
-            if(cphvb_is_constant(bridge_a))
+            cphvb_array *bridge_op = bridge->operand[j];
+
+            if(cphvb_is_constant(bridge_op))
                 continue;//No need to exchange constants
 
-            if((vem_a = ary_map[(cphvb_intp)bridge_a]) != NULL)//We know the operand
+            vem->operand[j] = bridge2vem[(cphvb_intp)bridge_op];
+            if(vem->operand[j] == NULL)//We don't know the operand
             {
-                inst->operand[j] = vem_a;
-            }
-            else//We don't know the operand
-            {
-                inst->operand[j] = ary_store.c_next();
-                *inst->operand[j] = *bridge_a;
-                ary_map[(cphvb_intp)bridge_a] = inst->operand[j];
+                vem->operand[j] = ary_store.c_next();
+                *vem->operand[j] = *bridge_op;
+                bridge2vem[(cphvb_intp)bridge_op] = vem->operand[j];
+                vem2bridge[(cphvb_intp)vem->operand[j]] = bridge_op;
             }
         }
     }
+}
+
+void exchange_inst_vem2bridge(cphvb_intp count,
+                              const cphvb_instruction vem_inst[],
+                              cphvb_instruction bridge_inst[])
+{
+    
+
+
 }

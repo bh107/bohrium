@@ -22,8 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 
-void exchange_inst_list(cphvb_intp count,
-                        cphvb_instruction inst_list[]);
+void exchange_inst_bridge2vem(cphvb_intp count,
+                              const cphvb_instruction bridge_inst[],
+                              cphvb_instruction vem_inst[]);
 
+void exchange_inst_vem2bridge(cphvb_intp count,
+                              const cphvb_instruction vem_inst[],
+                              cphvb_instruction bridge_inst[]);
 
 #endif
