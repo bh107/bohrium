@@ -11,6 +11,7 @@ fi
 doxygen Doxyfile                # Generate C++ docs
 make html                       # Generate HTML via sphinx
 
+cp extras/benchmark_browser.html $DOCDIR/
 cp -r build/html/* $DOCDIR      # Copy to repos
 cd $DOCDIR
 git add .
