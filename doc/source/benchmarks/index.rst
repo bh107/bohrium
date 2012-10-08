@@ -3,17 +3,34 @@ Benchmarks
 
 The speedup graphs below represent the latest results (raw form available `here <https://bitbucket.org/cphvb/benchpress/raw/master/results/akira/benchmark-latest.json>`_) of running benchmarks on akira.
 
-All benchmark results are stored in json-format and are available `here <https://bitbucket.org/cphvb/benchpress/raw/master/results`_.
+All benchmark results are stored in json-format and are available `here <https://bitbucket.org/cphvb/benchpress/raw/master/results>`_.
 Benchmarks are run automatically in a daily fashion on akira and marge, results for p31sd and smithers01 are obtained manually.
 
-To compare benchmark-results from different machines and revisions, take a look at the `compare <http://cphvb.org/benchmarks/compare.html>`_ that is where the magic is happens.
+To compare benchmark-results from different machines and revisions, take a look at the `compare-tool <http://cphvb.org/benchmarks/compare.html>`_ that is where the magic is happens.
 
-![Jacobi Fixed   ](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi%20fixed_speedup.png)
-![1D 4way-Stencil](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/1d%204way%20stencil_speedup.png)
-![kNN            ](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png)
-![Monte Carlo    ](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte%20carlo_speedup.png)
-![Stencil        ](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil%20synth_speedup.png)
-![Shallow Water  ](https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow%20water_speedup.png)
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi%20fixed_speedup.png
+   :align: center
+   :alt: "Jacobi Fixed"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/1d%204way%20stencil_speedup.png
+   :align: center
+   :alt: "1D 4way-Stencil"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
+   :align: center
+   :alt: "kNN"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte%20carlo_speedup.png
+   :align: center
+   :alt: "Monte Carlo"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil%20synth_speedup.png
+   :align: center
+   :alt: "Stencil"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow%20water_speedup.png
+   :align: center
+   :alt: "Shallow Water"
 
 Deploying the Buildbot
 ======================
@@ -33,11 +50,11 @@ Log into the machine you want to run benchmarks on. Then do the following::
     ./bootstrap.sh
 
 After you have confirmed that the scripts runs without error, inspect the $MACHINE.log file
-Then add it to a cron-job or something like that:
+Then add it to a cron-job or something like that::
 
     crontab -e
 
-With a line something like:
+With a line something like::
 
     01      3       *       *       *       $HOME/buildbot/bootstrap.sh >> $HOME/buildbot/cron.log 2>&1
 
