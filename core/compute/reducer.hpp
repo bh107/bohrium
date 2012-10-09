@@ -30,13 +30,13 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 
     cphvb_index stride      = op_in->stride[axis];
     cphvb_index nelements   = op_in->shape[axis];
+    cphvb_index i, i, off0;
 
     if (op_in->ndim == 1) {                     // 1D special case
 
         *data_out = *data_in;                   // Initialize pseudo-scalar output
                                                 // the value of the first element
                                                 // in input.
-        cphvb_index off0, j;
         for(off0 = op_in->start+1, j=1; j < nelements; j++, off0 += stride ) {
             opcode_func( data_out, data_out, (data_in+off0) );
         }
@@ -45,31 +45,49 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 
     } else {                                    // ND general case
 
-        cphvb_array tmp;                        // Setup view of input
-        tmp.base    = cphvb_base_array(op_in);
-        tmp.type    = op_in->type;
-        tmp.ndim    = in->ndim-1;               // Decrement dimensionality
+        cphvb_array tmp;                            // Copy the input-array meta-data
+
+        tmp.base    = cphvb_base_array(in);
+        tmp.type    = in->type;
+        tmp.ndim    = in->ndim-1;
         tmp.start   = in->start;
 
-        cphvb_intp i, j;
-        for(i=0,j=0; i<op_in->ndim; i++) {      // Remove the "axis" dimension
-            if (i==axis) {
-                continue;
+        for(j=0, i=0; i<in->ndim; ++i) {            // Remove the 'axis' dimension from in
+            if(i != a->axis) {
+                tmp.shape[j]    = in->shape[i];
+                tmp.stride[j]   = in->stride[i];
+                ++j;
             }
-            tmp.shape[j]    = in->shape[i];
-            tmp.stride[j]   = in->stride[i];
-            j++;
-        } 
-        tmp.data = op_in->data;
+        }
+        tmp.data = in->data;
+        
+        inst.status = CPHVB_INST_PENDING;           // Copy the first element to the output.
+        inst.opcode = CPHVB_IDENTITY;
+        inst.operand[0] = op_out;
+        inst.operand[1] = &tmp;
+        inst.operand[2] = NULL;
 
-        cphvb_instruction r_instr;
-        r_instr.status = CPHVB_INST_PENDING;    // Setup a pseudo-instruction
-        r_instr.opcode = opcode;
-        r_instr.operand[0] = op_out;
-        r_instr.operand[1] = op_out;
-        r_instr.operand[2] = &tmp;
+        //err = traverse_aa<T, T, Instr>( instr );// execute the pseudo-instruction
+        err = cphvb_compute_apply( &instr );
+        if (err != CPHVB_SUCCESS) {
+            return err;
+        }
+        tmp.start += stride;
 
-        traverse_aaa<T, T, T, Instr>( instr );  // Do traversal
+        inst.status = CPHVB_INST_PENDING;           // Reduce over the 'axis' dimension.
+        inst.opcode = a->opcode;                    // NB: the first element is already handled.
+        inst.operand[0] = out;
+        inst.operand[1] = out;
+        inst.operand[2] = &tmp;
+        
+        for(i=1; i<nelements; ++i) {
+            //err = traverse_aaa<T, T, T, Instr>( instr );
+            err = cphvb_compute_apply( &instr );
+            if (err != CPHVB_SUCCESS) {
+                return err;
+            }
+            tmp.start += stride;
+        }
 
         return CPHVB_SUCCESS;
     }
