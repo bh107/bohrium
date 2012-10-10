@@ -13,6 +13,7 @@ def main():
         ('traverser',   'traverser.ctpl',       'traverser.hpp'),
         ('functors',    'functors.ctpl',        'functors.hpp'),
         ('compute',     'cphvb_compute.ctpl',   'cphvb_compute.cpp'),
+        ('reduce',      'cphvb_reduce.ctpl',   'cphvb_compute_reduce.cpp'),
     ]
 
     ignore  = json.load(open(script_dir+'ignore.json'))
