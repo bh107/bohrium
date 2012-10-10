@@ -124,7 +124,7 @@ cphvb_error get_largest_chunk(cphvb_intp localsize,
     memcpy(chunk->stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
     chunk->start = offset; 
     memcpy(chunk->shape, dim, ary->ndim * sizeof(cphvb_intp));
-    
+
     return CPHVB_SUCCESS;
 }
 
@@ -225,6 +225,7 @@ cphvb_error local_arrays(int NPROC,
                 darray_ext chunk_ext;
                 chunks.push_back(chunk);
                 chunks_ext.push_back(chunk_ext);
+                assert(op_is_constant == -1);
                 op_is_constant = o;
                 continue;
             }
@@ -239,11 +240,13 @@ cphvb_error local_arrays(int NPROC,
 
             if((ret = get_largest_chunk(localsize, ary, dim_offset, &chunk, &chunk_ext)) != CPHVB_SUCCESS)
                 return ret;
+
             chunks.push_back(chunk);
             chunks_ext.push_back(chunk_ext);
         }
         cphvb_intp min_dim_size[CPHVB_MAXDIM];
-        memcpy(min_dim_size, &chunks[first_chunk], chunks[first_chunk].ndim * sizeof(cphvb_intp));
+        memcpy(min_dim_size, chunks[first_chunk].shape, chunks[first_chunk].ndim * sizeof(cphvb_intp));
+
         //Find the greates dimensions included by all operands
         for(cphvb_intp o=1; o < cphvb_operands_in_instruction(inst); ++o)
         {

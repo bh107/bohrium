@@ -35,8 +35,6 @@ void exchange_inst_bridge2vem(cphvb_intp count,
 
     //TODO: Send the instruction list to all slave processes
 
-    //TODO: We also need to exchange the array-bases
-    
     for(cphvb_intp i=0; i<count; ++i)
     {
         const cphvb_instruction *bridge = &bridge_inst[i];
@@ -98,8 +96,6 @@ void exchange_inst_vem2bridge(cphvb_intp count,
      
     //TODO: Send the instruction list to all slave processes
 
-    //TODO: We also need to exchange the array-bases
-    
     for(cphvb_intp i=0; i<count; ++i)
     {
         const cphvb_instruction *vem = &vem_inst[i];
