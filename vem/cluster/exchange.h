@@ -30,4 +30,6 @@ void exchange_inst_vem2bridge(cphvb_intp count,
                               const cphvb_instruction vem_inst[],
                               cphvb_instruction bridge_inst[]);
 
+void exchange_inst_discard(cphvb_array *vem_ary);
+
 #endif

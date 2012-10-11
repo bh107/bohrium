@@ -42,6 +42,10 @@ void exchange_inst_bridge2vem(cphvb_intp count,
         *vem = *bridge;
         int nop = cphvb_operands_in_instruction(bridge);
         assert(nop == cphvb_operands_in_instruction(vem));
+
+        if(bridge->opcode == CPHVB_USERFUNC)
+            continue;
+
         for(cphvb_intp j=0; j<nop; ++j)
         {
             cphvb_array *bridge_op = bridge->operand[j];
@@ -69,7 +73,7 @@ void exchange_inst_bridge2vem(cphvb_intp count,
                         bridge2vem[(cphvb_intp)bridge_base] = vem->operand[j]->base;
                         vem2bridge[(cphvb_intp)vem->operand[j]->base] = bridge_base;
                     }
-                 }   
+                }   
             }
 
             //TODO: Do data communication
@@ -93,9 +97,6 @@ void exchange_inst_vem2bridge(cphvb_intp count,
                               const cphvb_instruction vem_inst[],
                               cphvb_instruction bridge_inst[])
 {
-     
-    //TODO: Send the instruction list to all slave processes
-
     for(cphvb_intp i=0; i<count; ++i)
     {
         const cphvb_instruction *vem = &vem_inst[i];
@@ -111,7 +112,6 @@ void exchange_inst_vem2bridge(cphvb_intp count,
             bridge->operand[j] = vem2bridge[(cphvb_intp)vem_op];
             assert(bridge->operand[j] != NULL);
             
-           
             //TODO: Do data communication
             cphvb_array *vem_base = cphvb_base_array(vem->operand[j]);
             cphvb_array *bridge_base = cphvb_base_array(bridge->operand[j]);
@@ -127,3 +127,17 @@ void exchange_inst_vem2bridge(cphvb_intp count,
         }
     }
 }
+
+void exchange_inst_discard(cphvb_array *vem_ary)
+{
+    cphvb_array *bridge_ary = vem2bridge[(cphvb_intp)vem_ary];
+    if(bridge_ary != NULL)
+    {
+        bridge2vem.erase((cphvb_intp)bridge_ary);
+        vem2bridge.erase((cphvb_intp)vem_ary);
+        ary_store.erase(vem_ary);
+    }
+}
+
+
+
