@@ -131,7 +131,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         }
     #endif
 
-    cphvb_pprint_instr_list(inst_list, count, "NODE");
+   // cphvb_pprint_instr_list(inst_list, count, "NODE");
 
 
     return ve_execute(count, inst_list);
