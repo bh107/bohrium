@@ -125,6 +125,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
 {
     //Local copy of the instruction list
     cphvb_instruction local_inst[count];
+    cphvb_error err;
     int NPROC = 1;
     
     if (count <= 0)
@@ -140,9 +141,8 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
 
     //Exchange the instruction list between all processes and
     //update all operand pointers to local pointers
-    exchange_inst_bridge2vem(count, inst_list, local_inst);
-
 //    cphvb_pprint_instr_list(inst_list, count, "CLUSTER GLOBAL");
+    exchange_inst_bridge2vem(count, inst_list, local_inst);
 //    cphvb_pprint_instr_list(local_inst, count, "CLUSTER LOCAL");
 
     for(cphvb_intp i=0; i < count; ++i)
@@ -152,20 +152,26 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
         switch(inst->opcode) 
         {
             case CPHVB_DISCARD:
+            {
+                exchange_inst_discard(inst->operand[0]);
+            }
             case CPHVB_FREE:
             case CPHVB_NONE:
             {
-                local_inst[i].status = vem_execute(1, inst);
-                if(local_inst[i].status != CPHVB_SUCCESS)
-                    return local_inst[i].status;
+                err = vem_execute(1, inst);
+                local_inst[i].status = inst->status;
+                inst_list[i].status = inst->status;
+                if(err != CPHVB_SUCCESS)
+                    return err; 
                 break;
             }
             case CPHVB_SYNC:
             {
-                //Tell the NODE VEM
-                local_inst[i].status = vem_execute(1, inst);
-                if(local_inst[i].status != CPHVB_SUCCESS)
-                    return local_inst[i].status;
+                err = vem_execute(1, inst);
+                local_inst[i].status = inst->status;
+                inst_list[i].status = inst->status;
+                if(err != CPHVB_SUCCESS)
+                    return err; 
                 
                 //Update the Bridge's instruction list
                 exchange_inst_vem2bridge(1,inst,&inst_list[i]);                
@@ -173,20 +179,26 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             }
             case CPHVB_USERFUNC:
             {
-                assert(0);
+                printf("CPHVB_USERFUNC\n");
+                return CPHVB_ERROR;
             }
             default:
             {
+                cphvb_instruction new_inst;
                 std::vector<cphvb_array> chunks;
                 std::vector<darray_ext> chunks_ext;
-                cphvb_error e = local_arrays(NPROC, inst, chunks, chunks_ext);
-                if(e != CPHVB_SUCCESS)
-                    return e;
+                err = local_arrays(NPROC, inst, chunks, chunks_ext);
+                if(err != CPHVB_SUCCESS)
+                {
+                    inst->status = CPHVB_INST_PENDING;
+                    return err;
+                }
 
+                assert(chunks.size() > 0);
                 for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();
                     c += cphvb_operands_in_instruction(inst))
                 {
-                    cphvb_instruction new_inst = *inst;
+                    new_inst = *inst;
                     for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
                     {
                         if(!cphvb_is_constant(inst->operand[k]))
@@ -203,13 +215,28 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                             new_inst.operand[k] = ary;
                         }
                     }
-                    cphvb_error e = vem_execute(1, &new_inst);
-                    if(e != CPHVB_SUCCESS)
+                    err = vem_execute(1, &new_inst);
+                    local_inst[i].status = new_inst.status;
+                    inst_list[i].status = new_inst.status;                            
+                    if(err != CPHVB_SUCCESS)
+                        return err;
+    
+                    //Discard the created array-views
+                    for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
                     {
-                        return e;
+                        if(!cphvb_is_constant(inst->operand[k]))
+                        {
+                            new_inst.opcode = CPHVB_DISCARD;
+                            new_inst.status = CPHVB_INST_PENDING;
+                            new_inst.operand[0] = &chunks[k+c];
+                            err = vem_execute(1, &new_inst);
+                            local_inst[i].status = new_inst.status;
+                            inst_list[i].status = new_inst.status;                            
+                            if(err != CPHVB_SUCCESS)
+                                return err;
+                        }
                     }
                 }
-                break; 
             }
         }
     }
