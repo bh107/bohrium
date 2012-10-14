@@ -37,8 +37,8 @@ template <typename T> cphvb_error do_nselect(cphvb_array  *out_index,
     cphvb_pprint_array(out_value);
     printf("input: ");
     cphvb_pprint_array(input);
-    printf("n: %d\n", n);
-    printf("axis: %d\n", axis);
+    printf("n: %ld\n", n);
+    printf("axis: %ld\n", axis);
     printf("opcode: %s\n", cphvb_opcode_text(opcode));
  
     return CPHVB_SUCCESS;
