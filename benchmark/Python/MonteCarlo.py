@@ -30,5 +30,3 @@ sum /= I
 B.stop()
 B.pprint()
 
-print sum
-
