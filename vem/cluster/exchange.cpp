@@ -28,6 +28,28 @@ static std::map<cphvb_intp, cphvb_array*> bridge2vem;
 static std::map<cphvb_intp, cphvb_array*> vem2bridge;
 static StaticStore<cphvb_array> ary_store(512);
 
+static cphvb_error copy_data_bridge2vem(cphvb_array *bridge_op, cphvb_array *vem_op)
+{
+    
+    //TODO: Do data communication
+
+    cphvb_array *bridge_base = cphvb_base_array(bridge_op);
+    cphvb_array *vem_base = cphvb_base_array(vem_op);
+    if(bridge_base->data != NULL)
+    {
+        cphvb_error e = cphvb_data_malloc(vem_op);
+        assert(e == CPHVB_SUCCESS);
+        assert(bridge_base->type == vem_base->type);
+
+        cphvb_intp nelem = cphvb_nelements(vem_base->ndim, vem_base->shape);
+        assert(bridge_base->data != vem_base->data);
+        memcpy(vem_base->data, bridge_base->data, nelem * cphvb_type_size(vem_base->type));
+    }
+    
+    return CPHVB_SUCCESS;
+}
+
+
 void exchange_inst_bridge2vem(cphvb_intp count,
                               const cphvb_instruction bridge_inst[],
                               cphvb_instruction vem_inst[])
@@ -77,21 +99,7 @@ void exchange_inst_bridge2vem(cphvb_intp count,
                     }
                 }   
             }
-
-            //TODO: Do data communication
-
-            cphvb_array *bridge_base = cphvb_base_array(bridge_op);
-            cphvb_array *vem_base = cphvb_base_array(vem_op);
-            if(bridge_base->data != NULL)
-            {
-                cphvb_error e = cphvb_data_malloc(vem_op);
-                assert(e == CPHVB_SUCCESS);
-                assert(bridge_base->type == vem_base->type);
-
-                cphvb_intp nelem = cphvb_nelements(vem_base->ndim, vem_base->shape);
-                assert(bridge_base->data != vem_base->data);
-                memcpy(vem_base->data, bridge_base->data, nelem * cphvb_type_size(vem_base->type));
-            }
+            copy_data_bridge2vem(bridge_op, vem_op);
             vem->operand[j] = vem_op;
         }
     }
