@@ -153,6 +153,20 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
         {
             case CPHVB_DISCARD:
             {
+                cphvb_array *op = inst->operand[0];
+                if(cphvb_base_array(op) == op &&//This is a base array
+                   op->base != NULL)//and has local allocated memory
+                {
+                    cphvb_instruction new_inst;
+                    new_inst.opcode     = CPHVB_FREE;
+                    new_inst.status     = CPHVB_INST_PENDING;
+                    new_inst.operand[0] = op;
+                    err = vem_execute(1, &new_inst);
+                    local_inst[i].status = new_inst.status;
+                    inst_list[i].status  = new_inst.status;
+                    if(err != CPHVB_SUCCESS)
+                        return err; 
+                }
                 exchange_inst_discard(inst->operand[0]);
             }
             case CPHVB_USERFUNC:
