@@ -43,12 +43,14 @@ void exchange_inst_bridge2vem(cphvb_intp count,
         int nop = cphvb_operands_in_instruction(bridge);
         assert(nop == cphvb_operands_in_instruction(vem));
 
-        if(bridge->opcode == CPHVB_USERFUNC)
-            continue;
-
         for(cphvb_intp j=0; j<nop; ++j)
         {
-            cphvb_array *bridge_op = bridge->operand[j];
+            cphvb_array *bridge_op;
+            if(bridge->opcode == CPHVB_USERFUNC)
+                bridge_op = bridge->userfunc->operand[j];
+            else
+                bridge_op = bridge->operand[j];
+ 
 
             if(cphvb_is_constant(bridge_op))
                 continue;//No need to exchange constants
@@ -84,6 +86,7 @@ void exchange_inst_bridge2vem(cphvb_intp count,
             {
                 cphvb_error e = cphvb_data_malloc(vem_op);
                 assert(e == CPHVB_SUCCESS);
+                assert(bridge_base->type == vem_base->type);
 
                 cphvb_intp nelem = cphvb_nelements(vem_base->ndim, vem_base->shape);
                 assert(bridge_base->data != vem_base->data);
@@ -105,7 +108,11 @@ void exchange_inst_vem2bridge(cphvb_intp count,
         assert(bridge->opcode == vem->opcode);
         for(cphvb_intp j=0; j<cphvb_operands_in_instruction(vem); ++j)
         {
-            cphvb_array *vem_op = vem->operand[j];
+            cphvb_array *vem_op;
+            if(vem->opcode == CPHVB_USERFUNC)
+                vem_op = vem->userfunc->operand[j];
+            else
+                vem_op = vem->operand[j];
 
             if(cphvb_is_constant(vem_op))
                 continue;//No need to exchange constants
@@ -120,6 +127,7 @@ void exchange_inst_vem2bridge(cphvb_intp count,
             {
                 cphvb_error e = cphvb_data_malloc(bridge_op);
                 assert(e == CPHVB_SUCCESS);
+                assert(bridge_base->type == vem_base->type);
 
                 cphvb_intp nelem = cphvb_nelements(vem_base->ndim, vem_base->shape);
                 assert(bridge_base->data != vem_base->data); 

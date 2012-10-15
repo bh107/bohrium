@@ -155,6 +155,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
             {
                 exchange_inst_discard(inst->operand[0]);
             }
+            case CPHVB_USERFUNC:
             case CPHVB_FREE:
             case CPHVB_NONE:
             {
@@ -176,11 +177,6 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                 //Update the Bridge's instruction list
                 exchange_inst_vem2bridge(1,inst,&inst_list[i]);                
                 break;
-            }
-            case CPHVB_USERFUNC:
-            {
-                printf("CPHVB_USERFUNC\n");
-                return CPHVB_ERROR;
             }
             default:
             {
