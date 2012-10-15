@@ -35,7 +35,7 @@ static cphvb_error copy_data_bridge2vem(cphvb_array *bridge_op, cphvb_array *vem
 
     cphvb_array *bridge_base = cphvb_base_array(bridge_op);
     cphvb_array *vem_base = cphvb_base_array(vem_op);
-    if(bridge_base->data != NULL)
+    if(bridge_base->data != NULL && vem_base->data == NULL)
     {
         cphvb_error e = cphvb_data_malloc(vem_op);
         assert(e == CPHVB_SUCCESS);
