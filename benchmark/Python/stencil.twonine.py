@@ -21,21 +21,16 @@ def main():
     right2  = raw[4:  ]
 
     center += 1.0
-    #tmp = center # Death!
+    tmp = center        # The kill
     cphvbbridge.flush()
     print "start"
     b.start()
 
     for _ in xrange(i):
-        tmp[:] = center
-        #tmp = center
         tmp += left1
         tmp += left2
         tmp += right1
         tmp += right2
-        tmp /= 9
-        center[:] = tmp
-        #center = tmp
 
     b.stop()
     b.pprint()

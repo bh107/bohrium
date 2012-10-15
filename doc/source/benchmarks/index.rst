@@ -8,27 +8,27 @@ Benchmarks are run automatically in a daily fashion on akira and marge, results 
 
 To compare benchmark-results from different machines and revisions, take a look at the `compare-tool <http://cphvb.org/benchmarks/compare.html>`_ that is where the magic is happens.
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi%20fixed_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_fixed_speedup.png
    :align: center
    :alt: "Jacobi Fixed"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/1d%204way%20stencil_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___ril_speedup.png
    :align: center
-   :alt: "1D 4way-Stencil"
+   :alt: "Monte Carlo PI"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way___no_copy_speedup.png
+   :align: center
+   :alt: "Stencil 1D 4Way - No Copy"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way___copy_speedup.png
+   :align: center
+   :alt: "Stencil 1D 4Way - Copy"
 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
    :align: center
    :alt: "kNN"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte%20carlo_speedup.png
-   :align: center
-   :alt: "Monte Carlo"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil%20synth_speedup.png
-   :align: center
-   :alt: "Stencil"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow%20water_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
    :align: center
    :alt: "Shallow Water"
 
