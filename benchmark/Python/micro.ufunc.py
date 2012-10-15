@@ -7,8 +7,6 @@ import sys
 import util
 import tempfile
 
-B = util.Benchmark()
-"Running micro-benchmark %s." % B.cphvb
 
 ttup = [
     ('CPHVB_BOOL',   np.bool),
@@ -18,7 +16,7 @@ ttup = [
     ('CPHVB_INT32',  np.int32),
     ('CPHVB_INT64',  np.int64),
 
-    ('CPHVB_FLOAT16',  np.float16),
+#    ('CPHVB_FLOAT16',  np.float16),
     ('CPHVB_FLOAT32',  np.float32),
     ('CPHVB_FLOAT64',  np.float64),
 
@@ -32,44 +30,44 @@ ttup = [
 ]
 tmap = dict(ttup)
 
-def main():
+def main( B, runs=5 ):
+
+    N = B.size.pop()
 
     print "Loading cphvb-opcodes."
     instructions    = json.load(open('../../core/codegen/opcodes.json'))
     ufuncs          = [ufunc for ufunc in instructions if not ufunc['system_opcode']]
-
 
     ignore_t = ['CPHVB_COMPLEX64']
     ignore_f = ['CPHVB_IDENTITY']
     
     print "Allocating operands."
     operands = {}                   # Setup operands of various types
-    op_length = 1024*1024*10
     for cphvb_type, np_type in ttup:
 
         if 'bool' in cphvb_type.lower():
             operands[ cphvb_type ] = (
-                np.ones([op_length],            dtype=np_type, cphvb=B.cphvb),
-                np.array([ True  ] * op_length, dtype=np_type, cphvb=B.cphvb),
-                np.array([ False ] * op_length, dtype=np_type, cphvb=B.cphvb),
+                np.ones([N],            dtype=np_type, cphvb=B.cphvb),
+                np.array([ True  ] * N, dtype=np_type, cphvb=B.cphvb),
+                np.array([ False ] * N, dtype=np_type, cphvb=B.cphvb),
             )
         elif 'int' in cphvb_type.lower():
             operands[ cphvb_type ] = (
-                np.ones([op_length],         dtype=np_type, cphvb=B.cphvb),
-                np.array([ 3 ] * op_length,  dtype=np_type, cphvb=B.cphvb),
-                np.array([ 2 ] * op_length,  dtype=np_type, cphvb=B.cphvb),
+                np.ones([N],         dtype=np_type, cphvb=B.cphvb),
+                np.array([ 3 ] * N,  dtype=np_type, cphvb=B.cphvb),
+                np.array([ 2 ] * N,  dtype=np_type, cphvb=B.cphvb),
             )
         elif 'float' in cphvb_type.lower():
             operands[ cphvb_type ] = (
-                np.ones([op_length],             dtype=np_type, cphvb=B.cphvb),
-                np.array([ 3.75 ] * op_length,   dtype=np_type, cphvb=B.cphvb),
-                np.array([ 2.0  ] * op_length,   dtype=np_type, cphvb=B.cphvb),
+                np.ones([N],             dtype=np_type, cphvb=B.cphvb),
+                np.array([ 3.75 ] * N,   dtype=np_type, cphvb=B.cphvb),
+                np.array([ 2.0  ] * N,   dtype=np_type, cphvb=B.cphvb),
             )
         elif 'complex' in cphvb_type.lower():
             operands[ cphvb_type ] = (
-                np.ones([op_length],             dtype=np_type, cphvb=B.cphvb),
-                np.array([ 3.75 ] * op_length,   dtype=np_type, cphvb=B.cphvb),
-                np.array([ 2.0  ] * op_length,   dtype=np_type, cphvb=B.cphvb),
+                np.ones([N],             dtype=np_type, cphvb=B.cphvb),
+                np.array([ 3.75 ] * N,   dtype=np_type, cphvb=B.cphvb),
+                np.array([ 2.0  ] * N,   dtype=np_type, cphvb=B.cphvb),
             )
     cb.flush()
     
@@ -101,24 +99,36 @@ def main():
                 print "WHAT!!!? "+nop
 
             invocation_err = ""
-            s = elapsed = 0.0
-            try:
-                cb.flush()
-                s = time.time()
-                fp( *params )
-                cb.flush()
-                elapsed = time.time() - s
-            except Exception as e:
-                invocation_err = str(e)
-                error_count += 1
+            times = []
+            for _ in xrange(0, runs):
+                s = elapsed = 0.0
+                try:
+                    cb.flush()
+                    s = time.time()
+                    fp( *params )
+                    cb.flush()
+                    elapsed = time.time() - s
+                    times.append( elapsed )
+                except Exception as e:
+                    invocation_err = str(e)
+                    error_count += 1
 
             val = params[-1][0] if str(params[-1][0]) else '?'
-            print "%s, %s, %f,\t%s,\t[%s]." % (opcode, str(typesig), elapsed, val, invocation_err)
-            results.append( [opcode, typesig, elapsed, str(val), invocation_err, B.cphvb] )
+            results.append( [opcode, typesig, times, str(val), invocation_err, B.cphvb] )
 
     print "%d successful invocations %s with error." % (len(ufuncs)-error_count, error_count)
+
+    return results
+
+if __name__ == "__main__":
+
+
+    B = util.Benchmark()
+    B.start()
+    results = main( B, 5 )
+    B.stop()
+    B.pprint()
+
     with tempfile.NamedTemporaryFile(delete=False, dir='/tmp', prefix='res-', suffix='.json') as fd:
         json.dump(results, fd, indent=4)
 
-if __name__ == "__main__":
-    main()
