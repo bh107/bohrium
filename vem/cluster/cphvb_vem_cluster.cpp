@@ -167,7 +167,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                     if(err != CPHVB_SUCCESS)
                         return err; 
                 }
-                exchange_inst_discard(inst->operand[0]);
+                exchange_inst_discard(op);
             }
             case CPHVB_USERFUNC:
             case CPHVB_FREE:

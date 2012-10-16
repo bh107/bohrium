@@ -28,7 +28,7 @@ static std::map<cphvb_intp, cphvb_array*> bridge2vem;
 static std::map<cphvb_intp, cphvb_array*> vem2bridge;
 static StaticStore<cphvb_array> ary_store(512);
 
-static cphvb_error copy_data_bridge2vem(cphvb_array *bridge_op, cphvb_array *vem_op)
+static cphvb_error copy_data_bridge2vem(const cphvb_array *bridge_op, cphvb_array *vem_op)
 {
     
     //TODO: Do data communication
@@ -57,6 +57,8 @@ void exchange_inst_bridge2vem(cphvb_intp count,
 
     //TODO: Send the instruction list to all slave processes
 
+    //TODO: Send userfunc instructions to all slave processes
+
     for(cphvb_intp i=0; i<count; ++i)
     {
         const cphvb_instruction *bridge = &bridge_inst[i];
@@ -64,6 +66,14 @@ void exchange_inst_bridge2vem(cphvb_intp count,
         *vem = *bridge;
         int nop = cphvb_operands_in_instruction(bridge);
         assert(nop == cphvb_operands_in_instruction(vem));
+
+        //Allocate a new userfunc struct for the vem instruction
+        if(bridge->opcode == CPHVB_USERFUNC)
+        {
+            vem->userfunc = (cphvb_userfunc *) malloc(bridge->userfunc->struct_size);
+            assert(vem->userfunc != NULL);
+            memcpy(vem->userfunc,bridge->userfunc,bridge->userfunc->struct_size);
+        }
 
         for(cphvb_intp j=0; j<nop; ++j)
         {
@@ -100,7 +110,10 @@ void exchange_inst_bridge2vem(cphvb_intp count,
                 }   
             }
             copy_data_bridge2vem(bridge_op, vem_op);
-            vem->operand[j] = vem_op;
+            if(vem->opcode == CPHVB_USERFUNC)
+                vem->userfunc->operand[j] = vem_op;
+            else
+                vem->operand[j] = vem_op;
         }
     }
 }
@@ -141,7 +154,10 @@ void exchange_inst_vem2bridge(cphvb_intp count,
                 assert(bridge_base->data != vem_base->data); 
                 memcpy(bridge_base->data, vem_base->data, nelem * cphvb_type_size(vem_base->type));
             }
-            bridge->operand[j] = bridge_op;
+            if(bridge->opcode == CPHVB_USERFUNC)
+                bridge->userfunc->operand[j] = bridge_op;
+            else
+                bridge->operand[j] = bridge_op;
         }
     }
 }
