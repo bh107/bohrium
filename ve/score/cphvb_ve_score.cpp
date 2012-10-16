@@ -43,6 +43,7 @@ static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
 static cphvb_intp bin_max = 25;
+static cphvb_intp mcache_size = 10;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
@@ -58,9 +59,32 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
         fprintf(stderr, "CPHVB_VE_SCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
         return CPHVB_ERROR;
     }
+
+    env = getenv("CPHVB_VE_SCORE_BINMAX");   // Override block_size from environment-variable.
+    if(env != NULL)
+    {
+        bin_max = atoi(env);
+    }
+    if(bin_max <= 0)                         // Verify it
+    {
+        fprintf(stderr, "CPHVB_VE_SCORE_BINMAX (%ld) should be greater than zero!\n", (long int)bin_max);
+        return CPHVB_ERROR;
+    }
+
+    env = getenv("CPHVB_CORE_MCACHE_SIZE");   // Override block_size from environment-variable.
+    if(env != NULL)
+    {
+        mcache_size = atoi(env);
+    }
+    if(mcache_size <= 0)                         // Verify it
+    {
+        fprintf(stderr, "CPHVB_CORE_MCACHE_SIZE (%ld) should be greater than zero!\n", (long int)mcache_size);
+        return CPHVB_ERROR;
+    }
     //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
     //printf("[CPHVB_VE_SCORE_BINMAX=%ld]\n", bin_max);
-    cphvb_mcache_init( 10 );
+    //printf("[CPHVB_CORE_MCACHE_SIZE=%ld]\n", mcache_size);
+    cphvb_mcache_init( mcache_size );
     return CPHVB_SUCCESS;
 }
 
