@@ -42,6 +42,7 @@ static computeloop* cphvb_ve_score_compute_loops = NULL;
 static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
+static cphvb_intp bin_max = 25;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
@@ -58,6 +59,7 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
         return CPHVB_ERROR;
     }
     //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
+    //printf("[CPHVB_VE_SCORE_BINMAX=%ld]\n", bin_max);
     cphvb_mcache_init( 10 );
     return CPHVB_SUCCESS;
 }
@@ -71,11 +73,11 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     {
     	cphvb_intp mcount = (end - start + 1);
 
-    	//We only work in multiples of 1000
+    	// We only work in multiples of 1000
     	if (mcount % 1000 != 0)
     		mcount = (mcount + 1000) - (mcount % 1000);
 
-    	//Make sure we re-allocate on error
+    	// Make sure we re-allocate on error
     	cphvb_ve_score_buffersizes = 0;
     	
     	if (cphvb_ve_score_compute_loops != NULL) {
@@ -101,7 +103,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     cphvb_intp  nelements, trav_end=0;
     cphvb_error ret_errcode = CPHVB_SUCCESS;
     
-    for(i=0; i<=end-start;i++)                      // Reset traversal coordinates
+    for(i=0; i<= (end-start);i++)                   // Reset traversal coordinates
         cphvb_tstate_reset( &states[i] );
 
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
@@ -118,9 +120,9 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
                 compute_loops[k] = cphvb_compute_get( &instr[i] );
                 if(compute_loops[k] == NULL)
                 {
-                    end = start + k - 1;
+                    end             = start + k - 1;
                     instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
-                    ret_errcode = CPHVB_PARTIAL_SUCCESS;
+                    ret_errcode     = CPHVB_PARTIAL_SUCCESS;
                     break;
                 }
                 else
@@ -133,8 +135,9 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     while(nelements>trav_end)
     {
         trav_end    += block_size;
-        if (trav_end > nelements)
+        if (trav_end > nelements) {
             trav_end = nelements;
+        }
         
         for(i=start, k=0; i <= end; i++, k++)
         {
@@ -148,6 +151,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
                 default:
                     compute_loops[k]( &instr[i], &states[k], trav_end );
+                    //compute_loops[k]( &instr[i], &states[k], 0 );
             }
         }
     }
@@ -167,7 +171,6 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
     for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
         inst = &instruction_list[cur_index];
-        //cphvb_pprint_instr(inst);
     }
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
@@ -234,10 +237,10 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bin_start   = cur_index;                        // Count built-ins and their start/end indexes and allocate memory for them.
                 bin_end     = cur_index;
                 bool has_sys = false;
-                for(j=bin_start+1; j<instruction_count; j++)    
+                //for(j=bin_start+1; j<instruction_count; j++)    
+                for(j=bin_start+1; (j<instruction_count) && (j<bin_start+1+bin_max); j++)
                 {
                     binst = &instruction_list[j];               
-
                     
                     if (binst->opcode == CPHVB_USERFUNC) {      // Stop bundle, userfunc encountered.
                         break;
@@ -263,8 +266,11 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bundle_size     = (bin_size > 1) ? cphvb_inst_bundle( instruction_list, bin_start, bin_end ) : 1;
                 bundle_start    = bin_start;
                 bundle_end      = bundle_start + bundle_size-1;
+
                 //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
                 if (bundle_size > 1) { 
+                    //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
+                    //cphvb_pprint_bundle( &(instruction_list[bundle_start]), bundle_size);
                     block_execute( instruction_list, bundle_start, bundle_end );
                     if (has_sys) {
                         for(j=bundle_start; j <= bundle_end; j++) {
