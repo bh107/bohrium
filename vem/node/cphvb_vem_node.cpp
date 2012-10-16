@@ -103,10 +103,17 @@ cphvb_error cphvb_vem_node_shutdown(void)
  */
 cphvb_error cphvb_vem_node_reg_func(char *fun, cphvb_intp *id)
 {
+	cphvb_error e;
+    
     if(*id == 0)//Only if parent didn't set the ID.
-        *id = userfunc_count + 1;
+        *id = ++userfunc_count;
 
-    return ve_reg_func(fun, id);
+    if((e = ve_reg_func(fun, id)) != CPHVB_SUCCESS)
+    {
+        *id = 0;
+        return e;
+    }
+    return e;
 }
 
 
