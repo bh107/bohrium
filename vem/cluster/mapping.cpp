@@ -28,9 +28,9 @@ If not, see <http://www.gnu.org/licenses/>.
 //Finds the largest dimension size possible
 cphvb_error find_largest_chunk_dim(cphvb_intp localsize,
                                    cphvb_intp ndim, 
-                                   cphvb_intp stride[], 
+                                   const cphvb_intp stride[], 
                                    cphvb_intp offset, 
-                                   cphvb_intp max_dims[], 
+                                   const cphvb_intp max_dims[], 
                                    cphvb_intp d, 
                                    cphvb_intp dims[])
 {
@@ -74,8 +74,8 @@ cphvb_error find_largest_chunk_dim(cphvb_intp localsize,
 
 //Get the largest chunk possible 
 cphvb_error get_largest_chunk(cphvb_intp localsize, 
-                              cphvb_array *ary, 
-                              cphvb_intp dim_offset[], 
+                              const cphvb_array *ary, 
+                              const cphvb_intp dim_offset[], 
                               cphvb_array *chunk,
                               darray_ext *dary)
 {
