@@ -111,6 +111,25 @@ namespace NumCIL
         }
 
         /// <summary>
+        /// Gets a value describing if any elements are overlapping
+        /// </summary>
+        public bool IsOverlapping
+        {
+            get
+            {
+                long size = 1;
+                for (long i = m_dimensions.LongLength - 1; i >= 0; i--)
+                {
+                    if (m_dimensions[i].Stride < size)
+                        return true;
+                    size *= m_dimensions[i].Length;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Constructs a one dimensional shape
         /// </summary>
         /// <param name="length">The size of the array</param>
@@ -352,6 +371,34 @@ namespace NumCIL
         {
             get { return new Shape(this.Dimensions.Select(x => x.Length).ToArray()); }
         }
+
+
+        /// <summary>
+        /// Returns a shape which has the minimum size required to
+        /// contain all elements, but which is broadcast compatible with
+        /// this shape
+        /// </summary>
+        /// <returns>This shape as a plain shape</returns>
+        public Shape Minimum
+        {
+            get
+            {
+                var d = new ShapeDimension[m_dimensions.LongLength];
+                long size = 1;
+                for (long i = m_dimensions.LongLength - 1; i >= 0; i--)
+                {
+                    if (m_dimensions[i].Stride == 0 || (i != m_dimensions.LongLength - 1 && m_dimensions[i].Length == 1))
+                        d[i] = new ShapeDimension(1, 0);
+                    else
+                        d[i] = new ShapeDimension(m_dimensions[i].Length, size);
+
+                    size *= m_dimensions[i].Length;
+                }
+                        
+                return new Shape(d, 0);
+            }
+        }
+
 
         /// <summary>
         /// Returns the shape as a human readable string

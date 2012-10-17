@@ -90,7 +90,17 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
 
     int opcount = 0;                                                // Per-instruction variables
     cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
-
+    cphvb_index nelements = 0;                                      // Get the number of elements
+    for(cphvb_intp i=start; i<= end; i++) {
+         switch(insts[i].opcode) {
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+                continue;
+        }
+        nelements = cphvb_nelements( insts[i].operand[0]->ndim, insts[i].operand[0]->shape );
+    }    
 
     for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
@@ -99,15 +109,19 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
             case CPHVB_FREE:
             case CPHVB_SYNC:
             case CPHVB_NONE:
-            case CPHVB_USERFUNC:
                 bundle_len++;
                 continue;
         }
-
         opcount = cphvb_operands(insts[i].opcode);
                                                                     // Check for collisions
         op      = insts[i].operand[0];                              // Look at the output-operand
         base    = cphvb_base_array( op );
+
+
+        if (cphvb_nelements(op->ndim, op->shape) != nelements) {
+            do_fuse = false;
+            break;
+        }
 
         ret = ops.equal_range( base );                              // Compare to all kernel operands.
         for(it = ret.first; it != ret.second; ++it)

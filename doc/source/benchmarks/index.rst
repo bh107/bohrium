@@ -20,10 +20,6 @@ To compare benchmark-results from different machines and revisions, take a look 
    :align: center
    :alt: "Stencil 1D 4Way - No Copy"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way___copy_speedup.png
-   :align: center
-   :alt: "Stencil 1D 4Way - Copy"
-
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
    :align: center
    :alt: "kNN"
