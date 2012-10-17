@@ -112,7 +112,13 @@ cphvb_error get_largest_chunk(cphvb_intp localsize,
     //Find largest possible dimension
     cphvb_intp dim[CPHVB_MAXDIM];
     memcpy(dim, max_dim, ary->ndim * sizeof(cphvb_intp));
-    if((ret = find_largest_chunk_dim(localsize,ary->ndim,ary->stride,offset,max_dim,incomplete_dim,dim)) != CPHVB_SUCCESS)
+    if((ret = find_largest_chunk_dim(localsize,
+                                     ary->ndim,
+                                     ary->stride,
+                                     offset,
+                                     max_dim,
+                                     incomplete_dim,
+                                     dim)) != CPHVB_SUCCESS)
         return ret;
  
     //Save chunk
