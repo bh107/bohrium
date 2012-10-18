@@ -19,9 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include <cphvb_compute.h>
-#include "functors.hpp"
-#include "traverser.hpp"
-#include <complex>
 
 //This function protects against arrays that have superfluos dimensions,
 // which could negatively affect computation speed

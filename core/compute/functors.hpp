@@ -1,3 +1,6 @@
+#ifndef CPHVB_FUNCTORS_HPP
+#define CPHVB_FUNCTORS_HPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cphvb_win_math.hpp>
@@ -390,3 +393,4 @@ struct identity_functor {
     }
 };
 
+#endif
