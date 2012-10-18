@@ -4,33 +4,33 @@
 ## equivalent 'equilibrium' density is found, and the densities
 ## relax towards that state, in a proportion governed by omega.
 ##               Iain Haslam, March 2006.
-import numpy as np
+import cphvbnumpy as np
 import util
-import cphvbbridge
 
 B = util.Benchmark()
+nx      = B.size[0]
+ny      = B.size[1]
+nz      = B.size[2]
+ITER    = B.size[3]
+
 NO_OBST = 1
-nx = B.size[0]
-ny = B.size[1]
-nz = B.size[2]
-ITER = B.size[3]
-omega = 1.0
+omega   = 1.0
 density = 1.0
-t1 = 1/3.0
-t2 = 1/18.0
-t3 = 1/36.0
-F   = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
-FEQ = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
-T   = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
-F[:] = density/19.0
-FEQ[:] = density/19.0
-T[:] = 0.0
-ts=0
-deltaU=1e-7
+deltaU  = 1e-7
+t1      = 1/3.0
+t2      = 1/18.0
+t3      = 1/36.0
+
+F       = np.empty((19,nx,ny,nz), dtype=float)
+F[:]    = density/19.0
+FEQ     = np.empty((19,nx,ny,nz), dtype=float)
+FEQ[:]  = density/19.0
+T       = np.empty((19,nx,ny,nz), dtype=float)
+T[:]    = 0.0
 
 #Create the scenery.
-BOUND = np.empty((nx,ny,nz), dtype=float,dist=B.cphvb)
-BOUNDi = np.empty((nx,ny,nz), dtype=float,dist=B.cphvb)
+BOUND   = np.empty((nx,ny,nz), dtype=float)
+BOUNDi  = np.empty((nx,ny,nz), dtype=float)
 BOUND[:] = 0
 BOUNDi[:] = 1
 if not NO_OBST:
@@ -45,7 +45,8 @@ BOUND[:,0,:] += 1.0
 BOUNDi[:,0,:] *= 0.0
 
 B.start()
-while ts<ITER:
+for ts in xrange(0, ITER):
+
     ##Propagate / Streaming step
     T[:] = F
     #nearest-neighbours
@@ -122,7 +123,7 @@ while ts<ITER:
     F[18,:,-1 ,:-1] = T[18,:,0 ,1:]
     F[18,:,-1 , -1] = T[18,:,0 ,0 ]
     #Densities bouncing back at next timestep
-    BB = np.empty(F.shape, dist=B.cphvb)
+    BB = np.empty(F.shape)
     T[:] = F
     T[1:,:,:,:] *= BOUND[np.newaxis,:,:,:]
     BB[2 ,:,:,:] += T[1 ,:,:,:]
@@ -233,8 +234,6 @@ while ts<ITER:
     #Densities bouncing back at next timestep
     F[1:,:,:,:] *= BOUNDi[np.newaxis,:,:,:]
     F[1:,:,:,:] += BB[1:,:,:,:]
-
-    ts += 1
 
 B.stop()
 B.pprint()

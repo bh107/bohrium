@@ -1,21 +1,24 @@
-import numpy as np
-import cphvbbridge
+import cphvbnumpy as np
 import util
 
 B = util.Benchmark()
 N = B.size[0]
-iterations = B.size[1]
+I = B.size[1]
 
-A = np.random.random([N,N], cphvb=B.cphvb)
-X = np.random.random([N],   cphvb=B.cphvb)
-h = np.empty([N], dtype=np.double, dist=B.cphvb)
+A = np.random.random([N,N])
+X = np.random.random([N])
+h = np.empty([N], dtype=np.double)
 h[:] = 0.001
+
 AD = np.diagonal(A).copy()
-if B.cphvb:
-    cphvbbridge.handle_array(AD)
+
+A.cphvb     = B.cphvb
+X.cphvb     = B.cphvb
+h.cphvb     = B.cphvb
+AD.cphvb    = B.cphvb
 
 B.start()
-for i in xrange(iterations):
+for i in xrange(I):
     t1 = A * h
     t1 = np.add.reduce(t1)
     t1 -= X

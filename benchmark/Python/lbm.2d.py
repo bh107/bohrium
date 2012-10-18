@@ -5,9 +5,8 @@ Copyright (C) 2006 Jonas Latt
 Address: Rue General Dufour 24,  1211 Geneva 4, Switzerland
 E-mail: Jonas.Latt@cui.unige.ch
 '''
-import numpy as np
+import cphvbnumpy as np
 import util
-import cphvbbridge
 
 """
 # Initialise Tk ...
@@ -28,37 +27,33 @@ canvas.get_tk_widget().pack(expand = True, fill = Tkinter.BOTH)
 B = util.Benchmark()
 NO_OBST = 1
 
-
 # General flow constants
 lx = B.size[0] #250
 ly = B.size[1] #51
-obst_x = lx/5.+1               # position of the cylinder; (exact
-obst_y = ly/2.+1               # y-symmetry is avoided)
-obst_r = 10 #ly/10.+1              # radius of the cylinder
-uMax   = 0.02                  # maximum velocity of Poiseuille inflow
-Re     = 100                   # Reynolds number
-nu     = uMax * 2.*obst_r / Re # kinematic viscosity
-omega  = 1. / (3*nu+1./2.)     # relaxation parameter
-maxT   = B.size[2]#10     # total number of iterations
-tPlot  = 5                     # cycles
+
+obst_x = lx/5.+1                # position of the cylinder; (exact
+obst_y = ly/2.+1                # y-symmetry is avoided)
+obst_r = 10 #ly/10.+1           # radius of the cylinder
+uMax   = 0.02                   # maximum velocity of Poiseuille inflow
+Re     = 100                    # Reynolds number
+nu     = uMax * 2.*obst_r / Re  # kinematic viscosity
+omega  = 1. / (3*nu+1./2.)      # relaxation parameter
+maxT   = B.size[2]              # total number of iterations
+tPlot  = 5                      # cycles
 
 # D2Q9 Lattice constants
-t  = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float)
-t_l  = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float)
-cx = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float)
-cx_l = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float)
-cy = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float)
-cy_l = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float)
-opp = np.array([ 0,   3,  4,  1,  2,    7,   8,   5,   6], dtype=float)
-col = np.array(xrange(2,ly), dtype=float)
-if B.cphvb:
-    cphvbbridge.handle_array(t)
-    cphvbbridge.handle_array(cx)
-    cphvbbridge.handle_array(cy)
-    cphvbbridge.handle_array(col)
+t       = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float)
+t_l     = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float)
+cx      = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float)
+cx_l    = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float)
+cy      = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float)
+cy_l    = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float)
+opp     = np.array([ 0,   3,  4,  1,  2,    7,   8,   5,   6], dtype=float)
+col     = np.array(xrange(2,ly), dtype=float)
 
-bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)
-not_bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)
+bbRegion        = np.empty((lx,ly), dtype=float)
+not_bbRegion    = np.empty((lx,ly), dtype=float)
+
 bbRegion[:] =  0.0
 bbRegion[:] =  1.0
 if not NO_OBST:
@@ -73,11 +68,11 @@ not_bbRegion[:,0] *= 0.0
 not_bbRegion[:,-1] *= 0.0
 
 # Initial condition: (rho=0, u=0) ==> fIn[i] = t[i]
-fIn = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fIn = np.empty([9,lx,ly], dtype=float)
 fIn[:] = 1.0 * t[:,np.newaxis,np.newaxis]
-fEq = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fEq = np.empty([9,lx,ly], dtype=float)
 fEq[:] = 1.0
-fOut = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fOut = np.empty([9,lx,ly], dtype=float)
 fOut[:] = 1.0
 
 def lbm2d():
@@ -94,8 +89,8 @@ def lbm2d():
         y = col-0.5
         ux[0,2:] = 4 * uMax / (L ** 2) * (y * L - y ** 2)
         uy[0,2:] *= 0
-        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float, dist=B.cphvb)
-        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float, dist=B.cphvb)
+        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float)
+        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float)
         t1[:] = fIn[0:5:2,0,2:]
         t2[:] = fIn[3:8:2,0,2:]
         rho[0,2:] = 1 / (1-ux[0,2:]) * (np.add.reduce(t1) + 2 * np.add.reduce(t2))
@@ -116,7 +111,7 @@ def lbm2d():
             # Right boundary:
             fOut[i,-1,2:] = fEq[i,-1,2:] + 18 * t_l[i] * cx_l[i] * cy_l[i] *(fIn[5,-1,2:] - fIn[8,-1,2:] - fEq[5,-1,2:] + fEq[8,-1,2:])
             # Bounce back region:
-            BB = np.empty((lx,ly), dist=B.cphvb)
+            BB = np.empty((lx,ly))
             BB[:] = fIn[opp[i]]
             BB *= bbRegion
             fOut[i] *= not_bbRegion
@@ -125,22 +120,22 @@ def lbm2d():
         # Streaming step
         for i in xrange(0,9):
             if cx_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float)
                 t1[1:] = fOut[i][:-1]
                 t1[0] = fOut[i][-1]
                 fOut[i] = t1
             elif cx_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float)
                 t1[:-1] = fOut[i][1:]
                 t1[-1] = fOut[i][0]
                 fOut[i] = t1
             if cy_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float)
                 t1[:,1:] = fOut[i][:,:-1]
                 t1[:,0] = fOut[i][:,-1]
                 fIn[i] = t1
             elif cy_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float)
                 t1[:,:-1] = fOut[i][:,1:]
                 t1[:,-1] = fOut[i][:,0]
                 fIn[i] = t1

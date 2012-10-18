@@ -1,8 +1,8 @@
-#A port from scimark2's LU.c
-#But with no pivoting!
-#Translated by Brian Vinter
+# A port from scimark2's LU.c
+# But with no pivoting!
+# Translated by Brian Vinter
 
-import numpy as np
+import cphvbnumpy as np
 import util
 
 def main():
@@ -12,14 +12,11 @@ def main():
     I = B.size[1]
 
     A = np.random.random((N,N))
-    A.cphvb = B.cphvb
 
     pivot = np.empty((N), dtype=float)
-    pivot.cphvb = B.cphvb
     pivot[:] = 0.0
 
     ONE = np.empty((1), dtype=float)
-    ONE.cphvb = B.cphvb
     ONE[0:-1] = 1.0
 
     B.start()
