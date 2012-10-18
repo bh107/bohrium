@@ -165,6 +165,23 @@ namespace UnitTest
             if (z5.Shape.Elements != 6 || z5.Shape.Dimensions.LongLength != 2)
                 throw new Exception("Reduced range failed");
 
+
+            var y1 = Generate.Arange(9).Reshape(new long[] {3, 3});
+            var y2 = y1.Transposed;
+            y1 = y1.Transposed;
+            var y3 = y1 + y2;
+            if (y3.Value[0, 2] != 12)
+                throw new Exception("Failure with double transpose");
+
+            var y4 = Generate.Arange(2 * 2 * 2 * 2 * 2).Reshape(new long[] {2,2,2,2,2});
+            var y5 = y4 * (Generate.Arange(2) + 1);
+            if (y5.Sum() != 752)
+                throw new Exception("Failure with 5 dimensions");
+
+            var y6 = Generate.Arange(2 * 2 * 2 * 2 * 2 * 2).Reshape(new long[] { 2, 2, 2, 2, 2, 2 });
+            var y7 = y6 * (Generate.Arange(2) + 1);
+            if (y7.Sum() != 3040)
+                throw new Exception("Failure with 6 dimensions");
         }
 
         private static bool Equals(double[] a, double[] b)
