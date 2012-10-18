@@ -27,13 +27,16 @@ extern "C" {
 
 typedef struct cphvb_tstate cphvb_tstate;
 struct cphvb_tstate {
-    cphvb_index coord[CPHVB_MAXDIM];
-    cphvb_index cur_e;
+    cphvb_index ndim;
+    cphvb_index noperands;
+    cphvb_index shape[CPHVB_MAXDIM];
+    cphvb_index start[CPHVB_MAX_NO_OPERANDS];
+    cphvb_index stride[CPHVB_MAX_NO_OPERANDS][CPHVB_MAXDIM];
 };
 
 typedef cphvb_error (*computeloop)( cphvb_instruction*, cphvb_tstate*, cphvb_index );
 
-void cphvb_tstate_reset( cphvb_tstate *state );
+void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction* instr );
 computeloop cphvb_compute_get( cphvb_instruction *instr );
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
 cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg);

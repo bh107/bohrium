@@ -23,35 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "traverser.hpp"
 #include <complex>
 
-void cphvb_tstate_reset( cphvb_tstate *state ) {
-    memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-    state->cur_e = 0;   
-}
-
-cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
-
-    computeloop comp = cphvb_compute_get( instr );
-    cphvb_tstate state;
-    cphvb_tstate_reset( &state );
-    
-    if (comp == NULL) {
-        return CPHVB_TYPE_NOT_SUPPORTED;
-    } else {
-        return comp( instr, &state, 0 );
-    }
-
-}
-
-cphvb_error cphvb_compute_apply_unsafe( cphvb_instruction *instr ) {
-
-    computeloop comp = cphvb_compute_get( instr );
-    cphvb_tstate state;
-    cphvb_tstate_reset( &state );
-
-    return comp( instr, &state, 0 );
-
-}
-
 computeloop cphvb_compute_get( cphvb_instruction *instr ) {
 
     // Poly contains a unique value, pairing an opcode with its function signature.
