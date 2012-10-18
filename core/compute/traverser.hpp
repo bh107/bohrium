@@ -230,7 +230,7 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 	d0 += state->start[0] * elsize0;			// Compute offsets
 	d1 += state->start[1] * elsize1;
 	d2 += state->start[2] * elsize2;
-	
+		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
@@ -320,6 +320,10 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
 
+		BYTE* d0_orig = d0;
+		BYTE* d1_orig = d1;
+		BYTE* d2_orig = d2;
+
 		while (total_ops-- > 0)
 		{
 			for (i = 0; i < ops_outer; i++)
@@ -345,20 +349,27 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0 += state->stride[0][p];
-				d1 += state->stride[1][p];
-				d2 += state->stride[2][p];
+				// Move one in current dimension
+				d0_orig += (state->stride[0][p] * elsize0);
+				d1_orig += (state->stride[1][p] * elsize1);
+				d2_orig += (state->stride[2][p] * elsize2);
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
 					//Update to move in the outer dimension, on carry
-					d0 += ((state->shape[p-1] * state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1 += ((state->shape[p-1] * state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
-					d2 += ((state->shape[p-1] * state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
+					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
+					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
+					d2_orig += ((state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
+
+					printf("In Traverse AAA - after outer move %ld\nPointers: %ld\t%ld\nDiffs: %ld\t%ld\t%ld\n", p, d0, d1, d2, (state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p]), (state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p]), (state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p]));
 
 					counters[p] = 0;
 					p--;
 				}
+				
+				d0 = d0_orig;
+				d1 = d1_orig;
+				d2 = d2_orig;
 			}
 		}		
 	}
@@ -469,6 +480,9 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
 
+		BYTE* d0_orig = d0;
+		BYTE* d1_orig = d1;
+
 		while (total_ops-- > 0)
 		{
 			for (i = 0; i < ops_outer; i++)
@@ -492,18 +506,21 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0 += state->stride[0][p];
-				d1 += state->stride[1][p];
+				d0_orig += (state->stride[0][p] * elsize0);
+				d1_orig += (state->stride[1][p] * elsize1);
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
 					//Update to move in the outer dimension, on carry
-					d0 += ((state->shape[p-1] * state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1 += ((state->shape[p-1] * state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
+					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
+					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
 
 					counters[p] = 0;
 					p--;
 				}
+				
+				d0 = d0_orig;
+				d1 = d1_orig;
 			}
 		}		
 	}
@@ -614,6 +631,9 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
 
+		BYTE* d0_orig = d0;
+		BYTE* d2_orig = d2;
+
 		while (total_ops-- > 0)
 		{
 			for (i = 0; i < ops_outer; i++)
@@ -637,18 +657,22 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0 += state->stride[0][p];
-				d2 += state->stride[2][p];
+				// Move one in current dimension
+				d0_orig += (state->stride[0][p] * elsize0);
+				d2_orig += (state->stride[2][p] * elsize2);
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
 					//Update to move in the outer dimension, on carry
-					d0 += ((state->shape[p-1] * state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d2 += ((state->shape[p-1] * state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
+					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
+					d2_orig += ((state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
 
 					counters[p] = 0;
 					p--;
 				}
+				
+				d0 = d0_orig;
+				d2 = d2_orig;
 			}
 		}		
 	}
@@ -756,6 +780,9 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
 
+		BYTE* d0_orig = d0;
+		BYTE* d1_orig = d1;
+
 		while (total_ops-- > 0)
 		{
 			for (i = 0; i < ops_outer; i++)
@@ -779,18 +806,22 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0 += state->stride[0][p];
-				d1 += state->stride[1][p];
+				d0_orig += (state->stride[0][p] * elsize0);
+				d1_orig += (state->stride[1][p] * elsize1);
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
 					//Update to move in the outer dimension, on carry
-					d0 += ((state->shape[p-1] * state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1 += ((state->shape[p-1] * state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
+					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
+					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
 
 					counters[p] = 0;
 					p--;
 				}
+				
+				d0 = d0_orig;
+				d1 = d1_orig;
+				
 			}
 		}		
 	}
@@ -880,6 +911,8 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
 
+		BYTE* d0_orig = d0;
+
 		while (total_ops-- > 0)
 		{
 			for (i = 0; i < ops_outer; i++)
@@ -901,16 +934,19 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0 += state->stride[0][p];
+				// Move one in current dimension
+				d0_orig += (state->stride[0][p] * elsize0);
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
 					//Update to move in the outer dimension, on carry
-					d0 += ((state->shape[p-1] * state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
+					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
 
 					counters[p] = 0;
 					p--;
 				}
+				
+				d0_orig = d0;
 			}
 		}		
 	}
