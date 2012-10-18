@@ -27,20 +27,20 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb_type.h>
 
 //See: http://stackoverflow.com/questions/758001/log2-not-found-in-my-math-h
-double log2( double n )  
+inline double log2( double n )  
 {  
     // log(n)/log(2) is log2.  
     return log( n ) / log( 2.0 );  
 }
 
 //http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
-template <typename T> int sgn(T val) {
+template <typename T> inline int sgn(T val) {
     return (val > T(0)) - (val < T(0));
 }
 
 //See: http://www.johndcook.com/cpp_expm1.html
 //Rewritten to be template based, should be in VS11
-template <typename T> T expm1(T x)
+template <typename T> inline T expm1(T x)
 {
 	if (abs(x) < T(1e-5))
 		return x + T(0.5)*x*x;
@@ -50,10 +50,10 @@ template <typename T> T expm1(T x)
 
 //See: http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c,
 // http://stackoverflow.com/a/570694
-template <typename T> T isNaN(T x) { return x != x; }
+template <typename T> inline T isNaN(T x) { return x != x; }
 
 //Yikes, should use a library function!
-template <typename T> T trunc(T x) { 
+template <typename T> inline T trunc(T x) { 
 	if (isNaN(x))
 		return x;
 	else {
@@ -67,31 +67,31 @@ template <typename T> T trunc(T x) {
 }
 
 //Should handle inf and NaN
-template <typename T> T log1p(T x) {
+template <typename T> inline T log1p(T x) {
 	if (isNaN(x))
 		return x;
 	return log(T(1) + x); 
 }
 
 //Add some missing overloads, Visual C++ compiler detects these as ambiguous
-cphvb_uint32 floor( cphvb_uint32 n ) { return n; }
-cphvb_uint64 floor( cphvb_uint64 n ) { return n; }
-cphvb_int32 floor( cphvb_int32 n ) { return n; }
-cphvb_int64 floor( cphvb_int64 n ) { return n; }
-cphvb_int32 atan( cphvb_int32 n ) { return (cphvb_int32)atan((float)n); }
+inline cphvb_uint32 floor( cphvb_uint32 n ) { return n; }
+inline cphvb_uint64 floor( cphvb_uint64 n ) { return n; }
+inline cphvb_int32 floor( cphvb_int32 n ) { return n; }
+inline cphvb_int64 floor( cphvb_int64 n ) { return n; }
+inline cphvb_int32 atan( cphvb_int32 n ) { return (cphvb_int32)atan((float)n); }
 
-cphvb_int32 pow( cphvb_int32 n, cphvb_int32 e ) { return (cphvb_int32)pow((float)n, e); }
-cphvb_int64 pow( cphvb_int64 n, cphvb_int64 e ) { return (cphvb_int64)pow((double)n, (double)e); }
-cphvb_uint64 pow( cphvb_uint64 n, cphvb_uint64 e ) { return (cphvb_uint64)pow((double)n, (double)e); }
-cphvb_uint32 pow( cphvb_uint32 n, cphvb_uint32 e ) { return (cphvb_uint32)pow((float)n, (float)e); }
-cphvb_float32 pow( cphvb_int32 n, cphvb_float32 e ) { return (cphvb_float32)pow((float)n, (float)e); }
-cphvb_float64 pow( cphvb_int32 n, cphvb_float64 e ) { return (cphvb_float64)pow((double)n, (double)e); }
+inline cphvb_int32 pow( cphvb_int32 n, cphvb_int32 e ) { return (cphvb_int32)pow((float)n, e); }
+inline cphvb_int64 pow( cphvb_int64 n, cphvb_int64 e ) { return (cphvb_int64)pow((double)n, (double)e); }
+inline cphvb_uint64 pow( cphvb_uint64 n, cphvb_uint64 e ) { return (cphvb_uint64)pow((double)n, (double)e); }
+inline cphvb_uint32 pow( cphvb_uint32 n, cphvb_uint32 e ) { return (cphvb_uint32)pow((float)n, (float)e); }
+inline cphvb_float32 pow( cphvb_int32 n, cphvb_float32 e ) { return (cphvb_float32)pow((float)n, (float)e); }
+inline cphvb_float64 pow( cphvb_int32 n, cphvb_float64 e ) { return (cphvb_float64)pow((double)n, (double)e); }
 
 //All the stuff that Microsoft decided not to implement:
 // http://msdn.microsoft.com/en-us/library/w3t84e33(v=vs.100).aspx
 #define _MAKE_MATH_FUNCS(NAME, CODE) \
-	double NAME(double n) { return CODE; }\
-	float NAME(float n) { return CODE; }
+	inline double NAME(double n) { return CODE; }\
+	inline float NAME(float n) { return CODE; }
 
 
 _MAKE_MATH_FUNCS(sec, (1 / cos(n)))
