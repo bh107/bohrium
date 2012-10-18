@@ -35,8 +35,12 @@ cphvb_error find_largest_chunk_dim(cphvb_intp localsize,
                                    cphvb_intp dims[])
 {
     while(1)//TODO:Sort 'd'
-    {
-        dims[d] = ceil(localsize - offset / (double) stride[d]);
+    {   
+        if(stride[d] == 0)
+            dims[d] = max_dims[d];
+        else
+            dims[d] = ceil((localsize - offset) / (double) stride[d]);
+    
         if(dims[d] > max_dims[d])//Overflow of the max dimension size
         {
             dims[d] = max_dims[d];
