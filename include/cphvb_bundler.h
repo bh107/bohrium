@@ -30,9 +30,10 @@ extern "C" {
  * @param inst The instruction list
  * @param start of the bundle
  * @param end of the bundle
+ * @param base_max TODO: describe
  * @return Number of consecutive bundeable instruction
  */
-cphvb_intp cphvb_inst_bundle(cphvb_instruction* insts, cphvb_intp start, cphvb_intp end);
+cphvb_intp cphvb_inst_bundle(cphvb_instruction* insts, cphvb_intp start, cphvb_intp end, cphvb_intp base_max);
 
 #ifdef __cplusplus
 }

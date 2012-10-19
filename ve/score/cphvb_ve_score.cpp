@@ -43,6 +43,7 @@ static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
 static cphvb_intp bin_max = 25;
+static cphvb_intp base_max = 5;
 static cphvb_intp mcache_size = 10;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
@@ -60,29 +61,41 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
         return CPHVB_ERROR;
     }
 
-    env = getenv("CPHVB_VE_SCORE_BINMAX");   // Override block_size from environment-variable.
+    env = getenv("CPHVB_VE_SCORE_BINMAX");      // Override block_size from environment-variable.
     if(env != NULL)
     {
         bin_max = atoi(env);
     }
-    if(bin_max <= 0)                         // Verify it
+    if(bin_max <= 0)                            // Verify it
     {
         fprintf(stderr, "CPHVB_VE_SCORE_BINMAX (%ld) should be greater than zero!\n", (long int)bin_max);
         return CPHVB_ERROR;
     }
 
-    env = getenv("CPHVB_CORE_MCACHE_SIZE");   // Override block_size from environment-variable.
+    env = getenv("CPHVB_VE_SCORE_BASEMAX");      // Override base max from environment-variable.
+    if(env != NULL)
+    {
+        base_max = atoi(env);
+    }
+    if(base_max <= 0)                            // Verify it
+    {
+        fprintf(stderr, "CPHVB_VE_SCORE_BASEMAX (%ld) should be greater than zero!\n", (long int)base_max);
+        return CPHVB_ERROR;
+    }
+
+    env = getenv("CPHVB_CORE_MCACHE_SIZE");     // Override block_size from environment-variable.
     if(env != NULL)
     {
         mcache_size = atoi(env);
     }
-    if(mcache_size <= 0)                         // Verify it
+    if(mcache_size <= 0)                        // Verify it
     {
         fprintf(stderr, "CPHVB_CORE_MCACHE_SIZE (%ld) should be greater than zero!\n", (long int)mcache_size);
         return CPHVB_ERROR;
     }
     //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
     //printf("[CPHVB_VE_SCORE_BINMAX=%ld]\n", bin_max);
+    //printf("[CPHVB_VE_SCORE_BASEMAX=%ld]\n", base_max);
     //printf("[CPHVB_CORE_MCACHE_SIZE=%ld]\n", mcache_size);
     cphvb_mcache_init( mcache_size );
     return CPHVB_SUCCESS;
@@ -92,17 +105,14 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
     cphvb_intp i, k;
 
-    //Make sure we have enough space
-    if ((end - start + 1) > cphvb_ve_score_buffersizes) 
+    if ((end - start + 1) > cphvb_ve_score_buffersizes) // Make sure we have enough space
     {
     	cphvb_intp mcount = (end - start + 1);
 
-    	// We only work in multiples of 1000
-    	if (mcount % 1000 != 0)
+    	if (mcount % 1000 != 0)                         // We only work in multiples of 1000
     		mcount = (mcount + 1000) - (mcount % 1000);
 
-    	// Make sure we re-allocate on error
-    	cphvb_ve_score_buffersizes = 0;
+    	cphvb_ve_score_buffersizes = 0;                 // Make sure we re-allocate on error
     	
     	if (cphvb_ve_score_compute_loops != NULL) {
     		free(cphvb_ve_score_compute_loops);
@@ -111,8 +121,8 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     		cphvb_ve_score_tstates = NULL;
     	}
     	
-    	cphvb_ve_score_compute_loops = (computeloop*)malloc(sizeof(computeloop) * mcount);
-        cphvb_ve_score_tstates = (cphvb_tstate*)malloc(sizeof(cphvb_tstate)*mcount);
+    	cphvb_ve_score_compute_loops    = (computeloop*)malloc(sizeof(computeloop) * mcount);
+        cphvb_ve_score_tstates          = (cphvb_tstate*)malloc(sizeof(cphvb_tstate)*mcount);
     	
     	if (cphvb_ve_score_compute_loops == NULL)
     		return CPHVB_OUT_OF_MEMORY;
@@ -165,7 +175,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
         
         for(i=start, k=0; i <= end; i++, k++)
         {
-            switch(instr[i].opcode) {                   // Ignore sys-ops
+            switch(instr[i].opcode) {               // Ignore sys-ops
                 case CPHVB_DISCARD:
                 case CPHVB_FREE:
                 case CPHVB_SYNC:
@@ -175,7 +185,6 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
 
                 default:
                     compute_loops[k]( &instr[i], &states[k], trav_end );
-                    //compute_loops[k]( &instr[i], &states[k], 0 );
             }
         }
     }
@@ -261,7 +270,6 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 bin_start   = cur_index;                        // Count built-ins and their start/end indexes and allocate memory for them.
                 bin_end     = cur_index;
                 bool has_sys = false;
-                //for(j=bin_start+1; j<instruction_count; j++)    
                 for(j=bin_start+1; (j<instruction_count) && (j<bin_start+1+bin_max); j++)
                 {
                     binst = &instruction_list[j];               
@@ -282,19 +290,17 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                     if ( res != CPHVB_SUCCESS ) {
                         return res;
                     }
-
                 }
                 bin_size = bin_end - bin_start +1;              // The counting part
 
                                                                 // -={[ BUNDLING ]}=-
-                bundle_size     = (bin_size > 1) ? cphvb_inst_bundle( instruction_list, bin_start, bin_end ) : 1;
+                bundle_size     = (bin_size > 1) ? cphvb_inst_bundle( instruction_list, bin_start, bin_end, base_max ) : 1;
                 bundle_start    = bin_start;
                 bundle_end      = bundle_start + bundle_size-1;
 
                 //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
                 if (bundle_size > 1) { 
-                    //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
-                    //cphvb_pprint_bundle( &(instruction_list[bundle_start]), bundle_size);
+
                     block_execute( instruction_list, bundle_start, bundle_end );
                     if (has_sys) {
                         for(j=bundle_start; j <= bundle_end; j++) {
