@@ -152,9 +152,9 @@ cphvb_error local_arrays(int NPROC,
     memset(dim_offset, 0, inst->operand[0]->ndim * sizeof(cphvb_intp));
     
     //Handle one chunk at a time
+    cphvb_intp first_chunk = 0;
     while(1)
     {
-        cphvb_intp first_chunk = 0;
         cphvb_intp op_is_constant = -1;
 
         for(cphvb_intp o=0; o < cphvb_operands_in_instruction(inst); ++o)
