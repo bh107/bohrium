@@ -232,6 +232,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                             new_inst.operand[k] = ary;
                         }
                     }
+                    new_inst.status = CPHVB_INST_PENDING;
                     err = vem_execute(1, &new_inst);
                     local_inst[i].status = new_inst.status;
                     inst_list[i].status = new_inst.status;                            
