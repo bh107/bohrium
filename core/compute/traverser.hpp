@@ -361,8 +361,6 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
 					d2_orig += ((state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
 
-					printf("In Traverse AAA - after outer move %ld\nPointers: %ld\t%ld\nDiffs: %ld\t%ld\t%ld\n", p, d0, d1, d2, (state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p]), (state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p]), (state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p]));
-
 					counters[p] = 0;
 					p--;
 				}
