@@ -16,10 +16,8 @@ import util
 G = 1.0
 
 def fill_diagonal(a, val):
-    d,_ = a.shape   #This only makes sense for square matrices
-    #a.shape=d*d     #Flatten a without making a copy
-    a.reshape((d*d))[::d+1]=val    #Assign the diagonal values
-    #a.shape = (d,d) #Return a to its original shape
+    d,_ = a.shape                   # This only makes sense for square matrices
+    a.reshape((d*d))[::d+1] = val   # Assign the diagonal values
 
 def calc_force(b):
     """Calculate forces between bodies
@@ -37,15 +35,15 @@ def calc_force(b):
 
     r = ( dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
 
-    #In the below calc of the the forces the force of a body upon itself
-    #becomes nan and thus destroys the data
+    # In the below calc of the the forces the force of a body upon itself
+    # becomes nan and thus destroys the data
 
     Fx = G * pm / r ** 2 * (dx / r)
     Fy = G * pm / r ** 2 * (dy / r)
     Fz = G * pm / r ** 2 * (dz / r)
 
-    #The diagonal nan numbers must be removed so that the force from a body
-    #upon itself is zero
+    # The diagonal nan numbers must be removed so that the force from a body
+    # upon itself is zero
 
     fill_diagonal(Fx,0)
     fill_diagonal(Fy,0)
@@ -65,19 +63,17 @@ def move(galaxy):
     galaxy['y'] += galaxy['vy']
     galaxy['z'] += galaxy['vz']
 
-def random_galaxy( x_max, y_max, z_max, n, dtype ):
+def random_galaxy( B, x_max, y_max, z_max, n, dtype ):
     """Generate a galaxy of random bodies"""
 
-    max_mass = 40.0     # Best guess of maximum known star
-
     return {            # We let all bodies stand still initially
-        'm':    np.random.random(n, dtype=dtype) * 10**6 / (4 * np.pi ** 2),
-        'x':    np.random.random(n, dtype=dtype)*2*x_max-x_max,
-        'y':    np.random.random(n, dtype=dtype)*2*y_max-y_max,
-        'z':    np.random.random(n, dtype=dtype)*2*z_max-z_max,
-        'vx':   np.empty(n, dtype=dtype) * 0.0,
-        'vy':   np.empty(n, dtype=dtype) * 0.0,
-        'vz':   np.empty(n, dtype=dtype) * 0.0,
+        'm':    np.random.random(n, dtype=dtype, cphvb=B.cphvb) * 10**6 / (4 * np.pi ** 2),
+        'x':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*x_max-x_max,
+        'y':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*y_max-y_max,
+        'z':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*z_max-z_max,
+        'vx':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
+        'vy':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
+        'vz':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
     }
 
 if __name__ == '__main__':
@@ -91,7 +87,7 @@ if __name__ == '__main__':
     y_max = 500
     z_max = 500
 
-    galaxy = random_galaxy(x_max, y_max, z_max, bodies, B.dtype)
+    galaxy = random_galaxy(B, x_max, y_max, z_max, bodies, B.dtype)
 
     B.start()
     for _ in range(time_step):
