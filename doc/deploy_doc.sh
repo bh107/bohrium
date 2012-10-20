@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
 DOCDIR="/tmp/cphvbdocs"
+BRANCH="master"
+#BRANCH="ctiling"
+CWD=`pwd`
 
 if [ -d "$DOCDIR" ]; then       # Grab the repos
     echo "Already got repos, not cloning."
 else
     git clone git@bitbucket.org:cphvb/cphvb.bitbucket.org.git $DOCDIR
+    cd $DOCDIR
+    git checkout $BRANCH
+    cd $CWD
 fi
 
 doxygen Doxyfile                # Generate C++ docs
