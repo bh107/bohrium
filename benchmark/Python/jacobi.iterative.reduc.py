@@ -8,8 +8,8 @@ I = B.size[2]
 
 full = np.empty((H+2,W+2),  dtype=np.double)
 work = np.empty((H,W),      dtype=np.double)
-full.cphvb = True
-work.cphvb = True
+full.cphvb = B.cphvb
+work.cphvb = B.cphvb
 
 full[:]     = np.float32(0.0)
 full[:,0]   = np.float32(-273.15)    # left column

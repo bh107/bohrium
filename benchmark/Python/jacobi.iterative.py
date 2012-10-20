@@ -8,8 +8,8 @@ I = B.size[2]
 
 full        = np.empty((H+2,W+2),   dtype=B.dtype)
 work        = np.empty((H,W),       dtype=B.dtype)
-full.cphvb  = True
-work.cphvb  = True
+full.cphvb  = B.cphvb
+work.cphvb  = B.cphvb
 
 full[:]     = np.float32(0.0)
 full[:,0]   = np.float32(-273.15)    # left column
@@ -25,7 +25,6 @@ down   = full[2:  , 1:-1]
 
 B.start()
 for i in xrange(I):
-    #cphvbbridge.flush();
     work[:] = center 
     work += left
     work += right 
