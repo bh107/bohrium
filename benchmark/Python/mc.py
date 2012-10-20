@@ -8,6 +8,8 @@ N = np.multiply.reduce(B.size)
 
 x = np.ones(B.size, dtype=B.dtype, cphvb=B.cphvb)
 y = np.ones(B.size, dtype=B.dtype, cphvb=B.cphvb)
+x.cphvb = B.cphvb
+y.cphvb = B.cphvb
 
 cnp.flush();
 
