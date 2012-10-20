@@ -32,7 +32,7 @@ To compare benchmark-results from different machines and revisions, take a look 
    :align: center
    :alt: "Lattice Boltzman 2D"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_23_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_3d_speedup.png
    :align: center
    :alt: "Lattice Boltzman 3D"
 
