@@ -16,9 +16,13 @@ To compare benchmark-results from different machines and revisions, take a look 
    :align: center
    :alt: "Monte Carlo PI"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way___no_copy_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way_speedup.png
    :align: center
-   :alt: "Stencil 1D 4Way - No Copy"
+   :alt: "Stencil 1D 4Way"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___2d_speedup.png
+   :align: center
+   :alt: "Stencil 2D"
 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
    :align: center
@@ -27,6 +31,14 @@ To compare benchmark-results from different machines and revisions, take a look 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
    :align: center
    :alt: "Shallow Water"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/black_scholes_speedup.png
+   :align: center
+   :alt: "Black Scholes"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/cache_synth_speedup.png
+   :align: center
+   :alt: "Cache Synth"
 
 Deploying the Buildbot
 ======================
