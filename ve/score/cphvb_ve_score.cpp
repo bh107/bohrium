@@ -41,10 +41,10 @@ static cphvb_intp cphvb_ve_score_buffersizes = 0;
 static computeloop* cphvb_ve_score_compute_loops = NULL;
 static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
-static cphvb_intp block_size = 1000;
-static cphvb_intp bin_max = 25;
-static cphvb_intp base_max = 5;
-static cphvb_intp mcache_size = 10;
+static cphvb_intp block_size    = 7000;
+static cphvb_intp bin_max       = 20;
+static cphvb_intp base_max      = 7;
+static cphvb_intp mcache_size   = 10;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
