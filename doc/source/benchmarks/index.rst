@@ -8,13 +8,49 @@ Benchmarks are run automatically in a daily fashion on akira and marge, results 
 
 To compare benchmark-results from different machines and revisions, take a look at the `compare-tool <http://cphvb.org/benchmarks/compare.html>`_ that is where the magic is happens.
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_fixed_speedup.png
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/black_scholes_speedup.png
    :align: center
-   :alt: "Jacobi Fixed"
+   :alt: "Black Scholes"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/cache_synth_speedup.png
+   :align: center
+   :alt: "Cache Synth"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_iterative_speedup.png
+   :align: center
+   :alt: "Jacobi Iterative"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_iterative___reduce_speedup.png
+   :align: center
+   :alt: "Jacobi Iterative - Reduce"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
+   :align: center
+   :alt: "kNN"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_2d_speedup.png
+   :align: center
+   :alt: "Lattice Boltzman 2D"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_23_speedup.png
+   :align: center
+   :alt: "Lattice Boltzman 3D"
 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___ril_speedup.png
    :align: center
    :alt: "Monte Carlo PI"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___2xn_speedup.png
+   :align: center
+   :alt: "Monte Carlo PI - 2xN"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___nx2_speedup.png
+   :align: center
+   :alt: "Monte Carlo PI - Nx2"
+
+.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
+   :align: center
+   :alt: "Shallow Water"
 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way_speedup.png
    :align: center
@@ -23,22 +59,6 @@ To compare benchmark-results from different machines and revisions, take a look 
 .. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___2d_speedup.png
    :align: center
    :alt: "Stencil 2D"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
-   :align: center
-   :alt: "kNN"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
-   :align: center
-   :alt: "Shallow Water"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/black_scholes_speedup.png
-   :align: center
-   :alt: "Black Scholes"
-
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/cache_synth_speedup.png
-   :align: center
-   :alt: "Cache Synth"
 
 Deploying the Buildbot
 ======================
