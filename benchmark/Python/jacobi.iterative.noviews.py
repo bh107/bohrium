@@ -5,16 +5,13 @@ B = util.Benchmark()
 N = B.size[0]
 I = B.size[1]
 
-A = np.random.random([N,N])
-X = np.random.random([N])
-h = np.empty([N], dtype=np.double)
+A = np.random.random([N,N],         cphvb=B.cphvb)
+X = np.random.random([N],           cphvb=B.cphvb)
+h = np.empty([N], dtype=np.double,  cphvb=B.cphvb)
 h[:] = 0.001
 
 AD = np.diagonal(A).copy()
 
-A.cphvb     = B.cphvb
-X.cphvb     = B.cphvb
-h.cphvb     = B.cphvb
 AD.cphvb    = B.cphvb
 
 B.start()

@@ -11,13 +11,12 @@ def main():
     N = B.size[0]
     I = B.size[1]
 
-    A = np.random.random((N,N))
+    A       = np.random.random((N,N),       cphvb=B.cphvb)
+    pivot   = np.empty((N), dtype=float,    cphvb=B.cphvb)
+    ONE     = np.empty((1), dtype=float,    cphvb=B.cphvb)
 
-    pivot = np.empty((N), dtype=float)
-    pivot[:] = 0.0
-
-    ONE = np.empty((1), dtype=float)
-    ONE[0:-1] = 1.0
+    pivot[:]    = 0.0
+    ONE[0:-1]   = 1.0
 
     B.start()
     for j in xrange(I):

@@ -1,5 +1,4 @@
 import cphvbnumpy as numpy
-import cphvbbridge
 import util
     
 def main():
@@ -8,24 +7,17 @@ def main():
     n = b.size[0]
     i = b.size[1]
 
-    raw = numpy.empty((n+4))
-    raw.cphvb = b.cphvb
-
-    tmp = numpy.empty((n))
-    tmp.cphvb = b.cphvb
+    raw = numpy.empty((n+4), cphvb=b.cphvb)
+    tmp = numpy.empty((n), cphvb=b.cphvb)
 
     center  = raw[2:-2]
     left1   = raw[1:-3]
     left2   = raw[ :-4]
     right1  = raw[3:-1]
     right2  = raw[4:  ]
-
     center += 1.0
-    #tmp = center # Death!
-    cphvbbridge.flush()
-    print "start"
-    b.start()
 
+    b.start()
     for _ in xrange(i):
         tmp[:] = center
         tmp += left1

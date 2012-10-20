@@ -10,8 +10,7 @@ def main():
 
     b.start()
 
-    raw = numpy.ones((n+4, m+4))
-    raw.cphvb=b.cphvb
+    raw = numpy.ones((n+4, m+4), cphvb=b.cphvb)
 
     data =   raw[2:-2, 2:-2]
     up2 =    raw[2:-2,  :-4]
@@ -26,7 +25,6 @@ def main():
     for _ in xrange(i):
         tmp = (data+left1+right1+left2+right2+up2+up1+down2+down1)/9
         data[:] = tmp
-    raw.cphvb = False
 
     b.stop()
     b.pprint()
