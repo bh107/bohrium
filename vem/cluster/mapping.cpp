@@ -81,7 +81,7 @@ cphvb_error find_largest_chunk_dim(cphvb_intp localsize,
 }
 
 //Get the largest chunk possible 
-cphvb_error get_largest_chunk(cphvb_intp localsize, 
+cphvb_error get_largest_chunk(int NPROC,
                               const cphvb_array *ary, 
                               const cphvb_intp dim_offset[], 
                               cphvb_array *chunk,
@@ -103,6 +103,15 @@ cphvb_error get_largest_chunk(cphvb_intp localsize,
     cphvb_intp offset = ary->start;
     for(cphvb_intp d=0; d<ary->ndim; ++d)
         offset += dim_offset[d] * ary->stride[d];
+
+
+    //Compute total array base size
+    cphvb_intp totalsize=1;
+    for(cphvb_intp i=0; i<cphvb_base_array(ary)->ndim; ++i)
+        totalsize *= cphvb_base_array(ary)->shape[i];
+
+    //Compute local array base size
+    cphvb_intp localsize = totalsize / NPROC;
 
     //Find the rank
     int rank = offset / localsize;
@@ -175,15 +184,8 @@ cphvb_error local_arrays(int NPROC,
                 continue;
             }
  
-            //Compute total array base size
-            cphvb_intp totalsize=1;
-            for(cphvb_intp i=0; i<cphvb_base_array(ary)->ndim; ++i)
-                totalsize *= cphvb_base_array(ary)->shape[i];
 
-            //Compute local array base size
-            cphvb_intp localsize = totalsize / NPROC;
-
-            if((ret = get_largest_chunk(localsize, ary, dim_offset, &chunk, &chunk_ext)) != CPHVB_SUCCESS)
+            if((ret = get_largest_chunk(NPROC,ary, dim_offset, &chunk, &chunk_ext)) != CPHVB_SUCCESS)
                 return ret;
 
             chunks.push_back(chunk);
