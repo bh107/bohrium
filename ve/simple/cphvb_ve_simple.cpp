@@ -31,10 +31,24 @@ static cphvb_intp matmul_impl_id = 0;
 static cphvb_userfunc_impl nselect_impl = NULL;
 static cphvb_intp nselect_impl_id = 0;
 
+static cphvb_intp mcache_size   = 10;
+
 cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 {
     myself = self;
-    cphvb_mcache_init( 10 );
+
+    char *env = getenv("CPHVB_CORE_MCACHE_SIZE");     // Override block_size from environment-variable.
+    if(env != NULL)
+    {
+        mcache_size = atoi(env);
+    }
+    if(mcache_size <= 0)                        // Verify it
+    {
+        fprintf(stderr, "CPHVB_CORE_MCACHE_SIZE (%ld) should be greater than zero!\n", (long int)mcache_size);
+        return CPHVB_ERROR;
+    }
+
+    cphvb_mcache_init( mcache_size );
     return CPHVB_SUCCESS;
 }
 
