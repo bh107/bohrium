@@ -110,13 +110,19 @@ cphvb_error get_largest_chunk(int NPROC,
     for(cphvb_intp i=0; i<cphvb_base_array(ary)->ndim; ++i)
         totalsize *= cphvb_base_array(ary)->shape[i];
 
-    //Compute local array base size
+    //Compute local array base size for nrank-1
     cphvb_intp localsize = totalsize / NPROC;
+    if(localsize == 0)
+        localsize = 1;
 
     //Find the rank
     int rank = offset / localsize;
     //Convert to local offset
     offset = offset % localsize;
+    //Convert localsize to be specific for this rank
+    if(rank == NPROC-1)
+        localsize = totalsize / NPROC + totalsize % NPROC;
+
 
     //Find maximum dimension sizes
     cphvb_intp max_dim[CPHVB_MAXDIM];
