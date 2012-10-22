@@ -349,7 +349,6 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 				long p = n - 1;
 
 				// Move one in current dimension
-				// Move one in current dimension
 				d0_orig += (state->stride[0][p] * elsize0);
 				d1_orig += (state->stride[1][p] * elsize1);
 				d2_orig += (state->stride[2][p] * elsize2);
@@ -655,7 +654,6 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 				long p = n - 1;
 
 				// Move one in current dimension
-				// Move one in current dimension
 				d0_orig += (state->stride[0][p] * elsize0);
 				d2_orig += (state->stride[2][p] * elsize2);
 
@@ -931,7 +929,6 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 				//Basically a ripple carry adder
 				long p = n - 1;
 
-				// Move one in current dimension
 				// Move one in current dimension
 				d0_orig += (state->stride[0][p] * elsize0);
 
