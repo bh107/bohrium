@@ -57,8 +57,8 @@ if B.cphvb:
     cphvbbridge.handle_array(cy)
     cphvbbridge.handle_array(col)
 
-bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)
-not_bbRegion = np.empty((lx,ly), dtype=float, dist=B.cphvb)
+bbRegion = np.empty((lx,ly), dtype=float, cphvb=B.cphvb)
+not_bbRegion = np.empty((lx,ly), dtype=float, cphvb=B.cphvb)
 bbRegion[:] =  0.0
 bbRegion[:] =  1.0
 if not NO_OBST:
@@ -73,11 +73,11 @@ not_bbRegion[:,0] *= 0.0
 not_bbRegion[:,-1] *= 0.0
 
 # Initial condition: (rho=0, u=0) ==> fIn[i] = t[i]
-fIn = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fIn = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
 fIn[:] = 1.0 * t[:,np.newaxis,np.newaxis]
-fEq = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fEq = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
 fEq[:] = 1.0
-fOut = np.empty([9,lx,ly], dtype=float, dist=B.cphvb)
+fOut = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
 fOut[:] = 1.0
 
 def lbm2d():
@@ -94,8 +94,8 @@ def lbm2d():
         y = col-0.5
         ux[0,2:] = 4 * uMax / (L ** 2) * (y * L - y ** 2)
         uy[0,2:] *= 0
-        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float, dist=B.cphvb)
-        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float, dist=B.cphvb)
+        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float, cphvb=B.cphvb)
+        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float, cphvb=B.cphvb)
         t1[:] = fIn[0:5:2,0,2:]
         t2[:] = fIn[3:8:2,0,2:]
         rho[0,2:] = 1 / (1-ux[0,2:]) * (np.add.reduce(t1) + 2 * np.add.reduce(t2))
@@ -116,7 +116,7 @@ def lbm2d():
             # Right boundary:
             fOut[i,-1,2:] = fEq[i,-1,2:] + 18 * t_l[i] * cx_l[i] * cy_l[i] *(fIn[5,-1,2:] - fIn[8,-1,2:] - fEq[5,-1,2:] + fEq[8,-1,2:])
             # Bounce back region:
-            BB = np.empty((lx,ly), dist=B.cphvb)
+            BB = np.empty((lx,ly), cphvb=B.cphvb)
             BB[:] = fIn[opp[i]]
             BB *= bbRegion
             fOut[i] *= not_bbRegion
@@ -125,22 +125,22 @@ def lbm2d():
         # Streaming step
         for i in xrange(0,9):
             if cx_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
                 t1[1:] = fOut[i][:-1]
                 t1[0] = fOut[i][-1]
                 fOut[i] = t1
             elif cx_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
                 t1[:-1] = fOut[i][1:]
                 t1[-1] = fOut[i][0]
                 fOut[i] = t1
             if cy_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
                 t1[:,1:] = fOut[i][:,:-1]
                 t1[:,0] = fOut[i][:,-1]
                 fIn[i] = t1
             elif cy_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, dist=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
                 t1[:,:-1] = fOut[i][:,1:]
                 t1[:,-1] = fOut[i][:,0]
                 fIn[i] = t1
