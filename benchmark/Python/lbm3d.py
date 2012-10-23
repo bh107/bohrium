@@ -19,9 +19,9 @@ density = 1.0
 t1 = 1/3.0
 t2 = 1/18.0
 t3 = 1/36.0
-F   = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
-FEQ = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
-T   = np.empty((19,nx,ny,nz), dtype=float,dist=B.cphvb)
+F   = np.empty((19,nx,ny,nz), dtype=float,cphvb=B.cphvb)
+FEQ = np.empty((19,nx,ny,nz), dtype=float,cphvb=B.cphvb)
+T   = np.empty((19,nx,ny,nz), dtype=float,cphvb=B.cphvb)
 F[:] = density/19.0
 FEQ[:] = density/19.0
 T[:] = 0.0
@@ -29,8 +29,8 @@ ts=0
 deltaU=1e-7
 
 #Create the scenery.
-BOUND = np.empty((nx,ny,nz), dtype=float,dist=B.cphvb)
-BOUNDi = np.empty((nx,ny,nz), dtype=float,dist=B.cphvb)
+BOUND = np.empty((nx,ny,nz), dtype=float,cphvb=B.cphvb)
+BOUNDi = np.empty((nx,ny,nz), dtype=float,cphvb=B.cphvb)
 BOUND[:] = 0
 BOUNDi[:] = 1
 if not NO_OBST:
@@ -122,7 +122,7 @@ while ts<ITER:
     F[18,:,-1 ,:-1] = T[18,:,0 ,1:]
     F[18,:,-1 , -1] = T[18,:,0 ,0 ]
     #Densities bouncing back at next timestep
-    BB = np.empty(F.shape, dist=B.cphvb)
+    BB = np.empty(F.shape, cphvb=B.cphvb)
     T[:] = F
     T[1:,:,:,:] *= BOUND[np.newaxis,:,:,:]
     BB[2 ,:,:,:] += T[1 ,:,:,:]
