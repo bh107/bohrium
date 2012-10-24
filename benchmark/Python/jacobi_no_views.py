@@ -8,7 +8,7 @@ iterations = B.size[1]
 
 A = np.random.random([N,N], cphvb=B.cphvb)
 X = np.random.random([N],   cphvb=B.cphvb)
-h = np.empty([N], dtype=np.double, dist=B.cphvb)
+h = np.empty([N], dtype=np.double, cphvb=B.cphvb)
 h[:] = 0.001
 AD = np.diagonal(A).copy()
 if B.cphvb:
