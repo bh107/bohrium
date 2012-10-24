@@ -6,29 +6,28 @@ class array:
 
     def pprint(self):
         print "rank:       %d"%self.rank
-        print "dim_offset: %s"%self.dim_offset
         print "offset:     %d"%self.offset
-        print "dim:        %s"%self.dim
+        print "shape:      %s"%self.shape
         print "stride:     %s"%self.stride
-        print "base dim:   %s"%self.base.dim
+        print "base shape: %s"%self.base.shape
 
-        totalsize = reduce(mul,self.base.dim)
+        totalsize = reduce(mul,self.base.shape)
         localsize = totalsize / self.nproc
         ret = ["_"," "]*totalsize
 
-        coord = [0]*len(self.dim)
+        coord = [0]*len(self.shape)
         finished = False
         while not finished:
             p = self.offset
-            for d in xrange(len(self.dim)):
+            for d in xrange(len(self.shape)):
                 p += coord[d] * self.stride[d]
             ret[2*(p+localsize*self.rank)] = "*"
             #Next coord
-            for d in xrange(len(self.dim)):
+            for d in xrange(len(self.shape)):
                 coord[d] += 1
-                if coord[d] >= self.dim[d]:
+                if coord[d] >= self.shape[d]:
                     coord[d] = 0
-                    if d == len(self.dim)-1:
+                    if d == len(self.shape)-1:
                         finished = True
                 else:
                     break
