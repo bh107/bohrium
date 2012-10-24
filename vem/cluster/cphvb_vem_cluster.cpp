@@ -204,7 +204,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                 cphvb_instruction new_inst;
                 std::vector<cphvb_array> chunks;
                 std::vector<darray_ext> chunks_ext;
-                err = local_arrays(NPROC, inst, chunks, chunks_ext);
+                err = mapping_chunks(NPROC, inst, chunks, chunks_ext);
                 if(err != CPHVB_SUCCESS)
                 {
                     inst->status = CPHVB_INST_PENDING;

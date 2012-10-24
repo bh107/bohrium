@@ -25,9 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "darray_extension.h"
 #include <vector>
 
-cphvb_error local_arrays(int NPROC, 
-                         cphvb_instruction *inst, 
-                         std::vector<cphvb_array>& chunks,  
-                         std::vector<darray_ext>& chunks_ext);
-
+cphvb_error mapping_chunks(int NPROC,
+                           const cphvb_instruction *inst, 
+                           std::vector<cphvb_array>& chunks,  
+                           std::vector<darray_ext>& chunks_ext);
 #endif
