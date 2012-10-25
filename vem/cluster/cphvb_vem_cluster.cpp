@@ -227,6 +227,8 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                 for(cphvb_intp d=0; d < cphvb_base_array(ary)->ndim; ++d)
                                     totalsize *= cphvb_base_array(ary)->shape[d];
                                 cphvb_intp localsize = totalsize / NPROC;
+                                if(localsize == 0)
+                                    localsize = 1;
                                 ary->start += localsize * chunks_ext[k+c].rank;
                             } 
                             new_inst.operand[k] = ary;
