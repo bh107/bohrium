@@ -133,7 +133,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     //Local copy of the instruction list
     cphvb_instruction local_inst[count];
     cphvb_error err;
-    int NPROC = 1;
+    int NPROC = 3;
     
     if (count <= 0)
         return CPHVB_SUCCESS;

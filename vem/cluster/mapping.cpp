@@ -29,7 +29,8 @@ static cphvb_error find_largest_chunk(int NPROC,
                                       const cphvb_instruction *inst, 
                                       std::vector<cphvb_array>& chunks,  
                                       std::vector<darray_ext>& chunks_ext,
-                                      const cphvb_intp coord[],
+                                      const cphvb_intp start_coord[],
+                                      const cphvb_intp end_coord[],
                                       cphvb_intp new_coord[])
 {
     cphvb_intp first_chunk = chunks.size();
@@ -55,7 +56,7 @@ static cphvb_error find_largest_chunk(int NPROC,
         //Compute the global offset based on the dimension offset
         cphvb_intp offset = ary->start;
         for(cphvb_intp d=0; d < ndim; ++d)
-            offset += coord[d] * ary->stride[d];
+            offset += start_coord[d] * ary->stride[d];
      
         //Compute total array base size
         cphvb_intp totalsize=1;
@@ -78,12 +79,13 @@ static cphvb_error find_largest_chunk(int NPROC,
         //Find the largest possible shape
         for(cphvb_intp d=0; d < ndim; ++d)
         {
-            cphvb_intp dim = ary->shape[d];
+            cphvb_intp max_dim = end_coord[d] - start_coord[d];
+            cphvb_intp dim = max_dim;
             if(ary->stride[d] > 0)        
-                dim = (localsize - offset) / ary->stride[d];
-            if(dim > ary->shape[d])
-                dim = ary->shape[d];
-            if(shape[d] == -1 || dim < shape[d])
+                dim = (cphvb_intp) ceil((localsize - offset) / (double) ary->stride[d]);
+            if(dim > max_dim)
+                dim = max_dim;
+            if(shape[d] == -1 || dim < shape[d])//We only save the smallest shape
                 shape[d] = dim;
         }
         //Save the chunk
@@ -103,15 +105,14 @@ static cphvb_error find_largest_chunk(int NPROC,
     //Save the largest possible shape found to all chunks
     for(cphvb_intp d=0; d < ndim; ++d)
     {
-        if(shape[d] <= 0)
-            shape[d] = 1;
+        assert(shape[d] > 0);
         for(cphvb_intp o=0; o < nop; ++o)
             chunks[first_chunk+o].shape[d] = shape[d];
     }
 
     //Update coord
     for(cphvb_intp d=0; d < ndim; ++d)
-        new_coord[d] = coord[d] + shape[d];
+        new_coord[d] = start_coord[d] + shape[d];
 
     return CPHVB_SUCCESS;
 }
@@ -120,26 +121,65 @@ static cphvb_error get_chunks(int NPROC,
                               const cphvb_instruction *inst, 
                               std::vector<cphvb_array>& chunks,  
                               std::vector<darray_ext>& chunks_ext,
-                              const cphvb_intp coord[])
+                              const cphvb_intp start_coord[],
+                              const cphvb_intp end_coord[])
 {
     cphvb_intp ndim = inst->operand[0]->ndim;
-    cphvb_intp new_coord[CPHVB_MAXDIM];
-    cphvb_intp next_coord[CPHVB_MAXDIM];
+    cphvb_intp new_start_coord[CPHVB_MAXDIM];
+    cphvb_error err;
 
-    find_largest_chunk(NPROC, inst, chunks, chunks_ext, coord, new_coord);
-
+    //We are finished when one of the coordinates are out of bound
     for(cphvb_intp d=0; d < ndim; ++d)
+        if(start_coord[d] >= end_coord[d])
+            return CPHVB_SUCCESS;
+    
+    if((err = find_largest_chunk(NPROC, inst, chunks, chunks_ext, 
+              start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
+        return err;
+
+    cphvb_intp corner[CPHVB_MAXDIM];
+    memset(corner, 0, ndim * sizeof(cphvb_intp));
+    ++corner[ndim-1];
+    while(1)//Lets start a new chunk search at each corner of the current chunk.
     {
-        if(new_coord[d] < inst->operand[0]->shape[d])
+        //Find start and end coord based on the current corner
+        cphvb_intp start[CPHVB_MAXDIM];
+        cphvb_intp end[CPHVB_MAXDIM];
+        for(cphvb_intp d=0; d < ndim; ++d)
         {
-            memcpy(next_coord, coord, ndim * sizeof(cphvb_intp));
-            next_coord[d] = new_coord[d];
-            get_chunks(NPROC, inst, chunks, chunks_ext, next_coord);
+            if(corner[d] == 1)
+            {
+                start[d] = new_start_coord[d];
+                end[d] = end_coord[d];
+            }
+            else
+            {
+                start[d] = start_coord[d];
+                end[d] = new_start_coord[d];
+            }
+        }
+
+        //Goto the next start cood
+        if((err = get_chunks(NPROC, inst, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
+            return err;
+
+        //Go to next corner
+        for(cphvb_intp d=ndim-1; d >= 0; --d)
+        {
+            if(++corner[d] > 1)
+            {
+                corner[d] = 0;
+                if(d == 0)
+                    return CPHVB_SUCCESS;
+            }
+            else 
+                break;
         }
     }
-    return CPHVB_SUCCESS;
+    return CPHVB_ERROR;//This shouldn't be possible
 }
 
+//The public function
 cphvb_error mapping_chunks(int NPROC,
                            const cphvb_instruction *inst, 
                            std::vector<cphvb_array>& chunks,  
@@ -147,7 +187,7 @@ cphvb_error mapping_chunks(int NPROC,
 {
     cphvb_intp coord[CPHVB_MAXDIM];
     memset(coord, 0, inst->operand[0]->ndim * sizeof(cphvb_intp));
-    return get_chunks(NPROC, inst, chunks, chunks_ext, coord);
+    return get_chunks(NPROC, inst, chunks, chunks_ext, coord, inst->operand[0]->shape);
 }
 
 
