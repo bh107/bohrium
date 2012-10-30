@@ -27,6 +27,22 @@ static cphvb_intp   cphvb_mcache_bytes_total;
 static int          cphvb_mcache_size;
 static int          cphvb_mcache_cur;
 
+static cphvb_mcache_hits = 0;
+static cphvb_mcache_miss = 0;
+static cphvb_mcache_store = 0;
+static cphvb_mcache_flush = 0;
+
+/**
+ *  Reset mcache counters
+ */
+inline
+void cphvb_mcache_reset_counters() {
+    cphvb_mcache_hits = 0;
+    cphvb_mcache_miss = 0;
+    cphvb_mcache_store = 0;
+    cphvb_mcache_flush = 0;
+}
+
 /**
  *  Initiate mcache to a fixed size.
  *
@@ -47,6 +63,8 @@ void cphvb_mcache_init( int size )
     memset(cphvb_mcache,0,sizeof(cphvb_data_ptr)*size);
     cphvb_mcache_bytes  = (cphvb_intp*)malloc(sizeof(cphvb_intp)*size);
     memset(cphvb_mcache_bytes,0,sizeof(cphvb_intp)*size);
+
+    cphvb_mcache_reset_counters();
 }
 
 /**
@@ -84,11 +102,13 @@ cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes )
     for (i=0; i<cphvb_mcache_size; i++) {
         if (cphvb_mcache_bytes[i] == bytes) {
             DEBUG_PRINT("Found %p in mcache.\n", cphvb_mcache[i]);
+            cphvb_mcache_hits++;
             cphvb_mcache_bytes[i] = 0;
             cphvb_mcache_bytes_total -= bytes;
             return cphvb_mcache[i];
         }
     }
+    cphvb_mcache_miss++;
     return NULL;
 }
 
@@ -110,8 +130,14 @@ void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size )
 
     cphvb_mcache_cur = (cphvb_mcache_cur+1) % cphvb_mcache_size;
     cphvb_mcache_bytes_total += size;
+
+    cphvb_mcache_store++;
 }
 
+/**
+ * De-allocate memory for an instructions output operand.
+ *
+ */
 cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
 {
     cphvb_array* base;
@@ -124,6 +150,7 @@ cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
         
 		DEBUG_PRINT("Deallocate=%p\n", base->data);
         cphvb_mcache_insert( base->data, bytes );
+        cphvb_mcache_store++;
 		base->data = NULL;
     }
     inst->operand[0] = NULL;
@@ -131,6 +158,11 @@ cphvb_error cphvb_mcache_free( cphvb_instruction* inst )
     return CPHVB_SUCCESS;
 }
 
+/**
+ * Allocate memory for the output operand of the given instruction.
+ * A previous (now unused) memory allocation will be assigned if available.
+ *
+ */
 cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst )
 {
     cphvb_array* base;
@@ -169,8 +201,10 @@ cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst )
                                     return CPHVB_OUT_OF_MEMORY;         // EXIT
                                 }                                   
                                 DEBUG_PRINT("Allocated=%p\n", base->data);
+                                cphvb_mcache_miss++;
                             } else {
                                 DEBUG_PRINT("Reusing=%p.\n", base->data);
+                                cphvb_mcache_hits++;
                             }
                         }
                     }
