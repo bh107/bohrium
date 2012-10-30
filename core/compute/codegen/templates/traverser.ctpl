@@ -127,3 +127,104 @@ cphvb_error traverse_naive_${traverse.sig}( cphvb_instruction *instr, cphvb_tsta
 
 %end for
 
+%for $traverse in $data
+/**
+ *  A optimized implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
+template <${traverse.tsig}, typename Instr>
+cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr ) {
+
+    Instr opcode_func;                          // Element-wise functor-pointer
+
+    cphvb_array *a0 = instr->operand[0];        // Operand pointers
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    cphvb_array *a$op[0] = instr->operand[$op[0]];
+    %end if
+    %end for
+                                                // Pointers to start of data elements
+    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    T$op[0]* d$op[0] = (T$op[0]*) cphvb_base_array(instr->operand[$op[0]])->data;
+    %else
+    T$op[0]* d$op[0] = (T$op[0]*) &(instr->constant.value);
+    %end if
+    %end for
+
+    assert(d0 != NULL);                         // Ensure that data is allocated
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    assert(d$op[0] != NULL);
+    %end if
+    %end for
+
+    cphvb_index j,                              // Traversal variables
+                last_dim    = a0->ndim-1,
+                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+
+    cphvb_index off0;                           // Stride-offset
+    %for $op in $traverse.ops[1:]
+    %if $op[1] == 'a'
+    cphvb_index off$op[0];
+    %end if
+    %end for
+
+    while( state->cur_e <= last_e )
+    {
+        off0 = a0->start;                           // Compute offset based on coord
+        %for $op in $traverse.ops[1:]
+        %if $op[1] == 'a'
+        off$op[0] = a$op[0]->start;
+        %end if
+        %end for
+
+        for( j=0; j<=last_dim; ++j)
+        {
+            off0 += state->coord[j] * a0->stride[j];
+            %for $op in $traverse.ops[1:]
+            %if $op[1] == 'a'
+            off$op[0] += state->coord[j] * a$op[0]->stride[j];
+            %end if
+            %end for
+        }
+                                                    // Iterate over "last" / "innermost" dimension
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        {
+            opcode_func( ${traverse.func_call} );
+
+            off0 += a0->stride[last_dim];
+            %for $op in $traverse.ops[1:]
+            %if $op[1] == 'a'
+            off$op[0] += a$op[0]->stride[last_dim];
+            %end if
+            %end for
+        }
+
+        if (state->coord[last_dim] >= a0->shape[last_dim])
+        {
+            state->coord[last_dim] = 0;
+            for(j = last_dim-1; j >= 0; --j)            // Increment coordinates for the remaining dimensions
+            {
+                state->coord[j]++;
+                if (state->coord[j] < a0->shape[j]) {   // Still within this dimension
+                    break;
+                } else {                                // Reached the end of this dimension
+                    state->coord[j] = 0;                // Reset coordinate
+                }                                       // Loop then continues to increment the next dimension
+            }
+        }
+
+    }
+
+    return CPHVB_SUCCESS;
+
+}
+
+%end for
+
