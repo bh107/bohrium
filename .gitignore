@@ -8,6 +8,7 @@
 *.so.0
 *.a
 *.test
+*.orig
 *.swp
 bridge/numpy/build/*
 *~
