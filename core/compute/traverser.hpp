@@ -205,7 +205,7 @@ typedef char BYTE;
 }
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
@@ -375,7 +375,7 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 }
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
     Instr opcode_func;                        	// Element-wise functor-pointer
 
     cphvb_index i, j;                        	// Traversal variables
@@ -526,7 +526,7 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 }
 
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
@@ -677,7 +677,7 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 }
 
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
     Instr opcode_func;                        	// Element-wise functor-pointer
 
     cphvb_index i, j;                        	// Traversal variables
@@ -826,7 +826,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 }
 
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
     Instr opcode_func;                        	// Element-wise functor-pointer
 
     cphvb_index i, j;                        	// Traversal variables
