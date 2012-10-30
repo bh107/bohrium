@@ -10,7 +10,7 @@ LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
-SRC=cphvb_compute_random.cpp cphvb_compute_reduce.cpp cphvb_compute.cpp cphvb_compute_matmul.cpp
+SRC=cphvb_compute_random.cpp cphvb_compute_reduce.cpp cphvb_compute.cpp cphvb_compute_nselect.cpp cphvb_compute_helpers.cpp cphvb_compute_matmul.cpp
 OBJ=$(SRC:.cpp=.obj)
 INSTALLDIR=/opt/cphvb/
 
@@ -27,6 +27,12 @@ cphvb_compute_reduce.obj: cphvb_compute_reduce.cpp
 
 cphvb_compute.obj: cphvb_compute.cpp
 		$(CC) $(CFLAGS) cphvb_compute.cpp /Fo$@
+
+cphvb_compute_nselect.obj: cphvb_compute_nselect.cpp
+		$(CC) $(CFLAGS) cphvb_compute_nselect.cpp /Fo$@
+
+cphvb_compute_helpers.obj: cphvb_compute_helpers.cpp
+		$(CC) $(CFLAGS) cphvb_compute_helpers.cpp /Fo$@
 
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ)
