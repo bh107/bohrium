@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <${traverse.tsig}, typename Instr>
-cphvb_error traverse_naive_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 

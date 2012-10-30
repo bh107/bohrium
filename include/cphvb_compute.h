@@ -25,14 +25,24 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-typedef struct cphvb_tstate cphvb_tstate;
-struct cphvb_tstate {
+typedef struct cphvb_tstate_naive cphvb_tstate_naive;
+struct cphvb_tstate_naive {
     cphvb_index coord[CPHVB_MAXDIM];
     cphvb_index cur_e;
 };
-void cphvb_tstate_reset( cphvb_tstate *state );
+void cphvb_tstate_naive_reset( cphvb_tstate *state );
 
-typedef cphvb_error (*cphvb_computeloop)( cphvb_instruction* );
+typedef struct cphvb_tstate cphvb_tstate;
+struct cphvb_tstate {
+    cphvb_index ndim;
+    cphvb_index noperands;
+    cphvb_index shape[CPHVB_MAXDIM];
+    cphvb_index start[CPHVB_MAX_NO_OPERANDS];
+    cphvb_index stride[CPHVB_MAX_NO_OPERANDS][CPHVB_MAXDIM];
+};
+void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction* instr );
+
+typedef cphvb_error (*cphvb_computeloop)( cphvb_instruction*, cphvb_tstate* );
 typedef cphvb_error (*cphvb_computeloop_naive)( cphvb_instruction*, cphvb_tstate*, cphvb_index );
 
 cphvb_computeloop_naive cphvb_compute_get_naive( cphvb_instruction *instr );

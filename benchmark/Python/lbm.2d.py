@@ -111,7 +111,7 @@ def lbm2d():
             # Right boundary:
             fOut[i,-1,2:] = fEq[i,-1,2:] + 18 * t_l[i] * cx_l[i] * cy_l[i] *(fIn[5,-1,2:] - fIn[8,-1,2:] - fEq[5,-1,2:] + fEq[8,-1,2:])
             # Bounce back region:
-            BB = np.empty((lx,ly))
+            BB = np.empty((lx,ly), cphvb=B.cphvb)
             BB[:] = fIn[opp[i]]
             BB *= bbRegion
             fOut[i] *= not_bbRegion
