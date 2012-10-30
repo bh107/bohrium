@@ -65,7 +65,7 @@ void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction *instr ) {
 
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
-    computeloop comp = cphvb_compute_get( instr );
+    cphvb_computeloop comp = cphvb_compute_get( instr );
     cphvb_tstate state;
     cphvb_tstate_reset( &state, instr );
     
@@ -79,7 +79,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
 cphvb_error cphvb_compute_apply_unsafe( cphvb_instruction *instr ) {
 
-    computeloop comp = cphvb_compute_get( instr );
+    cphvb_computeloop comp = cphvb_compute_get( instr );
     cphvb_tstate state;
     cphvb_tstate_reset( &state, instr );
 
