@@ -30,13 +30,19 @@ struct cphvb_tstate {
     cphvb_index coord[CPHVB_MAXDIM];
     cphvb_index cur_e;
 };
-
-typedef cphvb_error (*computeloop)( cphvb_instruction*, cphvb_tstate*, cphvb_index );
-
 void cphvb_tstate_reset( cphvb_tstate *state );
-computeloop cphvb_compute_get( cphvb_instruction *instr );
+
+typedef cphvb_error (*cphvb_computeloop)( cphvb_instruction* );
+typedef cphvb_error (*cphvb_computeloop_naive)( cphvb_instruction*, cphvb_tstate*, cphvb_index );
+
+cphvb_computeloop_naive cphvb_compute_get_naive( cphvb_instruction *instr );
+cphvb_error cphvb_compute_apply_naive( cphvb_instruction *instr );
+cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg);
+
+cphvb_computeloop cphvb_compute_get( cphvb_instruction *instr );
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
 cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg);
+
 cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg);
 cphvb_error cphvb_compute_matmul(cphvb_userfunc *arg, void* ve_arg);
 cphvb_error cphvb_compute_nselect(cphvb_userfunc *arg, void* ve_arg);

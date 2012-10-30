@@ -21,8 +21,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include <assert.h>
 
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
@@ -88,8 +96,16 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
 }
 
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
@@ -149,8 +165,16 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
 }
 
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
@@ -210,8 +234,16 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state, cphvb_i
 
 }
 
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
@@ -270,8 +302,16 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state, cphvb_in
 
 }
 
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_ac( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 

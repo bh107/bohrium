@@ -78,7 +78,8 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 
         // TODO: use traverse directly
         //err = traverse_aa<T, T, Instr>( instr );// execute the pseudo-instruction
-        err = cphvb_compute_apply( &instr );
+        //err = cphvb_compute_apply( &instr );
+        err = cphvb_compute_apply_naive( &instr );
         if (err != CPHVB_SUCCESS) {
             return err;
         }
@@ -93,7 +94,7 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
         for(i=1; i<nelements; ++i) {
             // TODO: use traverse directly
             //err = traverse_aaa<T, T, T, Instr>( instr );
-            err = cphvb_compute_apply( &instr );
+            err = cphvb_compute_apply_naive( &instr );
             if (err != CPHVB_SUCCESS) {
                 return err;
             }
@@ -105,7 +106,7 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 
 }
 
-cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
+cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
 {
     cphvb_reduce_type *a = (cphvb_reduce_type *) arg;   // Grab function arguments
 

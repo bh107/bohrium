@@ -27,8 +27,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 
 %for $traverse in $data
+/**
+ *  A naive implementation of executing an instruction.
+ *
+ *  @param instr The instruction to execute
+ *  @param state State of the iteration
+ *  @param nelements the number of elements on which the instruction should be applied.
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
 template <${traverse.tsig}, typename Instr>
-cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
+cphvb_error traverse_naive_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* state, cphvb_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 

@@ -38,7 +38,7 @@ static cphvb_userfunc_impl fft2_impl = NULL;
 static cphvb_intp fft2_impl_id = 0;
 
 static cphvb_intp cphvb_ve_score_buffersizes = 0;
-static computeloop* cphvb_ve_score_compute_loops = NULL;
+static cphvb_computeloop_naive* cphvb_ve_score_compute_loops = NULL;
 static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size    = 7000;
@@ -121,7 +121,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     		cphvb_ve_score_tstates = NULL;
     	}
     	
-    	cphvb_ve_score_compute_loops    = (computeloop*)malloc(sizeof(computeloop) * mcount);
+    	cphvb_ve_score_compute_loops    = (cphvb_computeloop_naive*)malloc(sizeof(cphvb_computeloop_naive) * mcount);
         cphvb_ve_score_tstates          = (cphvb_tstate*)malloc(sizeof(cphvb_tstate)*mcount);
     	
     	if (cphvb_ve_score_compute_loops == NULL)
@@ -132,7 +132,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     	cphvb_ve_score_buffersizes = mcount;
     }
     
-    computeloop* compute_loops = cphvb_ve_score_compute_loops;
+    cphvb_computeloop_naive* compute_loops = cphvb_ve_score_compute_loops;
     cphvb_tstate* states = cphvb_ve_score_tstates;
     cphvb_intp  nelements, trav_end=0;
     cphvb_error ret_errcode = CPHVB_SUCCESS;
@@ -151,7 +151,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
                 break;
 
             default:
-                compute_loops[k] = cphvb_compute_get( &instr[i] );
+                compute_loops[k] = cphvb_compute_get_naive( &instr[i] );
                 if(compute_loops[k] == NULL)
                 {
                     end             = start + k - 1;
@@ -324,7 +324,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
                 } else {
                     inst = &instruction_list[bundle_start];
-                    inst->status = cphvb_compute_apply( inst );
+                    inst->status = cphvb_compute_apply_naive( inst );
                 }
                 cur_index += bundle_size-1;
 
@@ -463,7 +463,7 @@ cphvb_error cphvb_ve_score_reg_func(char *fun, cphvb_intp *id) {
 
 cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
 {
-    return cphvb_compute_reduce( arg, ve_arg );
+    return cphvb_compute_reduce_naive( arg, ve_arg );
 }
 
 cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
