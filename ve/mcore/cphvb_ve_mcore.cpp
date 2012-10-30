@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include "cphvb_ve_mcore.h"
-#include <cphvb_mcache.h>
+#include <cphvb_vcache.h>
 #include <iostream>
 
 #include <queue>                                        //
@@ -145,7 +145,7 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
         worker_count = MCORE_WORKERS;
     }
 
-    cphvb_mcache_init( 10 );                            // Malloc-cache initialization
+    cphvb_vcache_init( 10 );                            // Malloc-cache initialization
 
                                                         //
                                                         // Multicore initialization
@@ -210,8 +210,8 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
     pthread_barrier_destroy( &work_sync );
 
     // De-allocate the malloc-cache
-    cphvb_mcache_clear();
-    cphvb_mcache_delete();
+    cphvb_vcache_clear();
+    cphvb_vcache_delete();
 
 
     return CPHVB_SUCCESS;
@@ -287,20 +287,8 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
         {
             continue;
         }
-        /*
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
-        for(i=0; i<nops; i++)
-        {
-            if (!cphvb_is_constant(inst->operand[i]))
-            {
-                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
-                {
-                    return CPHVB_OUT_OF_MEMORY; // EXIT
-                }
-            }
 
-        }*/
-        res = cphvb_mcache_malloc( inst );      // Allocate memory for operands
+        res = cphvb_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
             return res;
         }
@@ -314,11 +302,8 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 break;
 
             case CPHVB_FREE:
-                /*
-                cphvb_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
-                */
-                inst->status = cphvb_mcache_free( inst );
+
+                inst->status = cphvb_vcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                // External libraries

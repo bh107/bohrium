@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include "cphvb_ve_score.h"
 #include <iostream>
-#include <cphvb_mcache.h>
+#include <cphvb_vcache.h>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -44,7 +44,7 @@ static cphvb_tstate* cphvb_ve_score_tstates = NULL;
 static cphvb_intp block_size    = 7000;
 static cphvb_intp bin_max       = 20;
 static cphvb_intp base_max      = 7;
-static cphvb_intp mcache_size   = 10;
+static cphvb_intp vcache_size   = 10;
 
 cphvb_error cphvb_ve_score_init(cphvb_component *self)
 {
@@ -83,21 +83,21 @@ cphvb_error cphvb_ve_score_init(cphvb_component *self)
         return CPHVB_ERROR;
     }
 
-    env = getenv("CPHVB_CORE_MCACHE_SIZE");     // Override block_size from environment-variable.
+    env = getenv("CPHVB_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
     if(env != NULL)
     {
-        mcache_size = atoi(env);
+        vcache_size = atoi(env);
     }
-    if(mcache_size <= 0)                        // Verify it
+    if(vcache_size <= 0)                        // Verify it
     {
-        fprintf(stderr, "CPHVB_CORE_MCACHE_SIZE (%ld) should be greater than zero!\n", (long int)mcache_size);
+        fprintf(stderr, "CPHVB_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
         return CPHVB_ERROR;
     }
     //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
     //printf("[CPHVB_VE_SCORE_BINMAX=%ld]\n", bin_max);
     //printf("[CPHVB_VE_SCORE_BASEMAX=%ld]\n", base_max);
-    //printf("[CPHVB_CORE_MCACHE_SIZE=%ld]\n", mcache_size);
-    cphvb_mcache_init( mcache_size );
+    //printf("[CPHVB_CORE_VCACHE_SIZE=%ld]\n", vcache_size);
+    cphvb_vcache_init( vcache_size );
     return CPHVB_SUCCESS;
 }
 
@@ -215,7 +215,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
             continue;
         }
 
-        res = cphvb_mcache_malloc( inst );      // Allocate memory for operands
+        res = cphvb_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
             return res;
         }
@@ -229,7 +229,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                 break;
 
             case CPHVB_FREE:                        // Store data-pointer in malloc-cache
-                inst->status = cphvb_mcache_free( inst );
+                inst->status = cphvb_vcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
@@ -286,7 +286,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                     }
 
                     bin_end++;                                  // The "end" index
-                    res = cphvb_mcache_malloc( binst );         // Allocate memory for operands
+                    res = cphvb_vcache_malloc( binst );         // Allocate memory for operands
                     if ( res != CPHVB_SUCCESS ) {
                         return res;
                     }
@@ -314,7 +314,7 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
                                     break;
 
                                 case CPHVB_FREE:                        // Store data-pointer in malloc-cache
-                                    inst->status = cphvb_mcache_free( inst );
+                                    inst->status = cphvb_vcache_free( inst );
                                     break;
 
                                        
@@ -347,8 +347,8 @@ cphvb_error cphvb_ve_score_execute( cphvb_intp instruction_count, cphvb_instruct
 
 cphvb_error cphvb_ve_score_shutdown( void )
 {
-    cphvb_mcache_clear();
-    cphvb_mcache_delete();
+    cphvb_vcache_clear();
+    cphvb_vcache_delete();
 
     return CPHVB_SUCCESS;
 }

@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include "cphvb_ve_simple.h"
-#include <cphvb_mcache.h>
+#include <cphvb_vcache.h>
 
 static cphvb_component *myself = NULL;
 static cphvb_userfunc_impl reduce_impl = NULL;
@@ -31,24 +31,24 @@ static cphvb_intp matmul_impl_id = 0;
 static cphvb_userfunc_impl nselect_impl = NULL;
 static cphvb_intp nselect_impl_id = 0;
 
-static cphvb_intp mcache_size   = 10;
+static cphvb_intp vcache_size   = 10;
 
 cphvb_error cphvb_ve_simple_init(cphvb_component *self)
 {
     myself = self;
 
-    char *env = getenv("CPHVB_CORE_MCACHE_SIZE");     // Override block_size from environment-variable.
+    char *env = getenv("CPHVB_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
     if(env != NULL)
     {
-        mcache_size = atoi(env);
+        vcache_size = atoi(env);
     }
-    if(mcache_size <= 0)                        // Verify it
+    if(vcache_size <= 0)                        // Verify it
     {
-        fprintf(stderr, "CPHVB_CORE_MCACHE_SIZE (%ld) should be greater than zero!\n", (long int)mcache_size);
+        fprintf(stderr, "CPHVB_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
         return CPHVB_ERROR;
     }
 
-    cphvb_mcache_init( mcache_size );
+    cphvb_vcache_init( vcache_size );
     return CPHVB_SUCCESS;
 }
 
@@ -65,9 +65,9 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
             continue;
         }
 
-        res = cphvb_mcache_malloc( inst );          // Allocate memory for operands
+        res = cphvb_vcache_malloc( inst );          // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
-            printf("Unhandled error returned by cphvb_mcache_malloc() called from cphvb_ve_simple_execute()\n");
+            printf("Unhandled error returned by cphvb_vcache_malloc() called from cphvb_ve_simple_execute()\n");
             return res;
         }
                                                     
@@ -79,7 +79,7 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 inst->status = CPHVB_SUCCESS;
                 break;
             case CPHVB_FREE:                        // Store data-pointer in malloc-cache
-                inst->status = cphvb_mcache_free( inst );
+                inst->status = cphvb_vcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                    // External libraries
@@ -130,8 +130,8 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
 cphvb_error cphvb_ve_simple_shutdown( void )
 {
     // De-allocate the malloc-cache
-    cphvb_mcache_clear();
-    cphvb_mcache_delete();
+    cphvb_vcache_clear();
+    cphvb_vcache_delete();
 
     return CPHVB_SUCCESS;
 }

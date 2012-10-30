@@ -18,8 +18,8 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#ifndef CPHVB_MCACHE_H
-#define CPHVB_MCACHE_H
+#ifndef CPHVB_VCACHE_H
+#define CPHVB_VCACHE_H
 #include <cphvb.h>
 
 #ifdef __cplusplus
@@ -28,48 +28,48 @@ extern "C" {
 
 
 /**
- *  Initiate mcache to a fixed size.
+ *  Initiate vcache to a fixed size.
  *
  *  cache will hold 'size' elements in the cache.
  *
  *  Expiration / cache invalidation is based on round-robin;
- *  Whenever an element is added to mcache the round-robin
+ *  Whenever an element is added to vcache the round-robin
  *  counter is incremented.
  *
  */
-DLLEXPORT void cphvb_mcache_init( int size );
+DLLEXPORT void cphvb_vcache_init( int size );
 
 /**
- * Deallocates mcache arrays.
+ * Deallocates vcache arrays.
  */
-DLLEXPORT void cphvb_mcache_delete();
+DLLEXPORT void cphvb_vcache_delete();
 
 /**
- * Remove all entries from mcache and de-allocate them
+ * Remove all entries from vcache and de-allocate them
  */
-DLLEXPORT void cphvb_mcache_clear();
+DLLEXPORT void cphvb_vcache_clear();
 
 /**
- * Return and remove a pointer of size 'size' from mcache.
+ * Return and remove a pointer of size 'size' from vcache.
  *
- * This removes it from the mcache!
+ * This removes it from the vcache!
  *
  * @return null If none exists.
  */
-DLLEXPORT cphvb_data_ptr cphvb_mcache_find( cphvb_intp bytes );
+DLLEXPORT cphvb_data_ptr cphvb_vcache_find( cphvb_intp bytes );
 
 /**
- * Add an element to mcache.
+ * Add an element to vcache.
  * 
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-DLLEXPORT void cphvb_mcache_insert( cphvb_data_ptr data, cphvb_intp size );
-DLLEXPORT cphvb_error cphvb_mcache_free( cphvb_instruction* inst );
-DLLEXPORT cphvb_error cphvb_mcache_malloc( cphvb_instruction* inst );
+DLLEXPORT void cphvb_vcache_insert( cphvb_data_ptr data, cphvb_intp size );
+DLLEXPORT cphvb_error cphvb_vcache_free( cphvb_instruction* inst );
+DLLEXPORT cphvb_error cphvb_vcache_malloc( cphvb_instruction* inst );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CPHVB_MCACHE_H */
+#endif /* CPHVB_VCACHE_H */
