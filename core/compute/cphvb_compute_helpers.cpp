@@ -44,17 +44,17 @@ void cphvb_compact_dimensions(cphvb_tstate* state)
 }
 
 void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction *instr ) {
+
 	// As all arrays have the same dimensions, we keep a single shared shape
 	cphvb_index i, blocksize;
 	
-	state->ndim = instr->operand[0]->ndim;
-	state->noperands = cphvb_operands(instr->opcode);
-	blocksize = state->ndim * sizeof(cphvb_index);
+	state->ndim         = instr->operand[0]->ndim;
+	state->noperands    = cphvb_operands(instr->opcode);
+	blocksize           = state->ndim * sizeof(cphvb_index);
 	memcpy(state->shape, instr->operand[0]->shape, blocksize);
 
 	for(i = 0; i < state->noperands; i++) {
-		if (!cphvb_is_constant(instr->operand[i]))
-		{
+        if (!cphvb_is_constant(instr->operand[i])) {
 			memcpy(state->stride[i], instr->operand[i]->stride, blocksize);
 			state->start[i] = instr->operand[i]->start;
 		}
@@ -63,6 +63,12 @@ void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction *instr ) {
 	cphvb_compact_dimensions(state);
 }
 
+/**
+ * Execute an instruction using the optimization traversal.
+ *
+ * @param instr Instruction to execute.
+ * @return Status of execution
+ */
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
 
     cphvb_computeloop comp = cphvb_compute_get( instr );
@@ -72,7 +78,7 @@ cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
     if (comp == NULL) {
         return CPHVB_TYPE_NOT_SUPPORTED;
     } else {
-        return comp( instr, &state, 0 );
+        return comp( instr, &state );
     }
 
 }
