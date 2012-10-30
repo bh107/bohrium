@@ -1,5 +1,4 @@
-import numpy as np
-import cphvbbridge
+import cphvbnumpy as np
 import util
 
 def compute_targets(base, target):
@@ -25,7 +24,6 @@ def main():
     B.start()
     compute_targets(base, targets)
     B.stop()
-
     B.pprint()
 
 if __name__ == "__main__":
