@@ -39,7 +39,7 @@ static cphvb_intp fft2_impl_id = 0;
 
 static cphvb_intp cphvb_ve_score_buffersizes = 0;
 static cphvb_computeloop_naive* cphvb_ve_score_compute_loops = NULL;
-static cphvb_tstate* cphvb_ve_score_tstates = NULL;
+static cphvb_tstate_naive* cphvb_ve_score_tstates = NULL;
 
 static cphvb_intp block_size    = 7000;
 static cphvb_intp bin_max       = 20;
@@ -122,7 +122,7 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     	}
     	
     	cphvb_ve_score_compute_loops    = (cphvb_computeloop_naive*)malloc(sizeof(cphvb_computeloop_naive) * mcount);
-        cphvb_ve_score_tstates          = (cphvb_tstate*)malloc(sizeof(cphvb_tstate)*mcount);
+        cphvb_ve_score_tstates          = (cphvb_tstate_naive*)malloc(sizeof(cphvb_tstate_naive)*mcount);
     	
     	if (cphvb_ve_score_compute_loops == NULL)
     		return CPHVB_OUT_OF_MEMORY;
@@ -133,12 +133,12 @@ inline cphvb_error block_execute( cphvb_instruction* instr, cphvb_intp start, cp
     }
     
     cphvb_computeloop_naive* compute_loops = cphvb_ve_score_compute_loops;
-    cphvb_tstate* states = cphvb_ve_score_tstates;
+    cphvb_tstate_naive* states = cphvb_ve_score_tstates;
     cphvb_intp  nelements, trav_end=0;
     cphvb_error ret_errcode = CPHVB_SUCCESS;
     
     for(i=0; i<= (end-start);i++)                   // Reset traversal coordinates
-        cphvb_tstate_reset( &states[i] );
+        cphvb_tstate_reset_naive( &states[i] );
 
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {

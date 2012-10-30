@@ -46,7 +46,7 @@ static cphvb_intp fft2_impl_id = 0;
 
 //static cphvb_intp cphvb_ve_mcore_buffersizes = 0;
 //static computeloop* cphvb_ve_mcore_compute_loops = NULL;
-//static cphvb_tstate* cphvb_ve_mcore_tstates = NULL;
+//static cphvb_tstate_naive* cphvb_ve_mcore_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
                                                         //
@@ -57,7 +57,7 @@ typedef struct worker_data {                            // Thread identity and c
     int id;
     cphvb_computeloop_naive loop;
     cphvb_instruction *instr;
-    cphvb_tstate *state;
+    cphvb_tstate_naive *state;
     cphvb_index nelements;
 } worker_data_t;
 
@@ -68,7 +68,7 @@ static pthread_t        worker[MCORE_MAX_WORKERS];          // Worker-pool
 static worker_data_t    worker_data[MCORE_MAX_WORKERS];     // And their associated data
 
 static int worker_count = MCORE_WORKERS;
-static cphvb_tstate tstates[MCORE_MAX_WORKERS];
+static cphvb_tstate_naive tstates[MCORE_MAX_WORKERS];
 
 static void* job(void *worker_arg)
 {
@@ -229,7 +229,7 @@ inline cphvb_error dispatch( cphvb_instruction* instr, cphvb_index nelements) {
     size     = nelements / worker_count;
 
     for (i=0; i<worker_count;i++)       // tstate = (0, 0, 0, ..., 0)
-        cphvb_tstate_reset( &tstates[i] );  
+        cphvb_tstate_reset_naive( &tstates[i] );  
     while(tstates[worker_count-1].cur_e < nelements) {
 
         for(i=0;i<worker_count;i++) {   // Setup workers
