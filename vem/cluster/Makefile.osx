@@ -1,9 +1,8 @@
 ROOT=../..
 LIB=libcphvb_vem_cluster.dylib
-CC?=gcc
-CXX?=g++
+CXX=mpic++
 WARNOPTS=-Wall
-ARCHOPTS?=-arch i386 -arch x86_64
+ARCHOPTS?= 
 LCFLAGS= $(ARCHOPTS) $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS= $(ARCHOPTS) -shared -L../../core -lcphvb -Wl,-dylib_install_name,$(LIB)
 HEADER=./*.h $(ROOT)/include/*

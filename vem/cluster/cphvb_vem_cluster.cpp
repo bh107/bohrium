@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "exchange.h"
 #include "mapping.h"
 #include "darray_extension.h"
+#include "pgrid.h"
 
 //Function pointers to the Node VEM.
 static cphvb_init vem_init;
@@ -53,6 +54,10 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
     cphvb_intp children_count;
     cphvb_error err;
     myself = self;
+    
+    //Initate the process grid
+    if((err = pgrid_init()) != CPHVB_SUCCESS)
+        return err;
 
     err = cphvb_component_children(self, &children_count, &my_components);
     if (children_count != 1) 
@@ -84,7 +89,8 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
     cphvb_error err;
-    err = vem_shutdown();
+    if((err = vem_shutdown()) != CPHVB_SUCCESS)
+        return err;
     cphvb_component_free(my_components[0]);//Only got one child.
     vem_init     = NULL;
     vem_execute  = NULL;
@@ -92,7 +98,12 @@ cphvb_error cphvb_vem_cluster_shutdown(void)
     vem_reg_func = NULL;
     cphvb_component_free_ptr(my_components);
     my_components = NULL;
-    return err;
+
+    //Finalize the process grid
+    if((err = pgrid_finalize()) != CPHVB_SUCCESS)
+        return err;
+
+    return CPHVB_SUCCESS;
 }
 
 
