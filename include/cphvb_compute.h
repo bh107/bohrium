@@ -30,7 +30,7 @@ struct cphvb_tstate_naive {
     cphvb_index coord[CPHVB_MAXDIM];
     cphvb_index cur_e;
 };
-void cphvb_tstate_naive_reset( cphvb_tstate_naive *state );
+void cphvb_tstate_reset_naive( cphvb_tstate_naive *state );
 
 typedef struct cphvb_tstate cphvb_tstate;
 struct cphvb_tstate {
