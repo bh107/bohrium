@@ -109,7 +109,7 @@ cphvb_error cphvb_ve_simple_execute( cphvb_intp instruction_count, cphvb_instruc
                 break;
 
             default:                            // Built-in operations
-                inst->status = cphvb_compute_apply_naive( inst );
+                inst->status = cphvb_compute_apply( inst );
 
         }
 
@@ -212,7 +212,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *fun, cphvb_intp *id)
 
 cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
 {
-    return cphvb_compute_reduce_naive( arg, ve_arg );
+    return cphvb_compute_reduce( arg, ve_arg );
 }
 
 cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
