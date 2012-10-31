@@ -4,11 +4,19 @@ children = node
 
 [node]
 impl = /opt/cphvb/libcphvb_vem_node.so
-children = simple
+children = tile
 type = vem
 
 [simple]
 impl = /opt/cphvb/libcphvb_ve_simple.so
+type = ve
+
+[tile]
+impl = /opt/cphvb/libcphvb_ve_tile.so
+type = ve
+
+[naive]
+impl = /opt/cphvb/libcphvb_ve_naive.so
 type = ve
 
 [score]
