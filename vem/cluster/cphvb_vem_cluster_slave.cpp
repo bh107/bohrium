@@ -18,44 +18,12 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
-#include <cstring>
-#include <iostream>
-#include <vector>
 #include <cphvb.h>
-
 #include "cphvb_vem_cluster.h"
-#include "exec.h"
-
-
-cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
+        
+int main()
 {
-    //TODO: Send to slaves
+    
 
-    return exec_init(self);
-}
-
-
-cphvb_error cphvb_vem_cluster_shutdown(void)
-{
-    //TODO: Send to slaves
-
-    return exec_shutdown();
-}
-
-
-cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
-{
-    //TODO: Send to slaves
-
-    return exec_reg_func(fun, id);
-}
-
-
-cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
-                                      cphvb_instruction inst_list[])
-{
-    //TODO: Send to slaves
-
-    return exec_execute(count,inst_list);
+   return 0; 
 }
