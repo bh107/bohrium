@@ -163,7 +163,7 @@ if __name__ == "__main__":
                   ("VE-SCORE", "ve/score", False),\
                   ("VE-MCORE", "ve/mcore", False),\
                   ("VEM-NODE", "vem/node", True),\
-                  ("VEM-CLUSTER", "vem/cluster", True),\
+                  ("VEM-CLUSTER", "vem/cluster", False),\
                   ("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
