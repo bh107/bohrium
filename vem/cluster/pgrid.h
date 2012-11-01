@@ -18,37 +18,26 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
- * There is a local array database on each MPI-process.
- * The database consist of all distributed array-bases.
- */
+#ifndef CLUSTER_VEM_PGRID_H
+#define CLUSTER_VEM_PGRID_H
+#include <mpi.h>
+#include <cphvb.h>
 
-#include "cphvb_vem_cluster.h"
-
-#ifndef ARRAY_DATABASE_H
-#define ARRAY_DATABASE_H
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern int pgrid_myrank, pgrid_worldsize;
 
 /*===================================================================
  *
- * Initiate the local array database.
+ * Initiate the MPI process grid.
+ * NB: must be called before the use of myrank and worldsize
  */
-void arydb_init(void);
+cphvb_error pgrid_init(void);
 
 
 /*===================================================================
  *
- * Put, get & remove arrays from the local array database.
+ * Finalize the MPI process grid.
  */
-void arydb_put(dndarray *ary);
-dndarray *arydb_get(cphvb_array *ary);
-void arydb_rm(cphvb_array *ary);
+cphvb_error pgrid_finalize(void);
 
 
-#ifdef __cplusplus
-}
 #endif
-
-#endif /* !defined(ARRAY_DATABASE_H) */
