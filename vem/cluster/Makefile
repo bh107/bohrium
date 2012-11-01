@@ -1,7 +1,7 @@
 ROOT=../..
 LIB=libcphvb_vem_cluster.so
 SLAVE=cphvb_vem_cluster_slave
-CXX?=mpic++
+CXX=mpic++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS=-L../../core -lcphvb -Wl -o $(SLAVE)
