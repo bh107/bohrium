@@ -36,9 +36,9 @@ void cphvb_compact_dimensions(cphvb_tstate* state)
 		if (state->shape[i] == 1 || state->shape[i] == 0) 
 		{
 			state->ndim--;
-			memcpy(&state->shape[i], &state->shape[i+1], (state->ndim - i) * sizeof(cphvb_index));
+			memmove(&state->shape[i], &state->shape[i+1], (state->ndim - i) * sizeof(cphvb_index));
 			for(j = 0; j < state->noperands; j++)
-				memcpy(&state->stride[j][i], &state->stride[j][i+1], (state->ndim - i) * sizeof(cphvb_index));
+				memmove(&state->stride[j][i], &state->stride[j][i+1], (state->ndim - i) * sizeof(cphvb_index));
 		}
 	}
 }
