@@ -110,9 +110,11 @@ static void *get_dlsym(void *handle, const char *name,
 
 /* Setup the root component, which normally is the bridge.
  *
+ * @name The name of the root component. If NULL "bridge" 
+         will be used.
  * @return The root component in the configuration.
  */
-cphvb_component *cphvb_component_setup(void)
+cphvb_component *cphvb_component_setup(const char* name)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
@@ -128,7 +130,10 @@ cphvb_component *cphvb_component_setup(void)
     //Clear memory so we do not have any random pointers
     memset(com, 0, sizeof(cphvb_component));
 
-    strcpy(com->name, "bridge"); //The config root keyword.
+    if(name == NULL)
+        strcpy(com->name, "bridge"); //The default config root keyword.
+    else
+        strcpy(com->name, name);
 
     //The environment variable has precedence.
     env = getenv("CPHVB_CONFIG");
@@ -217,14 +222,6 @@ cphvb_component *cphvb_component_setup(void)
     }
 
     com->type = get_type(com->config, com->name);
-
-    if(com->type != CPHVB_BRIDGE)
-    {
-        fprintf(stderr, "Error in the configuration: the root "
-                        "component must be of type bridge.\n");
-        free(com);
-        return NULL;
-    }
     return com;
 }
 
