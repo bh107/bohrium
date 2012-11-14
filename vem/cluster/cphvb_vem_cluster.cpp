@@ -34,7 +34,6 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
     cphvb_error e;
     cphvb_intp size;
-    dispatch_msg *msg;
 
     //Initiate the process grid
     if((e = pgrid_init()) != CPHVB_SUCCESS)
@@ -51,15 +50,9 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
         MPI_Abort(MPI_COMM_WORLD,e);
     }
 
-    //Create dispatch message
-    msg = (dispatch_msg*) malloc(sizeof(dispatch_msg) + sizeof(char)*CPHVB_COMPONENT_NAME_SIZE);
-    if(msg == NULL)
-        return CPHVB_OUT_OF_MEMORY;
-
     //We we send the component name
     size = strnlen(self->name, CPHVB_COMPONENT_NAME_SIZE) * sizeof(char);
     e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT, size, self->name);
-    free(msg);
     
     if(e != CPHVB_SUCCESS)
         return e;
@@ -82,9 +75,25 @@ cphvb_error cphvb_vem_cluster_shutdown(void)
     
 cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
-    //TODO: Send to slaves
+    char *msg;
+    cphvb_error e;
+    assert(fun != NULL);
 
-    return exec_reg_func(fun, id);
+    //The Master will find the new 'id' if required.
+    if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
+        return e;
+
+    //Lets send the function name and id to the slaves
+    int strsize = strlen(fun) * sizeof(char) + 1;//Including the terminating null byte ('\0').
+
+    msg = (char*) malloc(sizeof(cphvb_intp) + strsize);
+    if(msg == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+    memcpy(msg,id,sizeof(cphvb_intp));
+    memcpy(msg+sizeof(cphvb_intp),fun,strsize);
+    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC, strsize + sizeof(cphvb_intp), msg);
+    free(msg);
+    return e;
 }
 
 

@@ -46,16 +46,24 @@ int main()
         {
             case CPHVB_CLUSTER_DISPATCH_INIT:
             {
-                printf("Slave (rank %d) received CPHVB_CLUSTER_DISPATCH_INIT\n", pgrid_myrank);
                 char *name = msg->payload;
-                printf("name: %s\n",name);
+                printf("Slave (rank %d) received INIT. name: %s\n", pgrid_myrank, name);
                 if((e = exec_init(name)) != CPHVB_SUCCESS)
                     return e;
                 break;
             }
             case CPHVB_CLUSTER_DISPATCH_SHUTDOWN:
-                printf("Slave (rank %d) received CPHVB_CLUSTER_DISPATCH_SHUTDOWN\n",pgrid_myrank);
+                printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
                 return exec_shutdown(); 
+            case CPHVB_CLUSTER_DISPATCH_UFUNC:
+            {
+                cphvb_intp *id = (cphvb_intp *)msg->payload;
+                char *fun = msg->payload+sizeof(cphvb_intp);
+                printf("Slave (rank %d) received UFUNC. fun: %s, id: %ld\n",pgrid_myrank, fun, *id);
+                if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
+                    return e;
+                break;
+            }
             default:
                 fprintf(stderr, "[VEM-CLUSTER] Slave (rank %d) "
                         "received unknown message type\n", pgrid_myrank);
