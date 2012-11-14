@@ -114,9 +114,12 @@ struct cphvb_component_struct
 
 /* Setup the root component, which normally is the bridge.
  *
- * @return A new component object.
+ * @name The name of the root component. If NULL "bridge" 
+         will be used.
+ * @return The root component in the configuration.
  */
-DLLEXPORT cphvb_component *cphvb_component_setup(void);
+DLLEXPORT cphvb_component *cphvb_component_setup(const char* name);
+
 
 
 /* Retrieves the children components of the parent.
