@@ -1,5 +1,6 @@
 ROOT=../..
-CXX?=g++
+CXX=g++
+#CXX=clang
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include
 LDFLAGS=-L$(ROOT)/core -lcphvb -lrt -shared -Wl,-soname

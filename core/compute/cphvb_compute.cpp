@@ -23,34 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "traverser.hpp"
 #include <complex>
 
-//
-// The new an optimized traversal goes here.
-//
-
-
-
-//
-// Below is usage of the naive traversal.
-//
-void cphvb_tstate_reset_naive( cphvb_tstate_naive *state ) {
-    memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-    state->cur_e = 0;   
-}
-
-cphvb_error cphvb_compute_apply_naive( cphvb_instruction *instr ) {
-
-    cphvb_computeloop_naive comp = cphvb_compute_get_naive( instr );
-    cphvb_tstate_naive state;
-    cphvb_tstate_reset_naive( &state );
-    
-    if (comp == NULL) {
-        return CPHVB_TYPE_NOT_SUPPORTED;
-    } else {
-        return comp( instr, &state, 0 );
-    }
-
-}
-
 cphvb_computeloop_naive cphvb_compute_get_naive( cphvb_instruction *instr ) {
 
     // Poly contains a unique value, pairing an opcode with its function signature.
