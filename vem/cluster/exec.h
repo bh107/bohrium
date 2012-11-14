@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_init(cphvb_component *self);
+cphvb_error exec_init(const char *component_name);
 
 
 /* Shutdown the VEM, which include a instruction flush

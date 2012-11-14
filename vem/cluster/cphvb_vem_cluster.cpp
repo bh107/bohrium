@@ -26,24 +26,60 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "cphvb_vem_cluster.h"
 #include "exec.h"
+#include "dispatch.h"
+#include "pgrid.h"
 
 
 cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
-    //TODO: Send to slaves
+    cphvb_error e;
+    cphvb_intp size;
+    dispatch_msg *msg;
 
-    return exec_init(self);
+    //Initiate the process grid
+    if((e = pgrid_init()) != CPHVB_SUCCESS)
+        return e;
+
+    //Initiate the dispatch system
+    if((e = dispatch_init()) != CPHVB_SUCCESS)
+        return e;
+
+    if(pgrid_myrank != 0)
+    {
+        fprintf(stderr, "[VEM-CLUSTER] Multiple instants of the bridge is not allowed. "
+        "Only rank-0 should execute the bridge. All slaves should execute cphvb_vem_cluster_slave.\n");
+        MPI_Abort(MPI_COMM_WORLD,e);
+    }
+
+    //Create dispatch message
+    msg = (dispatch_msg*) malloc(sizeof(dispatch_msg) + sizeof(char)*CPHVB_COMPONENT_NAME_SIZE);
+    if(msg == NULL)
+        return CPHVB_OUT_OF_MEMORY;
+
+    //We we send the component name
+    size = strnlen(self->name, CPHVB_COMPONENT_NAME_SIZE) * sizeof(char);
+    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT, size, self->name);
+    free(msg);
+    
+    if(e != CPHVB_SUCCESS)
+        return e;
+
+    if((e = exec_init(self->name)) != CPHVB_SUCCESS)
+        return e;
+
+    return CPHVB_SUCCESS; 
 }
 
 
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
-    //TODO: Send to slaves
-
+    cphvb_error e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN, 0, NULL)) != CPHVB_SUCCESS)
+        return e;
     return exec_shutdown();
-}
+} 
 
-
+    
 cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
     //TODO: Send to slaves
