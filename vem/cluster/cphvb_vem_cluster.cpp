@@ -33,14 +33,9 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
     cphvb_error e;
-    cphvb_intp size;
 
     //Initiate the process grid
     if((e = pgrid_init()) != CPHVB_SUCCESS)
-        return e;
-
-    //Initiate the dispatch system
-    if((e = dispatch_init()) != CPHVB_SUCCESS)
         return e;
 
     if(pgrid_myrank != 0)
@@ -50,13 +45,15 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
         MPI_Abort(MPI_COMM_WORLD,e);
     }
 
-    //We we send the component name
-    size = strnlen(self->name, CPHVB_COMPONENT_NAME_SIZE) * sizeof(char);
-    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT, size, self->name);
-    
-    if(e != CPHVB_SUCCESS)
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(strlen(self->name), self->name)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT)) != CPHVB_SUCCESS)
         return e;
 
+    //Execute our self
     if((e = exec_init(self->name)) != CPHVB_SUCCESS)
         return e;
 
@@ -67,15 +64,20 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
     cphvb_error e;
-    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN, 0, NULL)) != CPHVB_SUCCESS)
+
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
         return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN)) != CPHVB_SUCCESS)
+        return e;
+    
+    //Execute our self
     return exec_shutdown();
 } 
 
     
 cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
-    char *msg;
     cphvb_error e;
     assert(fun != NULL);
 
@@ -83,29 +85,23 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
     if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
         return e;
 
-    //Lets send the function name and id to the slaves
-    int strsize = strlen(fun) * sizeof(char) + 1;//Including the terminating null byte ('\0').
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(sizeof(cphvb_intp), id)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(strlen(fun)+1, fun)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC)) != CPHVB_SUCCESS)
+        return e;
 
-    msg = (char*) malloc(sizeof(cphvb_intp) + strsize);
-    if(msg == NULL)
-        return CPHVB_OUT_OF_MEMORY;
-    memcpy(msg,id,sizeof(cphvb_intp));
-    memcpy(msg+sizeof(cphvb_intp),fun,strsize);
-    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC, strsize + sizeof(cphvb_intp), msg);
-    free(msg);
-    return e;
+    return CPHVB_SUCCESS;
 }
 
 
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
-    cphvb_error e;
-    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC, 
-                      count * sizeof(cphvb_instruction), inst_list);
-
-    if(e != CPHVB_SUCCESS)
-        return e;
     
     return exec_execute(count,inst_list);
 }

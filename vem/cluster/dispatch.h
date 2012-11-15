@@ -31,40 +31,48 @@ enum /* int */
     CPHVB_CLUSTER_DISPATCH_UFUNC
 };
 
+
 //The size of a message chunk in bytes
 #define CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE (256)
 
+
 //The header of a dispatch message. If 'size' is larger than the message 
-//chunk size, consecutive payload messages will follow the dispatch message.
+//default size, consecutive payload messages will follow the dispatch message.
 typedef struct
 {
     //Message type
     int type;
-    //Total message size (all included)
+    //Size of the payload in bytes
     int size;
     //The content of the message
     char payload[];
 }dispatch_msg;
 
 
-/* Send payload to all slave processes.
- * @type is the type of the message
- * @size is the size of the payload
- * @payload is the payload of the message
-*/
-cphvb_error dispatch_send(int type, int size, const void *payload);
-
-
-/* Receive payload from master process.
- * @msg the received message (should not be freed)
-*/
-cphvb_error dispatch_recv(dispatch_msg **msg);
-
 /* Initiate the dispatch system. */
-cphvb_error dispatch_init(void);
+cphvb_error dispatch_reset(void);
 
     
 /* Finalize the dispatch system. */
 cphvb_error dispatch_finalize(void);
+
+
+/* Add data to the send message payload.
+ * @size is the size of the data in bytes
+ * @data is the data to add to the send buffer
+ */
+cphvb_error dispatch_add2payload(cphvb_intp size, void *data);
+
+
+/* Receive payload from master process.
+ * @msg the received message (should not be freed)
+ */
+cphvb_error dispatch_recv(dispatch_msg **msg);
+
+
+/* Send payload to all slave processes.
+ * @type is the type of the message
+*/
+cphvb_error dispatch_send(int type);
 
 #endif

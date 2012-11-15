@@ -34,12 +34,11 @@ int main()
     if((e = pgrid_init()) != CPHVB_SUCCESS)
         return e;
 
-    //Initiate the dispatch system
-    if((e = dispatch_init()) != CPHVB_SUCCESS)
-        return e;
-
     while(1)
     {
+        if((e = dispatch_reset()) != CPHVB_SUCCESS)
+            return e;
+
         if((e = dispatch_recv(&msg)) != CPHVB_SUCCESS)
             return e;
 
@@ -71,7 +70,7 @@ int main()
             {
                 cphvb_intp count = (msg->size - 2 * sizeof(int)) / sizeof(cphvb_instruction);
                 assert((msg->size - 2 * sizeof(int)) % sizeof(cphvb_instruction) == 0);
-                cphvb_instruction *list = (cphvb_instruction*) msg->payload;
+//                cphvb_instruction *list = (cphvb_instruction*) msg->payload;
                 printf("Slave (rank %d) received EXEC. count: %ld\n",pgrid_myrank, count);
 //                if((e = exec_execute(count, list)) != CPHVB_SUCCESS)
 //                    return e;

@@ -24,19 +24,23 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "dispatch.h"
 
 
-//Message buffer and buffer size
-static int buf_size;
-static char *buf;
+//Message buffer, current offset and buffer size
+static int buf_size=sizeof(dispatch_msg);
+static dispatch_msg *msg=NULL;
 
 /* Initiate the dispatch system. */
-cphvb_error dispatch_init(void)
+cphvb_error dispatch_reset(void)
 {
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
-    assert(((int)dms) > 2 * sizeof(int));
-    buf = (char*) malloc(dms);
-    if(buf == NULL)
-        return CPHVB_OUT_OF_MEMORY;
-    buf_size = dms;
+    assert(((int)dms) > sizeof(dispatch_msg));
+    if(msg == NULL)
+    {
+        msg = (dispatch_msg*) malloc(dms);
+        if(msg == NULL)
+            return CPHVB_OUT_OF_MEMORY;
+        buf_size = dms;
+    }
+    msg->size = 0;
     return CPHVB_SUCCESS;
 }
 
@@ -44,74 +48,78 @@ cphvb_error dispatch_init(void)
 /* Finalize the dispatch system. */
 cphvb_error dispatch_finalize(void)
 {
-    free(buf);
-    buf_size = 0;
+    free(msg);
+    return CPHVB_SUCCESS;
+}
+
+
+/* Add data to the send message payload.
+ * @size is the size of the data in bytes
+ * @data is the data to add to the send buffer
+ */
+cphvb_error dispatch_add2payload(cphvb_intp size, void *data)
+{
+    cphvb_intp new_msg_size = sizeof(dispatch_msg) + msg->size + size;
+    //Expand the buffer if need
+    if(buf_size < new_msg_size)
+    {
+        buf_size = new_msg_size*2;
+        msg = (dispatch_msg*) realloc(msg, buf_size);
+        if(msg == NULL)
+           return CPHVB_OUT_OF_MEMORY;
+    }
+    memcpy(msg->payload+msg->size, data, size);
+    msg->size += size;
     return CPHVB_SUCCESS;
 }
 
 
 /* Send payload to all slave processes.
  * @type is the type of the message
- * @size is the size of the payload
- * @payload is the payload of the message
 */
-cphvb_error dispatch_send(int type, int size, const void *payload)
+cphvb_error dispatch_send(int type)
 {
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
-    const int msgsize = size + 2 * sizeof(int);
     int e;
-    assert(((int)dms) > 2 * sizeof(int));
-
-    //Expand the read buffer if need  
-    if(buf_size < msgsize)
-    {
-        buf_size = msgsize;
-        buf = (char*) realloc(buf, buf_size);
-        if(buf == NULL)
-           return CPHVB_OUT_OF_MEMORY;
-    }
 
     //Create message
-    dispatch_msg *msg = (dispatch_msg *)buf;
     msg->type = type;
-    msg->size = msgsize;
-    if(size > 0)
-        memcpy(msg->payload, payload, size);
-    
-    if((e = MPI_Bcast(buf, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        
+    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
         return CPHVB_ERROR;
        
-    int size_left = msgsize - dms;
+    int size_left = sizeof(dispatch_msg) + msg->size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(buf + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        if((e = MPI_Bcast(msg + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
             return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
 }
 
+
 /* Receive payload from master process.
  * @msg the received message (should not be freed)
 */
-cphvb_error dispatch_recv(dispatch_msg **msg)
+cphvb_error dispatch_recv(dispatch_msg **message)
 {
 
     int e;
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     
     //Get header of the message
-    if((e = MPI_Bcast(buf, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
         return CPHVB_ERROR;
 
     //Read total message size
-    int size = ((dispatch_msg *)buf)->size;
+    int size = sizeof(dispatch_msg) + msg->size;
  
     //Expand the read buffer if need  
     if(buf_size < size)
     {
         buf_size = size;
-        buf = (char*) realloc(buf, buf_size);
-        if(buf == NULL)
+        msg = (dispatch_msg*) realloc(msg, buf_size);
+        if(msg == NULL)
            return CPHVB_OUT_OF_MEMORY;
     }
  
@@ -119,11 +127,11 @@ cphvb_error dispatch_recv(dispatch_msg **msg)
     int size_left = size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(buf + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        if((e = MPI_Bcast(msg + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
             return CPHVB_ERROR;
     }
 
-    *msg = (dispatch_msg*) buf;
+    *message = msg;
     return CPHVB_SUCCESS;
 }
 
