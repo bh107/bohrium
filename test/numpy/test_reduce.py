@@ -5,7 +5,7 @@ from numpytest import numpytest,gen_views,TYPES
 class test_reduce(numpytest):
     
     def init(self):
-        for v in gen_views(3,64,12):
+        for v in gen_views(5,10,6):
             a = {}
             self.axis = 0
             exec v
