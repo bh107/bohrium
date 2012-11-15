@@ -3,6 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
+#ifndef CPHVB_FUNCTORS_HPP
+#define CPHVB_FUNCTORS_HPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cphvb_win_math.hpp>
@@ -33,3 +36,4 @@ struct ${functor.opcode.lower().replace('cphvb_','')}_functor {
 };
 %end for
 
+#endif
