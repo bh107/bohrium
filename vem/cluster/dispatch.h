@@ -32,7 +32,7 @@ enum /* int */
 };
 
 //The size of a message chunk in bytes
-#define CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE (1024)
+#define CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE (256)
 
 //The header of a dispatch message. If 'size' is larger than the message 
 //chunk size, consecutive payload messages will follow the dispatch message.

@@ -100,7 +100,12 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
-    //TODO: Send to slaves
+    cphvb_error e;
+    e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC, 
+                      count * sizeof(cphvb_instruction), inst_list);
 
+    if(e != CPHVB_SUCCESS)
+        return e;
+    
     return exec_execute(count,inst_list);
 }

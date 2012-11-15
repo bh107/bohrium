@@ -74,7 +74,7 @@ cphvb_error dispatch_send(int type, int size, const void *payload)
     //Create message
     dispatch_msg *msg = (dispatch_msg *)buf;
     msg->type = type;
-    msg->size = size;
+    msg->size = msgsize;
     if(size > 0)
         memcpy(msg->payload, payload, size);
     

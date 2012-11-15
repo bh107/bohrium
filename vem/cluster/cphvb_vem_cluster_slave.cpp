@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
+#include <cassert>
 #include "cphvb_vem_cluster.h"
 #include "dispatch.h"
 #include "pgrid.h"
@@ -53,8 +54,10 @@ int main()
                 break;
             }
             case CPHVB_CLUSTER_DISPATCH_SHUTDOWN:
+            {
                 printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
                 return exec_shutdown(); 
+            }
             case CPHVB_CLUSTER_DISPATCH_UFUNC:
             {
                 cphvb_intp *id = (cphvb_intp *)msg->payload;
@@ -64,10 +67,20 @@ int main()
                     return e;
                 break;
             }
+            case CPHVB_CLUSTER_DISPATCH_EXEC:
+            {
+                cphvb_intp count = (msg->size - 2 * sizeof(int)) / sizeof(cphvb_instruction);
+                assert((msg->size - 2 * sizeof(int)) % sizeof(cphvb_instruction) == 0);
+                cphvb_instruction *list = (cphvb_instruction*) msg->payload;
+                printf("Slave (rank %d) received EXEC. count: %ld\n",pgrid_myrank, count);
+//                if((e = exec_execute(count, list)) != CPHVB_SUCCESS)
+//                    return e;
+                break;
+            }
             default:
                 fprintf(stderr, "[VEM-CLUSTER] Slave (rank %d) "
                         "received unknown message type\n", pgrid_myrank);
-                return CPHVB_ERROR; 
+                MPI_Abort(MPI_COMM_WORLD,CPHVB_ERROR);
         }
     }
     return CPHVB_SUCCESS; 
