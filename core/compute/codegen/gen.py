@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pprint
 import json
 import os
 from Cheetah.Template import Template
@@ -6,7 +7,7 @@ from Cheetah.Template import Template
 def main():
 
     script_dir  = "."+os.sep
-    output_dir  = script_dir + ".." + os.sep
+    output_dir  = script_dir + "./output/" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
     
     gens = [
