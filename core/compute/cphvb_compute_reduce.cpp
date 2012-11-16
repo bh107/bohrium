@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include <cphvb_compute.h>
+#include "functors.hpp"
 #include <complex>
 #include "functors.hpp"
 #include "traverser.hpp"
@@ -118,7 +119,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
         return CPHVB_ERROR;
     }
 
@@ -141,7 +142,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
-
+    
         case CPHVB_ADD + (CPHVB_BOOL << 8):
             return cphvb_compute_reduce_any_naive<cphvb_bool, add_functor<cphvb_bool, cphvb_bool, cphvb_bool > >( op_out, op_in, axis, opcode );
         case CPHVB_ADD + (CPHVB_COMPLEX128 << 8):
@@ -897,7 +898,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
         return CPHVB_ERROR;
     }
 
@@ -920,7 +921,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
-
+    
         case CPHVB_ADD + (CPHVB_BOOL << 8):
             return cphvb_compute_reduce_any<cphvb_bool, add_functor<cphvb_bool, cphvb_bool, cphvb_bool > >( op_out, op_in, axis, opcode );
         case CPHVB_ADD + (CPHVB_COMPLEX128 << 8):

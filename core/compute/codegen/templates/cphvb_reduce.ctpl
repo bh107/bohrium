@@ -26,9 +26,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb_compute.h>
 #include "functors.hpp"
 #include <complex>
+#include "functors.hpp"
+#include "traverser.hpp"
+
+typedef char BYTE;
+
+// These are legacy
 
 template <typename T, typename Instr>
-cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, cphvb_index axis, cphvb_opcode opcode )
+cphvb_error cphvb_compute_reduce_any_naive( cphvb_array* op_out, cphvb_array* op_in, cphvb_index axis, cphvb_opcode opcode )
 {
     Instr opcode_func;                          // Functor-pointer
                                                 // Data pointers
@@ -118,7 +124,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %ld is not a binary ufunc, hence it is not suitable for reduction.\n", opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
         return CPHVB_ERROR;
     }
 
@@ -141,7 +147,308 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
+    
+        %for $case in $data
+        case ${case.opcode} + (${case.op1} << 8):
+            return cphvb_compute_reduce_any_naive<${case.ftype}, ${case.fname}_functor<${case.ftype}, ${case.ftype}, ${case.ftype} > >( op_out, op_in, axis, opcode );
+        %end for
 
+        default:
+            
+            return CPHVB_ERROR;
+
+    }
+
+}
+
+// These are the future
+
+template <typename T, typename Instr>
+cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, cphvb_index axis, cphvb_opcode opcode )
+{
+    Instr opcode_func;                          // Functor-pointer
+                                                // Data pointers
+    T* data_out = (T*) cphvb_base_array(op_out)->data;
+    T* data_in  = (T*) cphvb_base_array(op_in)->data;
+
+    cphvb_index nelements   = op_in->shape[axis];
+    cphvb_index i, j;
+    
+    cphvb_index el_size = sizeof(T);
+
+    if (op_in->ndim == 1) {                     // 1D special case
+
+        *data_out = *(data_in+op_in->start);    // Initialize pseudo-scalar output
+                                                // the value of the first element
+                                                // in input.
+        cphvb_index stride = op_in->stride[axis] * el_size;
+        BYTE* src = ((BYTE*)(data_in + op_in->start)) + stride;
+
+		// 4x Loop unrolling
+		cphvb_index fulls = (nelements - 1) / 4;
+		cphvb_index remainder = (nelements - 1) % 4;
+
+		for (i = 0; i < fulls; i++) { 
+			opcode_func( data_out, data_out, ((T*)src) );
+			src += stride;
+			opcode_func( data_out, data_out, ((T*)src) );
+			src += stride;
+			opcode_func( data_out, data_out, ((T*)src) );
+			src += stride;
+			opcode_func( data_out, data_out, ((T*)src) );
+			src += stride;
+		} 
+
+		switch (remainder) {
+			case 3:
+				opcode_func( data_out, data_out, ((T*)src) );
+				src += stride;
+			case 2:
+				opcode_func( data_out, data_out, ((T*)src) );
+				src += stride;
+			case 1:
+				opcode_func( data_out, data_out, ((T*)src) );
+				src += stride;
+		}
+        
+    } else if (op_in->ndim == 2) {				// 2D General case
+    
+    	if (axis == 0) {						// Reduce outer dimension
+			cphvb_index inner_stride = op_in->stride[1] * el_size;
+			cphvb_index outer_stride = (op_in->stride[0] * el_size);
+
+			BYTE* ix = (BYTE*)(data_in + op_in->start);
+			BYTE* ox = (BYTE*)(data_out + op_out->start);
+
+			cphvb_index result_stride = op_out->stride[0] * el_size;
+
+												// 4x Loop unrolling
+			cphvb_index outer_limit = op_in->shape[1];
+			cphvb_index fulls = outer_limit / 4;
+			cphvb_index remainder = outer_limit % 4;
+
+			BYTE* ox_orig = ox;
+			BYTE* ix_orig = ix;
+												
+			for (i = 0; i < fulls; i++) { 		//First we copy to output
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+			}
+
+			switch (remainder) {
+				case 3:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+				case 2:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+				case 1:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+			}
+
+			ix = ix_orig;
+			
+			for (i = 1; i < nelements; i++) { 	// Then we apply the reduction
+				ox = ox_orig;
+				ix += outer_stride;
+				
+				BYTE* nx = ix;
+				for (j = 0; j < fulls; j++) {
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+				}
+
+				switch(remainder) {
+					case 3:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+					case 2:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+					case 1:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+				}
+			}
+						
+    	} else {								// Reduce inner dimension
+
+			cphvb_index inner_stride = op_in->stride[1] * el_size;
+			cphvb_index outer_stride = op_in->stride[0] * el_size;
+
+			BYTE* ix = (BYTE*)(data_in + op_in->start);
+			BYTE* ox = (BYTE*)(data_out + op_out->start);
+
+			cphvb_index result_stride = op_out->stride[0] * el_size;
+
+												// 4x Loop unrolling
+			cphvb_index fulls = (nelements - 1) / 4;
+			cphvb_index remainder = (nelements - 1) % 4;
+			cphvb_index outer_limit = op_in->shape[0];
+
+			for (i = 0; i < outer_limit; i++)
+			{
+				T value = *((T*)ix);
+
+				BYTE* nx = ix;					// Store inner offset
+				for (j = 0; j < fulls; j++) {
+					nx += inner_stride;
+					opcode_func(&value, &value, ((T*)nx));
+					nx += inner_stride;
+					opcode_func(&value, &value, ((T*)nx));
+					nx += inner_stride;
+					opcode_func(&value, &value, ((T*)nx));
+					nx += inner_stride;
+					opcode_func(&value, &value, ((T*)nx));
+				}
+
+				switch (remainder) {
+					case 3:
+						nx += inner_stride;
+						opcode_func(&value, &value, ((T*)nx));
+					case 2:
+						nx += inner_stride;
+						opcode_func(&value, &value, ((T*)nx));
+					case 1:
+						nx += inner_stride;
+						opcode_func(&value, &value, ((T*)nx));
+				}
+
+				*((T*)ox) = value;				// Store result back from local
+				ox += result_stride;
+
+				ix += outer_stride;
+			}    	
+    	}
+    
+    } else {                                    // ND general case
+
+        cphvb_array tmp;                        // Copy the input-array meta-data
+        cphvb_instruction instr; 
+        cphvb_error err;
+
+        tmp.base    = cphvb_base_array(op_in);
+        tmp.type    = op_in->type;
+        tmp.ndim    = op_in->ndim-1;
+        tmp.start   = op_in->start;
+
+        for(j=0, i=0; i < op_in->ndim; ++i) {        // Copy every dimension except for the 'axis' dimension.
+            if(i != axis) {
+                tmp.shape[j]    = op_in->shape[i];
+                tmp.stride[j]   = op_in->stride[i];
+                ++j;
+            }
+        }
+        tmp.data = op_in->data;
+       
+        instr.status = CPHVB_INST_PENDING;       // Copy the first element to the output.
+        instr.opcode = CPHVB_IDENTITY;
+        instr.operand[0] = op_out;
+        instr.operand[1] = &tmp;
+        instr.operand[2] = NULL;
+
+		cphvb_tstate state;
+		cphvb_tstate_reset( &state, &instr );
+		err = traverse_aa<T, T, identity_functor<T, T> >(&instr, &state);
+        if (err != CPHVB_SUCCESS) {
+            return err;
+        }
+
+		cphvb_index stride = op_in->stride[axis];
+        tmp.start += stride;
+
+        instr.status = CPHVB_INST_PENDING;       // Reduce over the 'axis' dimension.
+        instr.opcode = opcode;                   // NB: the first element is already handled.
+        instr.operand[0] = op_out;
+        instr.operand[1] = op_out;
+        instr.operand[2] = &tmp;
+
+		cphvb_tstate_reset( &state, &instr );
+        
+        for(i=1; i<nelements; ++i) {
+			cphvb_tstate_reset( &state, &instr );
+						
+            err = traverse_aaa<T, T, T, Instr>(&instr, &state);
+            if (err != CPHVB_SUCCESS) {
+                return err;
+            }
+
+			// We could omit this, but minor gain, large inconsistency ...
+            tmp.start += stride;
+
+			// Faster replacement of cphvb_tstate_reset
+            state.start[0] = op_out->start;
+            state.start[1] = op_out->start;
+            state.start[2] = tmp.start;
+        }
+    }
+
+	return CPHVB_SUCCESS;
+}
+
+cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
+{
+    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;   // Grab function arguments
+
+    cphvb_opcode opcode = a->opcode;                    // Opcode
+    cphvb_index axis    = a->axis;                      // The axis to reduce "around"
+
+    cphvb_array *op_out = a->operand[0];                // Output operand
+    cphvb_array *op_in  = a->operand[1];                // Input operand
+
+                                                        //  Sanity checks.
+    if (cphvb_operands(opcode) != 3) {
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
+        return CPHVB_ERROR;
+    }
+
+	if (cphvb_base_array(a->operand[1])->data == NULL) {
+        fprintf(stderr, "ERR: cphvb_compute_reduce; input-operand ( op[1] ) is null.\n");
+        return CPHVB_ERROR;
+	}
+
+    if (op_in->type != op_out->type) {
+        fprintf(stderr, "ERR: cphvb_compute_reduce; input and output types are mixed."
+                        "Probable causes include reducing over 'LESS', just dont...\n");
+        return CPHVB_ERROR;
+    }
+    
+    if (cphvb_data_malloc(op_out) != CPHVB_SUCCESS) {
+        fprintf(stderr, "ERR: cphvb_compute_reduce; No memory for reduction-result.\n");
+        return CPHVB_OUT_OF_MEMORY;
+    }
+
+    long int poly = opcode + (op_in->type << 8);
+
+    switch(poly) {
+    
         %for $case in $data
         case ${case.opcode} + (${case.op1} << 8):
             return cphvb_compute_reduce_any<${case.ftype}, ${case.fname}_functor<${case.ftype}, ${case.ftype}, ${case.ftype} > >( op_out, op_in, axis, opcode );
