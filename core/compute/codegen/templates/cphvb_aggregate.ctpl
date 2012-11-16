@@ -1,0 +1,243 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+/*
+This file is part of cphVB and copyright (c) 2012 the cphVB team:
+http://cphvb.bitbucket.org
+
+cphVB is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+cphVB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with cphVB. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#include <cphvb.h>
+#include <cphvb_compute.h>
+#include <cphvb_compute.h>
+#include "functors.hpp"
+#include <complex>
+#include "traverser.hpp"
+
+typedef char BYTE;
+
+
+/**
+ *  A optimized implementation of executing an instruction.
+ *
+ *  @param opt_out The output scalar storage array
+ *  @param opt_in The array to aggregate
+ *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ */
+template <typename T0, typename T1, typename Instr>
+cphvb_error traverse_sa( cphvb_array* op_out, cphvb_array* op_in ) {
+
+    Instr opcode_func;                        	// Element-wise functor-pointer
+
+    cphvb_index i, j;                        	// Traversal variables
+
+    BYTE* d0;									// Pointer to start of data elements
+	BYTE* d1;
+
+    size_t elsize1 = sizeof(T1);				// We use the size for explicit multiplication
+
+	T1 value;									// Local store with data
+	
+    d0 = (BYTE*) cphvb_base_array(op_out)->data;
+    d1 = (BYTE*) cphvb_base_array(op_in)->data;
+
+    assert(d0 != NULL);                         // Ensure that data is allocated
+    assert(d1 != NULL);
+
+	d1 += op_in->start * elsize1;				// Compute offsets
+	value = *((T1*)d1);
+		
+	if (op_in->ndim == 1)
+	{
+		// Simple 1D loop
+		cphvb_index stride1 = op_in->stride[0] * elsize1;
+		
+		cphvb_index total_ops = op_in->shape[0];
+		
+		d1 += stride1;
+		total_ops--;
+
+		cphvb_index remainder = total_ops % 4;
+		cphvb_index fulls = total_ops / 4;
+
+		//Macro magic time!
+        INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, stride1, &value);
+	}
+	else if(op_in->ndim == 2)
+	{
+		cphvb_index ops_outer = op_in->shape[0];
+		cphvb_index ops_inner = op_in->shape[1];
+		
+		// Basic 2D loop with unrolling
+		cphvb_index outer_stride1 = op_in->stride[0] * elsize1;
+		cphvb_index inner_stride1 = op_in->stride[1] * elsize1;
+		outer_stride1 -= inner_stride1 * op_in->shape[1];
+
+		cphvb_index remainder = (ops_inner - 1) % 4;
+		cphvb_index fulls = (ops_inner - 1) / 4;
+
+		// Skip the first element, as that is copied
+		d1 += inner_stride1;
+		INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, inner_stride1, &value);
+
+		remainder = ops_inner % 4;
+		fulls = ops_inner / 4;
+
+		for (i = 1; i < ops_outer; i++)
+		{
+			//Macro magic time!
+            INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, inner_stride1, &value);
+			d1 += outer_stride1;
+		}
+	}
+	else
+	{
+		//General case, optimal up to 3D, and almost optimal for 4D
+		cphvb_index n = op_in->ndim - 3;
+		cphvb_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(cphvb_index) * n);		
+
+		cphvb_index total_ops = 1;
+		for(i = 0; i < n; i++)
+			total_ops *= op_in->shape[i];
+			
+		//This chunk of variables prevents repeated calculations of offsets
+		cphvb_index dim_index0 = n + 0;
+		cphvb_index dim_index1 = n + 1;
+		cphvb_index dim_index2 = n + 2;
+
+		cphvb_index ops_outer = op_in->shape[dim_index0];
+		cphvb_index ops_inner = op_in->shape[dim_index1];
+		cphvb_index ops_inner_inner = op_in->shape[dim_index2];
+
+		cphvb_index outer_stride1 = op_in->stride[dim_index0] * elsize1;
+		cphvb_index inner_stride1 = op_in->stride[dim_index1] * elsize1;
+		cphvb_index inner_inner_stride1 = op_in->stride[dim_index2] * elsize1;
+
+		outer_stride1 -= inner_stride1 * op_in->shape[dim_index1];
+		inner_stride1 -= inner_inner_stride1 * op_in->shape[dim_index2];
+
+		cphvb_index remainder = (ops_inner_inner - 1) % 4;
+		cphvb_index fulls = (ops_inner_inner - 1) / 4;
+
+		BYTE* d1_orig = d1;
+
+		// Run the first inner loop without the first element
+		d1 += inner_inner_stride1;
+		INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, inner_inner_stride1, &value);
+
+		// Prepare for the following loops
+		remainder = ops_inner_inner % 4;
+		fulls = ops_inner_inner / 4;
+		cphvb_index j_start = 1;
+
+		while (total_ops-- > 0)
+		{
+			for (i = 0; i < ops_outer; i++)
+			{
+				for (j = j_start; j < ops_inner; j++)
+				{
+					//Macro magic time!
+                    INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, inner_inner_stride1, &value);
+					d1 += inner_stride1;
+				}
+
+				d1 += outer_stride1;
+				j_start = 0;
+			}
+
+			if (n > 0)
+			{
+				//Basically a ripple carry adder
+				long p = n - 1;
+
+				// Move one in current dimension
+				d1_orig += (op_in->stride[p] * elsize1);
+
+				while (++counters[p] == op_in->shape[p] && p > 0)
+				{
+					//Update to move in the outer dimension, on carry
+					d1_orig += ((op_in->stride[p-1]) - (op_in->shape[p] * op_in->stride[p])) * elsize1;
+
+					counters[p] = 0;
+					p--;
+				}
+				
+				d1 = d1_orig;
+			}
+		}		
+	}
+
+	*(((T0*)d0) + op_out->start) = (T1)value;
+
+    return CPHVB_SUCCESS;
+
+}
+
+cphvb_error cphvb_compute_aggregate(cphvb_userfunc *arg, void* ve_arg)
+{
+    cphvb_aggregate_type *a = (cphvb_aggregate_type *) arg;   // Grab function arguments
+
+    cphvb_opcode opcode = a->opcode;                    // Opcode
+
+    cphvb_array *op_out = a->operand[0];                // Output operand
+    cphvb_array *op_in  = a->operand[1];                // Input operand
+
+                                                        //  Sanity checks.
+    if (cphvb_operands(opcode) != 3) {
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
+        return CPHVB_ERROR;
+    }
+
+	if (cphvb_base_array(a->operand[1])->data == NULL) {
+        fprintf(stderr, "ERR: cphvb_compute_aggregate; input-operand ( op[1] ) is null.\n");
+        return CPHVB_ERROR;
+	}
+
+    if (op_in->type != op_out->type) {
+        fprintf(stderr, "ERR: cphvb_compute_aggregate; input and output types are mixed."
+                        "Probable causes include reducing over 'LESS', just dont...\n");
+        return CPHVB_ERROR;
+    }
+    
+    if (cphvb_data_malloc(op_out) != CPHVB_SUCCESS) {
+        fprintf(stderr, "ERR: cphvb_compute_aggregate; No memory for reduction-result.\n");
+        return CPHVB_OUT_OF_MEMORY;
+    }
+    
+    if (op_out->ndim != 1 || op_out->shape[0] != 1) {
+        fprintf(stderr, "ERR: cphvb_compute_aggregate; output-operand ( op[0] ) is not a scalar.\n");
+        return CPHVB_ERROR;
+    }
+
+    long int poly = opcode + (op_in->type << 8);
+
+    switch(poly) {
+    
+        %for $case in $data
+        case ${case.opcode} + (${case.op1} << 8):
+            return traverse_sa<${case.ftype}, ${case.ftype}, ${case.fname}_functor<${case.ftype}, ${case.ftype}, ${case.ftype} > >( op_out, op_in );
+        %end for
+
+        default:
+            
+            return CPHVB_ERROR;
+
+    }
+
+}
