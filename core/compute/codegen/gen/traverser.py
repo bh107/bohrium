@@ -17,15 +17,15 @@ def gen( opcodes, ignore ):
 
     t = []
     for f in funcs:
-        template_sig = ', '.join(['typename T%d'%op[0] for op in f])
+        template_sig = ', '.join(['typename T%d' % op_n for op_n, op_t in f])
         func_call = []
-        for op in f:
-            if op[1] == 'a':
-                func_call.append('(off%d+d%d)' % (op[0], op[0]))
+        for op_n, op_t in f:
+            if op_t == 'a':
+                func_call.append('(off%d+d%d)' % (op_n, op_n))
             else:
-                func_call.append('d%d' % op[0])
+                func_call.append('d%d' % op_n)
         t.append({
-            'sig': ''.join([op[1] for op in f]),
+            'sig': ''.join([op_t for op_n, op_t in f]),
             'tsig': template_sig,
             'ops': f,
             'func_call': ', '.join(func_call)
