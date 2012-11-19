@@ -53,11 +53,11 @@ cphvb_error dispatch_finalize(void)
 }
 
 
-/* Add data to the send message payload.
- * @size is the size of the data in bytes
- * @data is the data to add to the send buffer
+/* Reserve memory on the send message payload.
+ * @size is the number of bytes to reserve
+ * @payload is the output pointer to the reserved memory
  */
-cphvb_error dispatch_add2payload(cphvb_intp size, void *data)
+cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload)
 {
     cphvb_intp new_msg_size = sizeof(dispatch_msg) + msg->size + size;
     //Expand the buffer if need
@@ -68,8 +68,25 @@ cphvb_error dispatch_add2payload(cphvb_intp size, void *data)
         if(msg == NULL)
            return CPHVB_OUT_OF_MEMORY;
     }
-    memcpy(msg->payload+msg->size, data, size);
+    *payload = msg->payload + msg->size;
     msg->size += size;
+    return CPHVB_SUCCESS;
+}
+
+
+/* Add data to the send message payload.
+ * @size is the size of the data in bytes
+ * @data is the data to add to the send buffer
+ */
+cphvb_error dispatch_add2payload(cphvb_intp size, const void *data)
+{
+    cphvb_error e;
+    void *payload;
+    //Reserve memory on the send message
+    if((e  = dispatch_reserve_payload(size, &payload)) != CPHVB_SUCCESS)
+        return e;
+    //Copy 'data' to the send message
+    memcpy(payload, data, size);
     return CPHVB_SUCCESS;
 }
 

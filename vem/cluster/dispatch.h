@@ -57,11 +57,18 @@ cphvb_error dispatch_reset(void);
 cphvb_error dispatch_finalize(void);
 
 
+/* Reserve memory on the send message payload.
+ * @size is the number of bytes to reserve
+ * @payload is the output pointer to the reserved memory
+ */
+cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload);
+
+
 /* Add data to the send message payload.
  * @size is the size of the data in bytes
  * @data is the data to add to the send buffer
  */
-cphvb_error dispatch_add2payload(cphvb_intp size, void *data);
+cphvb_error dispatch_add2payload(cphvb_intp size, const void *data);
 
 
 /* Receive payload from master process.
