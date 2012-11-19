@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include <cphvb_compute.h>
+#include "functors.hpp"
 #include <complex>
 #include "functors.hpp"
 #include "traverser.hpp"
@@ -118,7 +119,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
         return CPHVB_ERROR;
     }
 
@@ -141,7 +142,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
-
+    
         case CPHVB_ADD + (CPHVB_BOOL << 8):
             return cphvb_compute_reduce_any_naive<cphvb_bool, add_functor<cphvb_bool, cphvb_bool, cphvb_bool > >( op_out, op_in, axis, opcode );
         case CPHVB_ADD + (CPHVB_COMPLEX128 << 8):
@@ -685,10 +686,9 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
         
     } else if (op_in->ndim == 2) {				// 2D General case
     
-    	if (axis == 0) {						// Reduce inner dimension
-
+    	if (axis == 0) {						// Reduce outer dimension
 			cphvb_index inner_stride = op_in->stride[1] * el_size;
-			cphvb_index outer_stride = op_in->stride[0] * el_size;
+			cphvb_index outer_stride = (op_in->stride[0] * el_size);
 
 			BYTE* ix = (BYTE*)(data_in + op_in->start);
 			BYTE* ox = (BYTE*)(data_out + op_out->start);
@@ -696,46 +696,83 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 			cphvb_index result_stride = op_out->stride[0] * el_size;
 
 												// 4x Loop unrolling
-			cphvb_index fulls = (nelements - 1) / 4;
-			cphvb_index remainder = (nelements - 1) % 4;
+			cphvb_index outer_limit = op_in->shape[1];
+			cphvb_index fulls = outer_limit / 4;
+			cphvb_index remainder = outer_limit % 4;
 
-			for (i = 0; i < op_in->shape[1]; i++)
-			{
-				T value = *((T*)ix); 			// Use a single storage 
-												// element for accumulation
-
-				BYTE* nx = ix;					// Store inner offset
-				for (j = 0; j < fulls; j++) {
-					nx += outer_stride;
-					opcode_func(&value, &value, ((T*)nx));
-					nx += outer_stride;
-					opcode_func(&value, &value, ((T*)nx));
-					nx += outer_stride;
-					opcode_func(&value, &value, ((T*)nx));
-					nx += outer_stride;
-					opcode_func(&value, &value, ((T*)nx));
-				}
-
-				switch (remainder) {
-					case 3:
-						nx += outer_stride;
-						opcode_func(&value, &value, ((T*)nx));
-					case 2:
-						nx += outer_stride;
-						opcode_func(&value, &value, ((T*)nx));
-					case 1:
-						nx += outer_stride;
-						opcode_func(&value, &value, ((T*)nx));
-				}
-
-				*((T*)ox) = value;				// Store result back from local
+			BYTE* ox_orig = ox;
+			BYTE* ix_orig = ix;
+												
+			for (i = 0; i < fulls; i++) { 		//First we copy to output
+				*((T*)ox) = *((T*)ix);
 				ox += result_stride;
-
-				ix += inner_stride;				// Next element in inner dimension
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
+				*((T*)ox) = *((T*)ix);
+				ox += result_stride;
+				ix += inner_stride;
 			}
+
+			switch (remainder) {
+				case 3:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+				case 2:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+				case 1:
+					*((T*)ox) = *((T*)ix);
+					ox += result_stride;
+					ix += inner_stride;
+			}
+
+			ix = ix_orig;
 			
-    	} else {								// Reduce outer dimension
-    	
+			for (i = 1; i < nelements; i++) { 	// Then we apply the reduction
+				ox = ox_orig;
+				ix += outer_stride;
+				
+				BYTE* nx = ix;
+				for (j = 0; j < fulls; j++) {
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+					opcode_func((T*)ox, (T*)ox, ((T*)nx));
+					ox += result_stride;
+					nx += inner_stride;
+				}
+
+				switch(remainder) {
+					case 3:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+					case 2:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+					case 1:
+						opcode_func((T*)ox, (T*)ox, ((T*)nx));
+						ox += result_stride;
+						nx += inner_stride;
+				}
+			}
+						
+    	} else {								// Reduce inner dimension
+
 			cphvb_index inner_stride = op_in->stride[1] * el_size;
 			cphvb_index outer_stride = op_in->stride[0] * el_size;
 
@@ -747,8 +784,9 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 												// 4x Loop unrolling
 			cphvb_index fulls = (nelements - 1) / 4;
 			cphvb_index remainder = (nelements - 1) % 4;
+			cphvb_index outer_limit = op_in->shape[0];
 
-			for (i = 0; i < op_in->shape[0]; i++)
+			for (i = 0; i < outer_limit; i++)
 			{
 				T value = *((T*)ix);
 
@@ -860,7 +898,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
         return CPHVB_ERROR;
     }
 
@@ -883,7 +921,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
-
+    
         case CPHVB_ADD + (CPHVB_BOOL << 8):
             return cphvb_compute_reduce_any<cphvb_bool, add_functor<cphvb_bool, cphvb_bool, cphvb_bool > >( op_out, op_in, axis, opcode );
         case CPHVB_ADD + (CPHVB_COMPLEX128 << 8):
