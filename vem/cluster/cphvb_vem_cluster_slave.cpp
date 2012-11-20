@@ -20,10 +20,20 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 #include <cassert>
+#include <map>
+#include <StaticStore.hpp>
 #include "cphvb_vem_cluster.h"
 #include "dispatch.h"
 #include "pgrid.h"
 #include "exec.h"
+#include "darray_extension.h"
+
+
+//Local array information and storage
+static std::map<cphvb_intp, cphvb_array*> map_dary2ary;
+static std::map<cphvb_array*,darray*> map_ary2dary;
+static StaticStore<darray> ary_store(512);
+
         
 int main()
 {
@@ -68,15 +78,66 @@ int main()
             }
             case CPHVB_CLUSTER_DISPATCH_EXEC:
             {
-                cphvb_intp *noi = (cphvb_intp *)msg->payload; //number of instructions
-                cphvb_instruction *inst_list = (cphvb_instruction *)msg->payload+sizeof(cphvb_intp);
-                
-                printf("Slave (rank %d) received EXEC. noi %ld\n",pgrid_myrank, *noi);
+                //The number of instructions
+                cphvb_intp *noi = (cphvb_intp *)msg->payload;                 
+                //The master-instruction list
+                cphvb_instruction *master_list = (cphvb_instruction *)(msg->payload+sizeof(cphvb_intp));
+                //The number of new arrays
+                cphvb_intp *noa = (cphvb_intp *)(master_list + *noi);
+                //The list of new arrays
+                darray *darys = (darray*)(noa+1); //number of new arrays
 
-//                cphvb_pprint_instr_list(inst_list, *noi, "SLAVE");
+                printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld\n",pgrid_myrank, *noi, *noa);
+               
+                //Insert the new array into the array store and the array maps
+                for(cphvb_intp i=0; i < *noa; ++i)
+                {
+                    darray *dary = ary_store.c_next();
+                    *dary = darys[i];
+                    dary->global_ary.data = NULL;//We will copy the data at a later time.
+                    assert(map_dary2ary.count(dary->id) == 0);
+                    assert(map_ary2dary.count(&dary->global_ary) == 0);
+                    map_dary2ary[dary->id] = &dary->global_ary;
+                    map_ary2dary[&dary->global_ary] = dary;
+                } 
+
+                //Update the base-array-pointers
+                for(cphvb_intp i=0; i < *noa; ++i)
+                {
+                    cphvb_array *ary = map_dary2ary[darys[i].id];
+                    if(ary->base != NULL)
+                    {
+                        assert(map_dary2ary.count((cphvb_intp)ary->base) == 1);
+                        ary->base = map_dary2ary[(cphvb_intp)ary->base];
+                    }
+                }
+                    
+                //Create the local instruction list that reference local arrays
+                cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
+                if(local_list == NULL)
+                    return CPHVB_OUT_OF_MEMORY;
+                for(cphvb_intp i=0; i < *noi; ++i)
+                {
+                    cphvb_instruction *master = &master_list[i];
+                    cphvb_instruction *local = &local_list[i];
+                    int nop = cphvb_operands_in_instruction(master);
+                    *local = *master;//Copy instruction
+                    //Convert all instructon operands
+                    for(cphvb_intp j=0; j<nop; ++j)
+                    {   
+                        assert(map_dary2ary.count((cphvb_intp)master->operand[j]) == 1);
+                        local->operand[j] = map_dary2ary[(cphvb_intp)master->operand[j]];
+                        assert(map_ary2dary.count(local->operand[j]) == 1);
+                    }
+                }
+
+
+
+                cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
 
 //                if((e = exec_execute(count, list)) != CPHVB_SUCCESS)
 //                    return e;
+                free(local_list);
                 break;
             }
             default:
