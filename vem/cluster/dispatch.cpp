@@ -190,7 +190,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
 
     //We need a message offset instead of a pointer since dispatch_reserve_payload() may 
     //re-allocate the 'msg_noa' pointer at a later time.
-    msg_noa_offset = msg_noa - msg->payload;
+    msg_noa_offset = msg->size - sizeof(cphvb_intp);
 
     //Pack the array list.
     for(cphvb_intp i=0; i<count; ++i)
@@ -211,18 +211,20 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
                 continue;//No need to exchange constants
 
             if(known_arrays.count(op) == 0)//The array is unknown to the slaves.
-            {
+            {   
                 darray *dary;
                 if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
                     return e;
+                known_arrays.insert(op);
                 //The master-process's memory pointer is the id of the array.
                 dary->id = (cphvb_intp) op;
                 dary->global_ary = *op;
                 ++noa;
-                if(op->base != NULL && known_arrays.count(op) == 0)//Also check the base-array.
+                if(op->base != NULL && known_arrays.count(op->base) == 0)//Also check the base-array.
                 {
                     if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
                         return e;
+                    known_arrays.insert(op->base);
                     dary->id = (cphvb_intp) op->base;
                     dary->global_ary = *op->base;
                     ++noa;
@@ -230,7 +232,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
             }
         }        
     }
-    msg->payload[msg_noa_offset] = noa;//Save the number of new arrays
+    *((cphvb_intp*)(msg->payload+msg_noa_offset)) = noa;//Save the number of new arrays
 
     return dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC);
 }
