@@ -20,8 +20,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <mpi.h>
 #include <cassert>
+#include <set>
 #include <cphvb.h>
 #include "dispatch.h"
+#include "darray_extension.h"
 
 
 //Message buffer, current offset and buffer size
@@ -108,7 +110,7 @@ cphvb_error dispatch_send(int type)
     int size_left = sizeof(dispatch_msg) + msg->size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(msg + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
             return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
@@ -120,7 +122,6 @@ cphvb_error dispatch_send(int type)
 */
 cphvb_error dispatch_recv(dispatch_msg **message)
 {
-
     int e;
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     
@@ -144,7 +145,7 @@ cphvb_error dispatch_recv(dispatch_msg **message)
     int size_left = size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(msg + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
             return CPHVB_ERROR;
     }
 
@@ -152,3 +153,84 @@ cphvb_error dispatch_recv(dispatch_msg **message)
     return CPHVB_SUCCESS;
 }
 
+
+/* Dispatch an instruction list to the slaves, which includes new array-structs.
+ * @count is the number of instructions in the list
+ * @inst_list is the instruction list
+ */
+static std::set<cphvb_array*> known_arrays;
+cphvb_error dispatch_inst_list(cphvb_intp count,
+                               const cphvb_instruction inst_list[])
+{
+    cphvb_error e;
+
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+
+    /* The execution message has the form:
+     * 1   x cphvb_intp NOI //number of instructions
+     * NOI x cphvb_instruction //instruction list
+     * 1   x cphvb_intp NOA //number of new arrays
+     * NOA x darray //list of new arrays unknown to the slaves
+     */
+
+    //Pack the number of instructions (NOI).
+    if((e = dispatch_add2payload(sizeof(cphvb_intp), &count)) != CPHVB_SUCCESS)
+        return e;
+    
+    //Pack the instruction list.
+    if((e = dispatch_add2payload(count * sizeof(cphvb_instruction), inst_list)) != CPHVB_SUCCESS)
+        return e;
+ 
+    //Make reservation for the number of new arrays (NOA).
+    cphvb_intp msg_noa_offset, noa=0;
+    char *msg_noa;
+    if((e = dispatch_reserve_payload(sizeof(cphvb_intp), (void**) &msg_noa)) != CPHVB_SUCCESS)
+        return e;
+
+    //We need a message offset instead of a pointer since dispatch_reserve_payload() may 
+    //re-allocate the 'msg_noa' pointer at a later time.
+    msg_noa_offset = msg_noa - msg->payload;
+
+    //Pack the array list.
+    for(cphvb_intp i=0; i<count; ++i)
+    {
+        const cphvb_instruction *inst = &inst_list[i];
+        assert(inst->opcode != CPHVB_USERFUNC);
+
+        int nop = cphvb_operands_in_instruction(inst);
+        for(cphvb_intp j=0; j<nop; ++j)
+        {
+            cphvb_array *op;
+            if(inst->opcode == CPHVB_USERFUNC)
+                op = inst->userfunc->operand[j];
+            else
+                op = inst->operand[j];
+ 
+            if(cphvb_is_constant(op))
+                continue;//No need to exchange constants
+
+            if(known_arrays.count(op) == 0)//The array is unknown to the slaves.
+            {
+                darray *dary;
+                if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
+                    return e;
+                //The master-process's memory pointer is the id of the array.
+                dary->id = (cphvb_intp) op;
+                dary->global_ary = *op;
+                ++noa;
+                if(op->base != NULL && known_arrays.count(op) == 0)//Also check the base-array.
+                {
+                    if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
+                        return e;
+                    dary->id = (cphvb_intp) op->base;
+                    dary->global_ary = *op->base;
+                    ++noa;
+                }
+            }
+        }        
+    }
+    msg->payload[msg_noa_offset] = noa;//Save the number of new arrays
+
+    return dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC);
+}

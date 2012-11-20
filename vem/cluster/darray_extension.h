@@ -18,6 +18,8 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cphvb.h>
+
 #ifndef __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
 #define __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
 
@@ -33,6 +35,16 @@ typedef struct
     int rank;
 }darray_ext;
 
+
+//Extension to the cphvb_array for cluster information
+typedef struct
+{
+    //The id of the array. This is identical with the array-struct address 
+    //on the master-process.
+    cphvb_intp id;
+    //The global array-struct.
+    cphvb_array global_ary;
+}darray;
 
 
 #ifdef __cplusplus

@@ -68,10 +68,13 @@ int main()
             }
             case CPHVB_CLUSTER_DISPATCH_EXEC:
             {
-                cphvb_intp count = (msg->size - 2 * sizeof(int)) / sizeof(cphvb_instruction);
-                assert((msg->size - 2 * sizeof(int)) % sizeof(cphvb_instruction) == 0);
-//                cphvb_instruction *list = (cphvb_instruction*) msg->payload;
-                printf("Slave (rank %d) received EXEC. count: %ld\n",pgrid_myrank, count);
+                cphvb_intp *noi = (cphvb_intp *)msg->payload; //number of instructions
+                cphvb_instruction *inst_list = (cphvb_instruction *)msg->payload+sizeof(cphvb_intp);
+                
+                printf("Slave (rank %d) received EXEC. noi %ld\n",pgrid_myrank, *noi);
+
+//                cphvb_pprint_instr_list(inst_list, *noi, "SLAVE");
+
 //                if((e = exec_execute(count, list)) != CPHVB_SUCCESS)
 //                    return e;
                 break;

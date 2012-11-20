@@ -82,4 +82,11 @@ cphvb_error dispatch_recv(dispatch_msg **msg);
 */
 cphvb_error dispatch_send(int type);
 
+/* Dispatch an instruction list to the slaves, which include new array-structs.
+ * @count is the number of instructions in the list
+ * @inst_list is the instruction list
+ */
+cphvb_error dispatch_inst_list(cphvb_intp count,
+                               const cphvb_instruction inst_list[]);
+
 #endif
