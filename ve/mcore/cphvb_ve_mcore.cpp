@@ -43,6 +43,8 @@ static cphvb_userfunc_impl fft_impl = NULL;
 static cphvb_intp fft_impl_id = 0;
 static cphvb_userfunc_impl fft2_impl = NULL;
 static cphvb_intp fft2_impl_id = 0;
+static cphvb_userfunc_impl aggregate_impl = NULL;
+static cphvb_intp aggregate_impl_id = 0;
 
 //static cphvb_intp cphvb_ve_mcore_buffersizes = 0;
 //static computeloop* cphvb_ve_mcore_compute_loops = NULL;
@@ -375,9 +377,14 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
-    return cphvb_compute_matmul( arg, ve_arg );
-    
+    return cphvb_compute_matmul( arg, ve_arg );    
 }
+
+cphvb_error cphvb_aggregate( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_aggregate( arg, ve_arg );
+}
+
 
 /**
  * cphvb_compute_reduce
@@ -571,6 +578,23 @@ cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
         {
         	*id = fft2_impl_id;
         	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_aggregate", fun) == 0)
+    {
+        if (aggregate_impl == NULL)
+        {
+            cphvb_component_get_func(myself, fun, &aggregate_impl);
+            if (nselect_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
+            
+            aggregate_impl_id = *id;
+            return CPHVB_SUCCESS;
+        }
+        else
+        {
+            *id = aggregate_impl_id;
+            return CPHVB_SUCCESS;
         }
     }
     
