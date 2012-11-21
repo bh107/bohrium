@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include <cassert>
 #include <map>
+#include <set>
 #include <StaticStore.hpp>
 #include "cphvb_vem_cluster.h"
 #include "dispatch.h"
@@ -90,6 +91,7 @@ int main()
                 printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld\n",pgrid_myrank, *noi, *noa);
                
                 //Insert the new array into the array store and the array maps
+                std::set<darray*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
                     darray *dary = ary_store.c_next();
@@ -99,19 +101,17 @@ int main()
                     assert(map_ary2dary.count(&dary->global_ary) == 0);
                     map_dary2ary[dary->id] = &dary->global_ary;
                     map_ary2dary[&dary->global_ary] = dary;
+                    if(dary->global_ary.base != NULL)
+                        base_darys.insert(dary);
                 } 
 
                 //Update the base-array-pointers
-                for(cphvb_intp i=0; i < *noa; ++i)
+                for(std::set<darray*>::iterator it=base_darys.begin(); it != base_darys.end(); ++it)
                 {
-                    cphvb_array *ary = map_dary2ary[darys[i].id];
-                    if(ary->base != NULL)
-                    {
-                        assert(map_dary2ary.count((cphvb_intp)ary->base) == 1);
-                        ary->base = map_dary2ary[(cphvb_intp)ary->base];
-                    }
-                }
-                    
+                    assert(map_dary2ary.count((cphvb_intp)(*it)->global_ary.base) == 1);
+                    (*it)->global_ary.base = map_dary2ary[(cphvb_intp)(*it)->global_ary.base];
+                } 
+                
                 //Create the local instruction list that reference local arrays
                 cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
                 if(local_list == NULL)
@@ -131,7 +131,7 @@ int main()
                     }
                 }
 
-
+                
 
                 cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
 
