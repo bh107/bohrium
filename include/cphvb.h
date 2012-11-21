@@ -88,6 +88,14 @@ DLLEXPORT cphvb_index cphvb_nelements(cphvb_intp ndim,
                             const cphvb_index shape[]);
 
 
+/* Size of the array data
+ *
+ * @array    The array in question
+ * @return   The size of the array data in bytes
+ */
+DLLEXPORT cphvb_index cphvb_array_size(const cphvb_array *array);
+
+
 /* Calculate the offset into an array based on element index
  *
  * @ndim     Number of dimentions
