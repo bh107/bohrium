@@ -21,6 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CPHVB_VEM_CLUSTER_DISPATCH_H
 
 #include <cphvb.h>
+#include <set>
+#include "darray_extension.h"
 
 /* Dispatch message type */
 enum /* int */
@@ -81,6 +83,13 @@ cphvb_error dispatch_recv(dispatch_msg **msg);
  * @type is the type of the message
 */
 cphvb_error dispatch_send(int type);
+
+
+/* Broadcast array-data to all slaves.
+ * @arys the base-arrays in question.
+*/
+cphvb_error dispatch_array_data(std::set<darray*> arys);
+
 
 /* Dispatch an instruction list to the slaves, which include new array-structs.
  * @count is the number of instructions in the list

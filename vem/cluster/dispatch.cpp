@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include "dispatch.h"
 #include "darray_extension.h"
+#include "pgrid.h"
 
 
 //Message buffer, current offset and buffer size
@@ -111,7 +112,10 @@ cphvb_error dispatch_send(int type)
     if(size_left > 0)
     {
         if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        {
+            fprintf(stderr, "MPI_Bcast in dispatch_send() returns error: %d\n", e);
             return CPHVB_ERROR;
+        }
     }
     return CPHVB_SUCCESS;
 }
@@ -146,10 +150,45 @@ cphvb_error dispatch_recv(dispatch_msg **message)
     if(size_left > 0)
     {
         if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+        {
+            fprintf(stderr, "MPI_Bcast in dispatch_recv() returns error: %d\n", e);
             return CPHVB_ERROR;
+        }
     }
 
     *message = msg;
+    return CPHVB_SUCCESS;
+}
+
+
+/* Broadcast array-data to all slaves.
+ * @arys the base-arrays in question.
+*/
+cphvb_error dispatch_array_data(std::set<darray*> arys)
+{
+    cphvb_error e;
+    for(std::set<darray*>::iterator it=arys.begin(); it != arys.end(); ++it)
+    {
+        darray *dary = *it;
+        cphvb_array *ary = &dary->global_ary;
+        assert(ary->base == NULL);
+        if(ary->data != NULL)
+        {
+            if(pgrid_myrank != 0)//We need to allocate memory since we are a slave-process.
+            {
+                ary->data = NULL;//The data-pointer is referencing memory on the master-process.
+                if((e = cphvb_data_malloc(ary)) != CPHVB_SUCCESS)
+                    return e;
+            }
+            //Broadcast the array data.
+            int err;
+            if((err = MPI_Bcast(ary->data, cphvb_array_size(ary), MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
+            {
+                fprintf(stderr, "MPI_Bcast in dispatch_array_data() returns error: %d\n", err);
+                return CPHVB_ERROR;
+            }
+        }
+    }      
     return CPHVB_SUCCESS;
 }
 
@@ -193,6 +232,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     msg_noa_offset = msg->size - sizeof(cphvb_intp);
 
     //Pack the array list.
+    std::set<darray*> base_darys;
     for(cphvb_intp i=0; i<count; ++i)
     {
         const cphvb_instruction *inst = &inst_list[i];
@@ -228,11 +268,16 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
                     dary->id = (cphvb_intp) op->base;
                     dary->global_ary = *op->base;
                     ++noa;
+                    assert(dary->global_ary.base == NULL);
+                    base_darys.insert(dary);
                 }
             }
-        }        
+        }
     }
     *((cphvb_intp*)(msg->payload+msg_noa_offset)) = noa;//Save the number of new arrays
 
-    return dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC);
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC)) != CPHVB_SUCCESS)
+        return e;
+
+    return dispatch_array_data(base_darys);
 }
