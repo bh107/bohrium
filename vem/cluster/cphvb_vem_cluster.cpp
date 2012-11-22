@@ -103,7 +103,7 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
     cphvb_error e;
-    cphvb_pprint_instr_list(inst_list, count, "MASTER");
+//    cphvb_pprint_instr_list(inst_list, count, "MASTER");
 
     //Send the instruction list and operands to the slaves
     if((e = dispatch_inst_list(count, inst_list)) != CPHVB_SUCCESS)
@@ -111,5 +111,4 @@ cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
     
     
     return exec_execute(count,inst_list);
-//    return CPHVB_SUCCESS;
 }

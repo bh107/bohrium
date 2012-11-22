@@ -82,13 +82,18 @@ int main()
                 //The number of instructions
                 cphvb_intp *noi = (cphvb_intp *)msg->payload;                 
                 //The master-instruction list
-                cphvb_instruction *master_list = (cphvb_instruction *)(msg->payload+sizeof(cphvb_intp));
+                cphvb_instruction *master_list = (cphvb_instruction *)(noi+1);
                 //The number of new arrays
                 cphvb_intp *noa = (cphvb_intp *)(master_list + *noi);
                 //The list of new arrays
                 darray *darys = (darray*)(noa+1); //number of new arrays
+                //The number of user-defined functions
+                cphvb_intp *nou = (cphvb_intp *)(darys + *noa);
+                //The list of user-defined functions
+                cphvb_userfunc *ufunc = (cphvb_userfunc*)(nou+1); //number of new arrays
 
-                printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld\n",pgrid_myrank, *noi, *noa);
+
+   printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
                
                 //Insert the new array into the array store and the array maps
                 std::set<darray*> base_darys;
@@ -119,29 +124,56 @@ int main()
                 if((e = dispatch_array_data(base_darys)) != CPHVB_SUCCESS)
                     return e;
                     
-                //Create the local instruction list that reference local arrays
+                //Allocate the local instruction list that should reference local arrays
                 cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
                 if(local_list == NULL)
                     return CPHVB_OUT_OF_MEMORY;
+                memcpy(local_list, master_list, (*noi)*sizeof(cphvb_instruction));
+            
+                //De-serialize all user-defined function pointers.
                 for(cphvb_intp i=0; i < *noi; ++i)
                 {
-                    cphvb_instruction *master = &master_list[i];
-                    cphvb_instruction *local = &local_list[i];
-                    int nop = cphvb_operands_in_instruction(master);
-                    *local = *master;//Copy instruction
-                    //Convert all instructon operands
-                    for(cphvb_intp j=0; j<nop; ++j)
+                    cphvb_instruction *inst = &local_list[i];
+                    if(inst->opcode == CPHVB_USERFUNC)
                     {   
-                        assert(map_dary2ary.count((cphvb_intp)master->operand[j]) == 1);
-                        local->operand[j] = map_dary2ary[(cphvb_intp)master->operand[j]];
-                        assert(map_ary2dary.count(local->operand[j]) == 1);
+                        inst->userfunc = (cphvb_userfunc*) malloc(ufunc->struct_size);
+                        if(inst->userfunc == NULL)
+                            return CPHVB_OUT_OF_MEMORY;
+                        //Save a local copy of the user-defined function
+                        memcpy(inst->userfunc, ufunc, ufunc->struct_size);
+                        //Iterate to the next user-defined function
+                        ufunc = (cphvb_userfunc*)(((char*)ufunc) + ufunc->struct_size);
                     }
                 }
 
-                cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
+                //Update all instruction to reference local arrays 
+                for(cphvb_intp i=0; i < *noi; ++i)
+                {
+                    cphvb_instruction *inst = &local_list[i];
+                    int nop = cphvb_operands_in_instruction(inst);
+                    cphvb_array **ops;
+                    if(inst->opcode == CPHVB_USERFUNC)
+                        ops = inst->userfunc->operand;
+                    else
+                        ops = inst->operand;
 
-//                if((e = exec_execute(count, list)) != CPHVB_SUCCESS)
-//                    return e;
+                    //Convert all instructon operands
+                    for(cphvb_intp j=0; j<nop; ++j)
+                    { 
+                        if(cphvb_is_constant(ops[j]))
+                            continue;
+                        assert(map_dary2ary.count((cphvb_intp)ops[j]) == 1);
+                        ops[j] = map_dary2ary[(cphvb_intp)ops[j]];
+                        assert(map_ary2dary.count(ops[j]) == 1);
+                    }
+                }
+
+
+
+//                cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
+
+                if((e = exec_execute(*noi, local_list)) != CPHVB_SUCCESS)
+                    return e;
                 free(local_list);
                 break;
             }
