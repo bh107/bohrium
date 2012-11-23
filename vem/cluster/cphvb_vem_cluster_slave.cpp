@@ -34,33 +34,72 @@ If not, see <http://www.gnu.org/licenses/>.
 static std::map<cphvb_intp, cphvb_array*> map_dary2ary;
 static std::map<cphvb_array*,darray*> map_ary2dary;
 static StaticStore<darray> ary_store(512);
+       
+//Check for error. Will exit on error.
+static void check_error(cphvb_error err, const char *file, int line)
+{
+    if(err != CPHVB_SUCCESS)
+    {
+        fprintf(stderr, "[VEM-CLUSTER] Slave (rank %d) encountered the error %s at %s:%d\n",
+                pgrid_myrank, cphvb_error_text(err), file, line);
+        MPI_Abort(MPI_COMM_WORLD,-1);
+    }
+}
 
-        
+//Check for execution error. Will exit on error.
+static void check_exec_error(cphvb_error err, const char *file, int line, 
+                             cphvb_intp count, cphvb_instruction inst_list[])
+{
+    if(err == CPHVB_PARTIAL_SUCCESS)//Only partial success
+    {
+        char msg[count+4096];
+        sprintf(msg, "[VEM-CLUSTER] Slave (rank %d) encountered error in instruction batch: %s\n",
+                pgrid_myrank, cphvb_error_text(err));
+        for(cphvb_intp i=0; i<count; ++i)
+        {
+            cphvb_instruction *ist = &inst_list[i];
+            sprintf(msg+strlen(msg),"\tOpcode: %s", cphvb_opcode_text(ist->opcode));
+            if(ist->opcode == CPHVB_USERFUNC)
+            {
+                sprintf(msg+strlen(msg),", Operand types:");
+                for(cphvb_intp j=0; j<cphvb_operands_in_instruction(ist); ++j)
+                    sprintf(msg+strlen(msg)," %s", cphvb_type_text(cphvb_type_operand(ist,j))); 
+            }
+            else
+            {
+                sprintf(msg+strlen(msg),", Operand types:");
+                for(cphvb_intp j=0; j<cphvb_operands_in_instruction(ist); ++j)
+                    sprintf(msg+strlen(msg)," %s", cphvb_type_text(cphvb_type_operand(ist,j))); 
+            }
+            sprintf(msg+strlen(msg),", Status: %s\n", cphvb_error_text(ist->status));
+        }
+        fprintf(stderr,"%s", msg);
+        MPI_Abort(MPI_COMM_WORLD,-1);
+    }
+    check_error(err, file, line);
+}  
+
 int main()
 {
     dispatch_msg *msg;
-    cphvb_error e;
     
     //Initiate the process grid
-    if((e = pgrid_init()) != CPHVB_SUCCESS)
-        return e;
+    check_error(pgrid_init(),__FILE__,__LINE__);
 
     while(1)
     {
-        if((e = dispatch_reset()) != CPHVB_SUCCESS)
-            return e;
+        //Receive the dispatch message from the master-process
+        check_error(dispatch_reset(),__FILE__,__LINE__);
+        check_error(dispatch_recv(&msg),__FILE__,__LINE__);
 
-        if((e = dispatch_recv(&msg)) != CPHVB_SUCCESS)
-            return e;
-
+        //Handle the message
         switch(msg->type) 
         {
             case CPHVB_CLUSTER_DISPATCH_INIT:
             {
                 char *name = msg->payload;
                 printf("Slave (rank %d) received INIT. name: %s\n", pgrid_myrank, name);
-                if((e = exec_init(name)) != CPHVB_SUCCESS)
-                    return e;
+                check_error(exec_init(name),__FILE__,__LINE__);
                 break;
             }
             case CPHVB_CLUSTER_DISPATCH_SHUTDOWN:
@@ -73,8 +112,7 @@ int main()
                 cphvb_intp *id = (cphvb_intp *)msg->payload;
                 char *fun = msg->payload+sizeof(cphvb_intp);
                 printf("Slave (rank %d) received UFUNC. fun: %s, id: %ld\n",pgrid_myrank, fun, *id);
-                if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
-                    return e;
+                check_error(exec_reg_func(fun, id),__FILE__,__LINE__);
                 break;
             }
             case CPHVB_CLUSTER_DISPATCH_EXEC:
@@ -121,8 +159,8 @@ int main()
                 }
 
                 //Receive the dispatched array-data from the master-process
-                if((e = dispatch_array_data(base_darys)) != CPHVB_SUCCESS)
-                    return e;
+                check_error(dispatch_array_data(base_darys),__FILE__,__LINE__);
+                    
                     
                 //Allocate the local instruction list that should reference local arrays
                 cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
@@ -168,12 +206,9 @@ int main()
                     }
                 }
 
-
-
 //                cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
 
-                if((e = exec_execute(*noi, local_list)) != CPHVB_SUCCESS)
-                    return e;
+                check_exec_error(exec_execute(*noi, local_list),__FILE__,__LINE__, *noi, local_list);
                 free(local_list);
                 break;
             }
