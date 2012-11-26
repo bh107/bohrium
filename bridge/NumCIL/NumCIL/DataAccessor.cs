@@ -267,7 +267,11 @@ namespace NumCIL.Generic
         /// Cache of the generic template method
         /// </summary>
         protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Matmul", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-		/// <summary>
+        /// <summary>
+        /// Cache of the generic template method
+        /// </summary>
+        protected static readonly System.Reflection.MethodInfo aggregateBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Aggregate", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        /// <summary>
 		/// Cache of the generic template method
 		/// </summary>
 		protected static readonly System.Reflection.MethodInfo unaryConversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyUnaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -279,6 +283,14 @@ namespace NumCIL.Generic
         /// Cache of instantiated template methods
         /// </summary>
         protected static readonly Dictionary<object, System.Reflection.MethodInfo> specializedMethods = new Dictionary<object, System.Reflection.MethodInfo>();
+        /// <summary>
+        /// Cache of instantiated template methods
+        /// </summary>
+        protected static readonly Dictionary<object, System.Reflection.MethodInfo> specializedReduceMethods = new Dictionary<object, System.Reflection.MethodInfo>();
+        /// <summary>
+        /// Cache of instantiated template methods
+        /// </summary>
+        protected static readonly Dictionary<object, System.Reflection.MethodInfo> specializedAggregateMethods = new Dictionary<object, System.Reflection.MethodInfo>();
 
         /// <summary>
         /// List of operations registered on this array but not yet executed
@@ -495,10 +507,10 @@ namespace NumCIL.Generic
                     NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)n.Operation;
 
                     System.Reflection.MethodInfo genericVersion;
-                    if (!specializedMethods.TryGetValue(lzop.Operation.GetType(), out genericVersion))
+                    if (!specializedReduceMethods.TryGetValue(lzop.Operation.GetType(), out genericVersion))
                     {
                         genericVersion = reduceBaseMethodType.MakeGenericMethod(typeof(T), lzop.Operation.GetType());
-                        specializedMethods[lzop.Operation.GetType()] = genericVersion;
+                        specializedReduceMethods[lzop.Operation.GetType()] = genericVersion;
                     }
 
                     genericVersion.Invoke(null, new object[] { lzop.Operation, lzop.Axis, n.Operands[1], n.Operands[0] });
@@ -511,6 +523,19 @@ namespace NumCIL.Generic
                     System.Reflection.MethodInfo genericVersion = matmulBaseMethodType.MakeGenericMethod(typeof(T), lzmt.AddOperator.GetType(), lzmt.MulOperator.GetType());
                     genericVersion.Invoke(null, new object[] { lzmt.AddOperator, lzmt.MulOperator, n.Operands[1], n.Operands[2], n.Operands[0] });
 
+                }
+                else if (n.Operation is NumCIL.UFunc.LazyAggregateOperation<T>)
+                {
+                    NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)n.Operation;
+
+                    System.Reflection.MethodInfo genericVersion;
+                    if (!specializedAggregateMethods.TryGetValue(lzop.Operation.GetType(), out genericVersion))
+                    {
+                        genericVersion = aggregateBaseMethodType.MakeGenericMethod(typeof(T), lzop.Operation.GetType());
+                        specializedAggregateMethods[lzop.Operation.GetType()] = genericVersion;
+                    }
+
+                    n.Operands[0].Value[0] = (T)genericVersion.Invoke(null, new object[] { lzop.Operation, n.Operands[1] });
                 }
                 else if (n.Operation is IBinaryOp<T>)
                 {

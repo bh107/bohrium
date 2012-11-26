@@ -27,9 +27,41 @@ using System.Text;
 using NumCIL.Generic;
 
 namespace NumCIL
-{
+{   
     public static partial class UFunc
     {
+        /// <summary>
+        /// Wrapper class to represent a pending reduce operation in a list of pending operations
+        /// </summary>
+        /// <typeparam name="T">The type of data being processed</typeparam>
+        public struct LazyAggregateOperation<T> : IOp<T>
+        {
+            /// <summary>
+            /// The operation to use for reduction
+            /// </summary>
+            public readonly IBinaryOp<T> Operation;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LazyReduceOperation&lt;T&gt;"/> struct.
+            /// </summary>
+            /// <param name="operation">The operation to reduce with</param>
+            public LazyAggregateOperation(IBinaryOp<T> operation)
+            {
+                Operation = operation;
+            }
+
+            /// <summary>
+            /// Required interface member that is not used
+            /// </summary>
+            /// <param name="a">Unused</param>
+            /// <param name="b">Unused</param>
+            /// <returns>Throws exception</returns>
+            public T Op(T a, T b)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
         /// <summary>
         /// Calculates the scalar result of applying the binary operation to all elements
         /// </summary>
@@ -66,6 +98,27 @@ namespace NumCIL
         /// <param name="in1">The array to aggregate</param>
         /// <returns>A scalar value that is the result of aggregating all elements</returns>
         private static T Aggregate_Entry<T, C>(C op, NdArray<T> in1)
+            where C : struct, IBinaryOp<T>
+        {
+            if (in1.DataAccessor is ILazyAccessor<T>)
+            {
+                var v = new NumCIL.Generic.NdArray<T>((IDataAccessor<T>)Activator.CreateInstance(in1.DataAccessor.GetType(), 1L));
+                ((ILazyAccessor<T>)v.DataAccessor).AddOperation(new LazyAggregateOperation<T>(new C()), v, in1);
+                return v.Value[0];
+            }
+            else
+                return FlushMethods.Aggregate<T, C>(op, in1);
+        }
+
+        /// <summary>
+        /// Calculates the scalar result of applying the binary operation to all elements
+        /// </summary>
+        /// <typeparam name="T">The value to operate on</typeparam>
+        /// <typeparam name="C">The operation to perform</typeparam>
+        /// <param name="op">The operation to perform</param>
+        /// <param name="in1">The array to aggregate</param>
+        /// <returns>A scalar value that is the result of aggregating all elements</returns>
+        internal static T UFunc_Aggregate_Inner_Flush<T, C>(C op, NdArray<T> in1)
             where C : struct, IBinaryOp<T>
         {
             T result;
