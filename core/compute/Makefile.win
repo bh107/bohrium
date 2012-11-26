@@ -34,6 +34,9 @@ cphvb_compute_nselect.obj: cphvb_compute_nselect.cpp
 cphvb_compute_helpers.obj: cphvb_compute_helpers.cpp
 		$(CC) $(CFLAGS) cphvb_compute_helpers.cpp /Fo$@
 
+cphvb_compute_aggregate.obj: cphvb_compute_aggregate.cpp
+		$(CC) $(CFLAGS) cphvb_compute_aggregate.cpp /Fo$@
+
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ)
 		
