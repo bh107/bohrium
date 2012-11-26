@@ -213,7 +213,7 @@ cphvb_error cphvb_ve_simple_reg_func(char *fun, cphvb_intp *id)
         if (aggregate_impl == NULL)
         {
             cphvb_component_get_func(myself, fun, &aggregate_impl);
-            if (nselect_impl == NULL)
+            if (aggregate_impl == NULL)
                 return CPHVB_USERFUNC_NOT_SUPPORTED;
             
             aggregate_impl_id = *id;
