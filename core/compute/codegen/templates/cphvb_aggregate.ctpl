@@ -140,6 +140,7 @@ cphvb_error traverse_sa( cphvb_array* op_out, cphvb_array* op_in ) {
 		// Run the first inner loop without the first element
 		d1 += inner_inner_stride1;
 		INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, inner_inner_stride1, &value);
+		d1 += inner_stride1; //Patch to start at next entry
 
 		// Prepare for the following loops
 		remainder = ops_inner_inner % 4;
