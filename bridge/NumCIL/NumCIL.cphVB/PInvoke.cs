@@ -1392,9 +1392,10 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Setup the root component, which normally is the bridge.
         /// </summary>
+        /// <param name="name">The component name</param>
         /// <returns>A new component object</returns>
         [DllImport("libcphvb", EntryPoint = "cphvb_component_setup", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
-        private extern static IntPtr cphvb_component_setup_masked();
+        private extern static IntPtr cphvb_component_setup_masked(string name);
 
         /// <summary>
         /// Setup the root component, which normally is the bridge.
@@ -1402,7 +1403,7 @@ namespace NumCIL.cphVB
         /// <returns>A new component object</returns>
         public static cphvb_component cphvb_component_setup(out IntPtr unmanaged)
         {
-            unmanaged = cphvb_component_setup_masked();
+            unmanaged = cphvb_component_setup_masked(null);
             cphvb_component r = (cphvb_component)Marshal.PtrToStructure(unmanaged, typeof(cphvb_component));
 			return r;
         }

@@ -119,7 +119,7 @@ cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return CPHVB_ERROR;
     }
 
@@ -898,7 +898,7 @@ cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg)
 
                                                         //  Sanity checks.
     if (cphvb_operands(opcode) != 3) {
-        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (cphvb_int64)opcode);
+        fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return CPHVB_ERROR;
     }
 

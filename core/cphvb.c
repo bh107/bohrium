@@ -99,6 +99,17 @@ cphvb_index cphvb_nelements(cphvb_intp ndim,
     return res;
 }
 
+/* Size of the array data
+ *
+ * @array    The array in question
+ * @return   The size of the array data in bytes
+ */
+cphvb_index cphvb_array_size(const cphvb_array *array)
+{
+    return cphvb_nelements(array->ndim, array->shape) * 
+           cphvb_type_size(array->type);
+}
+
 /* Calculate the dimention boundries for shape
  *
  * @ndim      Number of dimentions
@@ -224,7 +235,7 @@ cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result)
  */
 cphvb_error cphvb_data_malloc(cphvb_array* array)
 {
-    cphvb_intp nelem, bytes;
+    cphvb_intp bytes;
     cphvb_array* base;
 
     if(array == NULL)
@@ -235,8 +246,7 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     if(base->data != NULL)
         return CPHVB_SUCCESS;
 
-    nelem = cphvb_nelements(base->ndim, base->shape);
-    bytes = nelem * cphvb_type_size(base->type);
+    bytes = cphvb_array_size(base);
     if(bytes <= 0)
         return CPHVB_SUCCESS;
 
@@ -260,7 +270,7 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
  */
 cphvb_error cphvb_data_free(cphvb_array* array)
 {
-    cphvb_intp nelem, bytes;
+    cphvb_intp bytes;
     cphvb_array* base;
 
     if(array == NULL)
@@ -271,8 +281,7 @@ cphvb_error cphvb_data_free(cphvb_array* array)
     if(base->data == NULL)
         return CPHVB_SUCCESS;
 
-    nelem = cphvb_nelements(base->ndim, base->shape);
-    bytes = nelem * cphvb_type_size(base->type);
+    bytes = cphvb_array_size(base);
 
     if(cphvb_memory_free(base->data, bytes) != 0)
     {
