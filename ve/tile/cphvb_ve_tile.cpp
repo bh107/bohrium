@@ -259,6 +259,10 @@ cphvb_error cphvb_ve_tile_execute( cphvb_intp instruction_count, cphvb_instructi
                 else if(inst->userfunc->id == fft2_impl_id)
                 {
                     inst->status = fft2_impl(inst->userfunc, NULL);
+                } 
+                else if(inst->userfunc->id == aggregate_impl_id) 
+                {
+                    inst->status = aggregate_impl(inst->userfunc, NULL);
                 }
                 else                            // Unsupported userfunc
                 {

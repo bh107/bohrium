@@ -334,6 +334,10 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 {
                     inst->status = fft2_impl(inst->userfunc, NULL);
                 }
+                else if(inst->userfunc->id == aggregate_impl_id)
+                {
+                    inst->status = aggregate_impl(inst->userfunc, NULL);
+				}
                 else                            // Unsupported userfunc
                 {
                     inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
