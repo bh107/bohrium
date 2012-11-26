@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 #include <set>
-#include "darray_extension.h"
+#include "darray.h"
 
 /* Dispatch message type */
 enum /* int */
@@ -88,7 +88,7 @@ cphvb_error dispatch_send(int type);
 /* Broadcast array-data to all slaves.
  * @arys the base-arrays in question.
 */
-cphvb_error dispatch_array_data(std::set<darray*> arys);
+cphvb_error dispatch_array_data(const std::set<darray*> arys);
 
 
 /* Dispatch an instruction list to the slaves, which include new array-structs.

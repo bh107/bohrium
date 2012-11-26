@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 
-#ifndef __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
-#define __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
+#ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
+#define __CPHVB_VEM_CLUSTER_DARRAY_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +45,34 @@ typedef struct
     //The global array-struct.
     cphvb_array global_ary;
 }darray;
+
+
+/* Insert the new array into the array store and the array maps.
+ * 
+ * @master_ary The master array to register locally
+ * @return Pointer to the registered array.
+ */
+darray* darray_new_slave_array(const darray *master_ary);
+
+
+/* Get the slave array.
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return Pointer to the registered array.
+ */
+cphvb_array* darray_master2slave(cphvb_intp master_array_id);
+
+
+/* Check if the slave array exist.
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return True when the slave array exist locally.
+ */
+bool darray_slave_exist(cphvb_intp master_array_id);
+
+
 
 
 #ifdef __cplusplus

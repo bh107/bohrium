@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
-#include "darray_extension.h"
+#include "darray.h"
 #include <cmath>
 #include <cstring>
 #include <vector>

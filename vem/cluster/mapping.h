@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __CPHVB_VEM_CLUSTER_MAPPING_H
 
 #include <cphvb.h>
-#include "darray_extension.h"
+#include "darray.h"
 #include <vector>
 
 cphvb_error mapping_chunks(int NPROC,

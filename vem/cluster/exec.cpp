@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cphvb_vem_cluster.h"
 #include "exchange.h"
 #include "mapping.h"
-#include "darray_extension.h"
+#include "darray.h"
 #include "pgrid.h"
 #include "dispatch.h"
 

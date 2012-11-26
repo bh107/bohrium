@@ -22,19 +22,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <map>
 #include <set>
-#include <StaticStore.hpp>
 #include "cphvb_vem_cluster.h"
 #include "dispatch.h"
 #include "pgrid.h"
 #include "exec.h"
-#include "darray_extension.h"
+#include "darray.h"
 
 
-//Local array information and storage
-static std::map<cphvb_intp, cphvb_array*> map_dary2ary;
-static std::map<cphvb_array*,darray*> map_ary2dary;
-static StaticStore<darray> ary_store(512);
-       
 //Check for error. Will exit on error.
 static void check_error(cphvb_error err, const char *file, int line)
 {
@@ -105,7 +99,7 @@ int main()
             case CPHVB_CLUSTER_DISPATCH_SHUTDOWN:
             {
                 printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
-                return exec_shutdown(); 
+                check_error(exec_shutdown(),__FILE__,__LINE__);
             }
             case CPHVB_CLUSTER_DISPATCH_UFUNC:
             {
@@ -137,24 +131,18 @@ int main()
                 std::set<darray*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    darray *dary = ary_store.c_next();
-                    *dary = darys[i];
-                    assert(map_dary2ary.count(dary->id) == 0);
-                    assert(map_ary2dary.count(&dary->global_ary) == 0);
-                    map_dary2ary[dary->id] = &dary->global_ary;
-                    map_ary2dary[&dary->global_ary] = dary;
+                    darray *dary = darray_new_slave_array(&darys[i]);
                     if(dary->global_ary.base == NULL)//This is a base array.
                         base_darys.insert(dary);
                 } 
-
                 //Update the base-array-pointers
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    cphvb_array *ary = map_dary2ary[darys[i].id];
+                    cphvb_array *ary = darray_master2slave(darys[i].id);
                     if(ary->base != NULL)//This is NOT a base array
                     {
-                        assert(map_dary2ary.count((cphvb_intp)ary->base) == 1);
-                        ary->base = map_dary2ary[(cphvb_intp)ary->base];
+                        assert(darray_slave_exist(((cphvb_intp)ary->base)));
+                        ary->base = darray_master2slave((cphvb_intp)ary->base);
                     }
                 }
 
@@ -165,7 +153,8 @@ int main()
                 //Allocate the local instruction list that should reference local arrays
                 cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
                 if(local_list == NULL)
-                    return CPHVB_OUT_OF_MEMORY;
+                    check_error(CPHVB_OUT_OF_MEMORY,__FILE__,__LINE__);
+        
                 memcpy(local_list, master_list, (*noi)*sizeof(cphvb_instruction));
             
                 //De-serialize all user-defined function pointers.
@@ -176,7 +165,7 @@ int main()
                     {   
                         inst->userfunc = (cphvb_userfunc*) malloc(ufunc->struct_size);
                         if(inst->userfunc == NULL)
-                            return CPHVB_OUT_OF_MEMORY;
+                            check_error(CPHVB_OUT_OF_MEMORY,__FILE__,__LINE__);
                         //Save a local copy of the user-defined function
                         memcpy(inst->userfunc, ufunc, ufunc->struct_size);
                         //Iterate to the next user-defined function
@@ -200,9 +189,8 @@ int main()
                     { 
                         if(cphvb_is_constant(ops[j]))
                             continue;
-                        assert(map_dary2ary.count((cphvb_intp)ops[j]) == 1);
-                        ops[j] = map_dary2ary[(cphvb_intp)ops[j]];
-                        assert(map_ary2dary.count(ops[j]) == 1);
+                        assert(darray_slave_exist((cphvb_intp)ops[j]));
+                        ops[j] = darray_master2slave((cphvb_intp)ops[j]);
                     }
                 }
 

@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <cphvb.h>
 #include "dispatch.h"
-#include "darray_extension.h"
+#include "darray.h"
 #include "pgrid.h"
 
 
@@ -164,7 +164,7 @@ cphvb_error dispatch_recv(dispatch_msg **message)
 /* Broadcast array-data to all slaves.
  * @arys the base-arrays in question.
 */
-cphvb_error dispatch_array_data(std::set<darray*> arys)
+cphvb_error dispatch_array_data(const std::set<darray*> arys)
 {
     cphvb_error e;
     for(std::set<darray*>::iterator it=arys.begin(); it != arys.end(); ++it)
@@ -300,14 +300,14 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     //Save the number of user-defined functions 
     *((cphvb_intp*)(msg->payload+msg_nou_offset)) = nou;
 
-    //Start of the new array list
-    darray *darys = (darray*)(msg->payload + 2 * sizeof(cphvb_intp)
-                                           + count * sizeof(cphvb_instruction));
 
     //Dispath the execution message
     if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC)) != CPHVB_SUCCESS)
         return e;
 
+    //Start of the new array list
+    darray *darys = (darray*)(msg->payload + 2 * sizeof(cphvb_intp)
+                                           + count * sizeof(cphvb_instruction));
     //Gather all base arrays dispathed
     std::set<darray*> base_darys;
     for(cphvb_intp i=0; i<noa; ++i)
