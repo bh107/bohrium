@@ -201,6 +201,8 @@ namespace NumCIL.cphVB
                 res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
                 res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+            if (VEM.Instance.SupportsAggregate)
+                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
 
 
             if (typeof(T) == typeof(NumCIL.Complex64.DataType))
@@ -744,7 +746,16 @@ namespace NumCIL.cphVB
                         else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
                         {
                             supported.Add(VEM.CreateMatmulInstruction<T>(CPHVB_TYPE, operands[0], operands[1], operands[2]));
-
+                        }
+                        else if (VEM.SupportsAggregate && ops is NumCIL.UFunc.LazyAggregateOperation<T>)
+                        {
+                            NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
+                            cphvb_opcode rop;
+                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+                            {
+                                supported.Add(VEM.CreateAggregateInstruction<T>(CPHVB_TYPE, rop, operands[0], operands[1]));
+                                isSupported = true;
+                            }
                         }
 
                         if (!isSupported)

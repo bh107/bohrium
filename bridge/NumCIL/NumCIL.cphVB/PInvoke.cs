@@ -99,6 +99,10 @@ namespace NumCIL.cphVB
         /// </summary>
         public static readonly int MATMULFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_matmul));
         /// <summary>
+        /// The size of the aggregate userfunc struct
+        /// </summary>
+        public static readonly int AGGREGATEFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_aggregate));
+        /// <summary>
         /// The size of the plain userfunc struct
         /// </summary>
         public static readonly int PLAINFUNC_SIZE = Marshal.SizeOf(typeof(cphvb_userfunc_plain));
@@ -865,25 +869,36 @@ namespace NumCIL.cphVB
             public cphvb_userfunc_matmul matmul;
 
             /// <summary>
-            /// Constructs a new union representin a plain userfunc
+            /// The aggregate userfunc
+            /// </summary>
+            [FieldOffset(0)]
+            public cphvb_userfunc_aggregate aggregate;
+
+            /// <summary>
+            /// Constructs a new union representing a plain userfunc
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public cphvb_userfunc_union(cphvb_userfunc_plain arg) : this() { plain = arg; }
             /// <summary>
-            /// Constructs a new union representin a reduce userfunc
+            /// Constructs a new union representing a reduce userfunc
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public cphvb_userfunc_union(cphvb_userfunc_reduce arg) : this() { reduce = arg; }
             /// <summary>
-            /// Constructs a new union representin a random userfunc
+            /// Constructs a new union representing a random userfunc
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public cphvb_userfunc_union(cphvb_userfunc_random arg) : this() { random = arg; }
             /// <summary>
-            /// Constructs a new union representin a matmul userfunc
+            /// Constructs a new union representing a matmul userfunc
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public cphvb_userfunc_union(cphvb_userfunc_matmul arg) : this() { matmul = arg; }
+            /// <summary>
+            /// Constructs a new union representing an aggregate userfunc
+            /// </summary>
+            /// <param name="arg">The user defined function</param>
+            public cphvb_userfunc_union(cphvb_userfunc_aggregate arg) : this() { aggregate = arg; }
 
             /// <summary>
             /// Implicit operator for creating a union with a plain userfunc
@@ -909,6 +924,12 @@ namespace NumCIL.cphVB
             /// <param name="arg">The userfunc</param>
             /// <returns>The union userfunc</returns>
             public static implicit operator cphvb_userfunc_union(cphvb_userfunc_matmul arg) { return new cphvb_userfunc_union(arg); }
+            /// <summary>
+            /// Implicit operator for creating a union with a aggregate userfunc
+            /// </summary>
+            /// <param name="arg">The userfunc</param>
+            /// <returns>The union userfunc</returns>
+            public static implicit operator cphvb_userfunc_union(cphvb_userfunc_aggregate arg) { return new cphvb_userfunc_union(arg); }
         }
 
         /// <summary>
@@ -1067,6 +1088,59 @@ namespace NumCIL.cphVB
             }
         }
 
+        /// <summary>
+        /// The aggregate userdefined function
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
+        public struct cphvb_userfunc_aggregate
+        {
+            /// <summary>
+            /// The reduce function id
+            /// </summary>
+            public cphvb_intp id;
+            /// <summary>
+            /// The number of output elements
+            /// </summary>
+            public cphvb_intp nout;
+            /// <summary>
+            /// The number of input elements
+            /// </summary>
+            public cphvb_intp nin;
+            /// <summary>
+            /// The total size of this struct
+            /// </summary>
+            public cphvb_intp struct_size;
+            /// <summary>
+            /// The output operand
+            /// </summary>
+            public cphvb_array_ptr operand0;
+            /// <summary>
+            /// The input operand
+            /// </summary>
+            public cphvb_array_ptr operand1;
+            /// <summary>
+            /// The opcode for the binary function used to reduce
+            /// </summary>
+            public cphvb_opcode opcode;
+
+            /// <summary>
+            /// Constructs a new reduce userfunc
+            /// </summary>
+            /// <param name="func">The id for the reduce userfunc</param>
+            /// <param name="opcode">The opcode for the binary function used to reduce with</param>
+            /// <param name="op1">The output operand</param>
+            /// <param name="op2">The input operand</param>
+            public cphvb_userfunc_aggregate(cphvb_intp func, cphvb_opcode opcode, cphvb_array_ptr op1, cphvb_array_ptr op2)
+            {
+                this.id = func;
+                this.nout = 1;
+                this.nin = 1;
+                this.struct_size = AGGREGATEFUNC_SIZE;
+                this.operand0 = op1;
+                this.operand1 = op2;
+                this.opcode = opcode;
+            }
+        }
         /// <summary>
         /// A plain userfunc
         /// </summary>
