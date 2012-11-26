@@ -23,10 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
 #define __CPHVB_VEM_CLUSTER_DARRAY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 //Extension to the cphvb_array for cluster information
 typedef struct
@@ -73,10 +69,31 @@ cphvb_array* darray_master2slave(cphvb_intp master_array_id);
 bool darray_slave_exist(cphvb_intp master_array_id);
 
 
+/* Register the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is known.
+ */
+void darray_slave_known_insert(cphvb_array *ary);
 
 
-#ifdef __cplusplus
-}
-#endif
+/* Check if the array is known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that should be checked.
+ * @return True if the array is known by all slave-processes
+ */
+bool darray_slave_known_check(cphvb_array *ary);
+
+
+/* Remove the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is unknown.
+ */
+void darray_slave_known_remove(cphvb_array *ary);
+
+
+
 
 #endif

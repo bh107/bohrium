@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include <map>
+#include <set>
 #include <assert.h>
 #include <StaticStore.hpp>
 #include "darray.h"
@@ -27,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 static std::map<cphvb_intp, cphvb_array*> map_master2slave;
 static std::map<cphvb_array*,darray*> map_slave2master;
 static StaticStore<darray> slave_ary_store(512);
+static std::set<cphvb_array*> slave_known_arrays;
 
 
 /* Insert the new array into the array store and the array maps.
@@ -69,3 +71,38 @@ bool darray_slave_exist(cphvb_intp master_array_id)
 {
     return map_master2slave.count(master_array_id) > 0;
 }
+
+
+/* Register the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is known.
+ */
+void darray_slave_known_insert(cphvb_array *ary)
+{
+    slave_known_arrays.insert(ary);
+}
+
+
+/* Check if the array is known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that should be checked.
+ * @return True if the array is known by all slave-processes
+ */
+bool darray_slave_known_check(cphvb_array *ary)
+{
+    return slave_known_arrays.count(ary) > 0;
+}
+
+
+/* Remove the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is unknown.
+ */
+void darray_slave_known_remove(cphvb_array *ary)
+{
+    slave_known_arrays.erase(ary);    
+}    
+

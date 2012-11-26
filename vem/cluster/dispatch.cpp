@@ -198,7 +198,6 @@ cphvb_error dispatch_array_data(const std::set<darray*> arys)
  * @count is the number of instructions in the list
  * @inst_list is the instruction list
  */
-static std::set<cphvb_array*> known_arrays;
 cphvb_error dispatch_inst_list(cphvb_intp count,
                                const cphvb_instruction inst_list[])
 {
@@ -250,21 +249,21 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
             if(cphvb_is_constant(op))
                 continue;//No need to dispatch constants
 
-            if(known_arrays.count(op) == 0)//The array is unknown to the slaves.
+            if(!darray_slave_known_check(op))//The array is unknown to the slaves.
             {   
                 darray *dary;
                 if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
                     return e;
-                known_arrays.insert(op);
+                darray_slave_known_insert(op);
                 //The master-process's memory pointer is the id of the array.
                 dary->id = (cphvb_intp) op;
                 dary->global_ary = *op;
                 ++noa;
-                if(op->base != NULL && known_arrays.count(op->base) == 0)//Also check the base-array.
+                if(op->base != NULL && !darray_slave_known_check(op->base))//Also check the base-array.
                 {
                     if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
                         return e;
-                    known_arrays.insert(op->base);
+                    darray_slave_known_insert(op->base);
                     dary->id = (cphvb_intp) op->base;
                     dary->global_ary = *op->base;
                     ++noa;
