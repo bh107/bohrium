@@ -684,13 +684,13 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 				src += stride;
 		}
         
-    /* 
-    } else if (op_in->ndim == 2) {			// 2D General case
+	/* 
+	} else if (op_in->ndim == 2) {			// 2D General case
 
 		Experiments show that the general case is almost as fast as
 		 an optimized 2D version
 	*/
-	
+    
     } else {                                    // ND general case
 
         cphvb_array tmp;                        // Copy the input-array meta-data
