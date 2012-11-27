@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 #include <cassert>
 #include <map>
-#include <set>
 #include "cphvb_vem_cluster.h"
 #include "dispatch.h"
 #include "pgrid.h"
@@ -128,12 +127,12 @@ int main()
    printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
                
                 //Insert the new array into the array store and the array maps
-                std::set<darray*> base_darys;
+                std::stack<darray*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
                     darray *dary = darray_new_slave_array(&darys[i]);
                     if(dary->global_ary.base == NULL)//This is a base array.
-                        base_darys.insert(dary);
+                        base_darys.push(dary);
                 } 
                 //Update the base-array-pointers
                 for(cphvb_intp i=0; i < *noa; ++i)
