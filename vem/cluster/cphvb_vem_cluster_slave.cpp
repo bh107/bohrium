@@ -99,6 +99,7 @@ int main()
             {
                 printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
                 check_error(exec_shutdown(),__FILE__,__LINE__);
+                return 0;
             }
             case CPHVB_CLUSTER_DISPATCH_UFUNC:
             {
