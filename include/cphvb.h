@@ -209,12 +209,18 @@ DLLEXPORT cphvb_error cphvb_data_malloc(cphvb_array* array);
  */
 DLLEXPORT cphvb_error cphvb_data_free(cphvb_array* array);
 
+/* Retrive the operands of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @return The operand list
+ */
+DLLEXPORT cphvb_array **cphvb_inst_operands(const cphvb_instruction *instruction);
 
 /* Retrive the operand type of a instruction.
  *
  * @instruction  The instruction in question
  * @operand_no Number of the operand in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return The operand type
  */
 DLLEXPORT cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
                                         cphvb_intp operand_no);
