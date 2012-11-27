@@ -47,6 +47,17 @@ typedef struct
 
 DLLEXPORT cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg);
 
+//The type of the user-defined aggregate function.
+typedef struct
+{
+    //User-defined function header with two operands.
+    CPHVB_USER_FUNC_HEADER(2)
+    //The opcode to aggregate with
+    cphvb_opcode  opcode;
+} cphvb_aggregate_type;
+
+DLLEXPORT cphvb_error cphvb_aggregate(cphvb_userfunc* arg, void* ve_arg);
+
 //The type of the user-defined random function.
 typedef struct
 {

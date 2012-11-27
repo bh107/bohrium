@@ -138,6 +138,34 @@ typedef char BYTE;
 	} \
 }
 
+#define INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, stride1, scalar) \
+{ \
+	cphvb_index loop_i; \
+	for (loop_i = 0; loop_i < fulls; loop_i++) \
+	{ \
+		opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+		d1 += stride1; \
+		opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+		d1 += stride1; \
+		opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+		d1 += stride1; \
+		opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+		d1 += stride1; \
+	} \
+ \
+	switch (remainder) \
+	{ \
+		case 3: \
+			opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+			d1 += stride1; \
+		case 2: \
+			opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+			d1 += stride1; \
+		case 1: \
+			opcode_func( (scalar), (scalar), ((T1*)d1) ); \
+			d1 += stride1; \
+	} \
+}
 
 #define INNER_LOOP_AA(opcode_func, fulls, remainder, d0, d1, stride0, stride1) \
 { \
@@ -205,7 +233,7 @@ typedef char BYTE;
 }
 
 /**
- *  A optimized implementation of executing an instruction.
+ *  An optimized implementation of executing an instruction.
  *
  *  @param instr The instruction to execute
  *  @param state State of the iteration
@@ -384,7 +412,7 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 }
 
 /**
- *  A optimized implementation of executing an instruction.
+ *  An optimized implementation of executing an instruction.
  *
  *  @param instr The instruction to execute
  *  @param state State of the iteration
@@ -544,7 +572,7 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 }
 
 /**
- *  A optimized implementation of executing an instruction.
+ *  An optimized implementation of executing an instruction.
  *
  *  @param instr The instruction to execute
  *  @param state State of the iteration
@@ -704,7 +732,7 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 }
 
 /**
- *  A optimized implementation of executing an instruction.
+ *  An optimized implementation of executing an instruction.
  *
  *  @param instr The instruction to execute
  *  @param state State of the iteration
@@ -862,7 +890,7 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 }
 
 /**
- *  A optimized implementation of executing an instruction.
+ *  An optimized implementation of executing an instruction.
  *
  *  @param instr The instruction to execute
  *  @param state State of the iteration

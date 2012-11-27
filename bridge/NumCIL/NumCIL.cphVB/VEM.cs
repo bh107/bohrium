@@ -79,6 +79,11 @@ namespace NumCIL.cphVB
         private readonly long m_matmulFunctionId;
 
         /// <summary>
+        /// ID for the user-defined aggregate operation
+        /// </summary>
+        private readonly long m_aggregateFunctionId;
+
+        /// <summary>
         /// A reference to the cphVB component for "self" aka the bridge
         /// </summary>
         private PInvoke.cphvb_component m_component;
@@ -139,41 +144,30 @@ namespace NumCIL.cphVB
             if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                 throw new cphVBException(e);
 
+            m_reduceFunctionId = GetUserFuncId("cphvb_reduce");
+            m_randomFunctionId = GetUserFuncId("cphvb_random");
+            m_matmulFunctionId = GetUserFuncId("cphvb_matmul");
+            m_aggregateFunctionId = GetUserFuncId("cphvb_aggregate");
+        }
+
+        /// <summary>
+        /// Helper to get the id of a userdefined function
+        /// </summary>
+        /// <param name="name">The name of the userfunc to find</param>
+        /// <returns>The ID of the userdefined function or 0</returns>
+        private long GetUserFuncId(string name)
+        {
             //The exception only happens with the debugger attached
             long id = 0;
             try
             {
-                //Since the current implementation of reduce in cphvb is slow,
-                // it can be disabled by an environment variable
-                if (Environment.GetEnvironmentVariable("CPHVB_MANAGED_REDUCE") == null)
-                {
-                    e = m_childs[0].reg_func("cphvb_reduce", ref id);
-                    if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                        id = 0;
-                }
-            }
-            catch { id = 0; }
-            m_reduceFunctionId = id;
-
-            id = 0;
-            try
-            {
-                e = m_childs[0].reg_func("cphvb_random", ref id);
+                PInvoke.cphvb_error e = m_childs[0].reg_func(name, ref id);
                 if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
                     id = 0;
             }
             catch { id = 0; }
-            m_randomFunctionId = id;
-
-            id = 0;
-            try
-            {
-                e = m_childs[0].reg_func("cphvb_matmul", ref id);
-                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                    id = 0;
-            }
-            catch { id = 0; }
-            m_matmulFunctionId = id;
+            
+            return id;
         }
 
         /// <summary>
@@ -1120,6 +1114,40 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
+        /// Creates a new reduce instruction
+        /// </summary>
+        /// <typeparam name="T">The data type to operate on</typeparam>
+        /// <param name="type">The cphVB datatype</param>
+        /// <param name="opcode">The opcode used for the reduction</param>
+        /// <param name="op1">The output operand</param>
+        /// <param name="op2">The input operand</param>
+        /// <returns>A new instruction</returns>
+        public IInstruction CreateAggregateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        {
+            if (!SupportsAggregate)
+                throw new cphVBException("The VEM/VE setup does not support the reduce function");
+
+            GCHandle gh = GCHandle.Alloc(
+                new PInvoke.cphvb_userfunc_aggregate(
+                    m_aggregateFunctionId,
+                    opcode,
+                    CreateViewPtr<T>(type, op1).Pointer,
+                    CreateViewPtr<T>(type, op2).Pointer
+                ),
+                GCHandleType.Pinned
+            );
+
+            IntPtr adr = gh.AddrOfPinnedObject();
+
+            m_allocatedUserfuncs.Add(adr, gh);
+
+            return new PInvoke.cphvb_instruction(
+                cphvb_opcode.CPHVB_USERFUNC,
+                adr
+            );
+        }
+
+        /// <summary>
         /// Returns a value indicating if a value is a scalar
         /// </summary>
         /// <typeparam name="T">The type of data in the array</typeparam>
@@ -1151,5 +1179,10 @@ namespace NumCIL.cphVB
         /// Gets a value indicating if the Matrix Multiplication operation is supported
         /// </summary>
         public bool SupportsMatmul { get { return m_matmulFunctionId > 0; } }
+
+        /// <summary>
+        /// Gets a value indicating if the aggregate operation is supported
+        /// </summary>
+        public bool SupportsAggregate { get { return m_aggregateFunctionId > 0; } }
     }
 }
