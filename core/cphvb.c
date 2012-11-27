@@ -295,21 +295,36 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 }
 
 
+/* Retrive the operands of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @return The operand list
+ */
+cphvb_array **cphvb_inst_operands(const cphvb_instruction *instruction)
+{
+    if (instruction->opcode == CPHVB_USERFUNC)
+        return (cphvb_array **) instruction->userfunc->operand;
+    else
+        return (cphvb_array **) instruction->operand;
+}
+
+
 /* Retrive the operand type of a instruction.
  *
  * @instruction  The instruction in question
  * @operand_no Number of the operand in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return The operand type
  */
 cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
-    if (cphvb_is_constant(instruction->operand[operand_no]))
+    cphvb_array **operands = cphvb_inst_operands(instruction);
+    cphvb_array *operand = operands[operand_no];
+
+    if (cphvb_is_constant(operand))
         return instruction->constant.type;
-    else if (instruction->opcode == CPHVB_USERFUNC)
-        return instruction->userfunc->operand[operand_no]->type;
     else
-        return instruction->operand[operand_no]->type;
+        return operand->type;
 }
 
 
