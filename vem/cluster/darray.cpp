@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <StaticStore.hpp>
 #include "darray.h"
+#include "pgrid.h"
 
 
 static std::map<cphvb_intp, cphvb_array*> map_master2slave;
@@ -32,12 +33,14 @@ static std::set<cphvb_array*> slave_known_arrays;
 
 
 /* Insert the new array into the array store and the array maps.
+ * Note that this function is only used by the slaves
  * 
  * @master_ary The master array to register locally
  * @return Pointer to the registered array.
  */
 darray* darray_new_slave_array(const darray *master_ary)
 {
+    assert(pgrid_myrank > 0);
     darray *ary = slave_ary_store.c_next();
     *ary = *master_ary;
     assert(map_master2slave.count(ary->id) == 0);
@@ -50,6 +53,7 @@ darray* darray_new_slave_array(const darray *master_ary)
 
 
 /* Get the slave array.
+ * Note that this function is only used by the slaves
  *
  * @master_array_id The master array id, which is the data pointer 
  *                  in the address space of the master-process.
@@ -57,11 +61,13 @@ darray* darray_new_slave_array(const darray *master_ary)
  */
 cphvb_array* darray_master2slave(cphvb_intp master_array_id)
 {
+    assert(pgrid_myrank > 0);
     return map_master2slave[master_array_id];
 }
 
 
 /* Check if the slave array exist.
+ * Note that this function is only used by the slaves
  *
  * @master_array_id The master array id, which is the data pointer 
  *                  in the address space of the master-process.
@@ -69,6 +75,7 @@ cphvb_array* darray_master2slave(cphvb_intp master_array_id)
  */
 bool darray_slave_exist(cphvb_intp master_array_id)
 {
+    assert(pgrid_myrank > 0);
     return map_master2slave.count(master_array_id) > 0;
 }
 
@@ -80,6 +87,7 @@ bool darray_slave_exist(cphvb_intp master_array_id)
  */
 void darray_slave_known_insert(cphvb_array *ary)
 {
+    assert(pgrid_myrank == 0);
     slave_known_arrays.insert(ary);
 }
 
@@ -92,17 +100,31 @@ void darray_slave_known_insert(cphvb_array *ary)
  */
 bool darray_slave_known_check(cphvb_array *ary)
 {
+    assert(pgrid_myrank == 0);
     return slave_known_arrays.count(ary) > 0;
 }
 
 
 /* Remove the array as known by all the slaves.
- * Note that this function is only used by the master
+ * Note that this function is used both by the master and slaves
  *
  * @ary The array that now is unknown.
  */
 void darray_slave_known_remove(cphvb_array *ary)
 {
-    slave_known_arrays.erase(ary);    
+    if(pgrid_myrank == 0)
+    {
+        assert(darray_slave_known_check(ary));
+        slave_known_arrays.erase(ary);
+    }
+    else
+    {
+        assert(map_slave2master.count(ary) == 1);
+        darray *dary = map_slave2master[ary];
+        map_slave2master.erase(ary);
+        assert(map_master2slave.count(dary->id) == 1);
+        map_master2slave.erase(dary->id);
+        slave_ary_store.erase(dary);
+    }
 }    
 

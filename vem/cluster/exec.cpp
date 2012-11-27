@@ -160,6 +160,14 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
         }
     #endif
 
+    //new approach
+    for(cphvb_intp i=0; i < count; ++i)
+    {
+        cphvb_instruction* inst = &inst_list[i];
+        if(inst->opcode == CPHVB_DISCARD)
+            darray_slave_known_remove(inst->operand[0]);
+    }
+
     //Exchange the instruction list between all processes and
     //update all operand pointers to local pointers
 //    cphvb_pprint_instr_list(inst_list, count, "CLUSTER GLOBAL");
