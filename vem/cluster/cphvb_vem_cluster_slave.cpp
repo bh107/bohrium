@@ -128,12 +128,12 @@ int main()
    printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
                
                 //Insert the new array into the array store and the array maps
-                std::stack<darray*> base_darys;
+                std::stack<cphvb_array*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
                     darray *dary = darray_new_slave_array(&darys[i]);
                     if(dary->global_ary.base == NULL)//This is a base array.
-                        base_darys.push(dary);
+                        base_darys.push(&dary->global_ary);
                 } 
                 //Update the base-array-pointers
                 for(cphvb_intp i=0; i < *noa; ++i)

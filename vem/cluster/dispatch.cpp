@@ -164,13 +164,12 @@ cphvb_error dispatch_recv(dispatch_msg **message)
 /* Broadcast array-data to all slaves.
  * @arys the base-arrays in question.
 */
-cphvb_error dispatch_array_data(std::stack<darray*> arys)
+cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
 {
     cphvb_error e;
     while (!arys.empty())
     {
-        darray *dary = arys.top();
-        cphvb_array *ary = &dary->global_ary;
+        cphvb_array *ary = arys.top();
         assert(ary->base == NULL);
         if(ary->data != NULL)
         {
@@ -309,11 +308,11 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     darray *darys = (darray*)(msg->payload + 2 * sizeof(cphvb_intp)
                                            + count * sizeof(cphvb_instruction));
     //Gather all base arrays dispathed
-    std::stack<darray*> base_darys;
+    std::stack<cphvb_array*> base_darys;
     for(cphvb_intp i=0; i<noa; ++i)
     {
         if(darys[i].global_ary.base == NULL)
-            base_darys.push(&darys[i]);
+            base_darys.push(&darys[i].global_ary);
     }
     
     //Dispath the array data
