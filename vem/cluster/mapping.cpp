@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
-#include "darray.h"
+#include "array.h"
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 static cphvb_error find_largest_chunk(int NPROC, 
                                       const cphvb_instruction *inst, 
                                       std::vector<cphvb_array>& chunks,  
-                                      std::vector<darray_ext>& chunks_ext,
+                                      std::vector<array_ext>& chunks_ext,
                                       const cphvb_intp start_coord[],
                                       const cphvb_intp end_coord[],
                                       cphvb_intp new_coord[])
@@ -47,7 +47,7 @@ static cphvb_error find_largest_chunk(int NPROC,
         {
             //Save a dummy chunk
             cphvb_array chunk;
-            darray_ext chunk_ext;
+            array_ext chunk_ext;
             chunks.push_back(chunk);
             chunks_ext.push_back(chunk_ext);
             continue;
@@ -90,7 +90,7 @@ static cphvb_error find_largest_chunk(int NPROC,
         }
         //Save the chunk
         cphvb_array chunk;
-        darray_ext chunk_ext;
+        array_ext chunk_ext;
         chunk_ext.rank = rank;
         chunk.base     = cphvb_base_array(ary);
         chunk.type     = ary->type;
@@ -120,7 +120,7 @@ static cphvb_error find_largest_chunk(int NPROC,
 static cphvb_error get_chunks(int NPROC,
                               const cphvb_instruction *inst, 
                               std::vector<cphvb_array>& chunks,  
-                              std::vector<darray_ext>& chunks_ext,
+                              std::vector<array_ext>& chunks_ext,
                               const cphvb_intp start_coord[],
                               const cphvb_intp end_coord[])
 {
@@ -183,7 +183,7 @@ static cphvb_error get_chunks(int NPROC,
 cphvb_error mapping_chunks(int NPROC,
                            const cphvb_instruction *inst, 
                            std::vector<cphvb_array>& chunks,  
-                           std::vector<darray_ext>& chunks_ext)
+                           std::vector<array_ext>& chunks_ext)
 {
     cphvb_intp coord[CPHVB_MAXDIM];
     memset(coord, 0, inst->operand[0]->ndim * sizeof(cphvb_intp));

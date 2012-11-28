@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cphvb_vem_cluster.h"
 #include "exchange.h"
 #include "mapping.h"
-#include "darray.h"
+#include "array.h"
 #include "pgrid.h"
 #include "dispatch.h"
 
@@ -225,7 +225,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             {
                 cphvb_instruction new_inst;
                 std::vector<cphvb_array> chunks;
-                std::vector<darray_ext> chunks_ext;
+                std::vector<array_ext> chunks_ext;
                 err = mapping_chunks(NPROC, inst, chunks, chunks_ext);
                 if(err != CPHVB_SUCCESS)
                 {

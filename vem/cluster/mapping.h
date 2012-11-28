@@ -22,11 +22,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __CPHVB_VEM_CLUSTER_MAPPING_H
 
 #include <cphvb.h>
-#include "darray.h"
+#include "array.h"
 #include <vector>
 
 cphvb_error mapping_chunks(int NPROC,
                            const cphvb_instruction *inst, 
                            std::vector<cphvb_array>& chunks,  
-                           std::vector<darray_ext>& chunks_ext);
+                           std::vector<array_ext>& chunks_ext);
 #endif

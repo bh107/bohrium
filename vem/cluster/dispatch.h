@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 #include <stack>
-#include "darray.h"
 
 /* Dispatch message type */
 enum /* int */

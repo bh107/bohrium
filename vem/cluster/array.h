@@ -29,7 +29,7 @@ typedef struct
 {
     //Process rank that owns the array.
     int rank;
-}darray_ext;
+}array_ext;
 
 
 
