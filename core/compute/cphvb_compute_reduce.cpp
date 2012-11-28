@@ -736,8 +736,6 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 		cphvb_tstate_reset( &state, &instr );
         
         for(i=1; i<nelements; ++i) {
-			cphvb_tstate_reset( &state, &instr );
-						
             err = traverse_aaa<T, T, T, Instr>(&instr, &state);
             if (err != CPHVB_SUCCESS) {
                 return err;
