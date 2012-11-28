@@ -27,8 +27,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 static std::map<cphvb_intp, cphvb_array*> map_master2slave;
-static std::map<cphvb_array*,darray*> map_slave2master;
-static StaticStore<darray> slave_ary_store(512);
+static std::map<cphvb_array*,cphvb_intp> map_slave2master;
+static StaticStore<cphvb_array> slave_ary_store(512);
 static std::set<cphvb_array*> slave_known_arrays;
 
 
@@ -41,16 +41,15 @@ static std::set<cphvb_array*> slave_known_arrays;
 cphvb_array* darray_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id)
 {
     assert(pgrid_myrank > 0);
-    darray *ary = slave_ary_store.c_next();
-    ary->global_ary = *master_ary;
-    ary->id = master_id; 
+    cphvb_array *ary = slave_ary_store.c_next();
+    *ary = *master_ary;
     
-    assert(map_master2slave.count(ary->id) == 0);
-    assert(map_slave2master.count(&ary->global_ary) == 0);
+    assert(map_master2slave.count(master_id) == 0);
+    assert(map_slave2master.count(ary) == 0);
 
-    map_master2slave[ary->id] = &ary->global_ary;
-    map_slave2master[&ary->global_ary] = ary;
-    return &ary->global_ary;
+    map_master2slave[master_id] = ary;
+    map_slave2master[ary] = master_id;
+    return ary;
 }
 
 
@@ -122,11 +121,11 @@ void darray_slave_known_remove(cphvb_array *ary)
     else
     {
         assert(map_slave2master.count(ary) == 1);
-        darray *dary = map_slave2master[ary];
+        cphvb_intp master_id = map_slave2master[ary];
         map_slave2master.erase(ary);
-        assert(map_master2slave.count(dary->id) == 1);
-        map_master2slave.erase(dary->id);
-        slave_ary_store.erase(dary);
+        assert(map_master2slave.count(master_id) == 1);
+        map_master2slave.erase(master_id);
+        slave_ary_store.erase(ary);
     }
 }    
 
