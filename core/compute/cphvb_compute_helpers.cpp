@@ -17,6 +17,7 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <assert.h>
 #include <cphvb.h>
 #include <cphvb_compute.h>
 
@@ -45,22 +46,43 @@ void cphvb_compact_dimensions(cphvb_tstate* state)
 
 void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction *instr ) {
 
-	// As all arrays have the same dimensions, we keep a single shared shape
-	cphvb_index i, blocksize;
+	cphvb_index i, j, blocksize, elsize;
+	void* basep;
 	
 	state->ndim         = instr->operand[0]->ndim;
 	state->noperands    = cphvb_operands(instr->opcode);
-	blocksize           = state->ndim * sizeof(cphvb_index);
+	blocksize 			= state->ndim * sizeof(cphvb_index);
+
+	// As all arrays have the same dimensions, we keep a single shared shape
 	memcpy(state->shape, instr->operand[0]->shape, blocksize);
 
-	for(i = 0; i < state->noperands; i++) {
-        if (!cphvb_is_constant(instr->operand[i])) {
+	//Prepare strides for compacting
+	for(i = 0; i < state->noperands; i++)
+        if (!cphvb_is_constant(instr->operand[i])) 
 			memcpy(state->stride[i], instr->operand[i]->stride, blocksize);
-			state->start[i] = instr->operand[i]->start;
-		}
-	}
 
 	cphvb_compact_dimensions(state);
+	
+	// Revisit the strides and pre-calculate them for traversal
+	for(i = 0; i < state->noperands; i++) 
+	{
+        if (!cphvb_is_constant(instr->operand[i])) 
+        {
+        	elsize = cphvb_type_size(instr->operand[i]->type);
+        	
+        	// Precalculate the pointer
+        	basep = cphvb_base_array(instr->operand[i])->data;
+        	assert(basep != NULL);
+			state->start[i] = (void*)(((char*)basep) + (instr->operand[i]->start * elsize));
+			
+			// Precalculate the strides in bytes, 
+			// relative to the size of the underlying dimension
+			for(j = 0; j < state->ndim - 1; j++) {
+				state->stride[i][j] = (state->stride[i][j] - (state->stride[i][j+1] * state->shape[j+1])) * elsize;
+			}
+			state->stride[i][state->ndim - 1] = state->stride[i][state->ndim - 1] * elsize;
+		}
+	}	
 }
 
 /**

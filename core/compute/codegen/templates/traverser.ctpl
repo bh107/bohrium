@@ -253,52 +253,26 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
     %for $op_n, $op_t in $traverse.ops[1:]
     %if $op_t == 'a'
-    BYTE* d${op_n};
+    BYTE* d${op_n} = (BYTE*)state->start[${op_n}];
     %end if
     %end for
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
     %for $op_n, $op_t in $traverse.ops[1:]
-    %if $op_t == 'a'
-    size_t elsize${op_n} = sizeof(T${op_n});
-    %end if
-    %end for
-
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
-    %for $op_n, $op_t in $traverse.ops[1:]
-    %if $op_t == 'a'
-    d${op_n} = (BYTE*) cphvb_base_array(instr->operand[${op_n}])->data;
-    %else
+    %if $op_t == 'c'
     T${op_n}* c = (T${op_n}*) &(instr->constant.value);
     %end if
     %end for
 
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    %for $op_n, $op_t in $traverse.ops[1:]
-    %if $op_t == 'a'
-    assert(d${op_n} != NULL);
-    %else
-    assert(c != NULL);
-    %end if
-    %end for
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-    %for $op_n, $op_t in $traverse.ops[1:]
-    %if $op_t == 'a'
-    d${op_n} += state->start[${op_n}] * elsize${op_n};
-    %end if
-    %end for
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
+		cphvb_index stride0 = state->stride[0][0];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index stride${op_n} = state->stride[${op_n}][0] * elsize${op_n};
+		cphvb_index stride${op_n} = state->stride[${op_n}][0];
         %end if
         %end for
 		
@@ -329,28 +303,21 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
+		cphvb_index outer_stride0 = state->stride[0][0];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index outer_stride${op_n} = state->stride[${op_n}][0] * elsize${op_n};
+		cphvb_index outer_stride${op_n} = state->stride[${op_n}][0];
         %end if
         %end for
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
+		cphvb_index inner_stride0 = state->stride[0][1];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index inner_stride${op_n} = state->stride[${op_n}][1] * elsize${op_n};
-        %end if
-        %end for
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
-        %for $op_n, $op_t in $traverse.ops[1:]
-        %if $op_t == 'a'
-		outer_stride${op_n} -= inner_stride${op_n} * state->shape[1];
+		cphvb_index inner_stride${op_n} = state->stride[${op_n}][1];
         %end if
         %end for
 
@@ -384,7 +351,6 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 			d${op_n} += outer_stride${op_n};
             %end if
             %end for
-
 		}
 	}
 	else
@@ -407,50 +373,29 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index outer_stride${op_n} = state->stride[${op_n}][dim_index0] * elsize${op_n};
+		cphvb_index outer_stride${op_n} = state->stride[${op_n}][dim_index0];
         %end if
         %end for
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index inner_stride${op_n} = state->stride[${op_n}][dim_index1] * elsize${op_n};
+		cphvb_index inner_stride${op_n} = state->stride[${op_n}][dim_index1];
         %end if
         %end for
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
         %for $op_n, $op_t in $traverse.ops[1:]
         %if $op_t == 'a'
-		cphvb_index inner_inner_stride${op_n} = state->stride[${op_n}][dim_index2] * elsize${op_n};
+		cphvb_index inner_inner_stride${op_n} = state->stride[${op_n}][dim_index2];
         %end if
         %end for
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-        %for $op_n, $op_t in $traverse.ops[1:]
-        %if $op_t == 'a'
-		outer_stride${op_n} -= inner_stride${op_n} * state->shape[dim_index1];
-        %end if
-        %end for
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-        %for $op_n, $op_t in $traverse.ops[1:]
-        %if $op_t == 'a'
-		inner_stride${op_n} -= inner_inner_stride${op_n} * state->shape[dim_index2];
-        %end if
-        %end for
-
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
-        %for $op_n, $op_t in $traverse.ops[1:]
-        %if $op_t == 'a'
-		BYTE* d${op_n}_orig = d${op_n};
-        %end if
-        %end for
 
 		while (total_ops-- > 0)
 		{
@@ -499,40 +444,31 @@ cphvb_error traverse_${traverse.sig}( cphvb_instruction *instr, cphvb_tstate* st
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
+				d0 += state->stride[0][p];
                 %for $op_n, $op_t in $traverse.ops[1:]
                 %if $op_t == 'a'
-				d${op_n}_orig += (state->stride[${op_n}][p] * elsize${op_n});
+				d${op_n} += state->stride[${op_n}][p];
                 %end if
                 %end for
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-                    %for $op_n, $op_t in $traverse.ops[1:]
-                    %if $op_t == 'a'
-					d${op_n}_orig += ((state->stride[${op_n}][p-1]) - (state->shape[p] * state->stride[${op_n}][p])) * elsize${op_n};
-                    %end if
-                    %end for
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
-                %for $op_n, $op_t in $traverse.ops[1:]
-                %if $op_t == 'a'
-				d${op_n} = d${op_n}_orig;
-                %end if
-                %end for
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+                    %for $op_n, $op_t in $traverse.ops[1:]
+                    %if $op_t == 'a'
+					d${op_n} += state->stride[${op_n}][p];
+                    %end if
+                    %end for
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 %end for
