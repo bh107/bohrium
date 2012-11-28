@@ -37,7 +37,7 @@ struct cphvb_tstate {
     cphvb_index ndim;
     cphvb_index noperands;
     cphvb_index shape[CPHVB_MAXDIM];
-    cphvb_index start[CPHVB_MAX_NO_OPERANDS];
+    void* start[CPHVB_MAX_NO_OPERANDS];
     cphvb_index stride[CPHVB_MAX_NO_OPERANDS][CPHVB_MAXDIM];
 };
 void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction* instr );
