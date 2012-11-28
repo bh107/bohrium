@@ -247,32 +247,17 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
-    BYTE* d1;
-    BYTE* d2;
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
+    BYTE* d1 = (BYTE*)state->start[1];
+    BYTE* d2 = (BYTE*)state->start[2];
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
-    size_t elsize1 = sizeof(T1);
-    size_t elsize2 = sizeof(T2);
 
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
-    d1 = (BYTE*) cphvb_base_array(instr->operand[1])->data;
-    d2 = (BYTE*) cphvb_base_array(instr->operand[2])->data;
-
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    assert(d1 != NULL);
-    assert(d2 != NULL);
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-    d1 += state->start[1] * elsize1;
-    d2 += state->start[2] * elsize2;
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
-		cphvb_index stride1 = state->stride[1][0] * elsize1;
-		cphvb_index stride2 = state->stride[2][0] * elsize2;
+		cphvb_index stride0 = state->stride[0][0];
+		cphvb_index stride1 = state->stride[1][0];
+		cphvb_index stride2 = state->stride[2][0];
 		
 		cphvb_index total_ops = state->shape[0];
 
@@ -284,21 +269,17 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][0] * elsize1;
-		cphvb_index outer_stride2 = state->stride[2][0] * elsize2;
+		cphvb_index outer_stride0 = state->stride[0][0];
+		cphvb_index outer_stride1 = state->stride[1][0];
+		cphvb_index outer_stride2 = state->stride[2][0];
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][1] * elsize1;
-		cphvb_index inner_stride2 = state->stride[2][1] * elsize2;
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
-		outer_stride1 -= inner_stride1 * state->shape[1];
-		outer_stride2 -= inner_stride2 * state->shape[1];
+		cphvb_index inner_stride0 = state->stride[0][1];
+		cphvb_index inner_stride1 = state->stride[1][1];
+		cphvb_index inner_stride2 = state->stride[2][1];
 
 		cphvb_index remainder = ops_inner % 4;
 		cphvb_index fulls = ops_inner / 4;
@@ -310,7 +291,6 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 			d0 += outer_stride0;
 			d1 += outer_stride1;
 			d2 += outer_stride2;
-
 		}
 	}
 	else
@@ -333,32 +313,20 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][dim_index0] * elsize1;
-		cphvb_index outer_stride2 = state->stride[2][dim_index0] * elsize2;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
+		cphvb_index outer_stride1 = state->stride[1][dim_index0];
+		cphvb_index outer_stride2 = state->stride[2][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][dim_index1] * elsize1;
-		cphvb_index inner_stride2 = state->stride[2][dim_index1] * elsize2;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
+		cphvb_index inner_stride1 = state->stride[1][dim_index1];
+		cphvb_index inner_stride2 = state->stride[2][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2] * elsize1;
-		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2] * elsize2;
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-		outer_stride1 -= inner_stride1 * state->shape[dim_index1];
-		outer_stride2 -= inner_stride2 * state->shape[dim_index1];
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-		inner_stride1 -= inner_inner_stride1 * state->shape[dim_index2];
-		inner_stride2 -= inner_inner_stride2 * state->shape[dim_index2];
-
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
+		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2];
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
-		BYTE* d1_orig = d1;
-		BYTE* d2_orig = d2;
 
 		while (total_ops-- > 0)
 		{
@@ -384,31 +352,25 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
-				d1_orig += (state->stride[1][p] * elsize1);
-				d2_orig += (state->stride[2][p] * elsize2);
+				d0 += state->stride[0][p];
+				d1 += state->stride[1][p];
+				d2 += state->stride[2][p];
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
-					d2_orig += ((state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
-				d1 = d1_orig;
-				d2 = d2_orig;
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+					d1 += state->stride[1][p];
+					d2 += state->stride[2][p];
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 /**
@@ -426,28 +388,16 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
-    BYTE* d1;
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
+    BYTE* d1 = (BYTE*)state->start[1];
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
-    size_t elsize1 = sizeof(T1);
-
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
-    d1 = (BYTE*) cphvb_base_array(instr->operand[1])->data;
     T2* c = (T2*) &(instr->constant.value);
 
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    assert(d1 != NULL);
-    assert(c != NULL);
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-    d1 += state->start[1] * elsize1;
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
-		cphvb_index stride1 = state->stride[1][0] * elsize1;
+		cphvb_index stride0 = state->stride[0][0];
+		cphvb_index stride1 = state->stride[1][0];
 		
 		cphvb_index total_ops = state->shape[0];
 
@@ -459,18 +409,15 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][0] * elsize1;
+		cphvb_index outer_stride0 = state->stride[0][0];
+		cphvb_index outer_stride1 = state->stride[1][0];
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][1] * elsize1;
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
-		outer_stride1 -= inner_stride1 * state->shape[1];
+		cphvb_index inner_stride0 = state->stride[0][1];
+		cphvb_index inner_stride1 = state->stride[1][1];
 
 		cphvb_index remainder = ops_inner % 4;
 		cphvb_index fulls = ops_inner / 4;
@@ -481,7 +428,6 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
             INNER_LOOP_AAC(opcode_func, fulls, remainder, d0, d1, c, inner_stride0, inner_stride1);
 			d0 += outer_stride0;
 			d1 += outer_stride1;
-
 		}
 	}
 	else
@@ -504,26 +450,17 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][dim_index0] * elsize1;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
+		cphvb_index outer_stride1 = state->stride[1][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][dim_index1] * elsize1;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
+		cphvb_index inner_stride1 = state->stride[1][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2] * elsize1;
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-		outer_stride1 -= inner_stride1 * state->shape[dim_index1];
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-		inner_stride1 -= inner_inner_stride1 * state->shape[dim_index2];
-
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
-		BYTE* d1_orig = d1;
 
 		while (total_ops-- > 0)
 		{
@@ -547,28 +484,23 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
-				d1_orig += (state->stride[1][p] * elsize1);
+				d0 += state->stride[0][p];
+				d1 += state->stride[1][p];
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
-				d1 = d1_orig;
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+					d1 += state->stride[1][p];
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 /**
@@ -586,28 +518,16 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
-    BYTE* d2;
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
+    BYTE* d2 = (BYTE*)state->start[2];
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
-    size_t elsize2 = sizeof(T2);
-
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
     T1* c = (T1*) &(instr->constant.value);
-    d2 = (BYTE*) cphvb_base_array(instr->operand[2])->data;
 
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    assert(c != NULL);
-    assert(d2 != NULL);
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-    d2 += state->start[2] * elsize2;
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
-		cphvb_index stride2 = state->stride[2][0] * elsize2;
+		cphvb_index stride0 = state->stride[0][0];
+		cphvb_index stride2 = state->stride[2][0];
 		
 		cphvb_index total_ops = state->shape[0];
 
@@ -619,18 +539,15 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
-		cphvb_index outer_stride2 = state->stride[2][0] * elsize2;
+		cphvb_index outer_stride0 = state->stride[0][0];
+		cphvb_index outer_stride2 = state->stride[2][0];
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
-		cphvb_index inner_stride2 = state->stride[2][1] * elsize2;
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
-		outer_stride2 -= inner_stride2 * state->shape[1];
+		cphvb_index inner_stride0 = state->stride[0][1];
+		cphvb_index inner_stride2 = state->stride[2][1];
 
 		cphvb_index remainder = ops_inner % 4;
 		cphvb_index fulls = ops_inner / 4;
@@ -641,7 +558,6 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
             INNER_LOOP_ACA(opcode_func, fulls, remainder, d0, c, d2, inner_stride0, inner_stride2);
 			d0 += outer_stride0;
 			d2 += outer_stride2;
-
 		}
 	}
 	else
@@ -664,26 +580,17 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
-		cphvb_index outer_stride2 = state->stride[2][dim_index0] * elsize2;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
+		cphvb_index outer_stride2 = state->stride[2][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
-		cphvb_index inner_stride2 = state->stride[2][dim_index1] * elsize2;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
+		cphvb_index inner_stride2 = state->stride[2][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
-		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2] * elsize2;
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-		outer_stride2 -= inner_stride2 * state->shape[dim_index1];
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-		inner_stride2 -= inner_inner_stride2 * state->shape[dim_index2];
-
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2];
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
-		BYTE* d2_orig = d2;
 
 		while (total_ops-- > 0)
 		{
@@ -707,28 +614,23 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
-				d2_orig += (state->stride[2][p] * elsize2);
+				d0 += state->stride[0][p];
+				d2 += state->stride[2][p];
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d2_orig += ((state->stride[2][p-1]) - (state->shape[p] * state->stride[2][p])) * elsize2;
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
-				d2 = d2_orig;
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+					d2 += state->stride[2][p];
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 /**
@@ -746,26 +648,15 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
-    BYTE* d1;
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
+    BYTE* d1 = (BYTE*)state->start[1];
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
-    size_t elsize1 = sizeof(T1);
 
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
-    d1 = (BYTE*) cphvb_base_array(instr->operand[1])->data;
-
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    assert(d1 != NULL);
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-    d1 += state->start[1] * elsize1;
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
-		cphvb_index stride1 = state->stride[1][0] * elsize1;
+		cphvb_index stride0 = state->stride[0][0];
+		cphvb_index stride1 = state->stride[1][0];
 		
 		cphvb_index total_ops = state->shape[0];
 
@@ -777,18 +668,15 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][0] * elsize1;
+		cphvb_index outer_stride0 = state->stride[0][0];
+		cphvb_index outer_stride1 = state->stride[1][0];
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][1] * elsize1;
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
-		outer_stride1 -= inner_stride1 * state->shape[1];
+		cphvb_index inner_stride0 = state->stride[0][1];
+		cphvb_index inner_stride1 = state->stride[1][1];
 
 		cphvb_index remainder = ops_inner % 4;
 		cphvb_index fulls = ops_inner / 4;
@@ -799,7 +687,6 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
             INNER_LOOP_AA(opcode_func, fulls, remainder, d0, d1, inner_stride0, inner_stride1);
 			d0 += outer_stride0;
 			d1 += outer_stride1;
-
 		}
 	}
 	else
@@ -822,26 +709,17 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
-		cphvb_index outer_stride1 = state->stride[1][dim_index0] * elsize1;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
+		cphvb_index outer_stride1 = state->stride[1][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
-		cphvb_index inner_stride1 = state->stride[1][dim_index1] * elsize1;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
+		cphvb_index inner_stride1 = state->stride[1][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2] * elsize1;
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-		outer_stride1 -= inner_stride1 * state->shape[dim_index1];
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-		inner_stride1 -= inner_inner_stride1 * state->shape[dim_index2];
-
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
-		BYTE* d1_orig = d1;
 
 		while (total_ops-- > 0)
 		{
@@ -865,28 +743,23 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
-				d1_orig += (state->stride[1][p] * elsize1);
+				d0 += state->stride[0][p];
+				d1 += state->stride[1][p];
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-					d1_orig += ((state->stride[1][p-1]) - (state->shape[p] * state->stride[1][p])) * elsize1;
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
-				d1 = d1_orig;
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+					d1 += state->stride[1][p];
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 /**
@@ -904,22 +777,14 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 
     cphvb_index i, j;                        	// Traversal variables
 
-    BYTE* d0;									// Pointers to start of data elements
+    BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
 
-    size_t elsize0 = sizeof(T0);				// We use the size for explicit multiplication
-
-    d0 = (BYTE*) cphvb_base_array(instr->operand[0])->data;
     T1* c = (T1*) &(instr->constant.value);
 
-    assert(d0 != NULL);                         // Ensure that data is allocated
-    assert(c != NULL);
-
-	d0 += state->start[0] * elsize0;			// Compute offsets
-		
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0] * elsize0;
+		cphvb_index stride0 = state->stride[0][0];
 		
 		cphvb_index total_ops = state->shape[0];
 
@@ -931,15 +796,13 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	}
 	else if(state->ndim == 2)
 	{
+		// Basic 2D loop with unrolling
 		cphvb_index ops_outer = state->shape[0];
 		cphvb_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0] * elsize0;
+		cphvb_index outer_stride0 = state->stride[0][0];
 
-		// Basic 2D loop with unrolling
-		cphvb_index inner_stride0 = state->stride[0][1] * elsize0;
-
-		outer_stride0 -= inner_stride0 * state->shape[1];
+		cphvb_index inner_stride0 = state->stride[0][1];
 
 		cphvb_index remainder = ops_inner % 4;
 		cphvb_index fulls = ops_inner / 4;
@@ -949,7 +812,6 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 			//Macro magic time!
             INNER_LOOP_AC(opcode_func, fulls, remainder, d0, c, inner_stride0);
 			d0 += outer_stride0;
-
 		}
 	}
 	else
@@ -972,20 +834,14 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 		cphvb_index ops_inner = state->shape[dim_index1];
 		cphvb_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0] * elsize0;
+		cphvb_index outer_stride0 = state->stride[0][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1] * elsize0;
+		cphvb_index inner_stride0 = state->stride[0][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2] * elsize0;
-
-		outer_stride0 -= inner_stride0 * state->shape[dim_index1];
-
-		inner_stride0 -= inner_inner_stride0 * state->shape[dim_index2];
-
+		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+        
 		cphvb_index remainder = ops_inner_inner % 4;
 		cphvb_index fulls = ops_inner_inner / 4;
-
-		BYTE* d0_orig = d0;
 
 		while (total_ops-- > 0)
 		{
@@ -1007,25 +863,21 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 				long p = n - 1;
 
 				// Move one in current dimension
-				d0_orig += (state->stride[0][p] * elsize0);
+				d0 += state->stride[0][p];
 
 				while (++counters[p] == state->shape[p] && p > 0)
 				{
-					//Update to move in the outer dimension, on carry
-					d0_orig += ((state->stride[0][p-1]) - (state->shape[p] * state->stride[0][p])) * elsize0;
-
 					counters[p] = 0;
 					p--;
-				}
-				
-				d0 = d0_orig;
 
+					//Update to move in the outer dimension, on carry
+					d0 += state->stride[0][p];
+				}
 			}
 		}		
 	}
 
     return CPHVB_SUCCESS;
-
 }
 
 

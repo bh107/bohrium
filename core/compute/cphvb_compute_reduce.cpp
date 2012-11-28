@@ -725,7 +725,7 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
         }
 
 		cphvb_index stride = op_in->stride[axis];
-        tmp.start += stride;
+		cphvb_index stride_bytes = stride * sizeof(T);
 
         instr.status = CPHVB_INST_PENDING;       // Reduce over the 'axis' dimension.
         instr.opcode = opcode;                   // NB: the first element is already handled.
@@ -733,21 +733,26 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
         instr.operand[1] = op_out;
         instr.operand[2] = &tmp;
 
+        tmp.start += stride;
 		cphvb_tstate_reset( &state, &instr );
+
+		void* out_start = state.start[0];
+		void* tmp_start = state.start[2];
         
         for(i=1; i<nelements; ++i) {
+						
             err = traverse_aaa<T, T, T, Instr>(&instr, &state);
             if (err != CPHVB_SUCCESS) {
                 return err;
             }
 
-			// We could omit this, but minor gain, large inconsistency ...
             tmp.start += stride;
 
 			// Faster replacement of cphvb_tstate_reset
-            state.start[0] = op_out->start;
-            state.start[1] = op_out->start;
-            state.start[2] = tmp.start;
+			tmp_start = (void*)(((char*)tmp_start) + stride_bytes);
+            state.start[0] = out_start;
+            state.start[1] = out_start;
+            state.start[2] = tmp_start;
         }
     }
 
