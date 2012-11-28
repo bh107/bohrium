@@ -68,6 +68,56 @@ cphvb_error dispatch_reset(void);
 /* Finalize the dispatch system. */
 cphvb_error dispatch_finalize(void);
 
+/* Insert the new array into the array store and the array maps.
+ * 
+ * @master_ary The master array to register locally
+ * @return Pointer to the registered array.
+ */
+cphvb_array* dispatch_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id);
+
+
+/* Get the slave array.
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return Pointer to the registered array.
+ */
+cphvb_array* dispatch_master2slave(cphvb_intp master_array_id);
+
+
+/* Check if the slave array exist.
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return True when the slave array exist locally.
+ */
+bool dispatch_slave_exist(cphvb_intp master_array_id);
+
+
+/* Register the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is known.
+ */
+void dispatch_slave_known_insert(cphvb_array *ary);
+
+
+/* Check if the array is known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that should be checked.
+ * @return True if the array is known by all slave-processes
+ */
+bool dispatch_slave_known_check(cphvb_array *ary);
+
+
+/* Remove the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is unknown.
+ */
+void dispatch_slave_known_remove(cphvb_array *ary);
+
 
 /* Reserve memory on the send message payload.
  * @size is the number of bytes to reserve

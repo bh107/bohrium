@@ -20,16 +20,25 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <mpi.h>
 #include <cassert>
+#include <map>
 #include <set>
 #include <cphvb.h>
+#include <StaticStore.hpp>
 #include "dispatch.h"
-#include "darray.h"
 #include "pgrid.h"
 
 
 //Message buffer, current offset and buffer size
 static int buf_size=sizeof(dispatch_msg);
 static dispatch_msg *msg=NULL;
+
+//Maps for translating between arrays addressing the master process
+//and arrays addressing a slave process.
+static std::map<cphvb_intp, cphvb_array*> map_master2slave;
+static std::map<cphvb_array*,cphvb_intp> map_slave2master;
+static StaticStore<cphvb_array> slave_ary_store(512);
+static std::set<cphvb_array*> slave_known_arrays;
+
 
 /* Initiate the dispatch system. */
 cphvb_error dispatch_reset(void)
@@ -54,6 +63,104 @@ cphvb_error dispatch_finalize(void)
     free(msg);
     return CPHVB_SUCCESS;
 }
+
+
+/* Insert the new array into the array store and the array maps.
+ * Note that this function is only used by the slaves
+ * 
+ * @master_ary The master array to register locally
+ * @return Pointer to the registered array.
+ */
+cphvb_array* dispatch_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id)
+{
+    assert(pgrid_myrank > 0);
+    cphvb_array *ary = slave_ary_store.c_next();
+    *ary = *master_ary;
+    
+    assert(map_master2slave.count(master_id) == 0);
+    assert(map_slave2master.count(ary) == 0);
+
+    map_master2slave[master_id] = ary;
+    map_slave2master[ary] = master_id;
+    return ary;
+}
+
+
+/* Get the slave array.
+ * Note that this function is only used by the slaves
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return Pointer to the registered array.
+ */
+cphvb_array* dispatch_master2slave(cphvb_intp master_array_id)
+{
+    assert(pgrid_myrank > 0);
+    return map_master2slave[master_array_id];
+}
+
+
+/* Check if the slave array exist.
+ * Note that this function is only used by the slaves
+ *
+ * @master_array_id The master array id, which is the data pointer 
+ *                  in the address space of the master-process.
+ * @return True when the slave array exist locally.
+ */
+bool dispatch_slave_exist(cphvb_intp master_array_id)
+{
+    assert(pgrid_myrank > 0);
+    return map_master2slave.count(master_array_id) > 0;
+}
+
+
+/* Register the array as known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that now is known.
+ */
+void dispatch_slave_known_insert(cphvb_array *ary)
+{
+    assert(pgrid_myrank == 0);
+    slave_known_arrays.insert(ary);
+}
+
+
+/* Check if the array is known by all the slaves.
+ * Note that this function is only used by the master
+ *
+ * @ary The array that should be checked.
+ * @return True if the array is known by all slave-processes
+ */
+bool dispatch_slave_known_check(cphvb_array *ary)
+{
+    assert(pgrid_myrank == 0);
+    return slave_known_arrays.count(ary) > 0;
+}
+
+
+/* Remove the array as known by all the slaves.
+ * Note that this function is used both by the master and slaves
+ *
+ * @ary The array that now is unknown.
+ */
+void dispatch_slave_known_remove(cphvb_array *ary)
+{
+    if(pgrid_myrank == 0)
+    {
+        assert(dispatch_slave_known_check(ary));
+        slave_known_arrays.erase(ary);
+    }
+    else
+    {
+        assert(map_slave2master.count(ary) == 1);
+        cphvb_intp master_id = map_slave2master[ary];
+        map_slave2master.erase(ary);
+        assert(map_master2slave.count(master_id) == 1);
+        map_master2slave.erase(master_id);
+        slave_ary_store.erase(ary);
+    }
+}    
 
 
 /* Reserve memory on the send message payload.
@@ -249,23 +356,23 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
             if(cphvb_is_constant(op))
                 continue;//No need to dispatch constants
 
-            if(!darray_slave_known_check(op))//The array is unknown to the slaves.
+            if(!dispatch_slave_known_check(op))//The array is unknown to the slaves.
             {   
                 dispatch_array *dary;
                 if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
                      != CPHVB_SUCCESS)
                     return e;
-                darray_slave_known_insert(op);
+                dispatch_slave_known_insert(op);
                 //The master-process's memory pointer is the id of the array.
                 dary->id = (cphvb_intp) op;
                 dary->ary = *op;
                 ++noa;
-                if(op->base != NULL && !darray_slave_known_check(op->base))//Also check the base-array.
+                if(op->base != NULL && !dispatch_slave_known_check(op->base))//Also check the base-array.
                 {
                     if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
                          != CPHVB_SUCCESS)
                         return e;
-                    darray_slave_known_insert(op->base);
+                    dispatch_slave_known_insert(op->base);
                     dary->id = (cphvb_intp) op->base;
                     dary->ary = *op->base;
                     ++noa;

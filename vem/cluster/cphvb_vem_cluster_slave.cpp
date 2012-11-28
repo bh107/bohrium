@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "dispatch.h"
 #include "pgrid.h"
 #include "exec.h"
-#include "darray.h"
 
 
 //Check for error. Will exit on error.
@@ -131,18 +130,18 @@ int main()
                 std::stack<cphvb_array*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    cphvb_array *ary = darray_new_slave_array(&darys[i].ary, darys[i].id);
+                    cphvb_array *ary = dispatch_new_slave_array(&darys[i].ary, darys[i].id);
                     if(ary->base == NULL)//This is a base array.
                         base_darys.push(ary);
                 } 
                 //Update the base-array-pointers
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    cphvb_array *ary = darray_master2slave(darys[i].id);
+                    cphvb_array *ary = dispatch_master2slave(darys[i].id);
                     if(ary->base != NULL)//This is NOT a base array
                     {
-                        assert(darray_slave_exist(((cphvb_intp)ary->base)));
-                        ary->base = darray_master2slave((cphvb_intp)ary->base);
+                        assert(dispatch_slave_exist(((cphvb_intp)ary->base)));
+                        ary->base = dispatch_master2slave((cphvb_intp)ary->base);
                     }
                 }
 
@@ -189,8 +188,8 @@ int main()
                     { 
                         if(cphvb_is_constant(ops[j]))
                             continue;
-                        assert(darray_slave_exist((cphvb_intp)ops[j]));
-                        ops[j] = darray_master2slave((cphvb_intp)ops[j]);
+                        assert(dispatch_slave_exist((cphvb_intp)ops[j]));
+                        ops[j] = dispatch_master2slave((cphvb_intp)ops[j]);
                     }
                 }
 
