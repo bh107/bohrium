@@ -38,17 +38,19 @@ static std::set<cphvb_array*> slave_known_arrays;
  * @master_ary The master array to register locally
  * @return Pointer to the registered array.
  */
-darray* darray_new_slave_array(const darray *master_ary)
+cphvb_array* darray_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id)
 {
     assert(pgrid_myrank > 0);
     darray *ary = slave_ary_store.c_next();
-    *ary = *master_ary;
+    ary->global_ary = *master_ary;
+    ary->id = master_id; 
+    
     assert(map_master2slave.count(ary->id) == 0);
     assert(map_slave2master.count(&ary->global_ary) == 0);
 
     map_master2slave[ary->id] = &ary->global_ary;
     map_slave2master[&ary->global_ary] = ary;
-    return ary;
+    return &ary->global_ary;
 }
 
 

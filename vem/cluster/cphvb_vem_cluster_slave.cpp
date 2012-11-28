@@ -131,9 +131,9 @@ int main()
                 std::stack<cphvb_array*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    darray *dary = darray_new_slave_array(&darys[i]);
-                    if(dary->global_ary.base == NULL)//This is a base array.
-                        base_darys.push(&dary->global_ary);
+                    cphvb_array *ary = darray_new_slave_array(&darys[i].global_ary, darys[i].id);
+                    if(ary->base == NULL)//This is a base array.
+                        base_darys.push(ary);
                 } 
                 //Update the base-array-pointers
                 for(cphvb_intp i=0; i < *noa; ++i)

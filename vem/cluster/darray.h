@@ -48,7 +48,7 @@ typedef struct
  * @master_ary The master array to register locally
  * @return Pointer to the registered array.
  */
-darray* darray_new_slave_array(const darray *master_ary);
+cphvb_array* darray_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id);
 
 
 /* Get the slave array.
