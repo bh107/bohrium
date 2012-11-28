@@ -210,7 +210,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
      * 1   x cphvb_intp NOI //number of instructions
      * NOI x cphvb_instruction //instruction list
      * 1   x cphvb_intp NOA //number of new arrays
-     * NOA x darray //list of new arrays unknown to the slaves
+     * NOA x dispatch_array //list of new arrays unknown to the slaves
      * 1   x cphvb_intp NOU //number of user-defined funstions
      * NOU x cphvb_userfunc //list of user-defined funstions
      */
@@ -251,23 +251,25 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
 
             if(!darray_slave_known_check(op))//The array is unknown to the slaves.
             {   
-                darray *dary;
-                if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
+                dispatch_array *dary;
+                if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
+                     != CPHVB_SUCCESS)
                     return e;
                 darray_slave_known_insert(op);
                 //The master-process's memory pointer is the id of the array.
                 dary->id = (cphvb_intp) op;
-                dary->global_ary = *op;
+                dary->ary = *op;
                 ++noa;
                 if(op->base != NULL && !darray_slave_known_check(op->base))//Also check the base-array.
                 {
-                    if((e = dispatch_reserve_payload(sizeof(darray),(void**) &dary)) != CPHVB_SUCCESS)
+                    if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
+                         != CPHVB_SUCCESS)
                         return e;
                     darray_slave_known_insert(op->base);
                     dary->id = (cphvb_intp) op->base;
-                    dary->global_ary = *op->base;
+                    dary->ary = *op->base;
                     ++noa;
-                    assert(dary->global_ary.base == NULL);
+                    assert(dary->ary.base == NULL);
                 }
             }
         }
@@ -305,14 +307,14 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
         return e;
 
     //Start of the new array list
-    darray *darys = (darray*)(msg->payload + 2 * sizeof(cphvb_intp)
-                                           + count * sizeof(cphvb_instruction));
+    dispatch_array *darys = (dispatch_array*)(msg->payload + 2 * sizeof(cphvb_intp)
+                                              + count * sizeof(cphvb_instruction));
     //Gather all base arrays dispathed
     std::stack<cphvb_array*> base_darys;
     for(cphvb_intp i=0; i<noa; ++i)
     {
-        if(darys[i].global_ary.base == NULL)
-            base_darys.push(&darys[i].global_ary);
+        if(darys[i].ary.base == NULL)
+            base_darys.push(&darys[i].ary);
     }
     
     //Dispath the array data

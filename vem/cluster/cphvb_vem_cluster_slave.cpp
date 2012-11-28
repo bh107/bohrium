@@ -118,7 +118,7 @@ int main()
                 //The number of new arrays
                 cphvb_intp *noa = (cphvb_intp *)(master_list + *noi);
                 //The list of new arrays
-                darray *darys = (darray*)(noa+1); //number of new arrays
+                dispatch_array *darys = (dispatch_array*)(noa+1); //number of new arrays
                 //The number of user-defined functions
                 cphvb_intp *nou = (cphvb_intp *)(darys + *noa);
                 //The list of user-defined functions
@@ -131,7 +131,7 @@ int main()
                 std::stack<cphvb_array*> base_darys;
                 for(cphvb_intp i=0; i < *noa; ++i)
                 {
-                    cphvb_array *ary = darray_new_slave_array(&darys[i].global_ary, darys[i].id);
+                    cphvb_array *ary = darray_new_slave_array(&darys[i].ary, darys[i].id);
                     if(ary->base == NULL)//This is a base array.
                         base_darys.push(ary);
                 } 

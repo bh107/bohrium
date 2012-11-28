@@ -50,6 +50,16 @@ typedef struct
     char payload[];
 }dispatch_msg;
 
+//ID extension to cphvb_array
+typedef struct
+{
+    //The id of the array. This is identical with the array-struct address 
+    //on the master-process.
+    cphvb_intp id;
+    //The array-struct.
+    cphvb_array ary;
+}dispatch_array;
+
 
 /* Initiate the dispatch system. */
 cphvb_error dispatch_reset(void);

@@ -32,17 +32,6 @@ typedef struct
 }darray_ext;
 
 
-//Extension to the cphvb_array for cluster information
-typedef struct
-{
-    //The id of the array. This is identical with the array-struct address 
-    //on the master-process.
-    cphvb_intp id;
-    //The global array-struct.
-    cphvb_array global_ary;
-}darray;
-
-
 /* Insert the new array into the array store and the array maps.
  * 
  * @master_ary The master array to register locally
