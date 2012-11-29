@@ -30,6 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include "pgrid.h"
 #include "dispatch.h"
+#include "comm.h"
+
 
 //Function pointers to the Node VEM.
 static cphvb_init vem_init;
@@ -135,38 +137,138 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
     return e;
 }
 
+/* Execute to instruction locally at the master-process
+ *
+ * @instruction The instructionto execute
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+static cphvb_error fallback_exec(cphvb_instruction *inst)
+{
+    cphvb_error e;
+    int nop = cphvb_operands_in_instruction(inst);
 
-/* Execute a list of instructions (blocking, for the time being).
- * It is required that the VEM supports all instructions in the list.
+    //Gather all data at the master-process
+    cphvb_array **oprands = cphvb_inst_operands(inst);
+    for(cphvb_intp o=0; o < nop; ++o)
+    {
+        cphvb_array *op = oprands[o];
+        if(cphvb_is_constant(op))
+            continue;
+        cphvb_instruction new_inst;
+        new_inst.opcode     = CPHVB_SYNC;
+        new_inst.status     = CPHVB_INST_PENDING;
+        new_inst.operand[0] = op;
+        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
+        {                                                           
+            inst->status  = new_inst.status;
+            return e;
+        }
+        if((e = comm_slaves2master(cphvb_base_array(op))) != CPHVB_SUCCESS)
+            return e;
+    }
+    
+    //Do global instruction
+    if(pgrid_myrank == 0)
+    {
+        if((e = vem_execute(1, inst)) != CPHVB_SUCCESS)
+            return e;
+    }
+
+    //Scatter all data back to all processes
+    for(cphvb_intp o=0; o < nop; ++o)
+    {
+        cphvb_array *op = oprands[o];
+        if(cphvb_is_constant(op))
+            continue;
+        cphvb_instruction new_inst;
+        new_inst.opcode     = CPHVB_SYNC;
+        new_inst.status     = CPHVB_INST_PENDING;
+        new_inst.operand[0] = op;
+        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
+        {                                                           
+            inst->status  = new_inst.status;
+            return e;
+        }
+        if((e = comm_master2slaves(cphvb_base_array(op))) != CPHVB_SUCCESS)
+            return e;
+        new_inst.opcode     = CPHVB_DISCARD;
+        new_inst.status     = CPHVB_INST_PENDING;
+        new_inst.operand[0] = op;
+        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
+        {                                                           
+            inst->status  = new_inst.status;
+            return e;
+        }
+    }
+    return CPHVB_SUCCESS; 
+}
+
+
+/* Execute a list of instructions where all operands are global arrays
  *
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
 cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
 {
+    cphvb_error e;
+    if(count <= 0)
+        return CPHVB_SUCCESS;
+    
+//    cphvb_pprint_instr_list(inst_list, count, "GLOBAL");
+
+    for(cphvb_intp i=0; i < count; ++i)
+    {
+        cphvb_instruction* inst = &inst_list[i];
+        assert(inst->opcode >= 0);
+        switch(inst->opcode) 
+        {
+            case CPHVB_DISCARD:
+            {
+                dispatch_slave_known_remove(inst->operand[0]);
+                if(inst->operand[0]->base == NULL)
+                    array_rm_local(inst->operand[0]); 
+                break;
+            }
+            case CPHVB_USERFUNC:
+            {
+                if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
+                    return e;
+                break;
+            }
+            case CPHVB_FREE:
+            {
+                cphvb_array *base = cphvb_base_array(inst->operand[0]);
+                cphvb_data_free(base);
+                cphvb_data_free(array_get_local(base));
+                break;
+            }
+            case CPHVB_NONE:
+            {
+                break;
+            }
+            case CPHVB_SYNC:
+            {
+                if((e = comm_slaves2master(inst->operand[0])) != CPHVB_SUCCESS)
+                    return e;
+                break;
+            }
+            default:
+            {
+                if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
+                    return e;
+            }
+        }
+    }
+    return CPHVB_SUCCESS;
+}
+
+/*
     //Local copy of the instruction list
     cphvb_instruction local_inst[count];
     cphvb_error err;
     int NPROC = 3;
-    
-    if (count <= 0)
-        return CPHVB_SUCCESS;
-    
-    #ifdef CPHVB_TRACE
-        for(cphvb_intp i=0; i<count; ++i)
-        {
-            cphvb_instruction* inst = &inst_list[i];
-            cphvb_component_trace_inst(myself, inst);
-        }
-    #endif
 
-    //new approach
-    for(cphvb_intp i=0; i < count; ++i)
-    {
-        cphvb_instruction* inst = &inst_list[i];
-        if(inst->opcode == CPHVB_DISCARD)
-            dispatch_slave_known_remove(inst->operand[0]);
-    }
 
     //Exchange the instruction list between all processes and
     //update all operand pointers to local pointers
@@ -283,4 +385,4 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
         }
     }
     return CPHVB_SUCCESS;
-}
+*/
