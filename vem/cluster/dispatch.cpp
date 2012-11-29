@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <StaticStore.hpp>
 #include "dispatch.h"
 #include "pgrid.h"
+#include "comm.h"
 
 
 //Message buffer, current offset and buffer size
@@ -269,6 +270,8 @@ cphvb_error dispatch_recv(dispatch_msg **message)
 
 
 /* Broadcast array-data to all slaves.
+ * NB: this is a collective operation.
+ *
  * @arys the base-arrays in question.
 */
 cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
@@ -280,20 +283,11 @@ cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
         assert(ary->base == NULL);
         if(ary->data != NULL)
         {
-            if(pgrid_myrank != 0)//We need to allocate memory since we are a slave-process.
-            {
-                ary->data = NULL;//The data-pointer is referencing memory on the master-process.
-                if((e = cphvb_data_malloc(ary)) != CPHVB_SUCCESS)
-                    return e;
-            }
-            //Broadcast the array data.
-            int err;
-            assert(cphvb_array_size(ary) > 0);
-            if((err = MPI_Bcast(ary->data, cphvb_array_size(ary), MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
-            {
-                fprintf(stderr, "MPI_Bcast in dispatch_array_data() returns error: %d\n", err);
-                return CPHVB_ERROR;
-            }
+            if(pgrid_myrank != 0)
+                ary->data = NULL;//The data-pointer was referencing memory on the master-process.
+            
+            if((e = comm_master2slaves(ary)) != CPHVB_SUCCESS)
+                return e;
         }
         arys.pop();
     } 

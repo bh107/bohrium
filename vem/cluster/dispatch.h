@@ -145,6 +145,8 @@ cphvb_error dispatch_send(int type);
 
 
 /* Broadcast array-data to all slaves.
+ * NB: this is a collective operation.
+ *
  * @arys the base-arrays in question.
 */
 cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys);
