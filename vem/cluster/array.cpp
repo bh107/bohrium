@@ -18,8 +18,18 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cassert>
+#include <map>
+#include <StaticStore.hpp>
 #include <cphvb.h>
 #include "pgrid.h"
+
+
+//Maps for translating between global and local arrays.
+static std::map<cphvb_array*, cphvb_array*> map_global2local;
+static std::map<cphvb_array*, cphvb_array*> map_local2global;
+static StaticStore<cphvb_array> local_ary_store(512);
+
 
 /* Returns the local number of elements in an array.
  * 
@@ -37,3 +47,28 @@ cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
     return localsize;
 }
 
+
+/* Returns the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ * @return The local array
+ */
+cphvb_array* array_get_local(cphvb_array *global_ary)
+{
+    assert(global_ary->base == NULL);
+    cphvb_array *local_ary = map_global2local[global_ary];
+    if(local_ary == NULL)
+    {
+        local_ary = local_ary_store.c_next();
+        local_ary->base = NULL;
+        local_ary->type = global_ary->type;
+        local_ary->ndim = 1;//We always use a flatten base array.
+        local_ary->start = 0;
+        local_ary->shape[0] = array_local_nelem(pgrid_myrank, global_ary); 
+        local_ary->stride[0] = 1;
+        local_ary->data = NULL;
+        map_global2local[global_ary] = local_ary;
+    }
+    return local_ary;
+}   

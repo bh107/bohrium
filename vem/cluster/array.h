@@ -41,6 +41,14 @@ typedef struct
 cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
 
 
+/* Returns the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ * @return The local array
+ */
+cphvb_array* array_get_local(cphvb_array *global_ary);
+
 
 
 #endif
