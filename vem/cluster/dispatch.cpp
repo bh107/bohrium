@@ -334,6 +334,9 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     //re-allocate the 'msg_noa' pointer at a later time.
     msg_noa_offset = msg->size - sizeof(cphvb_intp);
 
+    //Stack of new base arrays
+    std::stack<cphvb_array*> base_darys;
+
     //Pack the array list.
     for(cphvb_intp i=0; i<count; ++i)
     {
@@ -361,7 +364,11 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
                 dary->id = (cphvb_intp) op;
                 dary->ary = *op;
                 ++noa;
-                if(op->base != NULL && !dispatch_slave_known_check(op->base))//Also check the base-array.
+                if(op->base == NULL)
+                {
+                    base_darys.push(op);
+                }
+                else if(!dispatch_slave_known_check(op->base))//Also check the base-array.
                 {
                     if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
                          != CPHVB_SUCCESS)
@@ -371,6 +378,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
                     dary->ary = *op->base;
                     ++noa;
                     assert(dary->ary.base == NULL);
+                    base_darys.push(op->base);
                 }
             }
         }
@@ -402,22 +410,10 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     //Save the number of user-defined functions 
     *((cphvb_intp*)(msg->payload+msg_nou_offset)) = nou;
 
-
     //Dispath the execution message
     if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC)) != CPHVB_SUCCESS)
         return e;
 
-    //Start of the new array list
-    dispatch_array *darys = (dispatch_array*)(msg->payload + 2 * sizeof(cphvb_intp)
-                                              + count * sizeof(cphvb_instruction));
-    //Gather all base arrays dispathed
-    std::stack<cphvb_array*> base_darys;
-    for(cphvb_intp i=0; i<noa; ++i)
-    {
-        if(darys[i].ary.base == NULL)
-            base_darys.push(&darys[i].ary);
-    }
-    
     //Dispath the array data
     if((e = dispatch_array_data(base_darys)) != CPHVB_SUCCESS)
         return e;
