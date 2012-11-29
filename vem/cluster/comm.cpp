@@ -24,12 +24,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 
 
-/* Distribute the global array data to all slave processes.
+/* Gather or scatter the global array processes.
  * NB: this is a collective operation.
  * 
+ * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-cphvb_error comm_master2slaves(cphvb_array *global_ary)
+static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
 {
     assert(global_ary->base == NULL);
     cphvb_error err;
@@ -51,7 +52,6 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary)
     
     //Get local array
     cphvb_array *local_ary = array_get_local(global_ary);
-    cphvb_pprint_array(local_ary);
 
     //We may need to do some memory allocations
     if(pgrid_myrank == 0)
@@ -66,17 +66,38 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary)
     }
     if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
          return err;
-
-    int e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
-                         local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+    
+    int e;
+    if(scatter)
+    {
+         e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
+                          local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+                          0, MPI_COMM_WORLD);
+    }
+    else
+    {
+         e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+                         global_ary->data, sendcnts, displs, MPI_BYTE, 
                          0, MPI_COMM_WORLD);
+    }
     if(e != MPI_SUCCESS)
     {
-        fprintf(stderr, "MPI_Scatterv() in comm_master2slaves() returns error: %d\n", e);
+        fprintf(stderr, "MPI error in gather_scatter() returns error: %d\n", e);
         return CPHVB_ERROR;
     }
-  
     return CPHVB_SUCCESS;
+}
+
+
+
+/* Distribute the global array data to all slave processes.
+ * NB: this is a collective operation.
+ * 
+ * @global_ary Global base array
+ */
+cphvb_error comm_master2slaves(cphvb_array *global_ary)
+{
+    return gather_scatter(1, global_ary);
 }
 
 
@@ -87,38 +108,5 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary)
  */
 cphvb_error comm_slaves2master(cphvb_array *global_ary)
 {
-/*
-    assert(global_ary->base == NULL);
-    cphvb_intp totalsize = cphvb_array_size(global_ary);
-    
-    if(totalsize <= 0)
-        return CPHVB_SUCCESS;
-
-    int sendcnts[pgrid_worldsize], displs[pgrid_worldsize];
-    cphvb_intp localsize = totalsize / pgrid_worldsize;//local size for all but the last process
-    for(int i=0; i<pgrid_worldsize; ++i)
-    {
-        sendcnts[i] = localsize;
-        displs[i] = localsize * i;
-    }
-    //The last process gets the rest
-    sendcnts[pgrid_worldsize-1] += totalsize % pgrid_worldsize;
-
-
-    if(pgrid_myrank == 0)
-    {
-        if(global_ary->data == NULL)    
-        {
-            cphvb_data_malloc(global_ary);
-        }
-    }
-    else if(global_ary->data == NULL)
-    {
-        global_ary->data = cphvb_memory_malloc(sendcnts[pgrid_myrank-1]);
-        fprintf(stderr, "Warning - comm_slaves2master() is communicating "
-                        "an uninitiated global array\n");
-    }
-
-*/
-    return CPHVB_SUCCESS;
+    return gather_scatter(0, global_ary);
 }

@@ -32,6 +32,12 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_error comm_master2slaves(cphvb_array *global_ary);
 
 
+/* Gather the global array data to all slave processes.
+ * NB: this is a collective operation.
+ * 
+ * @global_ary Global base array
+ */
+cphvb_error comm_slaves2master(cphvb_array *global_ary);
 
 
 #endif
