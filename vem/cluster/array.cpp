@@ -19,18 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
-
-#ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
-#define __CPHVB_VEM_CLUSTER_DARRAY_H
-
-
-//Extension to the cphvb_array for cluster information
-typedef struct
-{
-    //Process rank that owns the array.
-    int rank;
-}array_ext;
- 
+#include "pgrid.h"
 
 /* Returns the local number of elements in an array.
  * 
@@ -38,9 +27,13 @@ typedef struct
  * @global_ary The global array 
  * @return The array size (in number of elements)
  */
-cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
+cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
+{
+    
+    cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
+    cphvb_intp localsize = totalsize / pgrid_worldsize;
+    if(rank == pgrid_worldsize-1)//The last process gets the rest
+        localsize += totalsize % pgrid_worldsize;
+    return localsize;
+}
 
-
-
-
-#endif
