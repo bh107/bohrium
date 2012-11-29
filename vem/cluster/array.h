@@ -50,5 +50,11 @@ cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
 cphvb_array* array_get_local(cphvb_array *global_ary);
 
 
+/* Remove the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ */
+void array_rm_local(cphvb_array *global_ary);
 
 #endif

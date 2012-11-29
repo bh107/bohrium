@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //Maps for translating between global and local arrays.
 static std::map<cphvb_array*, cphvb_array*> map_global2local;
-static std::map<cphvb_array*, cphvb_array*> map_local2global;
+//static std::map<cphvb_array*, cphvb_array*> map_local2global;
 static StaticStore<cphvb_array> local_ary_store(512);
 
 
@@ -71,4 +71,23 @@ cphvb_array* array_get_local(cphvb_array *global_ary)
         map_global2local[global_ary] = local_ary;
     }
     return local_ary;
-}   
+}
+
+
+/* Remove the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ */
+void array_rm_local(cphvb_array *global_ary)
+{
+    assert(global_ary->base == NULL);
+    cphvb_array *local_ary = map_global2local[global_ary];
+    if(local_ary != NULL)
+        local_ary_store.erase(local_ary);
+    map_global2local.erase(global_ary);
+}
+        
+    
+    
+
