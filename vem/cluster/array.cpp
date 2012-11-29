@@ -39,7 +39,6 @@ static StaticStore<cphvb_array> local_ary_store(512);
  */
 cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
 {
-    
     cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
     cphvb_intp localsize = totalsize / pgrid_worldsize;
     if(rank == pgrid_worldsize-1)//The last process gets the rest

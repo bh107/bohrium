@@ -58,8 +58,6 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
     {
         if(global_ary->data == NULL)    
         {
-            fprintf(stderr, "Warning - comm_master2slaves() is communicating "
-                            "an uninitiated global array\n");
             if((err = cphvb_data_malloc(global_ary)) != CPHVB_SUCCESS)
                 return err;
         }
