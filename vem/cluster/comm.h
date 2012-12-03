@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
+#include "array.h"
 
 #ifndef __CPHVB_VEM_CLUSTER_COMM_H
 #define __CPHVB_VEM_CLUSTER_COMM_H
@@ -32,12 +33,25 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_error comm_master2slaves(cphvb_array *global_ary);
 
 
-/* Gather the global array data to all slave processes.
+/* Gather the global array data at the master processes.
  * NB: this is a collective operation.
  * 
  * @global_ary Global base array
  */
 cphvb_error comm_slaves2master(cphvb_array *global_ary);
+
+
+/* Communicate array data such that the processes can apply local computation.
+ * This function may reshape the input array.
+ * NB: The process that owns the data and the process where the data is located
+ *     must both call this function.
+ *     
+ * @global_ary The global array to communicate
+ * @global_ary_ext  The global array extention
+ * @receiving_rank The rank of the receiving process, e.g. the process that should
+ *                 apply the computation
+ */
+cphvb_error comm_array_data(cphvb_array *global_ary, array_ext *global_ary_ext, int receiving_rank);
 
 
 #endif

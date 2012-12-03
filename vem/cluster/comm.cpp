@@ -68,15 +68,15 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
     int e;
     if(scatter)
     {
-         e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
-                          local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
-                          0, MPI_COMM_WORLD);
+        e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
+                         local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+                         0, MPI_COMM_WORLD);
     }
     else
     {
-         e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
-                         global_ary->data, sendcnts, displs, MPI_BYTE, 
-                         0, MPI_COMM_WORLD);
+        e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+                        global_ary->data, sendcnts, displs, MPI_BYTE, 
+                        0, MPI_COMM_WORLD);
     }
     if(e != MPI_SUCCESS)
     {
@@ -85,7 +85,6 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
     }
     return CPHVB_SUCCESS;
 }
-
 
 
 /* Distribute the global array data to all slave processes.
@@ -99,7 +98,7 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary)
 }
 
 
-/* Gather the global array data to all slave processes.
+/* Gather the global array data at the master processes.
  * NB: this is a collective operation.
  * 
  * @global_ary Global base array
@@ -108,3 +107,25 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary)
 {
     return gather_scatter(0, global_ary);
 }
+
+
+/* Communicate array data such that the processes can apply local computation.
+ * This function may reshape the input array.
+ * NB: The process that owns the data and the process where the data is located
+ *     must both call this function.
+ *     
+ * @global_ary The global array to communicate
+ * @global_ary_ext The global array extention
+ * @receiving_rank The rank of the receiving process, e.g. the process that should
+ *                 apply the computation
+ */
+cphvb_error comm_array_data(cphvb_array *global_ary, array_ext *global_ary_ext, 
+                            int receiving_rank)
+{
+    assert(global_ary_ext->rank == receiving_rank);
+    return CPHVB_SUCCESS;
+}
+
+
+
+
