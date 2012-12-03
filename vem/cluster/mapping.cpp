@@ -59,9 +59,8 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
             offset += start_coord[d] * ary->stride[d];
      
         //Compute total array base size
-        cphvb_intp totalsize=1;
-        for(cphvb_intp d=0; d<cphvb_base_array(ary)->ndim; ++d)
-            totalsize *= cphvb_base_array(ary)->shape[d];
+        cphvb_intp totalsize = cphvb_nelements(cphvb_base_array(ary)->ndim, 
+                                               cphvb_base_array(ary)->shape);
 
         //Compute local array base size for nrank-1
         cphvb_intp localsize = totalsize / pgrid_worldsize;
