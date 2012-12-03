@@ -25,8 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include <vector>
 
-cphvb_error mapping_chunks(int NPROC,
-                           const cphvb_instruction *inst, 
+/* Creates a list of loca array chunks that enables local
+ * execution of the instruction
+ *
+ * @inst The instruction to map
+ * @chunks The output chunks
+ * @chunks_ext The output chunks extention
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error mapping_chunks(const cphvb_instruction *inst, 
                            std::vector<cphvb_array>& chunks,  
                            std::vector<array_ext>& chunks_ext);
+
 #endif

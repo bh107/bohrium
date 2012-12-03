@@ -24,9 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <vector>
 #include <cassert>
+#include "pgrid.h"
 
-static cphvb_error find_largest_chunk(int NPROC, 
-                                      const cphvb_instruction *inst, 
+static cphvb_error find_largest_chunk(const cphvb_instruction *inst, 
                                       std::vector<cphvb_array>& chunks,  
                                       std::vector<array_ext>& chunks_ext,
                                       const cphvb_intp start_coord[],
@@ -64,7 +64,7 @@ static cphvb_error find_largest_chunk(int NPROC,
             totalsize *= cphvb_base_array(ary)->shape[d];
 
         //Compute local array base size for nrank-1
-        cphvb_intp localsize = totalsize / NPROC;
+        cphvb_intp localsize = totalsize / pgrid_worldsize;
         if(localsize == 0)
             localsize = 1;
 
@@ -73,8 +73,8 @@ static cphvb_error find_largest_chunk(int NPROC,
         //Convert to local offset
         offset = offset % localsize;
         //Convert localsize to be specific for this rank
-        if(rank == NPROC-1)
-           localsize = totalsize / NPROC + totalsize % NPROC; 
+        if(rank == pgrid_worldsize-1)
+           localsize = totalsize / pgrid_worldsize + totalsize % pgrid_worldsize; 
 
         //Find the largest possible shape
         for(cphvb_intp d=0; d < ndim; ++d)
@@ -92,7 +92,7 @@ static cphvb_error find_largest_chunk(int NPROC,
         cphvb_array chunk;
         array_ext chunk_ext;
         chunk_ext.rank = rank;
-        chunk.base     = cphvb_base_array(ary);
+        chunk.base     = array_get_local(cphvb_base_array(ary));
         chunk.type     = ary->type;
         chunk.ndim     = ary->ndim;
         chunk.data     = NULL;
@@ -117,8 +117,7 @@ static cphvb_error find_largest_chunk(int NPROC,
     return CPHVB_SUCCESS;
 }
 
-static cphvb_error get_chunks(int NPROC,
-                              const cphvb_instruction *inst, 
+static cphvb_error get_chunks(const cphvb_instruction *inst, 
                               std::vector<cphvb_array>& chunks,  
                               std::vector<array_ext>& chunks_ext,
                               const cphvb_intp start_coord[],
@@ -133,7 +132,7 @@ static cphvb_error get_chunks(int NPROC,
         if(start_coord[d] >= end_coord[d])
             return CPHVB_SUCCESS;
     
-    if((err = find_largest_chunk(NPROC, inst, chunks, chunks_ext, 
+    if((err = find_largest_chunk(inst, chunks, chunks_ext, 
               start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
         return err;
 
@@ -160,7 +159,7 @@ static cphvb_error get_chunks(int NPROC,
         }
 
         //Goto the next start cood
-        if((err = get_chunks(NPROC, inst, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
+        if((err = get_chunks(inst, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
             return err;
 
         //Go to next corner
@@ -179,15 +178,21 @@ static cphvb_error get_chunks(int NPROC,
     return CPHVB_ERROR;//This shouldn't be possible
 }
 
-//The public function
-cphvb_error mapping_chunks(int NPROC,
-                           const cphvb_instruction *inst, 
+/* Creates a list of loca array chunks that enables local
+ * execution of the instruction
+ *
+ * @inst The instruction to map
+ * @chunks The output chunks
+ * @chunks_ext The output chunks extention
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+cphvb_error mapping_chunks(const cphvb_instruction *inst, 
                            std::vector<cphvb_array>& chunks,  
                            std::vector<array_ext>& chunks_ext)
 {
     cphvb_intp coord[CPHVB_MAXDIM];
     memset(coord, 0, inst->operand[0]->ndim * sizeof(cphvb_intp));
-    return get_chunks(NPROC, inst, chunks, chunks_ext, coord, inst->operand[0]->shape);
+    return get_chunks(inst, chunks, chunks_ext, coord, inst->operand[0]->shape);
 }
 
 
