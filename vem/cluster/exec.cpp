@@ -157,7 +157,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         cphvb_instruction new_inst;
         new_inst.opcode     = CPHVB_SYNC;
         new_inst.status     = CPHVB_INST_PENDING;
-        new_inst.operand[0] = op;
+        new_inst.operand[0] = cphvb_base_array(op);
         if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
         {                                                           
             inst->status  = new_inst.status;
@@ -183,7 +183,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         cphvb_instruction new_inst;
         new_inst.opcode     = CPHVB_SYNC;
         new_inst.status     = CPHVB_INST_PENDING;
-        new_inst.operand[0] = op;
+        new_inst.operand[0] = cphvb_base_array(op);
         if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
         {                                                           
             inst->status  = new_inst.status;
@@ -191,6 +191,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         }
         if((e = comm_master2slaves(cphvb_base_array(op))) != CPHVB_SUCCESS)
             return e;
+        //TODO: need to discard all bases aswell
         new_inst.opcode     = CPHVB_DISCARD;
         new_inst.status     = CPHVB_INST_PENDING;
         new_inst.operand[0] = op;
@@ -202,6 +203,81 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
     }
     return CPHVB_SUCCESS; 
 }
+
+
+/* Execute a regular computation instruction
+ *
+ * @instruction The regular computation instruction
+ * @return Error codes (CPHVB_SUCCESS)
+ */
+static cphvb_error execute_regular(cphvb_instruction *inst)
+{
+    cphvb_error e; 
+    std::vector<cphvb_array> chunks;
+    std::vector<array_ext> chunks_ext;
+    e = mapping_chunks(inst, chunks, chunks_ext);
+    if(e != CPHVB_SUCCESS)
+    {
+        inst->status = CPHVB_INST_PENDING;
+        return e;
+    }
+
+    assert(chunks.size() > 0);
+    int nop = cphvb_operands_in_instruction(inst);
+    for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();c += nop)
+    {
+        //Create a local instruction based on the array-chunks
+        cphvb_instruction local_inst = *inst;
+        for(cphvb_intp k=0; k < nop; ++k)
+        {
+            if(!cphvb_is_constant(inst->operand[k]))
+            {
+                cphvb_array *ary = &chunks[k+c];
+                array_ext *ary_ext = &chunks_ext[k+c];
+                local_inst.operand[k] = ary;
+                //The process where the output chunk is located will do the computation.
+                int owner_rank = chunks_ext[0+c].rank;
+                if(owner_rank != ary_ext->rank) 
+                {
+                    assert( 1 == 2 );
+                    comm_array_data(ary, ary_ext, chunks_ext[0+c].rank);
+                }
+            }
+        }
+        //Apply the local computation
+        local_inst.status = CPHVB_INST_PENDING;
+        e = vem_execute(1, &local_inst);
+        inst->status = local_inst.status;
+        if(e != CPHVB_SUCCESS)
+            return e;
+
+        //Sync and discard the local arrays
+        for(cphvb_intp k=0; k < nop; ++k)
+        {
+            if(!cphvb_is_constant(inst->operand[k]))
+            {
+                local_inst.opcode = CPHVB_SYNC;
+                local_inst.status = CPHVB_INST_PENDING;
+                local_inst.operand[0] = cphvb_base_array(&chunks[k+c]);
+                e = vem_execute(1, &local_inst);
+                inst->status = local_inst.status;
+                if(e != CPHVB_SUCCESS)
+                    return e;
+
+                //TODO: need to discard all bases aswell
+                local_inst.opcode = CPHVB_DISCARD;
+                local_inst.status = CPHVB_INST_PENDING;
+                local_inst.operand[0] = &chunks[k+c];
+                e = vem_execute(1, &local_inst);
+                inst->status = local_inst.status;
+                if(e != CPHVB_SUCCESS)
+                    return e;
+            }
+        }
+    }
+    return CPHVB_SUCCESS;
+}
+
 
 
 /* Execute a list of instructions where all operands are global arrays
@@ -255,7 +331,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             default:
             {
-                if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
+                if((e = execute_regular(inst)) != CPHVB_SUCCESS)
                     return e;
             }
         }
