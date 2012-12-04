@@ -64,13 +64,19 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
 
         //Compute local array base size for nrank-1
         cphvb_intp localsize = totalsize / pgrid_worldsize;
-        if(localsize == 0)
-            localsize = 1;
 
-        //Find the rank
-        cphvb_intp rank = offset / localsize;
-        //Convert to local offset
-        offset = offset % localsize;
+        //Find rank and local offset
+        cphvb_intp rank;
+        if(localsize > 0)
+        {
+            rank = offset / localsize;
+            offset = offset % localsize;
+        }
+        else
+        {
+            rank = pgrid_worldsize-1;
+        }
+
         //Convert localsize to be specific for this rank
         if(rank == pgrid_worldsize-1)
            localsize = totalsize / pgrid_worldsize + totalsize % pgrid_worldsize; 

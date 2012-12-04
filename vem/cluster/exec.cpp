@@ -224,8 +224,12 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 
     assert(chunks.size() > 0);
     int nop = cphvb_operands_in_instruction(inst);
+    //Handle one chunk at a time.
     for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();c += nop)
     {
+        //The process where the output chunk is located will do the computation.
+        int owner_rank = chunks_ext[0+c].rank;
+
         //Create a local instruction based on the array-chunks
         cphvb_instruction local_inst = *inst;
         for(cphvb_intp k=0; k < nop; ++k)
@@ -235,15 +239,18 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
                 cphvb_array *ary = &chunks[k+c];
                 array_ext *ary_ext = &chunks_ext[k+c];
                 local_inst.operand[k] = ary;
-                //The process where the output chunk is located will do the computation.
-                int owner_rank = chunks_ext[0+c].rank;
                 if(owner_rank != ary_ext->rank) 
                 {
                     assert( 1 == 2 );
-                    comm_array_data(ary, ary_ext, chunks_ext[0+c].rank);
+                    comm_array_data(ary, ary_ext, owner_rank);
                 }
             }
         }
+
+        //Check if we should do the computation
+        if(pgrid_myrank != owner_rank)
+            continue;
+
         //Apply the local computation
         local_inst.status = CPHVB_INST_PENDING;
         e = vem_execute(1, &local_inst);
