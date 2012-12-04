@@ -70,12 +70,14 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         if(localsize > 0)
         {
             rank = offset / localsize;
-            offset = offset % localsize;
+            //There may be rank overspill because the local size of 
+            //the last process may be larger then the 'localsize'
+            if(rank > pgrid_worldsize-1)
+                rank = pgrid_worldsize-1;
+            offset -= rank * localsize;
         }
         else
-        {
             rank = pgrid_worldsize-1;
-        }
 
         //Convert localsize to be specific for this rank
         if(rank == pgrid_worldsize-1)
@@ -105,6 +107,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         memcpy(chunk.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
         chunks.push_back(chunk);
         chunks_ext.push_back(chunk_ext);
+        assert(0 <= rank && rank < pgrid_worldsize);
     }
 
     //Save the largest possible shape found to all chunks
