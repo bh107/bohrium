@@ -46,12 +46,13 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary);
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
  *     
- * @global_ary The global array to communicate
- * @global_ary_ext  The global array extention
+ * @local_ary The local array to communicate
+ * @local_ary_ext The local array extention
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-cphvb_error comm_array_data(cphvb_array *global_ary, array_ext *global_ary_ext, int receiving_rank);
+cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext, 
+                            int receiving_rank);
 
 
 #endif
