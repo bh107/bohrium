@@ -239,11 +239,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
                 cphvb_array *ary = &chunks[k+c];
                 array_ext *ary_ext = &chunks_ext[k+c];
                 local_inst.operand[k] = ary;
-                if(owner_rank != ary_ext->rank) 
-                {
-                    assert( 1 == 2 );
-                    comm_array_data(ary, ary_ext, owner_rank);
-                }
+                comm_array_data(ary, ary_ext, owner_rank);
             }
         }
 
