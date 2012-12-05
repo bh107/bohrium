@@ -36,6 +36,9 @@ cphvb_error cphvb_ve_print_init(cphvb_component* _component)
 cphvb_error cphvb_ve_print_execute(cphvb_intp instruction_count,
                                    cphvb_instruction instruction_list[])
 {
+    std::cout << "# ----------------------------- Recieved batch with " << 
+        instruction_count << 
+        " instructions --------------------------------------- #" << std::endl;
     for (cphvb_intp i = 0; i < instruction_count; ++i)
         cphvb_pprint_instr(instruction_list+i);
     return CPHVB_SUCCESS;
