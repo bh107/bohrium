@@ -131,6 +131,7 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
         //This array is temporary and
         //located contiguous in memory (row-major)
         local_ary->base = NULL;
+        local_ary->start = 0;
         cphvb_intp s = 1;
         for(cphvb_intp i=local_ary->ndim-1; i >= 0; --i)
         {    
@@ -144,7 +145,7 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
         MPI_Recv(local_ary->data, size, MPI_BYTE, local_ary_ext->rank, 0,
                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    else if(local_ary_ext->rank)
+    else if(pgrid_myrank == local_ary_ext->rank)
     {
         //Create the MPI type for sending
         int typesize = cphvb_type_size(local_ary->type);
