@@ -44,7 +44,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
     for(cphvb_intp o=0; o < nop; ++o)
     {
         const cphvb_array *ary = inst->operand[o];
-        if(ary == NULL)//Operand is a constant
+        if(cphvb_is_constant(ary))
         {
             //Save a dummy chunk
             cphvb_array chunk;
@@ -125,10 +125,14 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
     //Save the largest possible shape found to all chunks
     for(cphvb_intp o=0; o < nop; ++o)
     {
+        if(cphvb_is_constant(inst->operand[o]))
+            continue;
         cphvb_array *ary = &chunks[first_chunk+o];
+        array_ext *ary_ext = &chunks_ext[first_chunk+o];
+
         memcpy(ary->shape, shape, ndim * sizeof(cphvb_intp));
         
-        if(chunks_ext[first_chunk+o].rank != pgrid_myrank)
+        if(ary_ext->rank != pgrid_myrank)
         {   //Now we know the strides of the remote array.
             cphvb_intp s = 1;
             for(cphvb_intp i=ary->ndim-1; i >= 0; --i)
