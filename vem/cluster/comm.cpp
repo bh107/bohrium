@@ -152,21 +152,22 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
         cphvb_intp shape[CPHVB_MAXDIM];
             
         //We need to sort the dimenions based on the size of the stride.
-        //We do this using a map.
+        //We do this using a map in ascending order.
         std::map<cphvb_intp, int> stride_map;
         for(cphvb_intp i=0; i<local_ary->ndim; ++i)
-            stride_map[local_ary->shape[i]] = i;
+        {
+            //Ignore empty dimensions.
+            if(local_ary->shape[i] > 1 && local_ary->stride[i] > 0)
+                stride_map[local_ary->stride[i]] = i;
+        }
         
-        for(std::map<cphvb_intp, int>::reverse_iterator it=stride_map.rbegin(); 
-            it != stride_map.rend(); ++it)
+        for(std::map<cphvb_intp, int>::iterator it=stride_map.begin(); 
+            it != stride_map.end(); ++it)
         {
             cphvb_intp i = it->second;
-            if(local_ary->shape[i] > 1)//Strip 1-sized dimensions.
-            {
-                stride[ndim] = local_ary->stride[i];
-                shape[ndim] = local_ary->shape[i];
-                ++ndim;
-            }
+            stride[ndim] = local_ary->stride[i];
+            shape[ndim] = local_ary->shape[i];
+            ++ndim;
         }
         if(ndim == 0)//We need at least one dimension
         {
@@ -175,7 +176,7 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
             ndim = 1;
         }
         //Create the MPI type for sending
-        int d = ndim-1;
+        int d = 0; //Dimensions is in ascending order
         int typesize = cphvb_type_size(local_ary->type);
         MPI_Datatype mpi_type, tmp;
         MPI_Type_vector(shape[d], 
@@ -183,7 +184,7 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
                         stride[d] * typesize,
                         MPI_BYTE,
                         &mpi_type);
-        while(--d >= 0)
+        while(++d < ndim)
         {
             MPI_Type_vector(shape[d], 1, 
                             stride[d],
@@ -196,7 +197,6 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
         char *base_data = (char*) cphvb_base_array(local_ary)->data;
         MPI_Send(base_data + local_ary->start * typesize,
                  1, mpi_type, receiving_rank, 0, MPI_COMM_WORLD);
-
         MPI_Type_free(&mpi_type);
     }
     MPI_Barrier(MPI_COMM_WORLD);

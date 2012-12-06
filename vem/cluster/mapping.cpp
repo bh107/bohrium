@@ -67,7 +67,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         cphvb_intp localsize = totalsize / pgrid_worldsize;
 
         //Find rank and local start
-        cphvb_intp rank;
+        int rank;
         if(localsize > 0)
         {
             rank = start / localsize;
