@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <cassert>
 #include "pgrid.h"
+#include <limits>
 
 static cphvb_error find_largest_chunk(const cphvb_instruction *inst, 
                                       std::vector<cphvb_array>& chunks,  
@@ -37,7 +38,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
     cphvb_intp ndim = inst->operand[0]->ndim;
     cphvb_intp shape[CPHVB_MAXDIM];
     for(cphvb_intp d=0; d < ndim; ++d)
-        shape[d] = -1;
+        shape[d] = std::numeric_limits<cphvb_intp>::max();
 
     cphvb_intp nop = cphvb_operands_in_instruction(inst);
     for(cphvb_intp o=0; o < nop; ++o)
@@ -92,7 +93,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
                 dim = (cphvb_intp) ceil((localsize - offset) / (double) ary->stride[d]);
             if(dim > max_dim)
                 dim = max_dim;
-            if(shape[d] == -1 || dim < shape[d])//We only save the smallest shape
+            if(dim < shape[d])//We only save the smallest shape
                 shape[d] = dim;
         }
         //Save the chunk
