@@ -186,10 +186,10 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
                         &mpi_type);
         while(++d < ndim)
         {
-            MPI_Type_vector(shape[d], 1, 
-                            stride[d],
-                            mpi_type,
-                            &tmp);
+            MPI_Type_hvector(shape[d], 1, 
+                             stride[d] * typesize,
+                             mpi_type,
+                             &tmp);
             MPI_Type_free(&mpi_type);
             mpi_type = tmp;
         }
