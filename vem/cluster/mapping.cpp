@@ -100,23 +100,40 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         cphvb_array chunk;
         array_ext chunk_ext;
         chunk_ext.rank = rank;
-        chunk.base     = array_get_local(cphvb_base_array(ary));
         chunk.type     = ary->type;
         chunk.ndim     = ary->ndim;
         chunk.data     = NULL;
-        memcpy(chunk.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
-        chunk.start = start;
+        if(pgrid_myrank == rank)//This is a local array
+        {
+            chunk.start = start;
+            chunk.base = array_get_local(cphvb_base_array(ary));
+            memcpy(chunk.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
+        }
+        else//This is a remote array thus we treat it as a base array.
+        {   //Note we will set the stride when we know the final shape
+            chunk.base = NULL;
+            chunk.start = 0;
+        }
         chunks.push_back(chunk);
         chunks_ext.push_back(chunk_ext);
         assert(0 <= rank && rank < pgrid_worldsize);
     }
 
     //Save the largest possible shape found to all chunks
-    for(cphvb_intp d=0; d < ndim; ++d)
+    for(cphvb_intp o=0; o < nop; ++o)
     {
-        assert(shape[d] > 0);
-        for(cphvb_intp o=0; o < nop; ++o)
-            chunks[first_chunk+o].shape[d] = shape[d];
+        cphvb_array *ary = &chunks[first_chunk+o];
+        memcpy(ary->shape, shape, ndim * sizeof(cphvb_intp));
+        
+        if(chunks_ext[first_chunk+o].rank != pgrid_myrank)
+        {   //Now we know the strides of the remote array.
+            cphvb_intp s = 1;
+            for(cphvb_intp i=ary->ndim-1; i >= 0; --i)
+            {    
+                ary->stride[i] = s;
+                s *= ary->shape[i];
+            }
+        }
     }
 
     //Update coord

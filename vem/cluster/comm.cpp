@@ -123,6 +123,7 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary)
 cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext, 
                             int receiving_rank)
 {
+    cphvb_error e;
     //Check if communication is even necessary
     if(local_ary_ext->rank == receiving_rank)
     {
@@ -134,19 +135,14 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
     {
         //This array is temporary and
         //located contiguous in memory (row-major)
-        local_ary->base = NULL;
-        local_ary->start = 0;
-        cphvb_intp s = 1;
-        for(cphvb_intp i=local_ary->ndim-1; i >= 0; --i)
-        {    
-            local_ary->stride[i] = s;
-            s *= local_ary->shape[i];
-        }
-        cphvb_intp size = s * cphvb_type_size(local_ary->type);
-        local_ary->data = malloc(size);
-        if(local_ary->data == NULL)
-            return CPHVB_OUT_OF_MEMORY;
-        MPI_Recv(local_ary->data, size, MPI_BYTE, local_ary_ext->rank, 0,
+        assert(local_ary->base == NULL);
+        assert(local_ary->start == 0);
+        assert(local_ary->data == NULL);
+        if((e = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
+            return e;
+        
+        MPI_Recv(local_ary->data, cphvb_array_size(local_ary), MPI_BYTE, 
+                 local_ary_ext->rank, 0,
                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
     else if(pgrid_myrank == local_ary_ext->rank)
