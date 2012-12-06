@@ -84,17 +84,20 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         if(rank == pgrid_worldsize-1)
            localsize = totalsize / pgrid_worldsize + totalsize % pgrid_worldsize; 
 
+        cphvb_intp offset = 0;
         //Find the largest possible shape
         for(cphvb_intp d=0; d < ndim; ++d)
         {
             cphvb_intp max_dim = end_coord[d] - start_coord[d];
             cphvb_intp dim = max_dim;
             if(ary->stride[d] > 0)        
-                dim = (cphvb_intp) ceil((localsize - start) / (double) ary->stride[d]);
+                dim = (cphvb_intp) ceil((localsize - start - offset) / 
+                                        (double) ary->stride[d]);
             if(dim > max_dim)
                 dim = max_dim;
             if(dim < shape[d])//We only save the smallest shape
                 shape[d] = dim;
+            offset += (dim-1) * ary->stride[d];
         }
         //Save the chunk
         cphvb_array chunk;
@@ -134,6 +137,9 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
                 s *= ary->shape[i];
             }
         }
+        assert(cphvb_nelements(ary->ndim, ary->shape) <= 
+               cphvb_nelements(cphvb_base_array(ary)->ndim, 
+                               cphvb_base_array(ary)->shape));
     }
 
     //Update coord
