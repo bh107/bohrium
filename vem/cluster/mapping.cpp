@@ -54,10 +54,10 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
             continue;
         }
 
-        //Compute the global offset based on the dimension offset
-        cphvb_intp offset = ary->start;
+        //Compute the global start based on the dimension start
+        cphvb_intp start = ary->start;
         for(cphvb_intp d=0; d < ndim; ++d)
-            offset += start_coord[d] * ary->stride[d];
+            start += start_coord[d] * ary->stride[d];
      
         //Compute total array base size
         cphvb_intp totalsize = cphvb_nelements(cphvb_base_array(ary)->ndim, 
@@ -66,16 +66,16 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         //Compute local array base size for nrank-1
         cphvb_intp localsize = totalsize / pgrid_worldsize;
 
-        //Find rank and local offset
+        //Find rank and local start
         cphvb_intp rank;
         if(localsize > 0)
         {
-            rank = offset / localsize;
+            rank = start / localsize;
             //There may be rank overspill because the local size of 
             //the last process may be larger then the 'localsize'
             if(rank > pgrid_worldsize-1)
                 rank = pgrid_worldsize-1;
-            offset -= rank * localsize;
+            start -= rank * localsize;
         }
         else
             rank = pgrid_worldsize-1;
@@ -90,7 +90,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
             cphvb_intp max_dim = end_coord[d] - start_coord[d];
             cphvb_intp dim = max_dim;
             if(ary->stride[d] > 0)        
-                dim = (cphvb_intp) ceil((localsize - offset) / (double) ary->stride[d]);
+                dim = (cphvb_intp) ceil((localsize - start) / (double) ary->stride[d]);
             if(dim > max_dim)
                 dim = max_dim;
             if(dim < shape[d])//We only save the smallest shape
@@ -104,8 +104,8 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
         chunk.type     = ary->type;
         chunk.ndim     = ary->ndim;
         chunk.data     = NULL;
-        chunk.start    = offset;
         memcpy(chunk.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
+        chunk.start = start;
         chunks.push_back(chunk);
         chunks_ext.push_back(chunk_ext);
         assert(0 <= rank && rank < pgrid_worldsize);
