@@ -156,6 +156,7 @@ if __name__ == "__main__":
                   ("CORE-BUNDLER", "core/bundler", True),\
                   ("CORE-COMPUTE", "core/compute", True),\
                   ("CORE", "core", True),\
+                  ("VE-PRINT", "ve/print", False),\
                   ("VE-GPU", "ve/gpu", False),\
                   ("VE-SIMPLE", "ve/simple", True),\
                   ("VE-TILE", "ve/tile", False),\

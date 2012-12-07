@@ -247,6 +247,22 @@ DLLEXPORT bool cphvb_is_scalar(const cphvb_array *array);
  */
 DLLEXPORT bool cphvb_is_constant(const cphvb_array* o);
 
+/* Determines whether the two views are the same
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+DLLEXPORT bool cphvb_same_view(cphvb_array* a, cphvb_array* b);
+
+/* Determines whether two array(views)s access some of the same data points
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+DLLEXPORT bool cphvb_disjoint_views(const cphvb_array *a, const cphvb_array *b);
+
 
 #ifdef __cplusplus
 }

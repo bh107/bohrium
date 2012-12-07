@@ -12,6 +12,10 @@ impl = /opt/cphvb/libcphvb_vem_node.so
 children = tile
 type = vem
 
+[print]
+impl = /opt/cphvb/libcphvb_ve_print.so
+type = ve
+
 [simple]
 impl = /opt/cphvb/libcphvb_ve_simple.so
 type = ve
