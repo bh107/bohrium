@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include "pgrid.h"
 #include "array.h"
+#include "exec.h"
 
 
 /* Gather or scatter the global array processes.
@@ -147,57 +148,35 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
     }
     else if(pgrid_myrank == local_ary_ext->rank)
     {
-        cphvb_intp ndim=0;
-        cphvb_intp stride[CPHVB_MAXDIM];
-        cphvb_intp shape[CPHVB_MAXDIM];
-            
-        //We need to sort the dimenions based on the size of the stride.
-        //We do this using a map in ascending order.
-        std::map<cphvb_intp, int> stride_map;
-        for(cphvb_intp i=0; i<local_ary->ndim; ++i)
-        {
-            //Ignore empty dimensions.
-            if(local_ary->shape[i] > 1 && local_ary->stride[i] > 0)
-                stride_map[local_ary->stride[i]] = i;
+        //We need to copy the local array view into a base array.
+        cphvb_array tmp_ary = *local_ary;
+        tmp_ary.base  = NULL;
+        tmp_ary.data  = NULL;
+        tmp_ary.start = 0;
+   
+        //Compute a row-major stride for the tmp array.
+        cphvb_intp nelem = 1;
+        for(cphvb_intp i=tmp_ary.ndim-1; i >= 0; --i)
+        {    
+            tmp_ary.stride[i] = nelem;
+            nelem *= tmp_ary.shape[i];
         }
-        
-        for(std::map<cphvb_intp, int>::iterator it=stride_map.begin(); 
-            it != stride_map.end(); ++it)
+
+        //Tell the VEM to do the data copy.
         {
-            cphvb_intp i = it->second;
-            stride[ndim] = local_ary->stride[i];
-            shape[ndim] = local_ary->shape[i];
-            ++ndim;
+            cphvb_array *ops[] = {&tmp_ary, local_ary};
+            cphvb_error status;
+            e = exec_inst(CPHVB_IDENTITY, ops, &status);
+            if(e != CPHVB_SUCCESS)
+            {
+                fprintf(stderr, "Error while sending: copy "
+                        "to a contiguous base array failed\n");
+                return e;
+            }
         }
-        if(ndim == 0)//We need at least one dimension
-        {
-            shape[0] = local_ary->shape[0];
-            stride[0] = local_ary->stride[0];
-            ndim = 1;
-        }
-        //Create the MPI type for sending
-        int d = 0; //Dimensions is in ascending order
-        int typesize = cphvb_type_size(local_ary->type);
-        MPI_Datatype mpi_type, tmp;
-        MPI_Type_vector(shape[d], 
-                        typesize, 
-                        stride[d] * typesize,
-                        MPI_BYTE,
-                        &mpi_type);
-        while(++d < ndim)
-        {
-            MPI_Type_hvector(shape[d], 1, 
-                             stride[d] * typesize,
-                             mpi_type,
-                             &tmp);
-            MPI_Type_free(&mpi_type);
-            mpi_type = tmp;
-        }
-        MPI_Type_commit(&mpi_type);
-        char *base_data = (char*) cphvb_base_array(local_ary)->data;
-        MPI_Send(base_data + local_ary->start * typesize,
-                 1, mpi_type, receiving_rank, 0, MPI_COMM_WORLD);
-        MPI_Type_free(&mpi_type);
+        assert(tmp_ary.data != NULL);
+        MPI_Send(tmp_ary.data, nelem * cphvb_type_size(tmp_ary.type), 
+                 MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     return CPHVB_SUCCESS;
