@@ -141,9 +141,6 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
                 s *= ary->shape[i];
             }
         }
-        assert(cphvb_nelements(ary->ndim, ary->shape) <= 
-               cphvb_nelements(cphvb_base_array(ary)->ndim, 
-                               cphvb_base_array(ary)->shape));
     }
 
     //Update coord
