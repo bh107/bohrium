@@ -124,7 +124,7 @@ int main()
                 cphvb_userfunc *ufunc = (cphvb_userfunc*)(nou+1); //number of new arrays
 
 
-   printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
+//   printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
                
                 //Insert the new array into the array store and the array maps
                 std::stack<cphvb_array*> base_darys;
