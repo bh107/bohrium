@@ -173,7 +173,7 @@ cphvb_error exec_inst(cphvb_opcode opcode, cphvb_array *operands[],
  */
 static cphvb_error fallback_exec(cphvb_instruction *inst)
 {
-    cphvb_error e;
+    cphvb_error e, stat;
     int nop = cphvb_operands_in_instruction(inst);
 
     //Gather all data at the master-process
@@ -185,9 +185,12 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
 
         cphvb_array *base = cphvb_base_array(op);
-        e = exec_inst(CPHVB_SYNC, &base, &inst->status);
-        if(e != CPHVB_SUCCESS)
+        if((e = exec_inst(CPHVB_SYNC, &base, &stat)) != CPHVB_SUCCESS)
+        {
+            fprintf(stderr, "Error in fallback_exec() when executing "
+            "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
             return e;
+        }
 
         if((e = comm_slaves2master(base)) != CPHVB_SUCCESS)
             return e;
@@ -208,17 +211,23 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
         cphvb_array *base = cphvb_base_array(op);
         
-        e = exec_inst(CPHVB_SYNC, &base, &inst->status);
-        if(e != CPHVB_SUCCESS)
+        if((e = exec_inst(CPHVB_SYNC, &base, &stat)) != CPHVB_SUCCESS)
+        {
+            fprintf(stderr, "Error in fallback_exec() when executing "
+            "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
             return e;
+        }
         
         if((e = comm_master2slaves(base)) != CPHVB_SUCCESS)
             return e;
 
         //TODO: need to discard all bases aswell
-        e = exec_inst(CPHVB_DISCARD, &op, &inst->status);
-        if(e != CPHVB_SUCCESS)
+        if((e = exec_inst(CPHVB_DISCARD, &op, &stat)) != CPHVB_SUCCESS)
+        {
+            fprintf(stderr, "Error in fallback_exec() when executing "
+            "CPHVB_DISCARD: instruction status: %s\n",cphvb_error_text(stat));
             return e;
+        }
     }
     return CPHVB_SUCCESS; 
 }
@@ -231,7 +240,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
  */
 static cphvb_error execute_regular(cphvb_instruction *inst)
 {
-    cphvb_error e; 
+    cphvb_error e, stat; 
     std::vector<cphvb_array> chunks;
     std::vector<array_ext> chunks_ext;
     e = mapping_chunks(inst, chunks, chunks_ext);
@@ -276,19 +285,24 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
         //Sync and discard the local arrays
         for(cphvb_intp k=0; k < nop; ++k)
         {
-            if(!cphvb_is_constant(inst->operand[k]))
+            if(cphvb_is_constant(inst->operand[k]))
+                continue;
+            
+            cphvb_array *ary = cphvb_base_array(&chunks[k+c]);
+            if((e = exec_inst(CPHVB_SYNC, &ary, &stat)) != CPHVB_SUCCESS)
             {
-                cphvb_array *ary = cphvb_base_array(&chunks[k+c]);
-                e = exec_inst(CPHVB_SYNC, &ary, &inst->status);
-                if(e != CPHVB_SUCCESS)
-                    return e;
+                fprintf(stderr, "Error in execute_regular() when executing "
+                "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
+                return e;
+            }
 
-                //TODO: need to discard all bases aswell
-                
-                ary = &chunks[k+c];
-                e = exec_inst(CPHVB_DISCARD, &ary, &inst->status);
-                if(e != CPHVB_SUCCESS)
-                    return e;
+            //TODO: need to discard all bases aswell
+            ary = &chunks[k+c];
+            if((e = exec_inst(CPHVB_DISCARD, &ary, &stat)) != CPHVB_SUCCESS)
+            {
+                fprintf(stderr, "Error in execute_regular() when executing "
+                "CPHVB_DISCARD: instruction status: %s\n",cphvb_error_text(stat));
+                return e;
             }
         }
     }
