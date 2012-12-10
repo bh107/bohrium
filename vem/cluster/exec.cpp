@@ -137,6 +137,35 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
     return e;
 }
 
+
+/* Execute one instruction.
+ *
+ * @opcode The opcode of the instruction
+ * @operands  The operands in the instruction
+ * @inst_status The returned status of the instruction (output)
+ * @return Error codes of vem_execute()
+ */
+cphvb_error exec_inst(cphvb_opcode opcode, cphvb_array *operands[], 
+                      cphvb_error *inst_status)
+{
+    cphvb_error e;
+
+    cphvb_instruction new_inst;
+    new_inst.opcode = opcode;
+    new_inst.status = CPHVB_INST_PENDING;
+    int nop = cphvb_operands(opcode);
+    
+    for(int i=0; i<nop; ++i)
+        new_inst.operand[i] = operands[i];
+
+    if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
+        *inst_status = new_inst.status;
+    else 
+        *inst_status = CPHVB_SUCCESS; 
+    return e;
+}
+
+
 /* Execute to instruction locally at the master-process
  *
  * @instruction The instructionto execute
@@ -154,16 +183,13 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         cphvb_array *op = oprands[o];
         if(cphvb_is_constant(op))
             continue;
-        cphvb_instruction new_inst;
-        new_inst.opcode     = CPHVB_SYNC;
-        new_inst.status     = CPHVB_INST_PENDING;
-        new_inst.operand[0] = cphvb_base_array(op);
-        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
-        {                                                           
-            inst->status  = new_inst.status;
+
+        cphvb_array *base = cphvb_base_array(op);
+        e = exec_inst(CPHVB_SYNC, &base, &inst->status);
+        if(e != CPHVB_SUCCESS)
             return e;
-        }
-        if((e = comm_slaves2master(cphvb_base_array(op))) != CPHVB_SUCCESS)
+
+        if((e = comm_slaves2master(base)) != CPHVB_SUCCESS)
             return e;
     }
     
@@ -180,26 +206,19 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         cphvb_array *op = oprands[o];
         if(cphvb_is_constant(op))
             continue;
-        cphvb_instruction new_inst;
-        new_inst.opcode     = CPHVB_SYNC;
-        new_inst.status     = CPHVB_INST_PENDING;
-        new_inst.operand[0] = cphvb_base_array(op);
-        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
-        {                                                           
-            inst->status  = new_inst.status;
+        cphvb_array *base = cphvb_base_array(op);
+        
+        e = exec_inst(CPHVB_SYNC, &base, &inst->status);
+        if(e != CPHVB_SUCCESS)
             return e;
-        }
-        if((e = comm_master2slaves(cphvb_base_array(op))) != CPHVB_SUCCESS)
+        
+        if((e = comm_master2slaves(base)) != CPHVB_SUCCESS)
             return e;
+
         //TODO: need to discard all bases aswell
-        new_inst.opcode     = CPHVB_DISCARD;
-        new_inst.status     = CPHVB_INST_PENDING;
-        new_inst.operand[0] = op;
-        if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
-        {                                                           
-            inst->status  = new_inst.status;
+        e = exec_inst(CPHVB_DISCARD, &op, &inst->status);
+        if(e != CPHVB_SUCCESS)
             return e;
-        }
     }
     return CPHVB_SUCCESS; 
 }
@@ -259,20 +278,15 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
         {
             if(!cphvb_is_constant(inst->operand[k]))
             {
-                local_inst.opcode = CPHVB_SYNC;
-                local_inst.status = CPHVB_INST_PENDING;
-                local_inst.operand[0] = cphvb_base_array(&chunks[k+c]);
-                e = vem_execute(1, &local_inst);
-                inst->status = local_inst.status;
+                cphvb_array *ary = cphvb_base_array(&chunks[k+c]);
+                e = exec_inst(CPHVB_SYNC, &ary, &inst->status);
                 if(e != CPHVB_SUCCESS)
                     return e;
 
                 //TODO: need to discard all bases aswell
-                local_inst.opcode = CPHVB_DISCARD;
-                local_inst.status = CPHVB_INST_PENDING;
-                local_inst.operand[0] = &chunks[k+c];
-                e = vem_execute(1, &local_inst);
-                inst->status = local_inst.status;
+                
+                ary = &chunks[k+c];
+                e = exec_inst(CPHVB_DISCARD, &ary, &inst->status);
                 if(e != CPHVB_SUCCESS)
                     return e;
             }
