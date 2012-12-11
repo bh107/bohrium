@@ -253,7 +253,7 @@ DLLEXPORT bool cphvb_is_constant(const cphvb_array* o);
  * @b The second array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_same_view(cphvb_array* a, cphvb_array* b);
+DLLEXPORT bool cphvb_same_view(const cphvb_array* a, const cphvb_array* b);
 
 /* Determines whether two array(views)s access some of the same data points
  *
