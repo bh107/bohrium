@@ -48,7 +48,7 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
     //Send the component name
     if((e = dispatch_reset()) != CPHVB_SUCCESS)
         return e;
-    if((e = dispatch_add2payload(strlen(self->name), self->name)) != CPHVB_SUCCESS)
+    if((e = dispatch_add2payload(strlen(self->name)+1, self->name)) != CPHVB_SUCCESS)
         return e;
     if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT)) != CPHVB_SUCCESS)
         return e;
