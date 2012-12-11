@@ -39,9 +39,6 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
         case CPHVB_FREE:
 //                free(inst->operand[0]);
             break;                
-        case CPHVB_USERFUNC:
-//                userdeffunc(inst->userfunc);
-            break;
         case CPHVB_NONE:
             break;
         default:
@@ -49,17 +46,18 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
             break;
         }
     }
-    
 }
 
-void DepGraph::func(cphvb_instruction* inst)
+
+void DepGraph::ufunc(cphvb_instruction* inst)
 {
     cphvb_intp nin, nout;
-    cphvb_array* operand;
-    if (inst == CPHVB_USERFUNC)
+    cphvb_array** operand;
+    /* Handle bothe ufunc and userdefined functions*/
+    if (inst->opcode == CPHVB_USERFUNC)
     {
         cphvb_userfunc* userfunc = inst->userfunc;
-        nout = = userfunc->nout;
+        nout = userfunc->nout;
         nin = userfunc->nin;
         operand = userfunc->operand;
     } else {
@@ -67,28 +65,44 @@ void DepGraph::func(cphvb_instruction* inst)
         nin = cphvb_operands(inst->opcode) - 1;
         operand = inst->operand;
     }
-    // TODO HERE!!!!
-    cphvb_array* out = cphvb_base_array(operand[0]);
-    auto omsub = lastModifiedBy.find(out);
-    if (omsub != lastModifiedBy.end())
+
+    std::list<DepSubGraph*> dependsOn;
+    /* Handle dependency on output parameters*/ 
+    for (int i = 0; i < nout; ++i)
     {
         /* If another subGraph is already writing to the same base array
-         * We just create a new subGraph, and make it dependent on it
+         * We just create a new subGraph, and make the new subGraph dependent
+         * on other subGraphs with overlapping output
          * TODO: Pruning and so on 
          */
-        DepSubGraph* sub = new DepSubGraph(inst, std::list<DepSubGraph*>(1,omsub->second));
+        cphvb_array* out = cphvb_base_array(operand[i]);
+        auto omsub = lastModifiedBy.find(out);
+        if (omsub != lastModifiedBy.end())
+        {
+            /* There is depencies on the output */
+            dependsOn.push_back(omsub->second);
+        }
+    }
+    if (dependsOn.size() > 0) // Is there dependencies on the output
+    {
+        // Make a new subgraph
+        DepSubGraph* sub = new DepSubGraph(inst, dependsOn);
         subGraphs.push_back(sub);
-        lastModifiedBy[out] = sub;
+        for (int i = 0; i < nout; ++i)
+        {
+            cphvb_array* out = cphvb_base_array(operand[i]);
+            lastModifiedBy[out] = sub;
+        }
         return;
     }
 
-    cphvb_intp nops = cphvb_operands(inst->opcode);
-    std::list<DepSubGraph*> dependsOn;
-    for (int i = 1; i < nops; ++i)
+    /* No dependencies on the output */
+    /* Handle dependency on intput parameters*/ 
+    for (int i = nout; i < nout+nin; ++i)
     {
         if (!cphvb_is_constant(inst->operand[i]))
         {
-            cphvb_array* in =  cphvb_base_array(inst->operand[i]);
+            cphvb_array* in =  cphvb_base_array(operand[i]);
             auto imsub = lastModifiedBy.find(in);
             if (imsub != lastModifiedBy.end())
             {
@@ -102,7 +116,11 @@ void DepGraph::func(cphvb_instruction* inst)
     {
         DepSubGraph* sub = new DepSubGraph(inst);
         subGraphs.push_back(sub);
-        lastModifiedBy[out] = sub;        
+        for (int i = 0; i < nout; ++i)
+        {
+            cphvb_array* out = cphvb_base_array(operand[i]);
+            lastModifiedBy[out] = sub;
+        }
         break;
     }
     case 1:
@@ -115,7 +133,11 @@ void DepGraph::func(cphvb_instruction* inst)
         {
             DepSubGraph* sub = DepSubGraph::merge(inst,dependsOn);
             subGraphs.push_back(sub);
-            lastModifiedBy[out] = sub;
+            for (int i = 0; i < nout; ++i)
+            {
+                cphvb_array* out = cphvb_base_array(operand[i]);
+                lastModifiedBy[out] = sub;
+            }
             for (DepSubGraph* &dsg: dependsOn)
             {
                 for (cphvb_array* ba: dsg->getModified())
@@ -131,7 +153,11 @@ void DepGraph::func(cphvb_instruction* inst)
         {
             DepSubGraph* sub = new DepSubGraph(inst,dependsOn);
             subGraphs.push_back(sub);
-            lastModifiedBy[out] = sub;
+            for (int i = 0; i < nout; ++i)
+            {
+                cphvb_array* out = cphvb_base_array(operand[i]);
+                lastModifiedBy[out] = sub;
+            }
         }
     }
 }
