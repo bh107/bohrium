@@ -52,9 +52,23 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
     
 }
 
-void DepGraph::ufunc(cphvb_instruction* inst)
+void DepGraph::func(cphvb_instruction* inst)
 {
-    cphvb_array* out = cphvb_base_array(inst->operand[0]);
+    cphvb_intp nin, nout;
+    cphvb_array* operand;
+    if (inst == CPHVB_USERFUNC)
+    {
+        cphvb_userfunc* userfunc = inst->userfunc;
+        nout = = userfunc->nout;
+        nin = userfunc->nin;
+        operand = userfunc->operand;
+    } else {
+        nout = 1;
+        nin = cphvb_operands(inst->opcode) - 1;
+        operand = inst->operand;
+    }
+    // TODO HERE!!!!
+    cphvb_array* out = cphvb_base_array(operand[0]);
     auto omsub = lastModifiedBy.find(out);
     if (omsub != lastModifiedBy.end())
     {
@@ -62,7 +76,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
          * We just create a new subGraph, and make it dependent on it
          * TODO: Pruning and so on 
          */
-        DepSupGraph* sub = new DepSubGraph(inst, std::list<DepSubGraph*>(1,omsub));
+        DepSubGraph* sub = new DepSubGraph(inst, std::list<DepSubGraph*>(1,omsub->second));
         subGraphs.push_back(sub);
         lastModifiedBy[out] = sub;
         return;
@@ -75,23 +89,27 @@ void DepGraph::ufunc(cphvb_instruction* inst)
         if (!cphvb_is_constant(inst->operand[i]))
         {
             cphvb_array* in =  cphvb_base_array(inst->operand[i]);
-            DepSubGraph* imsub = lastModifiedBy.find(in);
+            auto imsub = lastModifiedBy.find(in);
             if (imsub != lastModifiedBy.end())
             {
-                dependsOn.push_back(imsub);
+                dependsOn.push_back(imsub->second);
             }
         }
     }
     switch (dependsOn.size())
     {
-    case 0:
+    case 0: 
+    {
         DepSubGraph* sub = new DepSubGraph(inst);
         subGraphs.push_back(sub);
         lastModifiedBy[out] = sub;        
         break;
+    }
     case 1:
+    {
         dependsOn.front()->add(inst);
         break;
+    }
     default:
         try 
         {
@@ -100,20 +118,20 @@ void DepGraph::ufunc(cphvb_instruction* inst)
             lastModifiedBy[out] = sub;
             for (DepSubGraph* &dsg: dependsOn)
             {
-                for (chpvb_array* &ba: dsg->getModified())
+                for (cphvb_array* ba: dsg->getModified())
                 {
                     if (lastModifiedBy[ba] == dsg)
                         lastModifiedBy[ba] = sub;
                 }
                 subGraphs.remove(dsg);
                 delete dsg;
-            } 
-            catch (DepSubGraphException  e) 
-            {
-                DepSubGraph* sub = new DepSubGraph(inst,dependsOn);
-                subGraphs.push_back(sub);
-                lastModifiedBy[out] = sub;
             }
+        }
+        catch (DepSubGraphException  e) 
+        {
+            DepSubGraph* sub = new DepSubGraph(inst,dependsOn);
+            subGraphs.push_back(sub);
+            lastModifiedBy[out] = sub;
         }
     }
 }
