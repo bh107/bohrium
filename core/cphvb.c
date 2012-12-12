@@ -106,8 +106,9 @@ cphvb_index cphvb_nelements(cphvb_intp ndim,
  */
 cphvb_index cphvb_array_size(const cphvb_array *array)
 {
-    return cphvb_nelements(array->ndim, array->shape) * 
-           cphvb_type_size(array->type);
+    const cphvb_array *b = cphvb_base_array(array);
+    return cphvb_nelements(b->ndim, b->shape) * 
+           cphvb_type_size(b->type);
 }
 
 /* Calculate the dimention boundries for shape
