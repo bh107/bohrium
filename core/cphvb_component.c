@@ -407,6 +407,7 @@ cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
     if(err != NULL)
     {
         *ret_func = NULL;//Make sure it is NULL on error.
+        fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
         return CPHVB_USERFUNC_NOT_SUPPORTED;
     }
     return CPHVB_SUCCESS;
