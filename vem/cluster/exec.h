@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_init(cphvb_component *self);
+cphvb_error exec_init(const char *component_name);
 
 
 /* Shutdown the VEM, which include a instruction flush
@@ -53,3 +53,14 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id);
  * @return Error codes (CPHVB_SUCCESS)
  */
 cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[]);
+
+
+/* Execute one instruction.
+ *
+ * @opcode The opcode of the instruction
+ * @operands  The operands in the instruction
+ * @inst_status The returned status of the instruction (output)
+ * @return Error codes of vem_execute()
+ */
+cphvb_error exec_inst(cphvb_opcode opcode, cphvb_array *operands[], 
+                      cphvb_error *inst_status);

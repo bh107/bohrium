@@ -4,7 +4,7 @@ SLAVE=cphvb_vem_cluster_slave
 CXX=mpic++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
-LDFLAGS=-L../../core -lcphvb -Wl -o $(SLAVE)
+LDFLAGS=-L../../core -lcphvb -ldl -Wl -o 
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJ=$(SRC:.cpp=.o)
@@ -16,10 +16,10 @@ all: $(LIB) $(SLAVE)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CXX) $(OBJ) -o $@ -shared $(LDFLAGS)
+		$(CXX) $(OBJ) -o $@ -shared $(LDFLAGS) $(LIB)
 
 $(SLAVE): $(OBJ)
-		$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(SLAVE)
 
 clean:
 		rm -rf *.o *~ $(LIB) $(SLAVE)
