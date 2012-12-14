@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cphvb.h>
 
 #include "cphvb_vem_cluster.h"
-#include "exchange.h"
 #include "mapping.h"
 #include "array.h"
 #include "pgrid.h"
