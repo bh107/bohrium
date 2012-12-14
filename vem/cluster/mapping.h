@@ -25,15 +25,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include <vector>
 
-/* Creates a list of loca array chunks that enables local
+/* Creates a list of local array chunks that enables local
  * execution of the instruction
  *
- * @inst The instruction to map
- * @chunks The output chunks
- * @chunks_ext The output chunks extention
- * @return Error codes (CPHVB_SUCCESS)
+ * @nop         Number of global array operands
+ * @operand     List of global array operands
+ * @chunks      The output chunks
+ * @chunks_ext  The output chunks extention
+ * @return      Error codes (CPHVB_SUCCESS, CPHVB_ERROR)
  */
-cphvb_error mapping_chunks(const cphvb_instruction *inst, 
+cphvb_error mapping_chunks(cphvb_intp nop,
+                           cphvb_array *operand[],
                            std::vector<cphvb_array>& chunks,  
                            std::vector<array_ext>& chunks_ext);
 
