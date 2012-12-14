@@ -27,7 +27,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include <limits>
 
-static cphvb_error find_largest_chunk(const cphvb_instruction *inst, 
+
+/* Finds the largest possible array chunk that is only located on one process.
+ * 
+ * @nop         Number of global array operands
+ * @operand    List of global array operands
+ * @chunks      List of the returned array chunks (output)
+ * @chunks_ext  List of the returned array chunks extensions (output)
+ * @start_coord The start coordinate of this chunk search
+ * @end_coord   The end coordinate of this chunk search
+ * @new_coord   The new coordinate for the next chunk search (output)
+ */
+static cphvb_error find_largest_chunk(cphvb_intp nop,
+                                      cphvb_array *operand[], 
                                       std::vector<cphvb_array>& chunks,  
                                       std::vector<array_ext>& chunks_ext,
                                       const cphvb_intp start_coord[],
@@ -35,15 +47,14 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
                                       cphvb_intp new_coord[])
 {
     cphvb_intp first_chunk = chunks.size();
-    cphvb_intp ndim = inst->operand[0]->ndim;
+    cphvb_intp ndim = operand[0]->ndim;
     cphvb_intp shape[CPHVB_MAXDIM];
     for(cphvb_intp d=0; d < ndim; ++d)
         shape[d] = std::numeric_limits<cphvb_intp>::max();
 
-    cphvb_intp nop = cphvb_operands_in_instruction(inst);
     for(cphvb_intp o=0; o < nop; ++o)
     {
-        const cphvb_array *ary = inst->operand[o];
+        const cphvb_array *ary = operand[o];
         if(cphvb_is_constant(ary))
         {
             //Save a dummy chunk
@@ -125,7 +136,7 @@ static cphvb_error find_largest_chunk(const cphvb_instruction *inst,
     //Save the largest possible shape found to all chunks
     for(cphvb_intp o=0; o < nop; ++o)
     {
-        if(cphvb_is_constant(inst->operand[o]))
+        if(cphvb_is_constant(operand[o]))
             continue;
         cphvb_array *ary = &chunks[first_chunk+o];
         array_ext *ary_ext = &chunks_ext[first_chunk+o];
@@ -164,9 +175,9 @@ static cphvb_error get_chunks(const cphvb_instruction *inst,
     for(cphvb_intp d=0; d < ndim; ++d)
         if(start_coord[d] >= end_coord[d])
             return CPHVB_SUCCESS;
-    
-    if((err = find_largest_chunk(inst, chunks, chunks_ext, 
-              start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
+   
+    if((err = find_largest_chunk(cphvb_operands_in_instruction(inst), cphvb_inst_operands(inst),
+                                 chunks, chunks_ext, start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
         return err;
 
     cphvb_intp corner[CPHVB_MAXDIM];
