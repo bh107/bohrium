@@ -47,6 +47,10 @@ static cphvb_component *myself;
 
 //Number of user-defined functions registered.
 static cphvb_intp userfunc_count = 0;
+//User-defined function IDs.
+static cphvb_userfunc_impl reduce_impl = NULL;
+static cphvb_intp reduce_impl_id = 0;
+
 
 /* Initialize the VEM
  *
@@ -127,14 +131,31 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
     cphvb_error e;
     
     if(*id == 0)//Only if parent didn't set the ID.
+    {
         *id = ++userfunc_count;
+        assert(pgrid_myrank == 0);
+    }
 
     if((e = vem_reg_func(fun, id)) != CPHVB_SUCCESS)
     {
         *id = 0;
         return e;
     }
-    return e;
+
+    if(strcmp("cphvb_reduce", fun) == 0)
+    {
+        if(reduce_impl == NULL)
+        {
+            cphvb_component_get_func(myself, fun, &reduce_impl);
+            if (reduce_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
+
+            reduce_impl_id = *id;
+            return CPHVB_SUCCESS;           
+        }
+    }
+
+    return CPHVB_SUCCESS;
 }
 
 
@@ -370,126 +391,9 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
     return CPHVB_SUCCESS;
 }
 
-/*
-    //Local copy of the instruction list
-    cphvb_instruction local_inst[count];
-    cphvb_error err;
-    int NPROC = 3;
 
 
-    //Exchange the instruction list between all processes and
-    //update all operand pointers to local pointers
-//    cphvb_pprint_instr_list(inst_list, count, "CLUSTER GLOBAL");
-    exchange_inst_bridge2vem(count, inst_list, local_inst);
-//    cphvb_pprint_instr_list(local_inst, count, "CLUSTER LOCAL");
-
-    for(cphvb_intp i=0; i < count; ++i)
-    {
-        cphvb_instruction* inst = &local_inst[i];
-        assert(inst->opcode >= 0);
-        switch(inst->opcode) 
-        {
-            case CPHVB_DISCARD:
-            {
-                cphvb_array *op = inst->operand[0];
-                if(cphvb_base_array(op) == op &&//This is a base array
-                   op->base != NULL)//and has local allocated memory
-                {
-                    cphvb_instruction new_inst;
-                    new_inst.opcode     = CPHVB_FREE;
-                    new_inst.status     = CPHVB_INST_PENDING;
-                    new_inst.operand[0] = op;
-                    err = vem_execute(1, &new_inst);
-                    local_inst[i].status = new_inst.status;
-                    inst_list[i].status  = new_inst.status;
-                    if(err != CPHVB_SUCCESS)
-                        return err; 
-                }
-                exchange_inst_discard(op);
-            }
-            case CPHVB_USERFUNC:
-            case CPHVB_FREE:
-            case CPHVB_NONE:
-            {
-                err = vem_execute(1, inst);
-                local_inst[i].status = inst->status;
-                inst_list[i].status = inst->status;
-                if(err != CPHVB_SUCCESS)
-                    return err; 
-                break;
-            }
-            case CPHVB_SYNC:
-            {
-                err = vem_execute(1, inst);
-                local_inst[i].status = inst->status;
-                inst_list[i].status = inst->status;
-                if(err != CPHVB_SUCCESS)
-                    return err; 
-                
-                //Update the Bridge's instruction list
-                exchange_inst_vem2bridge(1,inst,&inst_list[i]);                
-                break;
-            }
-            default:
-            {
-                cphvb_instruction new_inst;
-                std::vector<cphvb_array> chunks;
-                std::vector<array_ext> chunks_ext;
-                err = mapping_chunks(NPROC, inst, chunks, chunks_ext);
-                if(err != CPHVB_SUCCESS)
-                {
-                    inst->status = CPHVB_INST_PENDING;
-                    return err;
-                }
-
-                assert(chunks.size() > 0);
-                for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();
-                    c += cphvb_operands_in_instruction(inst))
-                {
-                    new_inst = *inst;
-                    for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
-                    {
-                        if(!cphvb_is_constant(inst->operand[k]))
-                        {
-                            cphvb_array *ary = &chunks[k+c];
-                            //Only for the local test.
-                            {
-                                cphvb_intp totalsize=1;
-                                for(cphvb_intp d=0; d < cphvb_base_array(ary)->ndim; ++d)
-                                    totalsize *= cphvb_base_array(ary)->shape[d];
-                                cphvb_intp localsize = totalsize / NPROC;
-                                if(localsize == 0)
-                                    localsize = 1;
-                                ary->start += localsize * chunks_ext[k+c].rank;
-                            } 
-                            new_inst.operand[k] = ary;
-                        }
-                    }
-                    new_inst.status = CPHVB_INST_PENDING;
-                    err = vem_execute(1, &new_inst);
-                    local_inst[i].status = new_inst.status;
-                    inst_list[i].status = new_inst.status;                            
-                    if(err != CPHVB_SUCCESS)
-                        return err;
-    
-                    //Discard the created array-views
-                    for(cphvb_intp k=0; k < cphvb_operands_in_instruction(inst); ++k)
-                    {
-                        if(!cphvb_is_constant(inst->operand[k]))
-                        {
-                            new_inst.opcode = CPHVB_DISCARD;
-                            new_inst.status = CPHVB_INST_PENDING;
-                            new_inst.operand[0] = &chunks[k+c];
-                            err = vem_execute(1, &new_inst);
-                            local_inst[i].status = new_inst.status;
-                            inst_list[i].status = new_inst.status;                            
-                            if(err != CPHVB_SUCCESS)
-                                return err;
-                        }
-                    }
-                }
-            }
-        }
-    }
+cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
+{
     return CPHVB_SUCCESS;
-*/
+}
