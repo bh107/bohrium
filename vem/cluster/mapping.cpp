@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 /* Finds the largest possible array chunk that is only located on one process.
  * 
  * @nop         Number of global array operands
- * @operand    List of global array operands
+ * @operand     List of global array operands
  * @chunks      List of the returned array chunks (output)
  * @chunks_ext  List of the returned array chunks extensions (output)
  * @start_coord The start coordinate of this chunk search
@@ -161,13 +161,24 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
     return CPHVB_SUCCESS;
 }
 
-static cphvb_error get_chunks(const cphvb_instruction *inst, 
+/* Retrieves the set of array chunks that makes up the complete 
+ * local array-view.
+ * 
+ * @nop         Number of global array operands
+ * @operand     List of global array operands
+ * @chunks      List of the returned array chunks (output)
+ * @chunks_ext  List of the returned array chunks extensions (output)
+ * @start_coord The start coordinate of this chunk search
+ * @end_coord   The end coordinate of this chunk search
+ */
+static cphvb_error get_chunks(cphvb_intp nop,
+                              cphvb_array *operand[], 
                               std::vector<cphvb_array>& chunks,  
                               std::vector<array_ext>& chunks_ext,
                               const cphvb_intp start_coord[],
                               const cphvb_intp end_coord[])
 {
-    cphvb_intp ndim = inst->operand[0]->ndim;
+    cphvb_intp ndim = operand[0]->ndim;
     cphvb_intp new_start_coord[CPHVB_MAXDIM];
     cphvb_error err;
 
@@ -176,8 +187,8 @@ static cphvb_error get_chunks(const cphvb_instruction *inst,
         if(start_coord[d] >= end_coord[d])
             return CPHVB_SUCCESS;
    
-    if((err = find_largest_chunk(cphvb_operands_in_instruction(inst), cphvb_inst_operands(inst),
-                                 chunks, chunks_ext, start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
+    if((err = find_largest_chunk(nop, operand, chunks, chunks_ext, 
+              start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
         return err;
 
     cphvb_intp corner[CPHVB_MAXDIM];
@@ -203,7 +214,7 @@ static cphvb_error get_chunks(const cphvb_instruction *inst,
         }
 
         //Goto the next start cood
-        if((err = get_chunks(inst, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
+        if((err = get_chunks(nop, operand, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
             return err;
 
         //Go to next corner
@@ -236,7 +247,7 @@ cphvb_error mapping_chunks(const cphvb_instruction *inst,
 {
     cphvb_intp coord[CPHVB_MAXDIM];
     memset(coord, 0, inst->operand[0]->ndim * sizeof(cphvb_intp));
-    return get_chunks(inst, chunks, chunks_ext, coord, inst->operand[0]->shape);
+    return get_chunks(cphvb_operands_in_instruction(inst), cphvb_inst_operands(inst), chunks, chunks_ext, coord, inst->operand[0]->shape);
 }
 
 
