@@ -36,46 +36,60 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
 {
     assert(global_ary->base == NULL);
     cphvb_error err;
+    cphvb_array *local_ary = array_get_local(global_ary);
     cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
 
     if(totalsize <= 0)
         return CPHVB_SUCCESS;
 
+    //Find the local size for all processes
     int sendcnts[pgrid_worldsize], displs[pgrid_worldsize];
-    cphvb_intp localsize = totalsize / pgrid_worldsize;//local size for all but the last process
-    localsize *= cphvb_type_size(global_ary->type);
-    for(int i=0; i<pgrid_worldsize; ++i)
     {
-        sendcnts[i] = localsize;
-        displs[i] = localsize * i;
-    }
-    //The last process gets the rest
-    sendcnts[pgrid_worldsize-1] += totalsize % pgrid_worldsize * cphvb_type_size(global_ary->type);
-    
-    //Get local array
-    cphvb_array *local_ary = array_get_local(global_ary);
-
-    //We may need to do some memory allocations
-    if(pgrid_myrank == 0)
-    {
-        if(global_ary->data == NULL)    
+        cphvb_intp s = totalsize / pgrid_worldsize;//local size for all but the last process
+        s *= cphvb_type_size(global_ary->type);
+        for(int i=0; i<pgrid_worldsize; ++i)
         {
-            if((err = cphvb_data_malloc(global_ary)) != CPHVB_SUCCESS)
-                return err;
+            sendcnts[i] = s;
+            displs[i] = s * i;
         }
+        //The last process gets the rest
+        sendcnts[pgrid_worldsize-1] += totalsize % pgrid_worldsize * cphvb_type_size(global_ary->type);
     }
-    if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
-         return err;
-    
+
     int e;
     if(scatter)
     {
+        //The slave-processes may need to allocate memory
+        if(sendcnts[pgrid_myrank] > 0 && local_ary->data == NULL)
+        {
+            if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
+                return err;
+        }
+        //The master-process MUST have allocated memory already
+        assert(pgrid_myrank != 0 || global_ary->data != NULL);
+        
+        //Scatter from master to slaves
         e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
                          local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
                          0, MPI_COMM_WORLD);
     }
     else
     {
+        //The master-processes may need to allocate memory
+        if(pgrid_myrank == 0 && global_ary->data == NULL)
+        {
+            if((err = cphvb_data_malloc(global_ary)) != CPHVB_SUCCESS)
+                return err;
+        }
+        
+        //We will always allocate the local array when gathering because 
+        //only the last process knows if the array has been initiated.
+        if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
+            return err;
+    
+        assert(sendcnts[pgrid_myrank] == 0 || local_ary->data != NULL);
+        
+        //Gather from the slaves to the master
         e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
                         global_ary->data, sendcnts, displs, MPI_BYTE, 
                         0, MPI_COMM_WORLD);
@@ -90,6 +104,7 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
 
 
 /* Distribute the global array data to all slave processes.
+ * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.
  * 
  * @global_ary Global base array

@@ -237,6 +237,14 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
             return e;
         }
+
+        //We have to make sure that the master-process has allocated memory
+        //because the slaves cannot determine it.
+        if(pgrid_myrank == 0)        
+        {
+            if((e = cphvb_data_malloc(base)) != CPHVB_SUCCESS)
+                return e;
+        }    
         
         if((e = comm_master2slaves(base)) != CPHVB_SUCCESS)
             return e;

@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Distribute the global array data to all slave processes.
+ * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.
  * 
  * @global_ary Global base array
