@@ -377,7 +377,8 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             case CPHVB_SYNC:
             {
-                if((e = comm_slaves2master(inst->operand[0])) != CPHVB_SUCCESS)
+                cphvb_array *base = cphvb_base_array(inst->operand[0]);
+                if((e = comm_slaves2master(base) != CPHVB_SUCCESS))
                     return e;
                 break;
             }
