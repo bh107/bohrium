@@ -181,7 +181,7 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
         {
             cphvb_array *ops[] = {&tmp_ary, local_ary};
             cphvb_error status;
-            e = exec_inst(CPHVB_IDENTITY, ops, &status);
+            e = exec_local_inst(CPHVB_IDENTITY, ops, NULL, &status);
             if(e != CPHVB_SUCCESS)
             {
                 fprintf(stderr, "Error while sending: copy "

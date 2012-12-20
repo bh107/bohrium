@@ -158,26 +158,30 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
 }
 
 
-/* Execute one instruction.
+/* Execute one instruction locally.
  *
- * @opcode The opcode of the instruction
- * @operands  The operands in the instruction
+ * @opcode   The opcode of the instruction
+ * @operands The local operands in the instruction
+ * @ufunc  The user-defined function struct when opcode is CPHVB_USERFUNC.
  * @inst_status The returned status of the instruction (output)
  * @return Error codes of vem_execute()
  */
-cphvb_error exec_inst(cphvb_opcode opcode, cphvb_array *operands[], 
-                      cphvb_error *inst_status)
+cphvb_error exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
+                            cphvb_userfunc *ufunc, cphvb_error *inst_status)
 {
     cphvb_error e;
-
     cphvb_instruction new_inst;
     new_inst.opcode = opcode;
     new_inst.status = CPHVB_INST_PENDING;
-    int nop = cphvb_operands(opcode);
+    if(ufunc != NULL)
+    {
+        assert(opcode == CPHVB_USERFUNC);
+        memcpy(new_inst.userfunc, ufunc, ufunc->struct_size);
+    }
+    if(ufunc == NULL)
+        memcpy(new_inst.operand, operands, cphvb_operands(opcode) 
+                                           * sizeof(cphvb_array*));
     
-    for(int i=0; i<nop; ++i)
-        new_inst.operand[i] = operands[i];
-
     if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
         *inst_status = new_inst.status;
     else 
@@ -205,7 +209,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
 
         cphvb_array *base = cphvb_base_array(op);
-        if((e = exec_inst(CPHVB_SYNC, &base, &stat)) != CPHVB_SUCCESS)
+        if((e = exec_local_inst(CPHVB_SYNC, &base, NULL, &stat)) != CPHVB_SUCCESS)
         {
             fprintf(stderr, "Error in fallback_exec() when executing "
             "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
@@ -231,7 +235,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
         cphvb_array *base = cphvb_base_array(op);
         
-        if((e = exec_inst(CPHVB_SYNC, &base, &stat)) != CPHVB_SUCCESS)
+        if((e = exec_local_inst(CPHVB_SYNC, &base, NULL, &stat)) != CPHVB_SUCCESS)
         {
             fprintf(stderr, "Error in fallback_exec() when executing "
             "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
@@ -250,7 +254,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             return e;
 
         //TODO: need to discard all bases aswell
-        if((e = exec_inst(CPHVB_DISCARD, &op, &stat)) != CPHVB_SUCCESS)
+        if((e = exec_local_inst(CPHVB_DISCARD, &op, NULL, &stat)) != CPHVB_SUCCESS)
         {
             fprintf(stderr, "Error in fallback_exec() when executing "
             "CPHVB_DISCARD: instruction status: %s\n",cphvb_error_text(stat));
@@ -318,7 +322,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
                 continue;
             
             cphvb_array *ary = cphvb_base_array(&chunks[k+c]);
-            if((e = exec_inst(CPHVB_SYNC, &ary, &stat)) != CPHVB_SUCCESS)
+            if((e = exec_local_inst(CPHVB_SYNC, &ary, NULL, &stat)) != CPHVB_SUCCESS)
             {
                 fprintf(stderr, "Error in execute_regular() when executing "
                 "CPHVB_SYNC: instruction status: %s\n",cphvb_error_text(stat));
@@ -327,7 +331,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 
             //TODO: need to discard all bases aswell
             ary = &chunks[k+c];
-            if((e = exec_inst(CPHVB_DISCARD, &ary, &stat)) != CPHVB_SUCCESS)
+            if((e = exec_local_inst(CPHVB_DISCARD, &ary, NULL, &stat)) != CPHVB_SUCCESS)
             {
                 fprintf(stderr, "Error in execute_regular() when executing "
                 "CPHVB_DISCARD: instruction status: %s\n",cphvb_error_text(stat));
