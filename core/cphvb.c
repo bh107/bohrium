@@ -128,6 +128,19 @@ void cphvb_dimbound(cphvb_intp ndim,
     }
 }
 
+/* Set the array stride to continuous row-major
+ *
+ * @array    The array in question
+ */
+void cphvb_set_continuous_stride(cphvb_array *array)
+{
+    cphvb_intp s = 1;
+    for(cphvb_intp i=array->ndim-1; i >= 0; --i)
+    {    
+        array->stride[i] = s;
+        s *= array->shape[i];
+    }
+}
 
 /* Calculate the offset into an array based on element index
  *
