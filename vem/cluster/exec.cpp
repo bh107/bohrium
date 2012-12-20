@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include "dispatch.h"
 #include "comm.h"
+#include "ufunc_reduce.h"
 
 
 //Function pointers to the Node VEM.
@@ -173,15 +174,14 @@ cphvb_error exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
     cphvb_instruction new_inst;
     new_inst.opcode = opcode;
     new_inst.status = CPHVB_INST_PENDING;
-    if(ufunc != NULL)
-    {
-        assert(opcode == CPHVB_USERFUNC);
-        memcpy(new_inst.userfunc, ufunc, ufunc->struct_size);
-    }
+    new_inst.userfunc = ufunc;
     if(ufunc == NULL)
+    {
+        assert(opcode != CPHVB_USERFUNC);
         memcpy(new_inst.operand, operands, cphvb_operands(opcode) 
                                            * sizeof(cphvb_array*));
-    
+    }
+   
     if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
         *inst_status = new_inst.status;
     else 
@@ -223,6 +223,8 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
     //Do global instruction
     if(pgrid_myrank == 0)
     {
+        assert(cphvb_nelements(inst->operand[0]->ndim, 
+                               inst->operand[0]->shape) > 0);
         if((e = vem_execute(1, inst)) != CPHVB_SUCCESS)
             return e;
     }
@@ -288,6 +290,8 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
     //Handle one chunk at a time.
     for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();c += nop)
     {
+        assert(cphvb_nelements(chunks[0].ndim, chunks[0].shape) > 0);
+
         //The process where the output chunk is located will do the computation.
         int owner_rank = chunks_ext[0+c].rank;
 
@@ -347,7 +351,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 /* Execute a list of instructions where all operands are global arrays
  *
  * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes
  */
 cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
 {
@@ -372,8 +376,20 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             case CPHVB_USERFUNC:
             {
-                if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
-                    return e;
+                if (inst->userfunc->id == reduce_impl_id) 
+                {
+                    //TODO: the cphvb_reduce is hardcoded for now.
+                    inst->status = cphvb_reduce(inst->userfunc, NULL);
+                    if(inst->status == CPHVB_ERROR)
+                        return CPHVB_ERROR;
+                    if(inst->status != CPHVB_SUCCESS)
+                        return CPHVB_PARTIAL_SUCCESS;
+                }
+                else
+                {
+                    if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
+                        return e;
+                }
                 break;
             }
             case CPHVB_FREE:
@@ -408,5 +424,9 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
 
 cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
 {
-    return CPHVB_SUCCESS;
+    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;   // Grab function arguments
+    cphvb_opcode opcode = a->opcode;                    // Opcode
+    cphvb_index axis    = a->axis;                      // The axis to reduce 
+
+    return ufunc_reduce(opcode, axis, a->operand, reduce_impl_id);
 }
