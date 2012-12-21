@@ -62,9 +62,23 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
     cphvb_array bcast_output = *operand[0];
     bcast_output.base        = cphvb_base_array(operand[0]);
     bcast_output.ndim        = operand[1]->ndim;
-    memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(cphvb_intp));
-    memcpy(bcast_output.stride, operand[1]->stride, bcast_output.ndim * sizeof(cphvb_intp));
-    bcast_output.stride[axis] = 0;
+
+    if(operand[1]->ndim == 1)//"Reducing" to a scalar.
+    {
+        bcast_output.shape[0] = operand[1]->shape[0];
+        bcast_output.stride[0] = 0;
+    }
+    else
+    {
+        memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(cphvb_intp));
+
+        //Insert a zero-stride into the 'axis' dimension
+        for(cphvb_intp i=0; i<axis; ++i)
+            bcast_output.stride[i] = operand[0]->stride[i];
+        bcast_output.stride[axis] = 0;
+        for(cphvb_intp i=axis+1; i<bcast_output.ndim; ++i)
+            bcast_output.stride[i] = operand[0]->stride[i-1];
+    }
 
     cphvb_array *operands[] = {&bcast_output, operand[1]};
     if((e = mapping_chunks(2, operands, chunks, chunks_ext)) != CPHVB_SUCCESS)
@@ -81,11 +95,18 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
  
         //Lets remove the "broadcasted" dimension from the output again
         out->ndim = operand[0]->ndim;
-        for(cphvb_intp i=axis; i<out->ndim; ++i)
+        if(in->ndim == 1)//Reducing to a scalar
         {
-            out->shape[i] = out->shape[i+1];
-            out->stride[i] = out->stride[i+1];
-        
+            out->shape[0] = 1;
+            out->stride[0] = 1;
+        }
+        else
+        {    
+            for(cphvb_intp i=axis; i<out->ndim; ++i)
+            {
+                out->shape[i] = out->shape[i+1];
+                out->stride[i] = out->stride[i+1];
+            }
         }
 
         //Lets make sure that all processes have the need input data.
