@@ -121,6 +121,8 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         //We need a tmp output array.
         cphvb_array tmp = *out;
         tmp.base = NULL;
+        tmp.data = NULL;
+        tmp.start = 0;
         cphvb_set_continuous_stride(&tmp);
         
         //Create a reduce instruction
