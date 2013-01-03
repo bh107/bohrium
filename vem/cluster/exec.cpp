@@ -223,8 +223,6 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
     //Do global instruction
     if(pgrid_myrank == 0)
     {
-        assert(cphvb_nelements(inst->operand[0]->ndim, 
-                               inst->operand[0]->shape) > 0);
         if((e = vem_execute(1, inst)) != CPHVB_SUCCESS)
             return e;
     }
