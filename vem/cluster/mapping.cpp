@@ -33,15 +33,13 @@ If not, see <http://www.gnu.org/licenses/>.
  * @nop         Number of global array operands
  * @operand     List of global array operands
  * @chunks      List of the returned array chunks (output)
- * @chunks_ext  List of the returned array chunks extensions (output)
  * @start_coord The start coordinate of this chunk search
  * @end_coord   The end coordinate of this chunk search
  * @new_coord   The new coordinate for the next chunk search (output)
  */
 static cphvb_error find_largest_chunk(cphvb_intp nop,
                                       cphvb_array *operand[], 
-                                      std::vector<cphvb_array>& chunks,  
-                                      std::vector<array_ext>& chunks_ext,
+                                      std::vector<ary_chunk>& chunks,  
                                       const cphvb_intp start_coord[],
                                       const cphvb_intp end_coord[],
                                       cphvb_intp new_coord[])
@@ -58,10 +56,8 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
         if(cphvb_is_constant(ary))
         {
             //Save a dummy chunk
-            cphvb_array chunk;
-            array_ext chunk_ext;
+            ary_chunk chunk;
             chunks.push_back(chunk);
-            chunks_ext.push_back(chunk_ext);
             continue;
         }
 
@@ -111,25 +107,23 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
             offset += (dim-1) * ary->stride[d];
         }
         //Save the chunk
-        cphvb_array chunk;
-        array_ext chunk_ext;
-        chunk_ext.rank = rank;
-        chunk.type     = ary->type;
-        chunk.ndim     = ary->ndim;
-        chunk.data     = NULL;
+        ary_chunk chunk;
+        chunk.rank      = rank;
+        chunk.ary.type  = ary->type;
+        chunk.ary.ndim  = ary->ndim;
+        chunk.ary.data  = NULL;
         if(pgrid_myrank == rank)//This is a local array
         {
-            chunk.start = start;
-            chunk.base = array_get_local(cphvb_base_array(ary));
-            memcpy(chunk.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
+            chunk.ary.start = start;
+            chunk.ary.base = array_get_local(cphvb_base_array(ary));
+            memcpy(chunk.ary.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
         }
         else//This is a remote array thus we treat it as a base array.
         {   //Note we will set the stride when we know the final shape
-            chunk.base = NULL;
-            chunk.start = 0;
+            chunk.ary.base = NULL;
+            chunk.ary.start = 0;
         }
         chunks.push_back(chunk);
-        chunks_ext.push_back(chunk_ext);
         assert(0 <= rank && rank < pgrid_worldsize);
     }
 
@@ -138,18 +132,17 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
     {
         if(cphvb_is_constant(operand[o]))
             continue;
-        cphvb_array *ary = &chunks[first_chunk+o];
-        array_ext *ary_ext = &chunks_ext[first_chunk+o];
+        ary_chunk *chunk = &chunks[first_chunk+o];
 
-        memcpy(ary->shape, shape, ndim * sizeof(cphvb_intp));
+        memcpy(chunk->ary.shape, shape, ndim * sizeof(cphvb_intp));
         
-        if(ary_ext->rank != pgrid_myrank)
+        if(chunk->rank != pgrid_myrank)
         {   //Now we know the strides of the remote array.
             cphvb_intp s = 1;
-            for(cphvb_intp i=ary->ndim-1; i >= 0; --i)
+            for(cphvb_intp i=chunk->ary.ndim-1; i >= 0; --i)
             {    
-                ary->stride[i] = s;
-                s *= ary->shape[i];
+                chunk->ary.stride[i] = s;
+                s *= chunk->ary.shape[i];
             }
         }
     }
@@ -167,14 +160,12 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
  * @nop         Number of global array operands
  * @operand     List of global array operands
  * @chunks      List of the returned array chunks (output)
- * @chunks_ext  List of the returned array chunks extensions (output)
  * @start_coord The start coordinate of this chunk search
  * @end_coord   The end coordinate of this chunk search
  */
 static cphvb_error get_chunks(cphvb_intp nop,
                               cphvb_array *operand[], 
-                              std::vector<cphvb_array>& chunks,  
-                              std::vector<array_ext>& chunks_ext,
+                              std::vector<ary_chunk>& chunks,  
                               const cphvb_intp start_coord[],
                               const cphvb_intp end_coord[])
 {
@@ -187,7 +178,7 @@ static cphvb_error get_chunks(cphvb_intp nop,
         if(start_coord[d] >= end_coord[d])
             return CPHVB_SUCCESS;
    
-    if((err = find_largest_chunk(nop, operand, chunks, chunks_ext, 
+    if((err = find_largest_chunk(nop, operand, chunks, 
               start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
         return err;
 
@@ -214,7 +205,7 @@ static cphvb_error get_chunks(cphvb_intp nop,
         }
 
         //Goto the next start cood
-        if((err = get_chunks(nop, operand, chunks, chunks_ext, start, end)) != CPHVB_SUCCESS)
+        if((err = get_chunks(nop, operand, chunks, start, end)) != CPHVB_SUCCESS)
             return err;
 
         //Go to next corner
@@ -239,17 +230,15 @@ static cphvb_error get_chunks(cphvb_intp nop,
  * @nop         Number of global array operands
  * @operand     List of global array operands
  * @chunks      The output chunks
- * @chunks_ext  The output chunks extention
  * @return      Error codes (CPHVB_SUCCESS, CPHVB_ERROR)
  */
 cphvb_error mapping_chunks(cphvb_intp nop,
                            cphvb_array *operand[],
-                           std::vector<cphvb_array>& chunks,  
-                           std::vector<array_ext>& chunks_ext)
+                           std::vector<ary_chunk>& chunks) 
 {
     cphvb_intp coord[CPHVB_MAXDIM];
     memset(coord, 0, operand[0]->ndim * sizeof(cphvb_intp));
-    return get_chunks(nop, operand, chunks, chunks_ext, coord, operand[0]->shape);
+    return get_chunks(nop, operand, chunks, coord, operand[0]->shape);
 }
 
 

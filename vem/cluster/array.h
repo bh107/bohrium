@@ -24,12 +24,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __CPHVB_VEM_CLUSTER_DARRAY_H
 
 
-//Extension to the cphvb_array for cluster information
+//Local array chunk
 typedef struct
 {
-    //Process rank that owns the array.
+    //Process rank that owns this array chunk.
     int rank;
-}array_ext;
+    //Local array chunk
+    cphvb_array ary;
+}ary_chunk;
  
 
 /* Returns the local number of elements in an array.

@@ -273,12 +273,10 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
 static cphvb_error execute_regular(cphvb_instruction *inst)
 {
     cphvb_error e, stat; 
-    std::vector<cphvb_array> chunks;
-    std::vector<array_ext> chunks_ext;
+    std::vector<ary_chunk> chunks;
     int nop = cphvb_operands_in_instruction(inst);
 
-    if((e = mapping_chunks(nop, cphvb_inst_operands(inst), 
-                           chunks, chunks_ext)) != CPHVB_SUCCESS)
+    if((e = mapping_chunks(nop, cphvb_inst_operands(inst), chunks)) != CPHVB_SUCCESS)
     {
         inst->status = CPHVB_INST_PENDING;
         return e;
@@ -286,12 +284,12 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 
     assert(chunks.size() > 0);
     //Handle one chunk at a time.
-    for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();c += nop)
+    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {
-        assert(cphvb_nelements(chunks[0].ndim, chunks[0].shape) > 0);
+        assert(cphvb_nelements(chunks[0].ary.ndim, chunks[0].ary.shape) > 0);
 
         //The process where the output chunk is located will do the computation.
-        int owner_rank = chunks_ext[0+c].rank;
+        int owner_rank = chunks[0+c].rank;
 
         //Create a local instruction based on the array-chunks
         cphvb_instruction local_inst = *inst;
@@ -299,10 +297,9 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
         {
             if(!cphvb_is_constant(inst->operand[k]))
             {
-                cphvb_array *ary = &chunks[k+c];
-                array_ext *ary_ext = &chunks_ext[k+c];
-                local_inst.operand[k] = ary;
-                comm_array_data(ary, ary_ext, owner_rank);
+                ary_chunk *chunk = &chunks[k+c];
+                local_inst.operand[k] = &chunk->ary;
+                comm_array_data(chunk, owner_rank);
             }
         }
 
@@ -323,7 +320,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
             if(cphvb_is_constant(inst->operand[k]))
                 continue;
             
-            cphvb_array *ary = cphvb_base_array(&chunks[k+c]);
+            cphvb_array *ary = cphvb_base_array(&chunks[k+c].ary);
             if((e = exec_local_inst(CPHVB_SYNC, &ary, NULL, &stat)) != CPHVB_SUCCESS)
             {
                 fprintf(stderr, "Error in execute_regular() when executing "
@@ -332,7 +329,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
             }
 
             //TODO: need to discard all bases aswell
-            ary = &chunks[k+c];
+            ary = &chunks[k+c].ary;
             if((e = exec_local_inst(CPHVB_DISCARD, &ary, NULL, &stat)) != CPHVB_SUCCESS)
             {
                 fprintf(stderr, "Error in execute_regular() when executing "

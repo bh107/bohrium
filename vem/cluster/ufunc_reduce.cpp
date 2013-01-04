@@ -54,8 +54,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
             assert(1==2);
     }
 
-    std::vector<cphvb_array> chunks;
-    std::vector<array_ext> chunks_ext;
+    std::vector<ary_chunk> chunks;
 
     //For the mapping we have to "broadcast" the 'axis' dimension to an 
     //output array view.
@@ -81,17 +80,17 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
     }
 
     cphvb_array *operands[] = {&bcast_output, operand[1]};
-    if((e = mapping_chunks(2, operands, chunks, chunks_ext)) != CPHVB_SUCCESS)
+    if((e = mapping_chunks(2, operands, chunks)) != CPHVB_SUCCESS)
         return e;
 
     assert(chunks.size() > 0);
     //Handle one chunk at a time.
-    for(std::vector<cphvb_array>::size_type c=0; c < chunks.size();c += 2)
+    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
     {
-        cphvb_array *out  = &chunks[c];
-        cphvb_array *in   = &chunks[c+1];
-        array_ext *in_ext = &chunks_ext[c+1]; 
-        int out_rank      = chunks_ext[c].rank;
+        ary_chunk *out_chunk = &chunks[c];
+        ary_chunk *in_chunk  = &chunks[c+1];
+        cphvb_array *out     = &out_chunk->ary;
+        cphvb_array *in      = &in_chunk->ary;
  
         //Lets remove the "broadcasted" dimension from the output again
         out->ndim = operand[0]->ndim;
@@ -110,9 +109,9 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         }
 
         //Lets make sure that all processes have the need input data.
-        comm_array_data(in, in_ext, out_rank);
+        comm_array_data(in_chunk, out_chunk->rank);
 
-        if(pgrid_myrank != out_rank)
+        if(pgrid_myrank != out_chunk->rank)
             continue;//We do not own the output chunk
         
         assert(cphvb_base_array(in)->data != NULL); 

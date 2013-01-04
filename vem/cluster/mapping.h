@@ -31,12 +31,10 @@ If not, see <http://www.gnu.org/licenses/>.
  * @nop         Number of global array operands
  * @operand     List of global array operands
  * @chunks      The output chunks
- * @chunks_ext  The output chunks extention
  * @return      Error codes (CPHVB_SUCCESS, CPHVB_ERROR)
  */
 cphvb_error mapping_chunks(cphvb_intp nop,
                            cphvb_array *operand[],
-                           std::vector<cphvb_array>& chunks,  
-                           std::vector<array_ext>& chunks_ext);
+                           std::vector<ary_chunk>& chunks);
 
 #endif

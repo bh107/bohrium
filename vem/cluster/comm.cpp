@@ -127,21 +127,22 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary)
 
 
 /* Communicate array data such that the processes can apply local computation.
- * This function may reshape the input array.
+ * This function may reshape the input array chunk.
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
  *     
- * @local_ary The local array to communicate
- * @local_ary_ext The local array extention
+ * @chunk The local array chunk to communicate
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext, 
-                            int receiving_rank)
+cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
 {
     cphvb_error e;
+    cphvb_array *local_ary = &chunk->ary;
+    int rank = chunk->rank;
+
     //Check if communication is even necessary
-    if(local_ary_ext->rank == receiving_rank)
+    if(rank == receiving_rank)
     {
         MPI_Barrier(MPI_COMM_WORLD);
         return CPHVB_SUCCESS;
@@ -158,10 +159,10 @@ cphvb_error comm_array_data(cphvb_array *local_ary, array_ext *local_ary_ext,
             return e;
         
         MPI_Recv(local_ary->data, cphvb_array_size(local_ary), MPI_BYTE, 
-                 local_ary_ext->rank, 0,
+                 rank, 0,
                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    else if(pgrid_myrank == local_ary_ext->rank)
+    else if(pgrid_myrank == rank)
     {
         //We need to copy the local array view into a base array.
         cphvb_array tmp_ary = *local_ary;
