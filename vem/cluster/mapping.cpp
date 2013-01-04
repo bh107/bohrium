@@ -112,6 +112,7 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
         chunk.ary.type  = ary->type;
         chunk.ary.ndim  = ary->ndim;
         chunk.ary.data  = NULL;
+        memcpy(&chunk.coord, start_coord, ndim * sizeof(cphvb_intp));
         if(pgrid_myrank == rank)//This is a local array
         {
             chunk.ary.start = start;

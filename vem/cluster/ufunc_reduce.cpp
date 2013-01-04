@@ -27,6 +27,40 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "exec.h"
 #include "comm.h"
 
+/* Reduces the input chunk to the output chunk.
+ * @ufunc_id The ID of the reduce user-defined function
+ * @opcode   The opcode of the reduce function.
+ * @axis     The axis to reduce
+ * @out      The output chunk
+ * @in       The input chunk
+*/
+static cphvb_error reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode, 
+                                cphvb_intp axis, 
+                                cphvb_array *out, cphvb_array *in)
+{
+    assert(cphvb_base_array(in)->data != NULL); 
+    cphvb_error stat, e;
+    cphvb_reduce_type ufunc;
+    ufunc.id          = ufunc_id; 
+    ufunc.nout        = 1;
+    ufunc.nin         = 1;
+    ufunc.struct_size = sizeof(cphvb_reduce_type);
+    ufunc.operand[0]  = out;
+    ufunc.operand[1]  = in;
+    ufunc.axis        = axis;
+    ufunc.opcode      = opcode;
+    if((e = exec_local_inst(CPHVB_USERFUNC, NULL, 
+           (cphvb_userfunc*)(&ufunc), &stat)) != CPHVB_SUCCESS)
+    {
+        fprintf(stderr, "Error in ufunc_reduce() when executing "
+        "%s: instruction status: %s\n",cphvb_opcode_text(opcode),
+        cphvb_error_text(stat));
+        return e;
+    }
+    return CPHVB_SUCCESS;
+}
+
+
 /* Apply the user-defined function "reduce".
  * @opcode   The opcode of the reduce function.
  * @axis     The axis to reduce
@@ -38,22 +72,6 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
                          cphvb_array *operand[], cphvb_intp ufunc_id)
 {
     cphvb_error e;
-    
-    {//Only for now we will initiate the output array with zero.
-        assert(opcode == CPHVB_ADD);
-            
-        cphvb_instruction inst;
-        memset(&inst, 0, sizeof(inst));//Need a zero constant
-        inst.status = CPHVB_INST_PENDING;
-        inst.opcode = CPHVB_IDENTITY;
-        inst.operand[0] = operand[0];
-        inst.operand[1] = NULL;
-        inst.constant.type = operand[0]->type;
-    
-        if((e = exec_execute(1, &inst)) != CPHVB_SUCCESS)
-            assert(1==2);
-    }
-
     std::vector<ary_chunk> chunks;
 
     //For the mapping we have to "broadcast" the 'axis' dimension to an 
@@ -84,14 +102,18 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         return e;
 
     assert(chunks.size() > 0);
-    //Handle one chunk at a time.
+
+    //First we handle all chunks that computes the first row
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
     {
         ary_chunk *out_chunk = &chunks[c];
         ary_chunk *in_chunk  = &chunks[c+1];
         cphvb_array *out     = &out_chunk->ary;
         cphvb_array *in      = &in_chunk->ary;
- 
+    
+        if(out_chunk->coord[axis] > 0)
+            continue;//Not the first row.
+        
         //Lets remove the "broadcasted" dimension from the output again
         out->ndim = operand[0]->ndim;
         if(in->ndim == 1)//Reducing to a scalar
@@ -114,36 +136,55 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         if(pgrid_myrank != out_chunk->rank)
             continue;//We do not own the output chunk
         
-        assert(cphvb_base_array(in)->data != NULL); 
-        cphvb_error stat;
+        if((e = reduce_chunk(ufunc_id, opcode, axis, out, in)) != CPHVB_SUCCESS)
+            return e;
+    }
 
+    //Then we handle all the rest.
+    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
+    {
+        ary_chunk *out_chunk = &chunks[c];
+        ary_chunk *in_chunk  = &chunks[c+1];
+        cphvb_array *out     = &out_chunk->ary;
+        cphvb_array *in      = &in_chunk->ary;
+ 
+        if(out_chunk->coord[axis] == 0)//The first row
+            continue;
+
+        //Lets remove the "broadcasted" dimension from the output again
+        out->ndim = operand[0]->ndim;
+        if(in->ndim == 1)//Reducing to a scalar
+        {
+            out->shape[0] = 1;
+            out->stride[0] = 1;
+        }
+        else
+        {    
+            for(cphvb_intp i=axis; i<out->ndim; ++i)
+            {
+                out->shape[i] = out->shape[i+1];
+                out->stride[i] = out->stride[i+1];
+            }
+        }
+
+        //Lets make sure that all processes have the need input data.
+        comm_array_data(in_chunk, out_chunk->rank);
+
+        if(pgrid_myrank != out_chunk->rank)
+            continue;//We do not own the output chunk
+        
         //We need a tmp output array.
         cphvb_array tmp = *out;
         tmp.base = NULL;
         tmp.data = NULL;
         tmp.start = 0;
         cphvb_set_continuous_stride(&tmp);
-        
-        //Create a reduce instruction
-        cphvb_reduce_type ufunc;
-        ufunc.id          = ufunc_id; 
-        ufunc.nout        = 1;
-        ufunc.nin         = 1;
-        ufunc.struct_size = sizeof(cphvb_reduce_type);
-        ufunc.operand[0]  = &tmp;
-        ufunc.operand[1]  = in;
-        ufunc.axis        = axis;
-        ufunc.opcode      = opcode;
-        if((e = exec_local_inst(CPHVB_USERFUNC, NULL, 
-               (cphvb_userfunc*)(&ufunc), &stat)) != CPHVB_SUCCESS)
-        {
-            fprintf(stderr, "Error in ufunc_reduce() when executing "
-            "%s: instruction status: %s\n",cphvb_opcode_text(opcode),
-            cphvb_error_text(stat));
+
+        if((e = reduce_chunk(ufunc_id, opcode, axis, &tmp, in)) != CPHVB_SUCCESS)
             return e;
-        }
         
         //Finally, we have to "reduce" the local chunks together
+        cphvb_error stat;
         cphvb_array *ops[] = {out, out, &tmp};
         if((e = exec_local_inst(opcode, ops, NULL, &stat)) != CPHVB_SUCCESS)
         {

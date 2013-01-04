@@ -31,6 +31,8 @@ typedef struct
     int rank;
     //Local array chunk
     cphvb_array ary;
+    //Local array chunk coordinate (in array elements)
+    cphvb_intp coord[CPHVB_MAXDIM];
 }ary_chunk;
  
 
