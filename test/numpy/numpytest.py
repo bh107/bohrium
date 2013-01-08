@@ -9,6 +9,7 @@ import os
 import getopt
 import random
 import warnings
+import copy
 from operator import mul
 from itertools import izip as zip
 
@@ -188,12 +189,14 @@ if __name__ == "__main__":
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
                     print "Testing %s"%(name)
-                    for (arys,cmd) in getattr(cls_inst,"init")():
+                    for (arrays,cmd) in getattr(cls_inst,"init")():
+                        arys = copy.deepcopy(arrays)
                         for a in arys.values():
                             a.cphvb = False
                         (res1,cmd1) = getattr(cls_inst,mth)(arys)
                         res1 = res1.copy()
                         cphvbbridge.flush()
+                        arys = copy.deepcopy(arrays)
                         for a in arys.values():
                             a.cphvb = True
                         (res2,cmd2) = getattr(cls_inst,mth)(arys)
