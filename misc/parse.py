@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import itertools
 import pprint
 import re
 
@@ -13,6 +14,18 @@ class Instruction(object):
 
         op_dots = "\n".join([op.dot() for op in self.operands])
         return "%s %s" % (self.opcode, ', '.join((str(op) for op in self.operands)))
+
+    def ops(self):
+        """Returns a list of operands."""
+        return self.operands()
+
+    def out(self):
+        """Returns a list of output-operands."""
+        return self.operands()
+
+    def in(self):
+        """Returns a list of input-operands."""
+        return self.operands()
 
     def ref(self):
         return self.opcode
@@ -47,7 +60,7 @@ class Base(Operand):
         return 'Base-%s' % self.addr
 
     def dot(self):
-        return '[shape=circle, style=filled, fillcolor="#B3E2CD", label=%s]' % self.ref()
+        return '[shape=box, style="rounded,filled", fillcolor="#B3E2CD", label=%s]' % self.ref()
 
 class View(Operand):
 
@@ -67,7 +80,7 @@ class View(Operand):
         return 'View-%s' % self.ref()
 
     def dot(self):
-        return '[shape=circle, style=filled, fillcolor="#E6F5C9", label=%s]' % self.ref()
+        return '[shape=box, style="rounded, filled", fillcolor="#E6F5C9", label=%s]' % self.ref()
 
 class Constant(Operand):
 
@@ -75,7 +88,7 @@ class Constant(Operand):
         return "Const-%s" % (self.symbol)
 
     def dot(self):
-        return '[shape=circle, style=filled, fillcolor="#F4CAE4", label=%s]' % self.symbol
+        return '[shape=box, style="rounded, filled", fillcolor="#F4CAE4", label=%s]' % self.symbol
 
 class Parser(object):
 
@@ -136,7 +149,7 @@ class Parser(object):
                     i += 1
 
                     if constant:            # Constant
-                        operands.append( Constant( constant ) )
+                        operands.append( Constant( "%0.2f" % float(constant) ) )
                     elif "(nil)" in base:   # Base
                         operands.append( Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data) )
                     else:                   # View
@@ -155,7 +168,7 @@ class Parser(object):
                 instructions.append( instr )
 
                 # When a view is discarded the address no longer refers to the same symbol
-                if 'DISCARD' in instr.opcode:       
+                if 'DISCARD' in instr.opcode:
                     for op in instr.operands:
                         self._desymbolize( op )
 
@@ -176,9 +189,6 @@ class Parser(object):
 
         dots = "digraph G {\n"
 
-        prev    = None
-        prev_id = None
-
         prevs    = []
         prevs_id = []
 
@@ -195,8 +205,8 @@ class Parser(object):
             self._rank += 1
 
             op_ids = []
-
             for op in instr.operands:
+
                 i = self._inc
                 self._inc += 1
                 op_id       = "%s%d" % (op.ref(), self._inc )
@@ -207,21 +217,31 @@ class Parser(object):
                 styles  += op_style
                 graph   += self._edge( instr_id, op_id )
 
+                if 'base' in op.__dict__ and op.base:
+
+                    base_id     = "%s%d" % (op.base.ref(), self._rank)
+                    base_style  = "%s %s\n" % (base_id, op.base.dot())
+                    styles      += base_style
+                    graph       += self._edge( op_id, base_id )
+
             dots += "%s%s\n" % (styles, graph)
             op_ids = dict(op_ids)
 
-            if prev:
+            prev_ind = (len(prevs)-1)
+            if prev_ind >= 0:
 
-                if prev.operands[0].symbol in (op.symbol for op in instr.operands):
-                    dots += self._edge( op_ids[prev.operands[0].symbol], prev_id )
-                #else:
-                #    dots += self._edge( instr_id, prev_id )
+                prev    = prevs[prev_ind]
+                prev_id = prevs_id[prev_ind]
 
-            prev    = instr
-            prev_id = instr_id
+                for (ps, cs) in itertools.product( [prev.operands[0]], instr.operands[1:] ):
+                    if ps.symbol == cs.symbol:
+                        dots += self._edge( op_ids[cs.symbol], prev_id )
 
-            prevs.append( prev )
-            prevs_id.append( prev_id )
+            #prev    = instr
+            #prev_id = instr_id
+
+            prevs.append( instr )
+            prevs_id.append( instr_id )
 
         dots += "}"
 
@@ -229,6 +249,6 @@ class Parser(object):
 
 if __name__ == "__main__":
 
-    p = Parser( 'shallow.trace' )
+    p = Parser( 'knn.trace' )
     print(p.dotify_list(p.parse()))
     

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOCDIR="/tmp/cphvbdocs"
+DOCDIR="/tmp/bohriumdocs"
 BRANCH="master"
 #BRANCH="ctiling"
 CWD=`pwd`
@@ -8,7 +8,7 @@ CWD=`pwd`
 if [ -d "$DOCDIR" ]; then       # Grab the repos
     echo "Already got repos, not cloning."
 else
-    git clone git@bitbucket.org:cphvb/cphvb.bitbucket.org.git $DOCDIR
+    git clone git@bitbucket.org:bohrium/bohrium.bitbucket.org.git $DOCDIR
     cd $DOCDIR
     git checkout $BRANCH
     cd $CWD
