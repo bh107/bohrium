@@ -651,6 +651,7 @@ cphvb_error cphvb_compute_reduce_any( cphvb_array* op_out, cphvb_array* op_in, c
 
     if (op_in->ndim == 1) {                     // 1D special case
 
+        data_out += op_out->start;
         *data_out = *(data_in+op_in->start);    // Initialize pseudo-scalar output
                                                 // the value of the first element
                                                 // in input.
