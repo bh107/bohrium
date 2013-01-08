@@ -38,7 +38,6 @@ static cphvb_error reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
                                 cphvb_intp axis, 
                                 cphvb_array *out, cphvb_array *in)
 {
-    assert(cphvb_base_array(in)->data != NULL); 
     cphvb_error stat, e;
     cphvb_reduce_type ufunc;
     ufunc.id          = ufunc_id; 
@@ -61,6 +60,116 @@ static cphvb_error reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
 }
 
 
+/* Apply the user-defined function "reduce" for a vector input.
+ * @opcode   The opcode of the reduce function.
+ * @axis     The axis to reduce
+ * @operand  The output and input operand (global arrays)
+ * @ufunc_id The ID of the reduce user-defined function
+ * @return   The instruction status 
+*/
+static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis, 
+                                 cphvb_array *operand[], cphvb_intp ufunc_id)
+{
+    assert(operand[1]->ndim == 1);
+    assert(axis == 0);
+    cphvb_error e;
+
+    //For the mapping we have to "broadcast" the 'axis' dimension to an 
+    //output array view.
+    cphvb_array bcast_out  = *operand[0];
+    bcast_out.base      = cphvb_base_array(operand[0]);
+    bcast_out.ndim      = 1;
+    bcast_out.shape[0]  = operand[1]->shape[0];
+    bcast_out.stride[0] = 0;
+
+    std::vector<ary_chunk> chunks;
+    cphvb_array *operands[] = {&bcast_out, operand[1]};
+    if((e = mapping_chunks(2, operands, chunks)) != CPHVB_SUCCESS)
+        return e;
+    assert(chunks.size() > 0);
+
+    //Master-tmp array that the master will reduce in the end.
+    cphvb_array mtmp;
+    mtmp.base = NULL;
+    mtmp.type = operand[1]->type;
+    mtmp.ndim = 1;
+    mtmp.start = 0;
+    mtmp.shape[0] = pgrid_worldsize;//Potential one scalar per process
+    mtmp.stride[0] = 1;
+    mtmp.data = NULL;
+    cphvb_intp mtmp_count=0;//Number of scalars received 
+
+    ary_chunk *out = &chunks[0];//The output chunks are all identical
+    out->ary.shape[0] = 1;//Remove the broadcasted dimension
+    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size(); c += 2)
+    {
+        ary_chunk *in  = &chunks[c+1];
+        if(pgrid_myrank == in->rank)//We own the input chunk
+        {
+            //Local-tmp array that the process will reduce 
+            cphvb_array ltmp;
+            ltmp.type = in->ary.type;
+            ltmp.ndim = 1;
+            ltmp.shape[0] = 1;
+            ltmp.stride[0] = 1;
+            ltmp.data = NULL;
+
+            if(pgrid_myrank == out->rank)//We also own the output chunk
+            {
+                //Lets write directly to the master-tmp array
+                ltmp.base = &mtmp;
+                ltmp.start = mtmp_count;
+                if((e = reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary)) 
+                   != CPHVB_SUCCESS)
+                    return e;
+            }
+            else
+            {
+                //Lets write to a tmp array and send it to the master-process
+                ltmp.base = NULL;
+                ltmp.start = 0;
+                if((e = reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary)) 
+                   != CPHVB_SUCCESS)
+                    return e;
+
+                //Send to output owner's mtmp array
+                MPI_Send(ltmp.data, cphvb_type_size(ltmp.type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
+            }
+        }
+
+        if(pgrid_myrank == out->rank)//We own the output chunk
+        {
+            if(pgrid_myrank != in->rank)//We don't own the input chunk
+            {
+                //Recv from input owner's ltmp to the output owner's mtmp array
+                if((e = cphvb_data_malloc(&mtmp)) != CPHVB_SUCCESS)
+                    return e;
+                MPI_Recv(((char*)mtmp.data) + mtmp_count * cphvb_type_size(mtmp.type), 
+                         cphvb_type_size(mtmp.type), MPI_BYTE, in->rank, 0, 
+                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            }
+            ++mtmp_count;//One scalar added to the master-tmp array
+        }
+        else
+        {   //Only one process can own the final output scalar
+            assert(mtmp_count == 0);
+        }
+    }
+
+    //Lets reduce the master-tmp array if we own it
+    if(pgrid_myrank == out->rank && mtmp_count > 0)
+    {
+        assert(mtmp_count <= pgrid_worldsize);
+        //Now we know the number of received scalars
+        cphvb_array tmp = mtmp;
+        tmp.base = &mtmp;
+        tmp.shape[0] = mtmp_count;
+        reduce_chunk(ufunc_id, opcode, axis, &out->ary, &tmp);
+    }
+    return CPHVB_SUCCESS;
+}
+
+
 /* Apply the user-defined function "reduce".
  * @opcode   The opcode of the reduce function.
  * @axis     The axis to reduce
@@ -73,6 +182,9 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
 {
     cphvb_error e;
     std::vector<ary_chunk> chunks;
+
+    if(operand[1]->ndim == 1)//"Reducing" to a scalar.
+        return reduce_vector(opcode, axis, operand, ufunc_id);
 
     //For the mapping we have to "broadcast" the 'axis' dimension to an 
     //output array view.
@@ -130,7 +242,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
             }
         }
 
-        //Lets make sure that all processes have the need input data.
+        //Lets make sure that all processes have the needed input data.
         comm_array_data(in_chunk, out_chunk->rank);
 
         if(pgrid_myrank != out_chunk->rank)
