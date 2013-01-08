@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <iostream>
 #include <cphvb.h>
+#include <set>
 
 #include "cphvb_vem_node.h"
 
@@ -39,6 +40,9 @@ static cphvb_component *vem_node_myself;
 
 //Number of user-defined functions registered.
 static cphvb_intp userfunc_count = 0;
+
+//Allocated arrays
+static std::set<cphvb_array*> allocated_arys;
 
 /* Initialize the VEM
  *
@@ -88,6 +92,12 @@ cphvb_error cphvb_vem_node_shutdown(void)
     ve_reg_func = NULL;
     cphvb_component_free_ptr(vem_node_components);
     vem_node_components = NULL;
+
+    if(allocated_arys.size() > 0)
+    {
+        fprintf(stderr, "[NODE-VEM] Warning %ld arrays were "
+                "not discarded on exit.\n", (long) allocated_arys.size());
+    }
     return err;
 }
 
@@ -129,17 +139,28 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
     if (count <= 0)
         return CPHVB_SUCCESS;
     
-    #ifdef CPHVB_TRACE
-        cphvb_intp i;
-        for(i=0; i<count; ++i)
-        {
-            cphvb_instruction* inst = &inst_list[i];
+    for(cphvb_intp i=0; i<count; ++i)
+    {
+        cphvb_instruction* inst = &inst_list[i];
+        #ifdef CPHVB_TRACE
             cphvb_component_trace_inst(vem_node_myself, inst);
-        }
-    #endif
+        #endif
+        int nop = cphvb_operands_in_instruction(inst);
+        cphvb_array **operands = cphvb_inst_operands(inst);
+
+        //Save all new arrays 
+        for(cphvb_intp o=0; o<nop; ++o)
+            allocated_arys.insert(operands[o]);
+
+        //And remove discared arrays
+        if(inst->opcode == CPHVB_DISCARD)
+        {
+            if(allocated_arys.erase(operands[0]) != 1)
+                fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
+        }               
+    }
 
    // cphvb_pprint_instr_list(inst_list, count, "NODE");
-
 
     return ve_execute(count, inst_list);
 }

@@ -18,12 +18,10 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
-#define __CPHVB_VEM_CLUSTER_ARRAY_EXTENSION_H
+#include <cphvb.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
+#define __CPHVB_VEM_CLUSTER_DARRAY_H
 
 
 //Extension to the cphvb_array for cluster information
@@ -31,12 +29,32 @@ typedef struct
 {
     //Process rank that owns the array.
     int rank;
-}darray_ext;
+}array_ext;
+ 
+
+/* Returns the local number of elements in an array.
+ * 
+ * @rank The rank of the local process
+ * @global_ary The global array 
+ * @return The array size (in number of elements)
+ */
+cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
 
 
+/* Returns the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ * @return The local array
+ */
+cphvb_array* array_get_local(cphvb_array *global_ary);
 
-#ifdef __cplusplus
-}
-#endif
+
+/* Remove the local array based on the global array.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ */
+void array_rm_local(cphvb_array *global_ary);
 
 #endif

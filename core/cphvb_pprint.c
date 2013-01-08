@@ -147,21 +147,11 @@ static void cphvb_sprint_instr( cphvb_instruction *instr, char buf[] ) {
             cphvb_sprint_array( userfunc->operand[i], op_str );
             sprintf(tmp, "  OUT%d %s\n", i, op_str);
             strcat(buf, tmp);
-            if (userfunc->operand[i]->base != NULL) {
-                cphvb_sprint_array( userfunc->operand[i]->base, op_str );
-                sprintf(tmp, "      %s\n", op_str);
-                strcat(buf, tmp);
-            }
         }
         for(i=userfunc->nout; i < userfunc->nout + userfunc->nin; i++) {
             cphvb_sprint_array( userfunc->operand[i], op_str );
             sprintf(tmp, "  IN%d %s\n", i, op_str);
             strcat(buf, tmp);
-            if (userfunc->operand[i]->base != NULL) {
-                cphvb_sprint_array( userfunc->operand[i]->base, op_str );
-                sprintf(tmp, "      %s\n", op_str);
-                strcat(buf, tmp);
-            }
         }
     }
     strcat(buf, "}");

@@ -26,36 +26,89 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "cphvb_vem_cluster.h"
 #include "exec.h"
+#include "dispatch.h"
+#include "pgrid.h"
 
 
 cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 {
-    //TODO: Send to slaves
+    cphvb_error e;
 
-    return exec_init(self);
+    //Initiate the process grid
+    if((e = pgrid_init()) != CPHVB_SUCCESS)
+        return e;
+
+    if(pgrid_myrank != 0)
+    {
+        fprintf(stderr, "[VEM-CLUSTER] Multiple instants of the bridge is not allowed. "
+        "Only rank-0 should execute the bridge. All slaves should execute cphvb_vem_cluster_slave.\n");
+        MPI_Abort(MPI_COMM_WORLD,e);
+    }
+
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(strlen(self->name)+1, self->name)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT)) != CPHVB_SUCCESS)
+        return e;
+
+    //Execute our self
+    if((e = exec_init(self->name)) != CPHVB_SUCCESS)
+        return e;
+
+    return CPHVB_SUCCESS; 
 }
 
 
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
-    //TODO: Send to slaves
+    cphvb_error e;
 
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN)) != CPHVB_SUCCESS)
+        return e;
+    
+    //Execute our self
     return exec_shutdown();
-}
+} 
 
-
+    
 cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 {
-    //TODO: Send to slaves
+    cphvb_error e;
+    assert(fun != NULL);
 
-    return exec_reg_func(fun, id);
+    //The Master will find the new 'id' if required.
+    if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
+        return e;
+
+    //Send the component name
+    if((e = dispatch_reset()) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(sizeof(cphvb_intp), id)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_add2payload(strlen(fun)+1, fun)) != CPHVB_SUCCESS)
+        return e;
+    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC)) != CPHVB_SUCCESS)
+        return e;
+
+    return CPHVB_SUCCESS;
 }
 
 
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
-    //TODO: Send to slaves
+    cphvb_error e;
+//    cphvb_pprint_instr_list(inst_list, count, "MASTER");
 
+    //Send the instruction list and operands to the slaves
+    if((e = dispatch_inst_list(count, inst_list)) != CPHVB_SUCCESS)
+        return e;
+    
+    
     return exec_execute(count,inst_list);
 }

@@ -120,6 +120,11 @@ DLLEXPORT void cphvb_dimbound(cphvb_intp ndim,
                     const cphvb_index shape[],
                     cphvb_index dimbound[CPHVB_MAXDIM]);
 
+/* Set the array stride to continuous row-major
+ *
+ * @array    The array in question
+ */
+void cphvb_set_continuous_stride(cphvb_array *array);
 
 /* Number of operands for operation
  *
