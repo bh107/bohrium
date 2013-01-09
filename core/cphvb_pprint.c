@@ -27,6 +27,55 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PPRINT_BUF_OPSTR_SIZE 512
 #define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*4
 
+static void cphvb_sprint_const( cphvb_instruction *instr, char buf[] ) {
+
+    switch( instr->constant.type) {
+        case CPHVB_BOOL: 
+            sprintf(buf, "[ CONST=%uc ]", instr->constant.value.bool8);
+            break;
+        case CPHVB_INT8:  
+            sprintf(buf, "[ CONST=%d ]", instr->constant.value.int8);
+            break;
+        case CPHVB_INT16:  
+            sprintf(buf, "[ CONST=%d ]", instr->constant.value.int16);
+            break;
+        case CPHVB_INT32:  
+            sprintf(buf, "[ CONST=%d ]", instr->constant.value.int32);
+            break;
+        case CPHVB_INT64:  
+            sprintf(buf, "[ CONST=%ld ]", instr->constant.value.int64);
+            break;
+        case CPHVB_UINT8:  
+            sprintf(buf, "[ CONST=%o ]", instr->constant.value.uint8);
+            break;
+        case CPHVB_UINT16:  
+            sprintf(buf, "[ CONST=%u ]", instr->constant.value.uint16);
+            break;
+        case CPHVB_UINT32:  
+            sprintf(buf, "[ CONST=%u ]", instr->constant.value.uint32);
+            break;
+        case CPHVB_UINT64:  
+            sprintf(buf, "[ CONST=%lu ]", instr->constant.value.uint64);
+            break;
+        case CPHVB_FLOAT16:  
+            sprintf(buf, "[ CONST=%u ]", instr->constant.value.float16);
+            break;
+        case CPHVB_FLOAT32:  
+            sprintf(buf, "[ CONST=%f ]", instr->constant.value.float32);
+            break;
+        case CPHVB_FLOAT64:  
+            sprintf(buf, "[ CONST=%lf ]", instr->constant.value.float64);
+            break;
+        case CPHVB_COMPLEX64: 
+        case CPHVB_COMPLEX128: 
+        case CPHVB_UNKNOWN:
+
+        default: 
+            sprintf(buf, "[ CONST=? ]");
+    }
+
+}
+
 static void cphvb_sprint_array( cphvb_array *op, char buf[] ) {
 
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
@@ -63,7 +112,7 @@ static void cphvb_sprint_array( cphvb_array *op, char buf[] ) {
             sprintf( base, "%p", op->base );
         }
 
-        sprintf(buf, "{ Addr: %p Dims: %d Start: %d Shape: %s Stride: %s Type: %s Data: %p, Base: %s  }",
+        sprintf(buf, "[ Addr: %p Dims: %d Start: %d Shape: %s Stride: %s Type: %s Data: %p, Base: %s  ]",
                 op, (int)op->ndim, (int)op->start, shape, stride, 
                 cphvb_type_text(op->type), op->data, base
         );
@@ -84,7 +133,8 @@ static void cphvb_sprint_instr( cphvb_instruction *instr, char buf[] ) {
         if (!cphvb_is_constant(instr->operand[i]))
             cphvb_sprint_array( instr->operand[i], op_str );
         else 
-            sprintf(op_str, "CONSTANT");
+            //sprintf(op_str, "CONSTANT");
+            cphvb_sprint_const( instr, op_str );
 
         sprintf(tmp, "  OP%d %s\n", i, op_str);
         strcat(buf, tmp);
