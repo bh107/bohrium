@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <StaticStore.hpp>
 #include "dispatch.h"
 #include "pgrid.h"
+#include "except.h"
 #include "comm.h"
 
 
@@ -42,7 +43,7 @@ static std::set<cphvb_array*> slave_known_arrays;
 
 
 /* Initiate the dispatch system. */
-cphvb_error dispatch_reset(void)
+void dispatch_reset(void)
 {
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     assert(((int)dms) > sizeof(dispatch_msg));
@@ -50,19 +51,17 @@ cphvb_error dispatch_reset(void)
     {
         msg = (dispatch_msg*) malloc(dms);
         if(msg == NULL)
-            return CPHVB_OUT_OF_MEMORY;
+            EXCEPT_OUT_OF_MEMORY();
         buf_size = dms;
     }
     msg->size = 0;
-    return CPHVB_SUCCESS;
 }
 
     
 /* Finalize the dispatch system. */
-cphvb_error dispatch_finalize(void)
+void dispatch_finalize(void)
 {
     free(msg);
-    return CPHVB_SUCCESS;
 }
 
 
@@ -168,7 +167,7 @@ void dispatch_slave_known_remove(cphvb_array *ary)
  * @size is the number of bytes to reserve
  * @payload is the output pointer to the reserved memory
  */
-cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload)
+void dispatch_reserve_payload(cphvb_intp size, void **payload)
 {
     cphvb_intp new_msg_size = sizeof(dispatch_msg) + msg->size + size;
     //Expand the buffer if need
@@ -177,11 +176,10 @@ cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload)
         buf_size = new_msg_size*2;
         msg = (dispatch_msg*) realloc(msg, buf_size);
         if(msg == NULL)
-           return CPHVB_OUT_OF_MEMORY;
+            EXCEPT_OUT_OF_MEMORY();
     }
     *payload = msg->payload + msg->size;
     msg->size += size;
-    return CPHVB_SUCCESS;
 }
 
 
@@ -189,23 +187,21 @@ cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload)
  * @size is the size of the data in bytes
  * @data is the data to add to the send buffer
  */
-cphvb_error dispatch_add2payload(cphvb_intp size, const void *data)
+void dispatch_add2payload(cphvb_intp size, const void *data)
 {
-    cphvb_error e;
     void *payload;
     //Reserve memory on the send message
-    if((e  = dispatch_reserve_payload(size, &payload)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reserve_payload(size, &payload);
+    
     //Copy 'data' to the send message
     memcpy(payload, data, size);
-    return CPHVB_SUCCESS;
 }
 
 
 /* Send payload to all slave processes.
  * @type is the type of the message
 */
-cphvb_error dispatch_send(int type)
+void dispatch_send(int type)
 {
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     int e;
@@ -213,33 +209,30 @@ cphvb_error dispatch_send(int type)
     //Create message
     msg->type = type;
         
-    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
-        return CPHVB_ERROR;
+    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
+        EXCEPT_MPI(e);
        
     int size_left = sizeof(dispatch_msg) + msg->size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
-        {
-            fprintf(stderr, "MPI_Bcast in dispatch_send() returns error: %d\n", e);
-            return CPHVB_ERROR;
-        }
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, 
+            MPI_COMM_WORLD)) != MPI_SUCCESS)
+            EXCEPT_MPI(e);
     }
-    return CPHVB_SUCCESS;
 }
 
 
 /* Receive payload from master process.
  * @msg the received message (should not be freed)
 */
-cphvb_error dispatch_recv(dispatch_msg **message)
+void dispatch_recv(dispatch_msg **message)
 {
     int e;
     const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     
     //Get header of the message
-    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
-        return CPHVB_ERROR;
+    if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
+        EXCEPT_MPI(e);
 
     //Read total message size
     int size = sizeof(dispatch_msg) + msg->size;
@@ -250,22 +243,18 @@ cphvb_error dispatch_recv(dispatch_msg **message)
         buf_size = size;
         msg = (dispatch_msg*) realloc(msg, buf_size);
         if(msg == NULL)
-           return CPHVB_OUT_OF_MEMORY;
+           EXCEPT_OUT_OF_MEMORY();
     }
  
     //Get rest of the message
     int size_left = size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, MPI_COMM_WORLD)) != 0)
-        {
-            fprintf(stderr, "MPI_Bcast in dispatch_recv() returns error: %d\n", e);
-            return CPHVB_ERROR;
-        }
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, 
+            MPI_COMM_WORLD)) != MPI_SUCCESS)
+            EXCEPT_MPI(e);
     }
-
     *message = msg;
-    return CPHVB_SUCCESS;
 }
 
 
@@ -274,7 +263,7 @@ cphvb_error dispatch_recv(dispatch_msg **message)
  *
  * @arys the base-arrays in question.
 */
-cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
+void dispatch_array_data(std::stack<cphvb_array*> arys)
 {
     while (!arys.empty())
     {
@@ -289,7 +278,6 @@ cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
         }
         arys.pop();
     } 
-    return CPHVB_SUCCESS;
 }
 
 
@@ -297,13 +285,9 @@ cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
  * @count is the number of instructions in the list
  * @inst_list is the instruction list
  */
-cphvb_error dispatch_inst_list(cphvb_intp count,
-                               const cphvb_instruction inst_list[])
+void dispatch_inst_list(cphvb_intp count, const cphvb_instruction inst_list[])
 {
-    cphvb_error e;
-
-    if((e = dispatch_reset()) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reset();
 
     /* The execution message has the form:
      * 1   x cphvb_intp NOI //number of instructions
@@ -315,18 +299,15 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
      */
 
     //Pack the number of instructions (NOI).
-    if((e = dispatch_add2payload(sizeof(cphvb_intp), &count)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_add2payload(sizeof(cphvb_intp), &count);
     
     //Pack the instruction list.
-    if((e = dispatch_add2payload(count * sizeof(cphvb_instruction), inst_list)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_add2payload(count * sizeof(cphvb_instruction), inst_list);
 
     //Make reservation for the number of new arrays (NOA).
     cphvb_intp msg_noa_offset, noa=0;
     char *msg_noa;
-    if((e = dispatch_reserve_payload(sizeof(cphvb_intp), (void**) &msg_noa)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reserve_payload(sizeof(cphvb_intp), (void**) &msg_noa);
 
     //We need a message offset instead of a pointer since dispatch_reserve_payload() may 
     //re-allocate the 'msg_noa' pointer at a later time.
@@ -354,9 +335,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
             if(!dispatch_slave_known_check(op))//The array is unknown to the slaves.
             {   
                 dispatch_array *dary;
-                if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
-                     != CPHVB_SUCCESS)
-                    return e;
+                dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary);
                 dispatch_slave_known_insert(op);
                 //The master-process's memory pointer is the id of the array.
                 dary->id = (cphvb_intp) op;
@@ -368,9 +347,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
                 }
                 else if(!dispatch_slave_known_check(op->base))//Also check the base-array.
                 {
-                    if((e = dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary)) 
-                         != CPHVB_SUCCESS)
-                        return e;
+                    dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary);
                     dispatch_slave_known_insert(op->base);
                     dary->id = (cphvb_intp) op->base;
                     dary->ary = *op->base;
@@ -387,8 +364,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     //Make reservation for the number of new arrays (NOU).
     cphvb_intp msg_nou_offset, nou=0;
     char *msg_nou;
-    if((e = dispatch_reserve_payload(sizeof(cphvb_intp), (void**) &msg_nou)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reserve_payload(sizeof(cphvb_intp), (void**) &msg_nou);
 
     //Again we need a message offset. 
     msg_nou_offset = msg->size - sizeof(cphvb_intp);
@@ -399,9 +375,7 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
         const cphvb_instruction *inst = &inst_list[i];
         if(inst->opcode == CPHVB_USERFUNC)
         {
-            if((e = dispatch_add2payload(inst->userfunc->struct_size, 
-                                         inst->userfunc)) != CPHVB_SUCCESS)
-                return e;
+            dispatch_add2payload(inst->userfunc->struct_size, inst->userfunc);
             ++nou;
         }
     }
@@ -409,12 +383,8 @@ cphvb_error dispatch_inst_list(cphvb_intp count,
     *((cphvb_intp*)(msg->payload+msg_nou_offset)) = nou;
 
     //Dispath the execution message
-    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC);
 
     //Dispath the array data
-    if((e = dispatch_array_data(base_darys)) != CPHVB_SUCCESS)
-        return e;
-
-    return CPHVB_SUCCESS;
+    dispatch_array_data(base_darys);
 }

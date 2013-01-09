@@ -61,11 +61,11 @@ typedef struct
 
 
 /* Initiate the dispatch system. */
-cphvb_error dispatch_reset(void);
+void dispatch_reset(void);
 
     
 /* Finalize the dispatch system. */
-cphvb_error dispatch_finalize(void);
+void dispatch_finalize(void);
 
 /* Insert the new array into the array store and the array maps.
  * 
@@ -122,26 +122,26 @@ void dispatch_slave_known_remove(cphvb_array *ary);
  * @size is the number of bytes to reserve
  * @payload is the output pointer to the reserved memory
  */
-cphvb_error dispatch_reserve_payload(cphvb_intp size, void **payload);
+void dispatch_reserve_payload(cphvb_intp size, void **payload);
 
 
 /* Add data to the send message payload.
  * @size is the size of the data in bytes
  * @data is the data to add to the send buffer
  */
-cphvb_error dispatch_add2payload(cphvb_intp size, const void *data);
+void dispatch_add2payload(cphvb_intp size, const void *data);
 
 
 /* Receive payload from master process.
  * @msg the received message (should not be freed)
  */
-cphvb_error dispatch_recv(dispatch_msg **msg);
+void dispatch_recv(dispatch_msg **msg);
 
 
 /* Send payload to all slave processes.
  * @type is the type of the message
 */
-cphvb_error dispatch_send(int type);
+void dispatch_send(int type);
 
 
 /* Broadcast array-data to all slaves.
@@ -149,14 +149,13 @@ cphvb_error dispatch_send(int type);
  *
  * @arys the base-arrays in question.
 */
-cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys);
+void dispatch_array_data(std::stack<cphvb_array*> arys);
 
 
 /* Dispatch an instruction list to the slaves, which include new array-structs.
  * @count is the number of instructions in the list
  * @inst_list is the instruction list
  */
-cphvb_error dispatch_inst_list(cphvb_intp count,
-                               const cphvb_instruction inst_list[]);
+void dispatch_inst_list(cphvb_intp count, const cphvb_instruction inst_list[]);
 
 #endif

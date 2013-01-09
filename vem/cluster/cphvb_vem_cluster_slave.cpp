@@ -81,8 +81,8 @@ int main()
     while(1)
     {
         //Receive the dispatch message from the master-process
-        check_error(dispatch_reset(),__FILE__,__LINE__);
-        check_error(dispatch_recv(&msg),__FILE__,__LINE__);
+        dispatch_reset();
+        dispatch_recv(&msg);
 
         //Handle the message
         switch(msg->type) 
@@ -122,9 +122,6 @@ int main()
                 cphvb_intp *nou = (cphvb_intp *)(darys + *noa);
                 //The list of user-defined functions
                 cphvb_userfunc *ufunc = (cphvb_userfunc*)(nou+1); //number of new arrays
-
-
-//   printf("Slave (rank %d) received EXEC. noi: %ld, noa: %ld, nou: %ld\n",pgrid_myrank, *noi, *noa, *nou);
                
                 //Insert the new array into the array store and the array maps
                 std::stack<cphvb_array*> base_darys;
@@ -146,8 +143,7 @@ int main()
                 }
 
                 //Receive the dispatched array-data from the master-process
-                check_error(dispatch_array_data(base_darys),__FILE__,__LINE__);
-                    
+                dispatch_array_data(base_darys);
                     
                 //Allocate the local instruction list that should reference local arrays
                 cphvb_instruction *local_list = (cphvb_instruction *)malloc(*noi*sizeof(cphvb_instruction));
@@ -192,8 +188,6 @@ int main()
                         ops[j] = dispatch_master2slave((cphvb_intp)ops[j]);
                     }
                 }
-
-//                cphvb_pprint_instr_list(local_list, *noi, "SLAVE");
 
                 check_exec_error(exec_execute(*noi, local_list),__FILE__,__LINE__, *noi, local_list);
                 free(local_list);

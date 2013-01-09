@@ -45,12 +45,9 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
     }
 
     //Send the component name
-    if((e = dispatch_reset()) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_add2payload(strlen(self->name)+1, self->name)) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reset();
+    dispatch_add2payload(strlen(self->name)+1, self->name);
+    dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT);
 
     //Execute our self
     if((e = exec_init(self->name)) != CPHVB_SUCCESS)
@@ -62,13 +59,9 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
 
 cphvb_error cphvb_vem_cluster_shutdown(void)
 {
-    cphvb_error e;
-
     //Send the component name
-    if((e = dispatch_reset()) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reset();
+    dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN);
     
     //Execute our self
     return exec_shutdown();
@@ -85,14 +78,10 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
         return e;
 
     //Send the component name
-    if((e = dispatch_reset()) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_add2payload(sizeof(cphvb_intp), id)) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_add2payload(strlen(fun)+1, fun)) != CPHVB_SUCCESS)
-        return e;
-    if((e = dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC)) != CPHVB_SUCCESS)
-        return e;
+    dispatch_reset();
+    dispatch_add2payload(sizeof(cphvb_intp), id);
+    dispatch_add2payload(strlen(fun)+1, fun);
+    dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC);
 
     return CPHVB_SUCCESS;
 }
@@ -101,13 +90,8 @@ cphvb_error cphvb_vem_cluster_reg_func(char *fun, cphvb_intp *id)
 cphvb_error cphvb_vem_cluster_execute(cphvb_intp count,
                                       cphvb_instruction inst_list[])
 {
-    cphvb_error e;
-//    cphvb_pprint_instr_list(inst_list, count, "MASTER");
-
     //Send the instruction list and operands to the slaves
-    if((e = dispatch_inst_list(count, inst_list)) != CPHVB_SUCCESS)
-        return e;
-    
+    dispatch_inst_list(count, inst_list);
     
     return exec_execute(count,inst_list);
 }

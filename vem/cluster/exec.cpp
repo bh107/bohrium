@@ -109,8 +109,7 @@ cphvb_error exec_shutdown(void)
     pgrid_finalize();
 
     //Finalize the process grid
-    if((err = dispatch_finalize()) != CPHVB_SUCCESS)
-        return err;
+    dispatch_finalize();
 
     return CPHVB_SUCCESS;
 }
