@@ -152,6 +152,21 @@ namespace NumCIL
             {
                 UFunc.UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
             }
+
+            /// <summary>
+            /// Calculates the scalar result of applying the binary operation to all elements
+            /// </summary>
+            /// <typeparam name="T">The value to operate on</typeparam>
+            /// <typeparam name="C">The operation to perform</typeparam>
+            /// <param name="op">The operation to reduce with</param>
+            /// <param name="in1">The array to aggregate</param>
+            /// <returns>A scalar value that is the result of aggregating all elements</returns>
+            public static T Aggregate<T, C>(C op, NdArray<T> in1)
+                where C : struct, IBinaryOp<T>
+            {
+                return UFunc.UFunc_Aggregate_Inner_Flush<T, C>(op, in1);
+            }
+
         }
     }
 }

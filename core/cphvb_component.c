@@ -110,12 +110,19 @@ static void *get_dlsym(void *handle, const char *name,
 
 /* Setup the root component, which normally is the bridge.
  *
+ * @name The name of the root component. If NULL "bridge" 
+         will be used.
  * @return The root component in the configuration.
  */
-cphvb_component *cphvb_component_setup(void)
+cphvb_component *cphvb_component_setup(const char* component_name)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
+    const char *name; 
+    if(component_name == NULL)
+        name = "bridge";
+    else
+        name = component_name;
 
     cphvb_component *com = (cphvb_component*)malloc(sizeof(cphvb_component));
     const char *env;
@@ -128,7 +135,10 @@ cphvb_component *cphvb_component_setup(void)
     //Clear memory so we do not have any random pointers
     memset(com, 0, sizeof(cphvb_component));
 
-    strcpy(com->name, "bridge"); //The config root keyword.
+    if(name == NULL)
+        strcpy(com->name, "bridge"); //The default config root keyword.
+    else
+        strcpy(com->name, name);
 
     //The environment variable has precedence.
     env = getenv("CPHVB_CONFIG");
@@ -217,14 +227,26 @@ cphvb_component *cphvb_component_setup(void)
     }
 
     com->type = get_type(com->config, com->name);
-
-    if(com->type != CPHVB_BRIDGE)
+   
+    if(strcmp("bridge", name) != 0)//This is not the bridge 
     {
-        fprintf(stderr, "Error in the configuration: the root "
-                        "component must be of type bridge.\n");
-        free(com);
-        return NULL;
+        char tmp[CPHVB_COMPONENT_NAME_SIZE];
+        snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:impl",name);
+        char *impl = iniparser_getstring(com->config, tmp, NULL);
+        if(impl == NULL)
+        {
+            fprintf(stderr,"In section \"%s\" impl is not set.\n",name);
+            return NULL;
+        }
+        com->lib_handle = dlopen(impl, RTLD_NOW);
+        if(com->lib_handle == NULL)
+        {
+            fprintf(stderr, "Error in [%s:impl]: %s\n", name, dlerror());
+            return NULL;
+        }
     }
+    else
+        com->lib_handle = NULL;//The bridge do not have a .so file
     return com;
 }
 
@@ -410,6 +432,7 @@ cphvb_error cphvb_component_get_func(cphvb_component *self, char *func,
     if(err != NULL)
     {
         *ret_func = NULL;//Make sure it is NULL on error.
+        fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
         return CPHVB_USERFUNC_NOT_SUPPORTED;
     }
     return CPHVB_SUCCESS;

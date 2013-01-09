@@ -99,6 +99,18 @@ cphvb_index cphvb_nelements(cphvb_intp ndim,
     return res;
 }
 
+/* Size of the array data
+ *
+ * @array    The array in question
+ * @return   The size of the array data in bytes
+ */
+cphvb_index cphvb_array_size(const cphvb_array *array)
+{
+    const cphvb_array *b = cphvb_base_array(array);
+    return cphvb_nelements(b->ndim, b->shape) * 
+           cphvb_type_size(b->type);
+}
+
 /* Calculate the dimention boundries for shape
  *
  * @ndim      Number of dimentions
@@ -116,6 +128,19 @@ void cphvb_dimbound(cphvb_intp ndim,
     }
 }
 
+/* Set the array stride to continuous row-major
+ *
+ * @array    The array in question
+ */
+void cphvb_set_continuous_stride(cphvb_array *array)
+{
+    cphvb_intp s = 1;
+    for(cphvb_intp i=array->ndim-1; i >= 0; --i)
+    {    
+        array->stride[i] = s;
+        s *= array->shape[i];
+    }
+}
 
 /* Calculate the offset into an array based on element index
  *
@@ -148,11 +173,11 @@ cphvb_index cphvb_calc_offset(cphvb_intp ndim,
  * @view   Array/view in question
  * @return The Base array
  */
-cphvb_array* cphvb_base_array(cphvb_array* view)
+cphvb_array* cphvb_base_array(const cphvb_array* view)
 {
     if(view->base == NULL)
     {
-        return view;
+        return (cphvb_array*)view;
     }
     else
     {
@@ -224,7 +249,7 @@ cphvb_error cphvb_data_get(cphvb_array* array, cphvb_data_ptr* result)
  */
 cphvb_error cphvb_data_malloc(cphvb_array* array)
 {
-    cphvb_intp nelem, bytes;
+    cphvb_intp bytes;
     cphvb_array* base;
 
     if(array == NULL)
@@ -235,8 +260,7 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
     if(base->data != NULL)
         return CPHVB_SUCCESS;
 
-    nelem = cphvb_nelements(base->ndim, base->shape);
-    bytes = nelem * cphvb_type_size(base->type);
+    bytes = cphvb_array_size(base);
     if(bytes <= 0)
         return CPHVB_SUCCESS;
 
@@ -260,7 +284,7 @@ cphvb_error cphvb_data_malloc(cphvb_array* array)
  */
 cphvb_error cphvb_data_free(cphvb_array* array)
 {
-    cphvb_intp nelem, bytes;
+    cphvb_intp bytes;
     cphvb_array* base;
 
     if(array == NULL)
@@ -271,8 +295,7 @@ cphvb_error cphvb_data_free(cphvb_array* array)
     if(base->data == NULL)
         return CPHVB_SUCCESS;
 
-    nelem = cphvb_nelements(base->ndim, base->shape);
-    bytes = nelem * cphvb_type_size(base->type);
+    bytes = cphvb_array_size(base);
 
     if(cphvb_memory_free(base->data, bytes) != 0)
     {
@@ -286,23 +309,37 @@ cphvb_error cphvb_data_free(cphvb_array* array)
 }
 
 
+/* Retrive the operands of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @return The operand list
+ */
+cphvb_array **cphvb_inst_operands(const cphvb_instruction *instruction)
+{
+    if (instruction->opcode == CPHVB_USERFUNC)
+        return (cphvb_array **) instruction->userfunc->operand;
+    else
+        return (cphvb_array **) instruction->operand;
+}
+
+
 /* Retrive the operand type of a instruction.
  *
  * @instruction  The instruction in question
  * @operand_no Number of the operand in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return The operand type
  */
-cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
+cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
                               cphvb_intp operand_no)
 {
-    if (cphvb_is_constant(instruction->operand[operand_no]))
-        return instruction->constant.type;
-    else if (instruction->opcode == CPHVB_USERFUNC)
-        return instruction->userfunc->operand[operand_no]->type;
-    else
-        return instruction->operand[operand_no]->type;
-}
+    cphvb_array **operands = cphvb_inst_operands(instruction);
+    cphvb_array *operand = operands[operand_no];
 
+    if (cphvb_is_constant(operand))
+        return instruction->constant.type;
+    else
+        return operand->type;
+}
 
 /* Determines whether two arrays conflicts.
  *
@@ -310,7 +347,7 @@ cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
+bool cphvb_array_conflict(const cphvb_array *a, const cphvb_array *b)
 {
     cphvb_intp i;
     if (a == NULL || b == NULL)
@@ -343,7 +380,7 @@ bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b)
  * @array The array
  * @return The boolean answer
  */
-bool cphvb_is_scalar(cphvb_array* array)
+bool cphvb_is_scalar(const cphvb_array* array)
 {
     return (cphvb_base_array(array)->ndim == 0) ||
         (cphvb_base_array(array)->ndim == 1 && cphvb_base_array(array)->shape[0] == 1);
@@ -354,8 +391,73 @@ bool cphvb_is_scalar(cphvb_array* array)
  * @o The operand
  * @return The boolean answer
  */
-bool cphvb_is_constant(cphvb_array* o)
+bool cphvb_is_constant(const cphvb_array* o)
 {
     return (o == NULL);
 }
 
+/* Determines whether the two views are the same
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+bool cphvb_same_view(const cphvb_array* a, const cphvb_array* b)
+{
+    if (a == b)
+        return true;
+    if (cphvb_base_array(a) != cphvb_base_array(b))
+        return false;
+    if (memcmp(((char*)a)+sizeof(cphvb_array*),
+               ((char*)b)+sizeof(cphvb_array*),
+               sizeof(cphvb_array)-sizeof(cphvb_array*)-sizeof(cphvb_data_ptr)))
+        return false;
+    return true;
+}
+
+
+inline int gcd(int a, int b)
+{
+    int c = a % b;
+    while(c != 0)
+    {
+        a = b;
+        b = c;
+        c = a % b;
+    }
+    return b;
+}
+/* Determines whether two array(views)s access some of the same data points
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+bool cphvb_disjoint_views(const cphvb_array *a, const cphvb_array *b)
+{
+    if (a == NULL || b == NULL) // One is a constant 
+        return true;
+    if(cphvb_base_array(a) != cphvb_base_array(b)) //different base
+        return true;
+    if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
+        return false;
+
+    int astart = a->start;
+    int bstart = b->start;
+    int stride = 1;
+    for (int i = 0; i < a->ndim; ++i)
+    {
+        stride = gcd(a->stride[i], b->stride[i]);
+        int as = astart / stride;
+        int bs = bstart / stride;
+        int ae = as + a->shape[i] * (a->stride[i]/stride);
+        int be = bs + b->shape[i] * (b->stride[i]/stride);
+        if (ae <= bs || be <= as)
+            return true;
+        astart %= stride;
+        bstart %= stride;
+    }
+    if (stride > 1 && a->start % stride != b->start % stride)
+        return true;
+    return false;
+}

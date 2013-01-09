@@ -8,6 +8,7 @@
 *.so.0
 *.a
 *.test
+*.orig
 *.swp
 bridge/numpy/build/*
 *~
@@ -46,3 +47,4 @@ Tester.userprefs
 OpCodes_fix.cs
 cphvb-release
 cphVB.zip
+cphvb_vem_cluster_slave

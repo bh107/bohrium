@@ -9,7 +9,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install g++ python-dev mpi-default-dev python-pip python-cheetah python-sphinx doxygen
+  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev
   sudo pip install breathe numpydoc
 
 Download and extract the source code::

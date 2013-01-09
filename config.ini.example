@@ -2,13 +2,30 @@
 type = bridge
 children = node
 
+[cluster]
+impl = /opt/cphvb/libcphvb_vem_cluster.so
+children = node
+type = vem
+
 [node]
 impl = /opt/cphvb/libcphvb_vem_node.so
-children = simple
+children = tile
 type = vem
+
+[print]
+impl = /opt/cphvb/libcphvb_ve_print.so
+type = ve
 
 [simple]
 impl = /opt/cphvb/libcphvb_ve_simple.so
+type = ve
+
+[tile]
+impl = /opt/cphvb/libcphvb_ve_tile.so
+type = ve
+
+[naive]
+impl = /opt/cphvb/libcphvb_ve_naive.so
 type = ve
 
 [score]

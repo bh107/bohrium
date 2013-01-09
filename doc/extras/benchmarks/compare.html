@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>Quicklook for cphvbbuildgraphs</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script language="javascript">
+var imgels = {}
+var ids = ['black_scholes',
+'cache_synth',
+'jacobi_iterative',
+'jacobi_iterative___reduce',
+'knn',
+'lattice_boltzmann_2d',
+'lattice_boltzmann_3d',
+'monte_carlo_pi___ril',
+'monte_carlo_pi___2xn',
+'monte_carlo_pi___nx2',
+'shallow_water',
+'stencil___1d_4way',
+'stencil___2d'];
+var img_src = 'https://bitbucket.org/cphvb/benchpress/raw/master/graphs/__MACHINE__/__REVISION__/__TEST___speedup.png';
+
+function ondocloaded()
+{
+	load_graphs(1);
+	load_graphs(2);
+}
+
+function load_graphs( index )
+{
+	var revision    = document.getElementById('revision' + '-' + index).value;
+	var machine     = document.getElementById('machine' + '-' + index).value;
+    var img         = img_src.replace('__MACHINE__', machine).replace('__REVISION__', revision);
+
+    $('#results-'+index).html("");
+    for(var test in ids) {
+        $('#results-'+index).append('<img src="'+ img.replace('__TEST__', ids[test])+ '" />');
+    }
+		
+	return false;
+}
+</script>
+
+</head>
+<body onLoad="ondocloaded();">
+
+Enter the 'revision' of the cphvb repository and a machine name. Machine-names include: akira, p31sd, smithers01 and marge.
+
+<table>
+<tr>
+<td>
+
+    <form onsubmit="return load_graphs(1)">
+    <table>
+    <tr>
+        <td>Revision:   <input type="text" id="revision-1" value="latest" /></td>
+        <td>Machine:    <input type="text" id="machine-1" value="akira" /></td>
+        <td><input type="submit" value="Update"></td>
+    </tr>
+    </table>
+    </form>
+
+</td>
+<td>
+
+    <form onsubmit="return load_graphs(2)">
+    <table>
+    <tr>
+        <td>Revision:   <input type="text" id="revision-2" value="latest" /></td>
+        <td>Machine:    <input type="text" id="machine-2" value="akira" /></td>
+        <td><input type="submit" value="Update"></td>
+    </tr>
+    </table>
+    </form>
+
+</td>
+<tr>
+<td>
+    <div id="results-1">
+
+    </div>
+</td>
+<td>
+    <div id="results-2">
+
+    </div>
+</td>
+</tr>
+
+</body>
+</html>

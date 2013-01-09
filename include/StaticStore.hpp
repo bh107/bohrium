@@ -24,14 +24,13 @@
 #include <stdexcept>
 #include <deque>
 #include <list>
+#include <iostream>
 
 #ifdef DEBUG
-#include <iostream>
 #include <typeinfo>
 #endif
 
 
-#define __SC_DEFAULT_BUFFER_SIZE (4096)
 
 class StaticStoreException : public std::exception {};
 
@@ -39,7 +38,7 @@ class StaticStoreException : public std::exception {};
 template <typename T>
 class StaticStore
 {
-private:
+  private:
     T* buffer;
     T* nextElement;
     size_t bufferSize;
@@ -80,18 +79,12 @@ StaticStore<T>::StaticStore(size_t initialSize) :
 }
 
 template <typename T>
-StaticStore<T>::StaticStore()
-{
-    StaticStore(__SC_DEFAULT_BUFFER_SIZE);
-}
-
-template <typename T>
 StaticStore<T>::~StaticStore()
 {
 	typename std::list<T*>::iterator it;
     
     if(counter > 0)
-        std::cout << "[VEM-NODE] Warning " << counter << " arrays were not destroyed by the BRIDGE" << std::endl;
+        std::cout << "[StaticStore] Warning " << counter << " arrays were not destroyed" << std::endl;
 
     for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
 	    free(*it);

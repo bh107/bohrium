@@ -25,20 +25,38 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-typedef struct cphvb_tstate cphvb_tstate;
-struct cphvb_tstate {
+typedef struct cphvb_tstate_naive cphvb_tstate_naive;
+struct cphvb_tstate_naive {
     cphvb_index coord[CPHVB_MAXDIM];
     cphvb_index cur_e;
 };
+void cphvb_tstate_reset_naive( cphvb_tstate_naive *state );
 
-typedef cphvb_error (*computeloop)( cphvb_instruction*, cphvb_tstate*, cphvb_index );
+typedef struct cphvb_tstate cphvb_tstate;
+struct cphvb_tstate {
+    cphvb_index ndim;
+    cphvb_index noperands;
+    cphvb_index shape[CPHVB_MAXDIM];
+    void* start[CPHVB_MAX_NO_OPERANDS];
+    cphvb_index stride[CPHVB_MAX_NO_OPERANDS][CPHVB_MAXDIM];
+};
+void cphvb_tstate_reset( cphvb_tstate *state, cphvb_instruction* instr );
 
-void cphvb_tstate_reset( cphvb_tstate *state );
-computeloop cphvb_compute_get( cphvb_instruction *instr );
+typedef cphvb_error (*cphvb_computeloop)( cphvb_instruction*, cphvb_tstate* );
+typedef cphvb_error (*cphvb_computeloop_naive)( cphvb_instruction*, cphvb_tstate_naive*, cphvb_index );
+
+cphvb_computeloop_naive cphvb_compute_get_naive( cphvb_instruction *instr );
+cphvb_error cphvb_compute_apply_naive( cphvb_instruction *instr );
+cphvb_error cphvb_compute_reduce_naive(cphvb_userfunc *arg, void* ve_arg);
+
+cphvb_computeloop cphvb_compute_get( cphvb_instruction *instr );
 cphvb_error cphvb_compute_apply( cphvb_instruction *instr );
 cphvb_error cphvb_compute_reduce(cphvb_userfunc *arg, void* ve_arg);
+cphvb_error cphvb_compute_aggregate(cphvb_userfunc *arg, void* ve_arg);
+
 cphvb_error cphvb_compute_random(cphvb_userfunc *arg, void* ve_arg);
 cphvb_error cphvb_compute_matmul(cphvb_userfunc *arg, void* ve_arg);
+cphvb_error cphvb_compute_nselect(cphvb_userfunc *arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

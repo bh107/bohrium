@@ -1,0 +1,29 @@
+ROOT=../..
+LIB=libcphvb_ve_tile.dylib
+CXX?=g++
+WARNOPTS=-Wall
+ARCHOPTS?=-arch i386 -arch x86_64
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
+LDFLAGS= $(ARCHOPTS) -L../../core -lcphvb -shared -Wl,-dylib_install_name,$(LIB)
+HEADER=./*.h $(ROOT)/include/*
+SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
+OBJ=$(SRC:.cpp=.o)
+INSTALLDIR?=/opt/cphvb/
+
+all: $(LIB)
+
+%.o: %.c $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+
+%.o: %.cpp $(HEADER)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+
+$(LIB): $(OBJ)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(CFLAGS)
+
+clean:
+		rm -rf *.o *~ *.so *.dylib
+
+install: all
+		cp $(LIB) $(INSTALLDIR)
+

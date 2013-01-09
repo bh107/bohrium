@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cphvb.h>
 #include "cphvb_ve_mcore.h"
-#include <cphvb_mcache.h>
+#include <cphvb_vcache.h>
 #include <iostream>
 
 #include <queue>                                        //
@@ -43,10 +43,12 @@ static cphvb_userfunc_impl fft_impl = NULL;
 static cphvb_intp fft_impl_id = 0;
 static cphvb_userfunc_impl fft2_impl = NULL;
 static cphvb_intp fft2_impl_id = 0;
+static cphvb_userfunc_impl aggregate_impl = NULL;
+static cphvb_intp aggregate_impl_id = 0;
 
 //static cphvb_intp cphvb_ve_mcore_buffersizes = 0;
 //static computeloop* cphvb_ve_mcore_compute_loops = NULL;
-//static cphvb_tstate* cphvb_ve_mcore_tstates = NULL;
+//static cphvb_tstate_naive* cphvb_ve_mcore_tstates = NULL;
 
 static cphvb_intp block_size = 1000;
                                                         //
@@ -55,9 +57,9 @@ static cphvb_intp block_size = 1000;
 
 typedef struct worker_data {                            // Thread identity and control
     int id;
-    computeloop loop;
+    cphvb_computeloop_naive loop;
     cphvb_instruction *instr;
-    cphvb_tstate *state;
+    cphvb_tstate_naive *state;
     cphvb_index nelements;
 } worker_data_t;
 
@@ -68,7 +70,7 @@ static pthread_t        worker[MCORE_MAX_WORKERS];          // Worker-pool
 static worker_data_t    worker_data[MCORE_MAX_WORKERS];     // And their associated data
 
 static int worker_count = MCORE_WORKERS;
-static cphvb_tstate tstates[MCORE_MAX_WORKERS];
+static cphvb_tstate_naive tstates[MCORE_MAX_WORKERS];
 
 static void* job(void *worker_arg)
 {
@@ -89,7 +91,7 @@ static void* job(void *worker_arg)
 
             if ( my_job->instr->opcode == CPHVB_USERFUNC ) {      // userfunc
 
-                cphvb_compute_apply( my_job->instr );
+                cphvb_compute_apply_naive( my_job->instr );
 
             } else {                                        // built-in
 
@@ -123,29 +125,29 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     cphvb_error res = CPHVB_SUCCESS;
     myself = self;                              // Assign config container.
 
-    env = getenv("CPHVB_VE_BLOCKSIZE");         // Override block_size from ENVVAR
+    env = getenv("CPHVB_VE_MCORE_BLOCKSIZE");         // Override block_size from ENVVAR
     if (env != NULL) {
         block_size = atoi(env);
     }
     if (block_size <= 0) {                      // Verify it
-        fprintf(stderr, "CPHVB_VE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
+        fprintf(stderr, "CPHVB_VE_MCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
         return CPHVB_ERROR;
     }
 
-    env = getenv("CPHVB_NUM_THREADS");          // Override worker_count with ENVVAR
+    env = getenv("CPHVB_VE_MCORE_NTHREADS");          // Override worker_count with ENVVAR
     if (env != NULL) {
         worker_count = atoi(env);
     }
 
     if (worker_count > MCORE_MAX_WORKERS) {     // Verify worker count
-        fprintf(stderr,"CPHVB_NUM_THREADS capped to %i.\n", MCORE_MAX_WORKERS);
+        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to %i.\n", MCORE_MAX_WORKERS);
         worker_count = MCORE_MAX_WORKERS;
     } else if (worker_count < 1) {
-        fprintf(stderr,"CPHVB_NUM_THREADS capped to default %i.\n", MCORE_WORKERS);
+        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to default %i.\n", MCORE_WORKERS);
         worker_count = MCORE_WORKERS;
     }
 
-    cphvb_mcache_init( 10 );                            // Malloc-cache initialization
+    cphvb_vcache_init( 10 );                            // Malloc-cache initialization
 
                                                         //
                                                         // Multicore initialization
@@ -158,8 +160,6 @@ cphvb_error cphvb_ve_mcore_init(cphvb_component *self)
     if (pthread_barrier_init( &work_sync, NULL, worker_count+1) != 0) {
         return CPHVB_ERROR;
     }
-
-
 
     DEBUG_PRINT("[worker_count=%d, block_size=%lu]\n", worker_count, block_size);
 
@@ -212,8 +212,8 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
     pthread_barrier_destroy( &work_sync );
 
     // De-allocate the malloc-cache
-    cphvb_mcache_clear();
-    cphvb_mcache_delete();
+    cphvb_vcache_clear();
+    cphvb_vcache_delete();
 
 
     return CPHVB_SUCCESS;
@@ -222,16 +222,16 @@ cphvb_error cphvb_ve_mcore_shutdown( void )
 inline cphvb_error dispatch( cphvb_instruction* instr, cphvb_index nelements) {
 
     int sync_res;
-    computeloop loop;
+    cphvb_computeloop_naive loop;
     cphvb_intp i;
     cphvb_index  last_dim, start, end, size;
 
-    loop     = cphvb_compute_get( instr );
+    loop     = cphvb_compute_get_naive( instr );
     last_dim = instr->operand[0]->ndim-1;
     size     = nelements / worker_count;
 
     for (i=0; i<worker_count;i++)       // tstate = (0, 0, 0, ..., 0)
-        cphvb_tstate_reset( &tstates[i] );  
+        cphvb_tstate_reset_naive( &tstates[i] );  
     while(tstates[worker_count-1].cur_e < nelements) {
 
         for(i=0;i<worker_count;i++) {   // Setup workers
@@ -289,20 +289,8 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
         {
             continue;
         }
-        /*
-        nops = cphvb_operands(inst->opcode);    // Allocate memory for operands
-        for(i=0; i<nops; i++)
-        {
-            if (!cphvb_is_constant(inst->operand[i]))
-            {
-                if (cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
-                {
-                    return CPHVB_OUT_OF_MEMORY; // EXIT
-                }
-            }
 
-        }*/
-        res = cphvb_mcache_malloc( inst );      // Allocate memory for operands
+        res = cphvb_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != CPHVB_SUCCESS ) {
             return res;
         }
@@ -316,11 +304,8 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 break;
 
             case CPHVB_FREE:
-                /*
-                cphvb_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
-                */
-                inst->status = cphvb_mcache_free( inst );
+
+                inst->status = cphvb_vcache_free( inst );
                 break;
 
             case CPHVB_USERFUNC:                // External libraries
@@ -349,6 +334,10 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 {
                     inst->status = fft2_impl(inst->userfunc, NULL);
                 }
+                else if(inst->userfunc->id == aggregate_impl_id)
+                {
+                    inst->status = aggregate_impl(inst->userfunc, NULL);
+				}
                 else                            // Unsupported userfunc
                 {
                     inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
@@ -361,7 +350,7 @@ cphvb_error cphvb_ve_mcore_execute( cphvb_intp instruction_count, cphvb_instruct
                 nelements   = cphvb_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
 
                 if (nelements < 1024*1024) {        // Do not bother threading...
-                    inst->status = cphvb_compute_apply( inst );
+                    inst->status = cphvb_compute_apply_naive( inst );
                 } else {                            // DO bother!
                     inst->status = dispatch( inst, nelements );
                 }
@@ -392,9 +381,14 @@ cphvb_error cphvb_random( cphvb_userfunc *arg, void* ve_arg)
 
 cphvb_error cphvb_matmul( cphvb_userfunc *arg, void* ve_arg)
 {
-    return cphvb_compute_matmul( arg, ve_arg );
-    
+    return cphvb_compute_matmul( arg, ve_arg );    
 }
+
+cphvb_error cphvb_aggregate( cphvb_userfunc *arg, void* ve_arg)
+{
+    return cphvb_compute_aggregate( arg, ve_arg );
+}
+
 
 /**
  * cphvb_compute_reduce
@@ -458,7 +452,7 @@ cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg )
 
     //nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
     //err         = dispatch( &inst, nelements );
-    err = cphvb_compute_apply( &inst );
+    err = cphvb_compute_apply_naive( &inst );
     if (err != CPHVB_SUCCESS) {
         return err;
     }
@@ -473,7 +467,7 @@ cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg )
     axis_size = in->shape[a->axis];
 
     for(i=1; i<axis_size; ++i) {                // Execute!
-        err = cphvb_compute_apply( &inst );
+        err = cphvb_compute_apply_naive( &inst );
         //nelements   = cphvb_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
         //err         = dispatch( &inst, nelements );
         //err         = dispatch( &inst, nelements );
@@ -588,6 +582,23 @@ cphvb_error cphvb_ve_mcore_reg_func(char *fun, cphvb_intp *id) {
         {
         	*id = fft2_impl_id;
         	return CPHVB_SUCCESS;
+        }
+    }
+    else if(strcmp("cphvb_aggregate", fun) == 0)
+    {
+        if (aggregate_impl == NULL)
+        {
+            cphvb_component_get_func(myself, fun, &aggregate_impl);
+            if (aggregate_impl == NULL)
+                return CPHVB_USERFUNC_NOT_SUPPORTED;
+            
+            aggregate_impl_id = *id;
+            return CPHVB_SUCCESS;
+        }
+        else
+        {
+            *id = aggregate_impl_id;
+            return CPHVB_SUCCESS;
         }
     }
     

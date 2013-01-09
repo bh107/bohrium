@@ -1,0 +1,33 @@
+ROOT=..\..
+LIBNAME=libcphvb_ve_naive.lib
+DLLNAME=libcphvb_ve_naive.dll
+CC=cl
+CXX=cl
+LIBTOOL=lib.exe
+LINKTOOL=link.exe
+
+LIBFLAGS=/nologo /out:$(LIBNAME)
+LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
+
+WARNOPTS=#-Wall
+CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
+LDFLAGS=/LD /MD /nologo
+
+HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+SRC=cphvb_ve_naive.cpp
+OBJ=$(SRC:.cpp=.obj)
+
+all: $(DLLNAME)
+
+cphvb_ve_naive.obj: cphvb_ve_naive.cpp $(HEADER)
+		$(CXX) $(CFLAGS) cphvb_ve_naive.cpp /Fo$@
+
+
+$(LIBNAME): $(OBJ)
+		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib
+
+$(DLLNAME): $(LIBNAME)
+		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libcphvb.lib $(ROOT)\core\compute\cphvb_compute.lib $(ROOT)\core\bundler\cphvb_bundler.lib $(ROOT)\pthread_win32\pthreadVC2_x64.lib
+
+clean:
+		del *.obj *.lib *.dll *.exp *.pdb *.ilk

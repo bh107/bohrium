@@ -18,28 +18,25 @@ GNU Lesser General Public License along with cphVB.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
- #include <cphvb.h>
- #include <iostream>
+#include <cphvb.h>
+#include <iostream>
 
+#if __cplusplus >= 199711L
+#include <functional>
+std::hash<std::string> string_hasher;
+#else
 size_t string_hasher(std::string str)
 {
-#if __cplusplus > 199711L
-    return std::hash<std::string>(str);
-#else
-	//fnv_64_str fixed to use fnv-1 initial value
-	cphvb_int64 hval = 0xcbf29ce484222325ULL;
+    //fnv_64_str fixed to use fnv-1 initial value
+    cphvb_int64 hval = 0xcbf29ce484222325ULL;
     const unsigned char *s = (const unsigned char *)str.c_str();
-
     while (*s) {
-
-	/* multiply by the 64 bit FNV magic prime mod 2^64 */
-	hval += (hval << 1) + (hval << 4) + (hval << 5) +
-		(hval << 7) + (hval << 8) + (hval << 40);
-
-	/* xor the bottom with the current octet */
-	hval ^= (cphvb_int64)*s++;
+        /* multiply by the 64 bit FNV magic prime mod 2^64 */
+        hval += (hval << 1) + (hval << 4) + (hval << 5) +
+            (hval << 7) + (hval << 8) + (hval << 40);
+        /* xor the bottom with the current octet */
+        hval ^= (cphvb_int64)*s++;
     }
-	
-	return (size_t)hval;
-#endif
+    return (size_t)hval;
 }
+#endif

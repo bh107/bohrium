@@ -88,6 +88,14 @@ DLLEXPORT cphvb_index cphvb_nelements(cphvb_intp ndim,
                             const cphvb_index shape[]);
 
 
+/* Size of the array data
+ *
+ * @array    The array in question
+ * @return   The size of the array data in bytes
+ */
+DLLEXPORT cphvb_index cphvb_array_size(const cphvb_array *array);
+
+
 /* Calculate the offset into an array based on element index
  *
  * @ndim     Number of dimentions
@@ -112,6 +120,11 @@ DLLEXPORT void cphvb_dimbound(cphvb_intp ndim,
                     const cphvb_index shape[],
                     cphvb_index dimbound[CPHVB_MAXDIM]);
 
+/* Set the array stride to continuous row-major
+ *
+ * @array    The array in question
+ */
+void cphvb_set_continuous_stride(cphvb_array *array);
 
 /* Number of operands for operation
  *
@@ -125,7 +138,7 @@ DLLEXPORT int cphvb_operands(cphvb_opcode opcode);
  * @inst Instruction
  * @return Number of operands
  */
-DLLEXPORT int cphvb_operands_in_instruction(cphvb_instruction *inst);
+DLLEXPORT int cphvb_operands_in_instruction(const cphvb_instruction *inst);
 
 /* Text string for operation
  *
@@ -164,7 +177,7 @@ DLLEXPORT const char* cphvb_error_text(cphvb_error error);
  * @view   Array/view in question
  * @return The Base array
  */
-DLLEXPORT cphvb_array* cphvb_base_array(cphvb_array* view);
+DLLEXPORT cphvb_array* cphvb_base_array(const cphvb_array* view);
 
 /* Set the data pointer for the array.
  * Can only set to non-NULL if the data ptr is already NULL
@@ -201,15 +214,21 @@ DLLEXPORT cphvb_error cphvb_data_malloc(cphvb_array* array);
  */
 DLLEXPORT cphvb_error cphvb_data_free(cphvb_array* array);
 
+/* Retrive the operands of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @return The operand list
+ */
+DLLEXPORT cphvb_array **cphvb_inst_operands(const cphvb_instruction *instruction);
 
 /* Retrive the operand type of a instruction.
  *
  * @instruction  The instruction in question
  * @operand_no Number of the operand in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return The operand type
  */
-DLLEXPORT cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
-                              cphvb_intp operand_no);
+DLLEXPORT cphvb_type cphvb_type_operand(const cphvb_instruction *instruction,
+                                        cphvb_intp operand_no);
 
 /* Determines whether two arrays conflicts.
  *
@@ -217,21 +236,37 @@ DLLEXPORT cphvb_type cphvb_type_operand(cphvb_instruction *instruction,
  * @b The second array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_array_conflict(cphvb_array *a, cphvb_array *b);
+DLLEXPORT bool cphvb_array_conflict(const cphvb_array *a, const cphvb_array *b);
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
  * @a The array
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_is_scalar(cphvb_array *array);
+DLLEXPORT bool cphvb_is_scalar(const cphvb_array *array);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool cphvb_is_constant(cphvb_array* o);
+DLLEXPORT bool cphvb_is_constant(const cphvb_array* o);
+
+/* Determines whether the two views are the same
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+DLLEXPORT bool cphvb_same_view(const cphvb_array* a, const cphvb_array* b);
+
+/* Determines whether two array(views)s access some of the same data points
+ *
+ * @a The first array
+ * @b The second array
+ * @return The boolean answer
+ */
+DLLEXPORT bool cphvb_disjoint_views(const cphvb_array *a, const cphvb_array *b);
 
 
 #ifdef __cplusplus

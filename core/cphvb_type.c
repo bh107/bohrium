@@ -94,7 +94,7 @@ const char* cphvb_type_text(cphvb_type type)
     case CPHVB_UINT16:
         return "CPHVB_UINT16";
     case CPHVB_UINT32:
-        return "CPHVB_UNIT32";
+        return "CPHVB_UINT32";
     case CPHVB_UINT64:
         return "CPHVB_UINT64";
     case CPHVB_FLOAT16:

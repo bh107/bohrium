@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cphvb_bundler.h"
 #include <iostream>
 #include <map>
+#include <set>
 
 typedef cphvb_array* cphvb_array_ptr;
 
@@ -64,13 +65,16 @@ inline bool ops_aligned( cphvb_array_ptr op_l, cphvb_array_ptr op_r) {
 /**
  * Calculates the bundleable instructions.
  *
+ * WARN: This function ignores sys-ops by simply incrementing the bundle-size when sys-ops are encountered.
+ * It is the responsibility of the caller to handle the sys-ops.
+ *
  * @param inst A list of instructions.
  * @param start Start from and with instruction with index 'start'.
  * @param end Stop at and with instruction with index 'end'.
  * @return Number of consecutive bundleable instructions.
  *
  */
-cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_intp end)
+cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_intp end, cphvb_intp base_max)
 {
 
     std::multimap<cphvb_array_ptr, cphvb_array_ptr> ops;            // Operands in kernel
@@ -81,20 +85,49 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
         std::multimap<cphvb_array_ptr, cphvb_array_ptr>::iterator
     > ret;
 
+    std::pair<std::set<cphvb_array_ptr>::iterator, bool> base_ret;
+    std::set<cphvb_array_ptr> bases; // List of distinct bases seen so far.
+    int base_count = 0;             // How many distinct bases seen to far
+    //int base_max = 5;               // Max amount of bases in bundle
+                                    // This will be made parameterizable
+    
     bool do_fuse = true;                                            // Loop invariant
     cphvb_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
                                                                     // incremented on each iteration
 
     int opcount = 0;                                                // Per-instruction variables
     cphvb_array_ptr op, base;                                       // re-assigned on each iteration.
+    cphvb_index nelements = 0;                                      // Get the number of elements
+    for(cphvb_intp i=start; i<= end; i++) {
+         switch(insts[i].opcode) {
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+                continue;
+        }
+        nelements = cphvb_nelements( insts[i].operand[0]->ndim, insts[i].operand[0]->shape );
+    }    
 
     for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
-
+        switch(insts[i].opcode) {                                   // Ignore sys-ops
+            case CPHVB_DISCARD:
+            case CPHVB_FREE:
+            case CPHVB_SYNC:
+            case CPHVB_NONE:
+                bundle_len++;
+                continue;
+        }
         opcount = cphvb_operands(insts[i].opcode);
                                                                     // Check for collisions
         op      = insts[i].operand[0];                              // Look at the output-operand
         base    = cphvb_base_array( op );
+
+        if (cphvb_nelements(op->ndim, op->shape) != nelements) {
+            do_fuse = false;
+            break;
+        }
 
         ret = ops.equal_range( base );                              // Compare to all kernel operands.
         for(it = ret.first; it != ret.second; ++it)
@@ -136,6 +169,11 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
             ops.insert(     std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
             ops_out.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
 
+            base_ret = bases.insert( base );                        // Update base count
+            if (base_ret.second) {
+                base_count++;
+            }
+
             for(int j=1; j < opcount; j++)                          // - input operand(s)
             {
 
@@ -145,7 +183,16 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
                 }
                 base    = cphvb_base_array( op );
                 ops.insert( std::pair<cphvb_array_ptr, cphvb_array_ptr>( base, op ) );
+
+                base_ret = bases.insert( base );                    // Update base count
+                if (base_ret.second) {
+                    base_count++;
+                }
+
             }
+            
+            do_fuse = base_count <= base_max;                       // Check whether we break base-threshold 
+
         }
 
     }
@@ -153,17 +200,27 @@ cphvb_intp cphvb_inst_bundle(cphvb_instruction *insts, cphvb_intp start, cphvb_i
     #ifdef DEBUG_BNDL
     if (bundle_len > 1)
     {
+        /*
         std::cout << "BUNDLING " << end-start << " {" << std::endl;
         for(cphvb_intp i=start; ((do_fuse) && (i<=end)); i++)
         {
-            cphvb_instr_pprint( insts[i] );
+            cphvb_pprint_instr( &insts[i] );
         }
         std::cout << "} ops {" << std::endl << "  ";
         for(it = ops.begin(); it != ops.end(); it++)
         {
-            std::cout << *it << ",";
+            std::cout << it->first << "," << it->second << std::endl;
+        }
+        std::cout << "} bundle len = [" << bundle_len << "]" << std::endl;
+        */
+
+        std::cout << "{";
+        for(it = ops.begin(); it != ops.end(); it++)
+        {
+            std::cout << it->first << "," << it->second << std::endl;
         }
         std::cout << std::endl;
+
         std::cout << "} bundle len = [" << bundle_len << "]" << std::endl;
     }
     #endif

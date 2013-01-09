@@ -28,36 +28,75 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "traverser.hpp"
 #include <complex>
 
-void cphvb_tstate_reset( cphvb_tstate *state ) {
-    memset(state->coord, 0, CPHVB_MAXDIM * sizeof(cphvb_index));
-    state->cur_e = 0;   
-}
+cphvb_computeloop_naive cphvb_compute_get_naive( cphvb_instruction *instr ) {
 
-cphvb_error cphvb_compute_apply( cphvb_instruction *instr ) {
+    // Poly contains a unique value, pairing an opcode with its function signature.
+    // All in one nicely switchable value.
+    long int poly;
+ 
+    if (cphvb_operands(instr->opcode) == 3) {   // Three operands
 
-    computeloop comp = cphvb_compute_get( instr );
-    cphvb_tstate state;
-    cphvb_tstate_reset( &state );
-    
-    if (comp == NULL) {
-        return CPHVB_TYPE_NOT_SUPPORTED;
-    } else {
-        return comp( instr, &state, 0 );
+        if (cphvb_is_constant(instr->operand[1])) {             // First operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(instr->operand[2]->type << 16) \
+                +(1 << 17);
+
+        } else if (cphvb_is_constant(instr->operand[2])) {      // Second operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->constant.type << 16) \
+                +(1 << 18);
+
+        } else {                                                // No constant operand
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->operand[2]->type << 16);
+        }
+
+    } else {                                    // Two operands
+
+        if (cphvb_is_constant(instr->operand[1])) {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(1 << 17);
+        } else {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12);
+        }
+    }
+
+    switch(poly) {
+
+        %for $case in $data
+        %if $case.nop == 2
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
+            return &traverse_naive_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (1 << 17):
+            return &traverse_naive_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %else
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
+            return &traverse_naive_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 18):
+            return &traverse_naive_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 17):
+            return &traverse_naive_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %end if
+        %end for
+
+        default:
+            return NULL;
+
     }
 
 }
 
-cphvb_error cphvb_compute_apply_unsafe( cphvb_instruction *instr ) {
-
-    computeloop comp = cphvb_compute_get( instr );
-    cphvb_tstate state;
-    cphvb_tstate_reset( &state );
-
-    return comp( instr, &state, 0 );
-
-}
-
-computeloop cphvb_compute_get( cphvb_instruction *instr ) {
+cphvb_computeloop cphvb_compute_get( cphvb_instruction *instr ) {
 
     // Poly contains a unique value, pairing an opcode with its function signature.
     // All in one nicely switchable value.
@@ -106,20 +145,15 @@ computeloop cphvb_compute_get( cphvb_instruction *instr ) {
         %if $case.nop == 2
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
             return &traverse_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
-            break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (1 << 17):
             return &traverse_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
-            break;
         %else
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
             return &traverse_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
-            break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 18):
             return &traverse_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
-            break;
         case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 17):
             return &traverse_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
-            break;
         %end if
         %end for
 
