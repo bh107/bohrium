@@ -21,17 +21,17 @@ def main():
             op_map.append( (name, opcode, t, code[0]["nop"]))
 
     gens = [
-        ('cphvb_cppb_traits.ctpl',          'cphvb_cppb_traits.hpp', types),
-        ('cphvb_cppb_traits.array.ctpl',    'cphvb_cppb_traits.hpp', types),
-        ('cphvb_cppb_traits.const.ctpl',    'cphvb_cppb_traits.hpp', types),
-        ('end.ctpl',                        'cphvb_cppb_traits.hpp', types),
+        ('bh_cppb_traits.ctpl',          'bh_cppb_traits.hpp', types),
+        ('bh_cppb_traits.array.ctpl',    'bh_cppb_traits.hpp', types),
+        ('bh_cppb_traits.const.ctpl',    'bh_cppb_traits.hpp', types),
+        ('end.ctpl',                        'bh_cppb_traits.hpp', types),
 
-        ('cphvb_cppb_functions.ctpl',      'cphvb_cppb_functions.hpp',   op_map),
+        ('bh_cppb_functions.ctpl',      'bh_cppb_functions.hpp',   op_map),
 
-        ('cphvb_cppb_operators.ctpl',       'cphvb_cppb_operators.hpp',   op_map),
-        ('cphvb_cppb_operators.in.ctpl',    'cphvb_cppb_operators.hpp',   op_map),
-        ('cphvb_cppb_operators.out.ctpl',   'cphvb_cppb_operators.hpp',   op_map),
-        ('end.ctpl',                        'cphvb_cppb_operators.hpp',   op_map),
+        ('bh_cppb_operators.ctpl',       'bh_cppb_operators.hpp',   op_map),
+        ('bh_cppb_operators.in.ctpl',    'bh_cppb_operators.hpp',   op_map),
+        ('bh_cppb_operators.out.ctpl',   'bh_cppb_operators.hpp',   op_map),
+        ('end.ctpl',                        'bh_cppb_operators.hpp',   op_map),
     ]
 
     prev_output_fn   = gens[0][1]

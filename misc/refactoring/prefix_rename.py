@@ -14,13 +14,15 @@ def rename( prefix, sep, text, directory='.', recursive=False, verbose=False, dr
 
         for fn in files:
             parts = fn.split(sep)
-            src = root +os.sep+ fn
-            dst = root +os.sep+ fn.replace('%s%s' % (prefix, sep), '%s%s' % (text, sep), 1)
 
-            if verbose or dry:
-                print "%s -> %s" % (src, dst)
-            if not dry:
-                shutil.move(src, dst) 
+            if prefix == parts[0]:
+                src = root +os.sep+ fn
+                dst = root +os.sep+ fn.replace('%s%s' % (prefix, sep), '%s%s' % (text, sep), 1)
+
+                if verbose or dry:
+                    print "%s -> %s" % (src, dst)
+                if not dry:
+                    shutil.move(src, dst) 
 
 if __name__ == "__main__":
 
