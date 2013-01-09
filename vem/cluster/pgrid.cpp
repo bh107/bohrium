@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <mpi.h>
 #include <assert.h>
 #include "pgrid.h"
+#include "except.h"
 
 int pgrid_myrank, pgrid_worldsize;
 
@@ -29,10 +30,11 @@ int pgrid_myrank, pgrid_worldsize;
  *
  * Initiate the MPI process grid.
  */
-cphvb_error pgrid_init(void)
+void pgrid_init(void)
 {
     int provided;
     int flag;
+    int e;
 
     //Make sure we only initialize once.
     MPI_Initialized(&flag);
@@ -40,7 +42,7 @@ cphvb_error pgrid_init(void)
     {
         fprintf(stderr, "[CLUSTER-VEM] Warning - multiple "
                         "initialization attempts.\n");
-        return CPHVB_SUCCESS;
+        return;
     }
 
     //We make use of MPI_Init_thread even though we only ask for
@@ -48,24 +50,25 @@ cphvb_error pgrid_init(void)
     //supports MPICH_ASYNC_PROGRESS when MPI_Init_thread is used.
     //Note that when MPICH_ASYNC_PROGRESS is defined the thread-safety
     //level will automatically be set to MPI_THREAD_MULTIPLE.
-    MPI_Init_thread(NULL, NULL, MPI_THREAD_SINGLE, &provided);
+    if((e = MPI_Init_thread(NULL, NULL, MPI_THREAD_SINGLE, &provided)) != MPI_SUCCESS)
+        EXCEPT_MPI(e);
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &pgrid_myrank);
-    MPI_Comm_size(MPI_COMM_WORLD, &pgrid_worldsize);
+    if((e = MPI_Comm_rank(MPI_COMM_WORLD, &pgrid_myrank)) != MPI_SUCCESS)
+        EXCEPT_MPI(e);
+
+    if((e = MPI_Comm_size(MPI_COMM_WORLD, &pgrid_worldsize)) != MPI_SUCCESS)
+        EXCEPT_MPI(e);
 
     printf("my rank %d of %d\n", pgrid_myrank, pgrid_worldsize);
 
-    return CPHVB_SUCCESS;
+    return ;
 }/* pgrid_init */
 
 /*===================================================================
  *
  * Finalize the MPI process grid.
  */
-cphvb_error pgrid_finalize(void)
+void pgrid_finalize(void)
 {
-
     MPI_Finalize();
-
-    return CPHVB_SUCCESS;
 } /* pgrid_finalize */

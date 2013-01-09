@@ -106,8 +106,7 @@ cphvb_error exec_shutdown(void)
     my_components = NULL;
 
     //Finalize the process grid
-    if((err = pgrid_finalize()) != CPHVB_SUCCESS)
-        return err;
+    pgrid_finalize();
 
     //Finalize the process grid
     if((err = dispatch_finalize()) != CPHVB_SUCCESS)

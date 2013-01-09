@@ -76,7 +76,7 @@ int main()
     dispatch_msg *msg;
     
     //Initiate the process grid
-    check_error(pgrid_init(),__FILE__,__LINE__);
+    pgrid_init();
 
     while(1)
     {

@@ -30,14 +30,14 @@ extern int pgrid_myrank, pgrid_worldsize;
  * Initiate the MPI process grid.
  * NB: must be called before the use of myrank and worldsize
  */
-cphvb_error pgrid_init(void);
+void pgrid_init(void);
 
 
 /*===================================================================
  *
  * Finalize the MPI process grid.
  */
-cphvb_error pgrid_finalize(void);
+void pgrid_finalize(void);
 
 
 #endif

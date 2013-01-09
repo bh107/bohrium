@@ -35,14 +35,13 @@ cphvb_error cphvb_vem_cluster_init(cphvb_component *self)
     cphvb_error e;
 
     //Initiate the process grid
-    if((e = pgrid_init()) != CPHVB_SUCCESS)
-        return e;
+    pgrid_init();
 
     if(pgrid_myrank != 0)
     {
         fprintf(stderr, "[VEM-CLUSTER] Multiple instants of the bridge is not allowed. "
         "Only rank-0 should execute the bridge. All slaves should execute cphvb_vem_cluster_slave.\n");
-        MPI_Abort(MPI_COMM_WORLD,e);
+        MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
     //Send the component name
