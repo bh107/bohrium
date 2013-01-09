@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include "array.h"
 #include "exec.h"
+#include "except.h"
 
 
 /* Gather or scatter the global array processes.
@@ -32,7 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
+static void gather_scatter(int scatter, cphvb_array *global_ary)
 {
     assert(global_ary->base == NULL);
     cphvb_error err;
@@ -40,7 +41,7 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
     cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
 
     if(totalsize <= 0)
-        return CPHVB_SUCCESS;
+        return;
 
     //Find the local size for all processes
     int sendcnts[pgrid_worldsize], displs[pgrid_worldsize];
@@ -63,7 +64,7 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
         if(sendcnts[pgrid_myrank] > 0 && local_ary->data == NULL)
         {
             if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
-                return err;
+                EXCEPT_OUT_OF_MEMORY();
         }
         //The master-process MUST have allocated memory already
         assert(pgrid_myrank != 0 || global_ary->data != NULL);
@@ -79,13 +80,13 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
         if(pgrid_myrank == 0 && global_ary->data == NULL)
         {
             if((err = cphvb_data_malloc(global_ary)) != CPHVB_SUCCESS)
-                return err;
+                EXCEPT_OUT_OF_MEMORY();
         }
         
         //We will always allocate the local array when gathering because 
         //only the last process knows if the array has been initiated.
         if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
-            return err;
+            EXCEPT_OUT_OF_MEMORY();
     
         assert(sendcnts[pgrid_myrank] == 0 || local_ary->data != NULL);
         
@@ -95,11 +96,7 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
                         0, MPI_COMM_WORLD);
     }
     if(e != MPI_SUCCESS)
-    {
-        fprintf(stderr, "MPI error in gather_scatter() returns error: %d\n", e);
-        return CPHVB_ERROR;
-    }
-    return CPHVB_SUCCESS;
+        EXCEPT_MPI(e);        
 }
 
 
@@ -109,9 +106,9 @@ static cphvb_error gather_scatter(int scatter, cphvb_array *global_ary)
  * 
  * @global_ary Global base array
  */
-cphvb_error comm_master2slaves(cphvb_array *global_ary)
+void comm_master2slaves(cphvb_array *global_ary)
 {
-    return gather_scatter(1, global_ary);
+    gather_scatter(1, global_ary);
 }
 
 
@@ -120,9 +117,9 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary)
  * 
  * @global_ary Global base array
  */
-cphvb_error comm_slaves2master(cphvb_array *global_ary)
+void comm_slaves2master(cphvb_array *global_ary)
 {
-    return gather_scatter(0, global_ary);
+    gather_scatter(0, global_ary);
 }
 
 
@@ -135,7 +132,7 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary)
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
+void comm_array_data(ary_chunk *chunk, int receiving_rank)
 {
     cphvb_error e;
     cphvb_array *local_ary = &chunk->ary;
@@ -145,7 +142,7 @@ cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
     if(rank == receiving_rank)
     {
         MPI_Barrier(MPI_COMM_WORLD);
-        return CPHVB_SUCCESS;
+        return;
     }
 
     if(pgrid_myrank == receiving_rank)
@@ -156,7 +153,7 @@ cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
         assert(local_ary->start == 0);
         assert(local_ary->data == NULL);
         if((e = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
-            return e;
+            EXCEPT_OUT_OF_MEMORY();
         
         MPI_Recv(local_ary->data, cphvb_array_size(local_ary), MPI_BYTE, 
                  rank, 0,
@@ -187,7 +184,7 @@ cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
             {
                 fprintf(stderr, "Error while sending: copy "
                         "to a contiguous base array failed\n");
-                return e;
+                MPI_Abort(MPI_COMM_WORLD, e);
             }
         }
         assert(tmp_ary.data != NULL);
@@ -195,7 +192,6 @@ cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank)
                  MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    return CPHVB_SUCCESS;
 }
 
 

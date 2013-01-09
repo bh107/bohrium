@@ -216,8 +216,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             return e;
         }
 
-        if((e = comm_slaves2master(base)) != CPHVB_SUCCESS)
-            return e;
+        comm_slaves2master(base);
     }
     
     //Do global instruction
@@ -250,8 +249,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
                 return e;
         }    
         
-        if((e = comm_master2slaves(base)) != CPHVB_SUCCESS)
-            return e;
+        comm_master2slaves(base);
 
         //TODO: need to discard all bases aswell
         if((e = exec_local_inst(CPHVB_DISCARD, &op, NULL, &stat)) != CPHVB_SUCCESS)
@@ -401,8 +399,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             case CPHVB_SYNC:
             {
                 cphvb_array *base = cphvb_base_array(inst->operand[0]);
-                if((e = comm_slaves2master(base) != CPHVB_SUCCESS))
-                    return e;
+                comm_slaves2master(base);
                 break;
             }
             default:

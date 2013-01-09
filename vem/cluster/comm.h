@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * 
  * @global_ary Global base array
  */
-cphvb_error comm_master2slaves(cphvb_array *global_ary);
+void comm_master2slaves(cphvb_array *global_ary);
 
 
 /* Gather the global array data at the master processes.
@@ -39,7 +39,7 @@ cphvb_error comm_master2slaves(cphvb_array *global_ary);
  * 
  * @global_ary Global base array
  */
-cphvb_error comm_slaves2master(cphvb_array *global_ary);
+void comm_slaves2master(cphvb_array *global_ary);
 
 
 /* Communicate array data such that the processes can apply local computation.
@@ -51,7 +51,7 @@ cphvb_error comm_slaves2master(cphvb_array *global_ary);
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-cphvb_error comm_array_data(ary_chunk *chunk, int receiving_rank);
+void comm_array_data(ary_chunk *chunk, int receiving_rank);
 
 
 #endif

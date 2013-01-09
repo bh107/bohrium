@@ -276,7 +276,6 @@ cphvb_error dispatch_recv(dispatch_msg **message)
 */
 cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
 {
-    cphvb_error e;
     while (!arys.empty())
     {
         cphvb_array *ary = arys.top();
@@ -286,8 +285,7 @@ cphvb_error dispatch_array_data(std::stack<cphvb_array*> arys)
             if(pgrid_myrank != 0)
                 ary->data = NULL;//The data-pointer was referencing memory on the master-process.
             
-            if((e = comm_master2slaves(ary)) != CPHVB_SUCCESS)
-                return e;
+            comm_master2slaves(ary);
         }
         arys.pop();
     } 
