@@ -274,13 +274,9 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
     std::vector<ary_chunk> chunks;
     int nop = cphvb_operands_in_instruction(inst);
 
-    if((e = mapping_chunks(nop, cphvb_inst_operands(inst), chunks)) != CPHVB_SUCCESS)
-    {
-        inst->status = CPHVB_INST_PENDING;
-        return e;
-    }
-
+    mapping_chunks(nop, cphvb_inst_operands(inst), chunks);
     assert(chunks.size() > 0);
+    
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {

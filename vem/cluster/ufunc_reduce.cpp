@@ -84,8 +84,7 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
 
     std::vector<ary_chunk> chunks;
     cphvb_array *operands[] = {&bcast_out, operand[1]};
-    if((e = mapping_chunks(2, operands, chunks)) != CPHVB_SUCCESS)
-        return e;
+    mapping_chunks(2, operands, chunks);
     assert(chunks.size() > 0);
 
     //Master-tmp array that the master will reduce in the end.
@@ -210,9 +209,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
     }
 
     cphvb_array *operands[] = {&bcast_output, operand[1]};
-    if((e = mapping_chunks(2, operands, chunks)) != CPHVB_SUCCESS)
-        return e;
-
+    mapping_chunks(2, operands, chunks);
     assert(chunks.size() > 0);
 
     //First we handle all chunks that computes the first row
