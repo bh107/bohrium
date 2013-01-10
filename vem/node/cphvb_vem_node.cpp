@@ -150,7 +150,10 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
 
         //Save all new arrays 
         for(cphvb_intp o=0; o<nop; ++o)
-            allocated_arys.insert(operands[o]);
+        {
+            if(operands[o] != NULL)
+                allocated_arys.insert(operands[o]);
+        }
 
         //And remove discared arrays
         if(inst->opcode == CPHVB_DISCARD)
