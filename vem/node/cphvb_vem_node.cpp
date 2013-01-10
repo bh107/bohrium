@@ -95,8 +95,21 @@ cphvb_error cphvb_vem_node_shutdown(void)
 
     if(allocated_arys.size() > 0)
     {
-        fprintf(stderr, "[NODE-VEM] Warning %ld arrays were "
-                "not discarded on exit.\n", (long) allocated_arys.size());
+        long s = (long) allocated_arys.size();
+        if(s > 20)
+            fprintf(stderr, "[NODE-VEM] Warning %ld arrays were not discarded "
+                            "on exit (too many to show here).\n", s);
+        else
+        {
+            fprintf(stderr, "[NODE-VEM] Warning %ld arrays were not discarded "
+                            "on exit (only showing the array IDs because the "
+                            "array list may be corrupted due to reuse of array structs):\n", s);
+            for(std::set<cphvb_array*>::iterator it=allocated_arys.begin(); 
+                it != allocated_arys.end(); ++it)
+            {
+                fprintf(stderr, "array id: %p\n", *it);
+            }
+        }
     }
     return err;
 }
@@ -173,7 +186,7 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         }               
     }
 
-   // cphvb_pprint_instr_list(inst_list, count, "NODE");
+    cphvb_pprint_instr_list(inst_list, count, "NODE");
 
     return ve_execute(count, inst_list);
 }
