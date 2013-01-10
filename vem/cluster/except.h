@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define EXCEPT( msg ) {throw except(msg, __LINE__, __FILE__ );}
 #define EXCEPT_OUT_OF_MEMORY(x) {throw except_out_of_memory(__LINE__, __FILE__ );}
 #define EXCEPT_MPI(errcode) {throw except_mpi(errcode, __LINE__, __FILE__ );}
+#define EXCEPT_INST(op, ret, stat) {throw except_inst(op,ret,stat, __LINE__, __FILE__ );}
 
 
 class except : public std::exception 
@@ -64,5 +65,16 @@ class except_mpi : public except
         int errcode;
 };
 
+class except_inst : public except
+{
+    public:
+        const char *what() const throw();
+        except_inst(cphvb_opcode opcode, cphvb_error inst_status, 
+                    cphvb_error inst_list_status, 
+                    int line, const std::string & file);
+    private:
+        cphvb_error status, retcode;
+        cphvb_opcode op;
+};
 
 #endif

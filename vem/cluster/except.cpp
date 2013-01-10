@@ -68,3 +68,25 @@ const char * except_mpi::what() const throw()
 
     return os.str().c_str();
 }
+
+except_inst::except_inst(cphvb_opcode opcode, cphvb_error inst_status, 
+                         cphvb_error inst_list_status, 
+                         int line, const std::string & file)
+    : except("", line, file)
+{
+    op = opcode;
+    status = inst_status;
+    retcode = inst_list_status;
+}
+
+const char * except_inst::what() const throw() 
+{
+    std::ostringstream os;
+ 
+    os << "Error when executing " << cphvb_opcode_text(op);
+    os << ", return code: " << cphvb_error_text(retcode); 
+    os << ", inst status: " << cphvb_error_text(status);
+    os << " (" << mFile << ":" << mLine << ")" << std::endl; 
+
+    return os.str().c_str();
+}
