@@ -47,6 +47,18 @@ cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
 }
 
 
+/* Returns the local array based on the global array if it exist.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ * @return The local array or NULL
+ */
+cphvb_array* array_get_existing_local(cphvb_array *global_ary)
+{
+    return map_global2local[global_ary];
+}
+
+
 /* Returns the local array based on the global array.
  * NB: this function only accept base-arrays. 
  *

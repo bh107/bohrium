@@ -36,6 +36,15 @@ typedef struct
 }ary_chunk;
  
 
+/* Returns the local array based on the global array if it exist.
+ * NB: this function only accept base-arrays. 
+ *
+ * @global_ary The global array 
+ * @return The local array or NULL
+ */
+cphvb_array* array_get_existing_local(cphvb_array *global_ary);
+
+
 /* Returns the local number of elements in an array.
  * 
  * @rank The rank of the local process
