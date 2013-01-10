@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <set>
 #include <cphvb.h>
 
 #include "cphvb_vem_cluster.h"
@@ -193,6 +194,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
 {
     cphvb_error e;
     int nop = cphvb_operands_in_instruction(inst);
+    std::set<cphvb_array*> arys2discard;
 
     //Gather all data at the master-process
     cphvb_array **oprands = cphvb_inst_operands(inst);
@@ -203,7 +205,6 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
 
         cphvb_array *base = cphvb_base_array(op);
-        exec_local_inst(CPHVB_SYNC, &base, NULL);
         comm_slaves2master(base);
     }
     
@@ -222,8 +223,6 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             continue;
         cphvb_array *base = cphvb_base_array(op);
         
-        exec_local_inst(CPHVB_SYNC, &base, NULL);
-
         //We have to make sure that the master-process has allocated memory
         //because the slaves cannot determine it.
         if(pgrid_myrank == 0)        
@@ -234,9 +233,31 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         
         comm_master2slaves(base);
 
-        //TODO: need to discard all bases aswell
-        exec_local_inst(CPHVB_DISCARD, &op, NULL);
+        //All local arrays should be discarded
+        arys2discard.insert(op);
+        arys2discard.insert(base);
     }
+    //Discard all local views
+    for(std::set<cphvb_array*>::iterator it=arys2discard.begin(); 
+        it != arys2discard.end(); ++it)
+    {
+        if((*it)->base != NULL)
+        {
+            cphvb_array *ops[1] = {*it};
+            exec_local_inst(CPHVB_DISCARD, ops, NULL);
+        }
+    }    
+    //Free and discard all local base arrays
+    for(std::set<cphvb_array*>::iterator it=arys2discard.begin(); 
+        it != arys2discard.end(); ++it)
+    {
+        if((*it)->base == NULL)
+        {
+            cphvb_array *ops[1] = {*it};
+            exec_local_inst(CPHVB_FREE, ops, NULL);
+            exec_local_inst(CPHVB_DISCARD, ops, NULL);
+        }
+    }    
     return CPHVB_SUCCESS; 
 }
 
@@ -251,8 +272,9 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
     cphvb_error e; 
     std::vector<ary_chunk> chunks;
     int nop = cphvb_operands_in_instruction(inst);
+    cphvb_array **operands = cphvb_inst_operands(inst);
 
-    mapping_chunks(nop, cphvb_inst_operands(inst), chunks);
+    mapping_chunks(nop, operands, chunks);
     assert(chunks.size() > 0);
     
     //Handle one chunk at a time.
@@ -286,17 +308,15 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
         if(e != CPHVB_SUCCESS)
             return e;
 
-        //Sync and discard the local arrays
+        //Free and discard all local chunk arrays
         for(cphvb_intp k=0; k < nop; ++k)
         {
             if(cphvb_is_constant(inst->operand[k]))
                 continue;
             
-            cphvb_array *ary = cphvb_base_array(&chunks[k+c].ary);
-            exec_local_inst(CPHVB_SYNC, &ary, NULL);
-
-            //TODO: need to discard all bases aswell
-            ary = &chunks[k+c].ary;
+            cphvb_array *ary = &chunks[k+c].ary;
+            if(ary->base == NULL)
+                exec_local_inst(CPHVB_FREE, &ary, NULL);
             exec_local_inst(CPHVB_DISCARD, &ary, NULL);
         }
     }
@@ -324,13 +344,6 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
         assert(inst->opcode >= 0);
         switch(inst->opcode) 
         {
-            case CPHVB_DISCARD:
-            {
-                dispatch_slave_known_remove(inst->operand[0]);
-                if(inst->operand[0]->base == NULL)
-                    array_rm_local(inst->operand[0]); 
-                break;
-            }
             case CPHVB_USERFUNC:
             {
                 if (inst->userfunc->id == reduce_impl_id) 
@@ -349,21 +362,38 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                 }
                 break;
             }
-            case CPHVB_FREE:
+            case CPHVB_DISCARD:
             {
-                cphvb_array *base = cphvb_base_array(inst->operand[0]);
-                cphvb_data_free(base);
-                cphvb_data_free(array_get_local(base));
+                cphvb_array *g_ary = inst->operand[0];
+                cphvb_array *l_ary = array_get_existing_local(g_ary);
+                if(g_ary->base == NULL)
+                {
+                    if(l_ary != NULL)
+                        exec_local_inst(CPHVB_DISCARD, &l_ary, NULL);
+                    array_rm_local(g_ary); 
+                }   
+                dispatch_slave_known_remove(g_ary);
                 break;
             }
-            case CPHVB_NONE:
+            case CPHVB_FREE:
             {
+                cphvb_array *g_ary = cphvb_base_array(inst->operand[0]);
+                cphvb_array *l_ary = array_get_existing_local(g_ary);
+                cphvb_data_free(g_ary);
+                if(l_ary != NULL)
+                {
+                    exec_local_inst(CPHVB_FREE, &l_ary, NULL);
+                }
                 break;
             }
             case CPHVB_SYNC:
             {
                 cphvb_array *base = cphvb_base_array(inst->operand[0]);
                 comm_slaves2master(base);
+                break;
+            }
+            case CPHVB_NONE:
+            {
                 break;
             }
             default:

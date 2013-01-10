@@ -176,22 +176,16 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         }
 
         //Tell the VEM to do the data copy.
-        {
-            cphvb_array *ops[] = {&tmp_ary, local_ary};
-            try
-            {
-                exec_local_inst(CPHVB_IDENTITY, ops, NULL);
-            }
-            catch(const std::exception& e)
-            {
-                fprintf(stderr, "Error while sending: copy "
-                        "to a contiguous base array failed: %s", e.what());
-                MPI_Abort(MPI_COMM_WORLD, -1);
-            }
-        }
+        cphvb_array *ops[] = {&tmp_ary, local_ary};
+        exec_local_inst(CPHVB_IDENTITY, ops, NULL);
         assert(tmp_ary.data != NULL);
         MPI_Send(tmp_ary.data, nelem * cphvb_type_size(tmp_ary.type), 
                  MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
+
+        //Cleanup the local arrays
+        exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
     }
     MPI_Barrier(MPI_COMM_WORLD);
 }
