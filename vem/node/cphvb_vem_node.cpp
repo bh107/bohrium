@@ -158,7 +158,17 @@ cphvb_error cphvb_vem_node_execute(cphvb_intp count,
         //And remove discared arrays
         if(inst->opcode == CPHVB_DISCARD)
         {
-            if(allocated_arys.erase(operands[0]) != 1)
+            cphvb_array *ary = operands[0];
+            //Check that we are not discarding a base that still has views.
+            if(ary->base == NULL)
+            {
+                for(std::set<cphvb_array*>::iterator it=allocated_arys.begin(); 
+                    it != allocated_arys.end(); ++it)
+                {
+                    assert((*it)->base != ary);
+                }
+            }
+            if(allocated_arys.erase(ary) != 1)
                 fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
         }               
     }
