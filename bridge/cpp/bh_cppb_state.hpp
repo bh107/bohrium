@@ -17,12 +17,12 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_BRIDGE_CPP_STATE
-#define __CPHVB_BRIDGE_CPP_STATE
+#ifndef __BOHRIUM_BRIDGE_CPP_STATE
+#define __BOHRIUM_BRIDGE_CPP_STATE
 #include <iostream>
 #include "cphvb.h"
 
-namespace cphvb {
+namespace bh {
 
 #define CPHVB_CPP_QUEUE_MAX 1024
 static cphvb_instruction queue[CPHVB_CPP_QUEUE_MAX]; // Instruction queue

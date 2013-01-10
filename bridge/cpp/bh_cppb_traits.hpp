@@ -17,15 +17,115 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_BRIDGE_CPP_TRAITS
-#define __CPHVB_BRIDGE_CPP_TRAITS
+#ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
+#define __BOHRIUM_BRIDGE_CPP_TRAITS
 #include "cphvb.h"
 
-namespace cphvb {
+namespace bh {
 
-//
-// Type traits for the assignment of array and array type.
-//
+template <typename T>
+inline
+void assign_array_type( cphvb_array* array );
+// NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
+
+template <>
+inline
+void assign_array_type<cphvb_bool>( cphvb_array* array )
+{
+    array->type = CPHVB_BOOL;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_int8>( cphvb_array* array )
+{
+    array->type = CPHVB_INT8;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_int16>( cphvb_array* array )
+{
+    array->type = CPHVB_INT16;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_int32>( cphvb_array* array )
+{
+    array->type = CPHVB_INT32;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_int64>( cphvb_array* array )
+{
+    array->type = CPHVB_INT64;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_uint8>( cphvb_array* array )
+{
+    array->type = CPHVB_UINT8;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_uint16>( cphvb_array* array )
+{
+    array->type = CPHVB_UINT16;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_uint32>( cphvb_array* array )
+{
+    array->type = CPHVB_UINT32;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_uint64>( cphvb_array* array )
+{
+    array->type = CPHVB_UINT64;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_float16>( cphvb_array* array )
+{
+    array->type = CPHVB_FLOAT16;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_float32>( cphvb_array* array )
+{
+    array->type = CPHVB_FLOAT32;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_float64>( cphvb_array* array )
+{
+    array->type = CPHVB_FLOAT64;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_complex64>( cphvb_array* array )
+{
+    array->type = CPHVB_COMPLEX64;
+}
+
+template <>
+inline
+void assign_array_type<cphvb_complex128>( cphvb_array* array )
+{
+    array->type = CPHVB_COMPLEX128;
+}
+
 template <typename T>
 inline
 void assign_const_type( cphvb_constant* instr, T value );
@@ -73,12 +173,19 @@ void assign_const_type( cphvb_constant* constant, cphvb_int64 value )
 
 template <>
 inline
+void assign_const_type( cphvb_constant* constant, cphvb_uint8 value )
+{
+    constant->value.uint8 = value;
+    constant->type = CPHVB_UINT8;
+}
+
+template <>
+inline
 void assign_const_type( cphvb_constant* constant, cphvb_uint16 value )
 {
     constant->value.uint16 = value;
     constant->type = CPHVB_UINT16;
 }
-
 
 template <>
 inline
@@ -98,6 +205,14 @@ void assign_const_type( cphvb_constant* constant, cphvb_uint64 value )
 
 template <>
 inline
+void assign_const_type( cphvb_constant* constant, cphvb_float16 value )
+{
+    constant->value.float16 = value;
+    constant->type = CPHVB_FLOAT16;
+}
+
+template <>
+inline
 void assign_const_type( cphvb_constant* constant, cphvb_float32 value )
 {
     constant->value.float32 = value;
@@ -112,79 +227,20 @@ void assign_const_type( cphvb_constant* constant, cphvb_float64 value )
     constant->type = CPHVB_FLOAT64;
 }
 
-template <typename T>
-inline
-void assign_array_type( cphvb_array* array );
-// NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
-
 template <>
 inline
-void assign_array_type<cphvb_bool>( cphvb_array* array )
+void assign_const_type( cphvb_constant* constant, cphvb_complex64 value )
 {
-    array->type = CPHVB_BOOL;
+    constant->value.complex64 = value;
+    constant->type = CPHVB_COMPLEX64;
 }
 
 template <>
 inline
-void assign_array_type<cphvb_int8>( cphvb_array* array )
+void assign_const_type( cphvb_constant* constant, cphvb_complex128 value )
 {
-    array->type = CPHVB_INT8;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_int16>( cphvb_array* array )
-{
-    array->type = CPHVB_INT16;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_int32>( cphvb_array* array )
-{
-    array->type = CPHVB_INT32;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_int64>( cphvb_array* array )
-{
-    array->type = CPHVB_INT64;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_uint16>( cphvb_array* array )
-{
-    array->type = CPHVB_UINT16;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_uint32>( cphvb_array* array )
-{
-    array->type = CPHVB_UINT32;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_uint64>( cphvb_array* array )
-{
-    array->type = CPHVB_UINT64;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_float32>( cphvb_array* array )
-{
-    array->type = CPHVB_FLOAT32;
-}
-
-template <>
-inline
-void assign_array_type<cphvb_float64>( cphvb_array* array )
-{
-    array->type = CPHVB_FLOAT64;
+    constant->value.complex128 = value;
+    constant->type = CPHVB_COMPLEX128;
 }
 
 }

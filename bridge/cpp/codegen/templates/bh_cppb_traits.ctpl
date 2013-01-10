@@ -22,9 +22,9 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_BRIDGE_CPP_TRAITS
-#define __CPHVB_BRIDGE_CPP_TRAITS
+#ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
+#define __BOHRIUM_BRIDGE_CPP_TRAITS
 #include "cphvb.h"
 
-namespace cphvb {
+namespace bh {
 

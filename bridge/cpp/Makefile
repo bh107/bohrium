@@ -9,17 +9,17 @@ OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/cphvb/
 
-all: mcpi
+all: examples
 
 gen:
 	python ./codegen/gen.py
-#	mv ./codegen/output/*.hpp .
+	mv ./codegen/output/*.hpp .
 
-mcpi: mcpi.cpp $(HEADER) 
+examples: examples/hello.cpp $(HEADER) 
 	$(CXX) $< -o $@ -L$(ROOT)/core -lcphvb -lrt -ldl $(LCFLAGS) $(CFLAGS) -DDEBUG
 
 install: all
 	@-(echo 'Done.')
 
 clean:
-	rm -rf *.o *~ mcpi codegen/output/*.cpp codegen/output/*.hpp
+	rm -rf *.o *~ hello mcpi codegen/output/*.cpp codegen/output/*.hpp

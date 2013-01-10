@@ -17,7 +17,7 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-namespace cphvb {
+namespace bh {
 
 template <typename T>
 Vector<T>::Vector( Vector<T> const& vector )

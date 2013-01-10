@@ -17,11 +17,11 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_BRIDGE_CPP
-#define __CPHVB_BRIDGE_CPP
+#ifndef __BOHRIUM_BRIDGE_CPP
+#define __BOHRIUM_BRIDGE_CPP
 #include "cphvb.h"
 
-namespace cphvb {
+namespace bh {
 
 template <typename T>
 class Vector {
@@ -36,9 +36,9 @@ public:
     // Operators: 
     //
     // =, [], (), -> must be "internal" (nonstatic member functions),
-    // these are defined in cphvb_cppb_vector.hpp
+    // these are defined in bh_cppb_vector.hpp
     //
-    // The remaining operators are defined "externally" in: cphvb_cppb_operators.hpp
+    // The remaining operators are defined "externally" in: bh_cppb_operators.hpp
     //
     Vector& operator=( const T rhs );
     Vector& operator=( Vector & rhs );
@@ -47,12 +47,12 @@ public:
 
 }
 
-#include "cphvb_cppb_state.hpp"         // Communication with cphVB runtime
-#include "cphvb_cppb_traits.hpp"        // Traits for assigning constants and arrays.
-#include "cphvb_cppb_operators.hpp"     // Vector operations via operator-overloads, auto-generated:
-                                        // see ./codegen/* on how.
-#include "cphvb_cppb_functions.hpp"     // Vector operations via functions, auto-generated:
-                                        // see ./codegen/* on how.
-#include "cphvb_cppb_vector.hpp"        // (De)Constructor, "internal" operator overloads.
+#include "bh_cppb_state.hpp"        // Communication with Bohrium runtime
+#include "bh_cppb_traits.hpp"       // Traits for assigning constants and arrays.
+#include "bh_cppb_operators.hpp"    // Vector operations via operator-overloads, auto-generated:
+                                    // see ./codegen/* on how.
+#include "bh_cppb_functions.hpp"    // Vector operations via functions, auto-generated:
+                                    // see ./codegen/* on how.
+#include "bh_cppb_vector.hpp"       // (De)Constructor, "internal" operator overloads.
 
 #endif

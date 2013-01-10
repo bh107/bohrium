@@ -22,11 +22,11 @@ GNU Lesser General Public License along with cphVB.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_BRIDGE_CPP_FUNCTIONS
-#define __CPHVB_BRIDGE_CPP_FUNCTIONS
+#ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
+#define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "cphvb.h"
 
-namespace cphvb {
+namespace bh {
 
 %for $function in $data
 %if $function[2] == "operator.fun"
