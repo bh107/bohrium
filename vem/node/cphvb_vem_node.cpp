@@ -95,8 +95,20 @@ cphvb_error cphvb_vem_node_shutdown(void)
 
     if(allocated_arys.size() > 0)
     {
-        fprintf(stderr, "[NODE-VEM] Warning %ld arrays were "
-                "not discarded on exit.\n", (long) allocated_arys.size());
+        long s = (long) allocated_arys.size();
+        if(s > 10)
+            printf("[NODE-VEM] Warning %ld arrays were not discarded "
+                   "on exit (too many to show here).\n", s);
+        else
+        {
+            printf("[NODE-VEM] Warning %ld arrays were not discarded "
+                   "on exit:\n", s);
+            for(std::set<cphvb_array*>::iterator it=allocated_arys.begin(); 
+                it != allocated_arys.end(); ++it)
+            {
+                cphvb_pprint_array(*it);
+            }
+        }
     }
     return err;
 }
