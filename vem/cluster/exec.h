@@ -60,10 +60,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[]);
  * @opcode   The opcode of the instruction
  * @operands The local operands in the instruction
  * @ufunc  The user-defined function struct when opcode is CPHVB_USERFUNC.
- * @inst_status The returned status of the instruction (output)
- * @return Error codes of vem_execute()
  */
-cphvb_error exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
-                            cphvb_userfunc *ufunc, cphvb_error *inst_status);
-
+void exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
+                     cphvb_userfunc *ufunc);
 

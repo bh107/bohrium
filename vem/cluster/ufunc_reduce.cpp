@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include "exec.h"
 #include "comm.h"
+#include "except.h"
 
 /* Reduces the input chunk to the output chunk.
  * @ufunc_id The ID of the reduce user-defined function
@@ -34,11 +35,10 @@ If not, see <http://www.gnu.org/licenses/>.
  * @out      The output chunk
  * @in       The input chunk
 */
-static cphvb_error reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode, 
-                                cphvb_intp axis, 
-                                cphvb_array *out, cphvb_array *in)
+static void reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode, 
+                         cphvb_intp axis, 
+                         cphvb_array *out, cphvb_array *in)
 {
-    cphvb_error stat, e;
     cphvb_reduce_type ufunc;
     ufunc.id          = ufunc_id; 
     ufunc.nout        = 1;
@@ -48,15 +48,7 @@ static cphvb_error reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
     ufunc.operand[1]  = in;
     ufunc.axis        = axis;
     ufunc.opcode      = opcode;
-    if((e = exec_local_inst(CPHVB_USERFUNC, NULL, 
-           (cphvb_userfunc*)(&ufunc), &stat)) != CPHVB_SUCCESS)
-    {
-        fprintf(stderr, "Error in ufunc_reduce() when executing "
-        "%s: instruction status: %s\n",cphvb_opcode_text(opcode),
-        cphvb_error_text(stat));
-        return e;
-    }
-    return CPHVB_SUCCESS;
+    exec_local_inst(CPHVB_USERFUNC, NULL, (cphvb_userfunc*)(&ufunc));
 }
 
 
@@ -118,18 +110,14 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
                 //Lets write directly to the master-tmp array
                 ltmp.base = &mtmp;
                 ltmp.start = mtmp_count;
-                if((e = reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary)) 
-                   != CPHVB_SUCCESS)
-                    return e;
+                reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary);
             }
             else
             {
                 //Lets write to a tmp array and send it to the master-process
                 ltmp.base = NULL;
                 ltmp.start = 0;
-                if((e = reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary)) 
-                   != CPHVB_SUCCESS)
-                    return e;
+                reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary);
 
                 //Send to output owner's mtmp array
                 MPI_Send(ltmp.data, cphvb_type_size(ltmp.type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
@@ -142,10 +130,12 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
             {
                 //Recv from input owner's ltmp to the output owner's mtmp array
                 if((e = cphvb_data_malloc(&mtmp)) != CPHVB_SUCCESS)
-                    return e;
-                MPI_Recv(((char*)mtmp.data) + mtmp_count * cphvb_type_size(mtmp.type), 
-                         cphvb_type_size(mtmp.type), MPI_BYTE, in->rank, 0, 
-                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    EXCEPT_MPI(e);
+                int err = MPI_Recv(((char*)mtmp.data) + mtmp_count * cphvb_type_size(mtmp.type), 
+                                   cphvb_type_size(mtmp.type), MPI_BYTE, in->rank, 0, 
+                                   MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                if(err != MPI_SUCCESS)
+                    EXCEPT_MPI(e);
             }
             ++mtmp_count;//One scalar added to the master-tmp array
         }
@@ -179,7 +169,6 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
 cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis, 
                          cphvb_array *operand[], cphvb_intp ufunc_id)
 {
-    cphvb_error e;
     std::vector<ary_chunk> chunks;
 
     if(operand[1]->ndim == 1)//"Reducing" to a scalar.
@@ -245,8 +234,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         if(pgrid_myrank != out_chunk->rank)
             continue;//We do not own the output chunk
         
-        if((e = reduce_chunk(ufunc_id, opcode, axis, out, in)) != CPHVB_SUCCESS)
-            return e;
+        reduce_chunk(ufunc_id, opcode, axis, out, in);
     }
 
     //Then we handle all the rest.
@@ -289,19 +277,11 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         tmp.start = 0;
         cphvb_set_continuous_stride(&tmp);
 
-        if((e = reduce_chunk(ufunc_id, opcode, axis, &tmp, in)) != CPHVB_SUCCESS)
-            return e;
+        reduce_chunk(ufunc_id, opcode, axis, &tmp, in);
         
         //Finally, we have to "reduce" the local chunks together
-        cphvb_error stat;
         cphvb_array *ops[] = {out, out, &tmp};
-        if((e = exec_local_inst(opcode, ops, NULL, &stat)) != CPHVB_SUCCESS)
-        {
-            fprintf(stderr, "Error in ufunc_reduce() when executing "
-            "%s: instruction status: %s\n",cphvb_opcode_text(opcode),
-            cphvb_error_text(stat));
-            return e;
-        }
+        exec_local_inst(opcode, ops, NULL);
     }
     return CPHVB_SUCCESS;
 }
