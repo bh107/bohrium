@@ -104,6 +104,7 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
             ltmp.shape[0] = 1;
             ltmp.stride[0] = 1;
             ltmp.data = NULL;
+            cphvb_array *ops[] = {&ltmp, &in->ary};
 
             if(pgrid_myrank == out->rank)//We also own the output chunk
             {
@@ -121,7 +122,12 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
 
                 //Send to output owner's mtmp array
                 MPI_Send(ltmp.data, cphvb_type_size(ltmp.type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
+                //Lets free the tmp array
+                exec_local_inst(CPHVB_FREE, &ops[0], NULL);
             }
+            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+            if(in->ary.base != NULL)
+                exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -154,6 +160,14 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         tmp.base = &mtmp;
         tmp.shape[0] = mtmp_count;
         reduce_chunk(ufunc_id, opcode, axis, &out->ary, &tmp);
+    
+        //Lets cleanup
+        cphvb_array *ops[] = {&mtmp, &tmp, &out->ary};
+        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
+        exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+        if(out->ary.base != NULL)
+            exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
     }
     return CPHVB_SUCCESS;
 }
@@ -235,6 +249,12 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
             continue;//We do not own the output chunk
         
         reduce_chunk(ufunc_id, opcode, axis, out, in);
+        //Clean the local views and free tmp arrays
+        cphvb_array *ops[] = {out, in};
+        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+        if(in->base == NULL)
+            exec_local_inst(CPHVB_FREE, &ops[1], NULL);
+        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
     }
 
     //Then we handle all the rest.
@@ -278,10 +298,22 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         cphvb_set_continuous_stride(&tmp);
 
         reduce_chunk(ufunc_id, opcode, axis, &tmp, in);
+
+        {//Cleanup
+            cphvb_array *ops[] = {in};
+            if(in->base == NULL)
+                exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+        }
         
         //Finally, we have to "reduce" the local chunks together
         cphvb_array *ops[] = {out, out, &tmp};
         exec_local_inst(opcode, ops, NULL);
+        //Cleanup
+        exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
+        if(out->base == NULL)
+            exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
     }
     return CPHVB_SUCCESS;
 }
