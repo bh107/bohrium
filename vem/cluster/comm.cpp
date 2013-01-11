@@ -140,10 +140,7 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
 
     //Check if communication is even necessary
     if(rank == receiving_rank)
-    {
-        MPI_Barrier(MPI_COMM_WORLD);
         return;
-    }
 
     if(pgrid_myrank == receiving_rank)
     {
@@ -187,7 +184,6 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
         exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
