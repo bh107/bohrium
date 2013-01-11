@@ -190,6 +190,17 @@ int main()
                 }
 
                 check_exec_error(exec_execute(*noi, local_list),__FILE__,__LINE__, *noi, local_list);
+
+                //Free all user-defined function structs
+                for(cphvb_intp i=0; i < *noi; ++i)
+                {
+                    cphvb_instruction *inst = &local_list[i];
+                    if(inst->opcode == CPHVB_USERFUNC)
+                    {
+                        assert(inst->userfunc != NULL);
+                        free(inst->userfunc);
+                    }
+                }
                 free(local_list);
                 break;
             }
