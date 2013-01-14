@@ -20,6 +20,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cphvb.h>
 
+//Public function pointer to the Node VEM
+extern cphvb_execute exec_vem_execute;
+
+
 /* Initialize the VEM
  *
  * @return Error codes (CPHVB_SUCCESS)

@@ -37,9 +37,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //Function pointers to the Node VEM.
 static cphvb_init vem_init;
-static cphvb_execute vem_execute;
 static cphvb_shutdown vem_shutdown;
 static cphvb_reg_func vem_reg_func;
+//Public function pointer to the Node VEM
+cphvb_execute exec_vem_execute;
 
 //The VE components
 static cphvb_component **my_components;
@@ -78,7 +79,7 @@ cphvb_error exec_init(const char *component_name)
 	    return err;
     
     vem_init = my_components[0]->init;
-    vem_execute = my_components[0]->execute;
+    exec_vem_execute = my_components[0]->execute;
     vem_shutdown = my_components[0]->shutdown;
     vem_reg_func = my_components[0]->reg_func;
 
@@ -101,7 +102,7 @@ cphvb_error exec_shutdown(void)
         return err;
     cphvb_component_free(my_components[0]);//Only got one child.
     vem_init     = NULL;
-    vem_execute  = NULL;
+    exec_vem_execute  = NULL;
     vem_shutdown = NULL;
     vem_reg_func = NULL;
     cphvb_component_free_ptr(my_components);
@@ -180,7 +181,7 @@ void exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
                                            * sizeof(cphvb_array*));
     }
    
-    if((e = vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
+    if((e = exec_vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
         EXCEPT_INST(opcode, e, new_inst.status);
 }
 
@@ -211,7 +212,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
     //Do global instruction
     if(pgrid_myrank == 0)
     {
-        if((e = vem_execute(1, inst)) != CPHVB_SUCCESS)
+        if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
             return e;
     }
 
@@ -303,7 +304,7 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 
         //Apply the local computation
         local_inst.status = CPHVB_INST_PENDING;
-        e = vem_execute(1, &local_inst);
+        e = exec_vem_execute(1, &local_inst);
         inst->status = local_inst.status;
         if(e != CPHVB_SUCCESS)
             return e;
