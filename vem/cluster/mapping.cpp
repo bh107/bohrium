@@ -19,14 +19,15 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cphvb.h>
-#include "array.h"
+#include <limits>
 #include <cmath>
 #include <cstring>
 #include <vector>
 #include <cassert>
 #include "pgrid.h"
+#include "array.h"
 #include "except.h"
-#include <limits>
+#include "batch.h"
 
 
 /* Finds the largest possible array chunk that is only located on one process.
@@ -109,21 +110,22 @@ static void find_largest_chunk(cphvb_intp nop,
         }
         //Save the chunk
         ary_chunk chunk;
-        chunk.rank      = rank;
-        chunk.ary.type  = ary->type;
-        chunk.ary.ndim  = ary->ndim;
-        chunk.ary.data  = NULL;
+        chunk.rank       = rank;
+        chunk.ary        = batch_tmp_ary();
+        chunk.ary->type  = ary->type;
+        chunk.ary->ndim  = ary->ndim;
+        chunk.ary->data  = NULL;
         memcpy(&chunk.coord, start_coord, ndim * sizeof(cphvb_intp));
         if(pgrid_myrank == rank)//This is a local array
         {
-            chunk.ary.start = start;
-            chunk.ary.base = array_get_local(cphvb_base_array(ary));
-            memcpy(chunk.ary.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
+            chunk.ary->start = start;
+            chunk.ary->base = array_get_local(cphvb_base_array(ary));
+            memcpy(chunk.ary->stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
         }
         else//This is a remote array thus we treat it as a base array.
         {   //Note we will set the stride when we know the final shape
-            chunk.ary.base = NULL;
-            chunk.ary.start = 0;
+            chunk.ary->base = NULL;
+            chunk.ary->start = 0;
         }
         chunks.push_back(chunk);
         assert(0 <= rank && rank < pgrid_worldsize);
@@ -136,15 +138,15 @@ static void find_largest_chunk(cphvb_intp nop,
             continue;
         ary_chunk *chunk = &chunks[first_chunk+o];
 
-        memcpy(chunk->ary.shape, shape, ndim * sizeof(cphvb_intp));
+        memcpy(chunk->ary->shape, shape, ndim * sizeof(cphvb_intp));
         
         if(chunk->rank != pgrid_myrank)
         {   //Now we know the strides of the remote array.
             cphvb_intp s = 1;
-            for(cphvb_intp i=chunk->ary.ndim-1; i >= 0; --i)
+            for(cphvb_intp i=chunk->ary->ndim-1; i >= 0; --i)
             {    
-                chunk->ary.stride[i] = s;
-                s *= chunk->ary.shape[i];
+                chunk->ary->stride[i] = s;
+                s *= chunk->ary->shape[i];
             }
         }
     }

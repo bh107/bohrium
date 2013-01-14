@@ -135,7 +135,7 @@ void comm_slaves2master(cphvb_array *global_ary)
 void comm_array_data(ary_chunk *chunk, int receiving_rank)
 {
     cphvb_error e;
-    cphvb_array *local_ary = &chunk->ary;
+    cphvb_array *local_ary = chunk->ary;
     int rank = chunk->rank;
 
     //Check if communication is even necessary

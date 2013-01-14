@@ -90,7 +90,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
     cphvb_intp mtmp_count=0;//Number of scalars received 
 
     ary_chunk *out = &chunks[0];//The output chunks are all identical
-    out->ary.shape[0] = 1;//Remove the broadcasted dimension
+    out->ary->shape[0] = 1;//Remove the broadcasted dimension
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size(); c += 2)
     {
         ary_chunk *in  = &chunks[c+1];
@@ -98,26 +98,26 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         {
             //Local-tmp array that the process will reduce 
             cphvb_array ltmp;
-            ltmp.type = in->ary.type;
+            ltmp.type = in->ary->type;
             ltmp.ndim = 1;
             ltmp.shape[0] = 1;
             ltmp.stride[0] = 1;
             ltmp.data = NULL;
-            cphvb_array *ops[] = {&ltmp, &in->ary};
+            cphvb_array *ops[] = {&ltmp, in->ary};
 
             if(pgrid_myrank == out->rank)//We also own the output chunk
             {
                 //Lets write directly to the master-tmp array
                 ltmp.base = &mtmp;
                 ltmp.start = mtmp_count;
-                reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary);
+                reduce_chunk(ufunc_id, opcode, axis, &ltmp, in->ary);
             }
             else
             {
                 //Lets write to a tmp array and send it to the master-process
                 ltmp.base = NULL;
                 ltmp.start = 0;
-                reduce_chunk(ufunc_id, opcode, axis, &ltmp, &in->ary);
+                reduce_chunk(ufunc_id, opcode, axis, &ltmp, in->ary);
 
                 //Send to output owner's mtmp array
                 MPI_Send(ltmp.data, cphvb_type_size(ltmp.type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
@@ -125,7 +125,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
                 exec_local_inst(CPHVB_FREE, &ops[0], NULL);
             }
             exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
-            if(in->ary.base != NULL)
+            if(in->ary->base != NULL)
                 exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
         }
 
@@ -158,14 +158,14 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         cphvb_array tmp = mtmp;
         tmp.base = &mtmp;
         tmp.shape[0] = mtmp_count;
-        reduce_chunk(ufunc_id, opcode, axis, &out->ary, &tmp);
+        reduce_chunk(ufunc_id, opcode, axis, out->ary, &tmp);
     
         //Lets cleanup
-        cphvb_array *ops[] = {&mtmp, &tmp, &out->ary};
+        cphvb_array *ops[] = {&mtmp, &tmp, out->ary};
         exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
         exec_local_inst(CPHVB_FREE, &ops[0], NULL);
         exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
-        if(out->ary.base != NULL)
+        if(out->ary->base != NULL)
             exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
     }
 }
@@ -219,8 +219,8 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         {
             ary_chunk *out_chunk = &chunks[c];
             ary_chunk *in_chunk  = &chunks[c+1];
-            cphvb_array *out     = &out_chunk->ary;
-            cphvb_array *in      = &in_chunk->ary;
+            cphvb_array *out     = out_chunk->ary;
+            cphvb_array *in      = in_chunk->ary;
         
             if(out_chunk->coord[axis] > 0)
                 continue;//Not the first row.
@@ -261,8 +261,8 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
         {
             ary_chunk *out_chunk = &chunks[c];
             ary_chunk *in_chunk  = &chunks[c+1];
-            cphvb_array *out     = &out_chunk->ary;
-            cphvb_array *in      = &in_chunk->ary;
+            cphvb_array *out     = out_chunk->ary;
+            cphvb_array *in      = in_chunk->ary;
      
             if(out_chunk->coord[axis] == 0)//The first row
                 continue;

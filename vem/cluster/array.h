@@ -30,7 +30,7 @@ typedef struct
     //Process rank that owns this array chunk.
     int rank;
     //Local array chunk
-    cphvb_array ary;
+    cphvb_array *ary;
     //Local array chunk coordinate (in array elements)
     cphvb_intp coord[CPHVB_MAXDIM];
 }ary_chunk;

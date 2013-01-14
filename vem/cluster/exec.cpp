@@ -33,6 +33,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "comm.h"
 #include "except.h"
 #include "ufunc_reduce.h"
+#include "task.h"
+#include "batch.h"
 
 
 //Function pointers to the Node VEM.
@@ -274,7 +276,7 @@ static void execute_regular(cphvb_instruction *inst)
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {
-        assert(cphvb_nelements(chunks[0].ary.ndim, chunks[0].ary.shape) > 0);
+        assert(cphvb_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
 
         //The process where the output chunk is located will do the computation.
         int owner_rank = chunks[0+c].rank;
@@ -286,7 +288,7 @@ static void execute_regular(cphvb_instruction *inst)
             if(!cphvb_is_constant(inst->operand[k]))
             {
                 ary_chunk *chunk = &chunks[k+c];
-                local_inst.operand[k] = &chunk->ary;
+                local_inst.operand[k] = chunk->ary;
                 comm_array_data(chunk, owner_rank);
             }
         }
@@ -306,7 +308,7 @@ static void execute_regular(cphvb_instruction *inst)
             if(cphvb_is_constant(inst->operand[k]))
                 continue;
             
-            cphvb_array *ary = &chunks[k+c].ary;
+            cphvb_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
                 exec_local_inst(CPHVB_FREE, &ary, NULL);
             exec_local_inst(CPHVB_DISCARD, &ary, NULL);
@@ -388,6 +390,10 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
         }
     }
+    
+    //Lets flush all scheduled tasks
+    batch_flush();
+
     return CPHVB_SUCCESS;
 }
 
