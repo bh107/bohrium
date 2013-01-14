@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include "exec.h"
 #include "except.h"
+#include "batch.h"
 
 
 /* Gather or scatter the global array processes.
@@ -159,30 +160,31 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
     else if(pgrid_myrank == rank)
     {
         //We need to copy the local array view into a base array.
-        cphvb_array tmp_ary = *local_ary;
-        tmp_ary.base  = NULL;
-        tmp_ary.data  = NULL;
-        tmp_ary.start = 0;
+        cphvb_array *tmp_ary = batch_tmp_ary();
+        *tmp_ary = *local_ary;
+        tmp_ary->base  = NULL;
+        tmp_ary->data  = NULL;
+        tmp_ary->start = 0;
    
         //Compute a row-major stride for the tmp array.
         cphvb_intp nelem = 1;
-        for(cphvb_intp i=tmp_ary.ndim-1; i >= 0; --i)
+        for(cphvb_intp i=tmp_ary->ndim-1; i >= 0; --i)
         {    
-            tmp_ary.stride[i] = nelem;
-            nelem *= tmp_ary.shape[i];
+            tmp_ary->stride[i] = nelem;
+            nelem *= tmp_ary->shape[i];
         }
 
         //Tell the VEM to do the data copy.
-        cphvb_array *ops[] = {&tmp_ary, local_ary};
+        cphvb_array *ops[] = {tmp_ary, local_ary};
         exec_local_inst(CPHVB_IDENTITY, ops, NULL);
-        assert(tmp_ary.data != NULL);
-        MPI_Send(tmp_ary.data, nelem * cphvb_type_size(tmp_ary.type), 
+        assert(tmp_ary->data != NULL);
+        MPI_Send(tmp_ary->data, nelem * cphvb_type_size(tmp_ary->type), 
                  MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
 
         //Cleanup the local arrays
-        exec_local_inst(CPHVB_FREE, &ops[0], NULL);
-        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
-        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
+        exec_local_inst(CPHVB_FREE, &tmp_ary, NULL);
+        exec_local_inst(CPHVB_DISCARD, &tmp_ary, NULL);
+        exec_local_inst(CPHVB_DISCARD, &local_ary, NULL);
     }
 }
 
