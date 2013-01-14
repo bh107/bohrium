@@ -57,10 +57,9 @@ static void reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
  * @axis     The axis to reduce
  * @operand  The output and input operand (global arrays)
  * @ufunc_id The ID of the reduce user-defined function
- * @return   The instruction status 
 */
-static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis, 
-                                 cphvb_array *operand[], cphvb_intp ufunc_id)
+static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis, 
+                          cphvb_array *operand[], cphvb_intp ufunc_id)
 {
     assert(operand[1]->ndim == 1);
     assert(axis == 0);
@@ -169,7 +168,6 @@ static cphvb_error reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         if(out->ary.base != NULL)
             exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
     }
-    return CPHVB_SUCCESS;
 }
 
 
@@ -184,136 +182,143 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
                          cphvb_array *operand[], cphvb_intp ufunc_id)
 {
     std::vector<ary_chunk> chunks;
-
-    if(operand[1]->ndim == 1)//"Reducing" to a scalar.
-        return reduce_vector(opcode, axis, operand, ufunc_id);
-
-    //For the mapping we have to "broadcast" the 'axis' dimension to an 
-    //output array view.
-    cphvb_array bcast_output = *operand[0];
-    bcast_output.base        = cphvb_base_array(operand[0]);
-    bcast_output.ndim        = operand[1]->ndim;
-
-    if(operand[1]->ndim == 1)//"Reducing" to a scalar.
+    try
     {
-        bcast_output.shape[0] = operand[1]->shape[0];
-        bcast_output.stride[0] = 0;
-    }
-    else
-    {
-        memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(cphvb_intp));
+        if(operand[1]->ndim == 1)//"Reducing" to a scalar.
+            reduce_vector(opcode, axis, operand, ufunc_id);
 
-        //Insert a zero-stride into the 'axis' dimension
-        for(cphvb_intp i=0; i<axis; ++i)
-            bcast_output.stride[i] = operand[0]->stride[i];
-        bcast_output.stride[axis] = 0;
-        for(cphvb_intp i=axis+1; i<bcast_output.ndim; ++i)
-            bcast_output.stride[i] = operand[0]->stride[i-1];
-    }
+        //For the mapping we have to "broadcast" the 'axis' dimension to an 
+        //output array view.
+        cphvb_array bcast_output = *operand[0];
+        bcast_output.base        = cphvb_base_array(operand[0]);
+        bcast_output.ndim        = operand[1]->ndim;
 
-    cphvb_array *operands[] = {&bcast_output, operand[1]};
-    mapping_chunks(2, operands, chunks);
-    assert(chunks.size() > 0);
-
-    //First we handle all chunks that computes the first row
-    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
-    {
-        ary_chunk *out_chunk = &chunks[c];
-        ary_chunk *in_chunk  = &chunks[c+1];
-        cphvb_array *out     = &out_chunk->ary;
-        cphvb_array *in      = &in_chunk->ary;
-    
-        if(out_chunk->coord[axis] > 0)
-            continue;//Not the first row.
-        
-        //Lets remove the "broadcasted" dimension from the output again
-        out->ndim = operand[0]->ndim;
-        if(in->ndim == 1)//Reducing to a scalar
+        if(operand[1]->ndim == 1)//"Reducing" to a scalar.
         {
-            out->shape[0] = 1;
-            out->stride[0] = 1;
+            bcast_output.shape[0] = operand[1]->shape[0];
+            bcast_output.stride[0] = 0;
         }
         else
-        {    
-            for(cphvb_intp i=axis; i<out->ndim; ++i)
-            {
-                out->shape[i] = out->shape[i+1];
-                out->stride[i] = out->stride[i+1];
-            }
-        }
-
-        //Lets make sure that all processes have the needed input data.
-        comm_array_data(in_chunk, out_chunk->rank);
-
-        if(pgrid_myrank != out_chunk->rank)
-            continue;//We do not own the output chunk
-        
-        reduce_chunk(ufunc_id, opcode, axis, out, in);
-        //Clean the local views and free tmp arrays
-        cphvb_array *ops[] = {out, in};
-        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
-        if(in->base == NULL)
-            exec_local_inst(CPHVB_FREE, &ops[1], NULL);
-        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
-    }
-
-    //Then we handle all the rest.
-    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
-    {
-        ary_chunk *out_chunk = &chunks[c];
-        ary_chunk *in_chunk  = &chunks[c+1];
-        cphvb_array *out     = &out_chunk->ary;
-        cphvb_array *in      = &in_chunk->ary;
- 
-        if(out_chunk->coord[axis] == 0)//The first row
-            continue;
-
-        //Lets remove the "broadcasted" dimension from the output again
-        out->ndim = operand[0]->ndim;
-        if(in->ndim == 1)//Reducing to a scalar
         {
-            out->shape[0] = 1;
-            out->stride[0] = 1;
-        }
-        else
-        {    
-            for(cphvb_intp i=axis; i<out->ndim; ++i)
-            {
-                out->shape[i] = out->shape[i+1];
-                out->stride[i] = out->stride[i+1];
-            }
+            memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(cphvb_intp));
+
+            //Insert a zero-stride into the 'axis' dimension
+            for(cphvb_intp i=0; i<axis; ++i)
+                bcast_output.stride[i] = operand[0]->stride[i];
+            bcast_output.stride[axis] = 0;
+            for(cphvb_intp i=axis+1; i<bcast_output.ndim; ++i)
+                bcast_output.stride[i] = operand[0]->stride[i-1];
         }
 
-        //Lets make sure that all processes have the need input data.
-        comm_array_data(in_chunk, out_chunk->rank);
+        cphvb_array *operands[] = {&bcast_output, operand[1]};
+        mapping_chunks(2, operands, chunks);
+        assert(chunks.size() > 0);
 
-        if(pgrid_myrank != out_chunk->rank)
-            continue;//We do not own the output chunk
+        //First we handle all chunks that computes the first row
+        for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
+        {
+            ary_chunk *out_chunk = &chunks[c];
+            ary_chunk *in_chunk  = &chunks[c+1];
+            cphvb_array *out     = &out_chunk->ary;
+            cphvb_array *in      = &in_chunk->ary;
         
-        //We need a tmp output array.
-        cphvb_array tmp = *out;
-        tmp.base = NULL;
-        tmp.data = NULL;
-        tmp.start = 0;
-        cphvb_set_continuous_stride(&tmp);
+            if(out_chunk->coord[axis] > 0)
+                continue;//Not the first row.
+            
+            //Lets remove the "broadcasted" dimension from the output again
+            out->ndim = operand[0]->ndim;
+            if(in->ndim == 1)//Reducing to a scalar
+            {
+                out->shape[0] = 1;
+                out->stride[0] = 1;
+            }
+            else
+            {    
+                for(cphvb_intp i=axis; i<out->ndim; ++i)
+                {
+                    out->shape[i] = out->shape[i+1];
+                    out->stride[i] = out->stride[i+1];
+                }
+            }
 
-        reduce_chunk(ufunc_id, opcode, axis, &tmp, in);
+            //Lets make sure that all processes have the needed input data.
+            comm_array_data(in_chunk, out_chunk->rank);
 
-        {//Cleanup
-            cphvb_array *ops[] = {in};
+            if(pgrid_myrank != out_chunk->rank)
+                continue;//We do not own the output chunk
+            
+            reduce_chunk(ufunc_id, opcode, axis, out, in);
+            //Clean the local views and free tmp arrays
+            cphvb_array *ops[] = {out, in};
+            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
             if(in->base == NULL)
+                exec_local_inst(CPHVB_FREE, &ops[1], NULL);
+            exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
+        }
+
+        //Then we handle all the rest.
+        for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += 2)
+        {
+            ary_chunk *out_chunk = &chunks[c];
+            ary_chunk *in_chunk  = &chunks[c+1];
+            cphvb_array *out     = &out_chunk->ary;
+            cphvb_array *in      = &in_chunk->ary;
+     
+            if(out_chunk->coord[axis] == 0)//The first row
+                continue;
+
+            //Lets remove the "broadcasted" dimension from the output again
+            out->ndim = operand[0]->ndim;
+            if(in->ndim == 1)//Reducing to a scalar
+            {
+                out->shape[0] = 1;
+                out->stride[0] = 1;
+            }
+            else
+            {    
+                for(cphvb_intp i=axis; i<out->ndim; ++i)
+                {
+                    out->shape[i] = out->shape[i+1];
+                    out->stride[i] = out->stride[i+1];
+                }
+            }
+
+            //Lets make sure that all processes have the need input data.
+            comm_array_data(in_chunk, out_chunk->rank);
+
+            if(pgrid_myrank != out_chunk->rank)
+                continue;//We do not own the output chunk
+            
+            //We need a tmp output array.
+            cphvb_array tmp = *out;
+            tmp.base = NULL;
+            tmp.data = NULL;
+            tmp.start = 0;
+            cphvb_set_continuous_stride(&tmp);
+
+            reduce_chunk(ufunc_id, opcode, axis, &tmp, in);
+
+            {//Cleanup
+                cphvb_array *ops[] = {in};
+                if(in->base == NULL)
+                    exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+                exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+            }
+            
+            //Finally, we have to "reduce" the local chunks together
+            cphvb_array *ops[] = {out, out, &tmp};
+            exec_local_inst(opcode, ops, NULL);
+            //Cleanup
+            exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
+            if(out->base == NULL)
                 exec_local_inst(CPHVB_FREE, &ops[0], NULL);
             exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
         }
-        
-        //Finally, we have to "reduce" the local chunks together
-        cphvb_array *ops[] = {out, out, &tmp};
-        exec_local_inst(opcode, ops, NULL);
-        //Cleanup
-        exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
-        if(out->base == NULL)
-            exec_local_inst(CPHVB_FREE, &ops[0], NULL);
-        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+    }
+    catch(std::exception& e)
+    {
+        fprintf(stderr, "[CLUSTER-VEM] Unhandled exception when reducing: \"%s\"", e.what());
+        return CPHVB_ERROR;
     }
     return CPHVB_SUCCESS;
 }

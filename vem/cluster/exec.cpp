@@ -67,7 +67,6 @@ cphvb_error exec_init(const char *component_name)
     if(myself == NULL)
         return CPHVB_ERROR;
     
-    
     err = cphvb_component_children(myself, &children_count, &my_components);
     if (children_count != 1) 
     {
@@ -340,11 +339,8 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                 if (inst->userfunc->id == reduce_impl_id) 
                 {
                     //TODO: the cphvb_reduce is hardcoded for now.
-                    inst->status = cphvb_reduce(inst->userfunc, NULL);
-                    if(inst->status == CPHVB_ERROR)
-                        return CPHVB_ERROR;
-                    if(inst->status != CPHVB_SUCCESS)
-                        return CPHVB_PARTIAL_SUCCESS;
+                    if(cphvb_reduce(inst->userfunc, NULL) != CPHVB_SUCCESS)
+                        EXCEPT("[CLUSTER-VEM] The user-defined function cphvb_reduce failed.");
                 }
                 else
                 {
