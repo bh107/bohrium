@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "exec.h"
 #include "comm.h"
 #include "except.h"
+#include "batch.h"
 
 /* Reduces the input chunk to the output chunk.
  * @ufunc_id The ID of the reduce user-defined function
@@ -79,14 +80,14 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
     assert(chunks.size() > 0);
 
     //Master-tmp array that the master will reduce in the end.
-    cphvb_array mtmp;
-    mtmp.base = NULL;
-    mtmp.type = operand[1]->type;
-    mtmp.ndim = 1;
-    mtmp.start = 0;
-    mtmp.shape[0] = pgrid_worldsize;//Potential one scalar per process
-    mtmp.stride[0] = 1;
-    mtmp.data = NULL;
+    cphvb_array *mtmp = batch_tmp_ary();
+    mtmp->base = NULL;
+    mtmp->type = operand[1]->type;
+    mtmp->ndim = 1;
+    mtmp->start = 0;
+    mtmp->shape[0] = pgrid_worldsize;//Potential one scalar per process
+    mtmp->stride[0] = 1;
+    mtmp->data = NULL;
     cphvb_intp mtmp_count=0;//Number of scalars received 
 
     ary_chunk *out = &chunks[0];//The output chunks are all identical
@@ -97,36 +98,35 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         if(pgrid_myrank == in->rank)//We own the input chunk
         {
             //Local-tmp array that the process will reduce 
-            cphvb_array ltmp;
-            ltmp.type = in->ary->type;
-            ltmp.ndim = 1;
-            ltmp.shape[0] = 1;
-            ltmp.stride[0] = 1;
-            ltmp.data = NULL;
-            cphvb_array *ops[] = {&ltmp, in->ary};
+            cphvb_array *ltmp = batch_tmp_ary();
+            ltmp->type = in->ary->type;
+            ltmp->ndim = 1;
+            ltmp->shape[0] = 1;
+            ltmp->stride[0] = 1;
+            ltmp->data = NULL;
 
             if(pgrid_myrank == out->rank)//We also own the output chunk
             {
                 //Lets write directly to the master-tmp array
-                ltmp.base = &mtmp;
-                ltmp.start = mtmp_count;
-                reduce_chunk(ufunc_id, opcode, axis, &ltmp, in->ary);
+                ltmp->base = mtmp;
+                ltmp->start = mtmp_count;
+                reduce_chunk(ufunc_id, opcode, axis, ltmp, in->ary);
             }
             else
             {
                 //Lets write to a tmp array and send it to the master-process
-                ltmp.base = NULL;
-                ltmp.start = 0;
-                reduce_chunk(ufunc_id, opcode, axis, &ltmp, in->ary);
+                ltmp->base = NULL;
+                ltmp->start = 0;
+                reduce_chunk(ufunc_id, opcode, axis, ltmp, in->ary);
 
                 //Send to output owner's mtmp array
-                MPI_Send(ltmp.data, cphvb_type_size(ltmp.type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
+                MPI_Send(ltmp->data, cphvb_type_size(ltmp->type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
                 //Lets free the tmp array
-                exec_local_inst(CPHVB_FREE, &ops[0], NULL);
+                exec_local_inst(CPHVB_FREE, &ltmp, NULL);
             }
-            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+            exec_local_inst(CPHVB_DISCARD, &ltmp, NULL);
             if(in->ary->base != NULL)
-                exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
+                exec_local_inst(CPHVB_DISCARD, &in->ary, NULL);
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -134,10 +134,10 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
             if(pgrid_myrank != in->rank)//We don't own the input chunk
             {
                 //Recv from input owner's ltmp to the output owner's mtmp array
-                if((e = cphvb_data_malloc(&mtmp)) != CPHVB_SUCCESS)
+                if((e = cphvb_data_malloc(mtmp)) != CPHVB_SUCCESS)
                     EXCEPT_MPI(e);
-                int err = MPI_Recv(((char*)mtmp.data) + mtmp_count * cphvb_type_size(mtmp.type), 
-                                   cphvb_type_size(mtmp.type), MPI_BYTE, in->rank, 0, 
+                int err = MPI_Recv(((char*)mtmp->data) + mtmp_count * cphvb_type_size(mtmp->type), 
+                                   cphvb_type_size(mtmp->type), MPI_BYTE, in->rank, 0, 
                                    MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 if(err != MPI_SUCCESS)
                     EXCEPT_MPI(e);
@@ -155,18 +155,18 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
     {
         assert(mtmp_count <= pgrid_worldsize);
         //Now we know the number of received scalars
-        cphvb_array tmp = mtmp;
-        tmp.base = &mtmp;
-        tmp.shape[0] = mtmp_count;
-        reduce_chunk(ufunc_id, opcode, axis, out->ary, &tmp);
+        cphvb_array *tmp = batch_tmp_ary();
+        *tmp = *mtmp;
+        tmp->base = mtmp;
+        tmp->shape[0] = mtmp_count;
+        reduce_chunk(ufunc_id, opcode, axis, out->ary, tmp);
     
         //Lets cleanup
-        cphvb_array *ops[] = {&mtmp, &tmp, out->ary};
-        exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
-        exec_local_inst(CPHVB_FREE, &ops[0], NULL);
-        exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+        exec_local_inst(CPHVB_DISCARD, &tmp, NULL);
+        exec_local_inst(CPHVB_FREE, &mtmp, NULL);
+        exec_local_inst(CPHVB_DISCARD, &mtmp, NULL);
         if(out->ary->base != NULL)
-            exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
+            exec_local_inst(CPHVB_DISCARD, &out->ary, NULL);
     }
 }
 
@@ -249,11 +249,10 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
             
             reduce_chunk(ufunc_id, opcode, axis, out, in);
             //Clean the local views and free tmp arrays
-            cphvb_array *ops[] = {out, in};
-            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+            exec_local_inst(CPHVB_DISCARD, &out, NULL);
             if(in->base == NULL)
-                exec_local_inst(CPHVB_FREE, &ops[1], NULL);
-            exec_local_inst(CPHVB_DISCARD, &ops[1], NULL);
+                exec_local_inst(CPHVB_FREE, &in, NULL);
+            exec_local_inst(CPHVB_DISCARD, &in, NULL);
         }
 
         //Then we handle all the rest.
@@ -290,29 +289,28 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
                 continue;//We do not own the output chunk
             
             //We need a tmp output array.
-            cphvb_array tmp = *out;
-            tmp.base = NULL;
-            tmp.data = NULL;
-            tmp.start = 0;
-            cphvb_set_continuous_stride(&tmp);
+            cphvb_array *tmp = batch_tmp_ary(); 
+            *tmp = *out;
+            tmp->base = NULL;
+            tmp->data = NULL;
+            tmp->start = 0;
+            cphvb_set_continuous_stride(tmp);
 
-            reduce_chunk(ufunc_id, opcode, axis, &tmp, in);
+            reduce_chunk(ufunc_id, opcode, axis, tmp, in);
 
-            {//Cleanup
-                cphvb_array *ops[] = {in};
-                if(in->base == NULL)
-                    exec_local_inst(CPHVB_FREE, &ops[0], NULL);
-                exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
-            }
+            //Cleanup
+            if(in->base == NULL)
+                exec_local_inst(CPHVB_FREE, &in, NULL);
+            exec_local_inst(CPHVB_DISCARD, &in, NULL);
             
             //Finally, we have to "reduce" the local chunks together
-            cphvb_array *ops[] = {out, out, &tmp};
+            cphvb_array *ops[] = {out, out, tmp};
             exec_local_inst(opcode, ops, NULL);
             //Cleanup
-            exec_local_inst(CPHVB_DISCARD, &ops[2], NULL);
+            exec_local_inst(CPHVB_DISCARD, &tmp, NULL);
             if(out->base == NULL)
-                exec_local_inst(CPHVB_FREE, &ops[0], NULL);
-            exec_local_inst(CPHVB_DISCARD, &ops[0], NULL);
+                exec_local_inst(CPHVB_FREE, &out, NULL);
+            exec_local_inst(CPHVB_DISCARD, &out, NULL);
         }
     }
     catch(std::exception& e)
