@@ -189,9 +189,8 @@ void exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
 /* Execute to instruction locally at the master-process
  *
  * @instruction The instructionto execute
- * @return Error codes (CPHVB_SUCCESS)
  */
-static cphvb_error fallback_exec(cphvb_instruction *inst)
+static void fallback_exec(cphvb_instruction *inst)
 {
     cphvb_error e;
     int nop = cphvb_operands_in_instruction(inst);
@@ -213,7 +212,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
     if(pgrid_myrank == 0)
     {
         if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
-            return e;
+            EXCEPT_INST(inst->opcode, e, inst->status);
     }
 
     //Scatter all data back to all processes
@@ -227,10 +226,7 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
         //We have to make sure that the master-process has allocated memory
         //because the slaves cannot determine it.
         if(pgrid_myrank == 0)        
-        {
-            if((e = cphvb_data_malloc(base)) != CPHVB_SUCCESS)
-                return e;
-        }    
+            cphvb_data_malloc(base);
         
         comm_master2slaves(base);
 
@@ -259,16 +255,14 @@ static cphvb_error fallback_exec(cphvb_instruction *inst)
             exec_local_inst(CPHVB_DISCARD, ops, NULL);
         }
     }    
-    return CPHVB_SUCCESS; 
 }
 
 
 /* Execute a regular computation instruction
  *
  * @instruction The regular computation instruction
- * @return Error codes (CPHVB_SUCCESS)
  */
-static cphvb_error execute_regular(cphvb_instruction *inst)
+static void execute_regular(cphvb_instruction *inst)
 {
     cphvb_error e; 
     std::vector<ary_chunk> chunks;
@@ -304,10 +298,8 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
 
         //Apply the local computation
         local_inst.status = CPHVB_INST_PENDING;
-        e = exec_vem_execute(1, &local_inst);
-        inst->status = local_inst.status;
-        if(e != CPHVB_SUCCESS)
-            return e;
+        if((e = exec_vem_execute(1, &local_inst)) != CPHVB_SUCCESS)
+            EXCEPT_INST(local_inst.opcode, e, local_inst.status);
 
         //Free and discard all local chunk arrays
         for(cphvb_intp k=0; k < nop; ++k)
@@ -321,7 +313,6 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
             exec_local_inst(CPHVB_DISCARD, &ary, NULL);
         }
     }
-    return CPHVB_SUCCESS;
 }
 
 
@@ -333,7 +324,6 @@ static cphvb_error execute_regular(cphvb_instruction *inst)
  */
 cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
 {
-    cphvb_error e;
     if(count <= 0)
         return CPHVB_SUCCESS;
     
@@ -358,8 +348,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                 }
                 else
                 {
-                    if((e = fallback_exec(inst)) != CPHVB_SUCCESS)
-                        return e;
+                    fallback_exec(inst);
                 }
                 break;
             }
@@ -399,8 +388,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             default:
             {
-                if((e = execute_regular(inst)) != CPHVB_SUCCESS)
-                    return e;
+                execute_regular(inst);
             }
         }
     }
