@@ -176,15 +176,15 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
 
         //Tell the VEM to do the data copy.
         cphvb_array *ops[] = {tmp_ary, local_ary};
-        exec_local_inst(CPHVB_IDENTITY, ops, NULL);
+        batch_schedule(CPHVB_IDENTITY, ops, NULL);
         assert(tmp_ary->data != NULL);
         MPI_Send(tmp_ary->data, nelem * cphvb_type_size(tmp_ary->type), 
                  MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
 
         //Cleanup the local arrays
-        exec_local_inst(CPHVB_FREE, &tmp_ary, NULL);
-        exec_local_inst(CPHVB_DISCARD, &tmp_ary, NULL);
-        exec_local_inst(CPHVB_DISCARD, &local_ary, NULL);
+        batch_schedule(CPHVB_FREE, tmp_ary);
+        batch_schedule(CPHVB_DISCARD, tmp_ary);
+        batch_schedule(CPHVB_DISCARD, local_ary);
     }
 }
 

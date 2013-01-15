@@ -33,7 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "comm.h"
 #include "except.h"
 #include "ufunc_reduce.h"
-#include "task.h"
 #include "batch.h"
 
 
@@ -161,39 +160,12 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
 }
 
 
-/* Execute one instruction locally.
- *
- * @opcode   The opcode of the instruction
- * @operands The local operands in the instruction
- * @ufunc  The user-defined function struct when opcode is CPHVB_USERFUNC.
- */
-void exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
-                     cphvb_userfunc *ufunc)
-{
-    cphvb_error e;
-    cphvb_instruction new_inst;
-    new_inst.opcode = opcode;
-    new_inst.status = CPHVB_INST_PENDING;
-    new_inst.userfunc = ufunc;
-    if(ufunc == NULL)
-    {
-        assert(opcode != CPHVB_USERFUNC);
-        memcpy(new_inst.operand, operands, cphvb_operands(opcode) 
-                                           * sizeof(cphvb_array*));
-    }
-   
-    if((e = exec_vem_execute(1, &new_inst)) != CPHVB_SUCCESS)
-        EXCEPT_INST(opcode, e, new_inst.status);
-}
-
-
 /* Execute to instruction locally at the master-process
  *
  * @instruction The instructionto execute
  */
 static void fallback_exec(cphvb_instruction *inst)
 {
-    cphvb_error e;
     int nop = cphvb_operands_in_instruction(inst);
     std::set<cphvb_array*> arys2discard;
 
@@ -212,8 +184,7 @@ static void fallback_exec(cphvb_instruction *inst)
     //Do global instruction
     if(pgrid_myrank == 0)
     {
-        if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
-            EXCEPT_INST(inst->opcode, e, inst->status);
+        batch_schedule(*inst);
     }
 
     //Scatter all data back to all processes
@@ -241,8 +212,7 @@ static void fallback_exec(cphvb_instruction *inst)
     {
         if((*it)->base != NULL)
         {
-            cphvb_array *ops[1] = {*it};
-            exec_local_inst(CPHVB_DISCARD, ops, NULL);
+            batch_schedule(CPHVB_DISCARD, *it);
         }
     }    
     //Free and discard all local base arrays
@@ -251,9 +221,8 @@ static void fallback_exec(cphvb_instruction *inst)
     {
         if((*it)->base == NULL)
         {
-            cphvb_array *ops[1] = {*it};
-            exec_local_inst(CPHVB_FREE, ops, NULL);
-            exec_local_inst(CPHVB_DISCARD, ops, NULL);
+            batch_schedule(CPHVB_FREE, *it);
+            batch_schedule(CPHVB_DISCARD, *it);
         }
     }    
 }
@@ -265,7 +234,6 @@ static void fallback_exec(cphvb_instruction *inst)
  */
 static void execute_regular(cphvb_instruction *inst)
 {
-    cphvb_error e; 
     std::vector<ary_chunk> chunks;
     int nop = cphvb_operands_in_instruction(inst);
     cphvb_array **operands = cphvb_inst_operands(inst);
@@ -299,9 +267,10 @@ static void execute_regular(cphvb_instruction *inst)
 
         //Apply the local computation
         local_inst.status = CPHVB_INST_PENDING;
-        if((e = exec_vem_execute(1, &local_inst)) != CPHVB_SUCCESS)
-            EXCEPT_INST(local_inst.opcode, e, local_inst.status);
 
+        //Schedule task
+        batch_schedule(local_inst);
+    
         //Free and discard all local chunk arrays
         for(cphvb_intp k=0; k < nop; ++k)
         {
@@ -310,8 +279,8 @@ static void execute_regular(cphvb_instruction *inst)
             
             cphvb_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
-                exec_local_inst(CPHVB_FREE, &ary, NULL);
-            exec_local_inst(CPHVB_DISCARD, &ary, NULL);
+                batch_schedule(CPHVB_FREE, ary);
+            batch_schedule(CPHVB_DISCARD, ary);
         }
     }
 }
@@ -357,7 +326,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                 if(g_ary->base == NULL)
                 {
                     if(l_ary != NULL)
-                        exec_local_inst(CPHVB_DISCARD, &l_ary, NULL);
+                        batch_schedule(CPHVB_DISCARD, l_ary);
                     array_rm_local(g_ary); 
                 }   
                 dispatch_slave_known_remove(g_ary);
@@ -369,9 +338,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                 cphvb_array *l_ary = array_get_existing_local(g_ary);
                 cphvb_data_free(g_ary);
                 if(l_ary != NULL)
-                {
-                    exec_local_inst(CPHVB_FREE, &l_ary, NULL);
-                }
+                    batch_schedule(CPHVB_FREE, l_ary);
                 break;
             }
             case CPHVB_SYNC:

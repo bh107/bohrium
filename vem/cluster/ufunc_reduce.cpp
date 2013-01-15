@@ -49,7 +49,7 @@ static void reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
     ufunc.operand[1]  = in;
     ufunc.axis        = axis;
     ufunc.opcode      = opcode;
-    exec_local_inst(CPHVB_USERFUNC, NULL, (cphvb_userfunc*)(&ufunc));
+    batch_schedule(CPHVB_USERFUNC, NULL, (cphvb_userfunc*)(&ufunc));
 }
 
 
@@ -122,11 +122,11 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
                 //Send to output owner's mtmp array
                 MPI_Send(ltmp->data, cphvb_type_size(ltmp->type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
                 //Lets free the tmp array
-                exec_local_inst(CPHVB_FREE, &ltmp, NULL);
+                batch_schedule(CPHVB_FREE, ltmp);
             }
-            exec_local_inst(CPHVB_DISCARD, &ltmp, NULL);
+            batch_schedule(CPHVB_DISCARD, ltmp);
             if(in->ary->base != NULL)
-                exec_local_inst(CPHVB_DISCARD, &in->ary, NULL);
+                batch_schedule(CPHVB_DISCARD, in->ary);
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -162,11 +162,11 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         reduce_chunk(ufunc_id, opcode, axis, out->ary, tmp);
     
         //Lets cleanup
-        exec_local_inst(CPHVB_DISCARD, &tmp, NULL);
-        exec_local_inst(CPHVB_FREE, &mtmp, NULL);
-        exec_local_inst(CPHVB_DISCARD, &mtmp, NULL);
+        batch_schedule(CPHVB_DISCARD, tmp);
+        batch_schedule(CPHVB_FREE, mtmp);
+        batch_schedule(CPHVB_DISCARD, mtmp);
         if(out->ary->base != NULL)
-            exec_local_inst(CPHVB_DISCARD, &out->ary, NULL);
+            batch_schedule(CPHVB_DISCARD, out->ary);
     }
 }
 
@@ -249,10 +249,10 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
             
             reduce_chunk(ufunc_id, opcode, axis, out, in);
             //Clean the local views and free tmp arrays
-            exec_local_inst(CPHVB_DISCARD, &out, NULL);
+            batch_schedule(CPHVB_DISCARD, out);
             if(in->base == NULL)
-                exec_local_inst(CPHVB_FREE, &in, NULL);
-            exec_local_inst(CPHVB_DISCARD, &in, NULL);
+                batch_schedule(CPHVB_FREE, in);
+            batch_schedule(CPHVB_DISCARD, in);
         }
 
         //Then we handle all the rest.
@@ -300,17 +300,17 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
 
             //Cleanup
             if(in->base == NULL)
-                exec_local_inst(CPHVB_FREE, &in, NULL);
-            exec_local_inst(CPHVB_DISCARD, &in, NULL);
+                batch_schedule(CPHVB_FREE, in);
+            batch_schedule(CPHVB_DISCARD, in);
             
             //Finally, we have to "reduce" the local chunks together
             cphvb_array *ops[] = {out, out, tmp};
-            exec_local_inst(opcode, ops, NULL);
+            batch_schedule(opcode, ops, NULL);
             //Cleanup
-            exec_local_inst(CPHVB_DISCARD, &tmp, NULL);
+            batch_schedule(CPHVB_DISCARD, tmp);
             if(out->base == NULL)
-                exec_local_inst(CPHVB_FREE, &out, NULL);
-            exec_local_inst(CPHVB_DISCARD, &out, NULL);
+                batch_schedule(CPHVB_FREE, out);
+            batch_schedule(CPHVB_DISCARD, out);
         }
     }
     catch(std::exception& e)
