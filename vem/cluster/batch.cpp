@@ -164,6 +164,23 @@ void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
 }
 
 
+/* Schedule an send/receive instruction.
+ *
+ * @direction  If True the array is send else it is received.
+ * @rank       The to send to or receive from
+ * @local_ary  The local array to communicate
+ */
+void batch_schedule(bool direction, int rank, cphvb_array *local_ary)
+{
+    task t;
+    t.send_recv.type      = TASK_SEND_RECV;
+    t.send_recv.direction = direction;
+    t.send_recv.rank      = rank;
+    t.send_recv.local_ary = local_ary;
+    batch_schedule(t); 
+}
+
+
 /* Flush all scheduled instructions
  * 
  */

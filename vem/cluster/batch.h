@@ -62,6 +62,15 @@ void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
                     cphvb_userfunc *ufunc);
 
 
+/* Schedule an send/receive instruction.
+ *
+ * @direction  If True the array is send else it is received.
+ * @rank       The to send to or receive from
+ * @local_ary  The local array to communicate
+ */
+void batch_schedule(bool direction, int rank, cphvb_array *local_ary);
+
+
 /* Flush all scheduled instructions
  * 
  */

@@ -150,10 +150,6 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
     if(rank == receiving_rank)
         return;
 
-    //Lets build the communication task
-    task t;
-    t.send_recv.type = TASK_SEND_RECV;
-     
     if(pgrid_myrank == receiving_rank)
     {
         //This array is temporary and
@@ -163,10 +159,7 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         assert(local_ary->data == NULL);
         
         //Schedule the receive message
-        t.send_recv.direction = 0;
-        t.send_recv.local_ary = local_ary;
-        t.send_recv.rank      = rank;
-        batch_schedule(t);       
+        batch_schedule(0, rank, local_ary);
     }
     else if(pgrid_myrank == rank)
     {
@@ -191,10 +184,7 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         assert(tmp_ary->data != NULL);
 
         //Schedule the send message
-        t.send_recv.direction = 1;
-        t.send_recv.local_ary = tmp_ary;
-        t.send_recv.rank      = receiving_rank;
-        batch_schedule(t);       
+        batch_schedule(1, receiving_rank, tmp_ary);
 
         //Cleanup the local arrays
         batch_schedule(CPHVB_FREE, tmp_ary);
