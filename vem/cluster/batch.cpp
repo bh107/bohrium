@@ -40,21 +40,13 @@ cphvb_array* batch_tmp_ary()
 }
 
 
-/* Schedule an task
- * @t      The task to schedule 
- * @return The new temporary array
+/* Schedule an task. 
+ * NB: for now, we will flush in every task scheduling
+ * @t  The task to schedule 
  */
 void batch_schedule(const task& t)
 {
     task_store.push_back(t);
-}
-
-
-/* Flush all scheduled instructions
- * 
- */
-void batch_flush()
-{
     for(std::vector<task>::iterator it=task_store.begin(); 
         it != task_store.end(); ++it)
     {
@@ -77,6 +69,68 @@ void batch_flush()
         }        
     }
     task_store.clear();
+}
+
+
+/* Schedule an instruction
+ * @inst   The instruction to schedule 
+ */
+void batch_schedule(const cphvb_instruction& inst)
+{
+    task t;
+    t.inst.type = TASK_INST;
+    t.inst.inst = inst;
+    batch_schedule(t); 
+}
+
+
+/* Schedule an instruction that only takes one instruction.
+ *
+ * @opcode   The opcode of the instruction
+ * @operand  The local operand in the instruction
+ */
+void batch_schedule(cphvb_opcode opcode, cphvb_array *operand)
+{
+    task t;
+    t.inst.type = TASK_INST;
+    t.inst.inst.opcode = opcode;
+    t.inst.inst.status = CPHVB_INST_PENDING;
+    t.inst.inst.operand[0] = operand;
+    assert(cphvb_operands_in_instruction(&t.inst.inst) == 1);
+    batch_schedule(t); 
+}
+
+
+/* Schedule an instruction.
+ *
+ * @opcode   The opcode of the instruction
+ * @operands The local operands in the instruction
+ * @ufunc    The user-defined function struct when opcode is CPHVB_USERFUNC.
+ */
+void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
+                    cphvb_userfunc *ufunc)
+{
+    task t;
+    t.inst.type = TASK_INST;
+    t.inst.inst.opcode = opcode;
+    t.inst.inst.status = CPHVB_INST_PENDING;
+    t.inst.inst.userfunc = ufunc;
+    if(ufunc == NULL)
+    {
+        assert(opcode != CPHVB_USERFUNC);
+        memcpy(t.inst.inst.operand, operands, cphvb_operands(opcode) 
+                                              * sizeof(cphvb_array*));
+    }
+    batch_schedule(t); 
+}
+
+
+/* Flush all scheduled instructions
+ * 
+ */
+void batch_flush()
+{
+//    task_store.clear();
     tmp_ary_store.clear(); 
 }
 

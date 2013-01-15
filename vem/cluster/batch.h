@@ -31,11 +31,35 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_array* batch_tmp_ary();
 
 
-/* Schedule an task
- * @t      The task to schedule 
- * @return The new temporary array
+/* Schedule an task. 
+ * NB: for now, we will flush in every task scheduling
+ * @t  The task to schedule 
  */
 void batch_schedule(const task& t);
+
+
+/* Schedule an instruction
+ * @inst   The instruction to schedule 
+ */
+void batch_schedule(const cphvb_instruction& inst);
+
+
+/* Schedule an instruction that only takes one instruction.
+ *
+ * @opcode   The opcode of the instruction
+ * @operand  The local operand in the instruction
+ */
+void batch_schedule(cphvb_opcode opcode, cphvb_array *operand);
+
+
+/* Schedule an instruction.
+ *
+ * @opcode   The opcode of the instruction
+ * @operands The local operands in the instruction
+ * @ufunc    The user-defined function struct when opcode is CPHVB_USERFUNC.
+ */
+void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
+                    cphvb_userfunc *ufunc);
 
 
 /* Flush all scheduled instructions
