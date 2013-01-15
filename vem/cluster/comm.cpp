@@ -156,8 +156,8 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         //located contiguous in memory (row-major)
         assert(local_ary->base == NULL);
         assert(local_ary->start == 0);
-        assert(local_ary->data == NULL);
-        
+        assert(local_ary->data == NULL);        
+    
         //Schedule the receive message
         batch_schedule(0, rank, local_ary);
     }
@@ -181,7 +181,6 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         //Tell the VEM to do the data copy.
         cphvb_array *ops[] = {tmp_ary, local_ary};
         batch_schedule(CPHVB_IDENTITY, ops, NULL);
-        assert(tmp_ary->data != NULL);
 
         //Schedule the send message
         batch_schedule(1, receiving_rank, tmp_ary);
