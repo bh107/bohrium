@@ -34,7 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-static void gather_scatter(int scatter, cphvb_array *global_ary)
+void comm_gather_scatter(int scatter, cphvb_array *global_ary)
 {
     assert(global_ary->base == NULL);
     cphvb_error err;
@@ -109,7 +109,11 @@ static void gather_scatter(int scatter, cphvb_array *global_ary)
  */
 void comm_master2slaves(cphvb_array *global_ary)
 {
-    gather_scatter(1, global_ary);
+    task t;
+    t.gather_scatter.type       = TASK_GATHER_SCATTER;
+    t.gather_scatter.direction  = 1;
+    t.gather_scatter.global_ary = global_ary;
+    batch_schedule(t);
 }
 
 
@@ -120,7 +124,11 @@ void comm_master2slaves(cphvb_array *global_ary)
  */
 void comm_slaves2master(cphvb_array *global_ary)
 {
-    gather_scatter(0, global_ary);
+    task t;
+    t.gather_scatter.type       = TASK_GATHER_SCATTER;
+    t.gather_scatter.direction  = 0;
+    t.gather_scatter.global_ary = global_ary;
+    batch_schedule(t);
 }
 
 
@@ -135,7 +143,6 @@ void comm_slaves2master(cphvb_array *global_ary)
  */
 void comm_array_data(ary_chunk *chunk, int receiving_rank)
 {
-    cphvb_error e;
     cphvb_array *local_ary = chunk->ary;
     int rank = chunk->rank;
 
@@ -143,6 +150,10 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
     if(rank == receiving_rank)
         return;
 
+    //Lets build the communication task
+    task t;
+    t.send_recv.type = TASK_SEND_RECV;
+     
     if(pgrid_myrank == receiving_rank)
     {
         //This array is temporary and
@@ -150,12 +161,12 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         assert(local_ary->base == NULL);
         assert(local_ary->start == 0);
         assert(local_ary->data == NULL);
-        if((e = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
-            EXCEPT_OUT_OF_MEMORY();
         
-        MPI_Recv(local_ary->data, cphvb_array_size(local_ary), MPI_BYTE, 
-                 rank, 0,
-                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        //Schedule the receive message
+        t.send_recv.direction = 0;
+        t.send_recv.local_ary = local_ary;
+        t.send_recv.rank      = rank;
+        batch_schedule(t);       
     }
     else if(pgrid_myrank == rank)
     {
@@ -178,8 +189,12 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         cphvb_array *ops[] = {tmp_ary, local_ary};
         batch_schedule(CPHVB_IDENTITY, ops, NULL);
         assert(tmp_ary->data != NULL);
-        MPI_Send(tmp_ary->data, nelem * cphvb_type_size(tmp_ary->type), 
-                 MPI_BYTE, receiving_rank, 0, MPI_COMM_WORLD);
+
+        //Schedule the send message
+        t.send_recv.direction = 1;
+        t.send_recv.local_ary = tmp_ary;
+        t.send_recv.rank      = receiving_rank;
+        batch_schedule(t);       
 
         //Cleanup the local arrays
         batch_schedule(CPHVB_FREE, tmp_ary);

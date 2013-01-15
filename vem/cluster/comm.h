@@ -25,6 +25,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __CPHVB_VEM_CLUSTER_COMM_H
 
 
+/* Gather or scatter the global array processes.
+ * NB: this is a collective operation.
+ * 
+ * @scatter If true we scatter else we gather
+ * @global_ary Global base array
+ */
+void comm_gather_scatter(int scatter, cphvb_array *global_ary);
+
+
 /* Distribute the global array data to all slave processes.
  * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.
