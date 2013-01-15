@@ -64,7 +64,6 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
 {
     assert(operand[1]->ndim == 1);
     assert(axis == 0);
-    cphvb_error e;
 
     //For the mapping we have to "broadcast" the 'axis' dimension to an 
     //output array view.
@@ -120,7 +119,8 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
                 reduce_chunk(ufunc_id, opcode, axis, ltmp, in->ary);
 
                 //Send to output owner's mtmp array
-                MPI_Send(ltmp->data, cphvb_type_size(ltmp->type), MPI_BYTE, out->rank, 0, MPI_COMM_WORLD);
+                batch_schedule(1, out->rank, ltmp); 
+
                 //Lets free the tmp array
                 batch_schedule(CPHVB_FREE, ltmp);
             }
@@ -133,14 +133,18 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         {
             if(pgrid_myrank != in->rank)//We don't own the input chunk
             {
+                //Create a tmp view for receiving
+                cphvb_array *recv_view = batch_tmp_ary();
+                *recv_view = *mtmp;
+                recv_view->base = mtmp;
+                recv_view->shape[0] = 1;
+                recv_view->start = mtmp_count;
+
                 //Recv from input owner's ltmp to the output owner's mtmp array
-                if((e = cphvb_data_malloc(mtmp)) != CPHVB_SUCCESS)
-                    EXCEPT_MPI(e);
-                int err = MPI_Recv(((char*)mtmp->data) + mtmp_count * cphvb_type_size(mtmp->type), 
-                                   cphvb_type_size(mtmp->type), MPI_BYTE, in->rank, 0, 
-                                   MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                if(err != MPI_SUCCESS)
-                    EXCEPT_MPI(e);
+                batch_schedule(0, in->rank, recv_view);
+
+                //Cleanup
+                batch_schedule(CPHVB_DISCARD, recv_view);
             }
             ++mtmp_count;//One scalar added to the master-tmp array
         }
