@@ -322,12 +322,14 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             case CPHVB_DISCARD:
             {
                 cphvb_array *g_ary = inst->operand[0];
-                cphvb_array *l_ary = array_get_existing_local(g_ary);
                 if(g_ary->base == NULL)
                 {
+                    cphvb_array *l_ary = array_get_existing_local(g_ary);
                     if(l_ary != NULL)
+                    {
                         batch_schedule(CPHVB_DISCARD, l_ary);
-                    array_rm_local(g_ary); 
+                        array_rm_local(g_ary);
+                    }
                 }   
                 dispatch_slave_known_remove(g_ary);
                 break;
