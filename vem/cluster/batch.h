@@ -31,6 +31,11 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_array* batch_tmp_ary();
 
 
+/* Remove all temporary arrays
+ */
+void batch_rm_tmp_arys();
+
+
 /* Schedule an task. 
  * NB: for now, we will flush in every task scheduling
  * @t  The task to schedule 

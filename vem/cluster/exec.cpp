@@ -168,6 +168,8 @@ static void fallback_exec(cphvb_instruction *inst)
 {
     int nop = cphvb_operands_in_instruction(inst);
     std::set<cphvb_array*> arys2discard;
+    
+    batch_flush();
 
     //Gather all data at the master-process
     cphvb_array **oprands = cphvb_inst_operands(inst);
@@ -361,6 +363,8 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
     
     //Lets flush all scheduled tasks
     batch_flush();
+    //And remove all tmp arrays
+    batch_rm_tmp_arys();
 
     return CPHVB_SUCCESS;
 }

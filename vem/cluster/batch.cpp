@@ -31,13 +31,21 @@ If not, see <http://www.gnu.org/licenses/>.
 static StaticStore<cphvb_array> tmp_ary_store(512);
 static std::vector<task> task_store;
 
-/* Returns a temporary array that will be freed on a batch flush
+/* Returns a temporary array that will be freed by batch_rm_tmp_arys()
  * 
  * @return The new temporary array
  */
 cphvb_array* batch_tmp_ary()
 {
     return tmp_ary_store.c_next();
+}
+
+
+/* Remove all temporary arrays
+ */
+void batch_rm_tmp_arys()
+{
+    tmp_ary_store.clear(); 
 }
 
 
@@ -192,8 +200,6 @@ void batch_schedule(bool direction, int rank, cphvb_array *local_ary)
  */
 void batch_flush()
 {
-//    task_store.clear();
-    tmp_ary_store.clear(); 
 }
 
 
