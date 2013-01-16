@@ -109,11 +109,8 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary)
  */
 void comm_master2slaves(cphvb_array *global_ary)
 {
-    task t;
-    t.gather_scatter.type       = TASK_GATHER_SCATTER;
-    t.gather_scatter.direction  = 1;
-    t.gather_scatter.global_ary = global_ary;
-    batch_schedule(t);
+    batch_flush();
+    comm_gather_scatter(1, global_ary);
 }
 
 
@@ -124,11 +121,8 @@ void comm_master2slaves(cphvb_array *global_ary)
  */
 void comm_slaves2master(cphvb_array *global_ary)
 {
-    task t;
-    t.gather_scatter.type       = TASK_GATHER_SCATTER;
-    t.gather_scatter.direction  = 0;
-    t.gather_scatter.global_ary = global_ary;
-    batch_schedule(t);
+    batch_flush();
+    comm_gather_scatter(0, global_ary);
 }
 
 

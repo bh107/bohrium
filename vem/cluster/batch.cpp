@@ -106,13 +106,6 @@ void batch_schedule(const task& t)
                 }
                 break;
             }
-            case TASK_GATHER_SCATTER:
-            {
-                bool dir         = (*it).gather_scatter.direction;
-                cphvb_array *ary = (*it).gather_scatter.global_ary;
-                comm_gather_scatter(dir, ary);
-                break;
-            }
             default:
             {
                 fprintf(stderr, "[VEM-CLUSTER] batch_schedule encountered "

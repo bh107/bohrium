@@ -28,7 +28,6 @@ enum /* cphvb_type */
 {
     TASK_INST,            //Regular cphVB instruction
     TASK_SEND_RECV,       //Send or receive p2p 
-    TASK_GATHER_SCATTER,  //Gather or scatter collective
 };
 typedef cphvb_intp task_type;
 
@@ -48,18 +47,6 @@ typedef struct
 {
     //The type of this task
     task_type type;
-    //If True we scatter else we gather
-    bool direction;
-    //The global array to gather or scatter
-    cphvb_array *global_ary;
-}task_gather_scatter;
-
-
-//Gather or Scatter task
-typedef struct
-{
-    //The type of this task
-    task_type type;
     //If True we send the array else we receive it
     bool direction;
     //The local array to send or receive
@@ -72,7 +59,6 @@ typedef struct
 typedef union
 {
     task_inst            inst;
-    task_gather_scatter  gather_scatter;
     task_send_recv       send_recv;
 }task;
 
