@@ -59,6 +59,12 @@ void batch_schedule(const task& t)
                 cphvb_instruction *inst = &((*it).inst.inst);
                 if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
                     EXCEPT_INST(inst->opcode, e, inst->status);
+
+                if(inst->opcode == CPHVB_DISCARD)
+                {
+                    if(inst->operand[0]->base == NULL)
+                        array_rm_local(inst->operand[0]); 
+                }
                 break;
             }
             case TASK_SEND_RECV:

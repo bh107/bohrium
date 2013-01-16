@@ -105,9 +105,13 @@ void array_rm_local(cphvb_array *local_ary)
                 global_ary = it->first;
             }
     }
-    assert(global_ary != NULL);
-    map_global2local.erase(global_ary);
-    local_ary_store.erase(local_ary);
+    //If 'local_ary' is not created through array_get_local()
+    //it is not in map_global2local and we will do nothing
+    if(global_ary != NULL)
+    {
+        map_global2local.erase(global_ary);
+        local_ary_store.erase(local_ary);
+    }
 }
    
     
