@@ -328,7 +328,7 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
                     if(l_ary != NULL)
                     {
                         batch_schedule(CPHVB_DISCARD, l_ary);
-                        array_rm_local(g_ary);
+                        array_rm_local(l_ary);
                     }
                 }   
                 dispatch_slave_known_remove(g_ary);

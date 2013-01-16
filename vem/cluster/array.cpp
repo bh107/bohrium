@@ -85,20 +85,30 @@ cphvb_array* array_get_local(cphvb_array *global_ary)
 }
 
 
-/* Remove the local array based on the global array.
+/* Remove the local array.
  * NB: this function only accept base-arrays. 
  *
- * @global_ary The global array 
+ * @local_ary The local array 
  */
-void array_rm_local(cphvb_array *global_ary)
+void array_rm_local(cphvb_array *local_ary)
 {
-    assert(global_ary->base == NULL);
-    cphvb_array *local_ary = map_global2local[global_ary];
-    if(local_ary != NULL)
-        local_ary_store.erase(local_ary);
+    assert(local_ary->base == NULL);
+
+    //find the global array
+    cphvb_array *global_ary = NULL;
+    {
+        std::map<cphvb_array*,cphvb_array*>::iterator it;
+        for(it=map_global2local.begin(); it != map_global2local.end(); ++it)
+            if(it->second == local_ary)
+            {
+                assert(global_ary == NULL);
+                global_ary = it->first;
+            }
+    }
+    assert(global_ary != NULL);
     map_global2local.erase(global_ary);
+    local_ary_store.erase(local_ary);
 }
-        
-    
+   
     
 
