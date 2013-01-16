@@ -286,7 +286,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
                 }
             }
 
-            //Lets make sure that all processes have the need input data.
+            //Lets make sure that all processes have the needed input data.
             comm_array_data(in_chunk, out_chunk->rank);
 
             if(pgrid_myrank != out_chunk->rank)
