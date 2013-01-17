@@ -175,7 +175,7 @@ if __name__ == "__main__":
     if len(script_list) == 0:
         script_list = os.listdir(os.path.dirname(os.path.abspath(__file__)))
 
-    print "*"*3, "Testing the equivalency of cphVB-NumPy and NumPy", "*"*3
+    print "*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3
     for i in xrange(len(script_list)):
         f = script_list[i]
         if f.startswith("test_") and f.endswith("py") and f not in exclude_list:

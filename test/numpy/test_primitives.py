@@ -18,7 +18,7 @@ def type_cphvb2numpy(cphvb_type):
     return "np.%s"%cphvb_type[6:].lower()
 
 
-class test_cphvb_opcodes(numpytest):#Ufuncs directly mappable to cphVB
+class test_cphvb_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
 
     def __init__(self):
         numpytest.__init__(self)
@@ -82,7 +82,7 @@ def type_all(nop):
     return type_float(nop) + type_int(nop) + type_bool(nop) 
 
 
-class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to cphVB
+class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.0001

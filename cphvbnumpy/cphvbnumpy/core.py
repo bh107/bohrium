@@ -20,7 +20,7 @@ def empty(shape, dtype=float, bohrium=True):
     dtype : data-type, optional
         Desired output data-type.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     See Also
     --------
@@ -62,7 +62,7 @@ def ones(shape, dtype=float, bohrium=True):
     dtype : data-type, optional
         The desired data-type for the matrix, default is np.float64.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------
@@ -107,7 +107,7 @@ def zeros(shape, dtype=float, bohrium=True):
     dtype : data-type, optional
         The desired data-type for the matrix, default is float.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------
@@ -154,7 +154,7 @@ def empty_like(a, dtype=None, bohrium=None):
     dtype : data-type, optional
         Overrides the data type of the result.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------
@@ -210,7 +210,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     dtype : data-type, optional
         Overrides the data type of the result.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------
@@ -266,7 +266,7 @@ def ones_like(a, dtype=None, bohrium=None):
     dtype : data-type, optional
         Overrides the data type of the result.
     bohrium : boolean, optional
-        Determines whether it is a cphVB-enabled array or a regular NumPy array
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------

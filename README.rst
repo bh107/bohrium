@@ -2,9 +2,9 @@
 Welcome!
 ========
 
-cphVB provides a runtime environment for efficiently executing vectorized applications using your favorourite programming languange Python/NumPy, C#, F# on Linux, Windows and MacOSX.
+Bohrium provides a runtime environment for efficiently executing vectorized applications using your favorourite programming languange Python/NumPy, C#, F# on Linux, Windows and MacOSX.
 
-Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes and locks to utilize your multi-core CPU and forget about MPI to program your cluster just cphVB!
+Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes and locks to utilize your multi-core CPU and forget about MPI to program your cluster just Bohrium!
 
 Features
 --------

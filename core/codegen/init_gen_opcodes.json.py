@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """This script was used initially to generate the opcodes.json fil.
-   NB: This script is not part of the cphVB installation script. 
-       It is only here as documentation of the initial creations of all the opcodes in cphVB.
+   NB: This script is not part of the Bohrium installation script. 
+       It is only here as documentation of the initial creations of all the opcodes in Bohrium.
 """
 import json
 import sys
@@ -86,27 +86,27 @@ def main():
     print """/*
  * Copyright 2012 Mads R. B. Kristensen <madsbk@gmail.com>
  *
- * This file is part of cphVB <http://code.google.com/p/cphvb/>.
+ * This file is part of Bohrium <http://code.google.com/p/cphvb/>.
  *
- * cphVB is free software: you can redistribute it and/or modify
+ * Bohrium is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * cphVB is distributed in the hope that it will be useful,
+ * Bohrium is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
+ * along with Bohrium. If not, see <http://www.gnu.org/licenses/>.
  */
   
  /*
- * This is the definition of all opcodes in cphVB. It uses the JSON 
+ * This is the definition of all opcodes in Bohrium. It uses the JSON 
  * (JavaScript Object Notation) syntax <http://json.org>.
  *
- * It contains a dictionary of all opcodes in the cphVB project. 
+ * It contains a dictionary of all opcodes in the Bohrium project. 
  * The format is mostly self-explaining but the "types" key needs some 
  * explanation. It contains a dictionary of all input data types 
  * supported by the associated opcode and each supported input type 

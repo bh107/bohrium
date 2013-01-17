@@ -2,10 +2,10 @@
 
 from distutils.core import setup
 
-setup(name='cphVB NumPy',
+setup(name='Bohrium NumPy',
       version='0.1',
-      description='cphVB NumPy',
-      author='The cphVB Team',
+      description='Bohrium NumPy',
+      author='The Bohrium Team',
       author_email='contact@cphvb.org',
       url='http://www.cphvb.org',
       packages=['cphvbnumpy','cphvbnumpy.examples'],

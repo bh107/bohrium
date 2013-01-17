@@ -1,6 +1,6 @@
 Running gen_opcodes.py will generate include/cphvb_opcode.h and core/cphvb_opcode.c
 
-The file ''opcodes.json'' contains a definition of all opcodes in cphVB,
+The file ''opcodes.json'' contains a definition of all opcodes in Bohrium,
 it uses the JSON (JavaScript Object Notation) syntax <http://json.org>.
 
 The file contains a list of opcode definitions on the form::
@@ -21,7 +21,7 @@ The file contains a list of opcode definitions on the form::
 A description of the opcode structure follows::
 
 _opcode
-  The unique symbol identifying a cphVB opcode.
+  The unique symbol identifying a Bohrium opcode.
 doc
   A textual description of the opcode.
 code
