@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 
 #ifndef __CPHVB_VEM_CLUSTER_TMP_H
 #define __CPHVB_VEM_CLUSTER_TMP_H
@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * 
  * @return The temporary array
  */
-cphvb_array* tmp_get_ary();
+bh_array* tmp_get_ary();
 
 
 /* Returns temporary memory for miscellaneous use
@@ -37,7 +37,7 @@ cphvb_array* tmp_get_ary();
  * 
  * @return The temporary memory
  */
-void* tmp_get_misc(cphvb_intp size);
+void* tmp_get_misc(bh_intp size);
 
 
 /* Clear all temporary data structures

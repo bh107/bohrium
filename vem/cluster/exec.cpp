@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <vector>
 #include <set>
-#include <cphvb.h>
+#include <bh.h>
 
-#include "cphvb_vem_cluster.h"
+#include "bh_vem_cluster.h"
 #include "mapping.h"
 #include "array.h"
 #include "pgrid.h"
@@ -38,38 +38,38 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 //Function pointers to the Node VEM.
-static cphvb_init vem_init;
-static cphvb_shutdown vem_shutdown;
-static cphvb_reg_func vem_reg_func;
+static bh_init vem_init;
+static bh_shutdown vem_shutdown;
+static bh_reg_func vem_reg_func;
 //Public function pointer to the Node VEM
-cphvb_execute exec_vem_execute;
+bh_execute exec_vem_execute;
 
 //The VE components
-static cphvb_component **my_components;
+static bh_component **my_components;
 
 //Our self
-static cphvb_component *myself;
+static bh_component *myself;
 
 //Number of user-defined functions registered.
-static cphvb_intp userfunc_count = 0;
+static bh_intp userfunc_count = 0;
 //User-defined function IDs.
-static cphvb_userfunc_impl reduce_impl = NULL;
-static cphvb_intp reduce_impl_id = 0;
+static bh_userfunc_impl reduce_impl = NULL;
+static bh_intp reduce_impl_id = 0;
 
 
 /* Initialize the VEM
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_init(const char *component_name)
+bh_error exec_init(const char *component_name)
 {
-    cphvb_intp children_count;
-    cphvb_error err;
-    myself = cphvb_component_setup(component_name);
+    bh_intp children_count;
+    bh_error err;
+    myself = bh_component_setup(component_name);
     if(myself == NULL)
         return CPHVB_ERROR;
     
-    err = cphvb_component_children(myself, &children_count, &my_components);
+    err = bh_component_children(myself, &children_count, &my_components);
     if (children_count != 1) 
     {
 		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
@@ -96,17 +96,17 @@ cphvb_error exec_init(const char *component_name)
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_shutdown(void)
+bh_error exec_shutdown(void)
 {
-    cphvb_error err;
+    bh_error err;
     if((err = vem_shutdown()) != CPHVB_SUCCESS)
         return err;
-    cphvb_component_free(my_components[0]);//Only got one child.
+    bh_component_free(my_components[0]);//Only got one child.
     vem_init     = NULL;
     exec_vem_execute  = NULL;
     vem_shutdown = NULL;
     vem_reg_func = NULL;
-    cphvb_component_free_ptr(my_components);
+    bh_component_free_ptr(my_components);
     my_components = NULL;
 
     //Finalize the process grid
@@ -128,9 +128,9 @@ cphvb_error exec_shutdown(void)
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
+bh_error exec_reg_func(char *fun, bh_intp *id)
 {
-    cphvb_error e;
+    bh_error e;
     
     if(*id == 0)//Only if parent didn't set the ID.
     {
@@ -144,11 +144,11 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
         return e;
     }
 
-    if(strcmp("cphvb_reduce", fun) == 0)
+    if(strcmp("bh_reduce", fun) == 0)
     {
         if(reduce_impl == NULL)
         {
-            cphvb_component_get_func(myself, fun, &reduce_impl);
+            bh_component_get_func(myself, fun, &reduce_impl);
             if (reduce_impl == NULL)
                 return CPHVB_USERFUNC_NOT_SUPPORTED;
 
@@ -165,22 +165,22 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id)
  *
  * @instruction The instructionto execute
  */
-static void fallback_exec(cphvb_instruction *inst)
+static void fallback_exec(bh_instruction *inst)
 {
-    int nop = cphvb_operands_in_instruction(inst);
-    std::set<cphvb_array*> arys2discard;
+    int nop = bh_operands_in_instruction(inst);
+    std::set<bh_array*> arys2discard;
     
     batch_flush();
 
     //Gather all data at the master-process
-    cphvb_array **oprands = cphvb_inst_operands(inst);
-    for(cphvb_intp o=0; o < nop; ++o)
+    bh_array **oprands = bh_inst_operands(inst);
+    for(bh_intp o=0; o < nop; ++o)
     {
-        cphvb_array *op = oprands[o];
-        if(cphvb_is_constant(op))
+        bh_array *op = oprands[o];
+        if(bh_is_constant(op))
             continue;
 
-        cphvb_array *base = cphvb_base_array(op);
+        bh_array *base = bh_base_array(op);
         comm_slaves2master(base);
     }
     
@@ -191,17 +191,17 @@ static void fallback_exec(cphvb_instruction *inst)
     }
 
     //Scatter all data back to all processes
-    for(cphvb_intp o=0; o < nop; ++o)
+    for(bh_intp o=0; o < nop; ++o)
     {
-        cphvb_array *op = oprands[o];
-        if(cphvb_is_constant(op))
+        bh_array *op = oprands[o];
+        if(bh_is_constant(op))
             continue;
-        cphvb_array *base = cphvb_base_array(op);
+        bh_array *base = bh_base_array(op);
         
         //We have to make sure that the master-process has allocated memory
         //because the slaves cannot determine it.
         if(pgrid_myrank == 0)        
-            cphvb_data_malloc(base);
+            bh_data_malloc(base);
         
         comm_master2slaves(base);
 
@@ -210,7 +210,7 @@ static void fallback_exec(cphvb_instruction *inst)
         arys2discard.insert(base);
     }
     //Discard all local views
-    for(std::set<cphvb_array*>::iterator it=arys2discard.begin(); 
+    for(std::set<bh_array*>::iterator it=arys2discard.begin(); 
         it != arys2discard.end(); ++it)
     {
         if((*it)->base != NULL)
@@ -219,7 +219,7 @@ static void fallback_exec(cphvb_instruction *inst)
         }
     }    
     //Free and discard all local base arrays
-    for(std::set<cphvb_array*>::iterator it=arys2discard.begin(); 
+    for(std::set<bh_array*>::iterator it=arys2discard.begin(); 
         it != arys2discard.end(); ++it)
     {
         if((*it)->base == NULL)
@@ -235,11 +235,11 @@ static void fallback_exec(cphvb_instruction *inst)
  *
  * @instruction The regular computation instruction
  */
-static void execute_regular(cphvb_instruction *inst)
+static void execute_regular(bh_instruction *inst)
 {
     std::vector<ary_chunk> chunks;
-    int nop = cphvb_operands_in_instruction(inst);
-    cphvb_array **operands = cphvb_inst_operands(inst);
+    int nop = bh_operands_in_instruction(inst);
+    bh_array **operands = bh_inst_operands(inst);
 
     mapping_chunks(nop, operands, chunks);
     assert(chunks.size() > 0);
@@ -247,16 +247,16 @@ static void execute_regular(cphvb_instruction *inst)
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {
-        assert(cphvb_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
+        assert(bh_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
 
         //The process where the output chunk is located will do the computation.
         int owner_rank = chunks[0+c].rank;
 
         //Create a local instruction based on the array-chunks
-        cphvb_instruction local_inst = *inst;
-        for(cphvb_intp k=0; k < nop; ++k)
+        bh_instruction local_inst = *inst;
+        for(bh_intp k=0; k < nop; ++k)
         {
-            if(!cphvb_is_constant(inst->operand[k]))
+            if(!bh_is_constant(inst->operand[k]))
             {
                 ary_chunk *chunk = &chunks[k+c];
                 local_inst.operand[k] = chunk->ary;
@@ -275,12 +275,12 @@ static void execute_regular(cphvb_instruction *inst)
         batch_schedule(local_inst);
     
         //Free and discard all local chunk arrays
-        for(cphvb_intp k=0; k < nop; ++k)
+        for(bh_intp k=0; k < nop; ++k)
         {
-            if(cphvb_is_constant(inst->operand[k]))
+            if(bh_is_constant(inst->operand[k]))
                 continue;
             
-            cphvb_array *ary = chunks[k+c].ary;
+            bh_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
                 batch_schedule(CPHVB_FREE, ary);
             batch_schedule(CPHVB_DISCARD, ary);
@@ -295,16 +295,16 @@ static void execute_regular(cphvb_instruction *inst)
  * @instruction A list of instructions to execute
  * @return Error codes
  */
-cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
+bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
 {
     if(count <= 0)
         return CPHVB_SUCCESS;
     
-//    cphvb_pprint_instr_list(inst_list, count, "GLOBAL");
+//    bh_pprint_instr_list(inst_list, count, "GLOBAL");
 
-    for(cphvb_intp i=0; i < count; ++i)
+    for(bh_intp i=0; i < count; ++i)
     {
-        cphvb_instruction* inst = &inst_list[i];
+        bh_instruction* inst = &inst_list[i];
         assert(inst->opcode >= 0);
         switch(inst->opcode) 
         {
@@ -312,9 +312,9 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             {
                 if (inst->userfunc->id == reduce_impl_id) 
                 {
-                    //TODO: the cphvb_reduce is hardcoded for now.
-                    if(cphvb_reduce(inst->userfunc, NULL) != CPHVB_SUCCESS)
-                        EXCEPT("[CLUSTER-VEM] The user-defined function cphvb_reduce failed.");
+                    //TODO: the bh_reduce is hardcoded for now.
+                    if(bh_reduce(inst->userfunc, NULL) != CPHVB_SUCCESS)
+                        EXCEPT("[CLUSTER-VEM] The user-defined function bh_reduce failed.");
                 }
                 else
                 {
@@ -324,10 +324,10 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             case CPHVB_DISCARD:
             {
-                cphvb_array *g_ary = inst->operand[0];
+                bh_array *g_ary = inst->operand[0];
                 if(g_ary->base == NULL)
                 {
-                    cphvb_array *l_ary = array_get_existing_local(g_ary);
+                    bh_array *l_ary = array_get_existing_local(g_ary);
                     if(l_ary != NULL)
                     {
                         batch_schedule(CPHVB_DISCARD, l_ary);
@@ -338,16 +338,16 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
             }
             case CPHVB_FREE:
             {
-                cphvb_array *g_ary = cphvb_base_array(inst->operand[0]);
-                cphvb_array *l_ary = array_get_existing_local(g_ary);
-                cphvb_data_free(g_ary);
+                bh_array *g_ary = bh_base_array(inst->operand[0]);
+                bh_array *l_ary = array_get_existing_local(g_ary);
+                bh_data_free(g_ary);
                 if(l_ary != NULL)
                     batch_schedule(CPHVB_FREE, l_ary);
                 break;
             }
             case CPHVB_SYNC:
             {
-                cphvb_array *base = cphvb_base_array(inst->operand[0]);
+                bh_array *base = bh_base_array(inst->operand[0]);
                 comm_slaves2master(base);
                 break;
             }
@@ -372,11 +372,11 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
 
 
 
-cphvb_error cphvb_reduce( cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_reduce_type *a = (cphvb_reduce_type *) arg;   // Grab function arguments
-    cphvb_opcode opcode = a->opcode;                    // Opcode
-    cphvb_index axis    = a->axis;                      // The axis to reduce 
+    bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
+    bh_opcode opcode = a->opcode;                    // Opcode
+    bh_index axis    = a->axis;                      // The axis to reduce 
 
     return ufunc_reduce(opcode, axis, a->operand, reduce_impl_id);
 }

@@ -86,7 +86,7 @@ def main():
     print """/*
  * Copyright 2012 Mads R. B. Kristensen <madsbk@gmail.com>
  *
- * This file is part of Bohrium <http://code.google.com/p/cphvb/>.
+ * This file is part of Bohrium <http://www.bh107.org>.
  *
  * Bohrium is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

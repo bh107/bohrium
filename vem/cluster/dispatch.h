@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __CPHVB_VEM_CLUSTER_DISPATCH_H
 
-#include <cphvb.h>
+#include <bh.h>
 #include <stack>
 
 /* Dispatch message type */
@@ -49,14 +49,14 @@ typedef struct
     char payload[];
 }dispatch_msg;
 
-//ID extension to cphvb_array
+//ID extension to bh_array
 typedef struct
 {
     //The id of the array. This is identical with the array-struct address 
     //on the master-process.
-    cphvb_intp id;
+    bh_intp id;
     //The array-struct.
-    cphvb_array ary;
+    bh_array ary;
 }dispatch_array;
 
 
@@ -72,7 +72,7 @@ void dispatch_finalize(void);
  * @master_ary The master array to register locally
  * @return Pointer to the registered array.
  */
-cphvb_array* dispatch_new_slave_array(const cphvb_array *master_ary, cphvb_intp master_id);
+bh_array* dispatch_new_slave_array(const bh_array *master_ary, bh_intp master_id);
 
 
 /* Get the slave array.
@@ -81,7 +81,7 @@ cphvb_array* dispatch_new_slave_array(const cphvb_array *master_ary, cphvb_intp 
  *                  in the address space of the master-process.
  * @return Pointer to the registered array.
  */
-cphvb_array* dispatch_master2slave(cphvb_intp master_array_id);
+bh_array* dispatch_master2slave(bh_intp master_array_id);
 
 
 /* Check if the slave array exist.
@@ -90,7 +90,7 @@ cphvb_array* dispatch_master2slave(cphvb_intp master_array_id);
  *                  in the address space of the master-process.
  * @return True when the slave array exist locally.
  */
-bool dispatch_slave_exist(cphvb_intp master_array_id);
+bool dispatch_slave_exist(bh_intp master_array_id);
 
 
 /* Register the array as known by all the slaves.
@@ -98,7 +98,7 @@ bool dispatch_slave_exist(cphvb_intp master_array_id);
  *
  * @ary The array that now is known.
  */
-void dispatch_slave_known_insert(cphvb_array *ary);
+void dispatch_slave_known_insert(bh_array *ary);
 
 
 /* Check if the array is known by all the slaves.
@@ -107,7 +107,7 @@ void dispatch_slave_known_insert(cphvb_array *ary);
  * @ary The array that should be checked.
  * @return True if the array is known by all slave-processes
  */
-bool dispatch_slave_known_check(cphvb_array *ary);
+bool dispatch_slave_known_check(bh_array *ary);
 
 
 /* Remove the array as known by all the slaves.
@@ -115,21 +115,21 @@ bool dispatch_slave_known_check(cphvb_array *ary);
  *
  * @ary The array that now is unknown.
  */
-void dispatch_slave_known_remove(cphvb_array *ary);
+void dispatch_slave_known_remove(bh_array *ary);
 
 
 /* Reserve memory on the send message payload.
  * @size is the number of bytes to reserve
  * @payload is the output pointer to the reserved memory
  */
-void dispatch_reserve_payload(cphvb_intp size, void **payload);
+void dispatch_reserve_payload(bh_intp size, void **payload);
 
 
 /* Add data to the send message payload.
  * @size is the size of the data in bytes
  * @data is the data to add to the send buffer
  */
-void dispatch_add2payload(cphvb_intp size, const void *data);
+void dispatch_add2payload(bh_intp size, const void *data);
 
 
 /* Receive payload from master process.
@@ -149,13 +149,13 @@ void dispatch_send(int type);
  *
  * @arys the base-arrays in question.
 */
-void dispatch_array_data(std::stack<cphvb_array*> arys);
+void dispatch_array_data(std::stack<bh_array*> arys);
 
 
 /* Dispatch an instruction list to the slaves, which include new array-structs.
  * @count is the number of instructions in the list
  * @inst_list is the instruction list
  */
-void dispatch_inst_list(cphvb_intp count, const cphvb_instruction inst_list[]);
+void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[]);
 
 #endif

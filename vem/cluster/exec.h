@@ -18,24 +18,24 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 
 //Public function pointer to the Node VEM
-extern cphvb_execute exec_vem_execute;
+extern bh_execute exec_vem_execute;
 
 
 /* Initialize the VEM
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_init(const char *component_name);
+bh_error exec_init(const char *component_name);
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_shutdown(void);
+bh_error exec_shutdown(void);
 
 
 /* Register a new user-defined function.
@@ -47,7 +47,7 @@ cphvb_error exec_shutdown(void);
  *     initial value to Zero. (in/out-put)
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_reg_func(char *fun, cphvb_intp *id);
+bh_error exec_reg_func(char *fun, bh_intp *id);
 
 
 /* Execute a list of instructions (blocking, for the time being).
@@ -56,6 +56,6 @@ cphvb_error exec_reg_func(char *fun, cphvb_intp *id);
  * @instruction A list of instructions to execute
  * @return Error codes (CPHVB_SUCCESS)
  */
-cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[]);
+bh_error exec_execute(bh_intp count, bh_instruction inst_list[]);
 
 

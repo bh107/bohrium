@@ -8,7 +8,7 @@ import stat
 import collections
 
 """
-    Generates the include/cphvb_opcode.h and core/cphvb_opcode 
+    Generates the include/bh_opcode.h and core/bh_opcode 
     based on the definitnion in /core/codegen/opcodes.json.
 """
 
@@ -26,14 +26,14 @@ def gen_headerfile( opcodes ):
 #ifndef __CPHVB_OPCODE_H
 #define __CPHVB_OPCODE_H
 
-#include "cphvb_type.h"
+#include "bh_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Codes for known oparations */
-enum /* cphvb_opcode */
+enum /* bh_opcode */
 {
 __OPCODES__
 
@@ -61,8 +61,8 @@ def gen_cfile(opcodes):
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cphvb_opcode.h>
-#include <cphvb.h>
+#include <bh_opcode.h>
+#include <bh.h>
 #include <stdbool.h>
 
 
@@ -71,7 +71,7 @@ def gen_cfile(opcodes):
  * @opcode Opcode for operation
  * @return Number of operands
  */
-int cphvb_operands(cphvb_opcode opcode)
+int bh_operands(bh_opcode opcode)
 {
     switch(opcode) 
     {
@@ -87,12 +87,12 @@ __NOPS__
  * @inst Instruction
  * @return Number of operands
  */
-int cphvb_operands_in_instruction(const cphvb_instruction *inst)
+int bh_operands_in_instruction(const bh_instruction *inst)
 {
     if (inst->opcode == CPHVB_USERFUNC)
         return inst->userfunc->nin + inst->userfunc->nout;
     else
-        return cphvb_operands(inst->opcode);
+        return bh_operands(inst->opcode);
 }
 
 /* Text descriptions for a given operation */
@@ -104,7 +104,7 @@ bool _opcode_text_initialized = false;
  * @opcode Opcode for operation
  * @return Text string.
  */
-const char* cphvb_opcode_text(cphvb_opcode opcode)
+const char* bh_opcode_text(bh_opcode opcode)
 {
     switch(opcode)
     {
@@ -139,14 +139,14 @@ def main(script_dir):
     headerfile  = gen_headerfile(opcodes)
     cfile       = gen_cfile(opcodes)    
 
-    name = os.path.join(script_dir,'..','..','include','cphvb_opcode.h')
+    name = os.path.join(script_dir,'..','..','include','bh_opcode.h')
     h = open(name,"w")
     h.write(headerfile)
     h.close()
     set_timestamp(name, timestamp)
 
     # Write the c file
-    name = os.path.join(script_dir,'..','cphvb_opcode.c')
+    name = os.path.join(script_dir,'..','bh_opcode.c')
     h = open(name,"w")
     h.write(cfile)    
     h.close()

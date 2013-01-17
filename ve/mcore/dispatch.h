@@ -27,19 +27,19 @@ extern "C" {
 
 //Dispatch the instruction.
 //NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
-cphvb_error dispatch(cphvb_instruction *instr);
+bh_error dispatch(bh_instruction *instr);
 
 //Dispatch the bundle of instructions.
 //NB: the instruction be a regular operation, i.e. no user-defined function, SYNC, etc.
-cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
-                            cphvb_intp size,
-                            cphvb_intp nblocks);
+bh_error dispatch_bundle(bh_instruction** inst_bundle,
+                            bh_intp size,
+                            bh_intp nblocks);
 
 //Initiate the dispather.
-cphvb_error dispatch_init(void);
+bh_error dispatch_init(void);
 
 //Finalize the dispather.
-cphvb_error dispatch_finalize(void);
+bh_error dispatch_finalize(void);
 
 #ifdef __cplusplus
 }

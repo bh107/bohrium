@@ -8,7 +8,7 @@ directiveStartToken = %
 
 #include <cmath>
 #include <cstdlib>
-#include <cphvb_win_math.hpp>
+#include <bh_win_math.hpp>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -16,11 +16,11 @@ directiveStartToken = %
 
 #if _WIN32
     #include <float.h>
-    #define cphvb_isnan(x) (_isnan(x))
-    #define cphvb_isinf(x) (!_isnan(x) || !_finite(x))
+    #define bh_isnan(x) (_isnan(x))
+    #define bh_isinf(x) (!_isnan(x) || !_finite(x))
 #else
-    #define cphvb_isnan(x) (std::isnan(x))
-    #define cphvb_isinf(x) (std::isinf(x))
+    #define bh_isnan(x) (std::isnan(x))
+    #define bh_isinf(x) (std::isinf(x))
 #endif
 
 #define DEG_CIR 360.0
@@ -29,7 +29,7 @@ directiveStartToken = %
 %for $functor in $data
 
 template <${functor.tparams}>
-struct ${functor.opcode.lower().replace('cphvb_','')}_functor {
+struct ${functor.opcode.lower().replace('bh_','')}_functor {
     void operator()(${functor.fparams}) {
         ${functor.code};
     }

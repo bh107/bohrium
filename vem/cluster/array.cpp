@@ -21,14 +21,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <map>
 #include <StaticStore.hpp>
-#include <cphvb.h>
+#include <bh.h>
 #include "pgrid.h"
 
 
 //Maps for translating between global and local arrays.
-static std::map<cphvb_array*, cphvb_array*> map_global2local;
-//static std::map<cphvb_array*, cphvb_array*> map_local2global;
-static StaticStore<cphvb_array> local_ary_store(512);
+static std::map<bh_array*, bh_array*> map_global2local;
+//static std::map<bh_array*, bh_array*> map_local2global;
+static StaticStore<bh_array> local_ary_store(512);
 
 
 /* Returns the local number of elements in an array.
@@ -37,10 +37,10 @@ static StaticStore<cphvb_array> local_ary_store(512);
  * @global_ary The global array 
  * @return The array size (in number of elements)
  */
-cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
+bh_intp array_local_nelem(int rank, const bh_array *global_ary)
 {
-    cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
-    cphvb_intp localsize = totalsize / pgrid_worldsize;
+    bh_intp totalsize = bh_nelements(global_ary->ndim, global_ary->shape);
+    bh_intp localsize = totalsize / pgrid_worldsize;
     if(rank == pgrid_worldsize-1)//The last process gets the rest
         localsize += totalsize % pgrid_worldsize;
     return localsize;
@@ -53,7 +53,7 @@ cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary)
  * @global_ary The global array 
  * @return The local array or NULL
  */
-cphvb_array* array_get_existing_local(cphvb_array *global_ary)
+bh_array* array_get_existing_local(bh_array *global_ary)
 {
     return map_global2local[global_ary];
 }
@@ -65,10 +65,10 @@ cphvb_array* array_get_existing_local(cphvb_array *global_ary)
  * @global_ary The global array 
  * @return The local array
  */
-cphvb_array* array_get_local(cphvb_array *global_ary)
+bh_array* array_get_local(bh_array *global_ary)
 {
     assert(global_ary->base == NULL);
-    cphvb_array *local_ary = map_global2local[global_ary];
+    bh_array *local_ary = map_global2local[global_ary];
     if(local_ary == NULL)
     {
         local_ary = local_ary_store.c_next();
@@ -90,14 +90,14 @@ cphvb_array* array_get_local(cphvb_array *global_ary)
  *
  * @local_ary The local array 
  */
-void array_rm_local(cphvb_array *local_ary)
+void array_rm_local(bh_array *local_ary)
 {
     assert(local_ary->base == NULL);
 
     //find the global array
-    cphvb_array *global_ary = NULL;
+    bh_array *global_ary = NULL;
     {
-        std::map<cphvb_array*,cphvb_array*>::iterator it;
+        std::map<bh_array*,bh_array*>::iterator it;
         for(it=map_global2local.begin(); it != map_global2local.end(); ++it)
             if(it->second == local_ary)
             {

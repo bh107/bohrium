@@ -18,18 +18,18 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 
 #ifndef __CPHVB_VEM_CLUSTER_TASK_H
 #define __CPHVB_VEM_CLUSTER_TASK_H
 
 /* Codes for data types */
-enum /* cphvb_type */
+enum /* bh_type */
 {
     TASK_INST,            //Regular Bohrium instruction
     TASK_SEND_RECV,       //Send or receive p2p 
 };
-typedef cphvb_intp task_type;
+typedef bh_intp task_type;
 
 
 //Local instruction task
@@ -38,7 +38,7 @@ typedef struct
     //The type of this task
     task_type type;
     //The local instruction that makes up this task
-    cphvb_instruction inst;
+    bh_instruction inst;
 }task_inst;
 
 
@@ -50,7 +50,7 @@ typedef struct
     //If True we send the array else we receive it
     bool direction;
     //The local array to send or receive
-    cphvb_array *local_ary;
+    bh_array *local_ary;
     //The process to send to or receive from
     int rank;
 }task_send_recv;

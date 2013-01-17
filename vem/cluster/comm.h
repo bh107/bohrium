@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 #include "array.h"
 
 #ifndef __CPHVB_VEM_CLUSTER_COMM_H
@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-void comm_gather_scatter(int scatter, cphvb_array *global_ary);
+void comm_gather_scatter(int scatter, bh_array *global_ary);
 
 
 /* Distribute the global array data to all slave processes.
@@ -40,7 +40,7 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary);
  * 
  * @global_ary Global base array
  */
-void comm_master2slaves(cphvb_array *global_ary);
+void comm_master2slaves(bh_array *global_ary);
 
 
 /* Gather the global array data at the master processes.
@@ -48,7 +48,7 @@ void comm_master2slaves(cphvb_array *global_ary);
  * 
  * @global_ary Global base array
  */
-void comm_slaves2master(cphvb_array *global_ary);
+void comm_slaves2master(bh_array *global_ary);
 
 
 /* Communicate array data such that the processes can apply local computation.

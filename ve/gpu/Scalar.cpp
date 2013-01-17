@@ -20,10 +20,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <stdexcept>
-#include <cphvb.h>
+#include <bh.h>
 #include "Scalar.hpp"
 
-Scalar::Scalar(cphvb_constant constant)
+Scalar::Scalar(bh_constant constant)
     : mytype(oclType(constant.type))
 {
     switch (constant.type)
@@ -69,48 +69,48 @@ Scalar::Scalar(cphvb_constant constant)
     }
 }
 
-Scalar::Scalar(cphvb_array* spec)
+Scalar::Scalar(bh_array* spec)
     : mytype(oclType(spec->type))
 {
-    assert (cphvb_is_scalar(spec));
+    assert (bh_is_scalar(spec));
     assert (spec->data != NULL);
     switch (spec->type)
     {
     case CPHVB_BOOL:
-        value.uc = *(cphvb_bool*)spec->data;
+        value.uc = *(bh_bool*)spec->data;
         break;
     case CPHVB_INT8:
-        value.c = *(cphvb_int8*)spec->data;
+        value.c = *(bh_int8*)spec->data;
         break;
     case CPHVB_INT16:
-        value.s = *(cphvb_int16*)spec->data;
+        value.s = *(bh_int16*)spec->data;
         break;
     case CPHVB_INT32:
-        value.i = *(cphvb_int32*)spec->data;
+        value.i = *(bh_int32*)spec->data;
         break;
     case CPHVB_INT64:
-        value.l = *(cphvb_int64*)spec->data;
+        value.l = *(bh_int64*)spec->data;
         break;
     case CPHVB_UINT8:
-        value.uc = *(cphvb_uint8*)spec->data;
+        value.uc = *(bh_uint8*)spec->data;
         break;
     case CPHVB_UINT16:
-        value.us = *(cphvb_uint16*)spec->data;
+        value.us = *(bh_uint16*)spec->data;
         break;
     case CPHVB_UINT32:
-        value.ui = *(cphvb_uint32*)spec->data;
+        value.ui = *(bh_uint32*)spec->data;
         break;
     case CPHVB_UINT64:
-        value.ul = *(cphvb_uint64*)spec->data;
+        value.ul = *(bh_uint64*)spec->data;
         break;
     case CPHVB_FLOAT16:
-        value.h = *(cphvb_float16*)spec->data;
+        value.h = *(bh_float16*)spec->data;
         break;
     case CPHVB_FLOAT32:
-        value.f = *(cphvb_float32*)spec->data;
+        value.f = *(bh_float32*)spec->data;
         break;
     case CPHVB_FLOAT64:
-        value.d = *(cphvb_float64*)spec->data;
+        value.d = *(bh_float64*)spec->data;
         break;
     default:
         throw std::runtime_error("Scalar: Unknown type.");

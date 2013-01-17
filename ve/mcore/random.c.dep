@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <cphvb.h>
-#include "cphvb_ve_mcore.h"
+#include <bh.h>
+#include "bh_ve_mcore.h"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -185,9 +185,9 @@ rk_initseed(rk_state *state)
 typedef struct
 {
     int myid;
-    cphvb_intp nthds;
-    cphvb_intp size;
-    cphvb_type type;
+    bh_intp nthds;
+    bh_intp size;
+    bh_type type;
     void *data;
 }thd_id;
 
@@ -195,11 +195,11 @@ void *thd_do_random(void *msg)
 {
     thd_id *id = (thd_id *) msg;
     int myid           = id->myid;
-    cphvb_intp size    = id->size;
-    cphvb_intp nthds   = id->nthds;
+    bh_intp size    = id->size;
+    bh_intp nthds   = id->nthds;
 
-    cphvb_intp length = size / nthds; // Find this thread's length of work.
-    cphvb_intp start = myid * length; // Find this thread's start block.
+    bh_intp length = size / nthds; // Find this thread's length of work.
+    bh_intp start = myid * length; // Find this thread's start block.
     if(myid == nthds-1)
         length += size % nthds;       // The last thread gets the remainder.
 
@@ -210,80 +210,80 @@ void *thd_do_random(void *msg)
     {
     	case CPHVB_INT8:
 		{
-			cphvb_int8* data = (cphvb_int8*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_int8* data = (bh_int8*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_int8(&state);
 		}
 		break;
 
     	case CPHVB_INT16:
 		{
-			cphvb_int16* data = (cphvb_int16*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_int16* data = (bh_int16*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_int16(&state);
 		}
 		break;
 
     	case CPHVB_INT32:
 		{
-			cphvb_int32* data = (cphvb_int32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_int32* data = (bh_int32*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_int32(&state);
 		}
 		break;
 
     	case CPHVB_INT64:
 		{
-			cphvb_int64* data = (cphvb_int64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_int64* data = (bh_int64*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_int64(&state);
 		}
 		break;
 		
 		case CPHVB_UINT8:
 		{
-			cphvb_uint8* data = (cphvb_uint8*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_uint8* data = (bh_uint8*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_uint8(&state);
 		}
 		break;
 
     	case CPHVB_UINT16:
 		{
-			cphvb_uint16* data = (cphvb_uint16*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_uint16* data = (bh_uint16*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_uint16(&state);
 		}
 		break;
 
     	case CPHVB_UINT32:
 		{
-			cphvb_uint32* data = (cphvb_uint32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_uint32* data = (bh_uint32*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_uint32(&state);
 		}
 		break;
 
     	case CPHVB_UINT64:
 		{
-			cphvb_uint64* data = (cphvb_uint64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_uint64* data = (bh_uint64*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_uint64(&state);
 		}
 		break;
 
     	case CPHVB_FLOAT32:
 		{
-			cphvb_float32* data = (cphvb_float32*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_float32* data = (bh_float32*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_float(&state);
 		}
 		break;
 
     	case CPHVB_FLOAT64:
 		{
-			cphvb_float64* data = (cphvb_float64*)id->data;
-			for(cphvb_intp i=start; i<start+length; ++i)
+			bh_float64* data = (bh_float64*)id->data;
+			for(bh_intp i=start; i<start+length; ++i)
 				data[i] = rk_double(&state);
 		}
 		break;
@@ -293,16 +293,16 @@ void *thd_do_random(void *msg)
     return NULL;
 }
 //Implementation of the user-defined funtion "random". Note that we
-//follows the function signature defined by cphvb_userfunc_impl.
-cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
+//follows the function signature defined by bh_userfunc_impl.
+bh_error bh_random(bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_random_type *a = (cphvb_random_type *) arg;
-    cphvb_array *ary = a->operand[0];
-    cphvb_intp size = cphvb_nelements(ary->ndim, ary->shape);
-    cphvb_intp nthds = 1;
+    bh_random_type *a = (bh_random_type *) arg;
+    bh_array *ary = a->operand[0];
+    bh_intp size = bh_nelements(ary->ndim, ary->shape);
+    bh_intp nthds = 1;
 
     //Make sure that the array memory is allocated.
-    if(cphvb_data_malloc(ary) != CPHVB_SUCCESS)
+    if(bh_data_malloc(ary) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
         
     switch(ary->type)
@@ -341,7 +341,7 @@ cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
     //Start threads.
     thd_id ids[32];
     pthread_t tid[32];
-    for(cphvb_intp i=0; i<nthds; ++i)
+    for(bh_intp i=0; i<nthds; ++i)
     {
         ids[i].myid        = i;
         ids[i].nthds       = nthds;
@@ -351,7 +351,7 @@ cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
         pthread_create(&tid[i], NULL, thd_do_random, (void *) (&ids[i]));
     }
     //Wait for threads to complete
-    for(cphvb_intp i=0; i<nthds; ++i)
+    for(bh_intp i=0; i<nthds; ++i)
         pthread_join(tid[i], NULL);
 
     return CPHVB_SUCCESS;

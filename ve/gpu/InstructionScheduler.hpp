@@ -24,30 +24,30 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <set>
-#include <cphvb.h>
+#include <bh.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 
 class InstructionScheduler
 {
 private:
-    typedef std::map<cphvb_array*, BaseArray*> ArrayMap;
-    typedef std::map<cphvb_intp, cphvb_userfunc_impl> FunctionMap;
+    typedef std::map<bh_array*, BaseArray*> ArrayMap;
+    typedef std::map<bh_intp, bh_userfunc_impl> FunctionMap;
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
     std::set<BaseArray*> discardSet;
-    void sync(cphvb_array* base);
-    void discard(cphvb_array* base);
+    void sync(bh_array* base);
+    void discard(bh_array* base);
     void executeBatch();
-    cphvb_error ufunc(cphvb_instruction* inst);
-    cphvb_error userdeffunc(cphvb_userfunc* userfunc);
+    bh_error ufunc(bh_instruction* inst);
+    bh_error userdeffunc(bh_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);
-    void registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc);
-    cphvb_error schedule(cphvb_intp instructionCount,
-                         cphvb_instruction* instructionList);
+    void registerFunction(bh_intp id, bh_userfunc_impl userfunc);
+    bh_error schedule(bh_intp instructionCount,
+                         bh_instruction* instructionList);
 };
 
 #endif

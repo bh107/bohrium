@@ -15,8 +15,8 @@ Download and extract the source code::
 When building and install Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
   
   cd cphvb-v0.1
-  make CPHVB_PYTHON=python2.7
-  make install CPHVB_PYTHON=python2.7
+  make BH_PYTHON=python2.7
+  make install BH_PYTHON=python2.7
 
 .. note:: The installation will prompt you for the installation path. 
           The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
@@ -43,7 +43,7 @@ And you should see a result similar to this::
     *** Testing the equivalency of Bohrium-NumPy and NumPy ***
     Testing test_array_create.py/array_create/zeros
     Testing test_sor.py/sor/sor
-    Testing test_primitives.py/cphvb_opcodes/ufunc
+    Testing test_primitives.py/bh_opcodes/ufunc
     Testing test_primitives.py/numpy_ufunc/ufunc
     Testing test_reduce.py/reduce/reduce
     Testing test_benchmarks.py/gameoflife/gameoflife

@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 #include <cassert>
 #include <map>
 #include "pgrid.h"
@@ -35,12 +35,12 @@ If not, see <http://www.gnu.org/licenses/>.
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-void comm_gather_scatter(int scatter, cphvb_array *global_ary)
+void comm_gather_scatter(int scatter, bh_array *global_ary)
 {
     assert(global_ary->base == NULL);
-    cphvb_error err;
-    cphvb_array *local_ary = array_get_local(global_ary);
-    cphvb_intp totalsize = cphvb_nelements(global_ary->ndim, global_ary->shape);
+    bh_error err;
+    bh_array *local_ary = array_get_local(global_ary);
+    bh_intp totalsize = bh_nelements(global_ary->ndim, global_ary->shape);
 
     if(totalsize <= 0)
         return;
@@ -48,15 +48,15 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary)
     //Find the local size for all processes
     int sendcnts[pgrid_worldsize], displs[pgrid_worldsize];
     {
-        cphvb_intp s = totalsize / pgrid_worldsize;//local size for all but the last process
-        s *= cphvb_type_size(global_ary->type);
+        bh_intp s = totalsize / pgrid_worldsize;//local size for all but the last process
+        s *= bh_type_size(global_ary->type);
         for(int i=0; i<pgrid_worldsize; ++i)
         {
             sendcnts[i] = s;
             displs[i] = s * i;
         }
         //The last process gets the rest
-        sendcnts[pgrid_worldsize-1] += totalsize % pgrid_worldsize * cphvb_type_size(global_ary->type);
+        sendcnts[pgrid_worldsize-1] += totalsize % pgrid_worldsize * bh_type_size(global_ary->type);
     }
 
     int e;
@@ -65,7 +65,7 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary)
         //The slave-processes may need to allocate memory
         if(sendcnts[pgrid_myrank] > 0 && local_ary->data == NULL)
         {
-            if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
+            if((err = bh_data_malloc(local_ary)) != CPHVB_SUCCESS)
                 EXCEPT_OUT_OF_MEMORY();
         }
         //The master-process MUST have allocated memory already
@@ -81,13 +81,13 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary)
         //The master-processes may need to allocate memory
         if(pgrid_myrank == 0 && global_ary->data == NULL)
         {
-            if((err = cphvb_data_malloc(global_ary)) != CPHVB_SUCCESS)
+            if((err = bh_data_malloc(global_ary)) != CPHVB_SUCCESS)
                 EXCEPT_OUT_OF_MEMORY();
         }
         
         //We will always allocate the local array when gathering because 
         //only the last process knows if the array has been initiated.
-        if((err = cphvb_data_malloc(local_ary)) != CPHVB_SUCCESS)
+        if((err = bh_data_malloc(local_ary)) != CPHVB_SUCCESS)
             EXCEPT_OUT_OF_MEMORY();
     
         assert(sendcnts[pgrid_myrank] == 0 || local_ary->data != NULL);
@@ -108,7 +108,7 @@ void comm_gather_scatter(int scatter, cphvb_array *global_ary)
  * 
  * @global_ary Global base array
  */
-void comm_master2slaves(cphvb_array *global_ary)
+void comm_master2slaves(bh_array *global_ary)
 {
     batch_flush();
     comm_gather_scatter(1, global_ary);
@@ -120,7 +120,7 @@ void comm_master2slaves(cphvb_array *global_ary)
  * 
  * @global_ary Global base array
  */
-void comm_slaves2master(cphvb_array *global_ary)
+void comm_slaves2master(bh_array *global_ary)
 {
     batch_flush();
     comm_gather_scatter(0, global_ary);
@@ -138,7 +138,7 @@ void comm_slaves2master(cphvb_array *global_ary)
  */
 void comm_array_data(ary_chunk *chunk, int receiving_rank)
 {
-    cphvb_array *local_ary = chunk->ary;
+    bh_array *local_ary = chunk->ary;
     int rank = chunk->rank;
 
     //Check if communication is even necessary
@@ -159,22 +159,22 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
     else if(pgrid_myrank == rank)
     {
         //We need to copy the local array view into a base array.
-        cphvb_array *tmp_ary = tmp_get_ary();
+        bh_array *tmp_ary = tmp_get_ary();
         *tmp_ary = *local_ary;
         tmp_ary->base  = NULL;
         tmp_ary->data  = NULL;
         tmp_ary->start = 0;
    
         //Compute a row-major stride for the tmp array.
-        cphvb_intp nelem = 1;
-        for(cphvb_intp i=tmp_ary->ndim-1; i >= 0; --i)
+        bh_intp nelem = 1;
+        for(bh_intp i=tmp_ary->ndim-1; i >= 0; --i)
         {    
             tmp_ary->stride[i] = nelem;
             nelem *= tmp_ary->shape[i];
         }
 
         //Tell the VEM to do the data copy.
-        cphvb_array *ops[] = {tmp_ary, local_ary};
+        bh_array *ops[] = {tmp_ary, local_ary};
         batch_schedule(CPHVB_IDENTITY, ops, NULL);
 
         //Schedule the send message

@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CPHVB_VEM_CLUSTER_MAPPING_H
 #define __CPHVB_VEM_CLUSTER_MAPPING_H
 
-#include <cphvb.h>
+#include <bh.h>
 #include "array.h"
 #include <vector>
 
@@ -32,8 +32,8 @@ If not, see <http://www.gnu.org/licenses/>.
  * @operand     List of global array operands
  * @chunks      The output chunks
  */
-void mapping_chunks(cphvb_intp nop,
-                    cphvb_array *operand[],
+void mapping_chunks(bh_intp nop,
+                    bh_array *operand[],
                     std::vector<ary_chunk>& chunks);
 
 #endif

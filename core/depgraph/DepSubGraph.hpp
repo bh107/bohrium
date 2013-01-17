@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DEPSUBGRAPH_HPP
 #define __DEPSUBGRAPH_HPP
 
-#include <cphvb.h>
+#include <bh.h>
 #include <map>
 #include <list>
 #include <set>
@@ -34,17 +34,17 @@ If not, see <http://www.gnu.org/licenses/>.
 class DepSubGraph
 {
     // A map from base array to instruction where it is modified
-    typedef std::multimap<cphvb_array* , cphvb_instruction*> ModificationMap;
+    typedef std::multimap<bh_array* , bh_instruction*> ModificationMap;
 private:
-    std::list<cphvb_instruction*> instructions;
+    std::list<bh_instruction*> instructions;
     ModificationMap modificationMap;
     std::list<DepSubGraph*> dependsOn;
 public:
-    DepSubGraph(cphvb_instruction* inst);
-    DepSubGraph(cphvb_instruction* inst, std::list<DepSubGraph*> _dependsOn);
-    static DepSubGraph* merge(cphvb_instruction* inst, std::list<DepSubGraph*> dependsOn);
-    void add(cphvb_instruction* inst);
-    std::set<cphvb_array*> getModified();
+    DepSubGraph(bh_instruction* inst);
+    DepSubGraph(bh_instruction* inst, std::list<DepSubGraph*> _dependsOn);
+    static DepSubGraph* merge(bh_instruction* inst, std::list<DepSubGraph*> dependsOn);
+    void add(bh_instruction* inst);
+    std::set<bh_array*> getModified();
 };
 
 class DepSubGraphException 

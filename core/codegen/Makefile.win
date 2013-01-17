@@ -2,7 +2,7 @@ all:
 		python gen_opcodes.py
 
 clean:
-		del /Q ..\cphvb_opcode.c ..\..\include\cphvb_opcode.h
+		del /Q ..\bh_opcode.c ..\..\include\bh_opcode.h
 
 install: all
 		

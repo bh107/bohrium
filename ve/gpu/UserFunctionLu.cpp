@@ -27,9 +27,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 UserFunctionLu* userFunctionLu = NULL;
 
-cphvb_error cphvb_lu(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_lu(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_lu_type* luDef = (cphvb_lu_type*)arg;
+    bh_lu_type* luDef = (bh_lu_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     //TODO asserts square matrix, dimension match etc. currently also checked in python before this call
@@ -50,7 +50,7 @@ UserFunctionLu::UserFunctionLu(ResourceManager* rm)
     kernelNames.push_back("update_block_col");
     kernelNames.push_back("update_block_row");
     kernelNames.push_back("mm");
-    std::vector<cphvb_intp> ndims(6,1);
+    std::vector<bh_intp> ndims(6,1);
     ndims[2] = 2;
     ndims[3] = 2;
     ndims[5] = 2;
@@ -66,7 +66,7 @@ UserFunctionLu::UserFunctionLu(ResourceManager* rm)
 }
 
 
-cphvb_error UserFunctionLu::lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg)
+bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     

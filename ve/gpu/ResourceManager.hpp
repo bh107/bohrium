@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <CL/cl.hpp>
 #include <vector>
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #ifdef STATS
 #include "timing.h"
 #endif
@@ -38,7 +38,7 @@ private:
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
     std::vector<size_t> maxWorkItemSizes;
-    cphvb_component* component;
+    bh_component* component;
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
@@ -58,7 +58,7 @@ public:
     ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
 #endif
-    ResourceManager(cphvb_component* _component);
+    ResourceManager(bh_component* _component);
     cl::Buffer createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array

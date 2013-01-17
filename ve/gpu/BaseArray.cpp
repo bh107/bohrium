@@ -22,8 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "BaseArray.hpp"
 
-BaseArray::BaseArray(cphvb_array* spec_, ResourceManager* resourceManager) 
-    : Buffer(cphvb_nelements(spec_->ndim, spec_->shape), oclType(spec_->type), resourceManager)
+BaseArray::BaseArray(bh_array* spec_, ResourceManager* resourceManager) 
+    : Buffer(bh_nelements(spec_->ndim, spec_->shape), oclType(spec_->type), resourceManager)
     , spec(spec_)
 {
     assert(spec->base == NULL);
@@ -37,7 +37,7 @@ void BaseArray::sync()
 {
     if (spec->data == NULL)
     {
-        if (cphvb_data_malloc(spec) != CPHVB_SUCCESS)
+        if (bh_data_malloc(spec) != CPHVB_SUCCESS)
         {
             throw std::runtime_error("Could not allocate memory on host");
         }
@@ -53,5 +53,5 @@ void BaseArray::update()
 
 size_t BaseArray::size()
 {
-    return cphvb_nelements(spec->ndim, spec->shape);
+    return bh_nelements(spec->ndim, spec->shape);
 }

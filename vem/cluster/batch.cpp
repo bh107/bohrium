@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <StaticStore.hpp>
-#include <cphvb.h>
+#include <bh.h>
 #include <vector>
 #include "task.h"
 #include "exec.h"
@@ -44,7 +44,7 @@ void batch_schedule(const task& t)
 /* Schedule an instruction
  * @inst   The instruction to schedule 
  */
-void batch_schedule(const cphvb_instruction& inst)
+void batch_schedule(const bh_instruction& inst)
 {
     task t;
     t.inst.type = TASK_INST;
@@ -58,14 +58,14 @@ void batch_schedule(const cphvb_instruction& inst)
  * @opcode   The opcode of the instruction
  * @operand  The local operand in the instruction
  */
-void batch_schedule(cphvb_opcode opcode, cphvb_array *operand)
+void batch_schedule(bh_opcode opcode, bh_array *operand)
 {
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
     t.inst.inst.status = CPHVB_INST_PENDING;
     t.inst.inst.operand[0] = operand;
-    assert(cphvb_operands_in_instruction(&t.inst.inst) == 1);
+    assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t); 
 }
 
@@ -76,8 +76,8 @@ void batch_schedule(cphvb_opcode opcode, cphvb_array *operand)
  * @operands The local operands in the instruction
  * @ufunc    The user-defined function struct when opcode is CPHVB_USERFUNC.
  */
-void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
-                    cphvb_userfunc *ufunc)
+void batch_schedule(bh_opcode opcode, bh_array *operands[],
+                    bh_userfunc *ufunc)
 {
     task t;
     t.inst.type = TASK_INST;
@@ -87,8 +87,8 @@ void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
     if(ufunc == NULL)
     {
         assert(opcode != CPHVB_USERFUNC);
-        memcpy(t.inst.inst.operand, operands, cphvb_operands(opcode) 
-                                              * sizeof(cphvb_array*));
+        memcpy(t.inst.inst.operand, operands, bh_operands(opcode) 
+                                              * sizeof(bh_array*));
     }
     batch_schedule(t); 
 }
@@ -100,7 +100,7 @@ void batch_schedule(cphvb_opcode opcode, cphvb_array *operands[],
  * @rank       The to send to or receive from
  * @local_ary  The local array to communicate
  */
-void batch_schedule(bool direction, int rank, cphvb_array *local_ary)
+void batch_schedule(bool direction, int rank, bh_array *local_ary)
 {
     task t;
     t.send_recv.type      = TASK_SEND_RECV;
@@ -123,8 +123,8 @@ void batch_flush()
         {
             case TASK_INST:
             {
-                cphvb_error e;
-                cphvb_instruction *inst = &((*it).inst.inst);
+                bh_error e;
+                bh_instruction *inst = &((*it).inst.inst);
                 if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
                     EXCEPT_INST(inst->opcode, e, inst->status);
 
@@ -137,16 +137,16 @@ void batch_flush()
             }
             case TASK_SEND_RECV:
             {
-                cphvb_error e;
+                bh_error e;
                 bool dir         = (*it).send_recv.direction;
                 int rank         = (*it).send_recv.rank;
-                cphvb_array *ary = (*it).send_recv.local_ary;
-                cphvb_intp s     = cphvb_type_size(ary->type);
-                cphvb_intp nelem = cphvb_nelements(ary->ndim, ary->shape);
+                bh_array *ary = (*it).send_recv.local_ary;
+                bh_intp s     = bh_type_size(ary->type);
+                bh_intp nelem = bh_nelements(ary->ndim, ary->shape);
                 
                 if(dir)//Sending
                 {
-                    char *data = (char*) cphvb_base_array(ary)->data;
+                    char *data = (char*) bh_base_array(ary)->data;
                     assert(data != NULL);
                     data += ary->start * s;
                     if((e = MPI_Send(data, nelem * s, MPI_BYTE, rank, 0, 
@@ -155,9 +155,9 @@ void batch_flush()
                 }
                 else//Receiving
                 {
-                    if((e = cphvb_data_malloc(ary)) != CPHVB_SUCCESS)
+                    if((e = bh_data_malloc(ary)) != CPHVB_SUCCESS)
                         EXCEPT_OUT_OF_MEMORY();
-                    char *data = (char*) cphvb_base_array(ary)->data;
+                    char *data = (char*) bh_base_array(ary)->data;
                     data += ary->start * s;
                     if((e = MPI_Recv(data, nelem * s, MPI_BYTE, rank, 
                                      0, MPI_COMM_WORLD, 

@@ -21,37 +21,37 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "DepSubGraph.hpp"
 #include <utility>
 
-DepSubGraph::DepSubGraph(cphvb_instruction* inst)
+DepSubGraph::DepSubGraph(bh_instruction* inst)
 {
     instructions.push_back(inst);
-    cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
+    bh_array* obase = bh_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
 }
 
-DepSubGraph::DepSubGraph(cphvb_instruction* inst, std::list<DepSubGraph*> _dependsOn)
+DepSubGraph::DepSubGraph(bh_instruction* inst, std::list<DepSubGraph*> _dependsOn)
 {
     instructions.push_back(inst); 
-    cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
+    bh_array* obase = bh_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
     dependsOn = _dependsOn;
 }
 
-void DepSubGraph::add(cphvb_instruction* inst)
+void DepSubGraph::add(bh_instruction* inst)
 {
     instructions.push_back(inst); 
-    cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
+    bh_array* obase = bh_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
 }
 
-std::set<cphvb_array*> DepSubGraph::getModified()
+std::set<bh_array*> DepSubGraph::getModified()
 {
-    std::set<cphvb_array*> res;
+    std::set<bh_array*> res;
     for (auto &m: modificationMap)
         res.insert(m.first);
     return res;
 }
 
-DepSubGraph* DepSubGraph::merge(cphvb_instruction* inst, 
+DepSubGraph* DepSubGraph::merge(bh_instruction* inst, 
                                 std::list<DepSubGraph*> dependsOn)
 {
     throw DepSubGraphException(0);

@@ -25,15 +25,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFunctionMatmul.hpp"
 
 
-cphvb_error cphvb_matmul(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_matmul(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_matmul_type* matmulDef = (cphvb_matmul_type*)arg;
+    bh_matmul_type* matmulDef = (bh_matmul_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     UserFunctionMatmul::matmul(matmulDef, userFuncArg);
     return CPHVB_SUCCESS;
 }
 
-void UserFunctionMatmul::matmul(cphvb_matmul_type* matmulDef, UserFuncArg* userFuncArg)
+void UserFunctionMatmul::matmul(bh_matmul_type* matmulDef, UserFuncArg* userFuncArg)
 {
     Kernel kernel = getKernel(matmulDef, userFuncArg);
     Kernel::Parameters kernelParameters;
@@ -58,7 +58,7 @@ void UserFunctionMatmul::matmul(cphvb_matmul_type* matmulDef, UserFuncArg* userF
     kernel.call(kernelParameters, globalShape, localShape);
 }
 
-Kernel UserFunctionMatmul::getKernel(cphvb_matmul_type* matmulDef, 
+Kernel UserFunctionMatmul::getKernel(bh_matmul_type* matmulDef, 
                                      UserFuncArg* userFuncArg)
 {
 #ifdef STATS
@@ -88,7 +88,7 @@ Kernel UserFunctionMatmul::getKernel(cphvb_matmul_type* matmulDef,
     }
 }
 
-std::string UserFunctionMatmul::generateDefines(cphvb_matmul_type* matmulDef, 
+std::string UserFunctionMatmul::generateDefines(bh_matmul_type* matmulDef, 
                                              OCLtype type)
 {
   int a_height = matmulDef->operand[1]->shape[0];
@@ -129,7 +129,7 @@ std::string UserFunctionMatmul::generateDefines(cphvb_matmul_type* matmulDef,
   return source.str();
 }
 
-std::string UserFunctionMatmul::generateCode(cphvb_matmul_type* matmulDef, 
+std::string UserFunctionMatmul::generateCode(bh_matmul_type* matmulDef, 
                                              OCLtype type)
 {
     bool good_block_size =    matmulDef->operand[1]->shape[0] % 32 == 0 

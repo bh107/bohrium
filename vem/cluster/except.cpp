@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 #include <sstream>
 #include <mpi.h>
 #include "except.h"
@@ -69,8 +69,8 @@ const char * except_mpi::what() const throw()
     return os.str().c_str();
 }
 
-except_inst::except_inst(cphvb_opcode opcode, cphvb_error inst_status, 
-                         cphvb_error inst_list_status, 
+except_inst::except_inst(bh_opcode opcode, bh_error inst_status, 
+                         bh_error inst_list_status, 
                          int line, const std::string & file)
     : except("", line, file)
 {
@@ -83,9 +83,9 @@ const char * except_inst::what() const throw()
 {
     std::ostringstream os;
  
-    os << "Error when executing " << cphvb_opcode_text(op);
-    os << ", return code: " << cphvb_error_text(retcode); 
-    os << ", inst status: " << cphvb_error_text(status);
+    os << "Error when executing " << bh_opcode_text(op);
+    os << ", return code: " << bh_error_text(retcode); 
+    os << ", inst status: " << bh_error_text(status);
     os << " (" << mFile << ":" << mLine << ")" << std::endl; 
 
     return os.str().c_str();

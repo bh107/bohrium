@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "Kernel.hpp"
 
 Kernel::Kernel(ResourceManager* resourceManager_, 
-               cphvb_intp ndim_,
+               bh_intp ndim_,
                const std::string& source, 
                const std::string& name)
     : resourceManager(resourceManager_)
@@ -35,7 +35,7 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     kernel = resourceManager->createKernel(source , name);
 }
 
-Kernel::Kernel(ResourceManager* resourceManager_, cphvb_intp ndim_, cl::Kernel kernel_)
+Kernel::Kernel(ResourceManager* resourceManager_, bh_intp ndim_, cl::Kernel kernel_)
     : resourceManager(resourceManager_)
     , ndim(ndim_)
     , kernel(kernel_) {}
@@ -43,7 +43,7 @@ Kernel::Kernel(ResourceManager* resourceManager_, cphvb_intp ndim_, cl::Kernel k
 
 
 std::vector<Kernel> Kernel::createKernels(ResourceManager* resourceManager, 
-                                          const std::vector<cphvb_intp> ndims,
+                                          const std::vector<bh_intp> ndims,
                                           const std::string& source, 
                                           const std::vector<std::string>& kernelNames)
 {
@@ -58,7 +58,7 @@ std::vector<Kernel> Kernel::createKernels(ResourceManager* resourceManager,
 }
  
 std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManager, 
-                                                  const std::vector<cphvb_intp> ndims,
+                                                  const std::vector<bh_intp> ndims,
                                                   const std::string& fileName, 
                                                   const std::vector<std::string>& kernelNames)
 {

@@ -20,13 +20,13 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "DepGraph.hpp"
 
-DepGraph::DepGraph(cphvb_intp instruction_count,
-                   cphvb_instruction instruction_list[])
+DepGraph::DepGraph(bh_intp instruction_count,
+                   bh_instruction instruction_list[])
 {
     
-    for (cphvb_intp i = 0; i < instruction_count; ++i)
+    for (bh_intp i = 0; i < instruction_count; ++i)
     {
-        cphvb_instruction* inst = instruction_list++;
+        bh_instruction* inst = instruction_list++;
         switch (inst->opcode)
         {
         case CPHVB_SYNC:
@@ -49,20 +49,20 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
 }
 
 
-void DepGraph::ufunc(cphvb_instruction* inst)
+void DepGraph::ufunc(bh_instruction* inst)
 {
-    cphvb_intp nin, nout;
-    cphvb_array** operand;
+    bh_intp nin, nout;
+    bh_array** operand;
     /* Handle bothe ufunc and userdefined functions*/
     if (inst->opcode == CPHVB_USERFUNC)
     {
-        cphvb_userfunc* userfunc = inst->userfunc;
+        bh_userfunc* userfunc = inst->userfunc;
         nout = userfunc->nout;
         nin = userfunc->nin;
         operand = userfunc->operand;
     } else {
         nout = 1;
-        nin = cphvb_operands(inst->opcode) - 1;
+        nin = bh_operands(inst->opcode) - 1;
         operand = inst->operand;
     }
 
@@ -75,7 +75,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
          * on other subGraphs with overlapping output
          * TODO: Pruning and so on 
          */
-        cphvb_array* out = cphvb_base_array(operand[i]);
+        bh_array* out = bh_base_array(operand[i]);
         auto omsub = lastModifiedBy.find(out);
         if (omsub != lastModifiedBy.end())
         {
@@ -90,7 +90,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
         subGraphs.push_back(sub);
         for (int i = 0; i < nout; ++i)
         {
-            cphvb_array* out = cphvb_base_array(operand[i]);
+            bh_array* out = bh_base_array(operand[i]);
             lastModifiedBy[out] = sub;
         }
         return;
@@ -100,9 +100,9 @@ void DepGraph::ufunc(cphvb_instruction* inst)
     /* Handle dependency on intput parameters*/ 
     for (int i = nout; i < nout+nin; ++i)
     {
-        if (!cphvb_is_constant(inst->operand[i]))
+        if (!bh_is_constant(inst->operand[i]))
         {
-            cphvb_array* in =  cphvb_base_array(operand[i]);
+            bh_array* in =  bh_base_array(operand[i]);
             auto imsub = lastModifiedBy.find(in);
             if (imsub != lastModifiedBy.end())
             {
@@ -118,7 +118,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
         subGraphs.push_back(sub);
         for (int i = 0; i < nout; ++i)
         {
-            cphvb_array* out = cphvb_base_array(operand[i]);
+            bh_array* out = bh_base_array(operand[i]);
             lastModifiedBy[out] = sub;
         }
         break;
@@ -135,12 +135,12 @@ void DepGraph::ufunc(cphvb_instruction* inst)
             subGraphs.push_back(sub);
             for (int i = 0; i < nout; ++i)
             {
-                cphvb_array* out = cphvb_base_array(operand[i]);
+                bh_array* out = bh_base_array(operand[i]);
                 lastModifiedBy[out] = sub;
             }
             for (DepSubGraph* &dsg: dependsOn)
             {
-                for (cphvb_array* ba: dsg->getModified())
+                for (bh_array* ba: dsg->getModified())
                 {
                     if (lastModifiedBy[ba] == dsg)
                         lastModifiedBy[ba] = sub;
@@ -155,7 +155,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
             subGraphs.push_back(sub);
             for (int i = 0; i < nout; ++i)
             {
-                cphvb_array* out = cphvb_base_array(operand[i]);
+                bh_array* out = bh_base_array(operand[i]);
                 lastModifiedBy[out] = sub;
             }
         }

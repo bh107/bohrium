@@ -21,13 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <deque>
 #include <StaticStore.hpp>
-#include <cphvb.h>
+#include <bh.h>
 #include "tmp.h"
 #include "except.h"
 
 
 //Temporary array store
-static StaticStore<cphvb_array> ary_store(512);
+static StaticStore<bh_array> ary_store(512);
 
 //Temporary miscellaneous stores
 static std::deque<char *> misc_stores;
@@ -38,7 +38,7 @@ static std::deque<char *> misc_stores;
  * 
  * @return The temporary array
  */
-cphvb_array* tmp_get_ary()
+bh_array* tmp_get_ary()
 {
     return ary_store.c_next();
 }
@@ -49,7 +49,7 @@ cphvb_array* tmp_get_ary()
  * 
  * @return The temporary memory
  */
-void* tmp_get_misc(cphvb_intp size)
+void* tmp_get_misc(bh_intp size)
 {
     char *t = (char*) malloc(size);
     if(t == NULL)

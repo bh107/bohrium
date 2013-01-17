@@ -17,49 +17,49 @@
  * along with Bohrium. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include <cphvb.h>
+#include <bh.h>
 #include <cassert>
 extern "C" {
 #include <clapack.h>
 #include <cblas.h>
 }
 
-void transpose_float32(cphvb_float32* A, int n, int row_stride){
+void transpose_float32(bh_float32* A, int n, int row_stride){
   int i, j;
   #pragma omp parallel for
   for(j = 0; j < n-1; j++){
     for(i = j+1; i < n; i++){
-       cphvb_float32 temp = A[i + j*row_stride];
+       bh_float32 temp = A[i + j*row_stride];
        A[i + j*row_stride] = A[j + i*row_stride];
        A[j + i*row_stride] = temp;
     }
   }
 }
 
-void transpose_float64(cphvb_float64* A, int n, int row_stride){
+void transpose_float64(bh_float64* A, int n, int row_stride){
   int i, j;
   #pragma omp parallel for
   for(i = 0; i < n-1; i++){
     for(j = i+1; j < n; j++){
-       cphvb_float64 temp = A[i + j*row_stride];
+       bh_float64 temp = A[i + j*row_stride];
        A[i + j*row_stride] = A[j + i*row_stride];
        A[j + i*row_stride] = temp;
     }
   }
 }
 
-cphvb_error do_lu_float32(cphvb_array *A, cphvb_array *P){
+bh_error do_lu_float32(bh_array *A, bh_array *P){
 
-    cphvb_float32* A_data;
-    cphvb_int32* P_data;
+    bh_float32* A_data;
+    bh_int32* P_data;
 
-    cphvb_data_get(A, (cphvb_data_ptr*) &A_data);
-    cphvb_data_get(P, (cphvb_data_ptr*) &P_data);
+    bh_data_get(A, (bh_data_ptr*) &A_data);
+    bh_data_get(P, (bh_data_ptr*) &P_data);
 
     A_data += A->start;
     P_data += P->start;
     
-    cphvb_intp N = A->shape[0];
+    bh_intp N = A->shape[0];
     
     //unfortinatly, atlas define row_major lu with column povoting, meaning we need to transpose the matrix
     //to get same behavior as scipy
@@ -70,18 +70,18 @@ cphvb_error do_lu_float32(cphvb_array *A, cphvb_array *P){
     return CPHVB_SUCCESS;
 }
 
-cphvb_error do_lu_float64(cphvb_array *A, cphvb_array *P){
+bh_error do_lu_float64(bh_array *A, bh_array *P){
 
-    cphvb_float64* A_data;
-    cphvb_int32* P_data;
+    bh_float64* A_data;
+    bh_int32* P_data;
 
-    cphvb_data_get(A, (cphvb_data_ptr*) &A_data);
-    cphvb_data_get(P, (cphvb_data_ptr*) &P_data);
+    bh_data_get(A, (bh_data_ptr*) &A_data);
+    bh_data_get(P, (bh_data_ptr*) &P_data);
 
     A_data += A->start;
     P_data += P->start;
     
-    cphvb_intp N = A->shape[0];
+    bh_intp N = A->shape[0];
     
     //unfortinatly, atlas define row_major lu with column povoting, meaning we need to transpose the matrix
     //to get same behavior as scipy
@@ -92,16 +92,16 @@ cphvb_error do_lu_float64(cphvb_array *A, cphvb_array *P){
     return CPHVB_SUCCESS;
 }
 
-cphvb_error cphvb_lu( cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_lu( bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_lu_type *m_arg = (cphvb_lu_type *) arg;
-    cphvb_array *A = m_arg->operand[0];
-    cphvb_array *P = m_arg->operand[1];
+    bh_lu_type *m_arg = (bh_lu_type *) arg;
+    bh_array *A = m_arg->operand[0];
+    bh_array *P = m_arg->operand[1];
     
-    if(cphvb_data_malloc(A) != CPHVB_SUCCESS)
+    if(bh_data_malloc(A) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
         
-    if(cphvb_data_malloc(P) != CPHVB_SUCCESS)
+    if(bh_data_malloc(P) != CPHVB_SUCCESS)
         return CPHVB_OUT_OF_MEMORY;
 
     //A needs to be row major, P needs to be continuous. Should be no problem, as both arrays are just created

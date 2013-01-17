@@ -35,7 +35,7 @@ def build(components,interpreter):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"CPHVB_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -61,7 +61,7 @@ def install(components,prefix,interpreter):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"install","CPHVB_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()

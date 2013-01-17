@@ -26,7 +26,7 @@ Build and install::
 .. note:: The installation will prompt you for the installation path. 
           The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
-.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, CPHVB_PYTHON, naming the binary of your custom compiled Python.
+.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
 
 Finally, you need to set the ``PYTHONPATH`` and the ``LD_LIBRARY_PATH`` environment variables.
 The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
@@ -50,7 +50,7 @@ And you should see a result similar to this::
     *** Testing the equivalency of Bohrium-NumPy and NumPy ***
     Testing test_array_create.py/array_create/zeros
     Testing test_sor.py/sor/sor
-    Testing test_primitives.py/cphvb_opcodes/ufunc
+    Testing test_primitives.py/bh_opcodes/ufunc
     Testing test_primitives.py/numpy_ufunc/ufunc
     Testing test_reduce.py/reduce/reduce
     Testing test_benchmarks.py/gameoflife/gameoflife

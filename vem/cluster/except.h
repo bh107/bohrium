@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 #include <string>
 #include <exception>
 
@@ -69,12 +69,12 @@ class except_inst : public except
 {
     public:
         const char *what() const throw();
-        except_inst(cphvb_opcode opcode, cphvb_error inst_status, 
-                    cphvb_error inst_list_status, 
+        except_inst(bh_opcode opcode, bh_error inst_status, 
+                    bh_error inst_list_status, 
                     int line, const std::string & file);
     private:
-        cphvb_error status, retcode;
-        cphvb_opcode op;
+        bh_error status, retcode;
+        bh_opcode op;
 };
 
 #endif

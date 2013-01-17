@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
@@ -32,12 +32,12 @@ namespace UserFunctionMatmul
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    void matmul(cphvb_matmul_type* matmulDef, UserFuncArg* userFuncArg);
-    Kernel getKernel(cphvb_matmul_type* matmulDef,
+    void matmul(bh_matmul_type* matmulDef, UserFuncArg* userFuncArg);
+    Kernel getKernel(bh_matmul_type* matmulDef,
                      UserFuncArg* userFuncArg);
-    std::string generateCode(cphvb_matmul_type* matmulDef,
+    std::string generateCode(bh_matmul_type* matmulDef,
                              OCLtype type);
-    std::string generateDefines(cphvb_matmul_type* matmulDef,
+    std::string generateDefines(bh_matmul_type* matmulDef,
                              OCLtype type);
 }
 

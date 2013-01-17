@@ -25,18 +25,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "GenerateSourceCode.hpp"
 #include "UserFunctionReduce.hpp"
 
-cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_reduce(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_reduce_type* reduceDef = (cphvb_reduce_type*)arg;
+    bh_reduce_type* reduceDef = (bh_reduce_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert(reduceDef->nout = 1);
     assert(reduceDef->nin = 1);
-    assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim || cphvb_is_scalar(reduceDef->operand[0]));
+    assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim || bh_is_scalar(reduceDef->operand[0]));
     assert(userFuncArg->operands.size() == 2);
-    if (cphvb_is_scalar(reduceDef->operand[0]))
+    if (bh_is_scalar(reduceDef->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        cphvb_error err = cphvb_compute_reduce(arg,NULL);
+        bh_error err = bh_compute_reduce(arg,NULL);
         if (err == CPHVB_SUCCESS)
             static_cast<BaseArray*>(userFuncArg->operands[0])->update();
         return err;
@@ -48,10 +48,10 @@ cphvb_error cphvb_reduce(cphvb_userfunc* arg, void* ve_arg)
     }
 }
 
-void UserFunctionReduce::reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg)
+void UserFunctionReduce::reduce(bh_reduce_type* reduceDef, UserFuncArg* userFuncArg)
 {
-    cphvb_array* out = reduceDef->operand[0];
-    std::vector<cphvb_index> shape = std::vector<cphvb_index>(out->shape, out->shape + out->ndim);
+    bh_array* out = reduceDef->operand[0];
+    std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
     Kernel kernel = getKernel(reduceDef, userFuncArg, shape);
     Kernel::Parameters kernelParameters;
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
@@ -62,9 +62,9 @@ void UserFunctionReduce::reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userF
     kernel.call(kernelParameters, globalShape);
 }
 
-Kernel UserFunctionReduce::getKernel(cphvb_reduce_type* reduceDef, 
+Kernel UserFunctionReduce::getKernel(bh_reduce_type* reduceDef, 
                                      UserFuncArg* userFuncArg,
-                                     std::vector<cphvb_index> shape)
+                                     std::vector<bh_index> shape)
 {
 #ifdef STATS
     timeval start, end;
@@ -103,12 +103,12 @@ Kernel UserFunctionReduce::getKernel(cphvb_reduce_type* reduceDef,
 }
 
 
-std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef, 
+std::string UserFunctionReduce::generateCode(bh_reduce_type* reduceDef, 
                                              OCLtype outType, OCLtype inType,
-                                             std::vector<cphvb_index> shape)
+                                             std::vector<bh_index> shape)
 {
-    cphvb_array* out = reduceDef->operand[0];
-    cphvb_array* in = reduceDef->operand[1];
+    bh_array* out = reduceDef->operand[0];
+    bh_array* in = reduceDef->operand[1];
     std::stringstream source;
     std::vector<std::string> operands(3);
     operands[0] = "accu";
@@ -116,7 +116,7 @@ std::string UserFunctionReduce::generateCode(cphvb_reduce_type* reduceDef,
     operands[2] = "in[element]";
     source << "( __global " << oclTypeStr(outType) << "* out\n" 
         "                     , __global " << oclTypeStr(inType) << "* in)\n{\n";
-    cphvb_array inn(*in);
+    bh_array inn(*in);
     inn.ndim = in->ndim - 1;
     int i = 0;
     int a = (reduceDef->axis)?0:1;

@@ -22,7 +22,7 @@
 
 #include <string>
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
@@ -36,8 +36,8 @@ private:
     ResourceManager* resourceManager;
 public:
     UserFunctionFft(ResourceManager* rm);
-    cphvb_error fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg);
-    cphvb_error fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg);
+    bh_error fft(bh_fft_type* fftDef, UserFuncArg* userFuncArg);
+    bh_error fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg);
 };
 
 #endif

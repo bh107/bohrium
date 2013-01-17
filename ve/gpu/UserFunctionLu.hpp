@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
@@ -37,7 +37,7 @@ private:
     ResourceManager* resourceManager;
 public:
     UserFunctionLu(ResourceManager* rm);
-    cphvb_error lu(cphvb_lu_type* luDef, UserFuncArg* userFuncArg);
+    bh_error lu(bh_lu_type* luDef, UserFuncArg* userFuncArg);
 };
 
 #endif

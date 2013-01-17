@@ -21,20 +21,20 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DEPGRAPH_HPP
 #define __DEPGRAPH_HPP
 
-#include <cphvb.h>
+#include <bh.h>
 #include <map>
 #include "DepSubGraph.hpp"
 
 class DepGraph
 {
-    typedef std::map<cphvb_array*, DepSubGraph*> LastModifiedByMap;
+    typedef std::map<bh_array*, DepSubGraph*> LastModifiedByMap;
 private:
     std::list<DepSubGraph*> subGraphs;
     LastModifiedByMap lastModifiedBy;
-    void ufunc(cphvb_instruction* inst);
+    void ufunc(bh_instruction* inst);
 public:
-    DepGraph(cphvb_intp instruction_count,
-             cphvb_instruction instruction_list[]);
+    DepGraph(bh_intp instruction_count,
+             bh_instruction instruction_list[]);
 };
 
 #endif

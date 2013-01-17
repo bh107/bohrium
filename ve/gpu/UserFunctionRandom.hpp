@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __USERFUNCTIONRANDOM_HPP
 
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #include <CL/cl.hpp>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
@@ -30,14 +30,14 @@ If not, see <http://www.gnu.org/licenses/>.
 class UserFunctionRandom
 {
 private:
-    typedef std::map<cphvb_type, Kernel> KernelMap;
+    typedef std::map<bh_type, Kernel> KernelMap;
     KernelMap kernelMap;
     ResourceManager* resourceManager;
     Buffer* state;
     static void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
 public:
     UserFunctionRandom(ResourceManager* rm);
-    cphvb_error fill(UserFuncArg* userFuncArg);
+    bh_error fill(UserFuncArg* userFuncArg);
 };
 
 #endif

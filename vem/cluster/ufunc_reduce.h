@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __CPHVB_VEM_CLUSTER_UFUNC_REDUCE_H
 
-#include <cphvb.h>
+#include <bh.h>
 
 /* Apply the user-defined function "reduce".
  * @opcode   The opcode of the reduce function.
@@ -29,8 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
  * @ufunc_id The ID of the reduce user-defined function
  * @return   The instruction status 
 */
-cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis, 
-                         cphvb_array *operand[], cphvb_intp ufunc_id);
+bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis, 
+                         bh_array *operand[], bh_intp ufunc_id);
 
 
 #endif

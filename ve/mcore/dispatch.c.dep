@@ -17,25 +17,25 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <cphvb.h>
-#include <cphvb_compute.h>
+#include <bh.h>
+#include <bh_compute.h>
 #include "dispatch.h"
 #include <assert.h>
 #include <pthread.h>
 
-//The data type of cphvb_array extended with temporary info.
+//The data type of bh_array extended with temporary info.
 typedef struct
 {
     CPHVB_ARRAY_HEAD
     //Saved original values
-    cphvb_index      org_start;
-    cphvb_index      org_shape[CPHVB_MAXDIM];
+    bh_index      org_start;
+    bh_index      org_shape[CPHVB_MAXDIM];
 
 } dispatch_ary;
 
 //Returns the offset based on the current block.
-inline cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
-                             cphvb_intp nblocks)
+inline bh_intp get_offset(bh_intp block, bh_instruction *inst,
+                             bh_intp nblocks)
 {
     if(block == 0)
         return 0;
@@ -48,8 +48,8 @@ inline cphvb_intp get_offset(cphvb_intp block, cphvb_instruction *inst,
 }
 
 //Returns the shape based on the current block.
-inline cphvb_intp get_shape(cphvb_intp block, cphvb_instruction *inst,
-                            cphvb_intp nblocks)
+inline bh_intp get_shape(bh_intp block, bh_instruction *inst,
+                            bh_intp nblocks)
 {
     dispatch_ary *ary = (dispatch_ary*) inst->operand[0];
 
@@ -74,26 +74,26 @@ static pthread_mutex_t thd_mutex         = PTHREAD_MUTEX_INITIALIZER;
 static int thd_wait         = 1;//0==start,1==wait
 static int thd_finished[2]  = {0,0};//Whan it reaches nthd we are finished.
 static int thd_exit         = 0;//1==exit,0=running
-static cphvb_intp thd_nblocks;
-static cphvb_intp thd_nthds;
-static cphvb_intp thd_size;
-static cphvb_instruction** thd_inst_bundle;
+static bh_intp thd_nblocks;
+static bh_intp thd_nthds;
+static bh_intp thd_size;
+static bh_instruction** thd_inst_bundle;
 static computeloop *thd_traverses;
 static int main_finished_idx = 0;//Finished index for main.
 
 //Buffer for allocated region for holding traverse elements
-static computeloop* cphvb_ve_mcore_traverses = NULL;
-static cphvb_intp cphvb_ve_mcore_traverses_buffersize = 0;
+static computeloop* bh_ve_mcore_traverses = NULL;
+static bh_intp bh_ve_mcore_traverses_buffersize = 0;
 
 //The thread function.
 static void *thd_do(void *msg)
 {
-    cphvb_intp myid = ((cphvb_intp)msg);
+    bh_intp myid = ((bh_intp)msg);
     int finished_idx = 0;//Finished index (swapped between iterations).
     
-    cphvb_instruction* thd_inst = NULL;
-    cphvb_array* ary_stack = NULL;
-    cphvb_intp instr_buffer_size = 0;
+    bh_instruction* thd_inst = NULL;
+    bh_array* ary_stack = NULL;
+    bh_intp instr_buffer_size = 0;
     
     while(1)
     {
@@ -106,10 +106,10 @@ static void *thd_do(void *msg)
         if(thd_exit)//Check if we should exit.
             break;
 
-        cphvb_intp nthds = thd_nthds;
-        cphvb_intp size = thd_size;
-        cphvb_intp nblocks = thd_nblocks;
-        cphvb_instruction** inst_bundle = thd_inst_bundle;
+        bh_intp nthds = thd_nthds;
+        bh_intp size = thd_size;
+        bh_intp nblocks = thd_nblocks;
+        bh_instruction** inst_bundle = thd_inst_bundle;
         computeloop *traverses = thd_traverses;
 
         if(nthds > nblocks)
@@ -124,15 +124,15 @@ static void *thd_do(void *msg)
                 if(nblocks > nthds)
                     nblocks = nthds;
 
-            cphvb_intp length = nblocks / nthds; // Find this thread's length of work.
-            cphvb_intp start = myid * length;    // Find this thread's start block.
+            bh_intp length = nblocks / nthds; // Find this thread's length of work.
+            bh_intp start = myid * length;    // Find this thread's start block.
             if(myid == nthds-1)
                 length += nblocks % nthds;       // The last thread gets the reminder.
 
 			//Make sure we have enough space
 			if (size > instr_buffer_size) 
 			{
-				cphvb_intp mcount = size;
+				bh_intp mcount = size;
 		
 				//We only work in multiples of 1000
 				if (mcount % 1000 != 0)
@@ -151,8 +151,8 @@ static void *thd_do(void *msg)
 					ary_stack = NULL;
 				}
 		
-				thd_inst = (cphvb_instruction*)malloc(sizeof(cphvb_instruction) * mcount);
-				ary_stack = (cphvb_array*)malloc(sizeof(cphvb_instruction) * mcount * CPHVB_MAX_NO_OPERANDS);
+				thd_inst = (bh_instruction*)malloc(sizeof(bh_instruction) * mcount);
+				ary_stack = (bh_array*)malloc(sizeof(bh_instruction) * mcount * CPHVB_MAX_NO_OPERANDS);
 				
 				if (thd_inst == NULL || ary_stack == NULL) {
 					inst_bundle[0]->status = CPHVB_OUT_OF_MEMORY;
@@ -164,15 +164,15 @@ static void *thd_do(void *msg)
 					instr_buffer_size = mcount;
 			}
 
-            cphvb_intp ary_stack_count=0;
-            for(cphvb_intp j=0; j<size; ++j)
+            bh_intp ary_stack_count=0;
+            for(bh_intp j=0; j<size; ++j)
             {
                 thd_inst[j] = *inst_bundle[j];
-                cphvb_intp nops = cphvb_operands(inst_bundle[j]->opcode);
-                for(cphvb_intp i=0; i<nops; ++i)
+                bh_intp nops = bh_operands(inst_bundle[j]->opcode);
+                for(bh_intp i=0; i<nops; ++i)
                 {
-                    cphvb_array *ary_org = inst_bundle[j]->operand[i];
-                    cphvb_array *ary = &ary_stack[ary_stack_count++];
+                    bh_array *ary_org = inst_bundle[j]->operand[i];
+                    bh_array *ary = &ary_stack[ary_stack_count++];
                     *ary = *ary_org;
 
                     if(ary_org->base == NULL)//base array
@@ -185,14 +185,14 @@ static void *thd_do(void *msg)
             }
 
             //Handle one block at a time.
-            for(cphvb_intp b=start; b<start+length; ++b)
+            for(bh_intp b=start; b<start+length; ++b)
             {
                 //Update the operands to match the current block.
-                for(cphvb_intp j=0; j<size; ++j)
+                for(bh_intp j=0; j<size; ++j)
                 {
-                    cphvb_instruction *inst = &thd_inst[j];
-                    cphvb_intp nops = cphvb_operands(inst->opcode);
-                    for(cphvb_intp i=0; i<nops; ++i)
+                    bh_instruction *inst = &thd_inst[j];
+                    bh_intp nops = bh_operands(inst->opcode);
+                    for(bh_intp i=0; i<nops; ++i)
                     {
                         dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
                         ary->start = ary->org_start + ary->stride[0] *
@@ -202,9 +202,9 @@ static void *thd_do(void *msg)
                 }
 
                 //Dispatch a block.
-                for(cphvb_intp j=0; j<size; ++j)
+                for(bh_intp j=0; j<size; ++j)
                 {
-                    cphvb_instruction *inst = &thd_inst[j];
+                    bh_instruction *inst = &thd_inst[j];
                     if(inst->operand[0]->shape[0] <= 0)
                         break;//Nothing to do.
 
@@ -244,7 +244,7 @@ static void *thd_do(void *msg)
 }
 
 //Initiate the dispather.
-cphvb_error dispatch_init(void)
+bh_error dispatch_init(void)
 {
     char *env = getenv("CPHVB_NUM_THREADS");
     if(env != NULL)
@@ -265,7 +265,7 @@ cphvb_error dispatch_init(void)
 }
 
 //Finalize the dispather.
-cphvb_error dispatch_finalize(void)
+bh_error dispatch_finalize(void)
 {
     //Kill all threads.
     pthread_mutex_lock(&thd_mutex);
@@ -281,43 +281,43 @@ cphvb_error dispatch_finalize(void)
 }
 
 //Dispatch the bundle of instructions.
-cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
-                            cphvb_intp size,
-                            cphvb_intp nblocks)
+bh_error dispatch_bundle(bh_instruction** inst_bundle,
+                            bh_intp size,
+                            bh_intp nblocks)
 {
-    cphvb_error ret = CPHVB_SUCCESS;
+    bh_error ret = CPHVB_SUCCESS;
 
     //Make sure we have enough space
-    if (size > cphvb_ve_mcore_traverses_buffersize) 
+    if (size > bh_ve_mcore_traverses_buffersize) 
     {
-    	cphvb_intp mcount = size;
+    	bh_intp mcount = size;
 
     	//We only work in multiples of 1000
     	if (mcount % 1000 != 0)
     		mcount = (mcount + 1000) - (mcount % 1000);
     		
     	//Make sure we re-allocate on error
-    	cphvb_ve_mcore_traverses_buffersize = 0;
+    	bh_ve_mcore_traverses_buffersize = 0;
     	
-    	if (cphvb_ve_mcore_traverses != NULL) {
-    		free(cphvb_ve_mcore_traverses);
-    		cphvb_ve_mcore_traverses = NULL;
+    	if (bh_ve_mcore_traverses != NULL) {
+    		free(bh_ve_mcore_traverses);
+    		bh_ve_mcore_traverses = NULL;
     	}
 
-    	cphvb_ve_mcore_traverses = (computeloop*)malloc(sizeof(computeloop) * mcount);
+    	bh_ve_mcore_traverses = (computeloop*)malloc(sizeof(computeloop) * mcount);
     	
-    	if (cphvb_ve_mcore_traverses == NULL)
+    	if (bh_ve_mcore_traverses == NULL)
     		return CPHVB_OUT_OF_MEMORY;
     	
-    	cphvb_ve_mcore_traverses_buffersize = mcount;
+    	bh_ve_mcore_traverses_buffersize = mcount;
     }
 
-	computeloop* traverses = cphvb_ve_mcore_traverses;
+	computeloop* traverses = bh_ve_mcore_traverses;
 	
     //Get all traverse function -- one per instruction.
-    for(cphvb_intp j=0; j<size; ++j)
+    for(bh_intp j=0; j<size; ++j)
     {
-        traverses[j] = cphvb_compute_get( inst_bundle[j] );
+        traverses[j] = bh_compute_get( inst_bundle[j] );
         if(traverses[j] == NULL)
         {
             inst_bundle[j]->status = CPHVB_OUT_OF_MEMORY;
@@ -326,25 +326,25 @@ cphvb_error dispatch_bundle(cphvb_instruction** inst_bundle,
         }
     }
     //Save the original array information.
-    for(cphvb_intp j=0; j<size; ++j)
+    for(bh_intp j=0; j<size; ++j)
     {
-        cphvb_instruction *inst = inst_bundle[j];
-        cphvb_intp nops = cphvb_operands(inst->opcode);
-        for(cphvb_intp i=0; i<nops; ++i)
+        bh_instruction *inst = inst_bundle[j];
+        bh_intp nops = bh_operands(inst->opcode);
+        for(bh_intp i=0; i<nops; ++i)
         {
             dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
             ary->org_start = ary->start;
-            memcpy(ary->org_shape, ary->shape, ary->ndim * sizeof(cphvb_index));
+            memcpy(ary->org_shape, ary->shape, ary->ndim * sizeof(bh_index));
         }
     }
     //Make sure that all array-data is allocated.
-    for(cphvb_intp j=0; j<size; ++j)
+    for(bh_intp j=0; j<size; ++j)
     {
-        cphvb_instruction *inst = inst_bundle[j];
-        cphvb_intp nops = cphvb_operands(inst->opcode);
-        for(cphvb_intp i=0; i<nops; ++i)
+        bh_instruction *inst = inst_bundle[j];
+        bh_intp nops = bh_operands(inst->opcode);
+        for(bh_intp i=0; i<nops; ++i)
         {
-            if(cphvb_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+            if(bh_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
             {
                 inst->status = CPHVB_OUT_OF_MEMORY;
                 ret = CPHVB_PARTIAL_SUCCESS;
@@ -376,14 +376,14 @@ finish:
 /*
     This is not needed anymore.
     //Restore the original arrays.
-    for(cphvb_intp j=0; j<size; ++j)
+    for(bh_intp j=0; j<size; ++j)
     {
-        cphvb_instruction *inst = inst_bundle[j];
-        for(cphvb_intp i=0; i<cphvb_operands(inst->opcode); ++i)
+        bh_instruction *inst = inst_bundle[j];
+        for(bh_intp i=0; i<bh_operands(inst->opcode); ++i)
         {
             dispatch_ary *ary = (dispatch_ary*) inst->operand[i];
             ary->start = ary->org_start;
-            memcpy(ary->shape, ary->org_shape, ary->ndim * sizeof(cphvb_index));
+            memcpy(ary->shape, ary->org_shape, ary->ndim * sizeof(bh_index));
         }
     }
 */

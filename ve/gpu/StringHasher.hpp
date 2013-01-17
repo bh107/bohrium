@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
- #include <cphvb.h>
+ #include <bh.h>
  #include <iostream>
 
 size_t string_hasher(std::string str);

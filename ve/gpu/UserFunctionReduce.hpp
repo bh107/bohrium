@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <map>
-#include <cphvb.h>
+#include <bh.h>
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
@@ -32,13 +32,13 @@ namespace UserFunctionReduce
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    void reduce(cphvb_reduce_type* reduceDef, UserFuncArg* userFuncArg);
-    Kernel getKernel(cphvb_reduce_type* reduceDef,
+    void reduce(bh_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+    Kernel getKernel(bh_reduce_type* reduceDef,
                      UserFuncArg* userFuncArg,
-                     std::vector<cphvb_index> shape);
-    std::string generateCode(cphvb_reduce_type* reduceDef,
+                     std::vector<bh_index> shape);
+    std::string generateCode(bh_reduce_type* reduceDef,
                              OCLtype outType, OCLtype inType,
-                             std::vector<cphvb_index> shape);
+                             std::vector<bh_index> shape);
 }
 
 #endif

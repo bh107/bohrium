@@ -21,16 +21,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BASEARRAY_HPP
 #define __BASEARRAY_HPP
 
-#include <cphvb.h>
+#include <bh.h>
 #include "Buffer.hpp"
 #include "KernelParameter.hpp"
 
 class BaseArray : public Buffer
 {
 private:
-    cphvb_array* spec;
+    bh_array* spec;
 public:
-    BaseArray(cphvb_array* spec, ResourceManager* resourceManager);
+    BaseArray(bh_array* spec, ResourceManager* resourceManager);
     void sync();
     void update();
     size_t size();

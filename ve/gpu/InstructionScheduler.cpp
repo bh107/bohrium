@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
-#include <cphvb.h>
+#include <bh.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
@@ -31,20 +31,20 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     , batch(0)
 {}
 
-cphvb_error InstructionScheduler::schedule(cphvb_intp instructionCount,
-                                    cphvb_instruction* instructionList)
+bh_error InstructionScheduler::schedule(bh_intp instructionCount,
+                                    bh_instruction* instructionList)
 {
 #ifdef DEBUG
     std::cout << "[VE GPU] InstructionScheduler: recieved batch with " << 
         instructionCount << " instructions." << std::endl;
 #endif
-    for (cphvb_intp i = 0; i < instructionCount; ++i)
+    for (bh_intp i = 0; i < instructionCount; ++i)
     {
-        cphvb_instruction* inst = instructionList++;
+        bh_instruction* inst = instructionList++;
         if (inst->opcode != CPHVB_NONE && inst->status != CPHVB_SUCCESS)
         {
 #ifdef DEBUG
-            cphvb_pprint_instr(inst);
+            bh_pprint_instr(inst);
 #endif
             switch (inst->opcode)
             {
@@ -58,7 +58,7 @@ cphvb_error InstructionScheduler::schedule(cphvb_intp instructionCount,
                 inst->status = CPHVB_SUCCESS;
                 break;
             case CPHVB_FREE:
-                cphvb_data_free(inst->operand[0]);
+                bh_data_free(inst->operand[0]);
                 inst->status = CPHVB_SUCCESS;
                 break;                
             case CPHVB_USERFUNC:
@@ -96,7 +96,7 @@ void InstructionScheduler::executeBatch()
     }
 }
 
-void InstructionScheduler::sync(cphvb_array* base)
+void InstructionScheduler::sync(bh_array* base)
 {
     //TODO postpone sync
     assert(base->base == NULL);
@@ -113,7 +113,7 @@ void InstructionScheduler::sync(cphvb_array* base)
     it->second->sync();
 }
 
-void InstructionScheduler::discard(cphvb_array* base)
+void InstructionScheduler::discard(bh_array* base)
 {
     assert(base->base == NULL);
     // We may recieve discard for arrays I don't own
@@ -133,25 +133,25 @@ void InstructionScheduler::discard(cphvb_array* base)
     arrayMap.erase(it);
 }
 
-cphvb_error InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
+bh_error InstructionScheduler::userdeffunc(bh_userfunc* userfunc)
 {
     FunctionMap::iterator fit = functionMap.find(userfunc->id);
     if (fit == functionMap.end())
     {
         return CPHVB_USERFUNC_NOT_SUPPORTED;
     }
-    cphvb_intp nops = userfunc->nout + userfunc->nin;
+    bh_intp nops = userfunc->nout + userfunc->nin;
     UserFuncArg userFuncArg;
     userFuncArg.resourceManager = resourceManager;
     for (int i = 0; i < nops; ++i)
     {
-        cphvb_array* operand = userfunc->operand[i];
+        bh_array* operand = userfunc->operand[i];
         if ((!resourceManager->float64support() && operand->type == CPHVB_FLOAT64)
             || (!resourceManager->float16support() && operand->type == CPHVB_FLOAT16))
         {
             return CPHVB_TYPE_NOT_SUPPORTED;
         }
-        cphvb_array* base = cphvb_base_array(operand);
+        bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
@@ -188,17 +188,17 @@ cphvb_error InstructionScheduler::userdeffunc(cphvb_userfunc* userfunc)
     return fit->second(userfunc, &userFuncArg);
 }
 
-cphvb_error InstructionScheduler::ufunc(cphvb_instruction* inst)
+bh_error InstructionScheduler::ufunc(bh_instruction* inst)
 {
     //TODO Find out if we support the operation before copying data to device
 
-    cphvb_intp nops = cphvb_operands(inst->opcode);
+    bh_intp nops = bh_operands(inst->opcode);
     assert(nops > 0);
     std::vector<KernelParameter*> operands(nops);
     for (int i = 0; i < nops; ++i)
     {
-        cphvb_array* operand = inst->operand[i];
-        if (cphvb_is_constant(operand))
+        bh_array* operand = inst->operand[i];
+        if (bh_is_constant(operand))
         {
             operands[i] = new Scalar(inst->constant);
             continue;
@@ -208,7 +208,7 @@ cphvb_error InstructionScheduler::ufunc(cphvb_instruction* inst)
         {
             return CPHVB_TYPE_NOT_SUPPORTED;
         }
-        cphvb_array* base = cphvb_base_array(operand);
+        bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
@@ -242,7 +242,7 @@ cphvb_error InstructionScheduler::ufunc(cphvb_instruction* inst)
     return CPHVB_SUCCESS;
 }
 
-void InstructionScheduler::registerFunction(cphvb_intp id, cphvb_userfunc_impl userfunc)
+void InstructionScheduler::registerFunction(bh_intp id, bh_userfunc_impl userfunc)
 {
     functionMap[id] = userfunc;
 }

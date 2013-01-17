@@ -26,9 +26,9 @@
 
 UserFunctionFft* userFunctionFft = NULL;
 
-cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_fft(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
+    bh_fft_type* fftDef = (bh_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 1){
@@ -56,9 +56,9 @@ cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg)
     
 }
 
-cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_fft2(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
+    bh_fft_type* fftDef = (bh_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 2){
@@ -93,7 +93,7 @@ UserFunctionFft::UserFunctionFft(ResourceManager* rm)
     kernelNames.push_back("fft");
     kernelNames.push_back("fft2d");
     kernelNames.push_back("copy");
-    std::vector<cphvb_intp> ndims(3,1);
+    std::vector<bh_intp> ndims(3,1);
     ndims[0] = 1;
     ndims[1] = 2;
     ndims[2] = 1;
@@ -114,7 +114,7 @@ int log2( int x )
 
 
 
-cphvb_error UserFunctionFft::fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg)
+bh_error UserFunctionFft::fft(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     
@@ -166,7 +166,7 @@ cphvb_error UserFunctionFft::fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncAr
     return CPHVB_SUCCESS;
 }
 
-cphvb_error UserFunctionFft::fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg)
+bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     

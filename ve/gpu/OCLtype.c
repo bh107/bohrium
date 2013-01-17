@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include <stdlib.h>
-#include <cphvb.h>
+#include <bh.h>
 #include "OCLtype.h"
 #ifdef __APPLE__
 #include <Headers/cl.h>
@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <CL/cl.h>
 #endif
 
-OCLtype oclType(cphvb_type vbtype)
+OCLtype oclType(bh_type vbtype)
 {
     switch (vbtype)
     {

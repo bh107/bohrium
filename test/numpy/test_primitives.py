@@ -14,11 +14,11 @@ def load_opcodes():
     f.close()
     return ret
 
-def type_cphvb2numpy(cphvb_type):
-    return "np.%s"%cphvb_type[6:].lower()
+def type_cphvb2numpy(bh_type):
+    return "np.%s"%bh_type[6:].lower()
 
 
-class test_cphvb_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
+class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
 
     def __init__(self):
         numpytest.__init__(self)

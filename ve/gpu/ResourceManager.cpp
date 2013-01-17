@@ -35,7 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define STD_MAX(a, b) std::max(a, b)
 #endif
 
-ResourceManager::ResourceManager(cphvb_component* _component) 
+ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
 {
     std::vector<cl::Platform> platforms;
@@ -373,7 +373,7 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus,
 
 std::string ResourceManager::getKernelPath()
 {
-    char* dir = cphvb_component_config_lookup(component, "ocldir");
+    char* dir = bh_component_config_lookup(component, "ocldir");
     if (dir == NULL)
         return std::string("/opt/cphvb/lib/ocl_source");
     return std::string(dir);

@@ -25,7 +25,7 @@ Build Bohrium with custom Python
 
 Build and install it::
 
-  sudo make CPHVB_PYTHON=dython
+  sudo make BH_PYTHON=dython
   sudo make install
 
 Most Used Commands

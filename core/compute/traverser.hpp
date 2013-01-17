@@ -18,14 +18,14 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#include <cphvb.h>
+#include <bh.h>
 #include <assert.h>
 
 typedef char BYTE;
 
 #define INNER_LOOP_AAA(opcode_func, fulls, remainder, d0, d1, d2, stride0, stride1, stride2) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( ((T0*)d0), ((T1*)d1), ((T2*)d2) ); \
@@ -68,7 +68,7 @@ typedef char BYTE;
 
 #define INNER_LOOP_AAC(opcode_func, fulls, remainder, d0, d1, c, stride0, stride1) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( ((T0*)d0), ((T1*)d1), c ); \
@@ -104,7 +104,7 @@ typedef char BYTE;
 
 #define INNER_LOOP_ACA(opcode_func, fulls, remainder, d0, c, d2, stride0, stride2) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( ((T0*)d0), c, ((T2*)d2) ); \
@@ -140,7 +140,7 @@ typedef char BYTE;
 
 #define INNER_LOOP_SSA(opcode_func, fulls, remainder, d1, stride1, scalar) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( (scalar), (scalar), ((T1*)d1) ); \
@@ -169,7 +169,7 @@ typedef char BYTE;
 
 #define INNER_LOOP_AA(opcode_func, fulls, remainder, d0, d1, stride0, stride1) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( ((T0*)d0), ((T1*)d1) ); \
@@ -205,7 +205,7 @@ typedef char BYTE;
 
 #define INNER_LOOP_AC(opcode_func, fulls, remainder, d0, c, stride0) \
 { \
-	cphvb_index loop_i; \
+	bh_index loop_i; \
 	for (loop_i = 0; loop_i < fulls; loop_i++) \
 	{ \
 		opcode_func( ((T0*)d0), (c) ); \
@@ -241,11 +241,11 @@ typedef char BYTE;
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
+bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
-    cphvb_index i, j;                        	// Traversal variables
+    bh_index i, j;                        	// Traversal variables
 
     BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
     BYTE* d1 = (BYTE*)state->start[1];
@@ -255,14 +255,14 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0];
-		cphvb_index stride1 = state->stride[1][0];
-		cphvb_index stride2 = state->stride[2][0];
+		bh_index stride0 = state->stride[0][0];
+		bh_index stride1 = state->stride[1][0];
+		bh_index stride2 = state->stride[2][0];
 		
-		cphvb_index total_ops = state->shape[0];
+		bh_index total_ops = state->shape[0];
 
-		cphvb_index remainder = total_ops % 4;
-		cphvb_index fulls = total_ops / 4;
+		bh_index remainder = total_ops % 4;
+		bh_index fulls = total_ops / 4;
 
 		//Macro magic time!
         INNER_LOOP_AAA(opcode_func, fulls, remainder, d0, d1, d2, stride0, stride1, stride2);
@@ -270,19 +270,19 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else if(state->ndim == 2)
 	{
 		// Basic 2D loop with unrolling
-		cphvb_index ops_outer = state->shape[0];
-		cphvb_index ops_inner = state->shape[1];
+		bh_index ops_outer = state->shape[0];
+		bh_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0];
-		cphvb_index outer_stride1 = state->stride[1][0];
-		cphvb_index outer_stride2 = state->stride[2][0];
+		bh_index outer_stride0 = state->stride[0][0];
+		bh_index outer_stride1 = state->stride[1][0];
+		bh_index outer_stride2 = state->stride[2][0];
 
-		cphvb_index inner_stride0 = state->stride[0][1];
-		cphvb_index inner_stride1 = state->stride[1][1];
-		cphvb_index inner_stride2 = state->stride[2][1];
+		bh_index inner_stride0 = state->stride[0][1];
+		bh_index inner_stride1 = state->stride[1][1];
+		bh_index inner_stride2 = state->stride[2][1];
 
-		cphvb_index remainder = ops_inner % 4;
-		cphvb_index fulls = ops_inner / 4;
+		bh_index remainder = ops_inner % 4;
+		bh_index fulls = ops_inner / 4;
 
 		for (i = 0; i < ops_outer; i++)
 		{
@@ -296,37 +296,37 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
-		cphvb_index n = state->ndim - 3;
-		cphvb_index counters[CPHVB_MAXDIM - 3];
-		memset(&counters, 0, sizeof(cphvb_index) * n);		
+		bh_index n = state->ndim - 3;
+		bh_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(bh_index) * n);		
 
-		cphvb_index total_ops = 1;
+		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
 			
 		//This chunk of variables prevents repeated calculations of offsets
-		cphvb_index dim_index0 = n + 0;
-		cphvb_index dim_index1 = n + 1;
-		cphvb_index dim_index2 = n + 2;
+		bh_index dim_index0 = n + 0;
+		bh_index dim_index1 = n + 1;
+		bh_index dim_index2 = n + 2;
 
-		cphvb_index ops_outer = state->shape[dim_index0];
-		cphvb_index ops_inner = state->shape[dim_index1];
-		cphvb_index ops_inner_inner = state->shape[dim_index2];
+		bh_index ops_outer = state->shape[dim_index0];
+		bh_index ops_inner = state->shape[dim_index1];
+		bh_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0];
-		cphvb_index outer_stride1 = state->stride[1][dim_index0];
-		cphvb_index outer_stride2 = state->stride[2][dim_index0];
+		bh_index outer_stride0 = state->stride[0][dim_index0];
+		bh_index outer_stride1 = state->stride[1][dim_index0];
+		bh_index outer_stride2 = state->stride[2][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1];
-		cphvb_index inner_stride1 = state->stride[1][dim_index1];
-		cphvb_index inner_stride2 = state->stride[2][dim_index1];
+		bh_index inner_stride0 = state->stride[0][dim_index1];
+		bh_index inner_stride1 = state->stride[1][dim_index1];
+		bh_index inner_stride2 = state->stride[2][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
-		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2];
+		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
+		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
+		bh_index inner_inner_stride2 = state->stride[2][dim_index2];
         
-		cphvb_index remainder = ops_inner_inner % 4;
-		cphvb_index fulls = ops_inner_inner / 4;
+		bh_index remainder = ops_inner_inner % 4;
+		bh_index fulls = ops_inner_inner / 4;
 
 		while (total_ops-- > 0)
 		{
@@ -382,11 +382,11 @@ cphvb_error traverse_aaa( cphvb_instruction *instr, cphvb_tstate* state ) {
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
+bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
-    cphvb_index i, j;                        	// Traversal variables
+    bh_index i, j;                        	// Traversal variables
 
     BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
     BYTE* d1 = (BYTE*)state->start[1];
@@ -396,13 +396,13 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0];
-		cphvb_index stride1 = state->stride[1][0];
+		bh_index stride0 = state->stride[0][0];
+		bh_index stride1 = state->stride[1][0];
 		
-		cphvb_index total_ops = state->shape[0];
+		bh_index total_ops = state->shape[0];
 
-		cphvb_index remainder = total_ops % 4;
-		cphvb_index fulls = total_ops / 4;
+		bh_index remainder = total_ops % 4;
+		bh_index fulls = total_ops / 4;
 
 		//Macro magic time!
         INNER_LOOP_AAC(opcode_func, fulls, remainder, d0, d1, c, stride0, stride1);
@@ -410,17 +410,17 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else if(state->ndim == 2)
 	{
 		// Basic 2D loop with unrolling
-		cphvb_index ops_outer = state->shape[0];
-		cphvb_index ops_inner = state->shape[1];
+		bh_index ops_outer = state->shape[0];
+		bh_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0];
-		cphvb_index outer_stride1 = state->stride[1][0];
+		bh_index outer_stride0 = state->stride[0][0];
+		bh_index outer_stride1 = state->stride[1][0];
 
-		cphvb_index inner_stride0 = state->stride[0][1];
-		cphvb_index inner_stride1 = state->stride[1][1];
+		bh_index inner_stride0 = state->stride[0][1];
+		bh_index inner_stride1 = state->stride[1][1];
 
-		cphvb_index remainder = ops_inner % 4;
-		cphvb_index fulls = ops_inner / 4;
+		bh_index remainder = ops_inner % 4;
+		bh_index fulls = ops_inner / 4;
 
 		for (i = 0; i < ops_outer; i++)
 		{
@@ -433,34 +433,34 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
-		cphvb_index n = state->ndim - 3;
-		cphvb_index counters[CPHVB_MAXDIM - 3];
-		memset(&counters, 0, sizeof(cphvb_index) * n);		
+		bh_index n = state->ndim - 3;
+		bh_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(bh_index) * n);		
 
-		cphvb_index total_ops = 1;
+		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
 			
 		//This chunk of variables prevents repeated calculations of offsets
-		cphvb_index dim_index0 = n + 0;
-		cphvb_index dim_index1 = n + 1;
-		cphvb_index dim_index2 = n + 2;
+		bh_index dim_index0 = n + 0;
+		bh_index dim_index1 = n + 1;
+		bh_index dim_index2 = n + 2;
 
-		cphvb_index ops_outer = state->shape[dim_index0];
-		cphvb_index ops_inner = state->shape[dim_index1];
-		cphvb_index ops_inner_inner = state->shape[dim_index2];
+		bh_index ops_outer = state->shape[dim_index0];
+		bh_index ops_inner = state->shape[dim_index1];
+		bh_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0];
-		cphvb_index outer_stride1 = state->stride[1][dim_index0];
+		bh_index outer_stride0 = state->stride[0][dim_index0];
+		bh_index outer_stride1 = state->stride[1][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1];
-		cphvb_index inner_stride1 = state->stride[1][dim_index1];
+		bh_index inner_stride0 = state->stride[0][dim_index1];
+		bh_index inner_stride1 = state->stride[1][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
+		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
+		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
         
-		cphvb_index remainder = ops_inner_inner % 4;
-		cphvb_index fulls = ops_inner_inner / 4;
+		bh_index remainder = ops_inner_inner % 4;
+		bh_index fulls = ops_inner_inner / 4;
 
 		while (total_ops-- > 0)
 		{
@@ -512,11 +512,11 @@ cphvb_error traverse_aac( cphvb_instruction *instr, cphvb_tstate* state ) {
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
+bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
-    cphvb_index i, j;                        	// Traversal variables
+    bh_index i, j;                        	// Traversal variables
 
     BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
     BYTE* d2 = (BYTE*)state->start[2];
@@ -526,13 +526,13 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0];
-		cphvb_index stride2 = state->stride[2][0];
+		bh_index stride0 = state->stride[0][0];
+		bh_index stride2 = state->stride[2][0];
 		
-		cphvb_index total_ops = state->shape[0];
+		bh_index total_ops = state->shape[0];
 
-		cphvb_index remainder = total_ops % 4;
-		cphvb_index fulls = total_ops / 4;
+		bh_index remainder = total_ops % 4;
+		bh_index fulls = total_ops / 4;
 
 		//Macro magic time!
         INNER_LOOP_ACA(opcode_func, fulls, remainder, d0, c, d2, stride0, stride2);
@@ -540,17 +540,17 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else if(state->ndim == 2)
 	{
 		// Basic 2D loop with unrolling
-		cphvb_index ops_outer = state->shape[0];
-		cphvb_index ops_inner = state->shape[1];
+		bh_index ops_outer = state->shape[0];
+		bh_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0];
-		cphvb_index outer_stride2 = state->stride[2][0];
+		bh_index outer_stride0 = state->stride[0][0];
+		bh_index outer_stride2 = state->stride[2][0];
 
-		cphvb_index inner_stride0 = state->stride[0][1];
-		cphvb_index inner_stride2 = state->stride[2][1];
+		bh_index inner_stride0 = state->stride[0][1];
+		bh_index inner_stride2 = state->stride[2][1];
 
-		cphvb_index remainder = ops_inner % 4;
-		cphvb_index fulls = ops_inner / 4;
+		bh_index remainder = ops_inner % 4;
+		bh_index fulls = ops_inner / 4;
 
 		for (i = 0; i < ops_outer; i++)
 		{
@@ -563,34 +563,34 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
-		cphvb_index n = state->ndim - 3;
-		cphvb_index counters[CPHVB_MAXDIM - 3];
-		memset(&counters, 0, sizeof(cphvb_index) * n);		
+		bh_index n = state->ndim - 3;
+		bh_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(bh_index) * n);		
 
-		cphvb_index total_ops = 1;
+		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
 			
 		//This chunk of variables prevents repeated calculations of offsets
-		cphvb_index dim_index0 = n + 0;
-		cphvb_index dim_index1 = n + 1;
-		cphvb_index dim_index2 = n + 2;
+		bh_index dim_index0 = n + 0;
+		bh_index dim_index1 = n + 1;
+		bh_index dim_index2 = n + 2;
 
-		cphvb_index ops_outer = state->shape[dim_index0];
-		cphvb_index ops_inner = state->shape[dim_index1];
-		cphvb_index ops_inner_inner = state->shape[dim_index2];
+		bh_index ops_outer = state->shape[dim_index0];
+		bh_index ops_inner = state->shape[dim_index1];
+		bh_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0];
-		cphvb_index outer_stride2 = state->stride[2][dim_index0];
+		bh_index outer_stride0 = state->stride[0][dim_index0];
+		bh_index outer_stride2 = state->stride[2][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1];
-		cphvb_index inner_stride2 = state->stride[2][dim_index1];
+		bh_index inner_stride0 = state->stride[0][dim_index1];
+		bh_index inner_stride2 = state->stride[2][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
-		cphvb_index inner_inner_stride2 = state->stride[2][dim_index2];
+		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
+		bh_index inner_inner_stride2 = state->stride[2][dim_index2];
         
-		cphvb_index remainder = ops_inner_inner % 4;
-		cphvb_index fulls = ops_inner_inner / 4;
+		bh_index remainder = ops_inner_inner % 4;
+		bh_index fulls = ops_inner_inner / 4;
 
 		while (total_ops-- > 0)
 		{
@@ -642,11 +642,11 @@ cphvb_error traverse_aca( cphvb_instruction *instr, cphvb_tstate* state ) {
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
+bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
-    cphvb_index i, j;                        	// Traversal variables
+    bh_index i, j;                        	// Traversal variables
 
     BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
     BYTE* d1 = (BYTE*)state->start[1];
@@ -655,13 +655,13 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0];
-		cphvb_index stride1 = state->stride[1][0];
+		bh_index stride0 = state->stride[0][0];
+		bh_index stride1 = state->stride[1][0];
 		
-		cphvb_index total_ops = state->shape[0];
+		bh_index total_ops = state->shape[0];
 
-		cphvb_index remainder = total_ops % 4;
-		cphvb_index fulls = total_ops / 4;
+		bh_index remainder = total_ops % 4;
+		bh_index fulls = total_ops / 4;
 
 		//Macro magic time!
         INNER_LOOP_AA(opcode_func, fulls, remainder, d0, d1, stride0, stride1);
@@ -669,17 +669,17 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else if(state->ndim == 2)
 	{
 		// Basic 2D loop with unrolling
-		cphvb_index ops_outer = state->shape[0];
-		cphvb_index ops_inner = state->shape[1];
+		bh_index ops_outer = state->shape[0];
+		bh_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0];
-		cphvb_index outer_stride1 = state->stride[1][0];
+		bh_index outer_stride0 = state->stride[0][0];
+		bh_index outer_stride1 = state->stride[1][0];
 
-		cphvb_index inner_stride0 = state->stride[0][1];
-		cphvb_index inner_stride1 = state->stride[1][1];
+		bh_index inner_stride0 = state->stride[0][1];
+		bh_index inner_stride1 = state->stride[1][1];
 
-		cphvb_index remainder = ops_inner % 4;
-		cphvb_index fulls = ops_inner / 4;
+		bh_index remainder = ops_inner % 4;
+		bh_index fulls = ops_inner / 4;
 
 		for (i = 0; i < ops_outer; i++)
 		{
@@ -692,34 +692,34 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
-		cphvb_index n = state->ndim - 3;
-		cphvb_index counters[CPHVB_MAXDIM - 3];
-		memset(&counters, 0, sizeof(cphvb_index) * n);		
+		bh_index n = state->ndim - 3;
+		bh_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(bh_index) * n);		
 
-		cphvb_index total_ops = 1;
+		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
 			
 		//This chunk of variables prevents repeated calculations of offsets
-		cphvb_index dim_index0 = n + 0;
-		cphvb_index dim_index1 = n + 1;
-		cphvb_index dim_index2 = n + 2;
+		bh_index dim_index0 = n + 0;
+		bh_index dim_index1 = n + 1;
+		bh_index dim_index2 = n + 2;
 
-		cphvb_index ops_outer = state->shape[dim_index0];
-		cphvb_index ops_inner = state->shape[dim_index1];
-		cphvb_index ops_inner_inner = state->shape[dim_index2];
+		bh_index ops_outer = state->shape[dim_index0];
+		bh_index ops_inner = state->shape[dim_index1];
+		bh_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0];
-		cphvb_index outer_stride1 = state->stride[1][dim_index0];
+		bh_index outer_stride0 = state->stride[0][dim_index0];
+		bh_index outer_stride1 = state->stride[1][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1];
-		cphvb_index inner_stride1 = state->stride[1][dim_index1];
+		bh_index inner_stride0 = state->stride[0][dim_index1];
+		bh_index inner_stride1 = state->stride[1][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
-		cphvb_index inner_inner_stride1 = state->stride[1][dim_index2];
+		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
+		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
         
-		cphvb_index remainder = ops_inner_inner % 4;
-		cphvb_index fulls = ops_inner_inner / 4;
+		bh_index remainder = ops_inner_inner % 4;
+		bh_index fulls = ops_inner_inner / 4;
 
 		while (total_ops-- > 0)
 		{
@@ -771,11 +771,11 @@ cphvb_error traverse_aa( cphvb_instruction *instr, cphvb_tstate* state ) {
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
+bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 
     Instr opcode_func;                        	// Element-wise functor-pointer
 
-    cphvb_index i, j;                        	// Traversal variables
+    bh_index i, j;                        	// Traversal variables
 
     BYTE* d0 = (BYTE*)state->start[0];			// Pointers to start of data elements
 
@@ -784,12 +784,12 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	if (state->ndim == 1)
 	{
 		// Simple 1D loop
-		cphvb_index stride0 = state->stride[0][0];
+		bh_index stride0 = state->stride[0][0];
 		
-		cphvb_index total_ops = state->shape[0];
+		bh_index total_ops = state->shape[0];
 
-		cphvb_index remainder = total_ops % 4;
-		cphvb_index fulls = total_ops / 4;
+		bh_index remainder = total_ops % 4;
+		bh_index fulls = total_ops / 4;
 
 		//Macro magic time!
         INNER_LOOP_AC(opcode_func, fulls, remainder, d0, c, stride0);
@@ -797,15 +797,15 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else if(state->ndim == 2)
 	{
 		// Basic 2D loop with unrolling
-		cphvb_index ops_outer = state->shape[0];
-		cphvb_index ops_inner = state->shape[1];
+		bh_index ops_outer = state->shape[0];
+		bh_index ops_inner = state->shape[1];
 		
-		cphvb_index outer_stride0 = state->stride[0][0];
+		bh_index outer_stride0 = state->stride[0][0];
 
-		cphvb_index inner_stride0 = state->stride[0][1];
+		bh_index inner_stride0 = state->stride[0][1];
 
-		cphvb_index remainder = ops_inner % 4;
-		cphvb_index fulls = ops_inner / 4;
+		bh_index remainder = ops_inner % 4;
+		bh_index fulls = ops_inner / 4;
 
 		for (i = 0; i < ops_outer; i++)
 		{
@@ -817,31 +817,31 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
 	else
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
-		cphvb_index n = state->ndim - 3;
-		cphvb_index counters[CPHVB_MAXDIM - 3];
-		memset(&counters, 0, sizeof(cphvb_index) * n);		
+		bh_index n = state->ndim - 3;
+		bh_index counters[CPHVB_MAXDIM - 3];
+		memset(&counters, 0, sizeof(bh_index) * n);		
 
-		cphvb_index total_ops = 1;
+		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
 			
 		//This chunk of variables prevents repeated calculations of offsets
-		cphvb_index dim_index0 = n + 0;
-		cphvb_index dim_index1 = n + 1;
-		cphvb_index dim_index2 = n + 2;
+		bh_index dim_index0 = n + 0;
+		bh_index dim_index1 = n + 1;
+		bh_index dim_index2 = n + 2;
 
-		cphvb_index ops_outer = state->shape[dim_index0];
-		cphvb_index ops_inner = state->shape[dim_index1];
-		cphvb_index ops_inner_inner = state->shape[dim_index2];
+		bh_index ops_outer = state->shape[dim_index0];
+		bh_index ops_inner = state->shape[dim_index1];
+		bh_index ops_inner_inner = state->shape[dim_index2];
 
-		cphvb_index outer_stride0 = state->stride[0][dim_index0];
+		bh_index outer_stride0 = state->stride[0][dim_index0];
 
-		cphvb_index inner_stride0 = state->stride[0][dim_index1];
+		bh_index inner_stride0 = state->stride[0][dim_index1];
 
-		cphvb_index inner_inner_stride0 = state->stride[0][dim_index2];
+		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
         
-		cphvb_index remainder = ops_inner_inner % 4;
-		cphvb_index fulls = ops_inner_inner / 4;
+		bh_index remainder = ops_inner_inner % 4;
+		bh_index fulls = ops_inner_inner / 4;
 
 		while (total_ops-- > 0)
 		{
@@ -891,29 +891,29 @@ cphvb_error traverse_ac( cphvb_instruction *instr, cphvb_tstate* state ) {
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_naive_aaa( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
+bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    cphvb_array *a0 = instr->operand[0];        // Operand pointers
-    cphvb_array *a1 = instr->operand[1];
-    cphvb_array *a2 = instr->operand[2];
+    bh_array *a0 = instr->operand[0];        // Operand pointers
+    bh_array *a1 = instr->operand[1];
+    bh_array *a2 = instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
-    T2* d2 = (T2*) cphvb_base_array(instr->operand[2])->data;
+    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
+    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
     assert(d2 != NULL);
 
-    cphvb_index j,                              // Traversal variables
+    bh_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : bh_nelements( a0->ndim, a0->shape )-1;
 
-    cphvb_index off0;                           // Stride-offset
-    cphvb_index off1;
-    cphvb_index off2;
+    bh_index off0;                           // Stride-offset
+    bh_index off1;
+    bh_index off2;
 
     while( state->cur_e <= last_e )
     {
@@ -966,26 +966,26 @@ cphvb_error traverse_naive_aaa( cphvb_instruction *instr, cphvb_tstate_naive* st
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_naive_aac( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
+bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    cphvb_array *a0 = instr->operand[0];        // Operand pointers
-    cphvb_array *a1 = instr->operand[1];
+    bh_array *a0 = instr->operand[0];        // Operand pointers
+    bh_array *a1 = instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
     T2* d2 = (T2*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
 
-    cphvb_index j,                              // Traversal variables
+    bh_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : bh_nelements( a0->ndim, a0->shape )-1;
 
-    cphvb_index off0;                           // Stride-offset
-    cphvb_index off1;
+    bh_index off0;                           // Stride-offset
+    bh_index off1;
 
     while( state->cur_e <= last_e )
     {
@@ -1035,26 +1035,26 @@ cphvb_error traverse_naive_aac( cphvb_instruction *instr, cphvb_tstate_naive* st
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
-cphvb_error traverse_naive_aca( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
+bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    cphvb_array *a0 = instr->operand[0];        // Operand pointers
-    cphvb_array *a2 = instr->operand[2];
+    bh_array *a0 = instr->operand[0];        // Operand pointers
+    bh_array *a2 = instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
     T1* d1 = (T1*) &(instr->constant.value);
-    T2* d2 = (T2*) cphvb_base_array(instr->operand[2])->data;
+    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d2 != NULL);
 
-    cphvb_index j,                              // Traversal variables
+    bh_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : bh_nelements( a0->ndim, a0->shape )-1;
 
-    cphvb_index off0;                           // Stride-offset
-    cphvb_index off2;
+    bh_index off0;                           // Stride-offset
+    bh_index off2;
 
     while( state->cur_e <= last_e )
     {
@@ -1104,25 +1104,25 @@ cphvb_error traverse_naive_aca( cphvb_instruction *instr, cphvb_tstate_naive* st
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_naive_aa( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
+bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    cphvb_array *a0 = instr->operand[0];        // Operand pointers
-    cphvb_array *a1 = instr->operand[1];
+    bh_array *a0 = instr->operand[0];        // Operand pointers
+    bh_array *a1 = instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) cphvb_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
 
-    cphvb_index j,                              // Traversal variables
+    bh_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : bh_nelements( a0->ndim, a0->shape )-1;
 
-    cphvb_index off0;                           // Stride-offset
-    cphvb_index off1;
+    bh_index off0;                           // Stride-offset
+    bh_index off1;
 
     while( state->cur_e <= last_e )
     {
@@ -1172,22 +1172,22 @@ cphvb_error traverse_naive_aa( cphvb_instruction *instr, cphvb_tstate_naive* sta
  *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
-cphvb_error traverse_naive_ac( cphvb_instruction *instr, cphvb_tstate_naive* state, cphvb_index nelements ) {
+bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    cphvb_array *a0 = instr->operand[0];        // Operand pointers
+    bh_array *a0 = instr->operand[0];        // Operand pointers
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) cphvb_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
     T1* d1 = (T1*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated
 
-    cphvb_index j,                              // Traversal variables
+    bh_index j,                              // Traversal variables
                 last_dim    = a0->ndim-1,
-                last_e      = (nelements>0) ? nelements-1 : cphvb_nelements( a0->ndim, a0->shape )-1;
+                last_e      = (nelements>0) ? nelements-1 : bh_nelements( a0->ndim, a0->shape )-1;
 
-    cphvb_index off0;                           // Stride-offset
+    bh_index off0;                           // Stride-offset
 
     while( state->cur_e <= last_e )
     {

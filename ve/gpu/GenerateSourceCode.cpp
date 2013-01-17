@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
 
-void generateGIDSource(std::vector<cphvb_index> shape, std::ostream& source)
+void generateGIDSource(std::vector<bh_index> shape, std::ostream& source)
 {
     size_t ndim = shape.size();
     assert(ndim > 0);    
@@ -40,9 +40,9 @@ void generateGIDSource(std::vector<cphvb_index> shape, std::ostream& source)
     source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
 }
 
-void generateOffsetSource(const cphvb_array* operand, std::ostream& source)
+void generateOffsetSource(const bh_array* operand, std::ostream& source)
 {
-    cphvb_index ndim = operand->ndim;
+    bh_index ndim = operand->ndim;
     assert(ndim > 0);
     if (ndim > 2)
     {
@@ -55,12 +55,12 @@ void generateOffsetSource(const cphvb_array* operand, std::ostream& source)
     source << "gidx*" << operand->stride[ndim-1] << " + " << operand->start;
 }
 
-void generateInstructionSource(cphvb_opcode opcode,
+void generateInstructionSource(bh_opcode opcode,
                                OCLtype returnType,
                                std::vector<std::string>& parameters, 
                                std::ostream& source)
 {
-    assert(parameters.size() == (size_t)cphvb_operands(opcode));
+    assert(parameters.size() == (size_t)bh_operands(opcode));
     if (isComplex(returnType))
     {
         switch(opcode)
@@ -88,7 +88,7 @@ void generateInstructionSource(cphvb_opcode opcode,
                    break;
         default:
 #ifdef DEBUG
-            std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
+            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
 #endif
             throw std::runtime_error("Instruction not supported.");
         }
@@ -267,7 +267,7 @@ void generateInstructionSource(cphvb_opcode opcode,
             break;
         default:
 #ifdef DEBUG
-            std::cerr << "Instruction \"" << cphvb_opcode_text(opcode) << "\" not supported." << std::endl;
+            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
 #endif
             throw std::runtime_error("Instruction not supported.");
         }

@@ -1,0 +1,166 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#include <bh.h>
+#include <bh_compute.h>
+#include "functors.hpp"
+#include "traverser.hpp"
+#include <complex>
+
+bh_computeloop_naive bh_compute_get_naive( bh_instruction *instr ) {
+
+    // Poly contains a unique value, pairing an opcode with its function signature.
+    // All in one nicely switchable value.
+    long int poly;
+ 
+    if (bh_operands(instr->opcode) == 3) {   // Three operands
+
+        if (bh_is_constant(instr->operand[1])) {             // First operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(instr->operand[2]->type << 16) \
+                +(1 << 17);
+
+        } else if (bh_is_constant(instr->operand[2])) {      // Second operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->constant.type << 16) \
+                +(1 << 18);
+
+        } else {                                                // No constant operand
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->operand[2]->type << 16);
+        }
+
+    } else {                                    // Two operands
+
+        if (bh_is_constant(instr->operand[1])) {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(1 << 17);
+        } else {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12);
+        }
+    }
+
+    switch(poly) {
+
+        %for $case in $data
+        %if $case.nop == 2
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
+            return &traverse_naive_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (1 << 17):
+            return &traverse_naive_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %else
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
+            return &traverse_naive_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 18):
+            return &traverse_naive_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 17):
+            return &traverse_naive_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %end if
+        %end for
+
+        default:
+            return NULL;
+
+    }
+
+}
+
+bh_computeloop bh_compute_get( bh_instruction *instr ) {
+
+    // Poly contains a unique value, pairing an opcode with its function signature.
+    // All in one nicely switchable value.
+    long int poly;
+ 
+    if (bh_operands(instr->opcode) == 3) {   // Three operands
+
+        if (bh_is_constant(instr->operand[1])) {             // First operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(instr->operand[2]->type << 16) \
+                +(1 << 17);
+
+        } else if (bh_is_constant(instr->operand[2])) {      // Second operand is constant
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->constant.type << 16) \
+                +(1 << 18);
+
+        } else {                                                // No constant operand
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12) \
+                +(instr->operand[2]->type << 16);
+        }
+
+    } else {                                    // Two operands
+
+        if (bh_is_constant(instr->operand[1])) {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->constant.type << 12) \
+                +(1 << 17);
+        } else {
+            poly = instr->opcode \
+                +(instr->operand[0]->type << 8) \
+                +(instr->operand[1]->type << 12);
+        }
+    }
+
+    switch(poly) {
+
+        %for $case in $data
+        %if $case.nop == 2
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12):
+            return &traverse_aa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (1 << 17):
+            return &traverse_ac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %else
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16):
+            return &traverse_aaa<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 18):
+            return &traverse_aac<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        case ${case.opcode} + (${case.op1} << 8) +(${case.op2} <<12) + (${case.op3} <<16) + (1 << 17):
+            return &traverse_aca<${case.ftypes}, ${case.fname}_functor<${case.ftypes} > >;
+        %end if
+        %end for
+
+        default:
+            return NULL;
+
+    }
+
+}
+

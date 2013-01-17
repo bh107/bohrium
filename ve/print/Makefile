@@ -1,7 +1,7 @@
 CPHVB_BASE=../../
 CPHVB_INCLUDE=$(CPHVB_BASE)include/
 INCLUDE=-I$(CPHVB_BASE)include
-LIB=libcphvb_ve_print.so
+LIB=libbh_ve_print.so
 CXX=g++
 CC=gcc
 WARNOPTS=-Wall
@@ -9,18 +9,18 @@ LCFLAGS= $(WARNOPTS) -g -O0 -fPIC $(INCLUDE) $(CFLAGS)
 CCFLAGS = $(LCFLAGS) -std=gnu99
 CXXFLAGS = $(LCFLAGS) -std=gnu++0x
 
-LDFLAGS = -L../../core -lcphvb -shared -Wl,-soname,$(LIB)
-CPPSRC = cphvb_ve_print
+LDFLAGS = -L../../core -lbh -shared -Wl,-soname,$(LIB)
+CPPSRC = bh_ve_print
 
 OBJECTS=$(CPPSRC:=.oo)
-INSTALLDIR?=/opt/cphvb/
+INSTALLDIR?=/opt/bh/
 
 all: $(LIB)
 
 %.o: %.c %.h Makefile
 		$(CC) -c $< -o $@ $(CCFLAGS)
 
-cphvb_ve_print.oo: cphvb_ve_print.cpp Makefile
+bh_ve_print.oo: bh_ve_print.cpp Makefile
 		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.oo: %.cpp %.hpp Makefile

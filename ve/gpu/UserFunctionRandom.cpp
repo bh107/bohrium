@@ -32,9 +32,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 UserFunctionRandom* userFunctionRandom = NULL;
 
-cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_random(bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_random_type* randomDef = (cphvb_random_type*)arg;
+    bh_random_type* randomDef = (bh_random_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert (randomDef->nout == 1);
     assert (randomDef->nin == 0);
@@ -75,7 +75,7 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     kernelNames.push_back("htrand_uint64");
     if (resourceManager->float64support()) 
         kernelNames.push_back("htrand_float64");
-    std::vector<cphvb_intp> ndims(kernelNames.size(),1);
+    std::vector<bh_intp> ndims(kernelNames.size(),1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
@@ -94,7 +94,7 @@ void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventSta
     delete [](cl_uint4*)data;
 }
 
-cphvb_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
+bh_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);

@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <CL/cl.hpp>
 #include <vector>
-#include <cphvb.h>
+#include <bh.h>
 #include "ResourceManager.hpp"
 #include "BaseArray.hpp"
 
@@ -31,15 +31,15 @@ class Kernel
 {
 private:
     ResourceManager* resourceManager;
-    cphvb_intp ndim;
+    bh_intp ndim;
     cl::Kernel kernel;
 public:
     typedef std::vector<std::pair<KernelParameter*, bool> > Parameters;
     Kernel(ResourceManager* resourceManager_, 
-           cphvb_intp ndim_,
+           bh_intp ndim_,
            cl::Kernel kernel_);
     Kernel(ResourceManager* resourceManager_, 
-           cphvb_intp ndim_,
+           bh_intp ndim_,
            const std::string& source, 
            const std::string& name); 
     void call(Parameters& parameters,
@@ -48,11 +48,11 @@ public:
               const std::vector<size_t>& globalShape,
               const std::vector<size_t>& localShape);
     static std::vector<Kernel> createKernels(ResourceManager* resourceManager_, 
-                                             const std::vector<cphvb_intp> ndims,
+                                             const std::vector<bh_intp> ndims,
                                              const std::string& source, 
                                              const std::vector<std::string>& kernelNames); 
     static  std::vector<Kernel> createKernelsFromFile(ResourceManager* resourceManager_, 
-                                                      const std::vector<cphvb_intp> ndims,
+                                                      const std::vector<bh_intp> ndims,
                                                       const std::string& fileName, 
                                                       const std::vector<std::string>& kernelNames); 
 };

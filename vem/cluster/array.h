@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 
 #ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
 #define __CPHVB_VEM_CLUSTER_DARRAY_H
@@ -30,9 +30,9 @@ typedef struct
     //Process rank that owns this array chunk.
     int rank;
     //Local array chunk
-    cphvb_array *ary;
+    bh_array *ary;
     //Local array chunk coordinate (in array elements)
-    cphvb_intp coord[CPHVB_MAXDIM];
+    bh_intp coord[CPHVB_MAXDIM];
 }ary_chunk;
  
 
@@ -42,7 +42,7 @@ typedef struct
  * @global_ary The global array 
  * @return The local array or NULL
  */
-cphvb_array* array_get_existing_local(cphvb_array *global_ary);
+bh_array* array_get_existing_local(bh_array *global_ary);
 
 
 /* Returns the local number of elements in an array.
@@ -51,7 +51,7 @@ cphvb_array* array_get_existing_local(cphvb_array *global_ary);
  * @global_ary The global array 
  * @return The array size (in number of elements)
  */
-cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
+bh_intp array_local_nelem(int rank, const bh_array *global_ary);
 
 
 /* Returns the local array based on the global array.
@@ -60,7 +60,7 @@ cphvb_intp array_local_nelem(int rank, const cphvb_array *global_ary);
  * @global_ary The global array 
  * @return The local array
  */
-cphvb_array* array_get_local(cphvb_array *global_ary);
+bh_array* array_get_local(bh_array *global_ary);
 
 
 /* Remove the local array based on the global array.
@@ -68,6 +68,6 @@ cphvb_array* array_get_local(cphvb_array *global_ary);
  *
  * @global_ary The global array 
  */
-void array_rm_local(cphvb_array *global_ary);
+void array_rm_local(bh_array *global_ary);
 
 #endif

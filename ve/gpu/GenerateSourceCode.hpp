@@ -23,12 +23,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifdef _WIN32
 #include <sstream>
 #endif
-#include <cphvb.h>
+#include <bh.h>
 #include "OCLtype.h"
 
-void generateGIDSource(std::vector<cphvb_index> shape, std::ostream& source);
-void generateOffsetSource(const cphvb_array* operand, std::ostream& source);
-void generateInstructionSource(cphvb_opcode opcode,
+void generateGIDSource(std::vector<bh_index> shape, std::ostream& source);
+void generateOffsetSource(const bh_array* operand, std::ostream& source);
+void generateInstructionSource(bh_opcode opcode,
                                OCLtype returnType, 
                                std::vector<std::string>& parameters, 
                                std::ostream& source);
