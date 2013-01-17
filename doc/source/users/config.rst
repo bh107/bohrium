@@ -1,10 +1,10 @@
 Runtime Configuration
 ---------------------
 
-cphVB supports a broad range of frontends and backends. 
-In order to configure the runtime setup of cphVB you must provide a configuration file to cphVB. The installation of cphVB installs a default configuration file in ``/etc/cphvb/config.ini`` when doing a system-wide installation and ``~/.cphvb/config.ini`` when doing a local installation.
+Bohrium supports a broad range of frontends and backends. 
+In order to configure the runtime setup of Bohrium you must provide a configuration file to Bohrium. The installation of Bohrium installs a default configuration file in ``/etc/cphvb/config.ini`` when doing a system-wide installation and ``~/.cphvb/config.ini`` when doing a local installation.
 
-At runtime cphVB will search through the following prioritized list in order to find the configuration file:
+At runtime Bohrium will search through the following prioritized list in order to find the configuration file:
 
 * The environment variable ``CPHVB_CONFIG``
 * The home directory config ``~/.cphvb/config.ini`` (Windows: %APPDATA%\cphvb\config.ini)

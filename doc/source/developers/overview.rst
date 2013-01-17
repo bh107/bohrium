@@ -20,7 +20,7 @@ Think of instructions as good old MIPS-assembly::
 
   ADD $d, $s, $t
 
-But instead of the operands $d, $s, and $t being registers they are either arrays, scalars or constants. Instructions are encapsulations of the most basic executable operation. For correct execution then the following set of statements must be true for any instance of a cphVB instruction.
+But instead of the operands $d, $s, and $t being registers they are either arrays, scalars or constants. Instructions are encapsulations of the most basic executable operation. For correct execution then the following set of statements must be true for any instance of a Bohrium instruction.
 
 The instruction has:
 
@@ -32,7 +32,7 @@ The instruction has:
 Whether an operand is an array, a scalar or a constant is determined at runtime by inspecting an instance of the struct:
 
 .. doxygenstruct:: cphvb_instruction
-   :project: cphVB
+   :project: Bohrium
    :path: doxygen/xml
 
 If operand[i] == NULL then the operand i is a constant and the value cphvb_instruction.constant is type cast to the appropriate type according to cphvb_instruction.constant_type and used as operand.

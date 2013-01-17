@@ -1,7 +1,7 @@
 Mac OSX
 -------
 
-The following explains how to get going on Mac OSX. cphVB and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install cphVB.
+The following explains how to get going on Mac OSX. Bohrium and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install Bohrium.
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/technologies/tools/>`_ from Apple and the following packages from MacPorts::
   
@@ -12,7 +12,7 @@ Download and extract the source code::
   wget https://bitbucket.org/cphvb/cphvb/downloads/cphvb-v0.1.tgz
   tar -xzf cphvb-v0.1.tgz
 
-When building and install cphVB we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
+When building and install Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
   
   cd cphvb-v0.1
   make CPHVB_PYTHON=python2.7
@@ -22,7 +22,7 @@ When building and install cphVB we need to specify the newly installed Python in
           The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
 Finally, you need to set the ``PYTHONPATH`` and the ``DYLD_LIBRARY_PATH`` environment variables.
-The ``PYTHONPATH`` should include the path to the newly installed cphVB Python module. This will also make sure that Python uses the NumPy module included in cphVB::
+The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
   #Example
@@ -40,7 +40,7 @@ Now the basic installation should work. Try running the NumPy test suite::
 
 And you should see a result similar to this::
 
-    *** Testing the equivalency of cphVB-NumPy and NumPy ***
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
     Testing test_array_create.py/array_create/zeros
     Testing test_sor.py/sor/sor
     Testing test_primitives.py/cphvb_opcodes/ufunc

@@ -29,7 +29,7 @@ Build and install::
 .. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, CPHVB_PYTHON, naming the binary of your custom compiled Python.
 
 Finally, you need to set the ``PYTHONPATH`` and the ``LD_LIBRARY_PATH`` environment variables.
-The ``PYTHONPATH`` should include the path to the newly installed cphVB Python module. This will also make sure that Python uses the NumPy module included in cphVB::
+The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
   #Example
@@ -47,7 +47,7 @@ Now the basic installation should work. Try running the NumPy test suite::
 
 And you should see a result similar to this::
 
-    *** Testing the equivalency of cphVB-NumPy and NumPy ***
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
     Testing test_array_create.py/array_create/zeros
     Testing test_sor.py/sor/sor
     Testing test_primitives.py/cphvb_opcodes/ufunc
