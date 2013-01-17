@@ -41,16 +41,16 @@ static void reduce_chunk(cphvb_intp ufunc_id, cphvb_opcode opcode,
                          cphvb_intp axis, 
                          cphvb_array *out, cphvb_array *in)
 {
-    cphvb_reduce_type ufunc;
-    ufunc.id          = ufunc_id; 
-    ufunc.nout        = 1;
-    ufunc.nin         = 1;
-    ufunc.struct_size = sizeof(cphvb_reduce_type);
-    ufunc.operand[0]  = out;
-    ufunc.operand[1]  = in;
-    ufunc.axis        = axis;
-    ufunc.opcode      = opcode;
-    batch_schedule(CPHVB_USERFUNC, NULL, (cphvb_userfunc*)(&ufunc));
+    cphvb_reduce_type *ufunc = (cphvb_reduce_type*)tmp_get_misc(sizeof(cphvb_reduce_type));
+    ufunc->id          = ufunc_id; 
+    ufunc->nout        = 1;
+    ufunc->nin         = 1;
+    ufunc->struct_size = sizeof(cphvb_reduce_type);
+    ufunc->operand[0]  = out;
+    ufunc->operand[1]  = in;
+    ufunc->axis        = axis;
+    ufunc->opcode      = opcode;
+    batch_schedule(CPHVB_USERFUNC, NULL, (cphvb_userfunc*)(ufunc));
 }
 
 

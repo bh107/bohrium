@@ -19,13 +19,18 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
+#include <deque>
 #include <StaticStore.hpp>
 #include <cphvb.h>
 #include "tmp.h"
+#include "except.h"
 
 
 //Temporary array store
 static StaticStore<cphvb_array> ary_store(512);
+
+//Temporary miscellaneous stores
+static std::deque<char *> misc_stores;
 
 
 /* Returns a temporary array that will be de-allocated  
@@ -39,11 +44,33 @@ cphvb_array* tmp_get_ary()
 }
 
 
+/* Returns temporary memory for miscellaneous use
+ * that will be de-allocated on tmp_clear().
+ * 
+ * @return The temporary memory
+ */
+void* tmp_get_misc(cphvb_intp size)
+{
+    char *t = (char*) malloc(size);
+    if(t == NULL)
+        EXCEPT_OUT_OF_MEMORY();
+    misc_stores.push_back(t);
+    return t;   
+}
+
+
 /* Clear all temporary data structures
  */
 void tmp_clear()
 {
     ary_store.clear();
+
+    //Free all misc stores
+    std::deque<char*>::iterator it = misc_stores.begin();
+
+    while(it != misc_stores.end())
+        free(*it++);
+    misc_stores.clear();
 }
 
 

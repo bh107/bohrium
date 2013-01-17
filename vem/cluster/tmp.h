@@ -32,6 +32,14 @@ If not, see <http://www.gnu.org/licenses/>.
 cphvb_array* tmp_get_ary();
 
 
+/* Returns temporary memory for miscellaneous use
+ * that will be de-allocated on tmp_clear().
+ * 
+ * @return The temporary memory
+ */
+void* tmp_get_misc(cphvb_intp size);
+
+
 /* Clear all temporary data structures
  */
 void tmp_clear();
