@@ -1,7 +1,7 @@
 .. _developer_extending:
 
-Extending cphVB
-===============
+Extending Bohrium
+=================
 
 
 Bridges / Language frontends

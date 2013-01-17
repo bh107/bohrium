@@ -9,13 +9,13 @@ Core
 ----
 
 .. doxygenstruct:: cphvb_array
-   :project: cphVB
+   :project: Bohrium
 
 .. doxygenfunction:: cphvb_create_array
-   :project: cphVB
+   :project: Bohrium
 
 .. doxygenfunction:: cphvb_destroy_array
-   :project: cphVB
+   :project: Bohrium
 
 
 Utilities
@@ -27,7 +27,7 @@ Printing
 ::::::::
 
 .. doxygensummary:: cphvb_pprint.h
-   :project: cphVB
+   :project: Bohrium
 
 Bridges / Language Frontends
 ----------------------------

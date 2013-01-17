@@ -1,7 +1,7 @@
 Developer Guide
 ---------------
 
-cphVB is hosted and made publicly available via a `git-repository <https://bitbucket.org/cphvb/cphvb>`_ on `bitbucket <https://bitbucket.org/cphvb>`_ under the :ref:`LGPLv3 License <license>`.
+Bohrium is hosted and made publicly available via a `git-repository <https://bitbucket.org/cphvb/cphvb>`_ on `bitbucket <https://bitbucket.org/cphvb>`_ under the :ref:`LGPLv3 License <license>`.
 
 If you want to join / contribute then fork the `repository <https://bitbucket.org/cphvb/cphvb>`_  on bitbucket and get in touch with us.
 
@@ -12,9 +12,9 @@ If you just want read-access then simply clone the repos::
   git submodule init
   git submodule update
 
-Continue by taking a look at :ref:`installation` on how to build / install cphVB.
+Continue by taking a look at :ref:`installation` on how to build / install Bohrium.
 
-The rest of the developer guide contains an :ref:`developer_overview` of the cphVB system. A documentation on :ref:`developer_extending` and notes on the setup/use of various :ref:`developer_tools` as well as a :ref:`developer_reference` for the cphVB backend-system.
+The rest of the developer guide contains an :ref:`developer_overview` of the Bohrium system. A documentation on :ref:`developer_extending` and notes on the setup/use of various :ref:`developer_tools` as well as a :ref:`developer_reference` for the Bohrium backend-system.
 
 .. note::
 
