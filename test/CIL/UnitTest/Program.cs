@@ -31,7 +31,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+            NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
             NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
             RunSomeTests(null);
@@ -47,13 +47,13 @@ namespace UnitTest
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
             RunSomeTests("Lazy");
 
-            try { NumCIL.cphVB.Utility.Activate(); }
+            try { NumCIL.Bohrium.Utility.Activate(); }
             catch { } 
 
-            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.cphVB.cphVBAccessorFactory<float>))
-                RunSomeTests("cphVB");
+            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium.BohriumAccessorFactory<float>))
+                RunSomeTests("Bohrium");
             else
-                Console.WriteLine("cphVB code is not supported, skipping tests for cphVB code");
+                Console.WriteLine("Bohrium code is not supported, skipping tests for Bohrium code");
 
             if (args.Contains<string>("--profiling", StringComparer.InvariantCultureIgnoreCase))
             {

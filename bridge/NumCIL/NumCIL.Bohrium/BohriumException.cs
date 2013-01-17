@@ -25,24 +25,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
-    /// Basic exception class for reporting errors from cphVB
+    /// Basic exception class for reporting errors from Bohrium
     /// </summary>
-    public class cphVBException : Exception
+    public class BohriumException : Exception
     {
         /// <summary>
         /// The error code that created the exception
         /// </summary>
-        private PInvoke.cphvb_error m_errorCode;
+        private PInvoke.bh_error m_errorCode;
 
         /// <summary>
         /// Constructs a new execption
         /// </summary>
         /// <param name="message">The error message to report</param>
-        public cphVBException(string message)
-            : this(PInvoke.cphvb_error.CPHVB_ERROR, message)
+        public BohriumException(string message)
+            : this(PInvoke.bh_error.BH_ERROR, message)
         {
         }
 
@@ -50,8 +50,8 @@ namespace NumCIL.cphVB
         /// Constructs a new execption
         /// </summary>
         /// <param name="errorcode">The error code to report</param>
-        public cphVBException(PInvoke.cphvb_error errorcode)
-            : this(errorcode, string.Format("CPHVB Error: {0}", errorcode))
+        public BohriumException(PInvoke.bh_error errorcode)
+            : this(errorcode, string.Format("CPBohriumHVB Error: {0}", errorcode))
         { 
         }
 
@@ -60,7 +60,7 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="errorcode">The error code to report</param>
         /// <param name="message">The error message to report</param>
-        public cphVBException(PInvoke.cphvb_error errorcode, string message)
+        public BohriumException(PInvoke.bh_error errorcode, string message)
             : base(message)
         {
             m_errorCode = errorcode;
@@ -69,13 +69,13 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Gets the error code the exception was caused by
         /// </summary>
-        public PInvoke.cphvb_error ErrorCode { get { return m_errorCode; } }
+        public PInvoke.bh_error ErrorCode { get { return m_errorCode; } }
     }
 
     /// <summary>
     /// Specialized exception for detecting instructions that are not supported by the VE
     /// </summary>
-    public class cphVBNotSupportedInstruction : cphVBException
+    public class BohriumNotSupportedInstruction : BohriumException
     {
         /// <summary>
         /// The instruction index
@@ -84,15 +84,15 @@ namespace NumCIL.cphVB
         /// <summary>
         /// The opcode that was not supported
         /// </summary>
-        private cphvb_opcode m_opcode;
+        private bh_opcode m_opcode;
 
         /// <summary>
         /// Constructs a new exception
         /// </summary>
         /// <param name="opcode">The opcode that was not supported</param>
         /// <param name="instructionNo">The instruction index</param>
-        public cphVBNotSupportedInstruction(cphvb_opcode opcode, long instructionNo)
-            : base(PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
+        public BohriumNotSupportedInstruction(bh_opcode opcode, long instructionNo)
+            : base(PInvoke.bh_error.BH_PARTIAL_SUCCESS)
         {
             m_opcode = opcode;
             m_instructionNo = instructionNo;
@@ -105,6 +105,6 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Gets the unsupported opcode
         /// </summary>
-        public cphvb_opcode OpCode { get { return m_opcode; } }
+        public bh_opcode OpCode { get { return m_opcode; } }
     }
 }

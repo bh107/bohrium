@@ -729,15 +729,15 @@ class random:
 def fromfile(file, elems=-1, dtype=float32):
     return ndarray(GetNdClass(dtype).NdArray(NumCIL.Utility.ReadArray[dtype](file, elems)))
 
-def activate_cphVB(active = True):
+def activate_Bohrium(active = True):
     try:
-        clr.AddReference("NumCIL.cphVB")
+        clr.AddReference("NumCIL.Bohrium")
     except Exception:
-        raise Exception("Unable to activate NumCIL.cphVB extensions, make sure that the NumCIL.cphVB.dll is placed in the same folder as NumCIL.dll")
+        raise Exception("Unable to activate NumCIL.Bohrium extensions, make sure that the NumCIL.Bohrium.dll is placed in the same folder as NumCIL.dll")
     
-    import NumCIL.cphVB
+    import NumCIL.Bohrium
 
     if active:
-        NumCIL.cphVB.Utility.Activate()
+        NumCIL.Bohrium.Utility.Activate()
     else:
-        NumCIL.cphVB.Utility.Deactivate()
+        NumCIL.Bohrium.Utility.Deactivate()

@@ -25,23 +25,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
-    /// Utility class for cphVB
+    /// Utility class for Bohrium
     /// </summary>
     public static class Utility
     {
         /// <summary>
-        /// Attempts to set up cphVB by looking for the cphvb checkout folder.
-        /// This simplifies using cphVB directly from the build folder,
-        /// without installing cphVB first
+        /// Attempts to set up Bohrium by looking for the Bohrium checkout folder.
+        /// This simplifies using Bohrium directly from the build folder,
+        /// without installing Bohrium first
         /// </summary>
         public static void SetupDebugEnvironmentVariables()
         {
             try
             {
-                var allowednames = new string[] { "cphvb", "cphvb_priv", "cphvb-priv" };
+                var allowednames = new string[] { "bohrium", "bohrium_priv", "bohrium-priv" };
                 string basepath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                 Func<string, bool> eq = (x) =>
                 {
@@ -78,20 +78,20 @@ namespace NumCIL.cphVB
                     }
                     catch { }
 
-					string configpath = Environment.GetEnvironmentVariable("CPHVB_CONFIG") ?? "";
+					string configpath = Environment.GetEnvironmentVariable("BOHRIUM_CONFIG") ?? "";
 					if (string.IsNullOrEmpty(configpath))
 					{
 	                    if (isOsx)
 						{
 		                    string dyldpath = Environment.GetEnvironmentVariable("DYLD_LIBRARY_PATH") ?? "";
 		                    Environment.SetEnvironmentVariable("DYLD_LIBRARY_PATH", binary_lookup_path + dyldpath);
-	                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.osx.ini"));
+                            Environment.SetEnvironmentVariable("BOHRIUM_CONFIG", System.IO.Path.Combine(basepath, "config.osx.ini"));
 						}
 	                    else
 						{
 		                    string ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? "";
 		                    Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", binary_lookup_path + ldpath);
-	                        Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.ini"));
+                            Environment.SetEnvironmentVariable("BOHRIUM_CONFIG", System.IO.Path.Combine(basepath, "config.ini"));
 						}
 					}
                 }
@@ -100,17 +100,17 @@ namespace NumCIL.cphVB
                     binary_lookup_path += System.IO.Path.Combine(basepath, "pthread_win32");
                     string path = Environment.GetEnvironmentVariable("PATH");
                     Environment.SetEnvironmentVariable("PATH", path + System.IO.Path.PathSeparator + binary_lookup_path);
-                    Environment.SetEnvironmentVariable("CPHVB_CONFIG", System.IO.Path.Combine(basepath, "config.win.ini"));
+                    Environment.SetEnvironmentVariable("BOHRIUM_CONFIG", System.IO.Path.Combine(basepath, "config.win.ini"));
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to set up debug paths for cphVB: " + ex.ToString());
+                Console.WriteLine("Failed to set up debug paths for Bohrium: " + ex.ToString());
             }
         }
 
         /// <summary>
-        /// Activates cphVB for all supported datatypes
+        /// Activates Bohrium for all supported datatypes
         /// </summary>
         public static void Activate()
         {
@@ -133,7 +133,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Deactivates cphVB for all supported datatypes
+        /// Deactivates Bohrium for all supported datatypes
         /// </summary>
         public static void Deactivate()
         {
@@ -153,18 +153,18 @@ namespace NumCIL.cphVB
         }
         
         /// <summary>
-        /// Activates cphVB for a specific datatype
+        /// Activates Bohrium for a specific datatype
         /// </summary>
-        /// <typeparam name="T">The datatype to activate cphVB for</typeparam>
+        /// <typeparam name="T">The datatype to activate Bohrium for</typeparam>
 		public static void Activate<T>()
         {
-            NumCIL.Generic.NdArray<T>.AccessorFactory = new cphVBAccessorFactory<T>();
+            NumCIL.Generic.NdArray<T>.AccessorFactory = new BohriumAccessorFactory<T>();
         }
 
         /// <summary>
-        /// Deactivates cphVB for a specific datatype
+        /// Deactivates Bohrium for a specific datatype
         /// </summary>
-        /// <typeparam name="T">The datatype to deactivate cphVB for</typeparam>
+        /// <typeparam name="T">The datatype to deactivate Bohrium for</typeparam>
         public static void Deactivate<T>()
         {
             NumCIL.Generic.NdArray<T>.AccessorFactory = new NumCIL.Generic.DefaultAccessorFactory<T>();

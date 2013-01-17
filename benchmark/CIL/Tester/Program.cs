@@ -35,13 +35,13 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            //NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+            //NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
             Console.WriteLine("Tester execution with {0} workblock{1}", NumCIL.UFunc.Threads.BlockCount, NumCIL.UFunc.Threads.BlockCount == 1 ? "" : "s");
             Console.WriteLine("Tester UnsafeAPI is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported ? "ENABLED" : "DISABLED");
             Console.WriteLine("Tester Unsafe arrays is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? "ENABLED": "DISABLED");
             Console.WriteLine("Tester Unsafe arrays limit is {0}MB", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? (NumCIL.UnsafeAPI.UnsafeArraysLargerThan/ (1024*1024)) : 0.0);
-            //NumCIL.cphVB.Utility.Activate();
+            //NumCIL.cphBohriumVB.Utility.Activate();
             try
             {
                 TimeJacobi();
@@ -63,7 +63,7 @@ namespace Tester
                 Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
                 NumCIL.ThreadRunner.TicksExecuted = 0;
 
-                //NumCIL.cphVB.Utility.Activate();
+                //NumCIL.Bohrium.Utility.Activate();
 
                 //TimeJacobi();
                 //TimeJacobiFixed();

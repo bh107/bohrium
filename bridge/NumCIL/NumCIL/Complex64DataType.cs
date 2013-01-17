@@ -29,8 +29,8 @@ namespace NumCIL.Complex64
 {
     /// <summary>
     /// Implementation of a 32+32=64 bit complex number.
-    /// Performance is not exceptional in non-cphVB mode, as anything beyond simple operations are performed with doubles, and truncated back into singles.
-    /// The primary use for this class is intended to be for speedups when being used with cphVB, and GPGPUs in particular.
+    /// Performance is not exceptional in non-Bohrium mode, as anything beyond simple operations are performed with doubles, and truncated back into singles.
+    /// The primary use for this class is intended to be for speedups when being used with Bohrium, and GPGPUs in particular.
     /// </summary>
     public struct DataType : IEquatable<DataType>, IFormattable
     {

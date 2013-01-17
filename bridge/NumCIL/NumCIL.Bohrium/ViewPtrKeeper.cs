@@ -26,10 +26,10 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
-    /// This class that keeps a reference to an allocated cphvb_array_ptr,
+    /// This class that keeps a reference to an allocated bh_array_ptr,
     /// and is used to free allocated views on garbage collection
     /// </summary>
     public class ViewPtrKeeper : IDisposable
@@ -37,7 +37,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Instance of the VEM that is used to dispose of the view
         /// </summary>
-        protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
+        protected static VEM VEM = NumCIL.Bohrium.VEM.Instance;
 
         /// <summary>
         /// Flag to prevent double disposing
@@ -46,7 +46,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// The view pointer
         /// </summary>
-        private PInvoke.cphvb_array_ptr m_ptr;
+        private PInvoke.bh_array_ptr m_ptr;
         /// <summary>
         /// An optional GC handle for the views associated data
         /// </summary>
@@ -54,7 +54,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Gets the view pointer associated with this instance
         /// </summary>
-        public PInvoke.cphvb_array_ptr Pointer { get { return m_ptr; } }
+        public PInvoke.bh_array_ptr Pointer { get { return m_ptr; } }
         /// <summary>
         /// Gets a value indicating if the handle is allocated
         /// </summary>
@@ -68,7 +68,7 @@ namespace NumCIL.cphVB
         /// Constructs a new instance guarding the given pointer
         /// </summary>
         /// <param name="p">The pointer to guard</param>
-        public ViewPtrKeeper(PInvoke.cphvb_array_ptr p)
+        public ViewPtrKeeper(PInvoke.bh_array_ptr p)
         {
             m_ptr = p;
         }
@@ -78,7 +78,7 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="p">The pointer to guard</param>
         /// <param name="handle">The associated handle</param>
-        public ViewPtrKeeper(PInvoke.cphvb_array_ptr p, GCHandle handle)
+        public ViewPtrKeeper(PInvoke.bh_array_ptr p, GCHandle handle)
         {
             System.Diagnostics.Debug.Assert(handle.IsAllocated);
             System.Diagnostics.Debug.Assert(p.Data == handle.AddrOfPinnedObject());
@@ -98,25 +98,25 @@ namespace NumCIL.cphVB
 
             m_isDisposed = true;
 
-            if (m_ptr != PInvoke.cphvb_array_ptr.Null)
+            if (m_ptr != PInvoke.bh_array_ptr.Null)
             {
                 if (m_handle.IsAllocated)
                 {
                     VEM.ExecuteRelease(m_ptr, m_handle);
                 }
-                else if (m_ptr.Data != IntPtr.Zero && m_ptr.BaseArray == PInvoke.cphvb_array_ptr.Null)
+                else if (m_ptr.Data != IntPtr.Zero && m_ptr.BaseArray == PInvoke.bh_array_ptr.Null)
                 {
                     VEM.ExecuteRelease(
-                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_ptr),
-                        new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr)
+                        new PInvoke.bh_instruction(bh_opcode.CPHVB_FREE, m_ptr),
+                        new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, m_ptr)
                     );
                 }
                 else
                 {
-                    VEM.ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, m_ptr));
+                    VEM.ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, m_ptr));
                 }
 
-                m_ptr = PInvoke.cphvb_array_ptr.Null;
+                m_ptr = PInvoke.bh_array_ptr.Null;
             }
             else if (m_handle.IsAllocated)
             {

@@ -8,7 +8,7 @@
     <ProjectGuid>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NumCIL.cphVB</RootNamespace>
+    <RootNamespace>NumCIL.Bohrium</RootNamespace>
     <AssemblyName>NumCIL.cphVB</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -83,8 +83,8 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="cphVBAccessor.cs" />
-    <Compile Include="cphVBException.cs" />
+    <Compile Include="BohriumAccessor.cs" />
+    <Compile Include="BohriumException.cs" />
     <Compile Include="IInstruction.cs" />
     <Compile Include="OpCodes.cs">
       <AutoGen>True</AutoGen>

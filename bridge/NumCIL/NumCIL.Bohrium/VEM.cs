@@ -27,10 +27,10 @@ using System.Text;
 using NumCIL.Generic;
 using System.Runtime.InteropServices;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
-    /// Basic wrapper implementation of a cphvb VEM
+    /// Basic wrapper implementation of a Bohrium VEM
     /// </summary>
     public class VEM : IDisposable
     {
@@ -84,9 +84,9 @@ namespace NumCIL.cphVB
         private readonly long m_aggregateFunctionId;
 
         /// <summary>
-        /// A reference to the cphVB component for "self" aka the bridge
+        /// A reference to the Bohrium component for "self" aka the bridge
         /// </summary>
-        private PInvoke.cphvb_component m_component;
+        private PInvoke.bh_component m_component;
         /// <summary>
         /// The unmanaged copy of the component
         /// </summary>
@@ -94,7 +94,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A reference to the chpVB VEM
         /// </summary>
-        private PInvoke.cphvb_component[] m_childs;
+        private PInvoke.bh_component[] m_childs;
         /// <summary>
         /// The unmanaged copy of the childs array
         /// </summary>
@@ -111,7 +111,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// A ref-counter for base arrays
         /// </summary>
-        private Dictionary<PInvoke.cphvb_array_ptr, List<ViewPtrKeeper>> m_baseArrayRefs = new Dictionary<PInvoke.cphvb_array_ptr, List<ViewPtrKeeper>>();
+        private Dictionary<PInvoke.bh_array_ptr, List<ViewPtrKeeper>> m_baseArrayRefs = new Dictionary<PInvoke.bh_array_ptr, List<ViewPtrKeeper>>();
         /// <summary>
         /// Lookup table for all created userfunc structures
         /// </summary>
@@ -119,7 +119,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// GC Handles for managed data
         /// </summary>
-        private Dictionary<PInvoke.cphvb_array_ptr, GCHandle> m_managedHandles = new Dictionary<PInvoke.cphvb_array_ptr, GCHandle>();
+        private Dictionary<PInvoke.bh_array_ptr, GCHandle> m_managedHandles = new Dictionary<PInvoke.bh_array_ptr, GCHandle>();
 
         /// <summary>
         /// Constructs a new VEM
@@ -128,26 +128,26 @@ namespace NumCIL.cphVB
         {
 //Disable "Unreachable code" warning
 #pragma warning disable 0162
-            if (cphvb_opcode.CPHVB_ADD == cphvb_opcode.CPHVB_SUBTRACT)
+            if (bh_opcode.CPHVB_ADD == bh_opcode.CPHVB_SUBTRACT)
                 throw new Exception("This version of NumCIL.cphVB contains invalid opcodes!");
 #pragma warning restore
 
-            m_component = PInvoke.cphvb_component_setup(out m_componentPtr);
-            PInvoke.cphvb_error e = PInvoke.cphvb_component_children(m_component, out m_childs, out m_childsPtr);
-            if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                throw new cphVBException(e);
+            m_component = PInvoke.bh_component_setup(out m_componentPtr);
+            PInvoke.bh_error e = PInvoke.bh_component_children(m_component, out m_childs, out m_childsPtr);
+            if (e != PInvoke.bh_error.BH_SUCCESS)
+                throw new BohriumException(e);
 
             if (m_childs.Length > 1)
-                throw new cphVBException(string.Format("Unexpected number of child nodes: {0}", m_childs.Length));
+                throw new BohriumException(string.Format("Unexpected number of child nodes: {0}", m_childs.Length));
 
             e = m_childs[0].init(ref m_childs[0]);
-            if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                throw new cphVBException(e);
+            if (e != PInvoke.bh_error.BH_SUCCESS)
+                throw new BohriumException(e);
 
-            m_reduceFunctionId = GetUserFuncId("cphvb_reduce");
-            m_randomFunctionId = GetUserFuncId("cphvb_random");
-            m_matmulFunctionId = GetUserFuncId("cphvb_matmul");
-            m_aggregateFunctionId = GetUserFuncId("cphvb_aggregate");
+            m_reduceFunctionId = GetUserFuncId("bh_reduce");
+            m_randomFunctionId = GetUserFuncId("bh_random");
+            m_matmulFunctionId = GetUserFuncId("bh_matmul");
+            m_aggregateFunctionId = GetUserFuncId("bh_aggregate");
         }
 
         /// <summary>
@@ -161,8 +161,8 @@ namespace NumCIL.cphVB
             long id = 0;
             try
             {
-                PInvoke.cphvb_error e = m_childs[0].reg_func(name, ref id);
-                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                PInvoke.bh_error e = m_childs[0].reg_func(name, ref id);
+                if (e != PInvoke.bh_error.BH_SUCCESS)
                     id = 0;
             }
             catch { id = 0; }
@@ -211,7 +211,7 @@ namespace NumCIL.cphVB
             //Locks are re-entrant, so we lock here to enforce order
             lock(m_releaselock)
                 foreach (var i in insts)
-                    ExecuteRelease((PInvoke.cphvb_instruction)i);
+                    ExecuteRelease((PInvoke.bh_instruction)i);
         }
 
         /// <summary>
@@ -219,14 +219,14 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <param name="array">The array to discard</param>
         /// <param name="handle">The handle to dispose after discarding the array</param>
-        public void ExecuteRelease(PInvoke.cphvb_array_ptr array, GCHandle handle)
+        public void ExecuteRelease(PInvoke.bh_array_ptr array, GCHandle handle)
         {
             lock (m_releaselock)
             {
-                System.Diagnostics.Debug.Assert(array.BaseArray == PInvoke.cphvb_array_ptr.Null);
+                System.Diagnostics.Debug.Assert(array.BaseArray == PInvoke.bh_array_ptr.Null);
                 if (handle.IsAllocated)
                     m_managedHandles.Add(array, handle);
-                ExecuteRelease(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_DISCARD, array));
+                ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, array));
             }
         }
 
@@ -237,14 +237,14 @@ namespace NumCIL.cphVB
         /// Registers an instruction for later execution, usually destroy calls
         /// </summary>
         /// <param name="inst">The instruction to queue</param>
-        public void ExecuteRelease(PInvoke.cphvb_instruction inst)
+        public void ExecuteRelease(PInvoke.bh_instruction inst)
         {
             lock (m_releaselock)
             {
-                if (inst.opcode == cphvb_opcode.CPHVB_DISCARD)
+                if (inst.opcode == bh_opcode.CPHVB_DISCARD)
                 {
                     var ar = inst.operand0;
-                    if (ar.BaseArray != PInvoke.cphvb_array_ptr.Null)
+                    if (ar.BaseArray != PInvoke.bh_array_ptr.Null)
                     {
                         var lst = m_baseArrayRefs[ar.BaseArray];
                         for (int i = lst.Count - 1; i >= 0; i--)
@@ -279,7 +279,7 @@ namespace NumCIL.cphVB
         {
             var lst = inst_list;
             List<IInstruction> cleanup_lst = null;
-            List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>> handles = null;
+            List<Tuple<long, PInvoke.bh_instruction, GCHandle>> handles = null;
 
             if (!m_preventCleanup && m_cleanups.Count > 0)
             {
@@ -289,13 +289,13 @@ namespace NumCIL.cphVB
 
                     GCHandle tmp;
                     long ix = inst_list.LongCount();
-                    foreach (PInvoke.cphvb_instruction inst in cleanup_lst)
+                    foreach (PInvoke.bh_instruction inst in cleanup_lst)
                     {
-                        if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
+                        if (inst.opcode == bh_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
                         {
                             if (handles == null)
-                                handles = new List<Tuple<long, PInvoke.cphvb_instruction, GCHandle>>();
-                            handles.Add(new Tuple<long, PInvoke.cphvb_instruction, GCHandle>(ix, inst, tmp));
+                                handles = new List<Tuple<long, PInvoke.bh_instruction, GCHandle>>();
+                            handles.Add(new Tuple<long, PInvoke.bh_instruction, GCHandle>(ix, inst, tmp));
                         }
                         ix++;
                     }
@@ -376,10 +376,10 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Reshuffles instructions to honor cphVB rules
+        /// Reshuffles instructions to honor Bohrium rules
         /// </summary>
         /// <param name="list">The list of instructions to reshuffle</param>
-        private void ReshuffleInstructions(PInvoke.cphvb_instruction[] list)
+        private void ReshuffleInstructions(PInvoke.bh_instruction[] list)
         {
             if (list.LongLength <= 1)
                 return;
@@ -388,7 +388,7 @@ namespace NumCIL.cphVB
             for(long i = 0; i < lastIx; i++)
             {
                 var inst = list[i];
-                if (inst.opcode == cphvb_opcode.CPHVB_DISCARD && inst.operand0.BaseArray == PInvoke.cphvb_array_ptr.Null)
+                if (inst.opcode == bh_opcode.CPHVB_DISCARD && inst.operand0.BaseArray == PInvoke.bh_array_ptr.Null)
                 {
                     Console.WriteLine("Shuffling list, i: {0}, inst: {1}, lastIx: {2}", i, inst, lastIx);
                     lastIx--;
@@ -412,12 +412,12 @@ namespace NumCIL.cphVB
 
             try
             {
-                PInvoke.cphvb_instruction[] instrBuffer = instList.Select(x => (PInvoke.cphvb_instruction)x).ToArray();
+                PInvoke.bh_instruction[] instrBuffer = instList.Select(x => (PInvoke.bh_instruction)x).ToArray();
                 //ReshuffleInstructions(instrBuffer);
 
                 foreach (var inst in instrBuffer)
                 {
-                    if (inst.opcode == cphvb_opcode.CPHVB_DISCARD)
+                    if (inst.opcode == bh_opcode.CPHVB_DISCARD)
                         destroys++;
                     if (inst.userfunc != IntPtr.Zero)
                     {
@@ -426,21 +426,21 @@ namespace NumCIL.cphVB
                     }
                 }
 
-                PInvoke.cphvb_error e = m_childs[0].execute(instrBuffer.LongLength, instrBuffer);
+                PInvoke.bh_error e = m_childs[0].execute(instrBuffer.LongLength, instrBuffer);
 
-                if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                if (e != PInvoke.bh_error.BH_SUCCESS)
                 {
-                    if (e == PInvoke.cphvb_error.CPHVB_PARTIAL_SUCCESS)
+                    if (e == PInvoke.bh_error.BH_PARTIAL_SUCCESS)
                     {
                         for (long i = 0; i < instrBuffer.LongLength; i++)
                         {
-                            if (instrBuffer[i].status == PInvoke.cphvb_error.CPHVB_INST_NOT_SUPPORTED)
+                            if (instrBuffer[i].status == PInvoke.bh_error.BH_INST_NOT_SUPPORTED)
                             {
                                 errorIndex = i;
-                                throw new cphVBNotSupportedInstruction(instrBuffer[i].opcode, i);
+                                throw new BohriumNotSupportedInstruction(instrBuffer[i].opcode, i);
                             }
 
-                            if (instrBuffer[i].status != PInvoke.cphvb_error.CPHVB_SUCCESS)
+                            if (instrBuffer[i].status != PInvoke.bh_error.BH_SUCCESS)
                             {
                                 errorIndex = i;
                                 break;
@@ -448,12 +448,12 @@ namespace NumCIL.cphVB
                         }
                     }
 
-                    throw new cphVBException(e);
+                    throw new BohriumException(e);
                 }
 
                 if (destroys > 0)
-                    foreach (var inst in instrBuffer.Where(x => x.opcode == cphvb_opcode.CPHVB_DISCARD))
-                        PInvoke.cphvb_destroy_array(inst.operand0);
+                    foreach (var inst in instrBuffer.Where(x => x.opcode == bh_opcode.CPHVB_DISCARD))
+                        PInvoke.bh_destroy_array(inst.operand0);
 
 
             }
@@ -465,11 +465,11 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Creates a cphvb descriptor for a base array, without assigning the actual data
+        /// Creates a Bohrium descriptor for a base array, without assigning the actual data
         /// </summary>
         /// <param name="d">The array to map</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateBaseArray(Array d)
+        public PInvoke.bh_array_ptr CreateBaseArray(Array d)
         {
             return CreateBaseArray(MapType(d.GetType().GetElementType()), d.LongLength);
         }
@@ -480,58 +480,58 @@ namespace NumCIL.cphVB
         /// <typeparam name="T">The data type for the array</typeparam>
         /// <param name="size">The size of the generated base array</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateBaseArray<T>(long size)
+        public PInvoke.bh_array_ptr CreateBaseArray<T>(long size)
         {
             return CreateBaseArray(MapType(typeof(T)), size);
         }
 
         /// <summary>
-        /// Maps the element type to the cphVB datatype
+        /// Maps the element type to the Bohrium datatype
         /// </summary>
         /// <param name="t">The element type to look up</param>
-        /// <returns>The cphVB datatype</returns>
-        public static PInvoke.cphvb_type MapType(Type t)
+        /// <returns>The Bohrium datatype</returns>
+        public static PInvoke.bh_type MapType(Type t)
         {
             if (t == typeof(bool))
-                return PInvoke.cphvb_type.CPHVB_BOOL;
+                return PInvoke.bh_type.BH_BOOL;
             else if (t == typeof(sbyte))
-                return PInvoke.cphvb_type.CPHVB_INT8;
+                return PInvoke.bh_type.BH_INT8;
             else if (t == typeof(short))
-                return PInvoke.cphvb_type.CPHVB_INT16;
+                return PInvoke.bh_type.BH_INT16;
             else if (t == typeof(int))
-                return PInvoke.cphvb_type.CPHVB_INT32;
+                return PInvoke.bh_type.BH_INT32;
             else if (t == typeof(long))
-                return PInvoke.cphvb_type.CPHVB_INT64;
+                return PInvoke.bh_type.BH_INT64;
             else if (t == typeof(byte))
-                return PInvoke.cphvb_type.CPHVB_UINT8;
+                return PInvoke.bh_type.BH_UINT8;
             else if (t == typeof(ushort))
-                return PInvoke.cphvb_type.CPHVB_UINT16;
+                return PInvoke.bh_type.BH_UINT16;
             else if (t == typeof(uint))
-                return PInvoke.cphvb_type.CPHVB_UINT32;
+                return PInvoke.bh_type.BH_UINT32;
             else if (t == typeof(ulong))
-                return PInvoke.cphvb_type.CPHVB_UINT64;
+                return PInvoke.bh_type.BH_UINT64;
             else if (t == typeof(float))
-                return PInvoke.cphvb_type.CPHVB_FLOAT32;
+                return PInvoke.bh_type.BH_FLOAT32;
             else if (t == typeof(double))
-                return PInvoke.cphvb_type.CPHVB_FLOAT64;
+                return PInvoke.bh_type.BH_FLOAT64;
             else if (t == typeof(NumCIL.Complex64.DataType))
-                return PInvoke.cphvb_type.CPHVB_COMPLEX64;
+                return PInvoke.bh_type.BH_COMPLEX64;
             else if (t == typeof(System.Numerics.Complex))
-                return PInvoke.cphvb_type.CPHVB_COMPLEX128;
+                return PInvoke.bh_type.BH_COMPLEX128;
             else
-                throw new cphVBException(string.Format("Unsupported data type: " + t.FullName));
+                throw new BohriumException(string.Format("Unsupported data type: " + t.FullName));
         }
 
         /// <summary>
-        /// Creates a cphvb base array or view descriptor
+        /// Creates a Bohrium base array or view descriptor
         /// </summary>
-        /// <param name="type">The cphvb type of data in the array</param>
+        /// <param name="type">The Bohrium type of data in the array</param>
         /// <param name="size">The size of the base array</param>
         /// <returns>The pointer to the base array descriptor</returns>
-        public PInvoke.cphvb_array_ptr CreateBaseArray(PInvoke.cphvb_type type, long size)
+        public PInvoke.bh_array_ptr CreateBaseArray(PInvoke.bh_type type, long size)
         {
             var ptr = CreateArray(
-                PInvoke.cphvb_array_ptr.Null,
+                PInvoke.bh_array_ptr.Null,
                 type,
                 1,
                 0,
@@ -546,18 +546,18 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Creates a cphvb view descriptor
+        /// Creates a Bohrium view descriptor
         /// </summary>
         /// <param name="basearray">The base array pointer</param>
-        /// <param name="type">The cphvb type of data in the array</param>
+        /// <param name="type">The Bohrium type of data in the array</param>
         /// <param name="ndim">Number of dimensions</param>
         /// <param name="start">The offset into the base array</param>
         /// <param name="shape">The shape values for each dimension</param>
         /// <param name="stride">The stride values for each dimension</param>
         /// <returns>The pointer to the array descriptor</returns>
-        public ViewPtrKeeper CreateView(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
+        public ViewPtrKeeper CreateView(PInvoke.bh_array_ptr basearray, PInvoke.bh_type type, long ndim, long start, long[] shape, long[] stride)
         {
-            if (basearray == PInvoke.cphvb_array_ptr.Null)
+            if (basearray == PInvoke.bh_array_ptr.Null)
                 throw new ArgumentException("Base array cannot be null for a view");
             var ptr = new ViewPtrKeeper(CreateArray(basearray, type, ndim, start, shape, stride));
             lock (m_releaselock)
@@ -567,25 +567,25 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Creates a cphvb base array or view descriptor
+        /// Creates a Bohrium base array or view descriptor
         /// </summary>
         /// <param name="basearray">The base array pointer if creating a view or IntPtr.Zero if the view is a base array</param>
-        /// <param name="type">The cphvb type of data in the array</param>
+        /// <param name="type">The Bohrium type of data in the array</param>
         /// <param name="ndim">Number of dimensions</param>
         /// <param name="start">The offset into the base array</param>
         /// <param name="shape">The shape values for each dimension</param>
         /// <param name="stride">The stride values for each dimension</param>
         /// <returns>The pointer to the array descriptor</returns>
-        protected PInvoke.cphvb_array_ptr CreateArray(PInvoke.cphvb_array_ptr basearray, PInvoke.cphvb_type type, long ndim, long start, long[] shape, long[] stride)
+        protected PInvoke.bh_array_ptr CreateArray(PInvoke.bh_array_ptr basearray, PInvoke.bh_type type, long ndim, long start, long[] shape, long[] stride)
         {
-            PInvoke.cphvb_error e;
-            PInvoke.cphvb_array_ptr res;
+            PInvoke.bh_error e;
+            PInvoke.bh_array_ptr res;
             lock (m_executelock)
             {
-                e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
+                e = PInvoke.bh_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
-            if (e == PInvoke.cphvb_error.CPHVB_OUT_OF_MEMORY)
+            if (e == PInvoke.bh_error.BH_OUT_OF_MEMORY)
             {
                 //If we get this, it can be because some of the unmanaged views are still kept in memory
                 Console.WriteLine("Ouch, forcing GC, allocated views: {0}", m_baseArrayRefs.Count + m_baseArrayRefs.Values.Select(x => x.Count).Sum());
@@ -593,11 +593,11 @@ namespace NumCIL.cphVB
                 ExecuteCleanups();
 
                 lock (m_executelock)
-                    e = PInvoke.cphvb_create_array(basearray, type, ndim, start, shape, stride, out res);
+                    e = PInvoke.bh_create_array(basearray, type, ndim, start, shape, stride, out res);
             }
 
-            if (e != PInvoke.cphvb_error.CPHVB_SUCCESS)
-                throw new cphVBException(e);
+            if (e != PInvoke.bh_error.BH_SUCCESS)
+                throw new BohriumException(e);
 
             return res;
         }
@@ -642,7 +642,7 @@ namespace NumCIL.cphVB
                         for (int i = 0; i < m_childs.Length; i++)
                         {
                             IntPtr cur = Marshal.ReadIntPtr(m_childsPtr, Marshal.SizeOf(typeof(IntPtr)) * i);
-                            PInvoke.cphvb_component_free(cur);
+                            PInvoke.bh_component_free(cur);
                             cur += Marshal.SizeOf(typeof(IntPtr));
                         }
 
@@ -654,7 +654,7 @@ namespace NumCIL.cphVB
 
                 if (m_componentPtr != IntPtr.Zero)
                 {
-                    PInvoke.cphvb_component_free(m_componentPtr);
+                    PInvoke.bh_component_free(m_componentPtr);
                     m_component.config = IntPtr.Zero;
                 }
 
@@ -663,7 +663,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Finalizes the VEM and shuts down the cphVB components
+        /// Finalizes the VEM and shuts down the Bohrium components
         /// </summary>
         ~VEM()
         {
@@ -687,13 +687,13 @@ namespace NumCIL.cphVB
         /// <param name="view">The NdArray to create the pointer for</param>
         /// <typeparam name="T">The datatype in the view</typeparam>
         /// <returns>An unmanaged view pointer</returns>
-        protected ViewPtrKeeper CreateViewPtr<T>(PInvoke.cphvb_type type, NdArray<T> view)
+        protected ViewPtrKeeper CreateViewPtr<T>(PInvoke.bh_type type, NdArray<T> view)
         {
-            PInvoke.cphvb_array_ptr basep;
+            PInvoke.bh_array_ptr basep;
 
-            if (view.DataAccessor is cphVBAccessor<T>)
+            if (view.DataAccessor is BohriumAccessor<T>)
             {
-                basep = ((cphVBAccessor<T>)view.DataAccessor).BaseArrayPtr;
+                basep = ((BohriumAccessor<T>)view.DataAccessor).BaseArrayPtr;
             }
             else
             {
@@ -710,7 +710,7 @@ namespace NumCIL.cphVB
                 }
             }
 
-            if (view.Tag as ViewPtrKeeper == null || ((ViewPtrKeeper)view.Tag).Pointer == PInvoke.cphvb_array_ptr.Null || ((ViewPtrKeeper)view.Tag).Pointer.BaseArray != basep)
+            if (view.Tag as ViewPtrKeeper == null || ((ViewPtrKeeper)view.Tag).Pointer == PInvoke.bh_array_ptr.Null || ((ViewPtrKeeper)view.Tag).Pointer.BaseArray != basep)
                 view.Tag = CreateView(type, view.Shape, basep);
 
             return (ViewPtrKeeper)view.Tag;
@@ -723,7 +723,7 @@ namespace NumCIL.cphVB
         /// <param name="baseArray">The array to set as base array</param>
         /// <typeparam name="T">The type of data in the view</typeparam>
         /// <returns>A new view</returns>
-        public ViewPtrKeeper CreateView<T>(Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        public ViewPtrKeeper CreateView<T>(Shape shape, PInvoke.bh_array_ptr baseArray)
         {
             return CreateView(MapType(typeof(T)), shape, baseArray);
         }
@@ -731,11 +731,11 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Creates a new view of data
         /// </summary>
-        /// <param name="CPHVB_TYPE">The data type of the view</param>
+        /// <param name="BH_TYPE">The data type of the view</param>
         /// <param name="shape">The shape to create the view for</param>
         /// <param name="baseArray">The array to set as base array</param>
         /// <returns>A new view</returns>
-        public ViewPtrKeeper CreateView(PInvoke.cphvb_type CPHVB_TYPE, Shape shape, PInvoke.cphvb_array_ptr baseArray)
+        public ViewPtrKeeper CreateView(PInvoke.bh_type BH_TYPE, Shape shape, PInvoke.bh_array_ptr baseArray)
         {
             //Unroll, to avoid creating a Linq query for basic 3d shapes
             switch(shape.Dimensions.Length)
@@ -743,7 +743,7 @@ namespace NumCIL.cphVB
                 case 1:
                     return CreateView(
                         baseArray,
-                        CPHVB_TYPE,
+                        BH_TYPE,
                         shape.Dimensions.Length,
                         (int)shape.Offset,
                         new long[] { shape.Dimensions[0].Length },
@@ -752,7 +752,7 @@ namespace NumCIL.cphVB
                 case 2:
                     return CreateView(
                             baseArray,
-                            CPHVB_TYPE,
+                            BH_TYPE,
                             shape.Dimensions.Length,
                             (int)shape.Offset,
                             new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length },
@@ -761,7 +761,7 @@ namespace NumCIL.cphVB
                 case 3:
                     return CreateView(
                         baseArray,
-                        CPHVB_TYPE,
+                        BH_TYPE,
                         shape.Dimensions.Length,
                         (int)shape.Offset,
                         new long[] { shape.Dimensions[0].Length, shape.Dimensions[1].Length, shape.Dimensions[2].Length },
@@ -779,7 +779,7 @@ namespace NumCIL.cphVB
 
                     return CreateView(
                         baseArray,
-                        CPHVB_TYPE,
+                        BH_TYPE,
                         shape.Dimensions.Length,
                         (int)shape.Offset,
                         lengths,
@@ -796,7 +796,7 @@ namespace NumCIL.cphVB
         /// <param name="operand">The output operand</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(bh_opcode opcode, NdArray<T> operand, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operand);
         }
@@ -809,7 +809,7 @@ namespace NumCIL.cphVB
         /// <param name="op2">The input operand</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(bh_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2);
         }
@@ -823,7 +823,7 @@ namespace NumCIL.cphVB
         /// <param name="op3">Another input operand</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(bh_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, op1, op2, op3);
         }
@@ -835,7 +835,7 @@ namespace NumCIL.cphVB
         /// <param name="operands">A list of operands</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(bh_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
             return CreateInstruction<T>(MapType(typeof(T)), opcode, operands);
         }
@@ -844,131 +844,131 @@ namespace NumCIL.cphVB
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="operand">The output operand</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> operand, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> operand, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, operand).Pointer, constant);
+            return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, operand).Pointer, constant);
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">The input operand</param>
         /// <param name="constant">An optional constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant())
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2, PInvoke.bh_constant constant = new PInvoke.bh_constant())
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, constant);
+            return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, constant);
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">The input operand</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2)
         {
             if (IsScalar(op2))
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.bh_array_ptr.Null, new PInvoke.bh_constant(type, op2.DataAccessor[0]));
             else
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, new PInvoke.cphvb_constant());
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, new PInvoke.bh_constant());
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="op1">The output operand</param>
         /// <param name="constant">An left-hand-side constant value</param>
         /// <param name="op2">The input operand</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, PInvoke.cphvb_constant constant, NdArray<T> op2)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, PInvoke.bh_constant constant, NdArray<T> op2)
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, constant, CreateViewPtr<T>(type, op2).Pointer);
+            return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, constant, CreateViewPtr<T>(type, op2).Pointer);
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">An input operand</param>
         /// <param name="op3">Another input operand</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
         {
             if (IsScalar(op2))
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.cphvb_array_ptr.Null, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant(type, op2.DataAccessor[0]));
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, PInvoke.bh_array_ptr.Null, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.bh_constant(type, op2.DataAccessor[0]));
             else if (IsScalar(op3))
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, PInvoke.cphvb_array_ptr.Null, new PInvoke.cphvb_constant(type, op3.DataAccessor[0]));
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, PInvoke.bh_array_ptr.Null, new PInvoke.bh_constant(type, op3.DataAccessor[0]));
             else
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.cphvb_constant());
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, new PInvoke.bh_constant());
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">An input operand</param>
         /// <param name="op3">Another input operand</param>
         /// <param name="constant">A constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.cphvb_constant constant)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3, PInvoke.bh_constant constant)
         {
-            return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, constant);
+            return new PInvoke.bh_instruction(opcode, CreateViewPtr<T>(type, op1).Pointer, CreateViewPtr<T>(type, op2).Pointer, CreateViewPtr<T>(type, op3).Pointer, constant);
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="operands">A list of operands</param>
         /// <param name="constant">A constant value</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.cphvb_constant constant)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, IEnumerable<NdArray<T>> operands, PInvoke.bh_constant constant)
         {
-            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
+            return new PInvoke.bh_instruction(opcode, operands.Select(x => CreateViewPtr<T>(type, x).Pointer), constant);
         }
 
         /// <summary>
         /// Creates a new instruction
         /// </summary>
         /// <typeparam name="T">The type of data used in the instruction</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The instruction opcode</param>
         /// <param name="operands">A list of operands</param>
         /// <returns>The new instruction</returns>
-        public IInstruction CreateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, IEnumerable<NdArray<T>> operands)
+        public IInstruction CreateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, IEnumerable<NdArray<T>> operands)
         {
             bool constantUsed = false;
-            PInvoke.cphvb_constant constant = new PInvoke.cphvb_constant();
+            PInvoke.bh_constant constant = new PInvoke.bh_constant();
 
-            return new PInvoke.cphvb_instruction(opcode, operands.Select(x => {
+            return new PInvoke.bh_instruction(opcode, operands.Select(x => {
                 if (!constantUsed && IsScalar(x))
                 {
-                    constant = new PInvoke.cphvb_constant(type, x.DataAccessor[0]);
-                    return PInvoke.cphvb_array_ptr.Null;
+                    constant = new PInvoke.bh_constant(type, x.DataAccessor[0]);
+                    return PInvoke.bh_array_ptr.Null;
                 }
                 else
                     return CreateViewPtr<T>(type, x).Pointer;
@@ -982,51 +982,51 @@ namespace NumCIL.cphVB
         /// <typeparam name="Tb">The input element datatype</typeparam>
         /// <param name="supported">A list of accumulated instructions</param>
         /// <param name="opcode">The instruction opcode</param>
-        /// <param name="typea">The cphVB datatype for the output</param>
+        /// <param name="typea">The Bohrium datatype for the output</param>
         /// <param name="output">The output operand</param>
         /// <param name="in1">An input operand</param>
         /// <param name="in2">Another input operand</param>
         /// <returns>A new instruction</returns>
-        public IInstruction CreateConversionInstruction<Ta, Tb>(List<IInstruction> supported, NumCIL.cphVB.cphvb_opcode opcode, PInvoke.cphvb_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
+        public IInstruction CreateConversionInstruction<Ta, Tb>(List<IInstruction> supported, NumCIL.Bohrium.bh_opcode opcode, PInvoke.bh_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
         {
-            if (in1.DataAccessor is cphVBAccessor<Tb>)
-                ((cphVBAccessor<Tb>)in1.DataAccessor).ContinueExecution(supported);
+            if (in1.DataAccessor is BohriumAccessor<Tb>)
+                ((BohriumAccessor<Tb>)in1.DataAccessor).ContinueExecution(supported);
             else
                 in1.DataAccessor.Allocate();
 
             if (in2 != null)
             {
-                if (in2.DataAccessor is cphVBAccessor<Tb>)
-                    ((cphVBAccessor<Tb>)in2.DataAccessor).ContinueExecution(supported);
+                if (in2.DataAccessor is BohriumAccessor<Tb>)
+                    ((BohriumAccessor<Tb>)in2.DataAccessor).ContinueExecution(supported);
                 else
                     in2.DataAccessor.Allocate();
             }
 
             if (IsScalar(in1))
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.cphvb_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.bh_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.bh_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
             else if (in2 != null && IsScalar(in2))
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.cphvb_constant(in2.DataAccessor[0]));
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, new PInvoke.bh_constant(in2.DataAccessor[0]));
             else
-                return new PInvoke.cphvb_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.cphvb_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
+                return new PInvoke.bh_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, CreateViewPtr<Tb>(in1).Pointer, in2 == null ? PInvoke.bh_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
         }
 
         /// <summary>
         /// Creates a new random userfunc instruction
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="op1">The output operand</param>
         /// <returns>A new instruction</returns>
-        public IInstruction CreateRandomInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1)
+        public IInstruction CreateRandomInstruction<T>(PInvoke.bh_type type, NdArray<T> op1)
         {
             if (!SupportsRandom)
-                throw new cphVBException("The VEM/VE setup does not support the random function");
+                throw new BohriumException("The VEM/VE setup does not support the random function");
 
             if (op1.Shape.Offset != 0 || !op1.Shape.IsPlain || op1.Shape.Elements != op1.DataAccessor.Length)
                 throw new Exception("The shape of the element that is sent to the random implementation must be a non-shape plain array");
 
             GCHandle gh = GCHandle.Alloc(
-                new PInvoke.cphvb_userfunc_random(
+                new PInvoke.bh_userfunc_random(
                     m_randomFunctionId,
                     CreateViewPtr<T>(type, op1).Pointer.BaseArray
                 ), 
@@ -1037,8 +1037,8 @@ namespace NumCIL.cphVB
 
             m_allocatedUserfuncs.Add(adr, gh);
 
-            return new PInvoke.cphvb_instruction(
-                cphvb_opcode.CPHVB_USERFUNC,
+            return new PInvoke.bh_instruction(
+                bh_opcode.CPHVB_USERFUNC,
                 adr                    
             );
         }
@@ -1047,19 +1047,19 @@ namespace NumCIL.cphVB
         /// Creates a new reduce instruction
         /// </summary>
         /// <typeparam name="T">The data type to operate on</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The opcode used for the reduction</param>
         /// <param name="axis">The axis to reduce over</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">The input operand</param>
         /// <returns>A new instruction</returns>
-        public IInstruction CreateReduceInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
+        public IInstruction CreateReduceInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
         {
             if (!SupportsReduce)
-                throw new cphVBException("The VEM/VE setup does not support the reduce function");
+                throw new BohriumException("The VEM/VE setup does not support the reduce function");
 
             GCHandle gh = GCHandle.Alloc(
-                new PInvoke.cphvb_userfunc_reduce(
+                new PInvoke.bh_userfunc_reduce(
                     m_reduceFunctionId,
                     opcode,
                     axis,
@@ -1073,8 +1073,8 @@ namespace NumCIL.cphVB
 
             m_allocatedUserfuncs.Add(adr, gh);
 
-            return new PInvoke.cphvb_instruction(
-                cphvb_opcode.CPHVB_USERFUNC,
+            return new PInvoke.bh_instruction(
+                bh_opcode.CPHVB_USERFUNC,
                 adr
             );
         }
@@ -1083,18 +1083,18 @@ namespace NumCIL.cphVB
         /// Creats a new matmul userfunc
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">An input operand</param>
         /// <param name="op3">Another input operand</param>
         /// <returns>A new instruction</returns>
-        public IInstruction CreateMatmulInstruction<T>(PInvoke.cphvb_type type, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
+        public IInstruction CreateMatmulInstruction<T>(PInvoke.bh_type type, NdArray<T> op1, NdArray<T> op2, NdArray<T> op3)
         {
             if (!SupportsMatmul)
-                throw new cphVBException("The VEM/VE setup does not support the matmul function");
+                throw new BohriumException("The VEM/VE setup does not support the matmul function");
 
             GCHandle gh = GCHandle.Alloc(
-                new PInvoke.cphvb_userfunc_matmul(
+                new PInvoke.bh_userfunc_matmul(
                     m_matmulFunctionId,
                     CreateViewPtr<T>(type, op1).Pointer,
                     CreateViewPtr<T>(type, op2).Pointer,
@@ -1107,8 +1107,8 @@ namespace NumCIL.cphVB
 
             m_allocatedUserfuncs.Add(adr, gh);
 
-            return new PInvoke.cphvb_instruction(
-                cphvb_opcode.CPHVB_USERFUNC,
+            return new PInvoke.bh_instruction(
+                bh_opcode.CPHVB_USERFUNC,
                 adr
             );
         }
@@ -1117,18 +1117,18 @@ namespace NumCIL.cphVB
         /// Creates a new reduce instruction
         /// </summary>
         /// <typeparam name="T">The data type to operate on</typeparam>
-        /// <param name="type">The cphVB datatype</param>
+        /// <param name="type">The Bohrium datatype</param>
         /// <param name="opcode">The opcode used for the reduction</param>
         /// <param name="op1">The output operand</param>
         /// <param name="op2">The input operand</param>
         /// <returns>A new instruction</returns>
-        public IInstruction CreateAggregateInstruction<T>(PInvoke.cphvb_type type, cphvb_opcode opcode, NdArray<T> op1, NdArray<T> op2)
+        public IInstruction CreateAggregateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2)
         {
             if (!SupportsAggregate)
-                throw new cphVBException("The VEM/VE setup does not support the reduce function");
+                throw new BohriumException("The VEM/VE setup does not support the reduce function");
 
             GCHandle gh = GCHandle.Alloc(
-                new PInvoke.cphvb_userfunc_aggregate(
+                new PInvoke.bh_userfunc_aggregate(
                     m_aggregateFunctionId,
                     opcode,
                     CreateViewPtr<T>(type, op1).Pointer,
@@ -1141,8 +1141,8 @@ namespace NumCIL.cphVB
 
             m_allocatedUserfuncs.Add(adr, gh);
 
-            return new PInvoke.cphvb_instruction(
-                cphvb_opcode.CPHVB_USERFUNC,
+            return new PInvoke.bh_instruction(
+                bh_opcode.CPHVB_USERFUNC,
                 adr
             );
         }
@@ -1152,13 +1152,13 @@ namespace NumCIL.cphVB
         /// </summary>
         /// <typeparam name="T">The type of data in the array</typeparam>
         /// <param name="ar">The array to examine</param>
-        /// <returns>True if the alue can be represented as a cphVB constant, false otherwise</returns>
+        /// <returns>True if the alue can be represented as a Bohrium constant, false otherwise</returns>
         private static bool IsScalar<T>(NdArray<T> ar)
         {
             if (ar.DataAccessor.Length == 1)
                 if (ar.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
                     return true;
-                else if (ar.DataAccessor.GetType() == typeof(cphVBAccessor<T>) && ar.DataAccessor.IsAllocated && ((cphVBAccessor<T>)ar.DataAccessor).PendingOperations.Count == 0)
+                else if (ar.DataAccessor.GetType() == typeof(BohriumAccessor<T>) && ar.DataAccessor.IsAllocated && ((BohriumAccessor<T>)ar.DataAccessor).PendingOperations.Count == 0)
                     return true;
 
             return false;

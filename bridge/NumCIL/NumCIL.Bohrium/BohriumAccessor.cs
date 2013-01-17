@@ -27,80 +27,80 @@ using System.Text;
 using NumCIL.Generic;
 using System.Runtime.InteropServices;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
-    /// Basic factory for creating cphVB accessors
+    /// Basic factory for creating Bohrium accessors
     /// </summary>
     /// <typeparam name="T">The type of data kept in the underlying array</typeparam>
-    public class cphVBAccessorFactory<T> : NumCIL.Generic.IAccessorFactory<T>
+    public class BohriumAccessorFactory<T> : NumCIL.Generic.IAccessorFactory<T>
     {
         /// <summary>
         /// Creates a new accessor for a data chunk of the given size
         /// </summary>
         /// <param name="size">The size of the array</param>
         /// <returns>An accessor</returns>
-        public IDataAccessor<T> Create(long size) { return size == 1 ? new cphVBAccessor<T>(new T[1]) : new cphVBAccessor<T>(size); }
+        public IDataAccessor<T> Create(long size) { return size == 1 ? new BohriumAccessor<T>(new T[1]) : new BohriumAccessor<T>(size); }
         /// <summary>
         /// Creates a new accessor for a preallocated array
         /// </summary>
         /// <param name="data">The data to wrap</param>
         /// <returns>An accessor</returns>
-        public IDataAccessor<T> Create(T[] data) { return new cphVBAccessor<T>(data); }
+        public IDataAccessor<T> Create(T[] data) { return new BohriumAccessor<T>(data); }
     }
     
     /// <summary>
-    /// Code to map from NumCIL operations to cphVB operations
+    /// Code to map from NumCIL operations to Bohrium operations
     /// </summary>
     public class OpCodeMapper
     {
         /// <summary>
-        /// Lookup table with mapping from NumCIL operation name to cphVB opcode
+        /// Lookup table with mapping from NumCIL operation name to Bohrium opcode
         /// </summary>
-        private static Dictionary<cphvb_opcode, string> _opcode_func_name;
+        private static Dictionary<bh_opcode, string> _opcode_func_name;
 
         /// <summary>
-        /// Static initializer, builds mapping table between the cphVB opcodes.
+        /// Static initializer, builds mapping table between the Bohrium opcodes.
         /// and the corresponding names of the operations in NumCIL
         /// </summary>
         static OpCodeMapper()
         {
-            _opcode_func_name = new Dictionary<cphvb_opcode, string>();
+            _opcode_func_name = new Dictionary<bh_opcode, string>();
 
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_ADD, "Add");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_SUBTRACT, "Sub");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_MULTIPLY, "Mul");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_DIVIDE, "Div");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_MOD, "Mod");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_MAXIMUM, "Max");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_MINIMUM, "Min");
+            _opcode_func_name.Add(bh_opcode.CPHVB_ADD, "Add");
+            _opcode_func_name.Add(bh_opcode.CPHVB_SUBTRACT, "Sub");
+            _opcode_func_name.Add(bh_opcode.CPHVB_MULTIPLY, "Mul");
+            _opcode_func_name.Add(bh_opcode.CPHVB_DIVIDE, "Div");
+            _opcode_func_name.Add(bh_opcode.CPHVB_MOD, "Mod");
+            _opcode_func_name.Add(bh_opcode.CPHVB_MAXIMUM, "Max");
+            _opcode_func_name.Add(bh_opcode.CPHVB_MINIMUM, "Min");
 
-            //These two are not found in cphVB, but are emulated with ADD and SUB
-            //_opcode_func_name.Add(cphvb_opcode.CPHVB_INCREMENT, "Inc");
-            //_opcode_func_name.Add(cphvb_opcode.CPHVB_DECREMENT, "Dec");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_FLOOR, "Floor");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_CEIL, "Ceiling");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_RINT, "Round");
+            //These two are not found in Bohrium, but are emulated with ADD and SUB
+            //_opcode_func_name.Add(bh_opcode.CPHVB_INCREMENT, "Inc");
+            //_opcode_func_name.Add(bh_opcode.CPHVB_DECREMENT, "Dec");
+            _opcode_func_name.Add(bh_opcode.CPHVB_FLOOR, "Floor");
+            _opcode_func_name.Add(bh_opcode.CPHVB_CEIL, "Ceiling");
+            _opcode_func_name.Add(bh_opcode.CPHVB_RINT, "Round");
 
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_ABSOLUTE, "Abs");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_SQRT, "Sqrt");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_EXP, "Exp");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG, "Log");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_LOG10, "Log10");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_POWER, "Pow");
+            _opcode_func_name.Add(bh_opcode.CPHVB_ABSOLUTE, "Abs");
+            _opcode_func_name.Add(bh_opcode.CPHVB_SQRT, "Sqrt");
+            _opcode_func_name.Add(bh_opcode.CPHVB_EXP, "Exp");
+            _opcode_func_name.Add(bh_opcode.CPHVB_LOG, "Log");
+            _opcode_func_name.Add(bh_opcode.CPHVB_LOG10, "Log10");
+            _opcode_func_name.Add(bh_opcode.CPHVB_POWER, "Pow");
 
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_COS, "Cos");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_SIN, "Sin");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_TAN, "Tan");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCCOS, "Acos");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCSIN, "Asin");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_ARCTAN, "Atan");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_COSH, "Cosh");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_SINH, "Sinh");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_TANH, "Tanh");
+            _opcode_func_name.Add(bh_opcode.CPHVB_COS, "Cos");
+            _opcode_func_name.Add(bh_opcode.CPHVB_SIN, "Sin");
+            _opcode_func_name.Add(bh_opcode.CPHVB_TAN, "Tan");
+            _opcode_func_name.Add(bh_opcode.CPHVB_ARCCOS, "Acos");
+            _opcode_func_name.Add(bh_opcode.CPHVB_ARCSIN, "Asin");
+            _opcode_func_name.Add(bh_opcode.CPHVB_ARCTAN, "Atan");
+            _opcode_func_name.Add(bh_opcode.CPHVB_COSH, "Cosh");
+            _opcode_func_name.Add(bh_opcode.CPHVB_SINH, "Sinh");
+            _opcode_func_name.Add(bh_opcode.CPHVB_TANH, "Tanh");
 
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_LOGICAL_NOT, "Not");
-            _opcode_func_name.Add(cphvb_opcode.CPHVB_INVERT, "Invert");
+            _opcode_func_name.Add(bh_opcode.CPHVB_LOGICAL_NOT, "Not");
+            _opcode_func_name.Add(bh_opcode.CPHVB_INVERT, "Invert");
         }
 
         /// <summary>
@@ -157,25 +157,25 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Helper function to get the opcode mapping table for the current type
         /// </summary>
-        /// <returns>A mapping between the type used for this executor and the cphVB opcodes</returns>
-        public static Dictionary<Type, cphvb_opcode> CreateOpCodeMap<T>()
+        /// <returns>A mapping between the type used for this executor and the Bohrium opcodes</returns>
+        public static Dictionary<Type, bh_opcode> CreateOpCodeMap<T>()
         {
-            Dictionary<Type, cphvb_opcode> res = new Dictionary<Type, cphvb_opcode>();
+            Dictionary<Type, bh_opcode> res = new Dictionary<Type, bh_opcode>();
 
             Type basic = GetBasicClass<T>();
-            Dictionary<cphvb_opcode, string> opcodenames = new Dictionary<cphvb_opcode, string>(_opcode_func_name);
+            Dictionary<bh_opcode, string> opcodenames = new Dictionary<bh_opcode, string>(_opcode_func_name);
 
             if (typeof(T) == typeof(bool))
             {
-                opcodenames.Add(cphvb_opcode.CPHVB_LOGICAL_AND, "And");
-                opcodenames.Add(cphvb_opcode.CPHVB_LOGICAL_OR, "Or");
-                opcodenames.Add(cphvb_opcode.CPHVB_LOGICAL_XOR, "Xor");
+                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_AND, "And");
+                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_OR, "Or");
+                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_XOR, "Xor");
             }
             else
             {
-                opcodenames.Add(cphvb_opcode.CPHVB_BITWISE_AND, "And");
-                opcodenames.Add(cphvb_opcode.CPHVB_BITWISE_OR, "Or");
-                opcodenames.Add(cphvb_opcode.CPHVB_BITWISE_XOR, "Xor");
+                opcodenames.Add(bh_opcode.CPHVB_BITWISE_AND, "And");
+                opcodenames.Add(bh_opcode.CPHVB_BITWISE_OR, "Or");
+                opcodenames.Add(bh_opcode.CPHVB_BITWISE_XOR, "Xor");
             }
 
             foreach (var e in opcodenames)
@@ -189,29 +189,29 @@ namespace NumCIL.cphVB
                 catch { }
             }
 
-            res[typeof(NumCIL.CopyOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
-            res[typeof(NumCIL.GenerateOp<T>)] = cphvb_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.CopyOp<T>)] = bh_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.GenerateOp<T>)] = bh_opcode.CPHVB_IDENTITY;
             if (VEM.Instance.SupportsRandom)
 			{
-                res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = cphvb_opcode.CPHVB_USERFUNC;
-				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = cphvb_opcode.CPHVB_USERFUNC; }
+                res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = bh_opcode.CPHVB_USERFUNC;
+				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.CPHVB_USERFUNC; }
 				catch {}
 			}
             if (VEM.Instance.SupportsReduce)
-                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
-                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
             if (VEM.Instance.SupportsAggregate)
-                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = cphvb_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
 
 
             if (typeof(T) == typeof(NumCIL.Complex64.DataType))
             {
-                res[typeof(NumCIL.Complex64.ToComplex)] = cphvb_opcode.CPHVB_IDENTITY;
+                res[typeof(NumCIL.Complex64.ToComplex)] = bh_opcode.CPHVB_IDENTITY;
             }
             else if (typeof(T) == typeof(System.Numerics.Complex))
             {
-                res[typeof(NumCIL.Complex128.ToComplex)] = cphvb_opcode.CPHVB_IDENTITY;
+                res[typeof(NumCIL.Complex128.ToComplex)] = bh_opcode.CPHVB_IDENTITY;
             }
             else
             {
@@ -221,7 +221,7 @@ namespace NumCIL.cphVB
                     {
                         Type t = basic.Assembly.GetType(basic.Namespace + ".To" + e);
                         if (t != null)
-                            res[t] = cphvb_opcode.CPHVB_IDENTITY; 
+                            res[t] = bh_opcode.CPHVB_IDENTITY; 
                     }
                     catch { }
                 }
@@ -229,13 +229,13 @@ namespace NumCIL.cphVB
 
             if (typeof(T) == typeof(bool))
             {
-                Dictionary<cphvb_opcode, string> logicalnames = new Dictionary<cphvb_opcode, string>();
-                logicalnames.Add(cphvb_opcode.CPHVB_EQUAL, "Equal");
-                logicalnames.Add(cphvb_opcode.CPHVB_NOT_EQUAL, "NotEqual");
-                logicalnames.Add(cphvb_opcode.CPHVB_GREATER, "GreaterThan");
-                logicalnames.Add(cphvb_opcode.CPHVB_LESS, "LessThan");
-                logicalnames.Add(cphvb_opcode.CPHVB_GREATER_EQUAL, "GreaterThanOrEqual");
-                logicalnames.Add(cphvb_opcode.CPHVB_LESS_EQUAL, "LessThanOrEqual");
+                Dictionary<bh_opcode, string> logicalnames = new Dictionary<bh_opcode, string>();
+                logicalnames.Add(bh_opcode.CPHVB_EQUAL, "Equal");
+                logicalnames.Add(bh_opcode.CPHVB_NOT_EQUAL, "NotEqual");
+                logicalnames.Add(bh_opcode.CPHVB_GREATER, "GreaterThan");
+                logicalnames.Add(bh_opcode.CPHVB_LESS, "LessThan");
+                logicalnames.Add(bh_opcode.CPHVB_GREATER_EQUAL, "GreaterThanOrEqual");
+                logicalnames.Add(bh_opcode.CPHVB_LESS_EQUAL, "LessThanOrEqual");
 
                 foreach (var type in new Type[] { typeof(NumCIL.Int8.NdArray), typeof(NumCIL.UInt8.NdArray), typeof(NumCIL.Int16.NdArray), typeof(NumCIL.UInt16.NdArray), typeof(NumCIL.Int32.NdArray), typeof(NumCIL.UInt32.NdArray), typeof(NumCIL.Int64.NdArray), typeof(NumCIL.UInt64.NdArray), typeof(NumCIL.Float.NdArray), typeof(NumCIL.Double.NdArray), typeof(NumCIL.Complex64.NdArray), typeof(NumCIL.Complex128.NdArray) })
                 {
@@ -257,7 +257,7 @@ namespace NumCIL.cphVB
                     string boolConvOpName = basicBool.Namespace + ".To" + basic.Namespace.Substring("NumCIL.".Length);
                     Type t = basicBool.Assembly.GetType(boolConvOpName);
                     if (t != null)
-                        res[t] = cphvb_opcode.CPHVB_IDENTITY;
+                        res[t] = bh_opcode.CPHVB_IDENTITY;
                 }
                 catch
                 {
@@ -270,20 +270,20 @@ namespace NumCIL.cphVB
     }
 
     /// <summary>
-    /// Basic accessor for a cphVB array
+    /// Basic accessor for a Bohrium array
     /// </summary>
     /// <typeparam name="T">The type of data kept in the underlying array</typeparam>
-    public class cphVBAccessor<T> : NumCIL.Generic.LazyAccessor<T>, IDisposable, IUnmanagedDataAccessor<T>
+    public class BohriumAccessor<T> : NumCIL.Generic.LazyAccessor<T>, IDisposable, IUnmanagedDataAccessor<T>
     {
         /// <summary>
-        /// Lock that prevents multithreaded access to the cphVB data
+        /// Lock that prevents multithreaded access to the Bohrium data
         /// </summary>
         private readonly object m_lock = new object();
 
         /// <summary>
         /// Instance of the VEM that is used
         /// </summary>
-        protected static VEM VEM = NumCIL.cphVB.VEM.Instance;
+        protected static VEM VEM = NumCIL.Bohrium.VEM.Instance;
 
         /// <summary>
         /// The maximum number of instructions to queue
@@ -293,7 +293,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Local copy of the type, to avoid lookups in the VEM dictionary
         /// </summary>
-        protected static readonly PInvoke.cphvb_type CPHVB_TYPE = VEM.MapType(typeof(T));
+        protected static readonly PInvoke.bh_type BH_TYPE = VEM.MapType(typeof(T));
 
         /// <summary>
         /// The size of the data element in native code
@@ -301,9 +301,9 @@ namespace NumCIL.cphVB
         protected static readonly int NATIVE_ELEMENT_SIZE = Marshal.SizeOf(typeof(T));
 
         /// <summary>
-        /// A lookup table that maps NumCIL operation types to cphVB opcodes
+        /// A lookup table that maps NumCIL operation types to Bohrium opcodes
         /// </summary>
-        protected static Dictionary<Type, cphvb_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
+        protected static Dictionary<Type, bh_opcode> OpcodeMap = OpCodeMapper.CreateOpCodeMap<T>();
 
         /// <summary>
         /// Gets the type for the Add operation
@@ -324,13 +324,13 @@ namespace NumCIL.cphVB
         /// Constructs a new data accessor for the given size
         /// </summary>
         /// <param name="size">The size of the data</param>
-        public cphVBAccessor(long size) : base(size) { }
+        public BohriumAccessor(long size) : base(size) { }
 
         /// <summary>
         /// Constructs a new data accessor for a pre-allocated block of storage
         /// </summary>
         /// <param name="data"></param>
-        public cphVBAccessor(T[] data) : base(data) { }
+        public BohriumAccessor(T[] data) : base(data) { }
 
         /// <summary>
         /// A pointer to the base-array view structure
@@ -347,7 +347,7 @@ namespace NumCIL.cphVB
                 base.Allocate();
 
             if (m_externalData != null)
-                VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_SYNC, m_externalData.Pointer));
+                VEM.Execute(new PInvoke.bh_instruction(bh_opcode.CPHVB_SYNC, m_externalData.Pointer));
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace NumCIL.cphVB
                         return (T)(object)new System.Numerics.Complex(tmp[0], tmp[1]);
                     }
                     else
-                        throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
+                        throw new BohriumException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                 }
             }
             set
@@ -576,10 +576,10 @@ namespace NumCIL.cphVB
                                 }
                             }
                             else
-                                throw new cphVBException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
+                                throw new BohriumException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                         }
 
-                        VEM.Execute(new PInvoke.cphvb_instruction(cphvb_opcode.CPHVB_FREE, m_externalData.Pointer));
+                        VEM.Execute(new PInvoke.bh_instruction(bh_opcode.CPHVB_FREE, m_externalData.Pointer));
                     }
                 }
 
@@ -589,7 +589,7 @@ namespace NumCIL.cphVB
         }
 
         /// <summary>
-        /// Allocates the data either in cphvb or in managed memory
+        /// Allocates the data either in Bohrium or in managed memory
         /// </summary>
         public override void Allocate()
         {
@@ -618,7 +618,7 @@ namespace NumCIL.cphVB
                     if (m_externalData == null || !m_externalData.HasHandle)
                     {
                         GCHandle h = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                        PInvoke.cphvb_array_ptr p = VEM.CreateBaseArray(m_data);
+                        PInvoke.bh_array_ptr p = VEM.CreateBaseArray(m_data);
                         p.Data = h.AddrOfPinnedObject();
                         m_externalData = new ViewPtrKeeper(p, h);
                     }
@@ -635,13 +635,13 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Gets a pointer to the base array
         /// </summary>
-        public PInvoke.cphvb_array_ptr BaseArrayPtr
+        public PInvoke.bh_array_ptr BaseArrayPtr
         {
             get
             {
                 if (m_data == null && m_externalData == null)
                 {
-                    m_externalData = new ViewPtrKeeper(VEM.CreateBaseArray(CPHVB_TYPE, m_size));
+                    m_externalData = new ViewPtrKeeper(VEM.CreateBaseArray(BH_TYPE, m_size));
                     return m_externalData.Pointer;
                 }
 
@@ -651,7 +651,7 @@ namespace NumCIL.cphVB
                 if (m_data != null)
                 {
                     GCHandle h = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                    PInvoke.cphvb_array_ptr p = VEM.CreateBaseArray(m_data);
+                    PInvoke.bh_array_ptr p = VEM.CreateBaseArray(m_data);
                     p.Data = h.AddrOfPinnedObject();
                     m_externalData = new ViewPtrKeeper(p, h);
 
@@ -711,7 +711,7 @@ namespace NumCIL.cphVB
                 IOp<T> ops = op.Operation;
                 NdArray<T>[] operands = op.Operands;
                 
-                cphvb_opcode opcode;
+                bh_opcode opcode;
                 if (OpcodeMap.TryGetValue(ops.GetType(), out opcode))
                 {
                     if (unsupported.Count > 0)
@@ -722,38 +722,38 @@ namespace NumCIL.cphVB
 
                     bool isSupported = true;
 
-                    if (opcode == cphvb_opcode.CPHVB_USERFUNC)
+                    if (opcode == bh_opcode.CPHVB_USERFUNC)
                     {
                         if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
                         {
-                            //cphVB only supports random for plain arrays
+                            //Bohrium only supports random for plain arrays
                             if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].DataAccessor.Length)
                             {
-                                supported.Add(VEM.CreateRandomInstruction<T>(CPHVB_TYPE, operands[0]));
+                                supported.Add(VEM.CreateRandomInstruction<T>(BH_TYPE, operands[0]));
                                 isSupported = true;
                             }
                         }
                         else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
                         {
                             NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
-                            cphvb_opcode rop;
+                            bh_opcode rop;
                             if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
                             {
-                                supported.Add(VEM.CreateReduceInstruction<T>(CPHVB_TYPE, rop, lzop.Axis, operands[0], operands[1]));
+                                supported.Add(VEM.CreateReduceInstruction<T>(BH_TYPE, rop, lzop.Axis, operands[0], operands[1]));
                                 isSupported = true;
                             }
                         }
                         else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
                         {
-                            supported.Add(VEM.CreateMatmulInstruction<T>(CPHVB_TYPE, operands[0], operands[1], operands[2]));
+                            supported.Add(VEM.CreateMatmulInstruction<T>(BH_TYPE, operands[0], operands[1], operands[2]));
                         }
                         else if (VEM.SupportsAggregate && ops is NumCIL.UFunc.LazyAggregateOperation<T>)
                         {
                             NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
-                            cphvb_opcode rop;
+                            bh_opcode rop;
                             if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
                             {
-                                supported.Add(VEM.CreateAggregateInstruction<T>(CPHVB_TYPE, rop, operands[0], operands[1]));
+                                supported.Add(VEM.CreateAggregateInstruction<T>(BH_TYPE, rop, operands[0], operands[1]));
                                 isSupported = true;
                             }
                         }
@@ -768,13 +768,13 @@ namespace NumCIL.cphVB
                     }
                     else
                     {
-                        if (op is IPendingUnaryConversionOp && opcode == cphvb_opcode.CPHVB_IDENTITY)
+                        if (op is IPendingUnaryConversionOp && opcode == bh_opcode.CPHVB_IDENTITY)
                         {
                             //As we cross execution spaces, we need to ensure that the input operand has no pending instructions
                             object unop = ((IPendingUnaryConversionOp)op).InputOperand;
 
                             Type inputType = unop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode,  CPHVB_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode,  BH_TYPE, operands[0], ((IPendingUnaryConversionOp)op).InputOperand, null });
 
                             supported.Add(inst);
                         }
@@ -785,20 +785,20 @@ namespace NumCIL.cphVB
                             object rhsop = ((IPendingBinaryConversionOp)op).InputOperand;
 
                             Type inputType = lhsop.GetType().GetGenericArguments()[0];
-                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode, CPHVB_TYPE, operands[0], lhsop, rhsop });
+                            IInstruction inst = (IInstruction)VEMConversionMethod.MakeGenericMethod(typeof(T), inputType).Invoke(VEM, new object[] { supported, opcode, BH_TYPE, operands[0], lhsop, rhsop });
 
                             supported.Add(inst);
                         } 
                         else
                         {
                             if (operands.Length == 1)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0]));
+                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0]));
                             else if (operands.Length == 2)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1]));
+                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1]));
                             else if (operands.Length == 3)
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands[0], operands[1], operands[2]));
+                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1], operands[2]));
                             else
-                                supported.Add(VEM.CreateInstruction<T>(CPHVB_TYPE, opcode, operands));
+                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands));
                         }
                     }
                 }
@@ -863,7 +863,7 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Finializes this object
         /// </summary>
-        ~cphVBAccessor()
+        ~BohriumAccessor()
         {
             Dispose(false);
         }

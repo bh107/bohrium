@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
     /// <summary>
     /// Simple representation of an instruction
@@ -35,6 +35,6 @@ namespace NumCIL.cphVB
         /// <summary>
         /// Gets the opcode this instruction represents
         /// </summary>
-        cphvb_opcode OpCode { get; }
+        bh_opcode OpCode { get; }
     }
 }

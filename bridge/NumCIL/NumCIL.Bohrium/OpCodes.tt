@@ -37,12 +37,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.cphVB
+namespace NumCIL.Bohrium
 {
 	///<summary>
-	/// Defines all the opcodes found in cphVB
+	/// Defines all the opcodes found in Bohrium
 	///</summary>
-	public enum cphvb_opcode
+	public enum bh_opcode
 	{
 <#
 		string path = null; 
