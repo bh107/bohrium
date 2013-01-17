@@ -1,5 +1,5 @@
 import cphvbnumpy as np
-import cphvbbridge as cnp
+import bohriumbridge as cnp
 import util
 
 if __name__ == "__main__":

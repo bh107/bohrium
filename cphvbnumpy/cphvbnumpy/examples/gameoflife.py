@@ -10,9 +10,9 @@ SURVIVE_LOW= 2
 SURVIVE_HIGH = 3
 SPAWN = 3
 
-def randomstate(height, width, prob=0.2, dtype=np.int32, cphvb=True):
-    state = np.zeros((height+2,width+2), dtype=dtype, cphvb=cphvb)
-    state[1:-1,1:-1] = np.random.random((width,height), dtype=np.float32, cphvb=cphvb) < prob
+def randomstate(height, width, prob=0.2, dtype=np.int32, bohrium=True):
+    state = np.zeros((height+2,width+2), dtype=dtype, bohrium=bohrium)
+    state[1:-1,1:-1] = np.random.random((width,height), dtype=np.float32, bohrium=bohrium) < prob
     return state
 
 def play(state, iterations):
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
         samples += 1
 
-        #s = randomstate(w, h,cphvb=False)
+        #s = randomstate(w, h,bohrium=False)
         #s = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 #       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
  #      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 #       [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
 #       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 #       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, cphvb=False)
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, bohrium=False)
 
-        #s = np.zeros((w,h), dtype=np.int32, cphvb=False)
+        #s = np.zeros((w,h), dtype=np.int32, bohrium=False)
         s = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -75,9 +75,9 @@ if __name__ == "__main__":
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, cphvb=False)
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, bohrium=False)
         n = s.copy()
-        n.cphvb = True
+        n.bohrium = True
 
         play( s, 50 )
         play( n, 50 )

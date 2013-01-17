@@ -1,7 +1,7 @@
 """
 CphVB NumPy is an extended version of NumPy that supports cphVB as the computation backend.  The cphVB NumPy module includes the original NumPy backend, which makes it possible to use both backend through the same Python Module. 
 
-In order to use the cphVB backend rather than normal NumPy you can either import the ``cphvbnumpy`` module instead of ``numpy`` or use the new optional parameter `cphvb`.
+In order to use the cphVB backend rather than normal NumPy you can either import the ``cphvbnumpy`` module instead of ``numpy`` or use the new optional parameter `bohrium`.
 
 The easiest method it simple to change the import statement as illustrated in the following two code examples. 
 
@@ -21,7 +21,7 @@ A cphVB execution::
   >>> print B
   [ 43 43 43 ]
 
-Alternatively, most array creation methods supports the optional parameter ``cphvb``::
+Alternatively, most array creation methods supports the optional parameter ``bohrium``::
 
   >>> import numpy as np
   >>> A = np.ones((3,), cphVB=True)
@@ -32,14 +32,14 @@ Alternatively, most array creation methods supports the optional parameter ``cph
 Backend Transition
 ~~~~~~~~~~~~~~~~~~
 
-It is possible to change the backend of an existing array by accessing the ``.cphvb`` attribute::
+It is possible to change the backend of an existing array by accessing the ``.bohrium`` attribute::
 
   >>> import cphvbnumpy as np
   >>> A = np.ones((3,), cphVB=True)
-  >>> print A.cphvb
+  >>> print A.bohrium
   True
-  >>> A.cphvb = False
-  >>> print A.cphvb
+  >>> A.bohrium = False
+  >>> print A.bohrium
   False
 
 All arrays will use the cphVB backend when combining arrays that use different backends. The following code example will be computed by the cphVB backend::
@@ -48,7 +48,7 @@ All arrays will use the cphVB backend when combining arrays that use different b
   >>> A = np.ones((3,), cphVB=True)
   >>> B = np.ones((3,), cphVB=False)
   >>> C = A + B
-  >>> print C.cphvb
+  >>> print C.bohrium
   True
 
 The cphVB backend does not support all the functionality in NumPy. Therefore, some functions will always use the NumPy backend even though the user specified the cphVB backend. In such cases, the execution will raise a Python warning. 

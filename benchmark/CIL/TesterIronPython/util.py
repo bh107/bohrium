@@ -69,11 +69,11 @@ class Benchmark:
             numcil.activate_cphVB()
 
     def start(self):
-        #cphvbbridge.flush()
+        #bohriumbridge.flush()
         self.info['totaltime'] = time.time()
 
     def stop(self):
-        #cphvbbridge.flush()
+        #bohriumbridge.flush()
         self.info['totaltime'] = time.time() - self.info['totaltime']
 
     def print_profile(self):

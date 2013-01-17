@@ -7,9 +7,9 @@ The ``core`` module provide the essential functions, such as all the array creat
 """
 import numpy
 from numpy import *
-import cphvbbridge as bridge
+import bohriumbridge as bridge
 
-def empty(shape, dtype=float, cphvb=True):
+def empty(shape, dtype=float, bohrium=True):
     """
     Return a new matrix of given shape and type, without initializing entries.
 
@@ -19,7 +19,7 @@ def empty(shape, dtype=float, cphvb=True):
         Shape of the empty matrix.
     dtype : data-type, optional
         Desired output data-type.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     See Also
@@ -47,9 +47,9 @@ def empty(shape, dtype=float, cphvb=True):
 
     """
 
-    return numpy.empty(shape, dtype=dtype, cphvb=cphvb)
+    return numpy.empty(shape, dtype=dtype, bohrium=bohrium)
 
-def ones(shape, dtype=float, cphvb=True):
+def ones(shape, dtype=float, bohrium=True):
     """
     Matrix of ones.
 
@@ -61,7 +61,7 @@ def ones(shape, dtype=float, cphvb=True):
         Shape of the matrix
     dtype : data-type, optional
         The desired data-type for the matrix, default is np.float64.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     Returns
@@ -92,11 +92,11 @@ def ones(shape, dtype=float, cphvb=True):
 
     """
 
-    A = empty(shape, dtype=dtype, cphvb=cphvb)
+    A = empty(shape, dtype=dtype, bohrium=bohrium)
     A[:] = 1
     return A
 
-def zeros(shape, dtype=float, cphvb=True):
+def zeros(shape, dtype=float, bohrium=True):
     """
     Return a matrix of given shape and type, filled with zeros.
 
@@ -106,7 +106,7 @@ def zeros(shape, dtype=float, cphvb=True):
         Shape of the matrix
     dtype : data-type, optional
         The desired data-type for the matrix, default is float.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     Returns
@@ -138,11 +138,11 @@ def zeros(shape, dtype=float, cphvb=True):
 
     """
 
-    A = empty(shape, dtype=dtype, cphvb=cphvb)
+    A = empty(shape, dtype=dtype, bohrium=bohrium)
     A[:] = 0
     return A
 
-def empty_like(a, dtype=None, cphvb=None):
+def empty_like(a, dtype=None, bohrium=None):
     """
     Return a new array with the same shape and type as a given array.
 
@@ -153,7 +153,7 @@ def empty_like(a, dtype=None, cphvb=None):
         returned array.
     dtype : data-type, optional
         Overrides the data type of the result.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     Returns
@@ -192,11 +192,11 @@ def empty_like(a, dtype=None, cphvb=None):
 
     if dtype == None:
         dtype = a.dtype
-    if cphvb == None:
-        cphvb = a.cphvb
-    return empty(a.shape, dtype, cphvb)
+    if bohrium == None:
+        bohrium = a.bohrium
+    return empty(a.shape, dtype, bohrium)
 
-def zeros_like(a, dtype=None, cphvb=None):
+def zeros_like(a, dtype=None, bohrium=None):
     """
     Return an array of zeros with the same shape and type as a given array.
 
@@ -209,7 +209,7 @@ def zeros_like(a, dtype=None, cphvb=None):
         the returned array.
     dtype : data-type, optional
         Overrides the data type of the result.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     Returns
@@ -248,11 +248,11 @@ def zeros_like(a, dtype=None, cphvb=None):
 
     """
 
-    b = empty_like(a, dtype=dtype, cphvb=cphvb)
+    b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[:] = 0
     return b
 
-def ones_like(a, dtype=None, cphvb=None):
+def ones_like(a, dtype=None, bohrium=None):
     """
     Return an array of ones with the same shape and type as a given array.
 
@@ -265,7 +265,7 @@ def ones_like(a, dtype=None, cphvb=None):
         the returned array.
     dtype : data-type, optional
         Overrides the data type of the result.
-    cphvb : boolean, optional
+    bohrium : boolean, optional
         Determines whether it is a cphVB-enabled array or a regular NumPy array
 
     Returns
@@ -304,7 +304,7 @@ def ones_like(a, dtype=None, cphvb=None):
 
     """
 
-    b = empty_like(a, dtype=dtype, cphvb=cphvb)
+    b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[:] = 1
     return b
 
@@ -446,7 +446,7 @@ def diagflat(d,k=0):
     d = numpy.asarray(d)
     d = flatten(d) 
     size = d.size+abs(k)
-    A = zeros((size,size), dtype=d.dtype, cphvb=d.cphvb)
+    A = zeros((size,size), dtype=d.dtype, bohrium=d.bohrium)
     Ad = diagonal(A, offset=k)
     Ad[:] = d 
     return A
@@ -570,7 +570,7 @@ def dot(a,b):
     499128
 
     """
-    if a.cphvb or b.cphvb:
+    if a.bohrium or b.bohrium:
         bridge.handle_array(a)
         bridge.handle_array(b)
     if b.ndim == 1:
@@ -615,9 +615,9 @@ def matmul(a,b):
         raise ValueError("Input must be of same type")
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
-    if a.cphvb or b.cphvb:
-        a.cphvb=True
-        b.cphvb=True
+    if a.bohrium or b.bohrium:
+        a.bohrium=True
+        b.bohrium=True
         c = empty((a.shape[0],b.shape[1]),dtype=a.dtype)
         bridge.matmul(a,b,c)
         return c
@@ -669,7 +669,7 @@ def fft(A):
     in the real part and anti-symmetric in the imaginary part, as described in
     the `numpy.fft` documentation.
     """
-    if A.cphvb and A.ndim <= 2:
+    if A.bohrium and A.ndim <= 2:
       if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft(A,B)
@@ -721,7 +721,7 @@ def fft2(A):
 
     """
 
-    if A.cphvb and A.ndim == 2:
+    if A.bohrium and A.ndim == 2:
       if A.dtype == numpy.complex64 or A.dtype == numpy.complex128: #maybe do type conversions for others
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft2(A,B)
@@ -1033,15 +1033,15 @@ def minn(x, n=1, axis=0):
     Info here.
     """
     assert x.shape[axis] > n
-    assert x.cphvb == True
+    assert x.bohrium == True
 
     if len(x.shape) == 1:
         out_shape = (n,)
     else:
         out_shape = x.shape[:axis] + (n,) + x.shape[axis+1:]
    
-    out_index = empty(out_shape,dtype=int64,cphvb=True)
-    out_value = empty(out_shape,dtype=x.dtype,cphvb=True)
+    out_index = empty(out_shape,dtype=int64,bohrium=True)
+    out_value = empty(out_shape,dtype=x.dtype,bohrium=True)
     return bridge.nselect(out_index, out_value, x, n, axis, numpy.minimum)
 
 

@@ -6,8 +6,8 @@ So what does this code example illustrate?
 """
 import cphvbnumpy as np
 
-def frezetrap(height, width, dtype=np.float32, cphvb=True):
-    grid = np.zeros((height+2,width+2), dtype=dtype, cphvb=cphvb)
+def frezetrap(height, width, dtype=np.float32, bohrium=True):
+    grid = np.zeros((height+2,width+2), dtype=dtype, bohrium=bohrium)
     grid[:,0]  = -273.15
     grid[:,-1] = -273.15
     grid[-1,:] = -273.15

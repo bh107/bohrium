@@ -44,7 +44,7 @@ def solve(a, b):
     for p in xrange(W.shape[0]-1):
         for r in xrange(p+1,W.shape[0]):
             W[r] = W[r] - W[p]*(W[r,p]/W[p,p])
-    x = np.empty(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
+    x = np.empty(np.shape(b), dtype=b.dtype, bohrium=b.bohrium)
     c = b.size
     for r in xrange(c-1,0,-1):
         x[r] = W[r,c]/W[r,r]
@@ -82,7 +82,7 @@ def jacobi(a, b, tol=0.0005):
     >>> (np.dot(a, x) == b).all()
     True 
     """
-    x = np.ones(np.shape(b), dtype=b.dtype, cphvb=b.cphvb)
+    x = np.ones(np.shape(b), dtype=b.dtype, bohrium=b.bohrium)
     D = 1/np.diag(a)
     R = np.diag(np.diag(a)) - a
     T = D[:,np.newaxis]*R
@@ -126,11 +126,11 @@ def lu(A):
         raise ValueError("Input must be floating point numbers")
     if A.ndim != 2 or A.shape[0] != A.shape[1]:
         raise ValueError("Input must be square 2-d.")
-    if A.cphvb:
+    if A.bohrium:
         LU = A.copy() #do not overwrite original A
         P = empty((A.shape[0],), dtype=numpy.int32)
         bridge.lu(LU,P)
         return (LU, P)
     else:
-        raise ValueError("LU is only supported for cphvb-enabled arrays")
+        raise ValueError("LU is only supported for bohrium-enabled arrays")
 

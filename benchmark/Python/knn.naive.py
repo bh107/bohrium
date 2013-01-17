@@ -1,5 +1,5 @@
 import cphvbnumpy as np
-import cphvbbridge as cb
+import bohriumbridge as cb
 import util
 
 def data_range(B, N, F):
