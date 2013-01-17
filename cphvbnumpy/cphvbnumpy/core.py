@@ -7,7 +7,7 @@ The ``core`` module provide the essential functions, such as all the array creat
 """
 import numpy
 from numpy import *
-import cphvbbridge as bridge
+import bohriumbridge as bridge
 
 def empty(shape, dtype=float, cphvb=True):
     """

@@ -1,7 +1,7 @@
 #Test and demonstration of the NumPy Bridge.
 import numpy as np
 import cphvbnumpy as cnp
-import cphvbbridge
+import bohriumbridge
 import sys
 import time
 import subprocess
@@ -43,8 +43,8 @@ def _array_equal(A,B,maxerror=0.0):
     if np.isscalar(A):
         return A == B
 
-    cphvbbridge.unhandle_array(A)
-    cphvbbridge.unhandle_array(B)
+    bohriumbridge.unhandle_array(A)
+    bohriumbridge.unhandle_array(B)
     A = A.flatten()
     B = B.flatten()
     if len(A) != len(B):
@@ -195,7 +195,7 @@ if __name__ == "__main__":
                             a.cphvb = False
                         (res1,cmd1) = getattr(cls_inst,mth)(arys)
                         res1 = res1.copy()
-                        cphvbbridge.flush()
+                        bohriumbridge.flush()
                         arys = copy.deepcopy(arrays)
                         for a in arys.values():
                             a.cphvb = True
@@ -203,7 +203,7 @@ if __name__ == "__main__":
                         assert cmd1 == cmd2
                         cmd += cmd1
                         try:
-                            cphvbbridge.flush() 
+                            bohriumbridge.flush() 
                         except RuntimeError as error_msg:
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                             print _C.FAIL + str(error_msg) + _C.ENDC 
