@@ -28,25 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include "comm.h"
 
-static StaticStore<cphvb_array> tmp_ary_store(512);
 static std::vector<task> task_store;
-
-/* Returns a temporary array that will be freed by batch_rm_tmp_arys()
- * 
- * @return The new temporary array
- */
-cphvb_array* batch_tmp_ary()
-{
-    return tmp_ary_store.c_next();
-}
-
-
-/* Remove all temporary arrays
- */
-void batch_rm_tmp_arys()
-{
-    tmp_ary_store.clear(); 
-}
 
 
 /* Schedule an task. 

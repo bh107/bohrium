@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "exec.h"
 #include "except.h"
 #include "batch.h"
+#include "tmp.h"
 
 
 /* Gather or scatter the global array processes.
@@ -158,7 +159,7 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
     else if(pgrid_myrank == rank)
     {
         //We need to copy the local array view into a base array.
-        cphvb_array *tmp_ary = batch_tmp_ary();
+        cphvb_array *tmp_ary = tmp_get_ary();
         *tmp_ary = *local_ary;
         tmp_ary->base  = NULL;
         tmp_ary->data  = NULL;

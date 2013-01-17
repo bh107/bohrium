@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include "except.h"
 #include "batch.h"
+#include "tmp.h"
 
 
 /* Finds the largest possible array chunk that is only located on one process.
@@ -111,7 +112,7 @@ static void find_largest_chunk(cphvb_intp nop,
         //Save the chunk
         ary_chunk chunk;
         chunk.rank       = rank;
-        chunk.ary        = batch_tmp_ary();
+        chunk.ary        = tmp_get_ary();
         chunk.ary->type  = ary->type;
         chunk.ary->ndim  = ary->ndim;
         chunk.ary->data  = NULL;

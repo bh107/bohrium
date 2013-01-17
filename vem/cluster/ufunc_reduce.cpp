@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "comm.h"
 #include "except.h"
 #include "batch.h"
+#include "tmp.h"
 
 /* Reduces the input chunk to the output chunk.
  * @ufunc_id The ID of the reduce user-defined function
@@ -79,7 +80,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
     assert(chunks.size() > 0);
 
     //Master-tmp array that the master will reduce in the end.
-    cphvb_array *mtmp = batch_tmp_ary();
+    cphvb_array *mtmp = tmp_get_ary();
     mtmp->base = NULL;
     mtmp->type = operand[1]->type;
     mtmp->ndim = 1;
@@ -97,7 +98,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
         if(pgrid_myrank == in->rank)//We own the input chunk
         {
             //Local-tmp array that the process will reduce 
-            cphvb_array *ltmp = batch_tmp_ary();
+            cphvb_array *ltmp = tmp_get_ary();
             ltmp->type = in->ary->type;
             ltmp->ndim = 1;
             ltmp->shape[0] = 1;
@@ -134,7 +135,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
             if(pgrid_myrank != in->rank)//We don't own the input chunk
             {
                 //Create a tmp view for receiving
-                cphvb_array *recv_view = batch_tmp_ary();
+                cphvb_array *recv_view = tmp_get_ary();
                 *recv_view = *mtmp;
                 recv_view->base = mtmp;
                 recv_view->shape[0] = 1;
@@ -159,7 +160,7 @@ static void reduce_vector(cphvb_opcode opcode, cphvb_intp axis,
     {
         assert(mtmp_count <= pgrid_worldsize);
         //Now we know the number of received scalars
-        cphvb_array *tmp = batch_tmp_ary();
+        cphvb_array *tmp = tmp_get_ary();
         *tmp = *mtmp;
         tmp->base = mtmp;
         tmp->shape[0] = mtmp_count;
@@ -293,7 +294,7 @@ cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis,
                 continue;//We do not own the output chunk
             
             //We need a tmp output array.
-            cphvb_array *tmp = batch_tmp_ary(); 
+            cphvb_array *tmp = tmp_get_ary(); 
             *tmp = *out;
             tmp->base = NULL;
             tmp->data = NULL;

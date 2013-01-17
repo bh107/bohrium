@@ -24,16 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CPHVB_VEM_CLUSTER_BATCH_H
 #define __CPHVB_VEM_CLUSTER_BATCH_H
 
-/* Returns a temporary array that will be freed on a batch flush
- * 
- * @return The new temporary array
- */
-cphvb_array* batch_tmp_ary();
-
-
-/* Remove all temporary arrays
- */
-void batch_rm_tmp_arys();
 
 
 /* Schedule an task. 

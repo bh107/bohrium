@@ -34,6 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "except.h"
 #include "ufunc_reduce.h"
 #include "batch.h"
+#include "tmp.h"
 
 
 //Function pointers to the Node VEM.
@@ -363,8 +364,8 @@ cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[])
     
     //Lets flush all scheduled tasks
     batch_flush();
-    //And remove all tmp arrays
-    batch_rm_tmp_arys();
+    //And remove all tmp data structures
+    tmp_clear();
 
     return CPHVB_SUCCESS;
 }
