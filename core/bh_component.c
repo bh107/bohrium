@@ -28,8 +28,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include <dlfcn-win32.h>
 
-#define HOME_INI_PATH "%APPDATA%\\cphvb\\config.ini"
-#define SYSTEM_INI_PATH "%PROGRAMFILES%\\cphvb\\config.ini"
+#define HOME_INI_PATH "%APPDATA%\\bohrium\\config.ini"
+#define SYSTEM_INI_PATH "%PROGRAMFILES%\\bohrium\\config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer1[MAX_PATH];
@@ -44,8 +44,8 @@ char _expand_buffer2[MAX_PATH];
 #include <dlfcn.h>
 #include <limits.h>
 
-#define HOME_INI_PATH "~/.cphvb/config.ini"
-#define SYSTEM_INI_PATH "/etc/cphvb/config.ini"
+#define HOME_INI_PATH "~/.bohrium/config.ini"
+#define SYSTEM_INI_PATH "/etc/bohrium/config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer[PATH_MAX];

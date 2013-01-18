@@ -2,13 +2,13 @@ Runtime Configuration
 ---------------------
 
 Bohrium supports a broad range of frontends and backends. 
-In order to configure the runtime setup of Bohrium you must provide a configuration file to Bohrium. The installation of Bohrium installs a default configuration file in ``/etc/cphvb/config.ini`` when doing a system-wide installation and ``~/.cphvb/config.ini`` when doing a local installation.
+In order to configure the runtime setup of Bohrium you must provide a configuration file to Bohrium. The installation of Bohrium installs a default configuration file in ``/etc/bohrium/config.ini`` when doing a system-wide installation and ``~/.bohrium/config.ini`` when doing a local installation.
 
 At runtime Bohrium will search through the following prioritized list in order to find the configuration file:
 
 * The environment variable ``BH_CONFIG``
-* The home directory config ``~/.cphvb/config.ini`` (Windows: %APPDATA%\cphvb\config.ini)
-* The system-wide config ``/etc/cphvb/config.ini`` (Windows: %PROGRAMFILES%\cphvb\config.ini)
+* The home directory config ``~/.bohrium/config.ini`` (Windows: %APPDATA%\bohrium\config.ini)
+* The system-wide config ``/etc/bohrium/config.ini`` (Windows: %PROGRAMFILES%\bohrium\config.ini)
 
 
 The default configuration file looks like this::
@@ -18,26 +18,26 @@ The default configuration file looks like this::
     children = node
 
     [node]
-    impl = /opt/cphvb/libbh_vem_node.so
+    impl = /opt/bohrium/libbh_vem_node.so
     children = simple
     type = vem
 
     [simple]
-    impl = /opt/cphvb/libbh_ve_simple.so
+    impl = /opt/bohrium/libbh_ve_simple.so
     type = ve
 
     [score]
-    impl = /opt/cphvb/libbh_ve_score.so
+    impl = /opt/bohrium/libbh_ve_score.so
     type = ve
 
     [mcore]
-    impl = /opt/cphvb/libbh_ve_mcore.so
+    impl = /opt/bohrium/libbh_ve_mcore.so
     type = ve
 
     [gpu]
-    impl = /opt/cphvb/libbh_ve_gpu.so
+    impl = /opt/bohrium/libbh_ve_gpu.so
     type = ve
-    ocldir = /opt/cphvb/lib/ocl_source
+    ocldir = /opt/bohrium/lib/ocl_source
 
 
 The configuration file consists of a number of components marked with square brackets. For example ``[bridge]``, ``[node]`` and ``[simple]`` are all components available for the runtime system. 

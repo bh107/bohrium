@@ -375,6 +375,6 @@ std::string ResourceManager::getKernelPath()
 {
     char* dir = bh_component_config_lookup(component, "ocldir");
     if (dir == NULL)
-        return std::string("/opt/cphvb/lib/ocl_source");
+        return std::string("/opt/bohrium/lib/ocl_source");
     return std::string(dir);
 }

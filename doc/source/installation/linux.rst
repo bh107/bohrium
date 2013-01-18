@@ -14,17 +14,17 @@ And some additional packages::
 
 Download and extract the source code::
   
-  wget https://bitbucket.org/cphvb/cphvb/downloads/cphvb-v0.1.tgz
-  tar -xzf cphvb-v0.1.tgz
+  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
+  tar -xzf bohrium-v0.1.tgz
 
 Build and install::
   
-  cd cphvb-v0.1
+  cd bohrium-v0.1
   make
   make install
 
 .. note:: The installation will prompt you for the installation path. 
-          The default path is ``/opt/cphvb`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
+          The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
 
@@ -33,13 +33,13 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
   #Example
-  export PYTHONPATH=/opt/cphvb/lib/python2.7/site-packages:$PYTHONPATH
+  export PYTHONPATH=/opt/bohrium/lib/python2.7/site-packages:$PYTHONPATH
 
 The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
 
   export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
   #Example
-  export LD_LIBRARY_PATH=/opt/cphvb:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=/opt/bohrium:$LD_LIBRARY_PATH
   
 Now the basic installation should work. Try running the NumPy test suite::
 

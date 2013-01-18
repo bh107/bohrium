@@ -76,9 +76,9 @@ def install(components,prefix,interpreter):
 
 def install_config(prefix):
     if os.geteuid() == 0:#Root user
-        HOME_CONFIG = "/etc/cphvb"
+        HOME_CONFIG = "/etc/bohrium"
     else: 
-        HOME_CONFIG = join(join(expanduser("~"),".cphvb"))
+        HOME_CONFIG = join(join(expanduser("~"),".bohrium"))
     if not exists(HOME_CONFIG):
         os.mkdir(HOME_CONFIG)
     dst = join(HOME_CONFIG, "config.ini")
@@ -87,7 +87,7 @@ def install_config(prefix):
         src_file = open(src, "r")
         src_str = src_file.read()
         src_file.close()
-        dst_str = src_str.replace("/opt/cphvb",prefix)
+        dst_str = src_str.replace("/opt/bohrium",prefix)
         if sys.platform.startswith('darwin'):
             dst_str = dst_str.replace(".so",".dylib")
         dst_file = open(dst,"w")
@@ -99,7 +99,7 @@ def install_config(prefix):
 if __name__ == "__main__":
     debug = False
     interactive = False
-    prefix = "/opt/cphvb"
+    prefix = "/opt/bohrium"
     interpreter = sys.executable
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))

@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-/* Mapping of cphvb data types to C data types */
+/* Mapping of bohrium data types to C data types */
 typedef unsigned char bh_bool;
 typedef int8_t        bh_int8;
 typedef int16_t       bh_int16;

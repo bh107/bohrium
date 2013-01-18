@@ -1,7 +1,7 @@
 /*
  * Copyright 2011 Troels Blum <troels@blum.dk>
  *
- * This file is part of Bohrium <http://code.google.com/p/cphvb/>.
+ * This file is part of Bohrium <http://code.google.com/p/bohrium/>.
  *
  * Bohrium is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

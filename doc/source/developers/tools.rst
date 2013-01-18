@@ -67,17 +67,17 @@ As well as a python-packages **breathe** and **numpydoc** for integrating doxyge
 
 Overview of the documentatation files::
 
-  cphvb/doc                 # Root folder of the documentation.
-  cphvb/doc/source          # Write / Edit the documentation here.
-  cphvb/doc/build           # Documentation is "rendered" and stored here.
-  cphvb/doc/Makefile        # This file instructs Sphinx on how to "render" the documentation.
-  cphvb/doc/make.bat        # ---- || ----, on Windows
-  cphvb/doc/deploy_doc.sh   # This script pushes the rendered docs to http://bohrium.bitbucket.org.
+  bohrium/doc                 # Root folder of the documentation.
+  bohrium/doc/source          # Write / Edit the documentation here.
+  bohrium/doc/build           # Documentation is "rendered" and stored here.
+  bohrium/doc/Makefile        # This file instructs Sphinx on how to "render" the documentation.
+  bohrium/doc/make.bat        # ---- || ----, on Windows
+  bohrium/doc/deploy_doc.sh   # This script pushes the rendered docs to http://bohrium.bitbucket.org.
 
 Most used commands
 ~~~~~~~~~~~~~~~~~~
 
-These commands assume that your current working dir is **cphvb/doc**.
+These commands assume that your current working dir is **bohrium/doc**.
 
 Initiate doxygen::
  

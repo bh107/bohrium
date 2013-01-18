@@ -1,14 +1,14 @@
 Developer Guide
 ---------------
 
-Bohrium is hosted and made publicly available via a `git-repository <https://bitbucket.org/cphvb/cphvb>`_ on `bitbucket <https://bitbucket.org/cphvb>`_ under the :ref:`LGPLv3 License <license>`.
+Bohrium is hosted and made publicly available via a `git-repository <https://bitbucket.org/bohrium/bohrium>`_ on `bitbucket <https://bitbucket.org/bohrium>`_ under the :ref:`LGPLv3 License <license>`.
 
-If you want to join / contribute then fork the `repository <https://bitbucket.org/cphvb/cphvb>`_  on bitbucket and get in touch with us.
+If you want to join / contribute then fork the `repository <https://bitbucket.org/bohrium/bohrium>`_  on bitbucket and get in touch with us.
 
 If you just want read-access then simply clone the repos::
 
-  git clone git@bitbucket.org:cphvb/cphvb.git
-  cd cphvb
+  git clone git@bitbucket.org:bohrium/bohrium.git
+  cd bohrium
   git submodule init
   git submodule update
 
