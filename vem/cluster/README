@@ -28,7 +28,7 @@ def chunks(operands[], start_coord=(0,...,0), end_coord=(infinity,...,infinity))
         
     chunks[] = A new copy of each operand with the new common shape and their respective calculated start offsets
     
-    corners = set of binary numbers with bit-length equals the number of dimensions
+    corners = set of binary numbers with bit-length equals the number of dimensions, excluding zero
     for corner in corners:
         for d in number of dimensions:
             if corner[d]:
