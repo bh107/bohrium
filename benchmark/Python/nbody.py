@@ -7,7 +7,7 @@ This is done to keep the simulation simple enough for teaching purposes
 All the work is done in the calc_force, move and random_galaxy functions.
 To vectorize the code these are the functions to transform.
 """
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 # By using the solar-mass as the mass unit and years as the standard time-unit

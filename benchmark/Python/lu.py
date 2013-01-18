@@ -2,7 +2,7 @@
 # But with no pivoting!
 # Translated by Brian Vinter
 
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 def main():

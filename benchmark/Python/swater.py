@@ -2,7 +2,7 @@
 # Saved images may be converted into an animated gif with:
 # convert   -delay 20   -loop 0   swater*.png   swater.gif
 
-import cphvbnumpy as numpy
+import bohrium as numpy
 import util
 
 B = util.Benchmark()

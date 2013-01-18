@@ -4,7 +4,7 @@
 ## equivalent 'equilibrium' density is found, and the densities
 ## relax towards that state, in a proportion governed by omega.
 ##               Iain Haslam, March 2006.
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 B = util.Benchmark()

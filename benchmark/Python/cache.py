@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 def main():

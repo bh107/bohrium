@@ -1,4 +1,4 @@
-import cphvbnumpy as numpy
+import bohrium as numpy
 import util
 
 def onethree(n, m, i, b):

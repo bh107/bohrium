@@ -168,7 +168,7 @@ if __name__ == "__main__":
                   ("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
-                  ("CPHVBNUMPY", "cphvbnumpy", True)
+                  ("CPHVBNUMPY", "bohrium", True)
                  ]
 
     if cmd == "rebuild":

@@ -1,7 +1,7 @@
-import cphvbnumpy as np
+import bohrium as np
 from numpytest import numpytest
-import cphvbnumpy.linalg as la
-from cphvbnumpy import examples as exp
+import bohrium.linalg as la
+from bohrium import examples as exp
 
 class test_jacobi(numpytest):
     def __init__(self):

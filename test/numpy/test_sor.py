@@ -1,7 +1,7 @@
-import cphvbnumpy as np
+import bohrium as np
 from numpytest import numpytest
-import cphvbnumpy.linalg as la
-from cphvbnumpy import examples as exp
+import bohrium.linalg as la
+from bohrium import examples as exp
 
 def sor_setup(W,H,dtype=np.float32,bohrium=False):
     if W%2 > 0 or H%2 > 0:

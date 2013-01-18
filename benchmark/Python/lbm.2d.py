@@ -5,7 +5,7 @@ Copyright (C) 2006 Jonas Latt
 Address: Rue General Dufour 24,  1211 Geneva 4, Switzerland
 E-mail: Jonas.Latt@cui.unige.ch
 '''
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 """

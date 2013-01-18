@@ -1,4 +1,4 @@
-.. automodule:: cphvbnumpy.linalg
+.. automodule:: bohrium.linalg
    :members:
    :undoc-members:
 

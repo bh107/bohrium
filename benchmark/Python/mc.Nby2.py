@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import bohriumbridge as cnp
 import util
 

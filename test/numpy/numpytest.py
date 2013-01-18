@@ -1,6 +1,6 @@
 #Test and demonstration of the NumPy Bridge.
 import numpy as np
-import cphvbnumpy as cnp
+import bohrium as cnp
 import bohriumbridge
 import sys
 import time
