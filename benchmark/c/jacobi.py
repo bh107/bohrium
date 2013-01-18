@@ -5,10 +5,10 @@ import sys
 
 H = W = int(sys.argv[1])
 I = int(sys.argv[2])
-cphvb = sys.argv[3].lower() == 'true'
+bohrium = sys.argv[3].lower() == 'true'
 
-full        = np.empty((H+2,W+2),   dtype=np.float64, cphvb=cphvb)
-work        = np.empty((H+2,W+2),   dtype=np.float64, cphvb=cphvb)
+full        = np.empty((H+2,W+2),   dtype=np.float64, bohrium=bohrium)
+work        = np.empty((H+2,W+2),   dtype=np.float64, bohrium=bohrium)
 
 full[:]     = np.arange((H+2)*(W+2), dtype=np.float64).reshape((H+2,W+2))
 cb.flush()

@@ -62,7 +62,7 @@ typedef struct
     BH_USER_FUNC_HEADER(1)
 } bh_userfunc;
 
-//Memory layout of the CPHVB instruction
+//Memory layout of the Bohrium instruction
 typedef struct
 {
     //Instruction status

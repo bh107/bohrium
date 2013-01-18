@@ -7,7 +7,7 @@ import json
 import sys
 import os
 
-mapped = {          # Datatype mapping from numpy to CPHVB
+mapped = {          # Datatype mapping from numpy to Bohrium
     '?': 'BH_BOOL',
 
     'b': 'BH_INT8',

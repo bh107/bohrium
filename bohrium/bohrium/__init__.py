@@ -1,5 +1,5 @@
 """
-CphVB NumPy is an extended version of NumPy that supports Bohrium as the computation backend.  The Bohrium NumPy module includes the original NumPy backend, which makes it possible to use both backend through the same Python Module. 
+Bohrium NumPy is an extended version of NumPy that supports Bohrium as the computation backend.  The Bohrium NumPy module includes the original NumPy backend, which makes it possible to use both backend through the same Python Module. 
 
 In order to use the Bohrium backend rather than normal NumPy you can either import the ``bohrium`` module instead of ``numpy`` or use the new optional parameter `bohrium`.
 
@@ -72,7 +72,7 @@ linalg
 Available subpackages
 ~~~~~~~~~~~~~~~~~~~~~
 examples
-    Code-examples of using Python/NumPy with CphVB.
+    Code-examples of using Python/NumPy with Bohrium.
 
 """
 from core import *
