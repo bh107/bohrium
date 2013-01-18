@@ -14,7 +14,7 @@ import collections
 
 def gen_headerfile( opcodes ):
 
-    enums = ("        %s,\t\t// %s" % (opcode['opcode'], opcode['doc']) for opcode in opcodes)
+    enums = ("        %s = %s,\t\t// %s" % (opcode['opcode'], opcode['id'], opcode['doc']) for opcode in opcodes)
     stamp   = time.strftime("%d/%m/%Y")
 
     return """
@@ -37,7 +37,7 @@ enum /* bh_opcode */
 {
 __OPCODES__
 
-    BH_NO_OPCODES    // The amount of opcodes
+    BH_NO_OPCODES = __NO_OPCODES__    // The amount of opcodes
 };
 
 #ifdef __cplusplus
@@ -45,7 +45,7 @@ __OPCODES__
 #endif
 
 #endif
-""".replace('__TIMESTAMP__', stamp).replace('__OPCODES__', '\n'.join(enums))
+""".replace('__TIMESTAMP__', stamp).replace('__OPCODES__', '\n'.join(enums)).replace('__NO_OPCODES__', str(len(opcodes)))
 
 def gen_cfile(opcodes):
 

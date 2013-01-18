@@ -9,7 +9,8 @@ The file contains a list of opcode definitions on the form::
         "_opcode":  "BH_ADD", 
         "doc":      "Add arguments element-wise.",
         "code":     "op1 = op2 + op3",
-        "nop":      3, 
+        "nop":      3,
+        "id":     1, 
         "system_opcode": false, 
         "types": [
             ["BH_BOOL", "BH_BOOL", "BH_BOOL"],
@@ -26,6 +27,8 @@ doc
   A textual description of the opcode.
 code
   A bried code-snippet illustrating the opcode-instruction.
+id
+  The numeric ID of the operation
 nop
   The amount of operands the instruction uses.
 system_opcode
