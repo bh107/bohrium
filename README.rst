@@ -21,4 +21,4 @@ Features
 | Windows   | X               | X              | -             | -     | X  | X  |
 +-----------+-----------------+----------------+---------------+-------+----+----+
 
-The documentation is available at www.cphvb.org
+The documentation is available at www.bh107.org
