@@ -8,11 +8,11 @@ def main():
 
     x = numpy.arange(N**2, dtype=numpy.float32)
     x.shape = (N, N)
-    x.cphvb = B.cphvb
+    x.bohrium = B.bohrium
 
     y = numpy.arange(N**2, dtype=numpy.float32)
     y.shape = (N, N)
-    x.cphvb = B.cphvb
+    x.bohrium = B.bohrium
 
     B.start()
 

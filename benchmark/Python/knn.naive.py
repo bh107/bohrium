@@ -5,13 +5,13 @@ import util
 def data_range(B, N, F):
 
     # Data is a list of N-dimensional coordinates / features in euclidean space.
-    data_flat   = np.array(range(0,N+1)*F, dtype=B.dtype, cphvb=B.cphvb)
+    data_flat   = np.array(range(0,N+1)*F, dtype=B.dtype, bohrium=B.bohrium)
     data        = data_flat.reshape(F, N+1)
-    data.cphvb  = B.cphvb
+    data.bohrium  = B.bohrium
 
     # Target is a single coordinate / feature in N-dimensional euclidian-space.
-    x = np.array([[N/2]]*F, dtype=B.dtype, cphvb=B.cphvb)
-    x.cphvb     = B.cphvb
+    x = np.array([[N/2]]*F, dtype=B.dtype, bohrium=B.bohrium)
+    x.bohrium     = B.bohrium
 
     return data, x
 
@@ -21,8 +21,8 @@ def data_image(B, N, F):
         import Image
         img     = Image.open("knn.input.bmp")
         data    = np.array(img.getdata()).T.copy()
-        x       = np.array([[0],[250],[0]], cphvb=B.cphvb)
-        data.cphvb = B.cphvb
+        x       = np.array([[0],[250],[0]], bohrium=B.bohrium)
+        data.bohrium = B.bohrium
         return data, x
     except Exception as e:
         print "Failed using image data-set, reverting to range. Err=[%s]" % e

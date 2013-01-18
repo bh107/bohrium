@@ -9,8 +9,8 @@ B.start()
 sum=0.0
 for i in xrange(I):
 
-    x = np.random.random(B.size, dtype=B.dtype, cphvb=B.cphvb)
-    y = np.random.random(B.size, dtype=B.dtype, cphvb=B.cphvb)
+    x = np.random.random(B.size, dtype=B.dtype, bohrium=B.bohrium)
+    y = np.random.random(B.size, dtype=B.dtype, bohrium=B.bohrium)
 
     np.square(x,x)
     np.square(y,y)

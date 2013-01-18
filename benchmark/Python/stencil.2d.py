@@ -10,7 +10,7 @@ def main():
 
     b.start()
 
-    raw = numpy.ones((n+4, m+4), cphvb=b.cphvb)
+    raw = numpy.ones((n+4, m+4), bohrium=b.bohrium)
 
     data =   raw[2:-2, 2:-2]
     up2 =    raw[2:-2,  :-4]

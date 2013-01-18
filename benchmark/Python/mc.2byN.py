@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     # scattering n points over the unit square
     p = np.random.random((2,N))
-    p.cphvb = B.cphvb
+    p.bohrium = B.bohrium
 
     B.start()
 

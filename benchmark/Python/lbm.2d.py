@@ -42,17 +42,17 @@ omega   = 1. / (3*nu+1./2.)      # relaxation parameter
 tPlot   = 5                      # cycles
 
 # D2Q9 Lattice constants
-t       = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float, cphvb=B.cphvb)
-t_l     = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float, cphvb=B.cphvb)
-cx      = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float, cphvb=B.cphvb)
-cx_l    = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float, cphvb=B.cphvb)
-cy      = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float, cphvb=B.cphvb)
-cy_l    = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float, cphvb=B.cphvb)
-opp     = np.array([ 0,   3,  4,  1,  2,    7,   8,   5,   6], dtype=float, cphvb=B.cphvb)
-col     = np.array(xrange(2,ly), dtype=float, cphvb=B.cphvb)
+t       = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float, bohrium=B.bohrium)
+t_l     = np.array([4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.], dtype=float, bohrium=B.bohrium)
+cx      = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float, bohrium=B.bohrium)
+cx_l    = np.array([  0,   1,  0, -1,  0,    1,  -1,  -1,   1], dtype=float, bohrium=B.bohrium)
+cy      = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float, bohrium=B.bohrium)
+cy_l    = np.array([  0,   0,  1,  0, -1,    1,   1,  -1,  -1], dtype=float, bohrium=B.bohrium)
+opp     = np.array([ 0,   3,  4,  1,  2,    7,   8,   5,   6], dtype=float, bohrium=B.bohrium)
+col     = np.array(xrange(2,ly), dtype=float, bohrium=B.bohrium)
 
-bbRegion        = np.empty((lx,ly), dtype=float, cphvb=B.cphvb)
-not_bbRegion    = np.empty((lx,ly), dtype=float, cphvb=B.cphvb)
+bbRegion        = np.empty((lx,ly), dtype=float, bohrium=B.bohrium)
+not_bbRegion    = np.empty((lx,ly), dtype=float, bohrium=B.bohrium)
 
 bbRegion[:] =  0.0
 bbRegion[:] =  1.0
@@ -68,11 +68,11 @@ not_bbRegion[:,0] *= 0.0
 not_bbRegion[:,-1] *= 0.0
 
 # Initial condition: (rho=0, u=0) ==> fIn[i] = t[i]
-fIn = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
+fIn = np.empty([9,lx,ly], dtype=float, bohrium=B.bohrium)
 fIn[:] = 1.0 * t[:,np.newaxis,np.newaxis]
-fEq = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
+fEq = np.empty([9,lx,ly], dtype=float, bohrium=B.bohrium)
 fEq[:] = 1.0
-fOut = np.empty([9,lx,ly], dtype=float, cphvb=B.cphvb)
+fOut = np.empty([9,lx,ly], dtype=float, bohrium=B.bohrium)
 fOut[:] = 1.0
 
 def lbm2d():
@@ -89,8 +89,8 @@ def lbm2d():
         y = col-0.5
         ux[0,2:] = 4 * uMax / (L ** 2) * (y * L - y ** 2)
         uy[0,2:] *= 0
-        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float, cphvb=B.cphvb)
-        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float, cphvb=B.cphvb)
+        t1 = np.empty(fIn[0:5:2,0,2:].shape, dtype=float, bohrium=B.bohrium)
+        t2 = np.empty(fIn[3:8:2,0,2:].shape, dtype=float, bohrium=B.bohrium)
         t1[:] = fIn[0:5:2,0,2:]
         t2[:] = fIn[3:8:2,0,2:]
         rho[0,2:] = 1 / (1-ux[0,2:]) * (np.add.reduce(t1) + 2 * np.add.reduce(t2))
@@ -111,7 +111,7 @@ def lbm2d():
             # Right boundary:
             fOut[i,-1,2:] = fEq[i,-1,2:] + 18 * t_l[i] * cx_l[i] * cy_l[i] *(fIn[5,-1,2:] - fIn[8,-1,2:] - fEq[5,-1,2:] + fEq[8,-1,2:])
             # Bounce back region:
-            BB = np.empty((lx,ly), cphvb=B.cphvb)
+            BB = np.empty((lx,ly), bohrium=B.bohrium)
             BB[:] = fIn[opp[i]]
             BB *= bbRegion
             fOut[i] *= not_bbRegion
@@ -120,22 +120,22 @@ def lbm2d():
         # Streaming step
         for i in xrange(0,9):
             if cx_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, bohrium=B.bohrium)
                 t1[1:] = fOut[i][:-1]
                 t1[0] = fOut[i][-1]
                 fOut[i] = t1
             elif cx_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, bohrium=B.bohrium)
                 t1[:-1] = fOut[i][1:]
                 t1[-1] = fOut[i][0]
                 fOut[i] = t1
             if cy_l[i] == 1:
-                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, bohrium=B.bohrium)
                 t1[:,1:] = fOut[i][:,:-1]
                 t1[:,0] = fOut[i][:,-1]
                 fIn[i] = t1
             elif cy_l[i] == -1:
-                t1 = np.empty(fOut[i].shape, dtype=float, cphvb=B.cphvb)
+                t1 = np.empty(fOut[i].shape, dtype=float, bohrium=B.bohrium)
                 t1[:,:-1] = fOut[i][:,1:]
                 t1[:,-1] = fOut[i][:,0]
                 fIn[i] = t1

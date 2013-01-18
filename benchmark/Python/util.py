@@ -22,15 +22,15 @@ class Benchmark:
         self.batch_mode = False
         t = datetime.datetime.now()
         date = "%d:%d:%d %d/%d/%d"%(t.hour,t.minute,t.second,t.day,t.month,t.year)
-        self.info = {'cphvb':False, 'date':date,'file':os.path.basename(sys.argv[0])}
+        self.info = {'bohrium':False, 'date':date,'file':os.path.basename(sys.argv[0])}
         self.info['dtype'] = "float64"
         options, self.argv = getopt.gnu_getopt(sys.argv[1:], \
                 'p:n:c:s:',\
-                ['cphvb=','nnodes=','ncores=','size=','batch','dtype='])
+                ['bohrium=','nnodes=','ncores=','size=','batch','dtype='])
 
         for opt, arg in options:
-            if opt in ('-p', '--cphvb'):
-                self.info['cphvb'] = bool(eval(arg))
+            if opt in ('-p', '--bohrium'):
+                self.info['bohrium'] = bool(eval(arg))
             if opt in ('-n', '--nnodes'):
                 self.info['nnodes'] = int(arg)
             if opt in ('-c', '--ncores'):
@@ -46,16 +46,16 @@ class Benchmark:
         self.info['nthd'] = multiprocessing.cpu_count()
         self.info['nblocks'] = 16
         try:
-            self.info['nthd'] = int(env['CPHVB_NUM_THREADS'])
+            self.info['nthd'] = int(env['BH_NUM_THREADS'])
         except KeyError:
             pass
         try:
-            self.info['nblocks'] = int(env['CPHVB_SCORE_NBLOCKS'])
+            self.info['nblocks'] = int(env['BH_SCORE_NBLOCKS'])
         except KeyError:
             pass
         #Expose variables to the user.
         self.size  = self.info['size']
-        self.cphvb = self.info['cphvb']
+        self.bohrium = self.info['bohrium']
         self.dtype = eval("np.%s"%self.info['dtype'])
 
     def start(self):
@@ -70,14 +70,14 @@ class Benchmark:
         if self.batch_mode:
             print "%s"%pickle.dumps(self.info)
         else:
-            print "%s - cphvb: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['cphvb'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
+            print "%s - bohrium: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['bohrium'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
 
 
-def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
+def do(nthd, nblocks, jobsize, filename, bohrium, savedir, uid):
     try:
         env = os.environ
-        env['CPHVB_NUM_THREADS'] = "%d"%nthd
-        env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
+        env['BH_NUM_THREADS'] = "%d"%nthd
+        env['BH_SCORE_NBLOCKS'] = "%d"%nblocks
 
         """
         taskmask = '0'
@@ -86,11 +86,11 @@ def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
         for i in xrange(1,nthd,2):
             taskmask += ",%d"%i
         """
-        p = subprocess.Popen([sys.executable,filename,"--batch","--cphvb=%s"%cphvb, "--size",jobsize],env=env,stdout=subprocess.PIPE)
+        p = subprocess.Popen([sys.executable,filename,"--batch","--bohrium=%s"%bohrium, "--size",jobsize],env=env,stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = p.communicate()
         err = p.wait()
         info = pickle.loads(stdoutdata)
-        if not cphvb:
+        if not bohrium:
             print "#NumPy   ;     N/A;%10.4f; %s"%(info['totaltime'],info)
         else:
             print "%9.d;%8.d;%10.4f; %s"%(nthd,nblocks, info['totaltime'],info)

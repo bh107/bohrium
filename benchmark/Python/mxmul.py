@@ -7,14 +7,14 @@ def main():
 
     x = numpy.arange(N**2, dtype=numpy.float32)
     x.shape = (N, N)
-    x.cphvb = B.cphvb
+    x.bohrium = B.bohrium
 
     y = numpy.arange(N**2, dtype=numpy.float32)
     y.shape = (N, N)
-    x.cphvb = B.cphvb
+    x.bohrium = B.bohrium
 
     z = numpy.empty((N,N), dtype=numpy.float32)
-    z.cphvb = B.cphvb
+    z.bohrium = B.bohrium
 
     B.start()
     for i in xrange(N):

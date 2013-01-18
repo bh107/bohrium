@@ -15,15 +15,15 @@ dx  = 1.0
 dy  = 1.0
 droploc = n/4
 
-H   = numpy.ones((n+2,n+2),     dtype=B.dtype, cphvb=B.cphvb);
-U   = numpy.zeros((n+2,n+2),    dtype=B.dtype, cphvb=B.cphvb);
-V   = numpy.zeros((n+2,n+2),    dtype=B.dtype, cphvb=B.cphvb);
-Hx  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
-Ux  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
-Vx  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
-Hy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
-Uy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
-Vy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, cphvb=B.cphvb);
+H   = numpy.ones((n+2,n+2),     dtype=B.dtype, bohrium=B.bohrium);
+U   = numpy.zeros((n+2,n+2),    dtype=B.dtype, bohrium=B.bohrium);
+V   = numpy.zeros((n+2,n+2),    dtype=B.dtype, bohrium=B.bohrium);
+Hx  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
+Ux  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
+Vx  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
+Hy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
+Uy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
+Vy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
 
 H[droploc,droploc] += 5.0
 

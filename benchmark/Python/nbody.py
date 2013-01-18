@@ -67,13 +67,13 @@ def random_galaxy( B, x_max, y_max, z_max, n, dtype ):
     """Generate a galaxy of random bodies"""
 
     return {            # We let all bodies stand still initially
-        'm':    np.random.random(n, dtype=dtype, cphvb=B.cphvb) * 10**6 / (4 * np.pi ** 2),
-        'x':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*x_max-x_max,
-        'y':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*y_max-y_max,
-        'z':    np.random.random(n, dtype=dtype, cphvb=B.cphvb)*2*z_max-z_max,
-        'vx':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
-        'vy':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
-        'vz':   np.ones(n, dtype=dtype, cphvb=B.cphvb),
+        'm':    np.random.random(n, dtype=dtype, bohrium=B.bohrium) * 10**6 / (4 * np.pi ** 2),
+        'x':    np.random.random(n, dtype=dtype, bohrium=B.bohrium)*2*x_max-x_max,
+        'y':    np.random.random(n, dtype=dtype, bohrium=B.bohrium)*2*y_max-y_max,
+        'z':    np.random.random(n, dtype=dtype, bohrium=B.bohrium)*2*z_max-z_max,
+        'vx':   np.ones(n, dtype=dtype, bohrium=B.bohrium),
+        'vy':   np.ones(n, dtype=dtype, bohrium=B.bohrium),
+        'vz':   np.ones(n, dtype=dtype, bohrium=B.bohrium),
     }
 
 if __name__ == '__main__':

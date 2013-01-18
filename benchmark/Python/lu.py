@@ -11,9 +11,9 @@ def main():
     N = B.size[0]
     I = B.size[1]
 
-    A       = np.random.random((N,N),       cphvb=B.cphvb)
-    pivot   = np.empty((N), dtype=float,    cphvb=B.cphvb)
-    ONE     = np.empty((1), dtype=float,    cphvb=B.cphvb)
+    A       = np.random.random((N,N),       bohrium=B.bohrium)
+    pivot   = np.empty((N), dtype=float,    bohrium=B.bohrium)
+    ONE     = np.empty((1), dtype=float,    bohrium=B.bohrium)
 
     pivot[:]    = 0.0
     ONE[0:-1]   = 1.0
