@@ -4,6 +4,7 @@
         "doc": "Add arguments element-wise.", 
         "code": "op1 = op2 + op3", 
         "nop": 3, 
+        "id": 1, 
         "system_opcode": false, 
         "types": [
             [
@@ -78,6 +79,7 @@
         "doc": "Subtract arguments, element-wise.", 
         "code": "op1 = op2 - op3", 
         "nop": 3, 
+        "id": 2, 
         "system_opcode": false, 
         "types": [
             [
@@ -152,6 +154,7 @@
         "doc": "Multiply arguments element-wise.", 
         "code": "op1 = op2 * op3", 
         "nop": 3, 
+        "id": 3, 
         "system_opcode": false, 
         "types": [
             [
@@ -226,6 +229,7 @@
         "doc": "Divide arguments element-wise.", 
         "code": "op1 = op2 / op3", 
         "nop": 3, 
+        "id": 4, 
         "system_opcode": false, 
         "types": [
             [
@@ -295,6 +299,7 @@
         "doc": "First array elements raised to powers from second array, element-wise.", 
         "code": "op1 = pow( op2, op3 )", 
         "nop": 3, 
+        "id": 5, 
         "system_opcode": false, 
         "types": [
             [
@@ -354,6 +359,7 @@
         "doc": "Calculate the absolute value element-wise.", 
         "code": "op1 = op2 < 0.0 ? -op2: op2", 
         "nop": 2, 
+        "id": 6, 
         "system_opcode": false, 
         "types": [
             [
@@ -407,6 +413,7 @@
         "doc": "Return the truth value of (x1 > x2) element-wise.", 
         "code": "op1 = op2 > op3", 
         "nop": 3, 
+        "id": 7, 
         "system_opcode": false, 
         "types": [
             [
@@ -471,6 +478,7 @@
         "doc": "Return the truth value of (x1 >= x2) element-wise.", 
         "code": "op1 = op2 >= op3", 
         "nop": 3, 
+        "id": 8, 
         "system_opcode": false, 
         "types": [
             [
@@ -535,6 +543,7 @@
         "doc": "Return the truth value of (x1 < x2) element-wise.", 
         "code": "op1 = op2 < op3", 
         "nop": 3, 
+        "id": 9, 
         "system_opcode": false, 
         "types": [
             [
@@ -599,6 +608,7 @@
         "doc": "Return the truth value of (x1 =< x2) element-wise.", 
         "code": "op1 = op2 <= op3", 
         "nop": 3, 
+        "id": 10, 
         "system_opcode": false, 
         "types": [
             [
@@ -663,6 +673,7 @@
         "doc": "Return (x1 == x2) element-wise.", 
         "code": "op1 = op2 == op3", 
         "nop": 3, 
+        "id": 11, 
         "system_opcode": false, 
         "types": [
             [
@@ -737,6 +748,7 @@
         "doc": "Return (x1 != x2) element-wise.", 
         "code": "op1 = op2 != op3", 
         "nop": 3, 
+        "id": 12, 
         "system_opcode": false, 
         "types": [
             [
@@ -811,6 +823,7 @@
         "doc": "Compute the truth value of x1 AND x2 elementwise.", 
         "code": "op1 = op2 && op3", 
         "nop": 3, 
+        "id": 13, 
         "system_opcode": false, 
         "types": [
             [
@@ -875,6 +888,7 @@
         "doc": "Compute the truth value of x1 OR x2 elementwise.", 
         "code": "op1 = op2 || op3", 
         "nop": 3, 
+        "id": 14, 
         "system_opcode": false, 
         "types": [
             [
@@ -939,6 +953,7 @@
         "doc": "Compute the truth value of x1 XOR x2, element-wise.", 
         "code": "op1 = (!op2 != !op3)", 
         "nop": 3, 
+        "id": 15, 
         "system_opcode": false, 
         "types": [
             [
@@ -1003,6 +1018,7 @@
         "doc": "Compute the truth value of NOT x elementwise.", 
         "code": "op1 = !op2", 
         "nop": 2, 
+        "id": 16, 
         "system_opcode": false, 
         "types": [
             [
@@ -1056,6 +1072,7 @@
         "doc": "Element-wise maximum of array elements.", 
         "code": "op1 = op2 < op3 ? op3 : op2", 
         "nop": 3, 
+        "id": 17, 
         "system_opcode": false, 
         "types": [
             [
@@ -1120,6 +1137,7 @@
         "doc": "Element-wise minimum of array elements.", 
         "code": "op1 = op2 < op3 ? op2 : op3", 
         "nop": 3, 
+        "id": 18, 
         "system_opcode": false, 
         "types": [
             [
@@ -1184,6 +1202,7 @@
         "doc": "Compute the bit-wise AND of two arrays element-wise.", 
         "code": "op1 = op2 & op3", 
         "nop": 3, 
+        "id": 19, 
         "system_opcode": false, 
         "types": [
             [
@@ -1238,6 +1257,7 @@
         "doc": "Compute the bit-wise OR of two arrays element-wise.", 
         "code": "op1 = op2 | op3", 
         "nop": 3, 
+        "id": 20, 
         "system_opcode": false, 
         "types": [
             [
@@ -1292,6 +1312,7 @@
         "doc": "Compute the bit-wise XOR of two arrays element-wise.", 
         "code": "op1 = op2 ^ op3", 
         "nop": 3, 
+        "id": 21, 
         "system_opcode": false, 
         "types": [
             [
@@ -1346,6 +1367,7 @@
         "doc": "Compute bit-wise inversion, or bit-wise NOT, element-wise.", 
         "code": "op1 = ~op2", 
         "nop": 2, 
+        "id": 22, 
         "system_opcode": false, 
         "types": [
             [
@@ -1386,11 +1408,12 @@
             ]
         ]
     }, 
-     {
+    {
         "opcode": "BH_LEFT_SHIFT", 
         "doc": "Shift the bits of an integer to the left.", 
         "code": "op1 = (op2) << (op3)", 
         "nop": 3, 
+        "id": 23, 
         "system_opcode": false, 
         "types": [
             [
@@ -1440,6 +1463,7 @@
         "doc": "Shift the bits of an integer to the right.", 
         "code": "op1 = (op2) >> (op3)", 
         "nop": 3, 
+        "id": 24, 
         "system_opcode": false, 
         "types": [
             [
@@ -1489,6 +1513,7 @@
         "doc": "Cosine elementwise.", 
         "code": "op1 = cos( op2 )", 
         "nop": 2, 
+        "id": 25, 
         "system_opcode": false, 
         "types": [
             [
@@ -1514,6 +1539,7 @@
         "doc": "Trigonometric sine, element-wise.", 
         "code": "op1 = sin( op2 )", 
         "nop": 2, 
+        "id": 26, 
         "system_opcode": false, 
         "types": [
             [
@@ -1539,6 +1565,7 @@
         "doc": "Compute tangent element-wise.", 
         "code": "op1 = tan( op2 )", 
         "nop": 2, 
+        "id": 27, 
         "system_opcode": false, 
         "types": [
             [
@@ -1564,6 +1591,7 @@
         "doc": "Hyperbolic cosine, element-wise.", 
         "code": "op1 = cosh( op2 )", 
         "nop": 2, 
+        "id": 28, 
         "system_opcode": false, 
         "types": [
             [
@@ -1589,6 +1617,7 @@
         "doc": "Hyperbolic sine, element-wise.", 
         "code": "op1 = sinh( op2 )", 
         "nop": 2, 
+        "id": 29, 
         "system_opcode": false, 
         "types": [
             [
@@ -1614,6 +1643,7 @@
         "doc": "Compute hyperbolic tangent element-wise.", 
         "code": "op1 = tanh( op2 )", 
         "nop": 2, 
+        "id": 30, 
         "system_opcode": false, 
         "types": [
             [
@@ -1639,6 +1669,7 @@
         "doc": "Inverse sine, element-wise.", 
         "code": "op1 = asin( op2 )", 
         "nop": 2, 
+        "id": 31, 
         "system_opcode": false, 
         "types": [
             [
@@ -1656,6 +1687,7 @@
         "doc": "Trigonometric inverse cosine, element-wise.", 
         "code": "op1 = acos( op2 )", 
         "nop": 2, 
+        "id": 32, 
         "system_opcode": false, 
         "types": [
             [
@@ -1673,6 +1705,7 @@
         "doc": "Trigonometric inverse tangent, element-wise.", 
         "code": "op1 = atan( op2 )", 
         "nop": 2, 
+        "id": 33, 
         "system_opcode": false, 
         "types": [
             [
@@ -1690,6 +1723,7 @@
         "doc": "Inverse hyperbolic sine elementwise.", 
         "code": "op1 = asinh( op2 )", 
         "nop": 2, 
+        "id": 34, 
         "system_opcode": false, 
         "types": [
             [
@@ -1707,6 +1741,7 @@
         "doc": "Inverse hyperbolic cosine, elementwise.", 
         "code": "op1 = acosh( op2 )", 
         "nop": 2, 
+        "id": 35, 
         "system_opcode": false, 
         "types": [
             [
@@ -1724,6 +1759,7 @@
         "doc": "Inverse hyperbolic tangent elementwise.", 
         "code": "op1 = atanh( op2 )", 
         "nop": 2, 
+        "id": 36, 
         "system_opcode": false, 
         "types": [
             [
@@ -1741,6 +1777,7 @@
         "doc": "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.", 
         "code": "op1 = atan2( op2, op3 )", 
         "nop": 3, 
+        "id": 37, 
         "system_opcode": false, 
         "types": [
             [
@@ -1760,6 +1797,7 @@
         "doc": "Calculate the exponential of all elements in the input array.", 
         "code": "op1 = exp( op2 )", 
         "nop": 2, 
+        "id": 38, 
         "system_opcode": false, 
         "types": [
             [
@@ -1785,6 +1823,7 @@
         "doc": "Calculate `2**p` for all `p` in the input array.", 
         "code": "op1 = pow( 2, op2 )", 
         "nop": 2, 
+        "id": 39, 
         "system_opcode": false, 
         "types": [
             [
@@ -1802,6 +1841,7 @@
         "doc": "Calculate ``exp(x) - 1`` for all elements in the array.", 
         "code": "op1 = expm1( op2 )", 
         "nop": 2, 
+        "id": 40, 
         "system_opcode": false, 
         "types": [
             [
@@ -1819,6 +1859,7 @@
         "doc": "Natural logarithm, element-wise.", 
         "code": "op1 = log( op2 )", 
         "nop": 2, 
+        "id": 41, 
         "system_opcode": false, 
         "types": [
             [
@@ -1844,6 +1885,7 @@
         "doc": "Base-2 logarithm of `x`.", 
         "code": "op1 = log2( op2 )", 
         "nop": 2, 
+        "id": 42, 
         "system_opcode": false, 
         "types": [
             [
@@ -1861,6 +1903,7 @@
         "doc": "Return the base 10 logarithm of the input array, element-wise.", 
         "code": "op1 = log10( op2 )", 
         "nop": 2, 
+        "id": 43, 
         "system_opcode": false, 
         "types": [
             [
@@ -1886,6 +1929,7 @@
         "doc": "Return the natural logarithm of one plus the input array, element-wise.", 
         "code": "op1 = log1p( op2 )", 
         "nop": 2, 
+        "id": 44, 
         "system_opcode": false, 
         "types": [
             [
@@ -1903,6 +1947,7 @@
         "doc": "Return the positive square-root of an array, element-wise.", 
         "code": "op1 = sqrt( op2 )", 
         "nop": 2, 
+        "id": 45, 
         "system_opcode": false, 
         "types": [
             [
@@ -1928,6 +1973,7 @@
         "doc": "Return the ceiling of the input, element-wise.", 
         "code": "op1 = ceil( op2 )", 
         "nop": 2, 
+        "id": 46, 
         "system_opcode": false, 
         "types": [
             [
@@ -1945,6 +1991,7 @@
         "doc": "Return the truncated value of the input, element-wise.", 
         "code": "op1 = trunc( op2 )", 
         "nop": 2, 
+        "id": 47, 
         "system_opcode": false, 
         "types": [
             [
@@ -1962,6 +2009,7 @@
         "doc": "Return the floor of the input, element-wise.", 
         "code": "op1 = floor( op2 )", 
         "nop": 2, 
+        "id": 48, 
         "system_opcode": false, 
         "types": [
             [
@@ -1979,6 +2027,7 @@
         "doc": "Round elements of the array to the nearest integer.", 
         "code": "op1 = (op2 > 0.0) ? floor(op2 + 0.5) : ceil(op2 - 0.5)", 
         "nop": 2, 
+        "id": 49, 
         "system_opcode": false, 
         "types": [
             [
@@ -1996,6 +2045,7 @@
         "doc": "Return the element-wise remainder of division.", 
         "code": "op1 = op2 - floor(op2 / op3) * op3", 
         "nop": 3, 
+        "id": 50, 
         "system_opcode": false, 
         "types": [
             [
@@ -2055,6 +2105,7 @@
         "doc": "Test for NaN values.", 
         "code": "op1 = bh_isnan(op2)", 
         "nop": 2, 
+        "id": 51, 
         "system_opcode": false, 
         "types": [
             [
@@ -2072,6 +2123,7 @@
         "doc": "Test for infinity values.", 
         "code": "op1 = bh_isinf(op2)", 
         "nop": 2, 
+        "id": 52, 
         "system_opcode": false, 
         "types": [
             [
@@ -2089,6 +2141,7 @@
         "doc": "The identity function that returns the input value converted to the output data type.", 
         "code": "op1 = op2", 
         "nop": 2, 
+        "id": 53, 
         "system_opcode": false, 
         "types": [
             [
@@ -2686,6 +2739,7 @@
         "doc": "System instruction that informs the child component to forget the array and release any metadata allocated.", 
         "code": "forget(op1)", 
         "nop": 1, 
+        "id": 54, 
         "system_opcode": true, 
         "types": []
     }, 
@@ -2694,6 +2748,7 @@
         "doc": "System instruction that informs the child component to deallocate the data storage associated with the array.", 
         "code": "free(op1)", 
         "nop": 1, 
+        "id": 55, 
         "system_opcode": true, 
         "types": []
     }, 
@@ -2702,6 +2757,7 @@
         "doc": "System instruction that informs the child component to make data synchronized and available.", 
         "code": "SYNC", 
         "nop": 1, 
+        "id": 56, 
         "system_opcode": true, 
         "types": []
     }, 
@@ -2710,6 +2766,7 @@
         "doc": "A opcode that should be ignored.", 
         "code": "No operation.", 
         "nop": 0, 
+        "id": 57, 
         "system_opcode": true, 
         "types": []
     }, 
@@ -2718,6 +2775,7 @@
         "doc": "System instruction that represents a user-defined function registered by the Bridge.", 
         "code": "USER DEFINED BEHAVIOR", 
         "nop": 0, 
+        "id": 58, 
         "system_opcode": true, 
         "types": []
     }
