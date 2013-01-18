@@ -66,7 +66,6 @@ namespace NumCIL.Bohrium
 
 				Newtonsoft.Json.Linq.JArray ja = Newtonsoft.Json.Linq.JArray.Load(rd);
 
-				long i = 0;
 				foreach (var opcode in ja)
 				{
 					if (opcode is Newtonsoft.Json.Linq.JObject)
@@ -79,16 +78,15 @@ namespace NumCIL.Bohrium
 						catch { }
 
 						string name =  (string)opcode["opcode"];
-						long id = i++;
+						long id = (long)opcode["id"];
 
 						WriteLine("\t\t///<summary>");
 						if (!string.IsNullOrEmpty(comment))
 							WriteLine("\t\t/// " + System.Web.HttpUtility.HtmlEncode(comment));
 						if (!string.IsNullOrEmpty(example))
 							WriteLine("\t\t/// Example: " + System.Web.HttpUtility.HtmlEncode(example));
-						WriteLine("\t\t/// Integer value: " + id);
 						WriteLine("\t\t///</summary>");
-						WriteLine("\t\t" + name + ",");
+						WriteLine("\t\t" + name + " = " + id + ",");
 					}
 				}
                     
