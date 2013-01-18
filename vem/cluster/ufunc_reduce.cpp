@@ -50,7 +50,7 @@ static void reduce_chunk(bh_intp ufunc_id, bh_opcode opcode,
     ufunc->operand[1]  = in;
     ufunc->axis        = axis;
     ufunc->opcode      = opcode;
-    batch_schedule(CPHVB_USERFUNC, NULL, (bh_userfunc*)(ufunc));
+    batch_schedule(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
 }
 
 
@@ -123,11 +123,11 @@ static void reduce_vector(bh_opcode opcode, bh_intp axis,
                 batch_schedule(1, out->rank, ltmp); 
 
                 //Lets free the tmp array
-                batch_schedule(CPHVB_FREE, ltmp);
+                batch_schedule(BH_FREE, ltmp);
             }
-            batch_schedule(CPHVB_DISCARD, ltmp);
+            batch_schedule(BH_DISCARD, ltmp);
             if(in->ary->base != NULL)
-                batch_schedule(CPHVB_DISCARD, in->ary);
+                batch_schedule(BH_DISCARD, in->ary);
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -145,7 +145,7 @@ static void reduce_vector(bh_opcode opcode, bh_intp axis,
                 batch_schedule(0, in->rank, recv_view);
 
                 //Cleanup
-                batch_schedule(CPHVB_DISCARD, recv_view);
+                batch_schedule(BH_DISCARD, recv_view);
             }
             ++mtmp_count;//One scalar added to the master-tmp array
         }
@@ -167,11 +167,11 @@ static void reduce_vector(bh_opcode opcode, bh_intp axis,
         reduce_chunk(ufunc_id, opcode, axis, out->ary, tmp);
     
         //Lets cleanup
-        batch_schedule(CPHVB_DISCARD, tmp);
-        batch_schedule(CPHVB_FREE, mtmp);
-        batch_schedule(CPHVB_DISCARD, mtmp);
+        batch_schedule(BH_DISCARD, tmp);
+        batch_schedule(BH_FREE, mtmp);
+        batch_schedule(BH_DISCARD, mtmp);
         if(out->ary->base != NULL)
-            batch_schedule(CPHVB_DISCARD, out->ary);
+            batch_schedule(BH_DISCARD, out->ary);
     }
 }
 
@@ -254,10 +254,10 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
             
             reduce_chunk(ufunc_id, opcode, axis, out, in);
             //Clean the local views and free tmp arrays
-            batch_schedule(CPHVB_DISCARD, out);
+            batch_schedule(BH_DISCARD, out);
             if(in->base == NULL)
-                batch_schedule(CPHVB_FREE, in);
-            batch_schedule(CPHVB_DISCARD, in);
+                batch_schedule(BH_FREE, in);
+            batch_schedule(BH_DISCARD, in);
         }
 
         //Then we handle all the rest.
@@ -305,23 +305,23 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
 
             //Cleanup
             if(in->base == NULL)
-                batch_schedule(CPHVB_FREE, in);
-            batch_schedule(CPHVB_DISCARD, in);
+                batch_schedule(BH_FREE, in);
+            batch_schedule(BH_DISCARD, in);
             
             //Finally, we have to "reduce" the local chunks together
             bh_array *ops[] = {out, out, tmp};
             batch_schedule(opcode, ops, NULL);
             //Cleanup
-            batch_schedule(CPHVB_DISCARD, tmp);
+            batch_schedule(BH_DISCARD, tmp);
             if(out->base == NULL)
-                batch_schedule(CPHVB_FREE, out);
-            batch_schedule(CPHVB_DISCARD, out);
+                batch_schedule(BH_FREE, out);
+            batch_schedule(BH_DISCARD, out);
         }
     }
     catch(std::exception& e)
     {
         fprintf(stderr, "[CLUSTER-VEM] Unhandled exception when reducing: \"%s\"", e.what());
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

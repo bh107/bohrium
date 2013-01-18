@@ -98,7 +98,7 @@ namespace NumCIL.Bohrium
 		{
 			WriteLine("\t\t#warning Config file not found: '" + path + "', using dummy values");
 			foreach(var s in new string[] {"ADD", "SUBTRACT", "DIVIDE", "MULTIPLY", "MOD", "MAXIMUM", "MINIMUM", "FLOOR", "CEIL", "RINT", "ABSOLUTE", "SQRT", "EXP", "LOG", "LOG10", "POWER", "NEGATIVE", "IDENTITY", "DISCARD", "SYNC", "FREE", "USERFUNC"})
-				WriteLine("\t\tCPHVB_" + s.ToUpper() + " = -1,");
+				WriteLine("\t\tBH_" + s.ToUpper() + " = -1,");
 		}
 
 #>

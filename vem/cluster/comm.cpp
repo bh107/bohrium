@@ -65,7 +65,7 @@ void comm_gather_scatter(int scatter, bh_array *global_ary)
         //The slave-processes may need to allocate memory
         if(sendcnts[pgrid_myrank] > 0 && local_ary->data == NULL)
         {
-            if((err = bh_data_malloc(local_ary)) != CPHVB_SUCCESS)
+            if((err = bh_data_malloc(local_ary)) != BH_SUCCESS)
                 EXCEPT_OUT_OF_MEMORY();
         }
         //The master-process MUST have allocated memory already
@@ -81,13 +81,13 @@ void comm_gather_scatter(int scatter, bh_array *global_ary)
         //The master-processes may need to allocate memory
         if(pgrid_myrank == 0 && global_ary->data == NULL)
         {
-            if((err = bh_data_malloc(global_ary)) != CPHVB_SUCCESS)
+            if((err = bh_data_malloc(global_ary)) != BH_SUCCESS)
                 EXCEPT_OUT_OF_MEMORY();
         }
         
         //We will always allocate the local array when gathering because 
         //only the last process knows if the array has been initiated.
-        if((err = bh_data_malloc(local_ary)) != CPHVB_SUCCESS)
+        if((err = bh_data_malloc(local_ary)) != BH_SUCCESS)
             EXCEPT_OUT_OF_MEMORY();
     
         assert(sendcnts[pgrid_myrank] == 0 || local_ary->data != NULL);
@@ -175,15 +175,15 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
 
         //Tell the VEM to do the data copy.
         bh_array *ops[] = {tmp_ary, local_ary};
-        batch_schedule(CPHVB_IDENTITY, ops, NULL);
+        batch_schedule(BH_IDENTITY, ops, NULL);
 
         //Schedule the send message
         batch_schedule(1, receiving_rank, tmp_ary);
 
         //Cleanup the local arrays
-        batch_schedule(CPHVB_FREE, tmp_ary);
-        batch_schedule(CPHVB_DISCARD, tmp_ary);
-        batch_schedule(CPHVB_DISCARD, local_ary);
+        batch_schedule(BH_FREE, tmp_ary);
+        batch_schedule(BH_DISCARD, tmp_ary);
+        batch_schedule(BH_DISCARD, local_ary);
     }
 }
 

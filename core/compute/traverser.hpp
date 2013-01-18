@@ -238,7 +238,7 @@ typedef char BYTE;
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
@@ -297,7 +297,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -370,7 +370,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 		}		
 	}
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /**
@@ -379,7 +379,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
@@ -434,7 +434,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -500,7 +500,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 		}		
 	}
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /**
@@ -509,7 +509,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
@@ -564,7 +564,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -630,7 +630,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 		}		
 	}
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /**
@@ -639,7 +639,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
@@ -693,7 +693,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -759,7 +759,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 		}		
 	}
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /**
@@ -768,7 +768,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
@@ -818,7 +818,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -877,7 +877,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 		}		
 	}
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -888,7 +888,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
@@ -953,7 +953,7 @@ bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -963,7 +963,7 @@ bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_i
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
@@ -1022,7 +1022,7 @@ bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -1032,7 +1032,7 @@ bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_i
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename T2, typename Instr>
 bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
@@ -1091,7 +1091,7 @@ bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -1101,7 +1101,7 @@ bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_i
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
@@ -1159,7 +1159,7 @@ bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -1169,7 +1169,7 @@ bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_in
  *  @param instr The instruction to execute
  *  @param state State of the iteration
  *  @param nelements the number of elements on which the instruction should be applied.
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_index nelements ) {
@@ -1221,7 +1221,7 @@ bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 

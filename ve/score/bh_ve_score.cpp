@@ -52,55 +52,55 @@ bh_error bh_ve_score_init(bh_component *self)
 {
     myself = self;                              // Assign config container.
 
-    char *env = getenv("CPHVB_VE_SCORE_BLOCKSIZE");   // Override block_size from environment-variable.
+    char *env = getenv("BH_VE_SCORE_BLOCKSIZE");   // Override block_size from environment-variable.
     if(env != NULL)
     {
         block_size = atoi(env);
     }
     if(block_size <= 0)                         // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_SCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_VE_SCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long int)block_size);
+        return BH_ERROR;
     }
 
-    env = getenv("CPHVB_VE_SCORE_BINMAX");      // Override block_size from environment-variable.
+    env = getenv("BH_VE_SCORE_BINMAX");      // Override block_size from environment-variable.
     if(env != NULL)
     {
         bin_max = atoi(env);
     }
     if(bin_max <= 0)                            // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_SCORE_BINMAX (%ld) should be greater than zero!\n", (long int)bin_max);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_VE_SCORE_BINMAX (%ld) should be greater than zero!\n", (long int)bin_max);
+        return BH_ERROR;
     }
 
-    env = getenv("CPHVB_VE_SCORE_BASEMAX");      // Override base max from environment-variable.
+    env = getenv("BH_VE_SCORE_BASEMAX");      // Override base max from environment-variable.
     if(env != NULL)
     {
         base_max = atoi(env);
     }
     if(base_max <= 0)                            // Verify it
     {
-        fprintf(stderr, "CPHVB_VE_SCORE_BASEMAX (%ld) should be greater than zero!\n", (long int)base_max);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_VE_SCORE_BASEMAX (%ld) should be greater than zero!\n", (long int)base_max);
+        return BH_ERROR;
     }
 
-    env = getenv("CPHVB_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
+    env = getenv("BH_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
     if(env != NULL)
     {
         vcache_size = atoi(env);
     }
     if(vcache_size <= 0)                        // Verify it
     {
-        fprintf(stderr, "CPHVB_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
+        return BH_ERROR;
     }
-    //printf("[CPHVB_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
-    //printf("[CPHVB_VE_SCORE_BINMAX=%ld]\n", bin_max);
-    //printf("[CPHVB_VE_SCORE_BASEMAX=%ld]\n", base_max);
-    //printf("[CPHVB_CORE_VCACHE_SIZE=%ld]\n", vcache_size);
+    //printf("[BH_VE_SCORE_BLOCKSIZE=%ld]\n", block_size);
+    //printf("[BH_VE_SCORE_BINMAX=%ld]\n", bin_max);
+    //printf("[BH_VE_SCORE_BASEMAX=%ld]\n", base_max);
+    //printf("[BH_CORE_VCACHE_SIZE=%ld]\n", vcache_size);
     bh_vcache_init( vcache_size );
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end) {
@@ -127,9 +127,9 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
         bh_ve_score_tstates          = (bh_tstate_naive*)malloc(sizeof(bh_tstate_naive)*mcount);
     	
     	if (bh_ve_score_compute_loops == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	if (bh_ve_score_tstates == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	
     	bh_ve_score_buffersizes = mcount;
     }
@@ -137,7 +137,7 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
     bh_computeloop_naive* compute_loops = bh_ve_score_compute_loops;
     bh_tstate_naive* states = bh_ve_score_tstates;
     bh_intp  nelements, trav_end=0;
-    bh_error ret_errcode = CPHVB_SUCCESS;
+    bh_error ret_errcode = BH_SUCCESS;
     
     for(i=0; i<= (end-start);i++)                   // Reset traversal coordinates
         bh_tstate_reset_naive( &states[i] );
@@ -145,11 +145,11 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
     for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
     {
         switch(instr[i].opcode) {                   // Ignore sys-ops
-            case CPHVB_DISCARD:
-            case CPHVB_FREE:
-            case CPHVB_SYNC:
-            case CPHVB_NONE:
-            case CPHVB_USERFUNC:
+            case BH_DISCARD:
+            case BH_FREE:
+            case BH_SYNC:
+            case BH_NONE:
+            case BH_USERFUNC:
                 break;
 
             default:
@@ -157,12 +157,12 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
                 if(compute_loops[k] == NULL)
                 {
                     end             = start + k - 1;
-                    instr[i].status = CPHVB_TYPE_NOT_SUPPORTED;
-                    ret_errcode     = CPHVB_PARTIAL_SUCCESS;
+                    instr[i].status = BH_TYPE_NOT_SUPPORTED;
+                    ret_errcode     = BH_PARTIAL_SUCCESS;
                     break;
                 }
                 else
-                    instr[i].status = CPHVB_SUCCESS;
+                    instr[i].status = BH_SUCCESS;
         }
 
     }
@@ -178,11 +178,11 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
         for(i=start, k=0; i <= end; i++, k++)
         {
             switch(instr[i].opcode) {               // Ignore sys-ops
-                case CPHVB_DISCARD:
-                case CPHVB_FREE:
-                case CPHVB_SYNC:
-                case CPHVB_NONE:
-                case CPHVB_USERFUNC:
+                case BH_DISCARD:
+                case BH_FREE:
+                case BH_SYNC:
+                case BH_NONE:
+                case BH_USERFUNC:
                     break;
 
                 default:
@@ -212,29 +212,29 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
     {
         inst = &instruction_list[cur_index];
 
-        if(inst->status == CPHVB_SUCCESS)       // SKIP instruction
+        if(inst->status == BH_SUCCESS)       // SKIP instruction
         {
             continue;
         }
 
         res = bh_vcache_malloc( inst );      // Allocate memory for operands
-        if ( res != CPHVB_SUCCESS ) {
+        if ( res != BH_SUCCESS ) {
             return res;
         }
         
         switch(inst->opcode)                    // Dispatch instruction
         {
-            case CPHVB_NONE:                    // NOOP.
-            case CPHVB_DISCARD:
-            case CPHVB_SYNC:
-                inst->status = CPHVB_SUCCESS;
+            case BH_NONE:                    // NOOP.
+            case BH_DISCARD:
+            case BH_SYNC:
+                inst->status = BH_SUCCESS;
                 break;
 
-            case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+            case BH_FREE:                        // Store data-pointer in malloc-cache
                 inst->status = bh_vcache_free( inst );
                 break;
 
-            case CPHVB_USERFUNC:                // External libraries
+            case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
@@ -266,7 +266,7 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 				}
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
+                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -280,20 +280,20 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                 {
                     binst = &instruction_list[j];               
                     
-                    if (binst->opcode == CPHVB_USERFUNC) {      // Stop bundle, userfunc encountered.
+                    if (binst->opcode == BH_USERFUNC) {      // Stop bundle, userfunc encountered.
                         break;
                     }
                                                                 // Delay sys-op
-                    if ((binst->opcode == CPHVB_NONE) || \
-                        (binst->opcode == CPHVB_DISCARD) || \
-                        (binst->opcode == CPHVB_SYNC) || \
-                        (binst->opcode == CPHVB_FREE) ) {
+                    if ((binst->opcode == BH_NONE) || \
+                        (binst->opcode == BH_DISCARD) || \
+                        (binst->opcode == BH_SYNC) || \
+                        (binst->opcode == BH_FREE) ) {
                         has_sys = true;
                     }
 
                     bin_end++;                                  // The "end" index
                     res = bh_vcache_malloc( binst );         // Allocate memory for operands
-                    if ( res != CPHVB_SUCCESS ) {
+                    if ( res != BH_SUCCESS ) {
                         return res;
                     }
                 }
@@ -313,13 +313,13 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                             inst = &instruction_list[j];
                             switch(inst->opcode)                    // Dispatch instruction
                             {
-                                case CPHVB_NONE:                    // NOOP.
-                                case CPHVB_DISCARD:
-                                case CPHVB_SYNC:
-                                    inst->status = CPHVB_SUCCESS;
+                                case BH_NONE:                    // NOOP.
+                                case BH_DISCARD:
+                                case BH_SYNC:
+                                    inst->status = BH_SUCCESS;
                                     break;
 
-                                case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+                                case BH_FREE:                        // Store data-pointer in malloc-cache
                                     inst->status = bh_vcache_free( inst );
                                     break;
 
@@ -336,7 +336,7 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 
         }
 
-        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
+        if (inst->status != BH_SUCCESS)    // Instruction failed
         {
             break;
         }
@@ -344,9 +344,9 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
     }
 
     if (cur_index == instruction_count) {
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     } else {
-        return CPHVB_PARTIAL_SUCCESS;
+        return BH_PARTIAL_SUCCESS;
     }
 
 }
@@ -356,7 +356,7 @@ bh_error bh_ve_score_shutdown( void )
     bh_vcache_clear();
     bh_vcache_delete();
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
@@ -367,15 +367,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = reduce_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_random", fun) == 0)
@@ -384,15 +384,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			random_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = random_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_matmul", fun) == 0)
@@ -401,15 +401,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &matmul_impl);
 			if (matmul_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			matmul_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = matmul_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_lu", fun) == 0)
@@ -418,15 +418,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &lu_impl);
 			if (lu_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			lu_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = lu_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_fft", fun) == 0)
@@ -435,15 +435,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &fft_impl);
 			if (fft_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			fft_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = fft_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_fft2", fun) == 0)
@@ -452,15 +452,15 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &fft2_impl);
 			if (fft2_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			fft2_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = fft2_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_aggregate", fun) == 0)
@@ -469,19 +469,19 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
         {
             bh_component_get_func(myself, fun, &aggregate_impl);
             if (aggregate_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
             
             aggregate_impl_id = *id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
         else
         {
             *id = aggregate_impl_id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
     }
     
-    return CPHVB_USERFUNC_NOT_SUPPORTED;
+    return BH_USERFUNC_NOT_SUPPORTED;
 }
 
 bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)

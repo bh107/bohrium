@@ -67,7 +67,7 @@ bh_error do_lu_float32(bh_array *A, bh_array *P){
     clapack_sgetrf(CblasRowMajor, N, N, A_data, A->stride[0], P_data);
     transpose_float32(A_data, N, A->stride[0]);
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error do_lu_float64(bh_array *A, bh_array *P){
@@ -89,7 +89,7 @@ bh_error do_lu_float64(bh_array *A, bh_array *P){
     clapack_dgetrf(CblasRowMajor, N, N, A_data, A->stride[0], P_data);
     transpose_float64(A_data, N, A->stride[0]);
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_lu( bh_userfunc *arg, void* ve_arg)
@@ -98,24 +98,24 @@ bh_error bh_lu( bh_userfunc *arg, void* ve_arg)
     bh_array *A = m_arg->operand[0];
     bh_array *P = m_arg->operand[1];
     
-    if(bh_data_malloc(A) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(A) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
-    if(bh_data_malloc(P) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(P) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
 
     //A needs to be row major, P needs to be continuous. Should be no problem, as both arrays are just created
     if(A->stride[1] != 1 || P->stride[0] != 1)
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
     switch (A->type)
     {
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 	    	return do_lu_float32(A, P);
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 	    	return do_lu_float64(A, P);
     	default:
-            return CPHVB_ERROR;
+            return BH_ERROR;
 	}   
     
 }

@@ -26,22 +26,22 @@ If not, see <http://www.gnu.org/licenses/>.
  * @type The type of data in the array
  * @ndim Number of dimensions
  * @start Index of the start element (always 0 for base-array)
- * @shape[CPHVB_MAXDIM] Number of elements in each dimention
- * @stride[CPHVB_MAXDIM] The stride for each dimention
+ * @shape[BH_MAXDIM] Number of elements in each dimention
+ * @stride[BH_MAXDIM] The stride for each dimention
  * @new_array The handler for the newly created array
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 bh_error bh_create_array(bh_array*   base,
                                bh_type     type,
                                bh_intp     ndim,
                                bh_index    start,
-                               bh_index    shape[CPHVB_MAXDIM],
-                               bh_index    stride[CPHVB_MAXDIM],
+                               bh_index    shape[BH_MAXDIM],
+                               bh_index    stride[BH_MAXDIM],
                                bh_array**  new_array)
 {
     bh_array *ary = (bh_array *) malloc(sizeof(bh_array));
     if(ary == NULL)
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
 
     ary->base  = base;
     ary->type  = type;
@@ -51,7 +51,7 @@ bh_error bh_create_array(bh_array*   base,
     memcpy(ary->shape, shape, ndim * sizeof(bh_index));
     memcpy(ary->stride, stride, ndim * sizeof(bh_index));
 
-#ifdef CPHVB_TRACE
+#ifdef BH_TRACE
     fprintf(stderr, "Created array %lld", array);
     if (array->base != NULL)
         fprintf(stderr, " -> %lld", array->base);
@@ -59,16 +59,16 @@ bh_error bh_create_array(bh_array*   base,
 #endif
     
     *new_array = ary;
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Destroy array.
  *
  * @array The array to destroy
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 bh_error bh_destroy_array(bh_array* array)
 {
     free(array);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

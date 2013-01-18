@@ -100,7 +100,7 @@ bh_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);
     KernelMap::iterator kit = kernelMap.find(ba->type());
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     Scalar size(ba->size());    
     Kernel::Parameters parameters;
     parameters.push_back(std::make_pair(ba, true));
@@ -110,5 +110,5 @@ bh_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
     std::vector<size_t> localShape(1,TPB);
     std::vector<size_t> globalShape(1,BPG*TPB);
     kit->second.call(parameters, globalShape, localShape);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

@@ -128,7 +128,7 @@ namespace NumCIL.Bohrium
         {
 //Disable "Unreachable code" warning
 #pragma warning disable 0162
-            if (bh_opcode.CPHVB_ADD == bh_opcode.CPHVB_SUBTRACT)
+            if (bh_opcode.BH_ADD == bh_opcode.BH_SUBTRACT)
                 throw new Exception("This version of NumCIL.cphVB contains invalid opcodes!");
 #pragma warning restore
 
@@ -226,7 +226,7 @@ namespace NumCIL.Bohrium
                 System.Diagnostics.Debug.Assert(array.BaseArray == PInvoke.bh_array_ptr.Null);
                 if (handle.IsAllocated)
                     m_managedHandles.Add(array, handle);
-                ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, array));
+                ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, array));
             }
         }
 
@@ -241,7 +241,7 @@ namespace NumCIL.Bohrium
         {
             lock (m_releaselock)
             {
-                if (inst.opcode == bh_opcode.CPHVB_DISCARD)
+                if (inst.opcode == bh_opcode.BH_DISCARD)
                 {
                     var ar = inst.operand0;
                     if (ar.BaseArray != PInvoke.bh_array_ptr.Null)
@@ -291,7 +291,7 @@ namespace NumCIL.Bohrium
                     long ix = inst_list.LongCount();
                     foreach (PInvoke.bh_instruction inst in cleanup_lst)
                     {
-                        if (inst.opcode == bh_opcode.CPHVB_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
+                        if (inst.opcode == bh_opcode.BH_DISCARD && m_managedHandles.TryGetValue(inst.operand0, out tmp))
                         {
                             if (handles == null)
                                 handles = new List<Tuple<long, PInvoke.bh_instruction, GCHandle>>();
@@ -388,7 +388,7 @@ namespace NumCIL.Bohrium
             for(long i = 0; i < lastIx; i++)
             {
                 var inst = list[i];
-                if (inst.opcode == bh_opcode.CPHVB_DISCARD && inst.operand0.BaseArray == PInvoke.bh_array_ptr.Null)
+                if (inst.opcode == bh_opcode.BH_DISCARD && inst.operand0.BaseArray == PInvoke.bh_array_ptr.Null)
                 {
                     Console.WriteLine("Shuffling list, i: {0}, inst: {1}, lastIx: {2}", i, inst, lastIx);
                     lastIx--;
@@ -417,7 +417,7 @@ namespace NumCIL.Bohrium
 
                 foreach (var inst in instrBuffer)
                 {
-                    if (inst.opcode == bh_opcode.CPHVB_DISCARD)
+                    if (inst.opcode == bh_opcode.BH_DISCARD)
                         destroys++;
                     if (inst.userfunc != IntPtr.Zero)
                     {
@@ -452,7 +452,7 @@ namespace NumCIL.Bohrium
                 }
 
                 if (destroys > 0)
-                    foreach (var inst in instrBuffer.Where(x => x.opcode == bh_opcode.CPHVB_DISCARD))
+                    foreach (var inst in instrBuffer.Where(x => x.opcode == bh_opcode.BH_DISCARD))
                         PInvoke.bh_destroy_array(inst.operand0);
 
 
@@ -1038,7 +1038,7 @@ namespace NumCIL.Bohrium
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.bh_instruction(
-                bh_opcode.CPHVB_USERFUNC,
+                bh_opcode.BH_USERFUNC,
                 adr                    
             );
         }
@@ -1074,7 +1074,7 @@ namespace NumCIL.Bohrium
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.bh_instruction(
-                bh_opcode.CPHVB_USERFUNC,
+                bh_opcode.BH_USERFUNC,
                 adr
             );
         }
@@ -1108,7 +1108,7 @@ namespace NumCIL.Bohrium
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.bh_instruction(
-                bh_opcode.CPHVB_USERFUNC,
+                bh_opcode.BH_USERFUNC,
                 adr
             );
         }
@@ -1142,7 +1142,7 @@ namespace NumCIL.Bohrium
             m_allocatedUserfuncs.Add(adr, gh);
 
             return new PInvoke.bh_instruction(
-                bh_opcode.CPHVB_USERFUNC,
+                bh_opcode.BH_USERFUNC,
                 adr
             );
         }

@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VE_TILE_H
-#define __CPHVB_VE_TILE_H
+#ifndef __BH_VE_TILE_H
+#define __BH_VE_TILE_H
 
 #include <bh.h>
 

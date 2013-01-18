@@ -68,8 +68,8 @@ bool bh_is_continuous(bh_intp ndim,
                          const bh_index stride[])
 {
     bh_intp my_ndim = 0;
-    bh_index my_shape[CPHVB_MAXDIM];
-    bh_index my_stride[CPHVB_MAXDIM];
+    bh_index my_shape[BH_MAXDIM];
+    bh_index my_stride[BH_MAXDIM];
     bh_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
     for (int i = 0; i < my_ndim - 1; ++i)
     {
@@ -191,7 +191,7 @@ bh_array* bh_base_array(const bh_array* view)
  *
  * @array The array in question
  * @data The new data pointer
- * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ * @return Error code (BH_SUCCESS, BH_ERROR)
  */
 bh_error bh_data_set(bh_array* array, bh_data_ptr data)
 {
@@ -200,7 +200,7 @@ bh_error bh_data_set(bh_array* array, bh_data_ptr data)
     if(array == NULL)
     {
         fprintf(stderr, "Attempt to set data pointer for a null array\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     base = bh_base_array(array);
@@ -208,19 +208,19 @@ bh_error bh_data_set(bh_array* array, bh_data_ptr data)
     if(base->data != NULL && data != NULL)
     {
         fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     base->data = data;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Get the data pointer for the array.
  *
  * @array The array in question
  * @result Output area
- * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ * @return Error code (BH_SUCCESS, BH_ERROR)
  */
 bh_error bh_data_get(bh_array* array, bh_data_ptr* result)
 {
@@ -229,14 +229,14 @@ bh_error bh_data_get(bh_array* array, bh_data_ptr* result)
     if(array == NULL)
     {
         fprintf(stderr, "Attempt to get data pointer for a null array\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     base = bh_base_array(array);
 
     *result = base->data;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Allocate data memory for the given array if not already allocated.
@@ -245,7 +245,7 @@ bh_error bh_data_get(bh_array* array, bh_data_ptr* result)
  * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 bh_error bh_data_malloc(bh_array* array)
 {
@@ -253,16 +253,16 @@ bh_error bh_data_malloc(bh_array* array)
     bh_array* base;
 
     if(array == NULL)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     base = bh_base_array(array);
 
     if(base->data != NULL)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     bytes = bh_array_size(base);
     if(bytes <= 0)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     base->data = bh_memory_malloc(bytes);
     if(base->data == NULL)
@@ -270,17 +270,17 @@ bh_error bh_data_malloc(bh_array* array)
         int errsv = errno;//mmap() sets the errno.
         printf("bh_data_malloc() could not allocate a data region. "
                "Returned error code: %s.\n", strerror(errsv));
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Frees data memory for the given array.
  * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 bh_error bh_data_free(bh_array* array)
 {
@@ -288,12 +288,12 @@ bh_error bh_data_free(bh_array* array)
     bh_array* base;
 
     if(array == NULL)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     base = bh_base_array(array);
 
     if(base->data == NULL)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     bytes = bh_array_size(base);
 
@@ -302,10 +302,10 @@ bh_error bh_data_free(bh_array* array)
         int errsv = errno;//munmmap() sets the errno.
         printf("bh_data_free() could not free a data region. "
                "Returned error code: %s.\n", strerror(errsv));
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     base->data = NULL;
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -316,7 +316,7 @@ bh_error bh_data_free(bh_array* array)
  */
 bh_array **bh_inst_operands(const bh_instruction *instruction)
 {
-    if (instruction->opcode == CPHVB_USERFUNC)
+    if (instruction->opcode == BH_USERFUNC)
         return (bh_array **) instruction->userfunc->operand;
     else
         return (bh_array **) instruction->operand;

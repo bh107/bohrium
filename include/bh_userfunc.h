@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_USERFUNC_H
-#define __CPHVB_USERFUNC_H
+#ifndef __BH_USERFUNC_H
+#define __BH_USERFUNC_H
 
 /* This header file is for the user-defined functions.
  * We include an implementation with the default Bohrium project.
@@ -38,7 +38,7 @@ extern "C" {
 typedef struct
 {
     //User-defined function header with two operands.
-    CPHVB_USER_FUNC_HEADER(2)
+    BH_USER_FUNC_HEADER(2)
     //The Axis to reduce
     bh_index   axis;
     //The opcode to reduce with
@@ -51,7 +51,7 @@ DLLEXPORT bh_error bh_reduce(bh_userfunc* arg, void* ve_arg);
 typedef struct
 {
     //User-defined function header with two operands.
-    CPHVB_USER_FUNC_HEADER(2)
+    BH_USER_FUNC_HEADER(2)
     //The opcode to aggregate with
     bh_opcode  opcode;
 } bh_aggregate_type;
@@ -62,7 +62,7 @@ DLLEXPORT bh_error bh_aggregate(bh_userfunc* arg, void* ve_arg);
 typedef struct
 {
     //User-defined function header with one operands.
-    CPHVB_USER_FUNC_HEADER(1)
+    BH_USER_FUNC_HEADER(1)
 } bh_random_type;
 
 DLLEXPORT bh_error bh_random(bh_userfunc* arg, void* ve_arg);
@@ -71,7 +71,7 @@ DLLEXPORT bh_error bh_random(bh_userfunc* arg, void* ve_arg);
 typedef struct
 {
     //User-defined function header with three operands.
-    CPHVB_USER_FUNC_HEADER(3)
+    BH_USER_FUNC_HEADER(3)
 } bh_matmul_type;
 
 DLLEXPORT bh_error bh_matmul(bh_userfunc* arg, void* ve_arg);
@@ -80,7 +80,7 @@ DLLEXPORT bh_error bh_matmul(bh_userfunc* arg, void* ve_arg);
 typedef struct
 {
     //User-defined function header with two operands.
-    CPHVB_USER_FUNC_HEADER(2)
+    BH_USER_FUNC_HEADER(2)
 } bh_lu_type;
 
 DLLEXPORT bh_error bh_lu(bh_userfunc* arg, void* ve_arg);
@@ -89,7 +89,7 @@ DLLEXPORT bh_error bh_lu(bh_userfunc* arg, void* ve_arg);
 typedef struct
 {
     //User-defined function header with two operands.
-    CPHVB_USER_FUNC_HEADER(2)
+    BH_USER_FUNC_HEADER(2)
 } bh_fft_type;
 
 DLLEXPORT bh_error bh_fft(bh_userfunc* arg, void* ve_arg);
@@ -100,7 +100,7 @@ typedef struct
 {
     //User-defined function header with three operands 
     //(one input and two outputs).
-    CPHVB_USER_FUNC_HEADER(3)
+    BH_USER_FUNC_HEADER(3)
     //The 'n' in n-select.
     bh_intp   n;
     //The axis to n-select.

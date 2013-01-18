@@ -26,14 +26,14 @@ extern bh_execute exec_vem_execute;
 
 /* Initialize the VEM
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_init(const char *component_name);
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_shutdown(void);
 
@@ -45,7 +45,7 @@ bh_error exec_shutdown(void);
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_reg_func(char *fun, bh_intp *id);
 
@@ -54,7 +54,7 @@ bh_error exec_reg_func(char *fun, bh_intp *id);
  * It is required that the VEM supports all instructions in the list.
  *
  * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_execute(bh_intp count, bh_instruction inst_list[]);
 

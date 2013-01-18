@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VE_SCORE_H
-#define __CPHVB_VE_SCORE_H
+#ifndef __BH_VE_SCORE_H
+#define __BH_VE_SCORE_H
 
 #include <bh.h>
 

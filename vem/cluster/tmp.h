@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-#ifndef __CPHVB_VEM_CLUSTER_TMP_H
-#define __CPHVB_VEM_CLUSTER_TMP_H
+#ifndef __BH_VEM_CLUSTER_TMP_H
+#define __BH_VEM_CLUSTER_TMP_H
 
 
 /* Returns a temporary array that will be de-allocated  

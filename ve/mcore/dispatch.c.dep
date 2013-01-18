@@ -26,10 +26,10 @@ If not, see <http://www.gnu.org/licenses/>.
 //The data type of bh_array extended with temporary info.
 typedef struct
 {
-    CPHVB_ARRAY_HEAD
+    BH_ARRAY_HEAD
     //Saved original values
     bh_index      org_start;
-    bh_index      org_shape[CPHVB_MAXDIM];
+    bh_index      org_shape[BH_MAXDIM];
 
 } dispatch_ary;
 
@@ -152,10 +152,10 @@ static void *thd_do(void *msg)
 				}
 		
 				thd_inst = (bh_instruction*)malloc(sizeof(bh_instruction) * mcount);
-				ary_stack = (bh_array*)malloc(sizeof(bh_instruction) * mcount * CPHVB_MAX_NO_OPERANDS);
+				ary_stack = (bh_array*)malloc(sizeof(bh_instruction) * mcount * BH_MAX_NO_OPERANDS);
 				
 				if (thd_inst == NULL || ary_stack == NULL) {
-					inst_bundle[0]->status = CPHVB_OUT_OF_MEMORY;
+					inst_bundle[0]->status = BH_OUT_OF_MEMORY;
 					//HACK: shortcut loops below
 					size = 0;
 					length = 0;
@@ -209,9 +209,9 @@ static void *thd_do(void *msg)
                         break;//Nothing to do.
 
                     inst->status = traverses[j](inst, 0, 0 );
-                    if(inst->status != CPHVB_SUCCESS)
+                    if(inst->status != BH_SUCCESS)
                     {
-                        //ret = CPHVB_PARTIAL_SUCCESS;
+                        //ret = BH_PARTIAL_SUCCESS;
                         start = length;//Force a complete exit.
                         break;
                     }
@@ -246,7 +246,7 @@ static void *thd_do(void *msg)
 //Initiate the dispather.
 bh_error dispatch_init(void)
 {
-    char *env = getenv("CPHVB_NUM_THREADS");
+    char *env = getenv("BH_NUM_THREADS");
     if(env != NULL)
         thd_nthds = atoi(env);
     else
@@ -254,14 +254,14 @@ bh_error dispatch_init(void)
 
     if(thd_nthds > 32)
     {
-        fprintf(stderr,"CPHVB_NUM_THREADS greater than 32!\n");
+        fprintf(stderr,"BH_NUM_THREADS greater than 32!\n");
         thd_nthds = 32;//MAX 32 thds.
     }
 
     //Create all threads.
     for(long i=0; i<thd_nthds; ++i)
         pthread_create(&thd_ids[i], NULL, thd_do, (void *) (i));
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 //Finalize the dispather.
@@ -277,7 +277,7 @@ bh_error dispatch_finalize(void)
     //Join all threads.
     for(int i=0; i<thd_nthds; ++i)
         pthread_join(thd_ids[i], NULL);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 //Dispatch the bundle of instructions.
@@ -285,7 +285,7 @@ bh_error dispatch_bundle(bh_instruction** inst_bundle,
                             bh_intp size,
                             bh_intp nblocks)
 {
-    bh_error ret = CPHVB_SUCCESS;
+    bh_error ret = BH_SUCCESS;
 
     //Make sure we have enough space
     if (size > bh_ve_mcore_traverses_buffersize) 
@@ -307,7 +307,7 @@ bh_error dispatch_bundle(bh_instruction** inst_bundle,
     	bh_ve_mcore_traverses = (computeloop*)malloc(sizeof(computeloop) * mcount);
     	
     	if (bh_ve_mcore_traverses == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	
     	bh_ve_mcore_traverses_buffersize = mcount;
     }
@@ -320,8 +320,8 @@ bh_error dispatch_bundle(bh_instruction** inst_bundle,
         traverses[j] = bh_compute_get( inst_bundle[j] );
         if(traverses[j] == NULL)
         {
-            inst_bundle[j]->status = CPHVB_OUT_OF_MEMORY;
-            ret = CPHVB_INST_NOT_SUPPORTED;
+            inst_bundle[j]->status = BH_OUT_OF_MEMORY;
+            ret = BH_INST_NOT_SUPPORTED;
             goto finish;
         }
     }
@@ -344,10 +344,10 @@ bh_error dispatch_bundle(bh_instruction** inst_bundle,
         bh_intp nops = bh_operands(inst->opcode);
         for(bh_intp i=0; i<nops; ++i)
         {
-            if(bh_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+            if(bh_data_malloc(inst->operand[i]) != BH_SUCCESS)
             {
-                inst->status = CPHVB_OUT_OF_MEMORY;
-                ret = CPHVB_PARTIAL_SUCCESS;
+                inst->status = BH_OUT_OF_MEMORY;
+                ret = BH_PARTIAL_SUCCESS;
                 goto finish;
             }
         }

@@ -208,7 +208,7 @@ void *thd_do_random(void *msg)
     
     switch (id->type)
     {
-    	case CPHVB_INT8:
+    	case BH_INT8:
 		{
 			bh_int8* data = (bh_int8*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -216,7 +216,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_INT16:
+    	case BH_INT16:
 		{
 			bh_int16* data = (bh_int16*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -224,7 +224,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_INT32:
+    	case BH_INT32:
 		{
 			bh_int32* data = (bh_int32*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -232,7 +232,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_INT64:
+    	case BH_INT64:
 		{
 			bh_int64* data = (bh_int64*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -240,7 +240,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 		
-		case CPHVB_UINT8:
+		case BH_UINT8:
 		{
 			bh_uint8* data = (bh_uint8*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -248,7 +248,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_UINT16:
+    	case BH_UINT16:
 		{
 			bh_uint16* data = (bh_uint16*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -256,7 +256,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_UINT32:
+    	case BH_UINT32:
 		{
 			bh_uint32* data = (bh_uint32*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -264,7 +264,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_UINT64:
+    	case BH_UINT64:
 		{
 			bh_uint64* data = (bh_uint64*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -272,7 +272,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 		{
 			bh_float32* data = (bh_float32*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -280,7 +280,7 @@ void *thd_do_random(void *msg)
 		}
 		break;
 
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 		{
 			bh_float64* data = (bh_float64*)id->data;
 			for(bh_intp i=start; i<start+length; ++i)
@@ -302,30 +302,30 @@ bh_error bh_random(bh_userfunc *arg, void* ve_arg)
     bh_intp nthds = 1;
 
     //Make sure that the array memory is allocated.
-    if(bh_data_malloc(ary) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(ary) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
     switch(ary->type)
     {
-    	case CPHVB_INT8:
-    	case CPHVB_INT16:
-    	case CPHVB_INT32:
-    	case CPHVB_INT64:
-    	case CPHVB_UINT8:
-    	case CPHVB_UINT16:
-    	case CPHVB_UINT32:
-    	case CPHVB_UINT64:
-    	case CPHVB_FLOAT32:
-    	case CPHVB_FLOAT64:
+    	case BH_INT8:
+    	case BH_INT16:
+    	case BH_INT32:
+    	case BH_INT64:
+    	case BH_UINT8:
+    	case BH_UINT16:
+    	case BH_UINT32:
+    	case BH_UINT64:
+    	case BH_FLOAT32:
+    	case BH_FLOAT64:
     		break;
     	
     	default:
-	        return CPHVB_TYPE_NOT_SUPPORTED;
+	        return BH_TYPE_NOT_SUPPORTED;
     }
 
     //We divide the blocks between the threads.
     {//Find number of threads to use.
-        char *env = getenv("CPHVB_NUM_THREADS");
+        char *env = getenv("BH_NUM_THREADS");
         if(env != NULL)
             nthds = atoi(env);
 
@@ -333,7 +333,7 @@ bh_error bh_random(bh_userfunc *arg, void* ve_arg)
             nthds = size;//Minimum one block per thread.
         if(nthds > 32)
         {
-            printf("CPHVB_NUM_THREADS greater than 32!\n");
+            printf("BH_NUM_THREADS greater than 32!\n");
             nthds = 32;//MAX 32 thds.
         }
     }
@@ -354,5 +354,5 @@ bh_error bh_random(bh_userfunc *arg, void* ve_arg)
     for(bh_intp i=0; i<nthds; ++i)
         pthread_join(tid[i], NULL);
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

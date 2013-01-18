@@ -37,7 +37,7 @@ void BaseArray::sync()
 {
     if (spec->data == NULL)
     {
-        if (bh_data_malloc(spec) != CPHVB_SUCCESS)
+        if (bh_data_malloc(spec) != BH_SUCCESS)
         {
             throw std::runtime_error("Could not allocate memory on host");
         }

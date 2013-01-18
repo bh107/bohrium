@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_TRANSFORMER_H
-#define __CPHVB_TRANSFORMER_H
+#ifndef __BH_TRANSFORMER_H
+#define __BH_TRANSFORMER_H
 
 #ifdef __cplusplus
 extern "C" {

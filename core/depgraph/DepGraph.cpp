@@ -29,17 +29,17 @@ DepGraph::DepGraph(bh_intp instruction_count,
         bh_instruction* inst = instruction_list++;
         switch (inst->opcode)
         {
-        case CPHVB_SYNC:
+        case BH_SYNC:
 //                sync(inst->operand[0]);
             break;
-        case CPHVB_DISCARD:
+        case BH_DISCARD:
             if (inst->operand[0]->base == NULL)
 //                    discard(inst->operand[0]);
                 break;
-        case CPHVB_FREE:
+        case BH_FREE:
 //                free(inst->operand[0]);
             break;                
-        case CPHVB_NONE:
+        case BH_NONE:
             break;
         default:
             ufunc(inst);
@@ -54,7 +54,7 @@ void DepGraph::ufunc(bh_instruction* inst)
     bh_intp nin, nout;
     bh_array** operand;
     /* Handle bothe ufunc and userdefined functions*/
-    if (inst->opcode == CPHVB_USERFUNC)
+    if (inst->opcode == BH_USERFUNC)
     {
         bh_userfunc* userfunc = inst->userfunc;
         nout = userfunc->nout;

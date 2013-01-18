@@ -1,5 +1,5 @@
-#ifndef CPHVB_FUNCTORS_HPP
-#define CPHVB_FUNCTORS_HPP
+#ifndef BH_FUNCTORS_HPP
+#define BH_FUNCTORS_HPP
 
 #include <cmath>
 #include <cstdlib>

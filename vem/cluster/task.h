@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-#ifndef __CPHVB_VEM_CLUSTER_TASK_H
-#define __CPHVB_VEM_CLUSTER_TASK_H
+#ifndef __BH_VEM_CLUSTER_TASK_H
+#define __BH_VEM_CLUSTER_TASK_H
 
 /* Codes for data types */
 enum /* bh_type */

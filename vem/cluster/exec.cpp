@@ -59,7 +59,7 @@ static bh_intp reduce_impl_id = 0;
 
 /* Initialize the VEM
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_init(const char *component_name)
 {
@@ -67,16 +67,16 @@ bh_error exec_init(const char *component_name)
     bh_error err;
     myself = bh_component_setup(component_name);
     if(myself == NULL)
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
     err = bh_component_children(myself, &children_count, &my_components);
     if (children_count != 1) 
     {
 		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
-		return CPHVB_ERROR;
+		return BH_ERROR;
     }
     
-    if (err != CPHVB_SUCCESS)
+    if (err != BH_SUCCESS)
 	    return err;
     
     vem_init = my_components[0]->init;
@@ -88,18 +88,18 @@ bh_error exec_init(const char *component_name)
     if((err = vem_init(my_components[0])) != 0)
         return err;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_shutdown(void)
 {
     bh_error err;
-    if((err = vem_shutdown()) != CPHVB_SUCCESS)
+    if((err = vem_shutdown()) != BH_SUCCESS)
         return err;
     bh_component_free(my_components[0]);//Only got one child.
     vem_init     = NULL;
@@ -115,7 +115,7 @@ bh_error exec_shutdown(void)
     //Finalize the process grid
     dispatch_finalize();
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -126,7 +126,7 @@ bh_error exec_shutdown(void)
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error exec_reg_func(char *fun, bh_intp *id)
 {
@@ -138,7 +138,7 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
         assert(pgrid_myrank == 0);
     }
 
-    if((e = vem_reg_func(fun, id)) != CPHVB_SUCCESS)
+    if((e = vem_reg_func(fun, id)) != BH_SUCCESS)
     {
         *id = 0;
         return e;
@@ -150,14 +150,14 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
         {
             bh_component_get_func(myself, fun, &reduce_impl);
             if (reduce_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
 
             reduce_impl_id = *id;
-            return CPHVB_SUCCESS;           
+            return BH_SUCCESS;           
         }
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -215,7 +215,7 @@ static void fallback_exec(bh_instruction *inst)
     {
         if((*it)->base != NULL)
         {
-            batch_schedule(CPHVB_DISCARD, *it);
+            batch_schedule(BH_DISCARD, *it);
         }
     }    
     //Free and discard all local base arrays
@@ -224,8 +224,8 @@ static void fallback_exec(bh_instruction *inst)
     {
         if((*it)->base == NULL)
         {
-            batch_schedule(CPHVB_FREE, *it);
-            batch_schedule(CPHVB_DISCARD, *it);
+            batch_schedule(BH_FREE, *it);
+            batch_schedule(BH_DISCARD, *it);
         }
     }    
 }
@@ -269,7 +269,7 @@ static void execute_regular(bh_instruction *inst)
             continue;
 
         //Apply the local computation
-        local_inst.status = CPHVB_INST_PENDING;
+        local_inst.status = BH_INST_PENDING;
 
         //Schedule task
         batch_schedule(local_inst);
@@ -282,8 +282,8 @@ static void execute_regular(bh_instruction *inst)
             
             bh_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
-                batch_schedule(CPHVB_FREE, ary);
-            batch_schedule(CPHVB_DISCARD, ary);
+                batch_schedule(BH_FREE, ary);
+            batch_schedule(BH_DISCARD, ary);
         }
     }
 }
@@ -298,7 +298,7 @@ static void execute_regular(bh_instruction *inst)
 bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
 {
     if(count <= 0)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
 
@@ -308,12 +308,12 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
         assert(inst->opcode >= 0);
         switch(inst->opcode) 
         {
-            case CPHVB_USERFUNC:
+            case BH_USERFUNC:
             {
                 if (inst->userfunc->id == reduce_impl_id) 
                 {
                     //TODO: the bh_reduce is hardcoded for now.
-                    if(bh_reduce(inst->userfunc, NULL) != CPHVB_SUCCESS)
+                    if(bh_reduce(inst->userfunc, NULL) != BH_SUCCESS)
                         EXCEPT("[CLUSTER-VEM] The user-defined function bh_reduce failed.");
                 }
                 else
@@ -322,7 +322,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                 }
                 break;
             }
-            case CPHVB_DISCARD:
+            case BH_DISCARD:
             {
                 bh_array *g_ary = inst->operand[0];
                 if(g_ary->base == NULL)
@@ -330,28 +330,28 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                     bh_array *l_ary = array_get_existing_local(g_ary);
                     if(l_ary != NULL)
                     {
-                        batch_schedule(CPHVB_DISCARD, l_ary);
+                        batch_schedule(BH_DISCARD, l_ary);
                     }
                 }   
                 dispatch_slave_known_remove(g_ary);
                 break;
             }
-            case CPHVB_FREE:
+            case BH_FREE:
             {
                 bh_array *g_ary = bh_base_array(inst->operand[0]);
                 bh_array *l_ary = array_get_existing_local(g_ary);
                 bh_data_free(g_ary);
                 if(l_ary != NULL)
-                    batch_schedule(CPHVB_FREE, l_ary);
+                    batch_schedule(BH_FREE, l_ary);
                 break;
             }
-            case CPHVB_SYNC:
+            case BH_SYNC:
             {
                 bh_array *base = bh_base_array(inst->operand[0]);
                 comm_slaves2master(base);
                 break;
             }
-            case CPHVB_NONE:
+            case BH_NONE:
             {
                 break;
             }
@@ -367,7 +367,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
     //And remove all tmp data structures
     tmp_clear();
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

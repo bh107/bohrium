@@ -21,8 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "task.h"
 
-#ifndef __CPHVB_VEM_CLUSTER_BATCH_H
-#define __CPHVB_VEM_CLUSTER_BATCH_H
+#ifndef __BH_VEM_CLUSTER_BATCH_H
+#define __BH_VEM_CLUSTER_BATCH_H
 
 
 
@@ -51,7 +51,7 @@ void batch_schedule(bh_opcode opcode, bh_array *operand);
  *
  * @opcode   The opcode of the instruction
  * @operands The local operands in the instruction
- * @ufunc    The user-defined function struct when opcode is CPHVB_USERFUNC.
+ * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
 void batch_schedule(bh_opcode opcode, bh_array *operands[],
                     bh_userfunc *ufunc);

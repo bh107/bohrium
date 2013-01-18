@@ -14,8 +14,8 @@ def load_opcodes():
     f.close()
     return ret
 
-def type_cphvb2numpy(bh_type):
-    return "np.%s"%bh_type[6:].lower()
+def type_bh2numpy(bh_type):
+    return "np.%s"%bh_type[3:].lower()
 
 
 class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
@@ -30,23 +30,23 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
             self.name = op['opcode']
             self.nops = op['nop']
 
-            if op['system_opcode'] or self.name in ["CPHVB_IDENTITY"]:
+            if op['system_opcode'] or self.name in ["BH_IDENTITY"]:
                 continue
             for t in op['types']:
                 a = {}
-                if self.name in ["CPHVB_ARCSIN","CPHVB_ARCTANH","CPHVB_ARCCOS"]:
+                if self.name in ["BH_ARCSIN","BH_ARCTANH","BH_ARCCOS"]:
                     floating = ",floating=True"
                 else:
                     floating = "" 
                 cmd = ""
                 for i in xrange(len(t)):
-                    tname = type_cphvb2numpy(t[i])
+                    tname = type_bh2numpy(t[i])
                     cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,floating)
                 exec cmd
                 yield (a,cmd)
                 
     def test_ufunc(self,a):
-        cmd = "%s("%("np.%s"%self.name[6:].lower())
+        cmd = "%s("%("np.%s"%self.name[3:].lower())
         for i in xrange(1,self.nops):
             cmd += "a[%d],"%(i)
         cmd += "a[0])"
@@ -63,20 +63,20 @@ def get_type_sig(nop, dtype_in, dtype_out):
 
 def type_float(nop):
     sig = []
-    for t in ['CPHVB_FLOAT32','CPHVB_FLOAT64']:
+    for t in ['BH_FLOAT32','BH_FLOAT64']:
         sig += [get_type_sig(nop,t,t)]
     return sig 
 
 def type_int(nop):
     sig = []
-    for t in ['CPHVB_INT8','CPHVB_INT16','CPHVB_INT32','CPHVB_INT64']:
+    for t in ['BH_INT8','BH_INT16','BH_INT32','BH_INT64']:
         sig += [get_type_sig(nop,t,t)]
-    for t in ['CPHVB_UINT8','CPHVB_UINT16','CPHVB_UINT32','CPHVB_UINT64']:
+    for t in ['BH_UINT8','BH_UINT16','BH_UINT32','BH_UINT64']:
         sig += [get_type_sig(nop,t,t)]
     return sig 
 
 def type_bool(nop):
-    return [get_type_sig(nop,'CPHVB_BOOL','CPHVB_BOOL')]
+    return [get_type_sig(nop,'BH_BOOL','BH_BOOL')]
 
 def type_all(nop):
     return type_float(nop) + type_int(nop) + type_bool(nop) 
@@ -122,7 +122,7 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
                 a = {}
                 cmd = ""
                 for i in xrange(len(t)):
-                    tname = type_cphvb2numpy(t[i])
+                    tname = type_bh2numpy(t[i])
                     cmd += "a[%d] = self.array((10),%s);"%(i,tname)
                 exec cmd
                 yield (a,cmd)

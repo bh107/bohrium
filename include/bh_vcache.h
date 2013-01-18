@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#ifndef CPHVB_VCACHE_H
-#define CPHVB_VCACHE_H
+#ifndef BH_VCACHE_H
+#define BH_VCACHE_H
 #include <bh.h>
 
 #ifdef __cplusplus
@@ -72,4 +72,4 @@ DLLEXPORT bh_error bh_vcache_malloc( bh_instruction* inst );
 }
 #endif
 
-#endif /* CPHVB_VCACHE_H */
+#endif /* BH_VCACHE_H */

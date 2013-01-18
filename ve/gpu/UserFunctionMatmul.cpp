@@ -30,7 +30,7 @@ bh_error bh_matmul(bh_userfunc* arg, void* ve_arg)
     bh_matmul_type* matmulDef = (bh_matmul_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     UserFunctionMatmul::matmul(matmulDef, userFuncArg);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 void UserFunctionMatmul::matmul(bh_matmul_type* matmulDef, UserFuncArg* userFuncArg)

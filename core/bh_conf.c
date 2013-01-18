@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 static dictionary *load_conf(void)
 {
     char *env;
-    env = getenv("CPHVB_CONFIG");
+    env = getenv("BH_CONFIG");
     if(env == NULL)
         env = "config.ini";
 
@@ -44,20 +44,20 @@ static bh_component get_type(dictionary *dict, const char *name)
     {
         fprintf(stderr,"In section \"%s\" type is not set. "\
                        "Should be bridge, vem or ve.\n",name);
-        return CPHVB_COMPONENT_ERROR;
+        return BH_COMPONENT_ERROR;
     }
     else
     {
         if(!strcasecmp(s, "bridge"))
-            return CPHVB_BRIDGE;
+            return BH_BRIDGE;
         if(!strcasecmp(s, "vem"))
-            return CPHVB_VEM;
+            return BH_VEM;
         if(!strcasecmp(s, "ve"))
-            return CPHVB_VE;
+            return BH_VE;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
             name, s);
-    return CPHVB_COMPONENT_ERROR;
+    return BH_COMPONENT_ERROR;
 }
 
 static void *get_dlsym(void *handle, const char *name,
@@ -66,11 +66,11 @@ static void *get_dlsym(void *handle, const char *name,
     char tmp[1024];
     char *stype;
     void *ret;
-    if(type == CPHVB_BRIDGE)
+    if(type == BH_BRIDGE)
         stype = "bridge";
-    else if(type == CPHVB_VEM)
+    else if(type == BH_VEM)
         stype = "vem";
-    else if(type == CPHVB_VE)
+    else if(type == BH_VE)
         stype = "ve";
     else
     {
@@ -99,20 +99,20 @@ bh_error bh_conf_children(const char *component_name, bh_interface *if_vem)
     sprintf(tmp, "%s:children",name);
     char *children = iniparser_getstring(dict, tmp, NULL);
     if(children == NULL)
-        return CPHVB_ERROR;
+        return BH_ERROR;
 
     //Handle one child at a time.
     child = strtok(children,",");
     while(child != NULL)
     {
         bh_component type = get_type(dict,child);
-        if(type == CPHVB_COMPONENT_ERROR)
-            return CPHVB_ERROR;
+        if(type == BH_COMPONENT_ERROR)
+            return BH_ERROR;
 
         if(!iniparser_find_entry(dict,child))
         {
             fprintf(stderr,"Reference \"%s\" is not declared.\n",child);
-            return CPHVB_ERROR;
+            return BH_ERROR;
         }
 
         sprintf(tmp, "%s:impl", child);
@@ -120,38 +120,38 @@ bh_error bh_conf_children(const char *component_name, bh_interface *if_vem)
         if(impl == NULL)
         {
             fprintf(stderr,"In section \"%s\" impl is not set.\n",child);
-            return CPHVB_ERROR;
+            return BH_ERROR;
         }
 
         void *handle = dlopen(impl, RTLD_NOW);
         if(handle == NULL)
         {
             fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
-            return CPHVB_ERROR;
+            return BH_ERROR;
         }
 
         if_vem->init = get_dlsym(handle, child, type, "init");
         if(if_vem->init == NULL)
-            return CPHVB_ERROR;
+            return BH_ERROR;
         if_vem->shutdown = get_dlsym(handle, child, type, "shutdown");
         if(if_vem->shutdown == NULL)
-            return CPHVB_ERROR;
+            return BH_ERROR;
         if_vem->execute = get_dlsym(handle, child, type, "execute");
         if(if_vem->execute == NULL)
-            return CPHVB_ERROR;
+            return BH_ERROR;
 
-        if(type == CPHVB_VEM)//VEM functions only.
+        if(type == BH_VEM)//VEM functions only.
         {
             if_vem->create_array = get_dlsym(handle, child, type, "create_array");
             if(if_vem->create_array == NULL)
-                return CPHVB_ERROR;
+                return BH_ERROR;
         }
 
         child = strtok(NULL,",");
     }
 
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

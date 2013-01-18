@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_VE_GPU_H
-#define __CPHVB_VE_GPU_H
+#ifndef __BH_VE_GPU_H
+#define __BH_VE_GPU_H
 
 #include <bh.h>
 #include "InstructionScheduler.hpp"

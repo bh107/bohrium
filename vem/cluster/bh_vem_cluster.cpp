@@ -47,13 +47,13 @@ bh_error bh_vem_cluster_init(bh_component *self)
     //Send the component name
     dispatch_reset();
     dispatch_add2payload(strlen(self->name)+1, self->name);
-    dispatch_send(CPHVB_CLUSTER_DISPATCH_INIT);
+    dispatch_send(BH_CLUSTER_DISPATCH_INIT);
 
     //Execute our self
-    if((e = exec_init(self->name)) != CPHVB_SUCCESS)
+    if((e = exec_init(self->name)) != BH_SUCCESS)
         return e;
 
-    return CPHVB_SUCCESS; 
+    return BH_SUCCESS; 
 }
 
 
@@ -61,7 +61,7 @@ bh_error bh_vem_cluster_shutdown(void)
 {
     //Send the component name
     dispatch_reset();
-    dispatch_send(CPHVB_CLUSTER_DISPATCH_SHUTDOWN);
+    dispatch_send(BH_CLUSTER_DISPATCH_SHUTDOWN);
     
     //Execute our self
     return exec_shutdown();
@@ -74,16 +74,16 @@ bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
     assert(fun != NULL);
 
     //The Master will find the new 'id' if required.
-    if((e = exec_reg_func(fun, id)) != CPHVB_SUCCESS)
+    if((e = exec_reg_func(fun, id)) != BH_SUCCESS)
         return e;
 
     //Send the component name
     dispatch_reset();
     dispatch_add2payload(sizeof(bh_intp), id);
     dispatch_add2payload(strlen(fun)+1, fun);
-    dispatch_send(CPHVB_CLUSTER_DISPATCH_UFUNC);
+    dispatch_send(BH_CLUSTER_DISPATCH_UFUNC);
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

@@ -41,44 +41,44 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
     for (bh_intp i = 0; i < instructionCount; ++i)
     {
         bh_instruction* inst = instructionList++;
-        if (inst->opcode != CPHVB_NONE && inst->status != CPHVB_SUCCESS)
+        if (inst->opcode != BH_NONE && inst->status != BH_SUCCESS)
         {
 #ifdef DEBUG
             bh_pprint_instr(inst);
 #endif
             switch (inst->opcode)
             {
-            case CPHVB_SYNC:
+            case BH_SYNC:
                 sync(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
+                inst->status = BH_SUCCESS;
                 break;
-            case CPHVB_DISCARD:
+            case BH_DISCARD:
                 if (inst->operand[0]->base == NULL)
                     discard(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
+                inst->status = BH_SUCCESS;
                 break;
-            case CPHVB_FREE:
+            case BH_FREE:
                 bh_data_free(inst->operand[0]);
-                inst->status = CPHVB_SUCCESS;
+                inst->status = BH_SUCCESS;
                 break;                
-            case CPHVB_USERFUNC:
+            case BH_USERFUNC:
                 inst->status = userdeffunc(inst->userfunc);
                 break;
             default:
                 inst->status = ufunc(inst);
                 break;
             }
-            if (inst->status != CPHVB_SUCCESS)
+            if (inst->status != BH_SUCCESS)
             {
                 executeBatch();
-                return CPHVB_PARTIAL_SUCCESS;
+                return BH_PARTIAL_SUCCESS;
             }
         }
     }
     
     /* End of batch cleanup */
     executeBatch();
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 void InstructionScheduler::executeBatch()
@@ -138,7 +138,7 @@ bh_error InstructionScheduler::userdeffunc(bh_userfunc* userfunc)
     FunctionMap::iterator fit = functionMap.find(userfunc->id);
     if (fit == functionMap.end())
     {
-        return CPHVB_USERFUNC_NOT_SUPPORTED;
+        return BH_USERFUNC_NOT_SUPPORTED;
     }
     bh_intp nops = userfunc->nout + userfunc->nin;
     UserFuncArg userFuncArg;
@@ -146,10 +146,10 @@ bh_error InstructionScheduler::userdeffunc(bh_userfunc* userfunc)
     for (int i = 0; i < nops; ++i)
     {
         bh_array* operand = userfunc->operand[i];
-        if ((!resourceManager->float64support() && operand->type == CPHVB_FLOAT64)
-            || (!resourceManager->float16support() && operand->type == CPHVB_FLOAT16))
+        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
         {
-            return CPHVB_TYPE_NOT_SUPPORTED;
+            return BH_TYPE_NOT_SUPPORTED;
         }
         bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
@@ -203,10 +203,10 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
             operands[i] = new Scalar(inst->constant);
             continue;
         }
-        if ((!resourceManager->float64support() && operand->type == CPHVB_FLOAT64)
-            || (!resourceManager->float16support() && operand->type == CPHVB_FLOAT16))
+        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
         {
-            return CPHVB_TYPE_NOT_SUPPORTED;
+            return BH_TYPE_NOT_SUPPORTED;
         }
         bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
@@ -239,7 +239,7 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
     {
         batch = new InstructionBatch(inst, operands);
     }
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 void InstructionScheduler::registerFunction(bh_intp id, bh_userfunc_impl userfunc)

@@ -44,7 +44,7 @@
     <Optimize>false</Optimize>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="CPHVB_CONFIG" value="/Users/kenneth/Udvikler/cphvb/config.osx.ini" />
+        <Variable name="BH_CONFIG" value="/Users/kenneth/Udvikler/cphvb/config.osx.ini" />
         <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core" />
       </EnvironmentVariables>
     </EnvironmentVariables>

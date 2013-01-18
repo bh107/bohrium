@@ -22,8 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <exception>
 
-#ifndef __CPHVB_VEM_CLUSTER_EXCEPT_H
-#define __CPHVB_VEM_CLUSTER_EXCEPT_H
+#ifndef __BH_VEM_CLUSTER_EXCEPT_H
+#define __BH_VEM_CLUSTER_EXCEPT_H
 
 #include <exception>
 #include <sstream>

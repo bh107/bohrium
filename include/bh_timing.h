@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_TIMING_H
-#define __CPHVB_TIMING_H
+#ifndef __BH_TIMING_H
+#define __BH_TIMING_H
 
 #include "bh_type.h"
 
@@ -27,13 +27,13 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-#define CPHVB_TIMING_MAX 32
+#define BH_TIMING_MAX 32
 
 typedef unsigned long long bh_time;
 typedef struct
 {
-    char *names[CPHVB_TIMING_MAX];
-    bh_time times[CPHVB_TIMING_MAX];
+    char *names[BH_TIMING_MAX];
+    bh_time times[BH_TIMING_MAX];
     bh_intp count;
 }bh_timing;
 

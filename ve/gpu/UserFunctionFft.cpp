@@ -32,18 +32,18 @@ bh_error bh_fft(bh_userfunc* arg, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 1){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     
     int s0 = fftDef->operand[1]->shape[0];
     
     //check power of 2
     if(s0 & (s0 - 1)){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     //currently only support simple strides
     if(fftDef->operand[1]->stride[0] != 1){
-       return CPHVB_TYPE_NOT_SUPPORTED;
+       return BH_TYPE_NOT_SUPPORTED;
     }
     
     
@@ -62,7 +62,7 @@ bh_error bh_fft2(bh_userfunc* arg, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 2){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     
     int s0 = fftDef->operand[1]->shape[0];
@@ -70,11 +70,11 @@ bh_error bh_fft2(bh_userfunc* arg, void* ve_arg)
     
     //check power of 2
     if((s0 & (s0 - 1)) || (s1 & (s1 - 1))){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     //currently only support simple strides
     if(fftDef->operand[1]->stride[1] != 1 || fftDef->operand[1]->stride[0] != fftDef->operand[0]->shape[1]){
-       return CPHVB_TYPE_NOT_SUPPORTED;
+       return BH_TYPE_NOT_SUPPORTED;
     }
     
     if (userFunctionFft == NULL)
@@ -134,7 +134,7 @@ bh_error UserFunctionFft::fft(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
       
     kit = kernelMap.find("fft");
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
     std::vector<size_t> globalShape(1,n/2);
     size_t local = n/2 >= 256 ? 256 : n/2;
@@ -163,7 +163,7 @@ bh_error UserFunctionFft::fft(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
       
     delete temp;
       
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
@@ -193,7 +193,7 @@ bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
       
     kit = kernelMap.find("fft2d");
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
     
     
     std::vector<size_t> globalShape(2,cols/2);
@@ -253,7 +253,7 @@ bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
     if(!res_in_out){
       kit = kernelMap.find("copy");
       if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
       
       parameters.clear();
       parameters.push_back(std::make_pair(temp, false));
@@ -268,7 +268,7 @@ bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
       
     delete temp;
       
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

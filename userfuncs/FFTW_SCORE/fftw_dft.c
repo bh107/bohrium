@@ -42,11 +42,11 @@ bh_error do_fft_complex64(bh_array* in, bh_array* out){
                                   FFTW_FORWARD, FFTW_ESTIMATE);
      }
   else
-    return CPHVB_ERROR;
+    return BH_ERROR;
   fftwf_execute(p);
   fftwf_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
 bh_error do_fft_complex128(bh_array* in, bh_array* out){
@@ -75,7 +75,7 @@ bh_error do_fft_complex128(bh_array* in, bh_array* out){
   fftw_execute(p);
   fftw_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
 
@@ -86,22 +86,22 @@ bh_error bh_fft(bh_userfunc *arg, void* ve_arg)
     bh_array *in = m_arg->operand[1];
     
     if(in->ndim > 2)
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
-    if(bh_data_malloc(out) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(out) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
-    if(bh_data_malloc(in) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(in) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
     switch (in->type)
     {
-    	case CPHVB_COMPLEX64:
+    	case BH_COMPLEX64:
 	    	return do_fft_complex64(in, out);
-    	case CPHVB_COMPLEX128:
+    	case BH_COMPLEX128:
 	    	return do_fft_complex128(in, out);
     	default:
-            return CPHVB_ERROR;
+            return BH_ERROR;
 	}  
 }
 
@@ -123,7 +123,7 @@ bh_error do_fft2_complex64(bh_array* in, bh_array* out){
   fftwf_execute(p);
   fftwf_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
 bh_error do_fft2_complex128(bh_array* in, bh_array* out){
@@ -140,7 +140,7 @@ bh_error do_fft2_complex128(bh_array* in, bh_array* out){
   fftw_execute(p);
   fftw_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
 bh_error bh_fft2(bh_userfunc *arg, void* ve_arg)
@@ -151,22 +151,22 @@ bh_error bh_fft2(bh_userfunc *arg, void* ve_arg)
     
     
     if(in->ndim != 2 || in->stride[1] != 1 || in->stride[0] != in->shape[1])
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
-    if(bh_data_malloc(out) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(out) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
-    if(bh_data_malloc(in) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(in) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
     switch (in->type)
     {
-    	case CPHVB_COMPLEX64:
+    	case BH_COMPLEX64:
 	    	return do_fft2_complex64(in, out);
-    	case CPHVB_COMPLEX128:
+    	case BH_COMPLEX128:
 	    	return do_fft2_complex128(in, out);
     	default:
-            return CPHVB_ERROR;
+            return BH_ERROR;
 	}  
 }
 

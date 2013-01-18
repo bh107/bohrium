@@ -42,7 +42,7 @@ bh_error do_matmul_float32(bh_array *A, bh_array *B, bh_array *C)
 
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0, A_data, A->stride[0], B_data, B->stride[0], 0.0, C_data, C->stride[0]);
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error do_matmul_float64(bh_array *A, bh_array *B, bh_array *C)
@@ -66,7 +66,7 @@ bh_error do_matmul_float64(bh_array *A, bh_array *B, bh_array *C)
 
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0, A_data, A->stride[0], B_data, B->stride[0], 0.0, C_data, C->stride[0]);
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_matmul(bh_userfunc *arg, void* ve_arg)
@@ -80,18 +80,18 @@ bh_error bh_matmul(bh_userfunc *arg, void* ve_arg)
     if(A->stride[1] != 1 || B->stride[1] != 1 || C->stride[1] != 1)
         goto failback;
 
-    if(bh_data_malloc(A) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;    
-    if(bh_data_malloc(B) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;    
-    if(bh_data_malloc(C) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;    
+    if(bh_data_malloc(A) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;    
+    if(bh_data_malloc(B) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;    
+    if(bh_data_malloc(C) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;    
 
     switch (C->type)
     {
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 	    	return do_matmul_float32(A, B, C);
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 	    	return do_matmul_float64(A, B, C);
     	default:
             goto failback;
@@ -101,5 +101,5 @@ bh_error bh_matmul(bh_userfunc *arg, void* ve_arg)
     //and all data types
     failback:
         return bh_compute_matmul(arg, ve_arg);
-    return CPHVB_ERROR;
+    return BH_ERROR;
 }

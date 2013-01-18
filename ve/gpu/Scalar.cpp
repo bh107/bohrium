@@ -28,40 +28,40 @@ Scalar::Scalar(bh_constant constant)
 {
     switch (constant.type)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         value.uc = constant.value.bool8;
         break;
-    case CPHVB_INT8:
+    case BH_INT8:
         value.c = constant.value.int8;
         break;
-    case CPHVB_INT16:
+    case BH_INT16:
         value.s = constant.value.int16;
         break;
-    case CPHVB_INT32:
+    case BH_INT32:
         value.i = constant.value.int32;
         break;
-    case CPHVB_INT64:
+    case BH_INT64:
         value.l = constant.value.int64;
         break;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         value.uc = constant.value.uint8;
         break;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         value.us = constant.value.uint16;
         break;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         value.ui = constant.value.uint32;
         break;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         value.ul = constant.value.uint64;
         break;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         value.h = constant.value.float16;
         break;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         value.f = constant.value.float32;
         break;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         value.d = constant.value.float64;
         break;
     default:
@@ -76,40 +76,40 @@ Scalar::Scalar(bh_array* spec)
     assert (spec->data != NULL);
     switch (spec->type)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         value.uc = *(bh_bool*)spec->data;
         break;
-    case CPHVB_INT8:
+    case BH_INT8:
         value.c = *(bh_int8*)spec->data;
         break;
-    case CPHVB_INT16:
+    case BH_INT16:
         value.s = *(bh_int16*)spec->data;
         break;
-    case CPHVB_INT32:
+    case BH_INT32:
         value.i = *(bh_int32*)spec->data;
         break;
-    case CPHVB_INT64:
+    case BH_INT64:
         value.l = *(bh_int64*)spec->data;
         break;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         value.uc = *(bh_uint8*)spec->data;
         break;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         value.us = *(bh_uint16*)spec->data;
         break;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         value.ui = *(bh_uint32*)spec->data;
         break;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         value.ul = *(bh_uint64*)spec->data;
         break;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         value.h = *(bh_float16*)spec->data;
         break;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         value.f = *(bh_float32*)spec->data;
         break;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         value.d = *(bh_float64*)spec->data;
         break;
     default:

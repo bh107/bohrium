@@ -30,7 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 //Check for error. Will exit on error.
 static void check_error(bh_error err, const char *file, int line)
 {
-    if(err != CPHVB_SUCCESS)
+    if(err != BH_SUCCESS)
     {
         fprintf(stderr, "[VEM-CLUSTER] Slave (rank %d) encountered the error %s at %s:%d\n",
                 pgrid_myrank, bh_error_text(err), file, line);
@@ -42,7 +42,7 @@ static void check_error(bh_error err, const char *file, int line)
 static void check_exec_error(bh_error err, const char *file, int line, 
                              bh_intp count, bh_instruction inst_list[])
 {
-    if(err == CPHVB_PARTIAL_SUCCESS)//Only partial success
+    if(err == BH_PARTIAL_SUCCESS)//Only partial success
     {
         char msg[count+4096];
         sprintf(msg, "[VEM-CLUSTER] Slave (rank %d) encountered error in instruction batch: %s\n",
@@ -51,7 +51,7 @@ static void check_exec_error(bh_error err, const char *file, int line,
         {
             bh_instruction *ist = &inst_list[i];
             sprintf(msg+strlen(msg),"\tOpcode: %s", bh_opcode_text(ist->opcode));
-            if(ist->opcode == CPHVB_USERFUNC)
+            if(ist->opcode == BH_USERFUNC)
             {
                 sprintf(msg+strlen(msg),", Operand types:");
                 for(bh_intp j=0; j<bh_operands_in_instruction(ist); ++j)
@@ -87,20 +87,20 @@ int main()
         //Handle the message
         switch(msg->type) 
         {
-            case CPHVB_CLUSTER_DISPATCH_INIT:
+            case BH_CLUSTER_DISPATCH_INIT:
             {
                 char *name = msg->payload;
                 printf("Slave (rank %d) received INIT. name: %s\n", pgrid_myrank, name);
                 check_error(exec_init(name),__FILE__,__LINE__);
                 break;
             }
-            case CPHVB_CLUSTER_DISPATCH_SHUTDOWN:
+            case BH_CLUSTER_DISPATCH_SHUTDOWN:
             {
                 printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
                 check_error(exec_shutdown(),__FILE__,__LINE__);
                 return 0;
             }
-            case CPHVB_CLUSTER_DISPATCH_UFUNC:
+            case BH_CLUSTER_DISPATCH_UFUNC:
             {
                 bh_intp *id = (bh_intp *)msg->payload;
                 char *fun = msg->payload+sizeof(bh_intp);
@@ -108,7 +108,7 @@ int main()
                 check_error(exec_reg_func(fun, id),__FILE__,__LINE__);
                 break;
             }
-            case CPHVB_CLUSTER_DISPATCH_EXEC:
+            case BH_CLUSTER_DISPATCH_EXEC:
             {
                 //The number of instructions
                 bh_intp *noi = (bh_intp *)msg->payload;                 
@@ -148,7 +148,7 @@ int main()
                 //Allocate the local instruction list that should reference local arrays
                 bh_instruction *local_list = (bh_instruction *)malloc(*noi*sizeof(bh_instruction));
                 if(local_list == NULL)
-                    check_error(CPHVB_OUT_OF_MEMORY,__FILE__,__LINE__);
+                    check_error(BH_OUT_OF_MEMORY,__FILE__,__LINE__);
         
                 memcpy(local_list, master_list, (*noi)*sizeof(bh_instruction));
             
@@ -156,11 +156,11 @@ int main()
                 for(bh_intp i=0; i < *noi; ++i)
                 {
                     bh_instruction *inst = &local_list[i];
-                    if(inst->opcode == CPHVB_USERFUNC)
+                    if(inst->opcode == BH_USERFUNC)
                     {   
                         inst->userfunc = (bh_userfunc*) malloc(ufunc->struct_size);
                         if(inst->userfunc == NULL)
-                            check_error(CPHVB_OUT_OF_MEMORY,__FILE__,__LINE__);
+                            check_error(BH_OUT_OF_MEMORY,__FILE__,__LINE__);
                         //Save a local copy of the user-defined function
                         memcpy(inst->userfunc, ufunc, ufunc->struct_size);
                         //Iterate to the next user-defined function
@@ -174,7 +174,7 @@ int main()
                     bh_instruction *inst = &local_list[i];
                     int nop = bh_operands_in_instruction(inst);
                     bh_array **ops;
-                    if(inst->opcode == CPHVB_USERFUNC)
+                    if(inst->opcode == BH_USERFUNC)
                         ops = inst->userfunc->operand;
                     else
                         ops = inst->operand;
@@ -195,7 +195,7 @@ int main()
                 for(bh_intp i=0; i < *noi; ++i)
                 {
                     bh_instruction *inst = &local_list[i];
-                    if(inst->opcode == CPHVB_USERFUNC)
+                    if(inst->opcode == BH_USERFUNC)
                     {
                         assert(inst->userfunc != NULL);
                         free(inst->userfunc);
@@ -207,8 +207,8 @@ int main()
             default:
                 fprintf(stderr, "[VEM-CLUSTER] Slave (rank %d) "
                         "received unknown message type\n", pgrid_myrank);
-                MPI_Abort(MPI_COMM_WORLD,CPHVB_ERROR);
+                MPI_Abort(MPI_COMM_WORLD,BH_ERROR);
         }
     }
-    return CPHVB_SUCCESS; 
+    return BH_SUCCESS; 
 }

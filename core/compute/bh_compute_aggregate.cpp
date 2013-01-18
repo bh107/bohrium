@@ -32,7 +32,7 @@ typedef char BYTE;
  *
  *  @param opt_out The output scalar storage array
  *  @param opt_in The array to aggregate
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
@@ -104,7 +104,7 @@ bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = op_in->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -181,7 +181,7 @@ bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
 
 	*(((T0*)d0) + op_out->start) = (T1)value;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -197,520 +197,520 @@ bh_error bh_compute_aggregate(bh_userfunc *arg, void* ve_arg)
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
 	if (bh_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_aggregate; input-operand ( op[1] ) is null.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
 	}
 
     if (op_in->type != op_out->type) {
         fprintf(stderr, "ERR: bh_compute_aggregate; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     
-    if (bh_data_malloc(op_out) != CPHVB_SUCCESS) {
+    if (bh_data_malloc(op_out) != BH_SUCCESS) {
         fprintf(stderr, "ERR: bh_compute_aggregate; No memory for reduction-result.\n");
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
     
     if (op_out->ndim != 1 || op_out->shape[0] != 1) {
         fprintf(stderr, "ERR: bh_compute_aggregate; output-operand ( op[0] ) is not a scalar.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     long int poly = opcode + (op_in->type << 8);
 
     switch(poly) {
     
-        case CPHVB_ADD + (CPHVB_BOOL << 8):
+        case BH_ADD + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, add_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_COMPLEX128 << 8):
+        case BH_ADD + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, add_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_COMPLEX64 << 8):
+        case BH_ADD + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, add_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_FLOAT32 << 8):
+        case BH_ADD + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, add_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_FLOAT64 << 8):
+        case BH_ADD + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, add_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_INT16 << 8):
+        case BH_ADD + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, add_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_INT32 << 8):
+        case BH_ADD + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, add_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_INT64 << 8):
+        case BH_ADD + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, add_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_INT8 << 8):
+        case BH_ADD + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, add_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_UINT16 << 8):
+        case BH_ADD + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, add_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_UINT32 << 8):
+        case BH_ADD + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, add_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_UINT64 << 8):
+        case BH_ADD + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, add_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_ADD + (CPHVB_UINT8 << 8):
+        case BH_ADD + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, add_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_BOOL << 8):
+        case BH_SUBTRACT + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, subtract_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_COMPLEX128 << 8):
+        case BH_SUBTRACT + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, subtract_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_COMPLEX64 << 8):
+        case BH_SUBTRACT + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, subtract_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_FLOAT32 << 8):
+        case BH_SUBTRACT + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, subtract_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_FLOAT64 << 8):
+        case BH_SUBTRACT + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, subtract_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_INT16 << 8):
+        case BH_SUBTRACT + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, subtract_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_INT32 << 8):
+        case BH_SUBTRACT + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, subtract_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_INT64 << 8):
+        case BH_SUBTRACT + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, subtract_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_INT8 << 8):
+        case BH_SUBTRACT + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, subtract_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_UINT16 << 8):
+        case BH_SUBTRACT + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, subtract_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_UINT32 << 8):
+        case BH_SUBTRACT + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, subtract_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_UINT64 << 8):
+        case BH_SUBTRACT + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, subtract_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_SUBTRACT + (CPHVB_UINT8 << 8):
+        case BH_SUBTRACT + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, subtract_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_BOOL << 8):
+        case BH_MULTIPLY + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, multiply_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_COMPLEX128 << 8):
+        case BH_MULTIPLY + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, multiply_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_COMPLEX64 << 8):
+        case BH_MULTIPLY + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, multiply_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_FLOAT32 << 8):
+        case BH_MULTIPLY + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, multiply_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_FLOAT64 << 8):
+        case BH_MULTIPLY + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, multiply_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_INT16 << 8):
+        case BH_MULTIPLY + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, multiply_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_INT32 << 8):
+        case BH_MULTIPLY + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, multiply_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_INT64 << 8):
+        case BH_MULTIPLY + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, multiply_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_INT8 << 8):
+        case BH_MULTIPLY + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, multiply_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_UINT16 << 8):
+        case BH_MULTIPLY + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, multiply_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_UINT32 << 8):
+        case BH_MULTIPLY + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, multiply_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_UINT64 << 8):
+        case BH_MULTIPLY + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, multiply_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_MULTIPLY + (CPHVB_UINT8 << 8):
+        case BH_MULTIPLY + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, multiply_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_COMPLEX128 << 8):
+        case BH_DIVIDE + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, divide_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_COMPLEX64 << 8):
+        case BH_DIVIDE + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, divide_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_FLOAT32 << 8):
+        case BH_DIVIDE + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, divide_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_FLOAT64 << 8):
+        case BH_DIVIDE + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, divide_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_INT16 << 8):
+        case BH_DIVIDE + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, divide_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_INT32 << 8):
+        case BH_DIVIDE + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, divide_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_INT64 << 8):
+        case BH_DIVIDE + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, divide_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_INT8 << 8):
+        case BH_DIVIDE + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, divide_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_UINT16 << 8):
+        case BH_DIVIDE + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, divide_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_UINT32 << 8):
+        case BH_DIVIDE + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, divide_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_UINT64 << 8):
+        case BH_DIVIDE + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, divide_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_DIVIDE + (CPHVB_UINT8 << 8):
+        case BH_DIVIDE + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, divide_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_FLOAT32 << 8):
+        case BH_POWER + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, power_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_FLOAT64 << 8):
+        case BH_POWER + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, power_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_INT16 << 8):
+        case BH_POWER + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, power_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_INT32 << 8):
+        case BH_POWER + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, power_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_INT64 << 8):
+        case BH_POWER + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, power_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_INT8 << 8):
+        case BH_POWER + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, power_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_UINT16 << 8):
+        case BH_POWER + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, power_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_UINT32 << 8):
+        case BH_POWER + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, power_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_UINT64 << 8):
+        case BH_POWER + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, power_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_POWER + (CPHVB_UINT8 << 8):
+        case BH_POWER + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, power_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_BOOL << 8):
+        case BH_GREATER + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, greater_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_FLOAT32 << 8):
+        case BH_GREATER + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, greater_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_FLOAT64 << 8):
+        case BH_GREATER + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, greater_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_INT16 << 8):
+        case BH_GREATER + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, greater_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_INT32 << 8):
+        case BH_GREATER + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, greater_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_INT64 << 8):
+        case BH_GREATER + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, greater_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_INT8 << 8):
+        case BH_GREATER + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, greater_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_UINT16 << 8):
+        case BH_GREATER + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, greater_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_UINT32 << 8):
+        case BH_GREATER + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, greater_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_UINT64 << 8):
+        case BH_GREATER + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, greater_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_GREATER + (CPHVB_UINT8 << 8):
+        case BH_GREATER + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, greater_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_BOOL << 8):
+        case BH_GREATER_EQUAL + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, greater_equal_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_FLOAT32 << 8):
+        case BH_GREATER_EQUAL + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, greater_equal_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_FLOAT64 << 8):
+        case BH_GREATER_EQUAL + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, greater_equal_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_INT16 << 8):
+        case BH_GREATER_EQUAL + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, greater_equal_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_INT32 << 8):
+        case BH_GREATER_EQUAL + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, greater_equal_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_INT64 << 8):
+        case BH_GREATER_EQUAL + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, greater_equal_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_INT8 << 8):
+        case BH_GREATER_EQUAL + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, greater_equal_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_UINT16 << 8):
+        case BH_GREATER_EQUAL + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, greater_equal_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_UINT32 << 8):
+        case BH_GREATER_EQUAL + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, greater_equal_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_UINT64 << 8):
+        case BH_GREATER_EQUAL + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, greater_equal_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_GREATER_EQUAL + (CPHVB_UINT8 << 8):
+        case BH_GREATER_EQUAL + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, greater_equal_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_BOOL << 8):
+        case BH_LESS + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, less_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_FLOAT32 << 8):
+        case BH_LESS + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, less_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_FLOAT64 << 8):
+        case BH_LESS + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, less_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_INT16 << 8):
+        case BH_LESS + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, less_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_INT32 << 8):
+        case BH_LESS + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, less_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_INT64 << 8):
+        case BH_LESS + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, less_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_INT8 << 8):
+        case BH_LESS + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, less_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_UINT16 << 8):
+        case BH_LESS + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, less_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_UINT32 << 8):
+        case BH_LESS + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, less_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_UINT64 << 8):
+        case BH_LESS + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, less_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LESS + (CPHVB_UINT8 << 8):
+        case BH_LESS + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, less_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_BOOL << 8):
+        case BH_LESS_EQUAL + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, less_equal_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_FLOAT32 << 8):
+        case BH_LESS_EQUAL + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, less_equal_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_FLOAT64 << 8):
+        case BH_LESS_EQUAL + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, less_equal_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_INT16 << 8):
+        case BH_LESS_EQUAL + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, less_equal_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_INT32 << 8):
+        case BH_LESS_EQUAL + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, less_equal_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_INT64 << 8):
+        case BH_LESS_EQUAL + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, less_equal_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_INT8 << 8):
+        case BH_LESS_EQUAL + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, less_equal_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_UINT16 << 8):
+        case BH_LESS_EQUAL + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, less_equal_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_UINT32 << 8):
+        case BH_LESS_EQUAL + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, less_equal_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_UINT64 << 8):
+        case BH_LESS_EQUAL + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, less_equal_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LESS_EQUAL + (CPHVB_UINT8 << 8):
+        case BH_LESS_EQUAL + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, less_equal_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_BOOL << 8):
+        case BH_EQUAL + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, equal_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_COMPLEX128 << 8):
+        case BH_EQUAL + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, equal_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_COMPLEX64 << 8):
+        case BH_EQUAL + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, equal_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_FLOAT32 << 8):
+        case BH_EQUAL + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, equal_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_FLOAT64 << 8):
+        case BH_EQUAL + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, equal_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_INT16 << 8):
+        case BH_EQUAL + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, equal_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_INT32 << 8):
+        case BH_EQUAL + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, equal_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_INT64 << 8):
+        case BH_EQUAL + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, equal_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_INT8 << 8):
+        case BH_EQUAL + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, equal_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_UINT16 << 8):
+        case BH_EQUAL + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, equal_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_UINT32 << 8):
+        case BH_EQUAL + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, equal_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_UINT64 << 8):
+        case BH_EQUAL + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, equal_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_EQUAL + (CPHVB_UINT8 << 8):
+        case BH_EQUAL + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, equal_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_BOOL << 8):
+        case BH_NOT_EQUAL + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, not_equal_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_COMPLEX128 << 8):
+        case BH_NOT_EQUAL + (BH_COMPLEX128 << 8):
             return traverse_sa<std::complex<double>, std::complex<double>, not_equal_functor<std::complex<double>, std::complex<double>, std::complex<double> > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_COMPLEX64 << 8):
+        case BH_NOT_EQUAL + (BH_COMPLEX64 << 8):
             return traverse_sa<std::complex<float>, std::complex<float>, not_equal_functor<std::complex<float>, std::complex<float>, std::complex<float> > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_FLOAT32 << 8):
+        case BH_NOT_EQUAL + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, not_equal_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_FLOAT64 << 8):
+        case BH_NOT_EQUAL + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, not_equal_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_INT16 << 8):
+        case BH_NOT_EQUAL + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, not_equal_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_INT32 << 8):
+        case BH_NOT_EQUAL + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, not_equal_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_INT64 << 8):
+        case BH_NOT_EQUAL + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, not_equal_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_INT8 << 8):
+        case BH_NOT_EQUAL + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, not_equal_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_UINT16 << 8):
+        case BH_NOT_EQUAL + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, not_equal_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_UINT32 << 8):
+        case BH_NOT_EQUAL + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, not_equal_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_UINT64 << 8):
+        case BH_NOT_EQUAL + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, not_equal_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_NOT_EQUAL + (CPHVB_UINT8 << 8):
+        case BH_NOT_EQUAL + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, not_equal_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_BOOL << 8):
+        case BH_LOGICAL_AND + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, logical_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_FLOAT32 << 8):
+        case BH_LOGICAL_AND + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, logical_and_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_FLOAT64 << 8):
+        case BH_LOGICAL_AND + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, logical_and_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_INT16 << 8):
+        case BH_LOGICAL_AND + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, logical_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_INT32 << 8):
+        case BH_LOGICAL_AND + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, logical_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_INT64 << 8):
+        case BH_LOGICAL_AND + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, logical_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_INT8 << 8):
+        case BH_LOGICAL_AND + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, logical_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_UINT16 << 8):
+        case BH_LOGICAL_AND + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, logical_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_UINT32 << 8):
+        case BH_LOGICAL_AND + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, logical_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_UINT64 << 8):
+        case BH_LOGICAL_AND + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, logical_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_AND + (CPHVB_UINT8 << 8):
+        case BH_LOGICAL_AND + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, logical_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_BOOL << 8):
+        case BH_LOGICAL_OR + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, logical_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_FLOAT32 << 8):
+        case BH_LOGICAL_OR + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, logical_or_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_FLOAT64 << 8):
+        case BH_LOGICAL_OR + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, logical_or_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_INT16 << 8):
+        case BH_LOGICAL_OR + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, logical_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_INT32 << 8):
+        case BH_LOGICAL_OR + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, logical_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_INT64 << 8):
+        case BH_LOGICAL_OR + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, logical_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_INT8 << 8):
+        case BH_LOGICAL_OR + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, logical_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_UINT16 << 8):
+        case BH_LOGICAL_OR + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, logical_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_UINT32 << 8):
+        case BH_LOGICAL_OR + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, logical_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_UINT64 << 8):
+        case BH_LOGICAL_OR + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, logical_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_OR + (CPHVB_UINT8 << 8):
+        case BH_LOGICAL_OR + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, logical_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_BOOL << 8):
+        case BH_LOGICAL_XOR + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, logical_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_FLOAT32 << 8):
+        case BH_LOGICAL_XOR + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, logical_xor_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_FLOAT64 << 8):
+        case BH_LOGICAL_XOR + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, logical_xor_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_INT16 << 8):
+        case BH_LOGICAL_XOR + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, logical_xor_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_INT32 << 8):
+        case BH_LOGICAL_XOR + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, logical_xor_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_INT64 << 8):
+        case BH_LOGICAL_XOR + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, logical_xor_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_INT8 << 8):
+        case BH_LOGICAL_XOR + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, logical_xor_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_UINT16 << 8):
+        case BH_LOGICAL_XOR + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, logical_xor_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_UINT32 << 8):
+        case BH_LOGICAL_XOR + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, logical_xor_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_UINT64 << 8):
+        case BH_LOGICAL_XOR + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, logical_xor_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LOGICAL_XOR + (CPHVB_UINT8 << 8):
+        case BH_LOGICAL_XOR + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, logical_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_BOOL << 8):
+        case BH_MAXIMUM + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, maximum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_FLOAT32 << 8):
+        case BH_MAXIMUM + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, maximum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_FLOAT64 << 8):
+        case BH_MAXIMUM + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, maximum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_INT16 << 8):
+        case BH_MAXIMUM + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, maximum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_INT32 << 8):
+        case BH_MAXIMUM + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, maximum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_INT64 << 8):
+        case BH_MAXIMUM + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, maximum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_INT8 << 8):
+        case BH_MAXIMUM + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, maximum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_UINT16 << 8):
+        case BH_MAXIMUM + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, maximum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_UINT32 << 8):
+        case BH_MAXIMUM + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, maximum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_UINT64 << 8):
+        case BH_MAXIMUM + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, maximum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_MAXIMUM + (CPHVB_UINT8 << 8):
+        case BH_MAXIMUM + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, maximum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_BOOL << 8):
+        case BH_MINIMUM + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, minimum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_FLOAT32 << 8):
+        case BH_MINIMUM + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, minimum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_FLOAT64 << 8):
+        case BH_MINIMUM + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, minimum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_INT16 << 8):
+        case BH_MINIMUM + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, minimum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_INT32 << 8):
+        case BH_MINIMUM + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, minimum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_INT64 << 8):
+        case BH_MINIMUM + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, minimum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_INT8 << 8):
+        case BH_MINIMUM + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, minimum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_UINT16 << 8):
+        case BH_MINIMUM + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, minimum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_UINT32 << 8):
+        case BH_MINIMUM + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, minimum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_UINT64 << 8):
+        case BH_MINIMUM + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, minimum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_MINIMUM + (CPHVB_UINT8 << 8):
+        case BH_MINIMUM + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, minimum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_BOOL << 8):
+        case BH_BITWISE_AND + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, bitwise_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_INT16 << 8):
+        case BH_BITWISE_AND + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, bitwise_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_INT32 << 8):
+        case BH_BITWISE_AND + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, bitwise_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_INT64 << 8):
+        case BH_BITWISE_AND + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, bitwise_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_INT8 << 8):
+        case BH_BITWISE_AND + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, bitwise_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_UINT16 << 8):
+        case BH_BITWISE_AND + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, bitwise_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_UINT32 << 8):
+        case BH_BITWISE_AND + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, bitwise_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_UINT64 << 8):
+        case BH_BITWISE_AND + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, bitwise_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_BITWISE_AND + (CPHVB_UINT8 << 8):
+        case BH_BITWISE_AND + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, bitwise_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_BOOL << 8):
+        case BH_BITWISE_OR + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, bitwise_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_INT16 << 8):
+        case BH_BITWISE_OR + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, bitwise_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_INT32 << 8):
+        case BH_BITWISE_OR + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, bitwise_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_INT64 << 8):
+        case BH_BITWISE_OR + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, bitwise_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_INT8 << 8):
+        case BH_BITWISE_OR + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, bitwise_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_UINT16 << 8):
+        case BH_BITWISE_OR + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, bitwise_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_UINT32 << 8):
+        case BH_BITWISE_OR + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, bitwise_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_UINT64 << 8):
+        case BH_BITWISE_OR + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, bitwise_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_BITWISE_OR + (CPHVB_UINT8 << 8):
+        case BH_BITWISE_OR + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, bitwise_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_BOOL << 8):
+        case BH_BITWISE_XOR + (BH_BOOL << 8):
             return traverse_sa<bh_bool, bh_bool, bitwise_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_INT16 << 8):
+        case BH_BITWISE_XOR + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, bitwise_xor_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_INT32 << 8):
+        case BH_BITWISE_XOR + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, bitwise_xor_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_INT64 << 8):
+        case BH_BITWISE_XOR + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, bitwise_xor_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_INT8 << 8):
+        case BH_BITWISE_XOR + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, bitwise_xor_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_UINT16 << 8):
+        case BH_BITWISE_XOR + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, bitwise_xor_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_UINT32 << 8):
+        case BH_BITWISE_XOR + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, bitwise_xor_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_UINT64 << 8):
+        case BH_BITWISE_XOR + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, bitwise_xor_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_BITWISE_XOR + (CPHVB_UINT8 << 8):
+        case BH_BITWISE_XOR + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, bitwise_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_INT16 << 8):
+        case BH_LEFT_SHIFT + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, left_shift_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_INT32 << 8):
+        case BH_LEFT_SHIFT + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, left_shift_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_INT64 << 8):
+        case BH_LEFT_SHIFT + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, left_shift_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_INT8 << 8):
+        case BH_LEFT_SHIFT + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, left_shift_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_UINT16 << 8):
+        case BH_LEFT_SHIFT + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, left_shift_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_UINT32 << 8):
+        case BH_LEFT_SHIFT + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, left_shift_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_UINT64 << 8):
+        case BH_LEFT_SHIFT + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, left_shift_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_LEFT_SHIFT + (CPHVB_UINT8 << 8):
+        case BH_LEFT_SHIFT + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, left_shift_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_INT16 << 8):
+        case BH_RIGHT_SHIFT + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, right_shift_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_INT32 << 8):
+        case BH_RIGHT_SHIFT + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, right_shift_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_INT64 << 8):
+        case BH_RIGHT_SHIFT + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, right_shift_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_INT8 << 8):
+        case BH_RIGHT_SHIFT + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, right_shift_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_UINT16 << 8):
+        case BH_RIGHT_SHIFT + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, right_shift_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_UINT32 << 8):
+        case BH_RIGHT_SHIFT + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, right_shift_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_UINT64 << 8):
+        case BH_RIGHT_SHIFT + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, right_shift_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_RIGHT_SHIFT + (CPHVB_UINT8 << 8):
+        case BH_RIGHT_SHIFT + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, right_shift_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
-        case CPHVB_ARCTAN2 + (CPHVB_FLOAT32 << 8):
+        case BH_ARCTAN2 + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, arctan2_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_ARCTAN2 + (CPHVB_FLOAT64 << 8):
+        case BH_ARCTAN2 + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, arctan2_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_FLOAT32 << 8):
+        case BH_MOD + (BH_FLOAT32 << 8):
             return traverse_sa<bh_float32, bh_float32, mod_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_FLOAT64 << 8):
+        case BH_MOD + (BH_FLOAT64 << 8):
             return traverse_sa<bh_float64, bh_float64, mod_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_INT16 << 8):
+        case BH_MOD + (BH_INT16 << 8):
             return traverse_sa<bh_int16, bh_int16, mod_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_INT32 << 8):
+        case BH_MOD + (BH_INT32 << 8):
             return traverse_sa<bh_int32, bh_int32, mod_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_INT64 << 8):
+        case BH_MOD + (BH_INT64 << 8):
             return traverse_sa<bh_int64, bh_int64, mod_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_INT8 << 8):
+        case BH_MOD + (BH_INT8 << 8):
             return traverse_sa<bh_int8, bh_int8, mod_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_UINT16 << 8):
+        case BH_MOD + (BH_UINT16 << 8):
             return traverse_sa<bh_uint16, bh_uint16, mod_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_UINT32 << 8):
+        case BH_MOD + (BH_UINT32 << 8):
             return traverse_sa<bh_uint32, bh_uint32, mod_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_UINT64 << 8):
+        case BH_MOD + (BH_UINT64 << 8):
             return traverse_sa<bh_uint64, bh_uint64, mod_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in );
-        case CPHVB_MOD + (CPHVB_UINT8 << 8):
+        case BH_MOD + (BH_UINT8 << 8):
             return traverse_sa<bh_uint8, bh_uint8, mod_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in );
 
         default:
             
-            return CPHVB_ERROR;
+            return BH_ERROR;
 
     }
 

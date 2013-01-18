@@ -100,10 +100,10 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
     bh_index nelements = 0;                                      // Get the number of elements
     for(bh_intp i=start; i<= end; i++) {
          switch(insts[i].opcode) {
-            case CPHVB_DISCARD:
-            case CPHVB_FREE:
-            case CPHVB_SYNC:
-            case CPHVB_NONE:
+            case BH_DISCARD:
+            case BH_FREE:
+            case BH_SYNC:
+            case BH_NONE:
                 continue;
         }
         nelements = bh_nelements( insts[i].operand[0]->ndim, insts[i].operand[0]->shape );
@@ -112,10 +112,10 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
     for(bh_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
         switch(insts[i].opcode) {                                   // Ignore sys-ops
-            case CPHVB_DISCARD:
-            case CPHVB_FREE:
-            case CPHVB_SYNC:
-            case CPHVB_NONE:
+            case BH_DISCARD:
+            case BH_FREE:
+            case BH_SYNC:
+            case BH_NONE:
                 bundle_len++;
                 continue;
         }

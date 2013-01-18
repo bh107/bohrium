@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-#ifndef __CPHVB_VEM_CLUSTER_DARRAY_H
-#define __CPHVB_VEM_CLUSTER_DARRAY_H
+#ifndef __BH_VEM_CLUSTER_DARRAY_H
+#define __BH_VEM_CLUSTER_DARRAY_H
 
 
 //Local array chunk
@@ -32,7 +32,7 @@ typedef struct
     //Local array chunk
     bh_array *ary;
     //Local array chunk coordinate (in array elements)
-    bh_intp coord[CPHVB_MAXDIM];
+    bh_intp coord[BH_MAXDIM];
 }ary_chunk;
  
 

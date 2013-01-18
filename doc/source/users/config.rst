@@ -6,7 +6,7 @@ In order to configure the runtime setup of Bohrium you must provide a configurat
 
 At runtime Bohrium will search through the following prioritized list in order to find the configuration file:
 
-* The environment variable ``CPHVB_CONFIG``
+* The environment variable ``BH_CONFIG``
 * The home directory config ``~/.cphvb/config.ini`` (Windows: %APPDATA%\cphvb\config.ini)
 * The system-wide config ``/etc/cphvb/config.ini`` (Windows: %PROGRAMFILES%\cphvb\config.ini)
 
@@ -57,8 +57,8 @@ Environment Variables
 
 The various engines can be manipulated by environment variables::
 
-  CPHVB_VE_SCORE_BLOCKSIZE - Adjusts size of cache-tiling.
-  CPHVB_VE_MCORE_BLOCKSIZE - Adjusts size of work-splits and cache-tiling.
-  CPHVB_VE_MCORE_NTHREADS - Adjusts the number of threads used.
+  BH_VE_SCORE_BLOCKSIZE - Adjusts size of cache-tiling.
+  BH_VE_MCORE_BLOCKSIZE - Adjusts size of work-splits and cache-tiling.
+  BH_VE_MCORE_NTHREADS - Adjusts the number of threads used.
 
 Experiment with values to obtain optimimal results.

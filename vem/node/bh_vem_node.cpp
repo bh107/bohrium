@@ -46,7 +46,7 @@ static std::set<bh_array*> allocated_arys;
 
 /* Initialize the VEM
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_vem_node_init(bh_component *self)
 {
@@ -58,10 +58,10 @@ bh_error bh_vem_node_init(bh_component *self)
     if (children_count != 1) 
     {
 		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
-		return CPHVB_ERROR;
+		return BH_ERROR;
     }
     
-    if (err != CPHVB_SUCCESS)
+    if (err != BH_SUCCESS)
 	    return err;
     
     ve_init = vem_node_components[0]->init;
@@ -73,13 +73,13 @@ bh_error bh_vem_node_init(bh_component *self)
     if((err = ve_init(vem_node_components[0])) != 0)
         return err;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_vem_node_shutdown(void)
 {
@@ -122,7 +122,7 @@ bh_error bh_vem_node_shutdown(void)
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_vem_node_reg_func(char *fun, bh_intp *id)
 {
@@ -131,7 +131,7 @@ bh_error bh_vem_node_reg_func(char *fun, bh_intp *id)
     if(*id == 0)//Only if parent didn't set the ID.
         *id = ++userfunc_count;
 
-    if((e = ve_reg_func(fun, id)) != CPHVB_SUCCESS)
+    if((e = ve_reg_func(fun, id)) != BH_SUCCESS)
     {
         *id = 0;
         return e;
@@ -144,18 +144,18 @@ bh_error bh_vem_node_reg_func(char *fun, bh_intp *id)
  * It is required that the VEM supports all instructions in the list.
  *
  * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_vem_node_execute(bh_intp count,
                                    bh_instruction inst_list[])
 {
     if (count <= 0)
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     
     for(bh_intp i=0; i<count; ++i)
     {
         bh_instruction* inst = &inst_list[i];
-        #ifdef CPHVB_TRACE
+        #ifdef BH_TRACE
             bh_component_trace_inst(vem_node_myself, inst);
         #endif
         int nop = bh_operands_in_instruction(inst);
@@ -169,7 +169,7 @@ bh_error bh_vem_node_execute(bh_intp count,
         }
 
         //And remove discared arrays
-        if(inst->opcode == CPHVB_DISCARD)
+        if(inst->opcode == BH_DISCARD)
         {
             bh_array *ary = operands[0];
             //Check that we are not discarding a base that still has views.

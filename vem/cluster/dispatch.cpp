@@ -45,7 +45,7 @@ static std::set<bh_array*> slave_known_arrays;
 /* Initiate the dispatch system. */
 void dispatch_reset(void)
 {
-    const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
+    const int dms = BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     assert(((int)dms) > sizeof(dispatch_msg));
     if(msg == NULL)
     {
@@ -203,7 +203,7 @@ void dispatch_add2payload(bh_intp size, const void *data)
 */
 void dispatch_send(int type)
 {
-    const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
+    const int dms = BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     int e;
 
     //Create message
@@ -228,7 +228,7 @@ void dispatch_send(int type)
 void dispatch_recv(dispatch_msg **message)
 {
     int e;
-    const int dms = CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
+    const int dms = BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
     
     //Get header of the message
     if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
@@ -324,7 +324,7 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
         for(bh_intp j=0; j<nop; ++j)
         {
             bh_array *op;
-            if(inst->opcode == CPHVB_USERFUNC)
+            if(inst->opcode == BH_USERFUNC)
                 op = inst->userfunc->operand[j];
             else
                 op = inst->operand[j];
@@ -373,7 +373,7 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
     for(bh_intp i=0; i<count; ++i)
     {
         const bh_instruction *inst = &inst_list[i];
-        if(inst->opcode == CPHVB_USERFUNC)
+        if(inst->opcode == BH_USERFUNC)
         {
             dispatch_add2payload(inst->userfunc->struct_size, inst->userfunc);
             ++nou;
@@ -383,7 +383,7 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
     *((bh_intp*)(msg->payload+msg_nou_offset)) = nou;
 
     //Dispath the execution message
-    dispatch_send(CPHVB_CLUSTER_DISPATCH_EXEC);
+    dispatch_send(BH_CLUSTER_DISPATCH_EXEC);
 
     //Dispath the array data
     dispatch_array_data(base_darys);

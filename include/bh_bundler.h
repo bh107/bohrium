@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_BUNDLE_H
-#define __CPHVB_BUNDLE_H
+#ifndef __BH_BUNDLE_H
+#define __BH_BUNDLE_H
 
 #ifdef __cplusplus
 extern "C" {

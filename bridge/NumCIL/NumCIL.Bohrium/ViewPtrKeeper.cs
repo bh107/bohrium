@@ -107,13 +107,13 @@ namespace NumCIL.Bohrium
                 else if (m_ptr.Data != IntPtr.Zero && m_ptr.BaseArray == PInvoke.bh_array_ptr.Null)
                 {
                     VEM.ExecuteRelease(
-                        new PInvoke.bh_instruction(bh_opcode.CPHVB_FREE, m_ptr),
-                        new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, m_ptr)
+                        new PInvoke.bh_instruction(bh_opcode.BH_FREE, m_ptr),
+                        new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr)
                     );
                 }
                 else
                 {
-                    VEM.ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.CPHVB_DISCARD, m_ptr));
+                    VEM.ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr));
                 }
 
                 m_ptr = PInvoke.bh_array_ptr.Null;

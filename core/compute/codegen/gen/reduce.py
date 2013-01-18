@@ -19,9 +19,9 @@ def gen( opcodes, ignore ):
             op['op3'] = t
            
             #Use the C++ complex data type 
-            if t == "CPHVB_COMPLEX64":
+            if t == "BH_COMPLEX64":
                 t = "std::complex<float>"
-            elif t == "CPHVB_COMPLEX128":
+            elif t == "BH_COMPLEX128":
                 t = "std::complex<double>"
 
             op['ftype'] = t.lower()

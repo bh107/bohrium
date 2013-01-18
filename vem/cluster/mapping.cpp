@@ -49,7 +49,7 @@ static void find_largest_chunk(bh_intp nop,
 {
     bh_intp first_chunk = chunks.size();
     bh_intp ndim = operand[0]->ndim;
-    bh_intp shape[CPHVB_MAXDIM];
+    bh_intp shape[BH_MAXDIM];
     for(bh_intp d=0; d < ndim; ++d)
         shape[d] = std::numeric_limits<bh_intp>::max();
 
@@ -175,7 +175,7 @@ static void get_chunks(bh_intp nop,
                        const bh_intp end_coord[])
 {
     bh_intp ndim = operand[0]->ndim;
-    bh_intp new_start_coord[CPHVB_MAXDIM];
+    bh_intp new_start_coord[BH_MAXDIM];
 
     //We are finished when one of the coordinates are out of bound
     for(bh_intp d=0; d < ndim; ++d)
@@ -185,14 +185,14 @@ static void get_chunks(bh_intp nop,
     find_largest_chunk(nop, operand, chunks, start_coord, 
                        end_coord, new_start_coord);
 
-    bh_intp corner[CPHVB_MAXDIM];
+    bh_intp corner[BH_MAXDIM];
     memset(corner, 0, ndim * sizeof(bh_intp));
     ++corner[ndim-1];
     while(1)//Lets start a new chunk search at each corner of the current chunk.
     {
         //Find start and end coord based on the current corner
-        bh_intp start[CPHVB_MAXDIM];
-        bh_intp end[CPHVB_MAXDIM];
+        bh_intp start[BH_MAXDIM];
+        bh_intp end[BH_MAXDIM];
         for(bh_intp d=0; d < ndim; ++d)
         {
             if(corner[d] == 1)
@@ -237,7 +237,7 @@ void mapping_chunks(bh_intp nop,
                            bh_array *operand[],
                            std::vector<ary_chunk>& chunks) 
 {
-    bh_intp coord[CPHVB_MAXDIM];
+    bh_intp coord[BH_MAXDIM];
     memset(coord, 0, operand[0]->ndim * sizeof(bh_intp));
     get_chunks(nop, operand, chunks, coord, operand[0]->shape);
 }

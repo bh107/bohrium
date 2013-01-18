@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_H
-#define __CPHVB_H
+#ifndef __BH_H
+#define __BH_H
 
 #include "bh_error.h"
 #include "bh_debug.h"
@@ -118,7 +118,7 @@ DLLEXPORT bh_index bh_calc_offset(bh_intp ndim,
  */
 DLLEXPORT void bh_dimbound(bh_intp ndim,
                     const bh_index shape[],
-                    bh_index dimbound[CPHVB_MAXDIM]);
+                    bh_index dimbound[BH_MAXDIM]);
 
 /* Set the array stride to continuous row-major
  *
@@ -184,7 +184,7 @@ DLLEXPORT bh_array* bh_base_array(const bh_array* view);
  *
  * @array The array in question
  * @data The new data pointer
- * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ * @return Error code (BH_SUCCESS, BH_ERROR)
  */
 DLLEXPORT bh_error bh_data_set(bh_array* array, bh_data_ptr data);
 
@@ -192,7 +192,7 @@ DLLEXPORT bh_error bh_data_set(bh_array* array, bh_data_ptr data);
  *
  * @array The array in question
  * @result Output area
- * @return Error code (CPHVB_SUCCESS, CPHVB_ERROR)
+ * @return Error code (BH_SUCCESS, BH_ERROR)
  */
 DLLEXPORT bh_error bh_data_get(bh_array* array, bh_data_ptr* result);
 
@@ -202,7 +202,7 @@ DLLEXPORT bh_error bh_data_get(bh_array* array, bh_data_ptr* result);
  * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 DLLEXPORT bh_error bh_data_malloc(bh_array* array);
 
@@ -210,7 +210,7 @@ DLLEXPORT bh_error bh_data_malloc(bh_array* array);
  * For convenience array is allowed to be NULL.
  *
  * @array  The array in question
- * @return Error code (CPHVB_SUCCESS, CPHVB_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 DLLEXPORT bh_error bh_data_free(bh_array* array);
 

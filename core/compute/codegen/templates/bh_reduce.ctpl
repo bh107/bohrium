@@ -54,7 +54,7 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
             opcode_func( data_out, data_out, (data_in+off0) );
         }
 
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
 
     } else {                                    // ND general case
 
@@ -76,8 +76,8 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
         }
         tmp.data = op_in->data;
        
-        instr.status = CPHVB_INST_PENDING;       // Copy the first element to the output.
-        instr.opcode = CPHVB_IDENTITY;
+        instr.status = BH_INST_PENDING;       // Copy the first element to the output.
+        instr.opcode = BH_IDENTITY;
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
         instr.operand[2] = NULL;
@@ -86,12 +86,12 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
         //err = traverse_aa<T, T, Instr>( instr );// execute the pseudo-instruction
         //err = bh_compute_apply( &instr );
         err = bh_compute_apply_naive( &instr );
-        if (err != CPHVB_SUCCESS) {
+        if (err != BH_SUCCESS) {
             return err;
         }
         tmp.start += stride;
 
-        instr.status = CPHVB_INST_PENDING;       // Reduce over the 'axis' dimension.
+        instr.status = BH_INST_PENDING;       // Reduce over the 'axis' dimension.
         instr.opcode = opcode;                   // NB: the first element is already handled.
         instr.operand[0] = op_out;
         instr.operand[1] = op_out;
@@ -101,13 +101,13 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
             // TODO: use traverse directly
             //err = traverse_aaa<T, T, T, Instr>( instr );
             err = bh_compute_apply_naive( &instr );
-            if (err != CPHVB_SUCCESS) {
+            if (err != BH_SUCCESS) {
                 return err;
             }
             tmp.start += stride;
         }
 
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     }
 
 }
@@ -125,23 +125,23 @@ bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg)
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
 	if (bh_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
 	}
 
     if (op_in->type != op_out->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     
-    if (bh_data_malloc(op_out) != CPHVB_SUCCESS) {
+    if (bh_data_malloc(op_out) != BH_SUCCESS) {
         fprintf(stderr, "ERR: bh_compute_reduce; No memory for reduction-result.\n");
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
 
     long int poly = opcode + (op_in->type << 8);
@@ -155,7 +155,7 @@ bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg)
 
         default:
             
-            return CPHVB_ERROR;
+            return BH_ERROR;
 
     }
 
@@ -238,8 +238,8 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
         }
         tmp.data = op_in->data;
        
-        instr.status = CPHVB_INST_PENDING;       // Copy the first element to the output.
-        instr.opcode = CPHVB_IDENTITY;
+        instr.status = BH_INST_PENDING;       // Copy the first element to the output.
+        instr.opcode = BH_IDENTITY;
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
         instr.operand[2] = NULL;
@@ -247,14 +247,14 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 		bh_tstate state;
 		bh_tstate_reset( &state, &instr );
 		err = traverse_aa<T, T, identity_functor<T, T> >(&instr, &state);
-        if (err != CPHVB_SUCCESS) {
+        if (err != BH_SUCCESS) {
             return err;
         }
 
 		bh_index stride = op_in->stride[axis];
 		bh_index stride_bytes = stride * sizeof(T);
 
-        instr.status = CPHVB_INST_PENDING;       // Reduce over the 'axis' dimension.
+        instr.status = BH_INST_PENDING;       // Reduce over the 'axis' dimension.
         instr.opcode = opcode;                   // NB: the first element is already handled.
         instr.operand[0] = op_out;
         instr.operand[1] = op_out;
@@ -269,7 +269,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
         for(i=1; i<nelements; ++i) {
 						
             err = traverse_aaa<T, T, T, Instr>(&instr, &state);
-            if (err != CPHVB_SUCCESS) {
+            if (err != BH_SUCCESS) {
                 return err;
             }
 
@@ -283,7 +283,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
         }
     }
 
-	return CPHVB_SUCCESS;
+	return BH_SUCCESS;
 }
 
 bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
@@ -299,23 +299,23 @@ bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
 	if (bh_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
 	}
 
     if (op_in->type != op_out->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     
-    if (bh_data_malloc(op_out) != CPHVB_SUCCESS) {
+    if (bh_data_malloc(op_out) != BH_SUCCESS) {
         fprintf(stderr, "ERR: bh_compute_reduce; No memory for reduction-result.\n");
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
 
     long int poly = opcode + (op_in->type << 8);
@@ -329,7 +329,7 @@ bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
 
         default:
             
-            return CPHVB_ERROR;
+            return BH_ERROR;
 
     }
 

@@ -21,8 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "array.h"
 
-#ifndef __CPHVB_VEM_CLUSTER_COMM_H
-#define __CPHVB_VEM_CLUSTER_COMM_H
+#ifndef __BH_VEM_CLUSTER_COMM_H
+#define __BH_VEM_CLUSTER_COMM_H
 
 
 /* Gather or scatter the global array processes.

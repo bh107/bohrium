@@ -23,8 +23,8 @@ def gen_headerfile( opcodes ):
  * ../core/codegen/gen_opcodes.py at __TIMESTAMP__.
  */
 
-#ifndef __CPHVB_OPCODE_H
-#define __CPHVB_OPCODE_H
+#ifndef __BH_OPCODE_H
+#define __BH_OPCODE_H
 
 #include "bh_type.h"
 
@@ -37,7 +37,7 @@ enum /* bh_opcode */
 {
 __OPCODES__
 
-    CPHVB_NO_OPCODES    // The amount of opcodes
+    BH_NO_OPCODES    // The amount of opcodes
 };
 
 #ifdef __cplusplus
@@ -89,14 +89,14 @@ __NOPS__
  */
 int bh_operands_in_instruction(const bh_instruction *inst)
 {
-    if (inst->opcode == CPHVB_USERFUNC)
+    if (inst->opcode == BH_USERFUNC)
         return inst->userfunc->nin + inst->userfunc->nout;
     else
         return bh_operands(inst->opcode);
 }
 
 /* Text descriptions for a given operation */
-const char* _opcode_text[CPHVB_NONE+1];
+const char* _opcode_text[BH_NONE+1];
 bool _opcode_text_initialized = false;
 
 /* Text string for operation

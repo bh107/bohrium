@@ -89,7 +89,7 @@ static void* job(void *worker_arg)
     
         if ( my_job->instr != NULL ) {                      // Got a job
 
-            if ( my_job->instr->opcode == CPHVB_USERFUNC ) {      // userfunc
+            if ( my_job->instr->opcode == BH_USERFUNC ) {      // userfunc
 
                 bh_compute_apply_naive( my_job->instr );
 
@@ -122,28 +122,28 @@ bh_error bh_ve_mcore_init(bh_component *self)
 {
     char *env;
     int i;
-    bh_error res = CPHVB_SUCCESS;
+    bh_error res = BH_SUCCESS;
     myself = self;                              // Assign config container.
 
-    env = getenv("CPHVB_VE_MCORE_BLOCKSIZE");         // Override block_size from ENVVAR
+    env = getenv("BH_VE_MCORE_BLOCKSIZE");         // Override block_size from ENVVAR
     if (env != NULL) {
         block_size = atoi(env);
     }
     if (block_size <= 0) {                      // Verify it
-        fprintf(stderr, "CPHVB_VE_MCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_VE_MCORE_BLOCKSIZE (%ld) should be greater than zero!\n", (long)block_size);
+        return BH_ERROR;
     }
 
-    env = getenv("CPHVB_VE_MCORE_NTHREADS");          // Override worker_count with ENVVAR
+    env = getenv("BH_VE_MCORE_NTHREADS");          // Override worker_count with ENVVAR
     if (env != NULL) {
         worker_count = atoi(env);
     }
 
     if (worker_count > MCORE_MAX_WORKERS) {     // Verify worker count
-        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to %i.\n", MCORE_MAX_WORKERS);
+        fprintf(stderr,"BH_VE_MCORE_NTHREADS capped to %i.\n", MCORE_MAX_WORKERS);
         worker_count = MCORE_MAX_WORKERS;
     } else if (worker_count < 1) {
-        fprintf(stderr,"CPHVB_VE_MCORE_NTHREADS capped to default %i.\n", MCORE_WORKERS);
+        fprintf(stderr,"BH_VE_MCORE_NTHREADS capped to default %i.\n", MCORE_WORKERS);
         worker_count = MCORE_WORKERS;
     }
 
@@ -155,10 +155,10 @@ bh_error bh_ve_mcore_init(bh_component *self)
 
                                                         // Barriers for work syncronization
     if (pthread_barrier_init( &work_start, NULL, worker_count+1) != 0) {
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     if (pthread_barrier_init( &work_sync, NULL, worker_count+1) != 0) {
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     DEBUG_PRINT("[worker_count=%d, block_size=%lu]\n", worker_count, block_size);
@@ -175,7 +175,7 @@ bh_error bh_ve_mcore_init(bh_component *self)
         worker_data[i] = (worker_data_t){ i, NULL, NULL, NULL, 0 };
 #endif
         if (pthread_create( &worker[i], NULL, job, &worker_data[i] ) != 0) {
-            res = CPHVB_ERROR;
+            res = BH_ERROR;
             break;
         }
     }
@@ -216,7 +216,7 @@ bh_error bh_ve_mcore_shutdown( void )
     bh_vcache_delete();
 
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
@@ -270,7 +270,7 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -285,30 +285,30 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     {
         inst = &instruction_list[count];
 
-        if(inst->status == CPHVB_SUCCESS)     // SKIP instruction
+        if(inst->status == BH_SUCCESS)     // SKIP instruction
         {
             continue;
         }
 
         res = bh_vcache_malloc( inst );      // Allocate memory for operands
-        if ( res != CPHVB_SUCCESS ) {
+        if ( res != BH_SUCCESS ) {
             return res;
         }
 
         switch(inst->opcode)                    // Dispatch instruction
         {
-            case CPHVB_NONE:                    // NOOP.
-            case CPHVB_DISCARD:
-            case CPHVB_SYNC:
-                inst->status = CPHVB_SUCCESS;
+            case BH_NONE:                    // NOOP.
+            case BH_DISCARD:
+            case BH_SYNC:
+                inst->status = BH_SUCCESS;
                 break;
 
-            case CPHVB_FREE:
+            case BH_FREE:
 
                 inst->status = bh_vcache_free( inst );
                 break;
 
-            case CPHVB_USERFUNC:                // External libraries
+            case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
@@ -340,7 +340,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
 				}
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
+                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -357,7 +357,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 
         }
 
-        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
+        if (inst->status != BH_SUCCESS)    // Instruction failed
         {
             break;
         }
@@ -365,9 +365,9 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     }
 
     if (count == instruction_count) {
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     } else {
-        return CPHVB_PARTIAL_SUCCESS;
+        return BH_PARTIAL_SUCCESS;
     }
 
 }
@@ -412,16 +412,16 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
 
     if (bh_operands(a->opcode) != 3) {
         fprintf(stderr, "ERR: Reduce only support binary operations.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
 	if (bh_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "ERR: Reduce called with input set to null.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
 	}
                                                 // Make sure that the array memory is allocated.
-    if (bh_data_malloc(a->operand[0]) != CPHVB_SUCCESS) {
-        return CPHVB_OUT_OF_MEMORY;
+    if (bh_data_malloc(a->operand[0]) != BH_SUCCESS) {
+        return BH_OUT_OF_MEMORY;
     }
     
     out = a->operand[0];
@@ -444,8 +444,8 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
         tmp.ndim--;                             //          be able to have 0 dimensions...
     }
     
-    inst.status = CPHVB_INST_PENDING;           // We copy the first element to the output.
-    inst.opcode = CPHVB_IDENTITY;
+    inst.status = BH_INST_PENDING;           // We copy the first element to the output.
+    inst.opcode = BH_IDENTITY;
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
@@ -453,12 +453,12 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
     //nelements   = bh_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
     //err         = dispatch( &inst, nelements );
     err = bh_compute_apply_naive( &inst );
-    if (err != CPHVB_SUCCESS) {
+    if (err != BH_SUCCESS) {
         return err;
     }
     tmp.start += step;
 
-    inst.status = CPHVB_INST_PENDING;           // Reduce over the 'axis' dimension.
+    inst.status = BH_INST_PENDING;           // Reduce over the 'axis' dimension.
     inst.opcode = a->opcode;                    // NB: the first element is already handled.
     inst.operand[0] = out;
     inst.operand[1] = out;
@@ -471,13 +471,13 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
         //nelements   = bh_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
         //err         = dispatch( &inst, nelements );
         //err         = dispatch( &inst, nelements );
-        if (err != CPHVB_SUCCESS) {
+        if (err != BH_SUCCESS) {
             return err;
         }
         tmp.start += step;
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
@@ -488,15 +488,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = reduce_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_random", fun) == 0)
@@ -505,15 +505,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			random_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = random_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_matmul", fun) == 0)
@@ -522,15 +522,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &matmul_impl);
 			if (matmul_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			matmul_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = matmul_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_lu", fun) == 0)
@@ -539,15 +539,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &lu_impl);
 			if (lu_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			lu_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = lu_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_fft", fun) == 0)
@@ -556,15 +556,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &fft_impl);
 			if (fft_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			fft_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = fft_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_fft2", fun) == 0)
@@ -573,15 +573,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &fft2_impl);
 			if (fft2_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			fft2_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = fft2_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_aggregate", fun) == 0)
@@ -590,19 +590,19 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
         {
             bh_component_get_func(myself, fun, &aggregate_impl);
             if (aggregate_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
             
             aggregate_impl_id = *id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
         else
         {
             *id = aggregate_impl_id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
     }
     
-    return CPHVB_USERFUNC_NOT_SUPPORTED;
+    return BH_USERFUNC_NOT_SUPPORTED;
 }
 
 
@@ -637,9 +637,9 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
         bh_ve_mcore_tstates = (bh_tstate*)malloc(sizeof(bh_tstate)*mcount);
     	
     	if (bh_ve_mcore_compute_loops == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	if (bh_ve_mcore_tstates == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	
     	bh_ve_mcore_buffersizes = mcount;
     }
@@ -700,10 +700,10 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
 
     for(i=start; i <= end; i++)                     // Set instruction status
     {
-        instr[i].status = CPHVB_SUCCESS;
+        instr[i].status = BH_SUCCESS;
     }
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -719,7 +719,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     {
         inst = &instruction_list[cur_index];
 
-        if(inst->status == CPHVB_SUCCESS)       // SKIP instruction
+        if(inst->status == BH_SUCCESS)       // SKIP instruction
         {
             continue;
         }
@@ -729,9 +729,9 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
         {
             if (!bh_is_constant(inst->operand[i]))
             {
-                if (bh_data_malloc(inst->operand[i]) != CPHVB_SUCCESS)
+                if (bh_data_malloc(inst->operand[i]) != BH_SUCCESS)
                 {
-                    return CPHVB_OUT_OF_MEMORY; // EXIT
+                    return BH_OUT_OF_MEMORY; // EXIT
                 }
             }
 
@@ -739,13 +739,13 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
 
         switch(inst->opcode)                    // Dispatch instruction
         {
-            case CPHVB_NONE:                    // NOOP.
-            case CPHVB_DISCARD:
-            case CPHVB_SYNC:
-                inst->status = CPHVB_SUCCESS;
+            case BH_NONE:                    // NOOP.
+            case BH_DISCARD:
+            case BH_SYNC:
+                inst->status = BH_SUCCESS;
                 break;
 
-            case CPHVB_USERFUNC:                // External libraries
+            case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
@@ -761,7 +761,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 }
                 else                            // Unsupported userfunc
                 {
-                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
+                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -773,7 +773,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 for(j=bin_start+1; j<instruction_count; j++)    
                 {
                     binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
-                    if ((binst->opcode == CPHVB_NONE) || (binst->opcode == CPHVB_DISCARD) || (binst->opcode == CPHVB_SYNC) ||(binst->opcode == CPHVB_USERFUNC) ) {
+                    if ((binst->opcode == BH_NONE) || (binst->opcode == BH_DISCARD) || (binst->opcode == BH_SYNC) ||(binst->opcode == BH_USERFUNC) ) {
                         break;
                     }
 
@@ -784,9 +784,9 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                     {
                         if (!bh_is_constant(binst->operand[i]))
                         {
-                            if (bh_data_malloc(binst->operand[i]) != CPHVB_SUCCESS)
+                            if (bh_data_malloc(binst->operand[i]) != BH_SUCCESS)
                             {
-                                return CPHVB_OUT_OF_MEMORY;     // EXIT
+                                return BH_OUT_OF_MEMORY;     // EXIT
                             }
                         }
 
@@ -804,7 +804,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 cur_index += bundle_size-1;
         }
 
-        if (inst->status != CPHVB_SUCCESS)    // Instruction failed
+        if (inst->status != BH_SUCCESS)    // Instruction failed
         {
             break;
         }
@@ -812,9 +812,9 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     }
 
     if (cur_index == instruction_count) {
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     } else {
-        return CPHVB_PARTIAL_SUCCESS;
+        return BH_PARTIAL_SUCCESS;
     }
 
 }

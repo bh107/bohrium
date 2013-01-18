@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_PPRINT_H
-#define __CPHVB_PPRINT_H
+#ifndef __BH_PPRINT_H
+#define __BH_PPRINT_H
 
 #include "bh_opcode.h"
 #include "bh_array.h"

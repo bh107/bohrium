@@ -1,6 +1,6 @@
-CPHVB_BASE=../../
-CPHVB_INCLUDE=$(CPHVB_BASE)include/
-INCLUDE=-I$(CPHVB_BASE)include
+BH_BASE=../../
+BH_INCLUDE=$(BH_BASE)include/
+INCLUDE=-I$(BH_BASE)include
 LIB=libbh_ve_gpu.so
 CXX=g++
 CC=gcc

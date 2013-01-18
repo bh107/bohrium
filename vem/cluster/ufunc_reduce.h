@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VEM_CLUSTER_UFUNC_REDUCE_H
+#ifndef __BH_VEM_CLUSTER_UFUNC_REDUCE_H
 
 #include <bh.h>
 

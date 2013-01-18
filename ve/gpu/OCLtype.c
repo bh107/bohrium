@@ -32,33 +32,33 @@ OCLtype oclType(bh_type vbtype)
 {
     switch (vbtype)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         return OCL_UINT8;
-    case CPHVB_INT8:
+    case BH_INT8:
         return OCL_INT8;
-    case CPHVB_INT16:
+    case BH_INT16:
         return OCL_INT16;
-    case CPHVB_INT32:
+    case BH_INT32:
         return OCL_INT32;
-    case CPHVB_INT64:
+    case BH_INT64:
         return OCL_INT64;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         return OCL_UINT8;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         return OCL_UINT16;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         return OCL_UINT32;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         return OCL_UINT64;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         return OCL_FLOAT16;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         return OCL_FLOAT32;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         return OCL_FLOAT64;
-    case CPHVB_COMPLEX64:
+    case BH_COMPLEX64:
         return OCL_COMPLEX64;
-    case CPHVB_COMPLEX128:
+    case BH_COMPLEX128:
         return OCL_COMPLEX128;
     default:
         assert(false);

@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VEM_CLUSTER_DISPATCH_H
+#ifndef __BH_VEM_CLUSTER_DISPATCH_H
 
 #include <bh.h>
 #include <stack>
@@ -26,15 +26,15 @@ If not, see <http://www.gnu.org/licenses/>.
 /* Dispatch message type */
 enum /* int */
 {
-    CPHVB_CLUSTER_DISPATCH_INIT,
-    CPHVB_CLUSTER_DISPATCH_SHUTDOWN,
-    CPHVB_CLUSTER_DISPATCH_EXEC,
-    CPHVB_CLUSTER_DISPATCH_UFUNC
+    BH_CLUSTER_DISPATCH_INIT,
+    BH_CLUSTER_DISPATCH_SHUTDOWN,
+    BH_CLUSTER_DISPATCH_EXEC,
+    BH_CLUSTER_DISPATCH_UFUNC
 };
 
 
 //The size of a message chunk in bytes
-#define CPHVB_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE (256)
+#define BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE (256)
 
 
 //The header of a dispatch message. If 'size' is larger than the message 

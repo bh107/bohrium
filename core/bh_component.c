@@ -55,27 +55,27 @@ char _expand_buffer[PATH_MAX];
 
 static bh_component_type get_type(dictionary *dict, const char *name)
 {
-    char tmp[CPHVB_COMPONENT_NAME_SIZE];
-    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:type", name);
+    char tmp[BH_COMPONENT_NAME_SIZE];
+    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:type", name);
     char *s = iniparser_getstring(dict, tmp, NULL);
     if(s == NULL)
     {
         fprintf(stderr,"In section \"%s\" type is not set. "\
                        "Should be bridge, vem or ve.\n",name);
-        return CPHVB_COMPONENT_ERROR;
+        return BH_COMPONENT_ERROR;
     }
     else
     {
         if(!strcasecmp(s, "bridge"))
-            return CPHVB_BRIDGE;
+            return BH_BRIDGE;
         if(!strcasecmp(s, "vem"))
-            return CPHVB_VEM;
+            return BH_VEM;
         if(!strcasecmp(s, "ve"))
-            return CPHVB_VE;
+            return BH_VE;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
             name, s);
-    return CPHVB_COMPONENT_ERROR;
+    return BH_COMPONENT_ERROR;
 }
 
 static void *get_dlsym(void *handle, const char *name,
@@ -84,11 +84,11 @@ static void *get_dlsym(void *handle, const char *name,
     char tmp[1024];
     const char *stype;
     void *ret;
-    if(type == CPHVB_BRIDGE)
+    if(type == BH_BRIDGE)
         stype = "bridge";
-    else if(type == CPHVB_VEM)
+    else if(type == BH_VEM)
         stype = "vem";
-    else if(type == CPHVB_VE)
+    else if(type == BH_VE)
         stype = "ve";
     else
     {
@@ -96,7 +96,7 @@ static void *get_dlsym(void *handle, const char *name,
         return NULL;
     }
 
-    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "bh_%s_%s_%s", stype, name, fun);
+    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "bh_%s_%s_%s", stype, name, fun);
     dlerror();//Clear old errors.
     ret = dlsym(handle, tmp);
     char *err = dlerror();
@@ -141,7 +141,7 @@ bh_component *bh_component_setup(const char* component_name)
         strcpy(com->name, name);
 
     //The environment variable has precedence.
-    env = getenv("CPHVB_CONFIG");
+    env = getenv("BH_CONFIG");
     if (env != NULL)
     {
         FILE *fp = fopen(env,"r");
@@ -211,7 +211,7 @@ bh_component *bh_component_setup(const char* component_name)
     {
         fprintf(stderr, "Error: Bohrium could not find the config file.\n"
             " The search is:\n"
-            "\t* The environment variable CPHVB_CONFIG.\n"
+            "\t* The environment variable BH_CONFIG.\n"
             "\t* The home directory \"%s\".\n"
             "\t* And system-wide \"%s\".\n", homepath, syspath);
         free(com);
@@ -230,8 +230,8 @@ bh_component *bh_component_setup(const char* component_name)
    
     if(strcmp("bridge", name) != 0)//This is not the bridge 
     {
-        char tmp[CPHVB_COMPONENT_NAME_SIZE];
-        snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:impl",name);
+        char tmp[BH_COMPONENT_NAME_SIZE];
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl",name);
         char *impl = iniparser_getstring(com->config, tmp, NULL);
         if(impl == NULL)
         {
@@ -255,69 +255,69 @@ bh_component *bh_component_setup(const char* component_name)
  * @parent The parent component (input).
  * @count Number of children components(output).
  * @children Array of children components (output).
- * @return Error code (CPHVB_SUCCESS).
+ * @return Error code (BH_SUCCESS).
  */
 bh_error bh_component_children(bh_component *parent, bh_intp *count,
                                      bh_component **children[])
 {
-    char tmp[CPHVB_COMPONENT_NAME_SIZE];
+    char tmp[BH_COMPONENT_NAME_SIZE];
     bh_error result;
     char *child;
     size_t c;
     *count = 0;
-    snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:children",parent->name);
+    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",parent->name);
     char *tchildren = iniparser_getstring(parent->config, tmp, NULL);
     if(tchildren == NULL)
     {
         fprintf(stderr, "bh_component_setup(): children missing from config.\n");
-		return CPHVB_ERROR;
+		return BH_ERROR;
 	}
 
-    *children = (bh_component**)malloc(CPHVB_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
+    *children = (bh_component**)malloc(BH_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
     if(*children == NULL)
     {
         fprintf(stderr, "bh_component_setup(): out of memory.\n");
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
     //Since we do not use all the data here, it is good for debugging if the rest is null pointers
-    memset(*children, 0, CPHVB_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
+    memset(*children, 0, BH_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
 
 	//Assume all goes well
-	result = CPHVB_SUCCESS;
+	result = BH_SUCCESS;
 	
     //Handle one child at a time.
     child = strtok(tchildren,",");
-    while(child != NULL && *count < CPHVB_COMPONENT_MAX_CHILDS)
+    while(child != NULL && *count < BH_COMPONENT_MAX_CHILDS)
     {
         (*children)[*count] = (bh_component*)malloc(sizeof(bh_component));
         bh_component *com = (*children)[*count];
 
         //Save component name.
-        strncpy(com->name, child, CPHVB_COMPONENT_NAME_SIZE);
+        strncpy(com->name, child, BH_COMPONENT_NAME_SIZE);
         //Save configuration dictionary.
         com->config = parent->config;
         //Save component type.
         com->type = get_type(parent->config,child);
-        if(com->type == CPHVB_COMPONENT_ERROR)
+        if(com->type == BH_COMPONENT_ERROR)
         {
 	        fprintf(stderr, "bh_component_setup(): invalid component type: %s.\n", child);
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
         if(!iniparser_find_entry(com->config,child))
         {
             fprintf(stderr,"Reference \"%s\" is not declared.\n",child);
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
-        snprintf(tmp, CPHVB_COMPONENT_NAME_SIZE, "%s:impl", child);
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child);
         char *impl = iniparser_getstring(com->config, tmp, NULL);
         if(impl == NULL)
         {
             fprintf(stderr,"In section \"%s\" impl is not set.\n",child);
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -325,7 +325,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         if(com->lib_handle == NULL)
         {
             fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -333,7 +333,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         if(com->init == NULL)
         {
 			fprintf(stderr, "Failed to load init function from child %s\n", child);        
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -342,7 +342,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         if(com->shutdown == NULL)
         {
 			fprintf(stderr, "Failed to load shutdown function from child %s\n", child);        
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -351,7 +351,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         if(com->execute == NULL)
         {
 			fprintf(stderr, "Failed to load execute function from child %s\n", child);        
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -360,7 +360,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         if(com->reg_func == NULL)
         {
 			fprintf(stderr, "Failed to load reg_func function from child %s\n", child);        
-	        result = CPHVB_ERROR;
+	        result = BH_ERROR;
 	        break;
         }
 
@@ -368,9 +368,9 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         ++(*count);
     }
 
-	if (result != CPHVB_SUCCESS)
+	if (result != BH_SUCCESS)
 	{
-		for(c = 0; c < CPHVB_COMPONENT_MAX_CHILDS; c++)
+		for(c = 0; c < BH_COMPONENT_MAX_CHILDS; c++)
 			if ((*children)[c] != NULL)
 			{
 				free((*children)[c]);
@@ -394,7 +394,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
  * @fun      Name of the function e.g. myfunc
  * @ret_func Pointer to the function (output)
  *           Is NULL if the function doesn't exist
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_component_get_func(bh_component *self, char *func,
                                      bh_userfunc_impl *ret_func)
@@ -407,7 +407,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         //Lets make a working copy
         lib_paths = strdup(lib_paths);
         if(lib_paths == NULL)
-            return CPHVB_OUT_OF_MEMORY;
+            return BH_OUT_OF_MEMORY;
     
         //Handle one library path at a time.
         char *path = strtok(lib_paths,",");
@@ -420,7 +420,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
                 *ret_func = (bh_userfunc_impl)dlsym(lib_handle, func);
                 char *err = dlerror();
                 if(err == NULL)
-                    return CPHVB_SUCCESS;
+                    return BH_SUCCESS;
             }
             path = strtok(NULL,",");
         }
@@ -433,40 +433,40 @@ bh_error bh_component_get_func(bh_component *self, char *func,
     {
         *ret_func = NULL;//Make sure it is NULL on error.
         fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
-        return CPHVB_USERFUNC_NOT_SUPPORTED;
+        return BH_USERFUNC_NOT_SUPPORTED;
     }
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Frees the component.
  *
- * @return Error code (CPHVB_SUCCESS).
+ * @return Error code (BH_SUCCESS).
  */
 bh_error bh_component_free(bh_component *component)
 {
-    if(component->type == CPHVB_BRIDGE)
+    if(component->type == BH_BRIDGE)
         iniparser_freedict(component->config);
     else
         dlclose(component->lib_handle);
     free(component);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Frees allocated data.
  *
- * @return Error code (CPHVB_SUCCESS).
+ * @return Error code (BH_SUCCESS).
  */
 bh_error bh_component_free_ptr(void* data)
 {
     free(data);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Trace an array creation.
  *
  * @self The component.
  * @ary  The array to trace.
- * @return Error code (CPHVB_SUCCESS).
+ * @return Error code (BH_SUCCESS).
  */
 bh_error bh_component_trace_array(bh_component *self, bh_array *ary)
 {
@@ -488,20 +488,20 @@ bh_error bh_component_trace_array(bh_component *self, bh_array *ary)
 #ifndef WIN32
     fclose(f);
 #endif
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Trace an instruction.
  *
  * @self The component.
  * @inst  The instruction to trace.
- * @return Error code (CPHVB_SUCCESS).
+ * @return Error code (BH_SUCCESS).
  */
 bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst)
 {
     int i;
     bh_intp nop;
-    bh_array *ops[CPHVB_MAX_NO_OPERANDS];
+    bh_array *ops[BH_MAX_NO_OPERANDS];
 
 #ifndef WIN32
     FILE *f = fopen("/tmp/bh_trace.inst", "a");
@@ -511,7 +511,7 @@ bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst)
 
     fprintf(f,"%s\t", bh_opcode_text(inst->opcode));
 
-    if(inst->opcode == CPHVB_USERFUNC)
+    if(inst->opcode == BH_USERFUNC)
     {
         nop = inst->userfunc->nout + inst->userfunc->nin;
         for(i=0; i<nop; ++i)
@@ -540,7 +540,7 @@ bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst)
 #ifndef WIN32
     fclose(f);
 #endif
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /* Look up a key in the config file 
@@ -551,7 +551,7 @@ bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst)
  */
 char* bh_component_config_lookup(bh_component *component, const char* key)
 {
-    char dictkey[CPHVB_COMPONENT_NAME_SIZE];
-    snprintf(dictkey, CPHVB_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    char dictkey[BH_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
     return iniparser_getstring(component->config, dictkey, NULL);    
 }

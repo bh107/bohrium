@@ -98,7 +98,7 @@ bh_error bh_compute_apply( bh_instruction *instr ) {
     bh_tstate_reset( &state, instr );
     
     if (comp == NULL) {
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     } else {
         return comp( instr, &state );
     }
@@ -109,7 +109,7 @@ bh_error bh_compute_apply( bh_instruction *instr ) {
 // Below is usage of the naive traversal.
 //
 void bh_tstate_reset_naive( bh_tstate_naive *state ) {
-    memset(state->coord, 0, CPHVB_MAXDIM * sizeof(bh_index));
+    memset(state->coord, 0, BH_MAXDIM * sizeof(bh_index));
     state->cur_e = 0;   
 }
 
@@ -120,7 +120,7 @@ bh_error bh_compute_apply_naive( bh_instruction *instr ) {
     bh_tstate_reset_naive( &state );
     
     if (comp == NULL) {
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     } else {
         return comp( instr, &state, 0 );
     }

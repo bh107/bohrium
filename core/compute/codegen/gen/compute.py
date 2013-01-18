@@ -19,9 +19,9 @@ def gen( opcodes, ignore ):
             #Use the C++ complex data type 
             tmp = []
             for tt in t:
-                if tt == "CPHVB_COMPLEX64":
+                if tt == "BH_COMPLEX64":
                     tt = "std::complex<float>"
-                elif tt == "CPHVB_COMPLEX128":
+                elif tt == "BH_COMPLEX128":
                     tt = "std::complex<double>"
                 tmp += [tt]
 

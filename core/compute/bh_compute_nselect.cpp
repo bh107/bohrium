@@ -41,7 +41,7 @@ template <typename T> bh_error do_nselect(bh_array  *out_index,
     printf("axis: %lld\n", (long long int) axis);
     printf("opcode: %s\n", bh_opcode_text(opcode));
  
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -65,37 +65,37 @@ bh_error bh_compute_nselect(bh_userfunc *arg, void* ve_arg)
     bh_opcode opcode      = m_arg->opcode;
 
     //Make sure that the arrays memory are allocated.
-    if(bh_data_malloc(out_index) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
-    if(bh_data_malloc(out_value) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
-    if(bh_data_malloc(input) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
+    if(bh_data_malloc(out_index) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
+    if(bh_data_malloc(out_value) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
+    if(bh_data_malloc(input) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
 
     switch (input->type)
     {
-    	case CPHVB_INT8:
+    	case BH_INT8:
 		    return do_nselect<bh_int8>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_INT16:
+    	case BH_INT16:
 		    return do_nselect<bh_int16>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_INT32:
+    	case BH_INT32:
 		    return do_nselect<bh_int32>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_INT64:
+    	case BH_INT64:
 		    return do_nselect<bh_int64>(out_index, out_value, input, n, axis, opcode);
-        case CPHVB_UINT8:
+        case BH_UINT8:
 		    return do_nselect<bh_uint8>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_UINT16:
+    	case BH_UINT16:
 		    return do_nselect<bh_uint16>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_UINT32:
+    	case BH_UINT32:
 	        return do_nselect<bh_uint32>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_UINT64:
+    	case BH_UINT64:
 		    return do_nselect<bh_uint64>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 		    return do_nselect<bh_float32>(out_index, out_value, input, n, axis, opcode);
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 		    return do_nselect<bh_float64>(out_index, out_value, input, n, axis, opcode);
         default:
-            return CPHVB_TYPE_NOT_SUPPORTED;
+            return BH_TYPE_NOT_SUPPORTED;
 	}
 }
 

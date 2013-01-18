@@ -63,7 +63,7 @@ void batch_schedule(bh_opcode opcode, bh_array *operand)
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.status = CPHVB_INST_PENDING;
+    t.inst.inst.status = BH_INST_PENDING;
     t.inst.inst.operand[0] = operand;
     assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t); 
@@ -74,7 +74,7 @@ void batch_schedule(bh_opcode opcode, bh_array *operand)
  *
  * @opcode   The opcode of the instruction
  * @operands The local operands in the instruction
- * @ufunc    The user-defined function struct when opcode is CPHVB_USERFUNC.
+ * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
 void batch_schedule(bh_opcode opcode, bh_array *operands[],
                     bh_userfunc *ufunc)
@@ -82,11 +82,11 @@ void batch_schedule(bh_opcode opcode, bh_array *operands[],
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.status = CPHVB_INST_PENDING;
+    t.inst.inst.status = BH_INST_PENDING;
     t.inst.inst.userfunc = ufunc;
     if(ufunc == NULL)
     {
-        assert(opcode != CPHVB_USERFUNC);
+        assert(opcode != BH_USERFUNC);
         memcpy(t.inst.inst.operand, operands, bh_operands(opcode) 
                                               * sizeof(bh_array*));
     }
@@ -125,10 +125,10 @@ void batch_flush()
             {
                 bh_error e;
                 bh_instruction *inst = &((*it).inst.inst);
-                if((e = exec_vem_execute(1, inst)) != CPHVB_SUCCESS)
+                if((e = exec_vem_execute(1, inst)) != BH_SUCCESS)
                     EXCEPT_INST(inst->opcode, e, inst->status);
 
-                if(inst->opcode == CPHVB_DISCARD)
+                if(inst->opcode == BH_DISCARD)
                 {
                     if(inst->operand[0]->base == NULL)
                         array_rm_local(inst->operand[0]); 
@@ -155,7 +155,7 @@ void batch_flush()
                 }
                 else//Receiving
                 {
-                    if((e = bh_data_malloc(ary)) != CPHVB_SUCCESS)
+                    if((e = bh_data_malloc(ary)) != BH_SUCCESS)
                         EXCEPT_OUT_OF_MEMORY();
                     char *data = (char*) bh_base_array(ary)->data;
                     data += ary->start * s;
@@ -170,7 +170,7 @@ void batch_flush()
             {
                 fprintf(stderr, "[VEM-CLUSTER] batch_schedule encountered "
                         "an unknown task type\n");
-                MPI_Abort(MPI_COMM_WORLD,CPHVB_ERROR);
+                MPI_Abort(MPI_COMM_WORLD,BH_ERROR);
             }
         }        
     }

@@ -97,7 +97,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
         //find pivot
         kit = kernelMap.find("pivot");
         if (kit == kernelMap.end())
-          return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+          return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
         parameters.push_back(std::make_pair(A, true));
         parameters.push_back(std::make_pair(&K, false));
@@ -112,7 +112,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
         //update the column under k
         kit = kernelMap.find("update_col");
         if (kit == kernelMap.end())
-          return CPHVB_TYPE_NOT_SUPPORTED;
+          return BH_TYPE_NOT_SUPPORTED;
         
         parameters.clear();
         parameters.push_back(std::make_pair(A, true));
@@ -126,7 +126,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
         //update the rest matrix
         kit = kernelMap.find("update_rest");
         if (kit == kernelMap.end())
-          return CPHVB_TYPE_NOT_SUPPORTED;
+          return BH_TYPE_NOT_SUPPORTED;
           
         localShape2d[0] = block_size;
         localShape2d[1] = block_size;
@@ -147,7 +147,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
             //find pivot
             kit = kernelMap.find("pivot");
             if (kit == kernelMap.end())
-                return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+                return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
             parameters.push_back(std::make_pair(A, true));
             parameters.push_back(std::make_pair(&K, false));
@@ -162,7 +162,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
             //update column under k
             kit = kernelMap.find("update_col");
                 if (kit == kernelMap.end())
-                    return CPHVB_TYPE_NOT_SUPPORTED;
+                    return BH_TYPE_NOT_SUPPORTED;
         
             parameters.clear();
             parameters.push_back(std::make_pair(A, true));
@@ -177,7 +177,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
             if(k_block < block_size-1){
                 kit = kernelMap.find("update_block_col");
                 if (kit == kernelMap.end())
-                    return CPHVB_TYPE_NOT_SUPPORTED;
+                    return BH_TYPE_NOT_SUPPORTED;
                 
                 parameters.clear();                
                 parameters.push_back(std::make_pair(A, true));
@@ -200,7 +200,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
             //solve for rows of U
             kit = kernelMap.find("update_block_row");
                 if (kit == kernelMap.end())
-                    return CPHVB_TYPE_NOT_SUPPORTED;
+                    return BH_TYPE_NOT_SUPPORTED;
         
             parameters.clear();
             parameters.push_back(std::make_pair(A, true));
@@ -215,7 +215,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
             //update the rest of the matrix with matmul
             kit = kernelMap.find("mm");
             if (kit == kernelMap.end())
-                return CPHVB_TYPE_NOT_SUPPORTED;
+                return BH_TYPE_NOT_SUPPORTED;
                 
             parameters.clear();                
             parameters.push_back(std::make_pair(A, true));
@@ -241,7 +241,7 @@ bh_error UserFunctionLu::lu(bh_lu_type* luDef, UserFuncArg* userFuncArg)
     
     }
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

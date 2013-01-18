@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#ifndef __CPHVB_WIN_H
-#define __CPHVB_WIN_H
+#ifndef __BH_WIN_H
+#define __BH_WIN_H
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )

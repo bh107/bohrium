@@ -155,7 +155,7 @@ bh_error bh_vcache_free( bh_instruction* inst )
     }
     inst->operand[0] = NULL;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 /**
@@ -170,11 +170,11 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
 
     switch (inst->opcode) {                     // Allocate memory for built-in
 
-        case CPHVB_NONE:                        // No memory operations for these
-        case CPHVB_DISCARD:
-        case CPHVB_SYNC:
-        case CPHVB_USERFUNC:
-        case CPHVB_FREE:
+        case BH_NONE:                        // No memory operations for these
+        case BH_DISCARD:
+        case BH_SYNC:
+        case BH_USERFUNC:
+        case BH_FREE:
             break;
 
         default:                                    
@@ -196,9 +196,9 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
                             DEBUG_PRINT("Reuse or allocate...\n");
                             base->data = bh_vcache_find( bytes );
                             if (base->data == NULL) {
-                                if (bh_data_malloc(inst->operand[0]) != CPHVB_SUCCESS) {
-                                    inst->status = CPHVB_OUT_OF_MEMORY;
-                                    return CPHVB_OUT_OF_MEMORY;         // EXIT
+                                if (bh_data_malloc(inst->operand[0]) != BH_SUCCESS) {
+                                    inst->status = BH_OUT_OF_MEMORY;
+                                    return BH_OUT_OF_MEMORY;         // EXIT
                                 }                                   
                                 DEBUG_PRINT("Allocated=%p\n", base->data);
                                 bh_vcache_miss++;
@@ -210,8 +210,8 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
                     }
                     else if(bh_base_array(inst->operand[i])->data == NULL) 
                     {
-                        inst->status = CPHVB_ERROR;
-                        return CPHVB_ERROR; // EXIT
+                        inst->status = BH_ERROR;
+                        return BH_ERROR; // EXIT
                     }
                 }
 
@@ -220,6 +220,6 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
 
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }

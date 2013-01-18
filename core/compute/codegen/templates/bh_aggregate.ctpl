@@ -37,7 +37,7 @@ typedef char BYTE;
  *
  *  @param opt_out The output scalar storage array
  *  @param opt_in The array to aggregate
- *  @return This function always returns CPHVB_SUCCESS unless it raises an exception with assert.
+ *  @return This function always returns BH_SUCCESS unless it raises an exception with assert.
  */
 template <typename T0, typename T1, typename Instr>
 bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
@@ -109,7 +109,7 @@ bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
 	{
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = op_in->ndim - 3;
-		bh_index counters[CPHVB_MAXDIM - 3];
+		bh_index counters[BH_MAXDIM - 3];
 		memset(&counters, 0, sizeof(bh_index) * n);		
 
 		bh_index total_ops = 1;
@@ -186,7 +186,7 @@ bh_error traverse_sa( bh_array* op_out, bh_array* op_in ) {
 
 	*(((T0*)d0) + op_out->start) = (T1)value;
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -202,28 +202,28 @@ bh_error bh_compute_aggregate(bh_userfunc *arg, void* ve_arg)
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
 	if (bh_base_array(a->operand[1])->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_aggregate; input-operand ( op[1] ) is null.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
 	}
 
     if (op_in->type != op_out->type) {
         fprintf(stderr, "ERR: bh_compute_aggregate; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     
-    if (bh_data_malloc(op_out) != CPHVB_SUCCESS) {
+    if (bh_data_malloc(op_out) != BH_SUCCESS) {
         fprintf(stderr, "ERR: bh_compute_aggregate; No memory for reduction-result.\n");
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
     
     if (op_out->ndim != 1 || op_out->shape[0] != 1) {
         fprintf(stderr, "ERR: bh_compute_aggregate; output-operand ( op[0] ) is not a scalar.\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 
     long int poly = opcode + (op_in->type << 8);
@@ -237,7 +237,7 @@ bh_error bh_compute_aggregate(bh_userfunc *arg, void* ve_arg)
 
         default:
             
-            return CPHVB_ERROR;
+            return BH_ERROR;
 
     }
 

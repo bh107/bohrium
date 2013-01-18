@@ -30,7 +30,7 @@ static bh_component* component = NULL;
 bh_error bh_ve_print_init(bh_component* _component)
 {
     component = _component;
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_print_execute(bh_intp instruction_count,
@@ -41,18 +41,18 @@ bh_error bh_ve_print_execute(bh_intp instruction_count,
         " instructions --------------------------------------- #" << std::endl;
     for (bh_intp i = 0; i < instruction_count; ++i)
         bh_pprint_instr(instruction_list+i);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_print_shutdown()
 {
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_print_reg_func(char *fun, 
                                   bh_intp *id)
 {
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 #ifdef __cplusplus

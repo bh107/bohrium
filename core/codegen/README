@@ -6,15 +6,15 @@ it uses the JSON (JavaScript Object Notation) syntax <http://json.org>.
 The file contains a list of opcode definitions on the form::
 
     {
-        "_opcode":  "CPHVB_ADD", 
+        "_opcode":  "BH_ADD", 
         "doc":      "Add arguments element-wise.",
         "code":     "op1 = op2 + op3",
         "nop":      3, 
         "system_opcode": false, 
         "types": [
-            ["CPHVB_BOOL", "CPHVB_BOOL", "CPHVB_BOOL"],
-            ["CPHVB_FLOAT32", "CPHVB_FLOAT32", "CPHVB_FLOAT32"],
-            ["CPHVB_UINT8", "CPHVB_UINT8", "CPHVB_UINT8"],
+            ["BH_BOOL", "BH_BOOL", "BH_BOOL"],
+            ["BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32"],
+            ["BH_UINT8", "BH_UINT8", "BH_UINT8"],
         ]
     } 
 

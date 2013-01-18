@@ -1,6 +1,6 @@
-CPHVB_BASE=../../
-CPHVB_INCLUDE=$(CPHVB_BASE)include/
-INCLUDE=-I$(CPHVB_BASE)include -I/System/Library/Frameworks/OpenCL.framework
+BH_BASE=../../
+BH_INCLUDE=$(BH_BASE)include/
+INCLUDE=-I$(BH_BASE)include -I/System/Library/Frameworks/OpenCL.framework
 LIB=libbh_ve_gpu.dylib
 CXX?=g++
 CC?=gcc

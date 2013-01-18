@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 template <typename Type> bh_error do_matmul(bh_array *A, bh_array *B, bh_array *C){
 
-    if(bh_data_malloc(C) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;    
+    if(bh_data_malloc(C) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;    
 
     Type* A_data;
     Type* B_data;
@@ -49,7 +49,7 @@ template <typename Type> bh_error do_matmul(bh_array *A, bh_array *B, bh_array *
         }	
     }
     
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 
@@ -69,37 +69,37 @@ bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg)
     bh_array *B = m_arg->operand[2];
 
     //Make sure that the arrays memory are allocated.
-    if(bh_data_malloc(A) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
-    if(bh_data_malloc(B) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
-    if(bh_data_malloc(C) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY; 
+    if(bh_data_malloc(A) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
+    if(bh_data_malloc(B) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
+    if(bh_data_malloc(C) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY; 
 
     switch (C->type)
     {
-    	case CPHVB_INT8:
+    	case BH_INT8:
 		    return do_matmul<bh_int8>(A, B, C);
-    	case CPHVB_INT16:
+    	case BH_INT16:
 		    return do_matmul<bh_int16>(A, B, C);
-    	case CPHVB_INT32:
+    	case BH_INT32:
 		    return do_matmul<bh_int32>(A, B, C);
-    	case CPHVB_INT64:
+    	case BH_INT64:
 		    return do_matmul<bh_int64>(A, B, C);
-        case CPHVB_UINT8:
+        case BH_UINT8:
 		    return do_matmul<bh_uint8>(A, B, C);
-    	case CPHVB_UINT16:
+    	case BH_UINT16:
 		    return do_matmul<bh_uint16>(A, B, C);
-    	case CPHVB_UINT32:
+    	case BH_UINT32:
 	        return do_matmul<bh_uint32>(A, B, C);
-    	case CPHVB_UINT64:
+    	case BH_UINT64:
 		    return do_matmul<bh_uint64>(A, B, C);
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 		    return do_matmul<bh_float32>(A, B, C);
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 		    return do_matmul<bh_float64>(A, B, C);
         default:
-            return CPHVB_TYPE_NOT_SUPPORTED;
+            return BH_TYPE_NOT_SUPPORTED;
 
 	}
 

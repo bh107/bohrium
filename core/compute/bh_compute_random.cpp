@@ -192,15 +192,15 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
     bh_array *base = bh_base_array(ary);
 
     //Make sure that the array memory is allocated.
-    if(bh_data_malloc(ary) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;	
+    if(bh_data_malloc(ary) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;	
 
     rk_state state;
     rk_initseed(&state);
     
     switch (ary->type)
     {
-    	case CPHVB_INT8:
+    	case BH_INT8:
 		{
 			bh_int8* data = (bh_int8*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -208,7 +208,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_INT16:
+    	case BH_INT16:
 		{
 			bh_int16* data = (bh_int16*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -216,7 +216,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_INT32:
+    	case BH_INT32:
 		{
 			bh_int32* data = (bh_int32*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -224,7 +224,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_INT64:
+    	case BH_INT64:
 		{
 			bh_int64* data = (bh_int64*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -232,7 +232,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 		
-		case CPHVB_UINT8:
+		case BH_UINT8:
 		{
 			bh_uint8* data = (bh_uint8*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -240,7 +240,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_UINT16:
+    	case BH_UINT16:
 		{
 			bh_uint16* data = (bh_uint16*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -248,7 +248,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_UINT32:
+    	case BH_UINT32:
 		{
 			bh_uint32* data = (bh_uint32*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -256,7 +256,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_UINT64:
+    	case BH_UINT64:
 		{
 			bh_uint64* data = (bh_uint64*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -264,7 +264,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_FLOAT32:
+    	case BH_FLOAT32:
 		{
 			bh_float32* data = (bh_float32*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -272,7 +272,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		}
 		break;
 
-    	case CPHVB_FLOAT64:
+    	case BH_FLOAT64:
 		{
 			bh_float64* data = (bh_float64*)base->data;
 			for(bh_intp i=0; i<size; ++i)
@@ -281,9 +281,9 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 		break;
 
     	default:
-	        return CPHVB_TYPE_NOT_SUPPORTED;
+	        return BH_TYPE_NOT_SUPPORTED;
 
 	}		
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

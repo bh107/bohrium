@@ -47,11 +47,11 @@ class Benchmark:
         self.info['nthd'] = System.Environment.ProcessorCount
         self.info['nblocks'] = 16
         try:
-            self.info['nthd'] = int(env['CPHVB_NUM_THREADS'])
+            self.info['nthd'] = int(env['BH_NUM_THREADS'])
         except KeyError:
             pass
         try:
-            self.info['nblocks'] = int(env['CPHVB_SCORE_NBLOCKS'])
+            self.info['nblocks'] = int(env['BH_SCORE_NBLOCKS'])
         except KeyError:
             pass
         #Expose variables to the user.
@@ -92,8 +92,8 @@ class Benchmark:
 def do(nthd, nblocks, jobsize, filename, cphvb, savedir, uid):
     try:
         env = os.environ
-        env['CPHVB_NUM_THREADS'] = "%d"%nthd
-        env['CPHVB_SCORE_NBLOCKS'] = "%d"%nblocks
+        env['BH_NUM_THREADS'] = "%d"%nthd
+        env['BH_SCORE_NBLOCKS'] = "%d"%nblocks
 
         """
         taskmask = '0'

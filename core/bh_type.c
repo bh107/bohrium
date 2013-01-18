@@ -35,35 +35,35 @@ int bh_type_size(bh_type type)
 {
     switch(type)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         return 1;
-    case CPHVB_INT8:
+    case BH_INT8:
         return 1;
-    case CPHVB_INT16:
+    case BH_INT16:
         return 2;
-    case CPHVB_INT32:
+    case BH_INT32:
         return 4;
-    case CPHVB_INT64:
+    case BH_INT64:
         return 8;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         return 1;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         return 2;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         return 4;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         return 8;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         return 2;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         return 4;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         return 8;
-    case CPHVB_COMPLEX64:
+    case BH_COMPLEX64:
         return 8;
-    case CPHVB_COMPLEX128:
+    case BH_COMPLEX128:
         return 16;
-    case CPHVB_UNKNOWN:
+    case BH_UNKNOWN:
         return -1;
     default:
         return -1;
@@ -79,36 +79,36 @@ const char* bh_type_text(bh_type type)
 {
     switch(type)
     {
-    case CPHVB_BOOL:
-        return "CPHVB_BOOL";
-    case CPHVB_INT8:
-        return "CPHVB_INT8";
-    case CPHVB_INT16:
-        return "CPHVB_INT16";
-    case CPHVB_INT32:
-        return "CPHVB_INT32";
-    case CPHVB_INT64:
-        return "CPHVB_INT64";
-    case CPHVB_UINT8:
-        return "CPHVB_UINT8";
-    case CPHVB_UINT16:
-        return "CPHVB_UINT16";
-    case CPHVB_UINT32:
-        return "CPHVB_UINT32";
-    case CPHVB_UINT64:
-        return "CPHVB_UINT64";
-    case CPHVB_FLOAT16:
-        return "CPHVB_FLOAT16";
-    case CPHVB_FLOAT32:
-        return "CPHVB_FLOAT32";
-    case CPHVB_FLOAT64:
-        return "CPHVB_FLOAT64";
-    case CPHVB_COMPLEX64:
-        return "CPHVB_COMPLEX64";
-    case CPHVB_COMPLEX128:
-        return "CPHVB_COMPLEX128";
-    case CPHVB_UNKNOWN:
-        return "CPHVB_UNKNOWN";
+    case BH_BOOL:
+        return "BH_BOOL";
+    case BH_INT8:
+        return "BH_INT8";
+    case BH_INT16:
+        return "BH_INT16";
+    case BH_INT32:
+        return "BH_INT32";
+    case BH_INT64:
+        return "BH_INT64";
+    case BH_UINT8:
+        return "BH_UINT8";
+    case BH_UINT16:
+        return "BH_UINT16";
+    case BH_UINT32:
+        return "BH_UINT32";
+    case BH_UINT64:
+        return "BH_UINT64";
+    case BH_FLOAT16:
+        return "BH_FLOAT16";
+    case BH_FLOAT32:
+        return "BH_FLOAT32";
+    case BH_FLOAT64:
+        return "BH_FLOAT64";
+    case BH_COMPLEX64:
+        return "BH_COMPLEX64";
+    case BH_COMPLEX128:
+        return "BH_COMPLEX128";
+    case BH_UNKNOWN:
+        return "BH_UNKNOWN";
     default:
         return "Unknown type";
     }

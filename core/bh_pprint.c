@@ -30,45 +30,45 @@ If not, see <http://www.gnu.org/licenses/>.
 static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
 
     switch( instr->constant.type) {
-        case CPHVB_BOOL: 
+        case BH_BOOL: 
             sprintf(buf, "[ CONST=%uc ]", instr->constant.value.bool8);
             break;
-        case CPHVB_INT8:  
+        case BH_INT8:  
             sprintf(buf, "[ CONST=%d ]", instr->constant.value.int8);
             break;
-        case CPHVB_INT16:  
+        case BH_INT16:  
             sprintf(buf, "[ CONST=%d ]", instr->constant.value.int16);
             break;
-        case CPHVB_INT32:  
+        case BH_INT32:  
             sprintf(buf, "[ CONST=%d ]", instr->constant.value.int32);
             break;
-        case CPHVB_INT64:  
+        case BH_INT64:  
             sprintf(buf, "[ CONST=%ld ]", instr->constant.value.int64);
             break;
-        case CPHVB_UINT8:  
+        case BH_UINT8:  
             sprintf(buf, "[ CONST=%o ]", instr->constant.value.uint8);
             break;
-        case CPHVB_UINT16:  
+        case BH_UINT16:  
             sprintf(buf, "[ CONST=%u ]", instr->constant.value.uint16);
             break;
-        case CPHVB_UINT32:  
+        case BH_UINT32:  
             sprintf(buf, "[ CONST=%u ]", instr->constant.value.uint32);
             break;
-        case CPHVB_UINT64:  
+        case BH_UINT64:  
             sprintf(buf, "[ CONST=%lu ]", instr->constant.value.uint64);
             break;
-        case CPHVB_FLOAT16:  
+        case BH_FLOAT16:  
             sprintf(buf, "[ CONST=%u ]", instr->constant.value.float16);
             break;
-        case CPHVB_FLOAT32:  
+        case BH_FLOAT32:  
             sprintf(buf, "[ CONST=%f ]", instr->constant.value.float32);
             break;
-        case CPHVB_FLOAT64:  
+        case BH_FLOAT64:  
             sprintf(buf, "[ CONST=%lf ]", instr->constant.value.float64);
             break;
-        case CPHVB_COMPLEX64: 
-        case CPHVB_COMPLEX128: 
-        case CPHVB_UNKNOWN:
+        case BH_COMPLEX64: 
+        case BH_COMPLEX128: 
+        case BH_UNKNOWN:
 
         default: 
             sprintf(buf, "[ CONST=? ]");
@@ -140,7 +140,7 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
         strcat(buf, tmp);
     }
 
-    if (instr->opcode == CPHVB_USERFUNC)
+    if (instr->opcode == BH_USERFUNC)
     {
         bh_userfunc* userfunc = instr->userfunc;
         for(i=0; i < userfunc->nout; i++) {

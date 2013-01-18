@@ -37,14 +37,14 @@ bh_error bh_reduce(bh_userfunc* arg, void* ve_arg)
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
         bh_error err = bh_compute_reduce(arg,NULL);
-        if (err == CPHVB_SUCCESS)
+        if (err == BH_SUCCESS)
             static_cast<BaseArray*>(userFuncArg->operands[0])->update();
         return err;
     }
     else
     {
         UserFunctionReduce::reduce(reduceDef, userFuncArg);
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     }
 }
 

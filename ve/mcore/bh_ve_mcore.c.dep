@@ -35,19 +35,19 @@ static bh_instruction** bh_ve_mcore_instruction_list = NULL;
 bh_error bh_ve_mcore_init(bh_component *self)
 {
     myself = self;
-    char *env = getenv("CPHVB_MCORE_NBLOCKS");
+    char *env = getenv("BH_MCORE_NBLOCKS");
     if(env != NULL)
         nblocks = atoi(env);
     if(nblocks <= 0)
     {
-        fprintf(stderr, "CPHVB_MCORE_NBLOCKS should be greater than"
+        fprintf(stderr, "BH_MCORE_NBLOCKS should be greater than"
                         " zero!\n");
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
     //Initiate the dispatcher.
     dispatch_init();
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_mcore_execute(
@@ -78,7 +78,7 @@ bh_error bh_ve_mcore_execute(
     	bh_ve_mcore_instruction_list = (bh_instruction**)malloc(sizeof(bh_instruction*) * mcount);
     	
     	if (bh_ve_mcore_instruction_list == NULL)
-    		return CPHVB_OUT_OF_MEMORY;
+    		return BH_OUT_OF_MEMORY;
     	
     	bh_ve_mcore_buffersizes = mcount;
     }
@@ -89,7 +89,7 @@ bh_error bh_ve_mcore_execute(
     {
         bh_instruction* inst = &instruction_list[count];
         //Handle user-defined operations.
-        if(inst->opcode == CPHVB_USERFUNC)
+        if(inst->opcode == BH_USERFUNC)
         {
             if(inst->userfunc->id == reduce_impl_id)
             {
@@ -101,14 +101,14 @@ bh_error bh_ve_mcore_execute(
             }
             else// Unsupported instruction
             {
-                inst->status = CPHVB_TYPE_NOT_SUPPORTED;
+                inst->status = BH_TYPE_NOT_SUPPORTED;
             }
             ++count;
         }
-        else if (inst->opcode == CPHVB_FREE)
+        else if (inst->opcode == BH_FREE)
         {
 			bh_data_free(inst->operand[0]);
-			inst->status = CPHVB_SUCCESS;
+			inst->status = BH_SUCCESS;
 			++count;
         }
 
@@ -117,17 +117,17 @@ bh_error bh_ve_mcore_execute(
         while(count < instruction_count)
         {
             inst = &instruction_list[count];
-            if(inst->opcode == CPHVB_USERFUNC || inst->opcode == CPHVB_FREE)
+            if(inst->opcode == BH_USERFUNC || inst->opcode == BH_FREE)
                 break;
 
             switch(inst->opcode)
             {
-                case CPHVB_NONE:
-                case CPHVB_DISCARD:
-                case CPHVB_SYNC:
+                case BH_NONE:
+                case BH_DISCARD:
+                case BH_SYNC:
                     break;
                 default://This is a regular operation.
-                    if(inst->status == CPHVB_INST_PENDING)
+                    if(inst->status == BH_INST_PENDING)
                         regular_inst[regular_size++] = inst;
             }
             ++count;
@@ -148,7 +148,7 @@ bh_error bh_ve_mcore_execute(
         }
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -156,7 +156,7 @@ bh_error bh_ve_mcore_shutdown( void )
 {
     //Shutdown the dispatcher.
     dispatch_finalize();
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 
 }
 
@@ -168,15 +168,15 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = reduce_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_random", fun) == 0)
@@ -185,19 +185,19 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     	{
 			bh_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			random_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = random_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
 
-    return CPHVB_USERFUNC_NOT_SUPPORTED;
+    return BH_USERFUNC_NOT_SUPPORTED;
 }
 
 //Implementation of the user-defined funtion "reduce". Note that we
@@ -209,7 +209,7 @@ bh_error bh_reduce(bh_userfunc *arg, void* ve_arg)
     bh_instruction *inst[1] = {&tinst};
     bh_error err;
     bh_intp i,j;
-    bh_index coord[CPHVB_MAXDIM];
+    bh_index coord[BH_MAXDIM];
     memset(coord, 0, a->operand[1]->ndim * sizeof(bh_index));
 
     if(bh_operands(a->opcode) != 3)
@@ -219,10 +219,10 @@ bh_error bh_reduce(bh_userfunc *arg, void* ve_arg)
     }
 
     //Make sure that the array memory is allocated.
-    if(bh_data_malloc(a->operand[0]) != CPHVB_SUCCESS ||
-       bh_data_malloc(a->operand[1]) != CPHVB_SUCCESS)
+    if(bh_data_malloc(a->operand[0]) != BH_SUCCESS ||
+       bh_data_malloc(a->operand[1]) != BH_SUCCESS)
     {
-        return CPHVB_OUT_OF_MEMORY;
+        return BH_OUT_OF_MEMORY;
     }
 
     //We need a tmp copy of the arrays.
@@ -243,18 +243,18 @@ bh_error bh_reduce(bh_userfunc *arg, void* ve_arg)
     --tmp.ndim;
 
     //We copy the first element to the output.
-    inst[0]->status = CPHVB_INST_PENDING;
-    inst[0]->opcode = CPHVB_IDENTITY;
+    inst[0]->status = BH_INST_PENDING;
+    inst[0]->opcode = BH_IDENTITY;
     inst[0]->operand[0] = out;
     inst[0]->operand[1] = &tmp;
     err = dispatch_bundle(inst,1,1);
-    if(err != CPHVB_SUCCESS)
+    if(err != BH_SUCCESS)
         return err;
     tmp.start += step;
 
     //Reduce over the 'axis' dimension.
     //NB: the first element is already handled.
-    inst[0]->status = CPHVB_INST_PENDING;
+    inst[0]->status = BH_INST_PENDING;
     inst[0]->opcode = a->opcode;
     inst[0]->operand[0] = out;
     inst[0]->operand[1] = out;
@@ -265,10 +265,10 @@ bh_error bh_reduce(bh_userfunc *arg, void* ve_arg)
     {
         //One block per thread.
         err = dispatch_bundle(inst,1,1);
-        if(err != CPHVB_SUCCESS)
+        if(err != BH_SUCCESS)
             return err;
         tmp.start += step;
     }
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

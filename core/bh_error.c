@@ -36,22 +36,22 @@ const char* bh_error_text(bh_error error)
 {
     switch(error)
     {
-    case CPHVB_SUCCESS: 
-        return "CPHVB_SUCCESS";
-    case CPHVB_ERROR: 
-        return "CPHVB_ERROR";
-    case CPHVB_TYPE_NOT_SUPPORTED: 
-        return "CPHVB_TYPE_NOT_SUPPORTED";
-    case CPHVB_OUT_OF_MEMORY: 
-        return "CPHVB_OUT_OF_MEMORY";
-    case CPHVB_PARTIAL_SUCCESS: 
-        return "CPHVB_PARTIAL_SUCCESS";
-    case CPHVB_INST_PENDING:
-        return "CPHVB_INST_PENDING";
-    case CPHVB_INST_NOT_SUPPORTED: 
-        return "CPHVB_INST_NOT_SUPPORTED";
-    case CPHVB_USERFUNC_NOT_SUPPORTED: 
-        return "CPHVB_USERFUNC_NOT_SUPPORTED";
+    case BH_SUCCESS: 
+        return "BH_SUCCESS";
+    case BH_ERROR: 
+        return "BH_ERROR";
+    case BH_TYPE_NOT_SUPPORTED: 
+        return "BH_TYPE_NOT_SUPPORTED";
+    case BH_OUT_OF_MEMORY: 
+        return "BH_OUT_OF_MEMORY";
+    case BH_PARTIAL_SUCCESS: 
+        return "BH_PARTIAL_SUCCESS";
+    case BH_INST_PENDING:
+        return "BH_INST_PENDING";
+    case BH_INST_NOT_SUPPORTED: 
+        return "BH_INST_NOT_SUPPORTED";
+    case BH_USERFUNC_NOT_SUPPORTED: 
+        return "BH_USERFUNC_NOT_SUPPORTED";
     default:
         return "Error code unknown";
 	}

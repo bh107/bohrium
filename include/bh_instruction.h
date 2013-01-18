@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CPHVB_INSTRUCTION_H
-#define __CPHVB_INSTRUCTION_H
+#ifndef __BH_INSTRUCTION_H
+#define __BH_INSTRUCTION_H
 
 #include "bh_opcode.h"
 #include "bh_array.h"
@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 // Maximum number of operands in a instruction.
-#define CPHVB_MAX_NO_OPERANDS (3)
+#define BH_MAX_NO_OPERANDS (3)
 
 // Datatype header for user-defined functions
 /*
@@ -49,7 +49,7 @@ extern "C" {
     The macro argument 'nop' specifies the total number of operands
     bh_array*   operand[nop];
 */
-#define CPHVB_USER_FUNC_HEADER(nop) \
+#define BH_USER_FUNC_HEADER(nop) \
     bh_intp     id;              \
     bh_intp     nout;            \
     bh_intp     nin;             \
@@ -59,7 +59,7 @@ extern "C" {
 //The base type for user-defined functions.
 typedef struct
 {
-    CPHVB_USER_FUNC_HEADER(1)
+    BH_USER_FUNC_HEADER(1)
 } bh_userfunc;
 
 //Memory layout of the CPHVB instruction
@@ -70,10 +70,10 @@ typedef struct
     //Opcode: Identifies the operation
     bh_opcode  opcode;
     //Id of each operand
-    bh_array*  operand[CPHVB_MAX_NO_OPERANDS];
+    bh_array*  operand[BH_MAX_NO_OPERANDS];
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
-    //Points to the user-defined function when the opcode is CPHVB_USERFUNC.
+    //Points to the user-defined function when the opcode is BH_USERFUNC.
     bh_userfunc *userfunc;
 } bh_instruction;
 

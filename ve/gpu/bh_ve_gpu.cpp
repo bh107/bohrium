@@ -33,9 +33,9 @@ bh_error bh_ve_gpu_init(bh_component* _component)
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_gpu_execute(bh_intp instruction_count,
@@ -48,7 +48,7 @@ bh_error bh_ve_gpu_execute(bh_intp instruction_count,
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
-        return CPHVB_ERROR;
+        return BH_ERROR;
     }
 }
 
@@ -56,7 +56,7 @@ bh_error bh_ve_gpu_shutdown()
 {
     delete instructionScheduler;
     delete resourceManager;
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_gpu_reg_func(char *fun, 
@@ -67,8 +67,8 @@ bh_error bh_ve_gpu_reg_func(char *fun,
     if (userfunc != NULL)
     {
         instructionScheduler->registerFunction(*id, userfunc);
-    	return CPHVB_SUCCESS;
+    	return BH_SUCCESS;
     }
     else
-	    return CPHVB_USERFUNC_NOT_SUPPORTED;
+	    return BH_USERFUNC_NOT_SUPPORTED;
 }

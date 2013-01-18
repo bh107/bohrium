@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#ifndef __CPHVB_OSX_H
-#define __CPHVB_OSX_H
+#ifndef __BH_OSX_H
+#define __BH_OSX_H
 
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON

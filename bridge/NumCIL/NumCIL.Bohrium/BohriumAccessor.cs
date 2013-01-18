@@ -67,40 +67,40 @@ namespace NumCIL.Bohrium
         {
             _opcode_func_name = new Dictionary<bh_opcode, string>();
 
-            _opcode_func_name.Add(bh_opcode.CPHVB_ADD, "Add");
-            _opcode_func_name.Add(bh_opcode.CPHVB_SUBTRACT, "Sub");
-            _opcode_func_name.Add(bh_opcode.CPHVB_MULTIPLY, "Mul");
-            _opcode_func_name.Add(bh_opcode.CPHVB_DIVIDE, "Div");
-            _opcode_func_name.Add(bh_opcode.CPHVB_MOD, "Mod");
-            _opcode_func_name.Add(bh_opcode.CPHVB_MAXIMUM, "Max");
-            _opcode_func_name.Add(bh_opcode.CPHVB_MINIMUM, "Min");
+            _opcode_func_name.Add(bh_opcode.BH_ADD, "Add");
+            _opcode_func_name.Add(bh_opcode.BH_SUBTRACT, "Sub");
+            _opcode_func_name.Add(bh_opcode.BH_MULTIPLY, "Mul");
+            _opcode_func_name.Add(bh_opcode.BH_DIVIDE, "Div");
+            _opcode_func_name.Add(bh_opcode.BH_MOD, "Mod");
+            _opcode_func_name.Add(bh_opcode.BH_MAXIMUM, "Max");
+            _opcode_func_name.Add(bh_opcode.BH_MINIMUM, "Min");
 
             //These two are not found in Bohrium, but are emulated with ADD and SUB
-            //_opcode_func_name.Add(bh_opcode.CPHVB_INCREMENT, "Inc");
-            //_opcode_func_name.Add(bh_opcode.CPHVB_DECREMENT, "Dec");
-            _opcode_func_name.Add(bh_opcode.CPHVB_FLOOR, "Floor");
-            _opcode_func_name.Add(bh_opcode.CPHVB_CEIL, "Ceiling");
-            _opcode_func_name.Add(bh_opcode.CPHVB_RINT, "Round");
+            //_opcode_func_name.Add(bh_opcode.BH_INCREMENT, "Inc");
+            //_opcode_func_name.Add(bh_opcode.BH_DECREMENT, "Dec");
+            _opcode_func_name.Add(bh_opcode.BH_FLOOR, "Floor");
+            _opcode_func_name.Add(bh_opcode.BH_CEIL, "Ceiling");
+            _opcode_func_name.Add(bh_opcode.BH_RINT, "Round");
 
-            _opcode_func_name.Add(bh_opcode.CPHVB_ABSOLUTE, "Abs");
-            _opcode_func_name.Add(bh_opcode.CPHVB_SQRT, "Sqrt");
-            _opcode_func_name.Add(bh_opcode.CPHVB_EXP, "Exp");
-            _opcode_func_name.Add(bh_opcode.CPHVB_LOG, "Log");
-            _opcode_func_name.Add(bh_opcode.CPHVB_LOG10, "Log10");
-            _opcode_func_name.Add(bh_opcode.CPHVB_POWER, "Pow");
+            _opcode_func_name.Add(bh_opcode.BH_ABSOLUTE, "Abs");
+            _opcode_func_name.Add(bh_opcode.BH_SQRT, "Sqrt");
+            _opcode_func_name.Add(bh_opcode.BH_EXP, "Exp");
+            _opcode_func_name.Add(bh_opcode.BH_LOG, "Log");
+            _opcode_func_name.Add(bh_opcode.BH_LOG10, "Log10");
+            _opcode_func_name.Add(bh_opcode.BH_POWER, "Pow");
 
-            _opcode_func_name.Add(bh_opcode.CPHVB_COS, "Cos");
-            _opcode_func_name.Add(bh_opcode.CPHVB_SIN, "Sin");
-            _opcode_func_name.Add(bh_opcode.CPHVB_TAN, "Tan");
-            _opcode_func_name.Add(bh_opcode.CPHVB_ARCCOS, "Acos");
-            _opcode_func_name.Add(bh_opcode.CPHVB_ARCSIN, "Asin");
-            _opcode_func_name.Add(bh_opcode.CPHVB_ARCTAN, "Atan");
-            _opcode_func_name.Add(bh_opcode.CPHVB_COSH, "Cosh");
-            _opcode_func_name.Add(bh_opcode.CPHVB_SINH, "Sinh");
-            _opcode_func_name.Add(bh_opcode.CPHVB_TANH, "Tanh");
+            _opcode_func_name.Add(bh_opcode.BH_COS, "Cos");
+            _opcode_func_name.Add(bh_opcode.BH_SIN, "Sin");
+            _opcode_func_name.Add(bh_opcode.BH_TAN, "Tan");
+            _opcode_func_name.Add(bh_opcode.BH_ARCCOS, "Acos");
+            _opcode_func_name.Add(bh_opcode.BH_ARCSIN, "Asin");
+            _opcode_func_name.Add(bh_opcode.BH_ARCTAN, "Atan");
+            _opcode_func_name.Add(bh_opcode.BH_COSH, "Cosh");
+            _opcode_func_name.Add(bh_opcode.BH_SINH, "Sinh");
+            _opcode_func_name.Add(bh_opcode.BH_TANH, "Tanh");
 
-            _opcode_func_name.Add(bh_opcode.CPHVB_LOGICAL_NOT, "Not");
-            _opcode_func_name.Add(bh_opcode.CPHVB_INVERT, "Invert");
+            _opcode_func_name.Add(bh_opcode.BH_LOGICAL_NOT, "Not");
+            _opcode_func_name.Add(bh_opcode.BH_INVERT, "Invert");
         }
 
         /// <summary>
@@ -167,15 +167,15 @@ namespace NumCIL.Bohrium
 
             if (typeof(T) == typeof(bool))
             {
-                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_AND, "And");
-                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_OR, "Or");
-                opcodenames.Add(bh_opcode.CPHVB_LOGICAL_XOR, "Xor");
+                opcodenames.Add(bh_opcode.BH_LOGICAL_AND, "And");
+                opcodenames.Add(bh_opcode.BH_LOGICAL_OR, "Or");
+                opcodenames.Add(bh_opcode.BH_LOGICAL_XOR, "Xor");
             }
             else
             {
-                opcodenames.Add(bh_opcode.CPHVB_BITWISE_AND, "And");
-                opcodenames.Add(bh_opcode.CPHVB_BITWISE_OR, "Or");
-                opcodenames.Add(bh_opcode.CPHVB_BITWISE_XOR, "Xor");
+                opcodenames.Add(bh_opcode.BH_BITWISE_AND, "And");
+                opcodenames.Add(bh_opcode.BH_BITWISE_OR, "Or");
+                opcodenames.Add(bh_opcode.BH_BITWISE_XOR, "Xor");
             }
 
             foreach (var e in opcodenames)
@@ -189,29 +189,29 @@ namespace NumCIL.Bohrium
                 catch { }
             }
 
-            res[typeof(NumCIL.CopyOp<T>)] = bh_opcode.CPHVB_IDENTITY;
-            res[typeof(NumCIL.GenerateOp<T>)] = bh_opcode.CPHVB_IDENTITY;
+            res[typeof(NumCIL.CopyOp<T>)] = bh_opcode.BH_IDENTITY;
+            res[typeof(NumCIL.GenerateOp<T>)] = bh_opcode.BH_IDENTITY;
             if (VEM.Instance.SupportsRandom)
 			{
-                res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = bh_opcode.CPHVB_USERFUNC;
-				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.CPHVB_USERFUNC; }
+                res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = bh_opcode.BH_USERFUNC;
+				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.BH_USERFUNC; }
 				catch {}
 			}
             if (VEM.Instance.SupportsReduce)
-                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
-                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.BH_USERFUNC;
             if (VEM.Instance.SupportsAggregate)
-                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.CPHVB_USERFUNC;
+                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.BH_USERFUNC;
 
 
             if (typeof(T) == typeof(NumCIL.Complex64.DataType))
             {
-                res[typeof(NumCIL.Complex64.ToComplex)] = bh_opcode.CPHVB_IDENTITY;
+                res[typeof(NumCIL.Complex64.ToComplex)] = bh_opcode.BH_IDENTITY;
             }
             else if (typeof(T) == typeof(System.Numerics.Complex))
             {
-                res[typeof(NumCIL.Complex128.ToComplex)] = bh_opcode.CPHVB_IDENTITY;
+                res[typeof(NumCIL.Complex128.ToComplex)] = bh_opcode.BH_IDENTITY;
             }
             else
             {
@@ -221,7 +221,7 @@ namespace NumCIL.Bohrium
                     {
                         Type t = basic.Assembly.GetType(basic.Namespace + ".To" + e);
                         if (t != null)
-                            res[t] = bh_opcode.CPHVB_IDENTITY; 
+                            res[t] = bh_opcode.BH_IDENTITY; 
                     }
                     catch { }
                 }
@@ -230,12 +230,12 @@ namespace NumCIL.Bohrium
             if (typeof(T) == typeof(bool))
             {
                 Dictionary<bh_opcode, string> logicalnames = new Dictionary<bh_opcode, string>();
-                logicalnames.Add(bh_opcode.CPHVB_EQUAL, "Equal");
-                logicalnames.Add(bh_opcode.CPHVB_NOT_EQUAL, "NotEqual");
-                logicalnames.Add(bh_opcode.CPHVB_GREATER, "GreaterThan");
-                logicalnames.Add(bh_opcode.CPHVB_LESS, "LessThan");
-                logicalnames.Add(bh_opcode.CPHVB_GREATER_EQUAL, "GreaterThanOrEqual");
-                logicalnames.Add(bh_opcode.CPHVB_LESS_EQUAL, "LessThanOrEqual");
+                logicalnames.Add(bh_opcode.BH_EQUAL, "Equal");
+                logicalnames.Add(bh_opcode.BH_NOT_EQUAL, "NotEqual");
+                logicalnames.Add(bh_opcode.BH_GREATER, "GreaterThan");
+                logicalnames.Add(bh_opcode.BH_LESS, "LessThan");
+                logicalnames.Add(bh_opcode.BH_GREATER_EQUAL, "GreaterThanOrEqual");
+                logicalnames.Add(bh_opcode.BH_LESS_EQUAL, "LessThanOrEqual");
 
                 foreach (var type in new Type[] { typeof(NumCIL.Int8.NdArray), typeof(NumCIL.UInt8.NdArray), typeof(NumCIL.Int16.NdArray), typeof(NumCIL.UInt16.NdArray), typeof(NumCIL.Int32.NdArray), typeof(NumCIL.UInt32.NdArray), typeof(NumCIL.Int64.NdArray), typeof(NumCIL.UInt64.NdArray), typeof(NumCIL.Float.NdArray), typeof(NumCIL.Double.NdArray), typeof(NumCIL.Complex64.NdArray), typeof(NumCIL.Complex128.NdArray) })
                 {
@@ -257,7 +257,7 @@ namespace NumCIL.Bohrium
                     string boolConvOpName = basicBool.Namespace + ".To" + basic.Namespace.Substring("NumCIL.".Length);
                     Type t = basicBool.Assembly.GetType(boolConvOpName);
                     if (t != null)
-                        res[t] = bh_opcode.CPHVB_IDENTITY;
+                        res[t] = bh_opcode.BH_IDENTITY;
                 }
                 catch
                 {
@@ -347,7 +347,7 @@ namespace NumCIL.Bohrium
                 base.Allocate();
 
             if (m_externalData != null)
-                VEM.Execute(new PInvoke.bh_instruction(bh_opcode.CPHVB_SYNC, m_externalData.Pointer));
+                VEM.Execute(new PInvoke.bh_instruction(bh_opcode.BH_SYNC, m_externalData.Pointer));
         }
 
         /// <summary>
@@ -579,7 +579,7 @@ namespace NumCIL.Bohrium
                                 throw new BohriumException(string.Format("Unexpected data type: {0}", typeof(T).FullName));
                         }
 
-                        VEM.Execute(new PInvoke.bh_instruction(bh_opcode.CPHVB_FREE, m_externalData.Pointer));
+                        VEM.Execute(new PInvoke.bh_instruction(bh_opcode.BH_FREE, m_externalData.Pointer));
                     }
                 }
 
@@ -722,7 +722,7 @@ namespace NumCIL.Bohrium
 
                     bool isSupported = true;
 
-                    if (opcode == bh_opcode.CPHVB_USERFUNC)
+                    if (opcode == bh_opcode.BH_USERFUNC)
                     {
                         if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
                         {
@@ -768,7 +768,7 @@ namespace NumCIL.Bohrium
                     }
                     else
                     {
-                        if (op is IPendingUnaryConversionOp && opcode == bh_opcode.CPHVB_IDENTITY)
+                        if (op is IPendingUnaryConversionOp && opcode == bh_opcode.BH_IDENTITY)
                         {
                             //As we cross execution spaces, we need to ensure that the input operand has no pending instructions
                             object unop = ((IPendingUnaryConversionOp)op).InputOperand;

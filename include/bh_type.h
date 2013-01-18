@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_TYPE_H
-#define __CPHVB_TYPE_H
+#ifndef __BH_TYPE_H
+#define __BH_TYPE_H
 
 #include <stdint.h>
 
@@ -47,21 +47,21 @@ typedef struct { double real, imag; } bh_complex128;
 /* Codes for data types */
 enum /* bh_type */
 {
-    CPHVB_BOOL,
-    CPHVB_INT8,
-    CPHVB_INT16,
-    CPHVB_INT32,
-    CPHVB_INT64,
-    CPHVB_UINT8,
-    CPHVB_UINT16,
-    CPHVB_UINT32,
-    CPHVB_UINT64,
-    CPHVB_FLOAT16,
-    CPHVB_FLOAT32,
-    CPHVB_FLOAT64,
-    CPHVB_COMPLEX64,
-    CPHVB_COMPLEX128,
-    CPHVB_UNKNOWN
+    BH_BOOL,
+    BH_INT8,
+    BH_INT16,
+    BH_INT32,
+    BH_INT64,
+    BH_UINT8,
+    BH_UINT16,
+    BH_UINT32,
+    BH_UINT64,
+    BH_FLOAT16,
+    BH_FLOAT32,
+    BH_FLOAT64,
+    BH_COMPLEX64,
+    BH_COMPLEX128,
+    BH_UNKNOWN
 };
 
 typedef int64_t    bh_intp;

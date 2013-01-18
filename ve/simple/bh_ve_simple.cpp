@@ -39,19 +39,19 @@ bh_error bh_ve_simple_init(bh_component *self)
 {
     myself = self;
 
-    char *env = getenv("CPHVB_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
+    char *env = getenv("BH_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
     if(env != NULL)
     {
         vcache_size = atoi(env);
     }
     if(vcache_size <= 0)                        // Verify it
     {
-        fprintf(stderr, "CPHVB_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
-        return CPHVB_ERROR;
+        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
+        return BH_ERROR;
     }
 
     bh_vcache_init( vcache_size );
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instruction_list )
@@ -63,28 +63,28 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
     for (count=0; count < instruction_count; count++) {
 
         inst = &instruction_list[count];
-        if (inst->status == CPHVB_SUCCESS) {        // SKIP instruction
+        if (inst->status == BH_SUCCESS) {        // SKIP instruction
             continue;
         }
 
         res = bh_vcache_malloc( inst );          // Allocate memory for operands
-        if ( res != CPHVB_SUCCESS ) {
+        if ( res != BH_SUCCESS ) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_simple_execute()\n");
             return res;
         }
                                                     
         switch (inst->opcode) {                     // Dispatch instruction
 
-            case CPHVB_NONE:                        // NOOP.
-            case CPHVB_DISCARD:
-            case CPHVB_SYNC:
-                inst->status = CPHVB_SUCCESS;
+            case BH_NONE:                        // NOOP.
+            case BH_DISCARD:
+            case BH_SYNC:
+                inst->status = BH_SUCCESS;
                 break;
-            case CPHVB_FREE:                        // Store data-pointer in malloc-cache
+            case BH_FREE:                        // Store data-pointer in malloc-cache
                 inst->status = bh_vcache_free( inst );
                 break;
 
-            case CPHVB_USERFUNC:                    // External libraries
+            case BH_USERFUNC:                    // External libraries
 
                 if (inst->userfunc->id == reduce_impl_id) {
 
@@ -108,7 +108,7 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
 
                 } else {                            // Unsupported userfunc
                 
-                    inst->status = CPHVB_USERFUNC_NOT_SUPPORTED;
+                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
 
                 }
 
@@ -119,16 +119,16 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
 
         }
 
-        if (inst->status != CPHVB_SUCCESS) {    // Instruction failed
+        if (inst->status != BH_SUCCESS) {    // Instruction failed
             break;
         }
 
     }
 
     if (count == instruction_count) {
-        return CPHVB_SUCCESS;
+        return BH_SUCCESS;
     } else {
-        return CPHVB_PARTIAL_SUCCESS;
+        return BH_PARTIAL_SUCCESS;
     }
 
 }
@@ -139,7 +139,7 @@ bh_error bh_ve_simple_shutdown( void )
     bh_vcache_clear();
     bh_vcache_delete();
 
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id) 
@@ -150,15 +150,15 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
     	{
 			bh_component_get_func(myself, fun, &reduce_impl);
 			if (reduce_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			reduce_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = reduce_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_random", fun) == 0)
@@ -167,15 +167,15 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
     	{
 			bh_component_get_func(myself, fun, &random_impl);
 			if (random_impl == NULL)
-				return CPHVB_USERFUNC_NOT_SUPPORTED;
+				return BH_USERFUNC_NOT_SUPPORTED;
 
 			random_impl_id = *id;
-			return CPHVB_SUCCESS;			
+			return BH_SUCCESS;			
         }
         else
         {
         	*id = random_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_matmul", fun) == 0)
@@ -184,15 +184,15 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
     	{
             bh_component_get_func(myself, fun, &matmul_impl);
             if (matmul_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
             
             matmul_impl_id = *id;
-            return CPHVB_SUCCESS;			
+            return BH_SUCCESS;			
         }
         else
         {
         	*id = matmul_impl_id;
-        	return CPHVB_SUCCESS;
+        	return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_nselect", fun) == 0)
@@ -201,15 +201,15 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
         {
             bh_component_get_func(myself, fun, &nselect_impl);
             if (nselect_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
             
             nselect_impl_id = *id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
         else
         {
             *id = nselect_impl_id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
     }
     else if(strcmp("bh_aggregate", fun) == 0)
@@ -218,19 +218,19 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
         {
             bh_component_get_func(myself, fun, &aggregate_impl);
             if (aggregate_impl == NULL)
-                return CPHVB_USERFUNC_NOT_SUPPORTED;
+                return BH_USERFUNC_NOT_SUPPORTED;
             
             aggregate_impl_id = *id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
         else
         {
             *id = aggregate_impl_id;
-            return CPHVB_SUCCESS;
+            return BH_SUCCESS;
         }
     }
     
-    return CPHVB_USERFUNC_NOT_SUPPORTED;
+    return BH_USERFUNC_NOT_SUPPORTED;
 }
 
 bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
