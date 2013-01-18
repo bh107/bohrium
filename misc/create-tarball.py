@@ -34,26 +34,26 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     VERSION = "v0.1"
-    NAME = "cphvb-%s"%VERSION
+    NAME = "bohrium-%s"%VERSION
 
     try:
-        p = subprocess.Popen(["git", "archive", "--format=tar", "--prefix=cphvb-dump/", "-o", "/tmp/cphvb-root-dump.tar", "HEAD"], cwd=root)
+        p = subprocess.Popen(["git", "archive", "--format=tar", "--prefix=bohrium-dump/", "-o", "/tmp/bohrium-root-dump.tar", "HEAD"], cwd=root)
         p.wait()
-        p = subprocess.Popen(["git", "archive", "--format=tar", "--prefix=cphvb-numpy-dump/", "-o", "/tmp/cphvb-numpy-dump.tar", "HEAD"], cwd=os.path.join(root,"bridge","numpy"))
+        p = subprocess.Popen(["git", "archive", "--format=tar", "--prefix=bohrium-numpy-dump/", "-o", "/tmp/bohrium-numpy-dump.tar", "HEAD"], cwd=os.path.join(root,"bridge","numpy"))
         p.wait()
-        p = subprocess.Popen(["tar", "-xf", "cphvb-root-dump.tar"], cwd="/tmp")
+        p = subprocess.Popen(["tar", "-xf", "bohrium-root-dump.tar"], cwd="/tmp")
         p.wait()
-        p = subprocess.Popen(["tar", "-xf", "cphvb-numpy-dump.tar"], cwd="/tmp")
+        p = subprocess.Popen(["tar", "-xf", "bohrium-numpy-dump.tar"], cwd="/tmp")
         p.wait()
-        p = subprocess.Popen(["rmdir", "cphvb-dump/bridge/numpy"], cwd="/tmp")
+        p = subprocess.Popen(["rmdir", "bohrium-dump/bridge/numpy"], cwd="/tmp")
         p.wait()
-        p = subprocess.Popen(["mv", "cphvb-numpy-dump","cphvb-dump/bridge/numpy"], cwd="/tmp")
+        p = subprocess.Popen(["mv", "bohrium-numpy-dump","bohrium-dump/bridge/numpy"], cwd="/tmp")
         p.wait()
-        p = subprocess.Popen(["mv", "cphvb-dump",NAME], cwd="/tmp")
+        p = subprocess.Popen(["mv", "bohrium-dump",NAME], cwd="/tmp")
         p.wait()
         p = subprocess.Popen(["tar", "-czf", "%s.tgz"%NAME, NAME], cwd="/tmp")
         p.wait()
-        p = subprocess.Popen(["rm", "-R", "cphvb-root-dump.tar", "cphvb-numpy-dump.tar", NAME], cwd="/tmp")
+        p = subprocess.Popen(["rm", "-R", "bohrium-root-dump.tar", "bohrium-numpy-dump.tar", NAME], cwd="/tmp")
         p.wait()
     except KeyboardInterrupt:
         p.terminate()
