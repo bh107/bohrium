@@ -485,7 +485,7 @@ class ndarray:
 
 ndarray.owncls = ndarray
 
-def empty(shape, dtype=float, order='C', dist=False):
+def empty(shape, dtype=float, order='C', bohrium=False):
     return ndarray(GetNdClass(dtype).Generate.Empty(ReshapeShape(shape)))
 
 def ones(shape, dtype=float, order='C', dist=False):
@@ -722,22 +722,22 @@ def shape(el):
 
 class random:
     @staticmethod
-    def random(shape, dtype=float, order='C', cphvb=False):
+    def random(shape, dtype=float, order='C', bohrium=False):
         return ndarray(GetNdClass(dtype).Generate.Random(ReshapeShape(shape)))
 
 
 def fromfile(file, elems=-1, dtype=float32):
     return ndarray(GetNdClass(dtype).NdArray(NumCIL.Utility.ReadArray[dtype](file, elems)))
 
-def activate_cphVB(active = True):
+def activate_bohrium(active = True):
     try:
-        clr.AddReference("NumCIL.cphVB")
+        clr.AddReference("NumCIL.Bohrium")
     except Exception:
-        raise Exception("Unable to activate NumCIL.cphVB extensions, make sure that the NumCIL.cphVB.dll is placed in the same folder as NumCIL.dll")
+        raise Exception("Unable to activate NumCIL.Bohrium extensions, make sure that the NumCIL.Bohrium.dll is placed in the same folder as NumCIL.dll")
     
-    import NumCIL.cphVB
+    import NumCIL.Bohrium
 
     if active:
-        NumCIL.cphVB.Utility.Activate()
+        NumCIL.Bohrium.Utility.Activate()
     else:
-        NumCIL.cphVB.Utility.Deactivate()
+        NumCIL.Bohrium.Utility.Deactivate()

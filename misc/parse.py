@@ -92,7 +92,7 @@ class Constant(Operand):
 
 class Parser(object):
 
-    re_instr    = "CPHVB_(?P<OPCODE>\w+)\sOPS=(?P<N_OPS>\d+)"
+    re_instr    = "BH_(?P<OPCODE>\w+)\sOPS=(?P<N_OPS>\d+)"
     re_meta     = "\s+(?P<OPN>\w+)?\s+\[(?:(?:\s+Addr:\s+(?P<ADDR>\w+)\s+Dims:\s+(?P<DIMS>\d+)\s+Start:\s+(?P<START>\d+)\s+Shape:\s+(?P<SHAPE>[\d,]+)\s+Stride:\s+\s+(?P<STRIDE>[\d,]+)\s+Type:\s+(?P<TYPE>\w+)\s+Data:\s(?P<DATA>.*?)\s+Base:\s+(?P<BASE>.*?)\s+)|(?:\s+CONST=(?P<CONST>[\d.,\-~]+)\s+))"
 
     def __init__(self, path):

@@ -1,21 +1,21 @@
 #!/usr/bin/python
 """
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -35,7 +35,7 @@ def build(components,interpreter):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"CPHVB_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -61,7 +61,7 @@ def install(components,prefix,interpreter):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"install","CPHVB_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", makefilename,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -76,9 +76,9 @@ def install(components,prefix,interpreter):
 
 def install_config(prefix):
     if os.geteuid() == 0:#Root user
-        HOME_CONFIG = "/etc/cphvb"
+        HOME_CONFIG = "/etc/bohrium"
     else: 
-        HOME_CONFIG = join(join(expanduser("~"),".cphvb"))
+        HOME_CONFIG = join(join(expanduser("~"),".bohrium"))
     if not exists(HOME_CONFIG):
         os.mkdir(HOME_CONFIG)
     dst = join(HOME_CONFIG, "config.ini")
@@ -87,7 +87,7 @@ def install_config(prefix):
         src_file = open(src, "r")
         src_str = src_file.read()
         src_file.close()
-        dst_str = src_str.replace("/opt/cphvb",prefix)
+        dst_str = src_str.replace("/opt/bohrium",prefix)
         if sys.platform.startswith('darwin'):
             dst_str = dst_str.replace(".so",".dylib")
         dst_file = open(dst,"w")
@@ -99,7 +99,7 @@ def install_config(prefix):
 if __name__ == "__main__":
     debug = False
     interactive = False
-    prefix = "/opt/cphvb"
+    prefix = "/opt/bohrium"
     interpreter = sys.executable
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                   ("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
-                  ("CPHVBNUMPY", "cphvbnumpy", True)
+                  ("BHNUMPY", "bohrium", True)
                  ]
 
     if cmd == "rebuild":

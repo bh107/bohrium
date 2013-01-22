@@ -1,15 +1,15 @@
 ROOT=../..
-LIB=libcphvb_atlas_score.so
+LIB=libbh_atlas_score.so
 CXX?=g++
 WARNOPTS=-Wall
 ATLASDIR?=/usr/local/atlas
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ATLASDIR)/include
-LDFLAGS= -L$(ATLASDIR)/lib -lsatlas -L$(ROOT)/core -lcphvb -lrt -shared -Wl,-soname
+LDFLAGS= -L$(ATLASDIR)/lib -lsatlas -L$(ROOT)/core -lbh -lrt -shared -Wl,-soname
 HEADER=$(ROOT)/include/*  
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
-INSTALLDIR?=/opt/cphvb/
+INSTALLDIR?=/opt/bh/
 
 all: $(LIB)
 

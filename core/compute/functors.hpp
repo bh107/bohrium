@@ -1,9 +1,9 @@
-#ifndef CPHVB_FUNCTORS_HPP
-#define CPHVB_FUNCTORS_HPP
+#ifndef BH_FUNCTORS_HPP
+#define BH_FUNCTORS_HPP
 
 #include <cmath>
 #include <cstdlib>
-#include <cphvb_win_math.hpp>
+#include <bh_win_math.hpp>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -11,11 +11,11 @@
 
 #if _WIN32
     #include <float.h>
-    #define cphvb_isnan(x) (_isnan(x))
-    #define cphvb_isinf(x) (!_isnan(x) || !_finite(x))
+    #define bh_isnan(x) (_isnan(x))
+    #define bh_isinf(x) (!_isnan(x) || !_finite(x))
 #else
-    #define cphvb_isnan(x) (std::isnan(x))
-    #define cphvb_isinf(x) (std::isinf(x))
+    #define bh_isnan(x) (std::isnan(x))
+    #define bh_isinf(x) (std::isinf(x))
 #endif
 
 #define DEG_CIR 360.0
@@ -375,14 +375,14 @@ struct mod_functor {
 template <typename T1, typename T2>
 struct isnan_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = cphvb_isnan(*op2);
+        *op1 = bh_isnan(*op2);
     }
 };
 
 template <typename T1, typename T2>
 struct isinf_functor {
     void operator()(T1 *op1, T2 *op2) {
-        *op1 = cphvb_isinf(*op2);
+        *op1 = bh_isinf(*op2);
     }
 };
 

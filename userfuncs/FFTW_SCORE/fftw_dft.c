@@ -1,33 +1,33 @@
 /*
  * Copyright 2012 Andreas Thorning <thorning@diku.dk>
  *
- * This file is part of cphVB.
+ * This file is part of Bohrium.
  *
- * cphVB is free software: you can redistribute it and/or modify
+ * Bohrium is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * cphVB is distributed in the hope that it will be useful,
+ * Bohrium is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
+ * along with Bohrium. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <cphvb.h>
+#include <bh.h>
 #include <fftw3.h>
 
 /* ONE DIMENSIONAL TRANSFORMATIONS START */
 
-cphvb_error do_fft_complex64(cphvb_array* in, cphvb_array* out){
+bh_error do_fft_complex64(bh_array* in, bh_array* out){
 
-  cphvb_complex64* in_data;
-  cphvb_complex64* out_data;
+  bh_complex64* in_data;
+  bh_complex64* out_data;
   
-  cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
-  cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
+  bh_data_get(in, (bh_data_ptr*) &in_data);
+  bh_data_get(out, (bh_data_ptr*) &out_data);
   
 
   fftwf_plan p;
@@ -42,20 +42,20 @@ cphvb_error do_fft_complex64(cphvb_array* in, cphvb_array* out){
                                   FFTW_FORWARD, FFTW_ESTIMATE);
      }
   else
-    return CPHVB_ERROR;
+    return BH_ERROR;
   fftwf_execute(p);
   fftwf_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
-cphvb_error do_fft_complex128(cphvb_array* in, cphvb_array* out){
+bh_error do_fft_complex128(bh_array* in, bh_array* out){
 
-  cphvb_complex128* in_data;
-  cphvb_complex128* out_data;
+  bh_complex128* in_data;
+  bh_complex128* out_data;
   
-  cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
-  cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
+  bh_data_get(in, (bh_data_ptr*) &in_data);
+  bh_data_get(out, (bh_data_ptr*) &out_data);
   
 
   fftw_plan p;
@@ -75,33 +75,33 @@ cphvb_error do_fft_complex128(cphvb_array* in, cphvb_array* out){
   fftw_execute(p);
   fftw_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
 
-cphvb_error cphvb_fft(cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_fft(bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_fft_type *m_arg = (cphvb_fft_type *) arg;
-    cphvb_array *out = m_arg->operand[0];
-    cphvb_array *in = m_arg->operand[1];
+    bh_fft_type *m_arg = (bh_fft_type *) arg;
+    bh_array *out = m_arg->operand[0];
+    bh_array *in = m_arg->operand[1];
     
     if(in->ndim > 2)
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
-    if(cphvb_data_malloc(out) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(out) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
-    if(cphvb_data_malloc(in) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(in) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
     switch (in->type)
     {
-    	case CPHVB_COMPLEX64:
+    	case BH_COMPLEX64:
 	    	return do_fft_complex64(in, out);
-    	case CPHVB_COMPLEX128:
+    	case BH_COMPLEX128:
 	    	return do_fft_complex128(in, out);
     	default:
-            return CPHVB_ERROR;
+            return BH_ERROR;
 	}  
 }
 
@@ -109,13 +109,13 @@ cphvb_error cphvb_fft(cphvb_userfunc *arg, void* ve_arg)
 
 /* TWO DIMENSIONAL TRANSFORMATIONS START */
 
-cphvb_error do_fft2_complex64(cphvb_array* in, cphvb_array* out){
+bh_error do_fft2_complex64(bh_array* in, bh_array* out){
 
-  cphvb_complex64* in_data;
-  cphvb_complex64* out_data;
+  bh_complex64* in_data;
+  bh_complex64* out_data;
   
-  cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
-  cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
+  bh_data_get(in, (bh_data_ptr*) &in_data);
+  bh_data_get(out, (bh_data_ptr*) &out_data);
   
   fftwf_plan p;
   p = fftwf_plan_dft_2d(in->shape[0], in->shape[1], (fftwf_complex*)in_data, (fftwf_complex*)out_data, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -123,16 +123,16 @@ cphvb_error do_fft2_complex64(cphvb_array* in, cphvb_array* out){
   fftwf_execute(p);
   fftwf_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
-cphvb_error do_fft2_complex128(cphvb_array* in, cphvb_array* out){
+bh_error do_fft2_complex128(bh_array* in, bh_array* out){
 
-  cphvb_complex128* in_data;
-  cphvb_complex128* out_data;
+  bh_complex128* in_data;
+  bh_complex128* out_data;
   
-  cphvb_data_get(in, (cphvb_data_ptr*) &in_data);
-  cphvb_data_get(out, (cphvb_data_ptr*) &out_data);
+  bh_data_get(in, (bh_data_ptr*) &in_data);
+  bh_data_get(out, (bh_data_ptr*) &out_data);
   
   fftw_plan p;
   p = fftw_plan_dft_2d(in->shape[0], in->shape[1], (fftw_complex*)in_data, (fftw_complex*)out_data, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -140,33 +140,33 @@ cphvb_error do_fft2_complex128(cphvb_array* in, cphvb_array* out){
   fftw_execute(p);
   fftw_destroy_plan(p);
   
-  return CPHVB_SUCCESS;
+  return BH_SUCCESS;
 }
 
-cphvb_error cphvb_fft2(cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_fft2(bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_fft_type *m_arg = (cphvb_fft_type *) arg;
-    cphvb_array *out = m_arg->operand[0];
-    cphvb_array *in = m_arg->operand[1];
+    bh_fft_type *m_arg = (bh_fft_type *) arg;
+    bh_array *out = m_arg->operand[0];
+    bh_array *in = m_arg->operand[1];
     
     
     if(in->ndim != 2 || in->stride[1] != 1 || in->stride[0] != in->shape[1])
-        return CPHVB_ERROR;
+        return BH_ERROR;
     
-    if(cphvb_data_malloc(out) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(out) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
-    if(cphvb_data_malloc(in) != CPHVB_SUCCESS)
-        return CPHVB_OUT_OF_MEMORY;
+    if(bh_data_malloc(in) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
         
     switch (in->type)
     {
-    	case CPHVB_COMPLEX64:
+    	case BH_COMPLEX64:
 	    	return do_fft2_complex64(in, out);
-    	case CPHVB_COMPLEX128:
+    	case BH_COMPLEX128:
 	    	return do_fft2_complex128(in, out);
     	default:
-            return CPHVB_ERROR;
+            return BH_ERROR;
 	}  
 }
 

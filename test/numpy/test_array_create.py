@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 from numpytest import numpytest,TYPES
 
 class test_array_create(numpytest):

@@ -1,19 +1,19 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -32,9 +32,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 UserFunctionRandom* userFunctionRandom = NULL;
 
-cphvb_error cphvb_random(cphvb_userfunc *arg, void* ve_arg)
+bh_error bh_random(bh_userfunc *arg, void* ve_arg)
 {
-    cphvb_random_type* randomDef = (cphvb_random_type*)arg;
+    bh_random_type* randomDef = (bh_random_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert (randomDef->nout == 1);
     assert (randomDef->nin == 0);
@@ -75,7 +75,7 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     kernelNames.push_back("htrand_uint64");
     if (resourceManager->float64support()) 
         kernelNames.push_back("htrand_float64");
-    std::vector<cphvb_intp> ndims(kernelNames.size(),1);
+    std::vector<bh_intp> ndims(kernelNames.size(),1);
     std::vector<Kernel> kernels = 
         Kernel::createKernelsFromFile(resourceManager, ndims, 
                                       resourceManager->getKernelPath() + "/HybridTaus.cl", kernelNames);
@@ -94,13 +94,13 @@ void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventSta
     delete [](cl_uint4*)data;
 }
 
-cphvb_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
+bh_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);
     KernelMap::iterator kit = kernelMap.find(ba->type());
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     Scalar size(ba->size());    
     Kernel::Parameters parameters;
     parameters.push_back(std::make_pair(ba, true));
@@ -110,5 +110,5 @@ cphvb_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
     std::vector<size_t> localShape(1,TPB);
     std::vector<size_t> globalShape(1,BPG*TPB);
     kit->second.call(parameters, globalShape, localShape);
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }

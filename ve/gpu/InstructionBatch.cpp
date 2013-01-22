@@ -1,19 +1,19 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,13 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
-#include <cphvb.h>
+#include <bh.h>
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
-InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
+InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
     , scalarnum(0)
     , variablenum(0)
@@ -41,11 +41,11 @@ InstructionBatch::InstructionBatch(cphvb_instruction* inst, const std::vector<Ke
 #endif
     if (inst->operand[0]->ndim > 3)
         throw std::runtime_error("More than 3 dimensions not supported.");        
-    shape = std::vector<cphvb_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
+    shape = std::vector<bh_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
     add(inst, operands);
 }
 
-bool InstructionBatch::shapeMatch(cphvb_intp ndim,const cphvb_index dims[])
+bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
 {
     int size = shape.size();
     if (ndim == size)
@@ -60,7 +60,7 @@ bool InstructionBatch::shapeMatch(cphvb_intp ndim,const cphvb_index dims[])
     return false;
 }
 
-bool InstructionBatch::sameView(const cphvb_array* a, const cphvb_array* b)
+bool InstructionBatch::sameView(const bh_array* a, const bh_array* b)
 {
     //assumes the the views shape are the same and they have the same base
     if (a == b)
@@ -87,7 +87,7 @@ inline int gcd(int a, int b)
     return b;
 }
 
-bool InstructionBatch::disjointView(const cphvb_array* a, const cphvb_array* b)
+bool InstructionBatch::disjointView(const bh_array* a, const bh_array* b)
 {
     //assumes the the views shape are the same and they have the same base
     int astart = a->start;
@@ -110,7 +110,7 @@ bool InstructionBatch::disjointView(const cphvb_array* a, const cphvb_array* b)
     return false;
 }
 
-void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelParameter*>& operands)
+void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
 {
     assert(!isScalar(operands[0]));
 
@@ -130,7 +130,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
             {
                 if (sameView(oit->second, inst->operand[op]))
                 {
-                    // Same view so we use the same cphvb_array* for it
+                    // Same view so we use the same bh_array* for it
                     inst->operand[op] = oit->second;
                     known[op] = true;
                 } 
@@ -145,7 +145,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
             {
                 if (sameView(iit->second, inst->operand[op]))
                 {
-                    // Same view so we use the same cphvb_array* for it
+                    // Same view so we use the same bh_array* for it
                     inst->operand[op] = iit->second;
                 } 
                 else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
@@ -161,7 +161,7 @@ void InstructionBatch::add(cphvb_instruction* inst, const std::vector<KernelPara
     instructions.push_back(inst);
     // Register unknow parameters
     //catch when same input is used twice
-    if (operands.size() == 3 && cphvb_base_array(inst->operand[1]) == cphvb_base_array(inst->operand[2]))
+    if (operands.size() == 3 && bh_base_array(inst->operand[1]) == bh_base_array(inst->operand[2]))
     {
         if(sameView(inst->operand[1], inst->operand[2]))
         {
@@ -304,7 +304,7 @@ std::string InstructionBatch::generateCode()
     }
 
     // Generate code for instructions
-    for (std::vector<cphvb_instruction*>::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
+    for (std::vector<bh_instruction*>::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
     {
         std::vector<std::string> operands;
         // Has the output operand been assigned a variable name?
@@ -322,9 +322,9 @@ std::string InstructionBatch::generateCode()
             operands.push_back(kvit->second);
         }
         // find variable names for input operands
-        for (int op = 1; op < cphvb_operands((*iit)->opcode); ++op)
+        for (int op = 1; op < bh_operands((*iit)->opcode); ++op)
         {
-            if (cphvb_is_constant((*iit)->operand[op]))
+            if (bh_is_constant((*iit)->operand[op]))
                 operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
             else
                 operands.push_back(kernelVariables[(*iit)->operand[op]]);  
@@ -365,9 +365,9 @@ bool InstructionBatch::access(BaseArray* array)
     return (read(array) || write(array));
 }
 
-struct Compare : public std::binary_function<std::pair<BaseArray*,cphvb_array*>,BaseArray*,bool>
+struct Compare : public std::binary_function<std::pair<BaseArray*,bh_array*>,BaseArray*,bool>
 {
-	bool operator() (const std::pair<BaseArray*,cphvb_array*> p, const BaseArray* k) const 
+	bool operator() (const std::pair<BaseArray*,bh_array*> p, const BaseArray* k) const 
 	{return (p.first==k);}
 };
 

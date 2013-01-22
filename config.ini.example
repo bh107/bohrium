@@ -3,41 +3,41 @@ type = bridge
 children = node
 
 [cluster]
-impl = /opt/cphvb/libcphvb_vem_cluster.so
+impl = /opt/bohrium/libbh_vem_cluster.so
 children = node
 type = vem
 
 [node]
-impl = /opt/cphvb/libcphvb_vem_node.so
+impl = /opt/bohrium/libbh_vem_node.so
 children = tile
 type = vem
 
 [print]
-impl = /opt/cphvb/libcphvb_ve_print.so
+impl = /opt/bohrium/libbh_ve_print.so
 type = ve
 
 [simple]
-impl = /opt/cphvb/libcphvb_ve_simple.so
+impl = /opt/bohrium/libbh_ve_simple.so
 type = ve
 
 [tile]
-impl = /opt/cphvb/libcphvb_ve_tile.so
+impl = /opt/bohrium/libbh_ve_tile.so
 type = ve
 
 [naive]
-impl = /opt/cphvb/libcphvb_ve_naive.so
+impl = /opt/bohrium/libbh_ve_naive.so
 type = ve
 
 [score]
-impl = /opt/cphvb/libcphvb_ve_score.so
+impl = /opt/bohrium/libbh_ve_score.so
 type = ve
 
 [mcore]
-impl = /opt/cphvb/libcphvb_ve_mcore.so
+impl = /opt/bohrium/libbh_ve_mcore.so
 type = ve
 
 [gpu]
-impl = /opt/cphvb/libcphvb_ve_gpu.so
+impl = /opt/bohrium/libbh_ve_gpu.so
 type = ve
-ocldir = /opt/cphvb/lib/ocl_source
+ocldir = /opt/bohrium/lib/ocl_source
 

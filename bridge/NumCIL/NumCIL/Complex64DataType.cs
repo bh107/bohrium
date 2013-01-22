@@ -1,20 +1,20 @@
 ﻿#region Copyright
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium:
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -29,8 +29,8 @@ namespace NumCIL.Complex64
 {
     /// <summary>
     /// Implementation of a 32+32=64 bit complex number.
-    /// Performance is not exceptional in non-cphVB mode, as anything beyond simple operations are performed with doubles, and truncated back into singles.
-    /// The primary use for this class is intended to be for speedups when being used with cphVB, and GPGPUs in particular.
+    /// Performance is not exceptional in non-Bohrium mode, as anything beyond simple operations are performed with doubles, and truncated back into singles.
+    /// The primary use for this class is intended to be for speedups when being used with Bohrium, and GPGPUs in particular.
     /// </summary>
     public struct DataType : IEquatable<DataType>, IFormattable
     {

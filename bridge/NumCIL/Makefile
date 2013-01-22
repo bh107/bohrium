@@ -1,4 +1,4 @@
-INSTALLDIR?=/opt/cphvb/
+INSTALLDIR?=/opt/bh/
 
 XBUILD?=xbuild
 TT?=mono buildsupport/TextTransform.exe

@@ -1,26 +1,26 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <assert.h>
 #include <stdlib.h>
-#include <cphvb.h>
+#include <bh.h>
 #include "OCLtype.h"
 #ifdef __APPLE__
 #include <Headers/cl.h>
@@ -28,37 +28,37 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <CL/cl.h>
 #endif
 
-OCLtype oclType(cphvb_type vbtype)
+OCLtype oclType(bh_type vbtype)
 {
     switch (vbtype)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         return OCL_UINT8;
-    case CPHVB_INT8:
+    case BH_INT8:
         return OCL_INT8;
-    case CPHVB_INT16:
+    case BH_INT16:
         return OCL_INT16;
-    case CPHVB_INT32:
+    case BH_INT32:
         return OCL_INT32;
-    case CPHVB_INT64:
+    case BH_INT64:
         return OCL_INT64;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         return OCL_UINT8;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         return OCL_UINT16;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         return OCL_UINT32;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         return OCL_UINT64;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         return OCL_FLOAT16;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         return OCL_FLOAT32;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         return OCL_FLOAT64;
-    case CPHVB_COMPLEX64:
+    case BH_COMPLEX64:
         return OCL_COMPLEX64;
-    case CPHVB_COMPLEX128:
+    case BH_COMPLEX128:
         return OCL_COMPLEX128;
     default:
         assert(false);

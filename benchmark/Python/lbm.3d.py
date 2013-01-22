@@ -4,7 +4,7 @@
 ## equivalent 'equilibrium' density is found, and the densities
 ## relax towards that state, in a proportion governed by omega.
 ##               Iain Haslam, March 2006.
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 B = util.Benchmark()
@@ -21,16 +21,16 @@ t1      = 1/3.0
 t2      = 1/18.0
 t3      = 1/36.0
 
-F       = np.empty((19,nx,ny,nz), dtype=float, cphvb=B.cphvb)
+F       = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
 F[:]    = density/19.0
-FEQ     = np.empty((19,nx,ny,nz), dtype=float, cphvb=B.cphvb)
+FEQ     = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
 FEQ[:]  = density/19.0
-T       = np.empty((19,nx,ny,nz), dtype=float, cphvb=B.cphvb)
+T       = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
 T[:]    = 0.0
 
 #Create the scenery.
-BOUND   = np.empty((nx,ny,nz), dtype=float, cphvb=B.cphvb)
-BOUNDi  = np.empty((nx,ny,nz), dtype=float, cphvb=B.cphvb)
+BOUND   = np.empty((nx,ny,nz), dtype=float, bohrium=B.bohrium)
+BOUNDi  = np.empty((nx,ny,nz), dtype=float, bohrium=B.bohrium)
 BOUND[:] = 0
 BOUNDi[:] = 1
 if not NO_OBST:
@@ -123,7 +123,7 @@ for ts in xrange(0, ITER):
     F[18,:,-1 ,:-1] = T[18,:,0 ,1:]
     F[18,:,-1 , -1] = T[18,:,0 ,0 ]
     #Densities bouncing back at next timestep
-    BB = np.empty(F.shape, cphvb=B.cphvb)
+    BB = np.empty(F.shape, bohrium=B.bohrium)
     T[:] = F
     T[1:,:,:,:] *= BOUND[np.newaxis,:,:,:]
     BB[2 ,:,:,:] += T[1 ,:,:,:]
@@ -149,7 +149,7 @@ for ts in xrange(0, ITER):
     DENSITY = np.add.reduce(F)
     #Doing this instead:
     UX = F[5,:,:,:].copy()
-    UX.cphvb = B.cphvb
+    UX.bohrium = B.bohrium
     UX += F[7,:,:,:]
     UX += F[8,:,:,:]
     UX += F[11,:,:,:]

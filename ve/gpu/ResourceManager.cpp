@@ -1,19 +1,19 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -35,7 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define STD_MAX(a, b) std::max(a, b)
 #endif
 
-ResourceManager::ResourceManager(cphvb_component* _component) 
+ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
 {
     std::vector<cl::Platform> platforms;
@@ -373,8 +373,8 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus,
 
 std::string ResourceManager::getKernelPath()
 {
-    char* dir = cphvb_component_config_lookup(component, "ocldir");
+    char* dir = bh_component_config_lookup(component, "ocldir");
     if (dir == NULL)
-        return std::string("/opt/cphvb/lib/ocl_source");
+        return std::string("/opt/bohrium/lib/ocl_source");
     return std::string(dir);
 }

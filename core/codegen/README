@@ -1,31 +1,34 @@
-Running gen_opcodes.py will generate include/cphvb_opcode.h and core/cphvb_opcode.c
+Running gen_opcodes.py will generate include/bh_opcode.h and core/bh_opcode.c
 
-The file ''opcodes.json'' contains a definition of all opcodes in cphVB,
+The file ''opcodes.json'' contains a definition of all opcodes in Bohrium,
 it uses the JSON (JavaScript Object Notation) syntax <http://json.org>.
 
 The file contains a list of opcode definitions on the form::
 
     {
-        "_opcode":  "CPHVB_ADD", 
+        "_opcode":  "BH_ADD", 
         "doc":      "Add arguments element-wise.",
         "code":     "op1 = op2 + op3",
-        "nop":      3, 
+        "nop":      3,
+        "id":     1, 
         "system_opcode": false, 
         "types": [
-            ["CPHVB_BOOL", "CPHVB_BOOL", "CPHVB_BOOL"],
-            ["CPHVB_FLOAT32", "CPHVB_FLOAT32", "CPHVB_FLOAT32"],
-            ["CPHVB_UINT8", "CPHVB_UINT8", "CPHVB_UINT8"],
+            ["BH_BOOL", "BH_BOOL", "BH_BOOL"],
+            ["BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32"],
+            ["BH_UINT8", "BH_UINT8", "BH_UINT8"],
         ]
     } 
 
 A description of the opcode structure follows::
 
 _opcode
-  The unique symbol identifying a cphVB opcode.
+  The unique symbol identifying a Bohrium opcode.
 doc
   A textual description of the opcode.
 code
   A bried code-snippet illustrating the opcode-instruction.
+id
+  The numeric ID of the operation
 nop
   The amount of operands the instruction uses.
 system_opcode

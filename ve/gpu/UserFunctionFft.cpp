@@ -1,20 +1,20 @@
 /*
  * Copyright 2012 Andreas Thorning <thorning@diku.dk>
  *
- * This file is part of cphVB.
+ * This file is part of Bohrium.
  *
- * cphVB is free software: you can redistribute it and/or modify
+ * Bohrium is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * cphVB is distributed in the hope that it will be useful,
+ * Bohrium is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with cphVB. If not, see <http://www.gnu.org/licenses/>.
+ * along with Bohrium. If not, see <http://www.gnu.org/licenses/>.
  */
  
 #include <iostream>
@@ -26,24 +26,24 @@
 
 UserFunctionFft* userFunctionFft = NULL;
 
-cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_fft(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
+    bh_fft_type* fftDef = (bh_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 1){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     
     int s0 = fftDef->operand[1]->shape[0];
     
     //check power of 2
     if(s0 & (s0 - 1)){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     //currently only support simple strides
     if(fftDef->operand[1]->stride[0] != 1){
-       return CPHVB_TYPE_NOT_SUPPORTED;
+       return BH_TYPE_NOT_SUPPORTED;
     }
     
     
@@ -56,13 +56,13 @@ cphvb_error cphvb_fft(cphvb_userfunc* arg, void* ve_arg)
     
 }
 
-cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg)
+bh_error bh_fft2(bh_userfunc* arg, void* ve_arg)
 {
-    cphvb_fft_type* fftDef = (cphvb_fft_type*)arg;
+    bh_fft_type* fftDef = (bh_fft_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     
     if(fftDef->operand[1]->ndim != 2){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     
     int s0 = fftDef->operand[1]->shape[0];
@@ -70,11 +70,11 @@ cphvb_error cphvb_fft2(cphvb_userfunc* arg, void* ve_arg)
     
     //check power of 2
     if((s0 & (s0 - 1)) || (s1 & (s1 - 1))){
-        return CPHVB_TYPE_NOT_SUPPORTED;
+        return BH_TYPE_NOT_SUPPORTED;
     }
     //currently only support simple strides
     if(fftDef->operand[1]->stride[1] != 1 || fftDef->operand[1]->stride[0] != fftDef->operand[0]->shape[1]){
-       return CPHVB_TYPE_NOT_SUPPORTED;
+       return BH_TYPE_NOT_SUPPORTED;
     }
     
     if (userFunctionFft == NULL)
@@ -93,7 +93,7 @@ UserFunctionFft::UserFunctionFft(ResourceManager* rm)
     kernelNames.push_back("fft");
     kernelNames.push_back("fft2d");
     kernelNames.push_back("copy");
-    std::vector<cphvb_intp> ndims(3,1);
+    std::vector<bh_intp> ndims(3,1);
     ndims[0] = 1;
     ndims[1] = 2;
     ndims[2] = 1;
@@ -114,7 +114,7 @@ int log2( int x )
 
 
 
-cphvb_error UserFunctionFft::fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg)
+bh_error UserFunctionFft::fft(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     
@@ -134,7 +134,7 @@ cphvb_error UserFunctionFft::fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncAr
       
     kit = kernelMap.find("fft");
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
         
     std::vector<size_t> globalShape(1,n/2);
     size_t local = n/2 >= 256 ? 256 : n/2;
@@ -163,10 +163,10 @@ cphvb_error UserFunctionFft::fft(cphvb_fft_type* fftDef, UserFuncArg* userFuncAr
       
     delete temp;
       
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
-cphvb_error UserFunctionFft::fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFuncArg)
+bh_error UserFunctionFft::fft2d(bh_fft_type* fftDef, UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     
@@ -193,7 +193,7 @@ cphvb_error UserFunctionFft::fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFunc
       
     kit = kernelMap.find("fft2d");
     if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
     
     
     std::vector<size_t> globalShape(2,cols/2);
@@ -253,7 +253,7 @@ cphvb_error UserFunctionFft::fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFunc
     if(!res_in_out){
       kit = kernelMap.find("copy");
       if (kit == kernelMap.end())
-        return CPHVB_TYPE_NOT_SUPPORTED; //TODO better error msg?
+        return BH_TYPE_NOT_SUPPORTED; //TODO better error msg?
       
       parameters.clear();
       parameters.push_back(std::make_pair(temp, false));
@@ -268,7 +268,7 @@ cphvb_error UserFunctionFft::fft2d(cphvb_fft_type* fftDef, UserFuncArg* userFunc
       
     delete temp;
       
-    return CPHVB_SUCCESS;
+    return BH_SUCCESS;
 }
 
 

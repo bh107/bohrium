@@ -1,28 +1,37 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
 #include "array.h"
 
-#ifndef __CPHVB_VEM_CLUSTER_COMM_H
-#define __CPHVB_VEM_CLUSTER_COMM_H
+#ifndef __BH_VEM_CLUSTER_COMM_H
+#define __BH_VEM_CLUSTER_COMM_H
+
+
+/* Gather or scatter the global array processes.
+ * NB: this is a collective operation.
+ * 
+ * @scatter If true we scatter else we gather
+ * @global_ary Global base array
+ */
+void comm_gather_scatter(int scatter, bh_array *global_ary);
 
 
 /* Distribute the global array data to all slave processes.
@@ -31,7 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * 
  * @global_ary Global base array
  */
-void comm_master2slaves(cphvb_array *global_ary);
+void comm_master2slaves(bh_array *global_ary);
 
 
 /* Gather the global array data at the master processes.
@@ -39,7 +48,7 @@ void comm_master2slaves(cphvb_array *global_ary);
  * 
  * @global_ary Global base array
  */
-void comm_slaves2master(cphvb_array *global_ary);
+void comm_slaves2master(bh_array *global_ary);
 
 
 /* Communicate array data such that the processes can apply local computation.

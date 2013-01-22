@@ -1,45 +1,45 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "DepGraph.hpp"
 
-DepGraph::DepGraph(cphvb_intp instruction_count,
-                   cphvb_instruction instruction_list[])
+DepGraph::DepGraph(bh_intp instruction_count,
+                   bh_instruction instruction_list[])
 {
     
-    for (cphvb_intp i = 0; i < instruction_count; ++i)
+    for (bh_intp i = 0; i < instruction_count; ++i)
     {
-        cphvb_instruction* inst = instruction_list++;
+        bh_instruction* inst = instruction_list++;
         switch (inst->opcode)
         {
-        case CPHVB_SYNC:
-            sync(inst->operand[0]);
+        case BH_SYNC:
+//                sync(inst->operand[0]);
             break;
-        case CPHVB_DISCARD:
+        case BH_DISCARD:
             if (inst->operand[0]->base == NULL)
-                discard(inst->operand[0]);
-            break;
-        case CPHVB_FREE:
-            free(inst->operand[0]);
+//                    discard(inst->operand[0]);
+                break;
+        case BH_FREE:
+//                free(inst->operand[0]);
             break;                
-        case CPHVB_NONE:
+        case BH_NONE:
             break;
         default:
             ufunc(inst);
@@ -64,20 +64,20 @@ void DepGraph::free(cphvb_array* operand)
 }
 
 
-void DepGraph::ufunc(cphvb_instruction* inst)
+void DepGraph::ufunc(bh_instruction* inst)
 {
-    cphvb_intp nin, nout;
-    cphvb_array** operand;
+    bh_intp nin, nout;
+    bh_array** operand;
     /* Handle bothe ufunc and userdefined functions*/
-    if (inst->opcode == CPHVB_USERFUNC)
+    if (inst->opcode == BH_USERFUNC)
     {
-        cphvb_userfunc* userfunc = inst->userfunc;
+        bh_userfunc* userfunc = inst->userfunc;
         nout = userfunc->nout;
         nin = userfunc->nin;
         operand = userfunc->operand;
     } else {
         nout = 1;
-        nin = cphvb_operands(inst->opcode) - 1;
+        nin = bh_operands(inst->opcode) - 1;
         operand = inst->operand;
     }
 
@@ -90,7 +90,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
          * on other subGraphs with overlapping output
          * TODO: Pruning and so on 
          */
-        cphvb_array* out = cphvb_base_array(operand[i]);
+        bh_array* out = bh_base_array(operand[i]);
         auto omsub = lastModifiedBy.find(out);
         if (omsub != lastModifiedBy.end())
         {
@@ -105,7 +105,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
         subGraphs.push_back(sub);
         for (int i = 0; i < nout; ++i)
         {
-            cphvb_array* out = cphvb_base_array(operand[i]);
+            bh_array* out = bh_base_array(operand[i]);
             lastModifiedBy[out] = sub;
         }
         return;
@@ -115,9 +115,9 @@ void DepGraph::ufunc(cphvb_instruction* inst)
     /* Handle dependency on intput parameters*/ 
     for (int i = nout; i < nout+nin; ++i)
     {
-        if (!cphvb_is_constant(inst->operand[i]))
+        if (!bh_is_constant(inst->operand[i]))
         {
-            cphvb_array* in =  cphvb_base_array(operand[i]);
+            bh_array* in =  bh_base_array(operand[i]);
             auto imsub = lastModifiedBy.find(in);
             if (imsub != lastModifiedBy.end())
             {
@@ -133,7 +133,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
         subGraphs.push_back(sub);
         for (int i = 0; i < nout; ++i)
         {
-            cphvb_array* out = cphvb_base_array(operand[i]);
+            bh_array* out = bh_base_array(operand[i]);
             lastModifiedBy[out] = sub;
         }
         break;
@@ -150,12 +150,12 @@ void DepGraph::ufunc(cphvb_instruction* inst)
             subGraphs.push_back(sub);
             for (int i = 0; i < nout; ++i)
             {
-                cphvb_array* out = cphvb_base_array(operand[i]);
+                bh_array* out = bh_base_array(operand[i]);
                 lastModifiedBy[out] = sub;
             }
             for (DepSubGraph* &dsg: dependsOn)
             {
-                for (cphvb_array* ba: dsg->getModified())
+                for (bh_array* ba: dsg->getModified())
                 {
                     if (lastModifiedBy[ba] == dsg)
                         lastModifiedBy[ba] = sub;
@@ -170,7 +170,7 @@ void DepGraph::ufunc(cphvb_instruction* inst)
             subGraphs.push_back(sub);
             for (int i = 0; i < nout; ++i)
             {
-                cphvb_array* out = cphvb_base_array(operand[i]);
+                bh_array* out = bh_base_array(operand[i]);
                 lastModifiedBy[out] = sub;
             }
         }

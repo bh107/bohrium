@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# cphVB documentation build configuration file, created by
+# Bohrium documentation build configuration file, created by
 # sphinx-quickstart on Wed Mar 14 12:12:45 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -50,7 +50,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'cphVB'
+project = u'Bohrium'
 copyright = u'2012, eScience Group @ NBI'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -177,7 +177,7 @@ html_static_path = ['.static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'cphVBdoc'
+htmlhelp_basename = 'Bohriumdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -191,7 +191,7 @@ htmlhelp_basename = 'cphVBdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cphVB.tex', u'cphVB Documentation',
+  ('index', 'Bohrium.tex', u'Bohrium Documentation',
    u'eScience Group @ NBI', 'manual'),
 ]
 
@@ -224,7 +224,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cphvb', u'cphVB Documentation',
+    ('index', 'bohrium', u'Bohrium Documentation',
      [u'eScience Group @ NBI'], 1)
 ]
 
@@ -232,7 +232,7 @@ man_pages = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title      = u'cphVB'
+epub_title      = u'Bohrium'
 epub_author     = u'eScience Group @ NBI'
 epub_publisher  = u'eScience Group @ NBI'
 epub_copyright  = u'2012, eScience Group @ NBI'
@@ -270,9 +270,9 @@ epub_copyright  = u'2012, eScience Group @ NBI'
 
 # -- Options for Breathe -----------------------------
 breathe_projects        = {
-    "cphVB": "doxygen/xml"
+    "Bohrium": "doxygen/xml"
 }
-breathe_default_project = "cphVB"
+breathe_default_project = "Bohrium"
 breathe_domain_by_extension = {
     "h" : "c",
     "c" : "c",

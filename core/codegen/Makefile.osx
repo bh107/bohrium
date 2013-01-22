@@ -2,7 +2,7 @@ all:
 		./gen_opcodes.py
 
 clean:
-		rm ../cphvb_opcode.c ../../include/cphvb_opcode.h
+		rm ../bh_opcode.c ../../include/bh_opcode.h
 
 install: all
 		

@@ -25,7 +25,7 @@ echo "--- Python/NumPy---"
 foreach i (1 2 3 4 5)
     python jacobi.py 7000 4 False
 end
-echo "--- Python/NumPy/cphVB---"
+echo "--- Python/NumPy/Bohrium---"
 foreach i (1 2 3 4 5)
     python jacobi.py 7000 4 True
 end

@@ -1,20 +1,20 @@
 ﻿#region Copyright
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -31,7 +31,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+            NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
             NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
             RunSomeTests(null);
@@ -47,13 +47,13 @@ namespace UnitTest
             NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
             RunSomeTests("Lazy");
 
-            try { NumCIL.cphVB.Utility.Activate(); }
+            try { NumCIL.Bohrium.Utility.Activate(); }
             catch { } 
 
-            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.cphVB.cphVBAccessorFactory<float>))
-                RunSomeTests("cphVB");
+            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium.BohriumAccessorFactory<float>))
+                RunSomeTests("Bohrium");
             else
-                Console.WriteLine("cphVB code is not supported, skipping tests for cphVB code");
+                Console.WriteLine("Bohrium code is not supported, skipping tests for Bohrium code");
 
             if (args.Contains<string>("--profiling", StringComparer.InvariantCultureIgnoreCase))
             {
