@@ -30,14 +30,14 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
         switch (inst->opcode)
         {
         case CPHVB_SYNC:
-//                sync(inst->operand[0]);
+            sync(inst->operand[0]);
             break;
         case CPHVB_DISCARD:
             if (inst->operand[0]->base == NULL)
-//                    discard(inst->operand[0]);
-                break;
+                discard(inst->operand[0]);
+            break;
         case CPHVB_FREE:
-//                free(inst->operand[0]);
+            free(inst->operand[0]);
             break;                
         case CPHVB_NONE:
             break;
@@ -46,6 +46,21 @@ DepGraph::DepGraph(cphvb_intp instruction_count,
             break;
         }
     }
+}
+
+void DepGraph::sync(cphvb_array* operand)
+{
+    
+}
+
+void DepGraph::discard(cphvb_array* operand)
+{
+
+}
+
+void DepGraph::free(cphvb_array* operand)
+{
+
 }
 
 

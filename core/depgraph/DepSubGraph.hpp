@@ -35,16 +35,24 @@ class DepSubGraph
 {
     // A map from base array to instruction where it is modified
     typedef std::multimap<cphvb_array* , cphvb_instruction*> ModificationMap;
+    struct atributes{bool sync; bool discard; bool free;};
+    typedef std::map<cphvb_array*, atributes> ArrayAtributes;
 private:
     std::list<cphvb_instruction*> instructions;
     ModificationMap modificationMap;
     std::list<DepSubGraph*> dependsOn;
+    ArrayAtributes arrayAtributes;
+    friend DepSubGraph* merge(cphvb_instruction* inst, std::list<DepSubGraph*> subGraphs);
 public:
     DepSubGraph(cphvb_instruction* inst);
     DepSubGraph(cphvb_instruction* inst, std::list<DepSubGraph*> _dependsOn);
-    static DepSubGraph* merge(cphvb_instruction* inst, std::list<DepSubGraph*> dependsOn);
+    static DepSubGraph* merge(cphvb_instruction* inst, std::list<DepSubGraph*> subGraphs);
     void add(cphvb_instruction* inst);
+    bool depends(DepSubGraph* subGraph);
     std::set<cphvb_array*> getModified();
+    void sync(cphvb_array a);
+    void free(cphvb_array a);
+    void discard(cphvb_array a);
 };
 
 class DepSubGraphException 

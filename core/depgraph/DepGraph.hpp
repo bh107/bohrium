@@ -27,11 +27,15 @@ If not, see <http://www.gnu.org/licenses/>.
 
 class DepGraph
 {
-    typedef std::map<cphvb_array*, DepSubGraph*> LastModifiedByMap;
+    typedef std::map<cphvb_array*, DepSubGraph*> LastAccessMap;
 private:
     std::list<DepSubGraph*> subGraphs;
-    LastModifiedByMap lastModifiedBy;
+    LastAccessMap lastAccess;
+    LastAccessMap lastAccess;
     void ufunc(cphvb_instruction* inst);
+    void sync(cphvb_array* operand);
+    void discard(cphvb_array* operand);
+    void free(cphvb_array* operand);
 public:
     DepGraph(cphvb_intp instruction_count,
              cphvb_instruction instruction_list[]);

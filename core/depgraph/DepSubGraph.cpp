@@ -26,6 +26,7 @@ DepSubGraph::DepSubGraph(cphvb_instruction* inst)
     instructions.push_back(inst);
     cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
+    arrayAtributes.insert(std::make_pair(obase,atributes(false,false,false)));
 }
 
 DepSubGraph::DepSubGraph(cphvb_instruction* inst, std::list<DepSubGraph*> _dependsOn)
@@ -33,6 +34,7 @@ DepSubGraph::DepSubGraph(cphvb_instruction* inst, std::list<DepSubGraph*> _depen
     instructions.push_back(inst); 
     cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
+    arrayAtributes.insert(std::make_pair(obase,atributes(false,false,false)));
     dependsOn = _dependsOn;
 }
 
@@ -41,6 +43,7 @@ void DepSubGraph::add(cphvb_instruction* inst)
     instructions.push_back(inst); 
     cphvb_array* obase = cphvb_base_array(inst->operand[0]); 
     modificationMap.insert(std::make_pair(obase,inst));
+    arrayAtributes.insert(std::make_pair(obase,atributes(false,false,false)));
 }
 
 std::set<cphvb_array*> DepSubGraph::getModified()
@@ -51,8 +54,34 @@ std::set<cphvb_array*> DepSubGraph::getModified()
     return res;
 }
 
-DepSubGraph* DepSubGraph::merge(cphvb_instruction* inst, 
-                                std::list<DepSubGraph*> dependsOn)
+bool DepSubGraph::depends(DepSubGraph* subGraph)
 {
-    throw DepSubGraphException(0);
+    for (DepSubGraph* dsg: dependsOn)
+        if (subGraph == dsg)
+            return true;
+    return false;
 }
+
+DepSubGraph* DepSubGraph::merge(cphvb_instruction* inst, 
+                                std::list<DepSubGraph*> subGraphs)
+{
+    for (DepSubGraph* sg1: subGraphs)
+        for (DepSubGraph* sg2: subGraphs)
+            if (sg1 != sg2 && sg1->depends(sg2))
+                throw DepSubGraphException(0);
+    // Do the merging
+    DepSubGraph* res = new DepSubGraph(inst);
+    for (DepSubGraph* sg: subGraphs)
+    {
+        for (cphvb_instruction* i: sg->instructions)
+            res->instructions.push_front(i);
+        for (auto &mp: sg->modificationMap)
+            res->modificationMap.insert(mp);
+        for (DepSubGraph* dep: sg->dependsOn)
+            res->dependsOn.push_back(dep);
+        for (auto &aa: sg->arrayAtributes)
+            res->arrayAtributes.insert(aa);
+    }
+    return res;
+}
+
