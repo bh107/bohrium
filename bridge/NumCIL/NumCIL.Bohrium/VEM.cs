@@ -129,7 +129,7 @@ namespace NumCIL.Bohrium
 //Disable "Unreachable code" warning
 #pragma warning disable 0162
             if (bh_opcode.BH_ADD == bh_opcode.BH_SUBTRACT)
-                throw new Exception("This version of NumCIL.cphVB contains invalid opcodes!");
+                throw new Exception("This version of NumCIL.Bohrium contains invalid opcodes!");
 #pragma warning restore
 
             m_component = PInvoke.bh_component_setup(out m_componentPtr);

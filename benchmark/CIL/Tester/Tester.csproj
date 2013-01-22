@@ -23,9 +23,9 @@
     <WarningLevel>4</WarningLevel>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node" />
-        <Variable name="CPHBV_CONFIG" value="/Users/kenneth/Udvikler/cphvb/config.osx.ini" />
-        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node" />
+        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
+        <Variable name="CPHBV_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>

@@ -1,8 +1,8 @@
 @echo off
 python build.py rebuild
 
-SET INSTALL_TARGET=cphvb-release
-SET ZIPFILE=cphVB.zip
+SET INSTALL_TARGET=Bohrium-release
+SET ZIPFILE=Bohrium.zip
 
 if exist "%INSTALL_TARGET%" del /q /s "%INSTALL_TARGET%"
 if exist "%ZIPFILE%" del /q "%INSTALL_TARGET%"
@@ -10,14 +10,14 @@ if exist "%ZIPFILE%" del /q "%INSTALL_TARGET%"
 mkdir "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL\bin\Release\NumCIL.dll" "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL\bin\Release\NumCIL.XML" "%INSTALL_TARGET%"
-copy "bridge\NumCIL\NumCIL.cphVB\bin\Release\NumCIL.cphVB.dll" "%INSTALL_TARGET%"
-copy "bridge\NumCIL\NumCIL.cphVB\bin\Release\NumCIL.cphVB.XML" "%INSTALL_TARGET%"
+copy "bridge\NumCIL\NumCIL.Bohrium\bin\Release\NumCIL.Bohrium.dll" "%INSTALL_TARGET%"
+copy "bridge\NumCIL\NumCIL.Bohrium\bin\Release\NumCIL.Bohrium.XML" "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL.Unsafe\bin\Release\NumCIL.Unsafe.dll" "%INSTALL_TARGET%"
 copy "bridge\NumCIL\NumCIL.Unsafe\bin\Release\NumCIL.Unsafe.XML" "%INSTALL_TARGET%"
 copy "benchmark\CIL\TesterIronPython\numcil.py" "%INSTALL_TARGET%"
 
-copy "core\libcphvb.dll" "%INSTALL_TARGET%"
-copy "core\libcphvb.lib" "%INSTALL_TARGET%"
+copy "core\libbh.dll" "%INSTALL_TARGET%"
+copy "core\libbh.lib" "%INSTALL_TARGET%"
 copy "VEM\node\libbh_vem_node.dll" "%INSTALL_TARGET%"
 copy "VEM\node\libbh_vem_node.lib" "%INSTALL_TARGET%"
 copy "VE\simple\libbh_ve_simple.dll" "%INSTALL_TARGET%"

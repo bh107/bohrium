@@ -485,7 +485,7 @@ class ndarray:
 
 ndarray.owncls = ndarray
 
-def empty(shape, dtype=float, order='C', dist=False):
+def empty(shape, dtype=float, order='C', bohrium=False):
     return ndarray(GetNdClass(dtype).Generate.Empty(ReshapeShape(shape)))
 
 def ones(shape, dtype=float, order='C', dist=False):
@@ -722,14 +722,14 @@ def shape(el):
 
 class random:
     @staticmethod
-    def random(shape, dtype=float, order='C', cphvb=False):
+    def random(shape, dtype=float, order='C', bohrium=False):
         return ndarray(GetNdClass(dtype).Generate.Random(ReshapeShape(shape)))
 
 
 def fromfile(file, elems=-1, dtype=float32):
     return ndarray(GetNdClass(dtype).NdArray(NumCIL.Utility.ReadArray[dtype](file, elems)))
 
-def activate_Bohrium(active = True):
+def activate_bohrium(active = True):
     try:
         clr.AddReference("NumCIL.Bohrium")
     except Exception:

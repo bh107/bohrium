@@ -75,7 +75,7 @@ def random_galaxy(
     y_max,
     z_max,
     n,
-    cphvb,
+    bohrium,
     dtype
     ):
     """Generate a galaxy of random bodies"""
@@ -85,13 +85,13 @@ def random_galaxy(
     # We let all bodies stand still initially
 
     return {
-        'm': numpy.random.random(n,dtype=dtype,cphvb=cphvb) * 10**6 / (4 * numpy.pi ** 2),
-        'x': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'y': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'z': numpy.random.random(n,dtype=dtype,cphvb=cphvb)*2*x_max-x_max,
-        'vx': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
-        'vy': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
-        'vz': numpy.empty(n,dtype=dtype,dist=cphvb) * 0.0,
+        'm': numpy.random.random(n,dtype=dtype,bohrium=bohrium) * 10**6 / (4 * numpy.pi ** 2),
+        'x': numpy.random.random(n,dtype=dtype,bohrium=bohrium)*2*x_max-x_max,
+        'y': numpy.random.random(n,dtype=dtype,bohrium=bohrium)*2*x_max-x_max,
+        'z': numpy.random.random(n,dtype=dtype,bohrium=bohrium)*2*x_max-x_max,
+        'vx': numpy.empty(n,dtype=dtype,bohrium=bohrium) * 0.0,
+        'vy': numpy.empty(n,dtype=dtype,bohrium=bohrium) * 0.0,
+        'vz': numpy.empty(n,dtype=dtype,bohrium=bohrium) * 0.0,
         }
 
 def Solve_nBody(size = None):
@@ -104,7 +104,7 @@ def Solve_nBody(size = None):
     y_max = 500
     z_max = 500
 
-    galaxy = random_galaxy(x_max, y_max, z_max, bodies, B.cphvb, B.dtype)
+    galaxy = random_galaxy(x_max, y_max, z_max, bodies, B.bohrium, B.dtype)
 
     B.start()
     for _ in range(time_step):
