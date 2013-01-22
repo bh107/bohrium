@@ -48,6 +48,21 @@ DepGraph::DepGraph(bh_intp instruction_count,
     }
 }
 
+void DepGraph::sync(cphvb_array* operand)
+{
+    
+}
+
+void DepGraph::discard(cphvb_array* operand)
+{
+
+}
+
+void DepGraph::free(cphvb_array* operand)
+{
+
+}
+
 
 void DepGraph::ufunc(bh_instruction* inst)
 {
