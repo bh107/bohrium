@@ -42,6 +42,7 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
 
     if (op_in->ndim == 1) {                     // 1D special case
 
+        data_out += op_out->start;
         *data_out = *(data_in+op_in->start);    // Initialize pseudo-scalar output
                                                 // the value of the first element
                                                 // in input.
