@@ -63,7 +63,6 @@ static void check_exec_error(bh_error err, const char *file, int line,
                 for(bh_intp j=0; j<bh_operands_in_instruction(ist); ++j)
                     sprintf(msg+strlen(msg)," %s", bh_type_text(bh_type_operand(ist,j))); 
             }
-            sprintf(msg+strlen(msg),", Status: %s\n", bh_error_text(ist->status));
         }
         fprintf(stderr,"%s", msg);
         MPI_Abort(MPI_COMM_WORLD,-1);

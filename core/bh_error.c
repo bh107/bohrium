@@ -44,10 +44,6 @@ const char* bh_error_text(bh_error error)
         return "BH_TYPE_NOT_SUPPORTED";
     case BH_OUT_OF_MEMORY: 
         return "BH_OUT_OF_MEMORY";
-    case BH_PARTIAL_SUCCESS: 
-        return "BH_PARTIAL_SUCCESS";
-    case BH_INST_PENDING:
-        return "BH_INST_PENDING";
     case BH_INST_NOT_SUPPORTED: 
         return "BH_INST_NOT_SUPPORTED";
     case BH_USERFUNC_NOT_SUPPORTED: 

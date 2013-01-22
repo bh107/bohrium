@@ -65,8 +65,6 @@ typedef struct
 //Memory layout of the Bohrium instruction
 typedef struct
 {
-    //Instruction status
-    bh_error   status;
     //Opcode: Identifies the operation
     bh_opcode  opcode;
     //Id of each operand

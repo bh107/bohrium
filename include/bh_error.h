@@ -31,8 +31,6 @@ enum /* bh_error */
     BH_ERROR,                 // Fatal error 
     BH_TYPE_NOT_SUPPORTED,    // Data type not supported
     BH_OUT_OF_MEMORY,         // Out of memory
-    BH_PARTIAL_SUCCESS,       // Recoverable
-    BH_INST_PENDING,           // Instruction is not executed
     BH_INST_NOT_SUPPORTED,    // Instruction not supported
     BH_USERFUNC_NOT_SUPPORTED,// User-defined function not supported
 };

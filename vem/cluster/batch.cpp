@@ -63,7 +63,6 @@ void batch_schedule(bh_opcode opcode, bh_array *operand)
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.status = BH_INST_PENDING;
     t.inst.inst.operand[0] = operand;
     assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t); 
@@ -82,7 +81,6 @@ void batch_schedule(bh_opcode opcode, bh_array *operands[],
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.status = BH_INST_PENDING;
     t.inst.inst.userfunc = ufunc;
     if(ufunc == NULL)
     {
@@ -126,7 +124,7 @@ void batch_flush()
                 bh_error e;
                 bh_instruction *inst = &((*it).inst.inst);
                 if((e = exec_vem_execute(1, inst)) != BH_SUCCESS)
-                    EXCEPT_INST(inst->opcode, e, inst->status);
+                    EXCEPT_INST(inst->opcode, e);
 
                 if(inst->opcode == BH_DISCARD)
                 {

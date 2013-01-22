@@ -41,37 +41,39 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
     for (bh_intp i = 0; i < instructionCount; ++i)
     {
         bh_instruction* inst = instructionList++;
-        if (inst->opcode != BH_NONE && inst->status != BH_SUCCESS)
+        if (inst->opcode != BH_NONE)
         {
 #ifdef DEBUG
             bh_pprint_instr(inst);
 #endif
+			bh_error res;
+			
             switch (inst->opcode)
             {
             case BH_SYNC:
                 sync(inst->operand[0]);
-                inst->status = BH_SUCCESS;
+                res = BH_SUCCESS;
                 break;
             case BH_DISCARD:
                 if (inst->operand[0]->base == NULL)
                     discard(inst->operand[0]);
-                inst->status = BH_SUCCESS;
+                res = BH_SUCCESS;
                 break;
             case BH_FREE:
                 bh_data_free(inst->operand[0]);
-                inst->status = BH_SUCCESS;
+                res = BH_SUCCESS;
                 break;                
             case BH_USERFUNC:
-                inst->status = userdeffunc(inst->userfunc);
+                res = userdeffunc(inst->userfunc);
                 break;
             default:
-                inst->status = ufunc(inst);
+                res = ufunc(inst);
                 break;
             }
-            if (inst->status != BH_SUCCESS)
+
+            if (res != BH_SUCCESS)
             {
-                executeBatch();
-                return BH_PARTIAL_SUCCESS;
+            	return res;
             }
         }
     }

@@ -69,13 +69,12 @@ const char * except_mpi::what() const throw()
     return os.str().c_str();
 }
 
-except_inst::except_inst(bh_opcode opcode, bh_error inst_status, 
+except_inst::except_inst(bh_opcode opcode, 
                          bh_error inst_list_status, 
                          int line, const std::string & file)
     : except("", line, file)
 {
     op = opcode;
-    status = inst_status;
     retcode = inst_list_status;
 }
 
@@ -85,7 +84,6 @@ const char * except_inst::what() const throw()
  
     os << "Error when executing " << bh_opcode_text(op);
     os << ", return code: " << bh_error_text(retcode); 
-    os << ", inst status: " << bh_error_text(status);
     os << " (" << mFile << ":" << mLine << ")" << std::endl; 
 
     return os.str().c_str();

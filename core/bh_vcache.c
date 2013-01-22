@@ -197,7 +197,6 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
                             base->data = bh_vcache_find( bytes );
                             if (base->data == NULL) {
                                 if (bh_data_malloc(inst->operand[0]) != BH_SUCCESS) {
-                                    inst->status = BH_OUT_OF_MEMORY;
                                     return BH_OUT_OF_MEMORY;         // EXIT
                                 }                                   
                                 DEBUG_PRINT("Allocated=%p\n", base->data);
@@ -210,7 +209,6 @@ bh_error bh_vcache_malloc( bh_instruction* inst )
                     }
                     else if(bh_base_array(inst->operand[i])->data == NULL) 
                     {
-                        inst->status = BH_ERROR;
                         return BH_ERROR; // EXIT
                     }
                 }

@@ -268,9 +268,6 @@ static void execute_regular(bh_instruction *inst)
         if(pgrid_myrank != owner_rank)
             continue;
 
-        //Apply the local computation
-        local_inst.status = BH_INST_PENDING;
-
         //Schedule task
         batch_schedule(local_inst);
     

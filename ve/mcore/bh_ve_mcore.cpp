@@ -285,11 +285,6 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     {
         inst = &instruction_list[count];
 
-        if(inst->status == BH_SUCCESS)     // SKIP instruction
-        {
-            continue;
-        }
-
         res = bh_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != BH_SUCCESS ) {
             return res;
@@ -300,47 +295,47 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
             case BH_NONE:                    // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
-                inst->status = BH_SUCCESS;
+                res = BH_SUCCESS;
                 break;
 
             case BH_FREE:
 
-                inst->status = bh_vcache_free( inst );
+                res = bh_vcache_free( inst );
                 break;
 
             case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    inst->status = reduce_impl(inst->userfunc, NULL);
+                    res = reduce_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    inst->status = random_impl(inst->userfunc, NULL);
+                    res = random_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == matmul_impl_id)
                 {
-                    inst->status = matmul_impl(inst->userfunc, NULL);
+                    res = matmul_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == lu_impl_id)
                 {
-                    inst->status = lu_impl(inst->userfunc, NULL);
+                    res = lu_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == fft_impl_id)
                 {
-                    inst->status = fft_impl(inst->userfunc, NULL);
+                    res = fft_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == fft2_impl_id)
                 {
-                    inst->status = fft2_impl(inst->userfunc, NULL);
+                    res = fft2_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == aggregate_impl_id)
                 {
-                    inst->status = aggregate_impl(inst->userfunc, NULL);
+                    res = aggregate_impl(inst->userfunc, NULL);
 				}
                 else                            // Unsupported userfunc
                 {
-                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
+                    res = BH_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -350,26 +345,21 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 nelements   = bh_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
 
                 if (nelements < 1024*1024) {        // Do not bother threading...
-                    inst->status = bh_compute_apply_naive( inst );
+                    res = bh_compute_apply_naive( inst );
                 } else {                            // DO bother!
-                    inst->status = dispatch( inst, nelements );
+                    res = dispatch( inst, nelements );
                 }
                 
         }
 
-        if (inst->status != BH_SUCCESS)    // Instruction failed
+        if (res != BH_SUCCESS)    // Instruction failed
         {
             break;
         }
 
     }
-
-    if (count == instruction_count) {
-        return BH_SUCCESS;
-    } else {
-        return BH_PARTIAL_SUCCESS;
-    }
-
+    
+    return res;
 }
 
 
@@ -444,8 +434,7 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
         tmp.ndim--;                             //          be able to have 0 dimensions...
     }
     
-    inst.status = BH_INST_PENDING;           // We copy the first element to the output.
-    inst.opcode = BH_IDENTITY;
+    inst.opcode = BH_IDENTITY;				 // We copy the first element to the output.
     inst.operand[0] = out;
     inst.operand[1] = &tmp;
     inst.operand[2] = NULL;
@@ -458,9 +447,8 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg )
     }
     tmp.start += step;
 
-    inst.status = BH_INST_PENDING;           // Reduce over the 'axis' dimension.
-    inst.opcode = a->opcode;                    // NB: the first element is already handled.
-    inst.operand[0] = out;
+    inst.opcode = a->opcode;                // Reduce over the 'axis' dimension.   
+    inst.operand[0] = out;					// NB: the first element is already handled.
     inst.operand[1] = out;
     inst.operand[2] = &tmp;
     

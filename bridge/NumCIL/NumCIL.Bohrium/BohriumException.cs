@@ -71,40 +71,4 @@ namespace NumCIL.Bohrium
         /// </summary>
         public PInvoke.bh_error ErrorCode { get { return m_errorCode; } }
     }
-
-    /// <summary>
-    /// Specialized exception for detecting instructions that are not supported by the VE
-    /// </summary>
-    public class BohriumNotSupportedInstruction : BohriumException
-    {
-        /// <summary>
-        /// The instruction index
-        /// </summary>
-        private long m_instructionNo;
-        /// <summary>
-        /// The opcode that was not supported
-        /// </summary>
-        private bh_opcode m_opcode;
-
-        /// <summary>
-        /// Constructs a new exception
-        /// </summary>
-        /// <param name="opcode">The opcode that was not supported</param>
-        /// <param name="instructionNo">The instruction index</param>
-        public BohriumNotSupportedInstruction(bh_opcode opcode, long instructionNo)
-            : base(PInvoke.bh_error.BH_PARTIAL_SUCCESS)
-        {
-            m_opcode = opcode;
-            m_instructionNo = instructionNo;
-        }
-
-        /// <summary>
-        /// Gets the unsupported instruction's index
-        /// </summary>
-        public long InstructionNo { get { return m_instructionNo; } }
-        /// <summary>
-        /// Gets the unsupported opcode
-        /// </summary>
-        public bh_opcode OpCode { get { return m_opcode; } }
-    }
 }

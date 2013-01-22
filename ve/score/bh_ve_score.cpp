@@ -154,15 +154,9 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
 
             default:
                 compute_loops[k] = bh_compute_get_naive( &instr[i] );
-                if(compute_loops[k] == NULL)
-                {
-                    end             = start + k - 1;
-                    instr[i].status = BH_TYPE_NOT_SUPPORTED;
-                    ret_errcode     = BH_PARTIAL_SUCCESS;
-                    break;
+                if(compute_loops[k] == NULL) {
+                    return BH_TYPE_NOT_SUPPORTED;
                 }
-                else
-                    instr[i].status = BH_SUCCESS;
         }
 
     }
@@ -212,11 +206,6 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
     {
         inst = &instruction_list[cur_index];
 
-        if(inst->status == BH_SUCCESS)       // SKIP instruction
-        {
-            continue;
-        }
-
         res = bh_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != BH_SUCCESS ) {
             return res;
@@ -227,46 +216,46 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
             case BH_NONE:                    // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
-                inst->status = BH_SUCCESS;
+                res = BH_SUCCESS;
                 break;
 
             case BH_FREE:                        // Store data-pointer in malloc-cache
-                inst->status = bh_vcache_free( inst );
+                res = bh_vcache_free( inst );
                 break;
 
             case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
                 {
-                    inst->status = reduce_impl(inst->userfunc, NULL);
+                    res = reduce_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == random_impl_id)
                 {
-                    inst->status = random_impl(inst->userfunc, NULL);
+                    res = random_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == matmul_impl_id)
                 {
-                    inst->status = matmul_impl(inst->userfunc, NULL);
+                    res = matmul_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == lu_impl_id)
                 {
-                    inst->status = lu_impl(inst->userfunc, NULL);
+                    res = lu_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == fft_impl_id)
                 {
-                    inst->status = fft_impl(inst->userfunc, NULL);
+                    res = fft_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == fft2_impl_id)
                 {
-                    inst->status = fft2_impl(inst->userfunc, NULL);
+                    res = fft2_impl(inst->userfunc, NULL);
                 }
                 else if(inst->userfunc->id == aggregate_impl_id)
                 {
-                    inst->status = aggregate_impl(inst->userfunc, NULL);
+                    res = aggregate_impl(inst->userfunc, NULL);
 				}
                 else                            // Unsupported userfunc
                 {
-                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
+                    res = BH_USERFUNC_NOT_SUPPORTED;
                 }
 
                 break;
@@ -316,39 +305,35 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                                 case BH_NONE:                    // NOOP.
                                 case BH_DISCARD:
                                 case BH_SYNC:
-                                    inst->status = BH_SUCCESS;
+                                    res = BH_SUCCESS;
                                     break;
 
                                 case BH_FREE:                        // Store data-pointer in malloc-cache
-                                    inst->status = bh_vcache_free( inst );
+                                    res = bh_vcache_free( inst );
                                     break;
-
-                                       
                             }
+                            
+                            if (res != BH_SUCCESS)
+                            	break;
                         }
                     }
 
                 } else {
                     inst = &instruction_list[bundle_start];
-                    inst->status = bh_compute_apply_naive( inst );
+                    res = bh_compute_apply_naive( inst );
                 }
+                
                 cur_index += bundle_size-1;
-
         }
 
-        if (inst->status != BH_SUCCESS)    // Instruction failed
+        if (res != BH_SUCCESS)    // Instruction failed
         {
             break;
         }
 
     }
 
-    if (cur_index == instruction_count) {
-        return BH_SUCCESS;
-    } else {
-        return BH_PARTIAL_SUCCESS;
-    }
-
+	return res;
 }
 
 bh_error bh_ve_score_shutdown( void )

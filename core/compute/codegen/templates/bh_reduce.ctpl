@@ -77,8 +77,7 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
         }
         tmp.data = op_in->data;
        
-        instr.status = BH_INST_PENDING;       // Copy the first element to the output.
-        instr.opcode = BH_IDENTITY;
+        instr.opcode = BH_IDENTITY;       // Copy the first element to the output.
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
         instr.operand[2] = NULL;
@@ -92,9 +91,8 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
         }
         tmp.start += stride;
 
-        instr.status = BH_INST_PENDING;       // Reduce over the 'axis' dimension.
-        instr.opcode = opcode;                   // NB: the first element is already handled.
-        instr.operand[0] = op_out;
+        instr.opcode = opcode;                   // Reduce over the 'axis' dimension.
+        instr.operand[0] = op_out;               // NB: the first element is already handled.
         instr.operand[1] = op_out;
         instr.operand[2] = &tmp;
         
@@ -240,8 +238,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
         }
         tmp.data = op_in->data;
        
-        instr.status = BH_INST_PENDING;       // Copy the first element to the output.
-        instr.opcode = BH_IDENTITY;
+        instr.opcode = BH_IDENTITY;					// Copy the first element to the output.
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
         instr.operand[2] = NULL;
@@ -256,9 +253,8 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 		bh_index stride = op_in->stride[axis];
 		bh_index stride_bytes = stride * sizeof(T);
 
-        instr.status = BH_INST_PENDING;       // Reduce over the 'axis' dimension.
-        instr.opcode = opcode;                   // NB: the first element is already handled.
-        instr.operand[0] = op_out;
+        instr.opcode = opcode;                // Reduce over the 'axis' dimension.
+        instr.operand[0] = op_out;			  // NB: the first element is already handled.
         instr.operand[1] = op_out;
         instr.operand[2] = &tmp;
 

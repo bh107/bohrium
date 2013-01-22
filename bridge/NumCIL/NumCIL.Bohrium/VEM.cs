@@ -430,24 +430,6 @@ namespace NumCIL.Bohrium
 
                 if (e != PInvoke.bh_error.BH_SUCCESS)
                 {
-                    if (e == PInvoke.bh_error.BH_PARTIAL_SUCCESS)
-                    {
-                        for (long i = 0; i < instrBuffer.LongLength; i++)
-                        {
-                            if (instrBuffer[i].status == PInvoke.bh_error.BH_INST_NOT_SUPPORTED)
-                            {
-                                errorIndex = i;
-                                throw new BohriumNotSupportedInstruction(instrBuffer[i].opcode, i);
-                            }
-
-                            if (instrBuffer[i].status != PInvoke.bh_error.BH_SUCCESS)
-                            {
-                                errorIndex = i;
-                                break;
-                            }
-                        }
-                    }
-
                     throw new BohriumException(e);
                 }
 

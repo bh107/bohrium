@@ -152,14 +152,6 @@ namespace NumCIL.Bohrium
             /// </summary>
             BH_OUT_OF_MEMORY,
             /// <summary>
-            /// Recoverable
-            /// </summary>
-            BH_PARTIAL_SUCCESS,
-            /// <summary>
-            /// Instruction is not executed
-            /// </summary>
-            BH_INST_PENDING,
-            /// <summary>
             /// Instruction not supported
             /// </summary>
             BH_INST_NOT_SUPPORTED,
@@ -1235,10 +1227,6 @@ namespace NumCIL.Bohrium
         public struct bh_instruction : IInstruction
         {
             /// <summary>
-            /// Instruction status
-            /// </summary>
-            public bh_error status;
-            /// <summary>
             /// The instruction opcode
             /// </summary>
             public bh_opcode opcode;
@@ -1271,7 +1259,6 @@ namespace NumCIL.Bohrium
             /// <param name="constant">An optional constant</param>
             public bh_instruction(bh_opcode opcode, bh_array_ptr operand, PInvoke.bh_constant constant = new PInvoke.bh_constant())
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand;
                 this.operand1 = bh_array_ptr.Null;
@@ -1289,7 +1276,6 @@ namespace NumCIL.Bohrium
             /// <param name="operand2">An input operand</param>
             public bh_instruction(bh_opcode opcode, bh_array_ptr operand1, PInvoke.bh_constant constant, bh_array_ptr operand2)
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand1;
                 this.operand1 = bh_array_ptr.Null;
@@ -1307,7 +1293,6 @@ namespace NumCIL.Bohrium
             /// <param name="constant">A right-hand-side constant</param>
             public bh_instruction(bh_opcode opcode, bh_array_ptr operand1, bh_array_ptr operand2, PInvoke.bh_constant constant = new PInvoke.bh_constant())
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand1;
                 this.operand1 = operand2;
@@ -1326,7 +1311,6 @@ namespace NumCIL.Bohrium
             /// <param name="constant">A right-hand-side constant</param>
             public bh_instruction(bh_opcode opcode, bh_array_ptr operand1, bh_array_ptr operand2, bh_array_ptr operand3, PInvoke.bh_constant constant = new PInvoke.bh_constant())
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 this.operand0 = operand1;
                 this.operand1 = operand2;
@@ -1343,7 +1327,6 @@ namespace NumCIL.Bohrium
             /// <param name="constant">A constant</param>
             public bh_instruction(bh_opcode opcode, IEnumerable<bh_array_ptr> operands, PInvoke.bh_constant constant = new PInvoke.bh_constant())
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 var en = operands.GetEnumerator();
                 if (en.MoveNext())
@@ -1380,7 +1363,6 @@ namespace NumCIL.Bohrium
             /// <param name="userfunc">A pointer to the userfunc struct</param>
             public bh_instruction(bh_opcode opcode, IntPtr userfunc)
             {
-                this.status = bh_error.BH_INST_PENDING;
                 this.opcode = opcode;
                 this.userfunc = userfunc;
                 this.operand0 = bh_array_ptr.Null;
