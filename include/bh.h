@@ -230,13 +230,16 @@ DLLEXPORT bh_array **bh_inst_operands(const bh_instruction *instruction);
 DLLEXPORT bh_type bh_type_operand(const bh_instruction *instruction,
                                         bh_intp operand_no);
 
-/* Determines whether two arrays conflicts.
- *
+/* Determines whether two arrays overlap.
+ * NB: This functions may return True on non-overlapping arrays. 
+ *     But will always return False on overlapping arrays.
+ * 
  * @a The first array
  * @b The second array
  * @return The boolean answer
  */
-DLLEXPORT bool bh_array_conflict(const bh_array *a, const bh_array *b);
+bool bh_array_overlap(const bh_array *a, const bh_array *b);
+
 
 /* Determines whether the array is a scalar or a broadcast view of a scalar.
  *
