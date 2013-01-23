@@ -38,38 +38,6 @@ static void check_error(bh_error err, const char *file, int line)
     }
 }
 
-//Check for execution error. Will exit on error.
-static void check_exec_error(bh_error err, const char *file, int line, 
-                             bh_intp count, bh_instruction inst_list[])
-{
-    if(err == BH_PARTIAL_SUCCESS)//Only partial success
-    {
-        char msg[count+4096];
-        sprintf(msg, "[VEM-CLUSTER] Slave (rank %d) encountered error in instruction batch: %s\n",
-                pgrid_myrank, bh_error_text(err));
-        for(bh_intp i=0; i<count; ++i)
-        {
-            bh_instruction *ist = &inst_list[i];
-            sprintf(msg+strlen(msg),"\tOpcode: %s", bh_opcode_text(ist->opcode));
-            if(ist->opcode == BH_USERFUNC)
-            {
-                sprintf(msg+strlen(msg),", Operand types:");
-                for(bh_intp j=0; j<bh_operands_in_instruction(ist); ++j)
-                    sprintf(msg+strlen(msg)," %s", bh_type_text(bh_type_operand(ist,j))); 
-            }
-            else
-            {
-                sprintf(msg+strlen(msg),", Operand types:");
-                for(bh_intp j=0; j<bh_operands_in_instruction(ist); ++j)
-                    sprintf(msg+strlen(msg)," %s", bh_type_text(bh_type_operand(ist,j))); 
-            }
-        }
-        fprintf(stderr,"%s", msg);
-        MPI_Abort(MPI_COMM_WORLD,-1);
-    }
-    check_error(err, file, line);
-}  
-
 int main()
 {
     dispatch_msg *msg;
@@ -188,7 +156,7 @@ int main()
                     }
                 }
 
-                check_exec_error(exec_execute(*noi, local_list),__FILE__,__LINE__, *noi, local_list);
+                check_error(exec_execute(*noi, local_list),__FILE__,__LINE__);
 
                 //Free all user-defined function structs
                 for(bh_intp i=0; i < *noi; ++i)
