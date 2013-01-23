@@ -1,5 +1,5 @@
 BH_PYTHON?=python
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 all:
 	$(BH_PYTHON) setup.py build

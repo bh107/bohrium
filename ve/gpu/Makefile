@@ -16,7 +16,7 @@ CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseA
 		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
 

@@ -13,7 +13,7 @@ LDFLAGS = -L../../core -lbh -shared -Wl,-soname,$(LIB)
 CPPSRC = DepGraph DepSubGraph
 
 OBJECTS=$(CPPSRC:=.oo)
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
 

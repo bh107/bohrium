@@ -16,7 +16,7 @@ CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseA
 		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 KERNELDIR=/usr/local/bh/
 
 all: $(LIB)
