@@ -190,30 +190,24 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
     try
     {
         if(operand[1]->ndim == 1)//"Reducing" to a scalar.
+        {
             reduce_vector(opcode, axis, operand, ufunc_id);
+            return BH_SUCCESS;
+        }
 
         //For the mapping we have to "broadcast" the 'axis' dimension to an 
         //output array view.
         bh_array bcast_output = *operand[0];
         bcast_output.base        = bh_base_array(operand[0]);
         bcast_output.ndim        = operand[1]->ndim;
+        memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(bh_intp));
 
-        if(operand[1]->ndim == 1)//"Reducing" to a scalar.
-        {
-            bcast_output.shape[0] = operand[1]->shape[0];
-            bcast_output.stride[0] = 0;
-        }
-        else
-        {
-            memcpy(bcast_output.shape, operand[1]->shape, bcast_output.ndim * sizeof(bh_intp));
-
-            //Insert a zero-stride into the 'axis' dimension
-            for(bh_intp i=0; i<axis; ++i)
-                bcast_output.stride[i] = operand[0]->stride[i];
-            bcast_output.stride[axis] = 0;
-            for(bh_intp i=axis+1; i<bcast_output.ndim; ++i)
-                bcast_output.stride[i] = operand[0]->stride[i-1];
-        }
+        //Insert a zero-stride into the 'axis' dimension
+        for(bh_intp i=0; i<axis; ++i)
+            bcast_output.stride[i] = operand[0]->stride[i];
+        bcast_output.stride[axis] = 0;
+        for(bh_intp i=axis+1; i<bcast_output.ndim; ++i)
+            bcast_output.stride[i] = operand[0]->stride[i-1];
 
         bh_array *operands[] = {&bcast_output, operand[1]};
         mapping_chunks(2, operands, chunks);
@@ -232,18 +226,10 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
             
             //Lets remove the "broadcasted" dimension from the output again
             out->ndim = operand[0]->ndim;
-            if(in->ndim == 1)//Reducing to a scalar
+            for(bh_intp i=axis; i<out->ndim; ++i)
             {
-                out->shape[0] = 1;
-                out->stride[0] = 1;
-            }
-            else
-            {    
-                for(bh_intp i=axis; i<out->ndim; ++i)
-                {
-                    out->shape[i] = out->shape[i+1];
-                    out->stride[i] = out->stride[i+1];
-                }
+                out->shape[i] = out->shape[i+1];
+                out->stride[i] = out->stride[i+1];
             }
 
             //Lets make sure that all processes have the needed input data.
@@ -273,18 +259,10 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
 
             //Lets remove the "broadcasted" dimension from the output again
             out->ndim = operand[0]->ndim;
-            if(in->ndim == 1)//Reducing to a scalar
+            for(bh_intp i=axis; i<out->ndim; ++i)
             {
-                out->shape[0] = 1;
-                out->stride[0] = 1;
-            }
-            else
-            {    
-                for(bh_intp i=axis; i<out->ndim; ++i)
-                {
-                    out->shape[i] = out->shape[i+1];
-                    out->stride[i] = out->stride[i+1];
-                }
+                out->shape[i] = out->shape[i+1];
+                out->stride[i] = out->stride[i+1];
             }
 
             //Lets make sure that all processes have the needed input data.
