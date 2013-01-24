@@ -58,7 +58,7 @@ bh_error bh_ve_naive_execute( bh_intp instruction_count, bh_instruction* instruc
 {
     bh_intp count;
     bh_instruction* inst;
-    bh_error res;
+    bh_error res = BH_SUCCESS;
 
     for (count=0; count < instruction_count; count++) {
 

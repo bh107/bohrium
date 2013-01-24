@@ -195,7 +195,7 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;
-    bh_error res;
+    bh_error res = BH_SUCCESS;
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
