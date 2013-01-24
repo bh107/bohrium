@@ -341,37 +341,40 @@ bh_type bh_type_operand(const bh_instruction *instruction,
         return operand->type;
 }
 
-/* Determines whether two arrays conflicts.
- *
+/* Determines whether two arrays overlap.
+ * NB: This functions may return True on non-overlapping arrays. 
+ *     But will always return False on overlapping arrays.
+ * 
  * @a The first array
  * @b The second array
  * @return The boolean answer
  */
-bool bh_array_conflict(const bh_array *a, const bh_array *b)
+bool bh_array_overlap(const bh_array *a, const bh_array *b)
 {
-    bh_intp i;
-    if (a == NULL || b == NULL)
-        return false;
-
-    if(a == b)
+    if(a == NULL || b == NULL)
         return false;
 
     if(bh_base_array(a) != bh_base_array(b))
         return false;
 
-    if(a->ndim != b->ndim)
-        return true;
+    bh_intp a_nelem = bh_nelements(a->ndim, a->shape);
+    bh_intp b_nelem = bh_nelements(b->ndim, b->shape);
 
-    if(a->start != b->start)
-        return true;
+    if(a_nelem <= 0 || b_nelem <= 0)
+        return false;
 
-    for(i=0; i<a->ndim; ++i)
-    {
-        if(a->shape[i] != b->shape[i])
-            return true;
-        if(a->stride[i] != b->stride[i])
-            return true;
-    }
+    //Check for obvious data overlap
+    bh_intp a_end = a->start + a_nelem;
+    bh_intp b_end = b->start + b_nelem;
+    if(a->start <= b->start && b->start < a_end)
+        return true;
+    if(a->start <= b_end && b_end < a_end)
+        return true;
+    if(b->start <= a->start && a->start < b_end)
+        return true;
+    if(b->start <= a_end && a_end < b_end)
+        return true;
+    
     return false;
 }
 

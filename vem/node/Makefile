@@ -8,7 +8,7 @@ LDFLAGS=-shared -L../../core -lbh -Wl,-soname,$(LIB)
 SRC=bh_vem_node.cpp 
 HEADER=bh_vem_node.h
 OBJ=$(SRC:.cpp=.o)
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
 

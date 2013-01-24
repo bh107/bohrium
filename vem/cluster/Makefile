@@ -8,7 +8,7 @@ LDFLAGS=-L../../core -lbh -ldl -Wl -o
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJ=$(SRC:.cpp=.o)
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB) $(SLAVE)
 

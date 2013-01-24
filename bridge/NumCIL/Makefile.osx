@@ -1,4 +1,4 @@
-INSTALLDIR?=/opt/bh/
+INSTALLDIR?=/opt/bohrium/
 
 XBUILD?=xbuild
 TT?=mono buildsupport/TextTransform.exe
