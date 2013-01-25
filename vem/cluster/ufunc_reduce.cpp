@@ -184,7 +184,7 @@ static void reduce_vector(bh_opcode opcode, bh_intp axis,
  * @return   The instruction status 
 */
 bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis, 
-                         bh_array *operand[], bh_intp ufunc_id)
+                      bh_array *operand[], bh_intp ufunc_id)
 {
     std::vector<ary_chunk> chunks;
     try
@@ -232,18 +232,36 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
                 out->stride[i] = out->stride[i+1];
             }
 
+            //And reduce the 'axis' dimension of the input chunk
+            bh_array *tmp = tmp_get_ary(); 
+            *tmp = *out;
+            tmp->base = NULL;
+            tmp->data = NULL;
+            tmp->start = 0;
+            bh_set_continuous_stride(tmp);
+            if(pgrid_myrank == in_chunk->rank)
+            {
+                reduce_chunk(ufunc_id, opcode, axis, tmp, in);
+            }
+            if(in->base != NULL)
+                batch_schedule(BH_DISCARD, in); 
+
             //Lets make sure that all processes have the needed input data.
-            comm_array_data(in_chunk, out_chunk->rank);
+            comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
 
             if(pgrid_myrank != out_chunk->rank)
                 continue;//We do not own the output chunk
             
-            reduce_chunk(ufunc_id, opcode, axis, out, in);
-            //Clean the local views and free tmp arrays
+            //Finally, we have to "reduce" the local chunks together
+            bh_array *ops[] = {out, tmp};
+            batch_schedule(BH_IDENTITY, ops, NULL);
+
+            //Cleanup
+            batch_schedule(BH_FREE, tmp);
+            batch_schedule(BH_DISCARD, tmp);
+            if(out->base == NULL)
+                batch_schedule(BH_FREE, out);
             batch_schedule(BH_DISCARD, out);
-            if(in->base == NULL)
-                batch_schedule(BH_FREE, in);
-            batch_schedule(BH_DISCARD, in);
         }
 
         //Then we handle all the rest.
@@ -254,8 +272,8 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
             bh_array *out     = out_chunk->ary;
             bh_array *in      = in_chunk->ary;
      
-            if(out_chunk->coord[axis] == 0)//The first row
-                continue;
+            if(out_chunk->coord[axis] == 0)
+                continue;//The first row
 
             //Lets remove the "broadcasted" dimension from the output again
             out->ndim = operand[0]->ndim;
@@ -265,31 +283,32 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
                 out->stride[i] = out->stride[i+1];
             }
 
-            //Lets make sure that all processes have the needed input data.
-            comm_array_data(in_chunk, out_chunk->rank);
-
-            if(pgrid_myrank != out_chunk->rank)
-                continue;//We do not own the output chunk
-            
-            //We need a tmp output array.
+            //And reduce the 'axis' dimension of the input chunk
             bh_array *tmp = tmp_get_ary(); 
             *tmp = *out;
             tmp->base = NULL;
             tmp->data = NULL;
             tmp->start = 0;
             bh_set_continuous_stride(tmp);
+            if(pgrid_myrank == in_chunk->rank)
+            {
+                reduce_chunk(ufunc_id, opcode, axis, tmp, in);
+            } 
+            if(in->base != NULL)
+                batch_schedule(BH_DISCARD, in); 
+ 
+            //Lets make sure that all processes have the needed input data.
+            comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
 
-            reduce_chunk(ufunc_id, opcode, axis, tmp, in);
-
-            //Cleanup
-            if(in->base == NULL)
-                batch_schedule(BH_FREE, in);
-            batch_schedule(BH_DISCARD, in);
+            if(pgrid_myrank != out_chunk->rank)
+                continue;//We do not own the output chunk
             
             //Finally, we have to "reduce" the local chunks together
             bh_array *ops[] = {out, out, tmp};
             batch_schedule(opcode, ops, NULL);
+
             //Cleanup
+            batch_schedule(BH_FREE, tmp);
             batch_schedule(BH_DISCARD, tmp);
             if(out->base == NULL)
                 batch_schedule(BH_FREE, out);
