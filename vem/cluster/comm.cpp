@@ -132,35 +132,33 @@ void comm_slaves2master(bh_array *global_ary)
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
  *     
- * @chunk The local array chunk to communicate
+ * @chunk          The local array chunk to communicate
+ * @sending_rank   The rank of the sending process
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-void comm_array_data(ary_chunk *chunk, int receiving_rank)
+void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
 {
-    bh_array *local_ary = chunk->ary;
-    int rank = chunk->rank;
-
     //Check if communication is even necessary
-    if(rank == receiving_rank)
+    if(sending_rank == receiving_rank)
         return;
 
     if(pgrid_myrank == receiving_rank)
     {
         //This array is temporary and
         //located contiguous in memory (row-major)
-        assert(local_ary->base == NULL);
-        assert(local_ary->start == 0);
-        assert(local_ary->data == NULL);        
+        assert(chunk->base == NULL);
+        assert(chunk->start == 0);
+        assert(chunk->data == NULL);        
     
         //Schedule the receive message
-        batch_schedule(0, rank, local_ary);
+        batch_schedule(0, sending_rank, chunk);
     }
-    else if(pgrid_myrank == rank)
+    else if(pgrid_myrank == sending_rank)
     {
         //We need to copy the local array view into a base array.
         bh_array *tmp_ary = tmp_get_ary();
-        *tmp_ary = *local_ary;
+        *tmp_ary = *chunk;
         tmp_ary->base  = NULL;
         tmp_ary->data  = NULL;
         tmp_ary->start = 0;
@@ -174,7 +172,7 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         }
 
         //Tell the VEM to do the data copy.
-        bh_array *ops[] = {tmp_ary, local_ary};
+        bh_array *ops[] = {tmp_ary, chunk};
         batch_schedule(BH_IDENTITY, ops, NULL);
 
         //Schedule the send message
@@ -183,8 +181,23 @@ void comm_array_data(ary_chunk *chunk, int receiving_rank)
         //Cleanup the local arrays
         batch_schedule(BH_FREE, tmp_ary);
         batch_schedule(BH_DISCARD, tmp_ary);
-        batch_schedule(BH_DISCARD, local_ary);
+        batch_schedule(BH_DISCARD, chunk);
     }
+}
+
+
+/* Communicate array data such that the processes can apply local computation.
+ * This function may reshape the input array chunk.
+ * NB: The process that owns the data and the process where the data is located
+ *     must both call this function.
+ *     
+ * @chunk The local array chunk to communicate
+ * @receiving_rank The rank of the receiving process, e.g. the process that should
+ *                 apply the computation
+ */
+void comm_array_data(ary_chunk *chunk, int receiving_rank)
+{
+    comm_array_data(chunk->ary, chunk->rank, receiving_rank);
 }
 
 

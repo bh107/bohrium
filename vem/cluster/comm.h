@@ -56,11 +56,23 @@ void comm_slaves2master(bh_array *global_ary);
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
  *     
+ * @chunk          The local array chunk to communicate
+ * @sending_rank   The rank of the sending process
+ * @receiving_rank The rank of the receiving process, e.g. the process that should
+ *                 apply the computation
+ */
+void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank);
+
+
+/* Communicate array data such that the processes can apply local computation.
+ * This function may reshape the input array chunk.
+ * NB: The process that owns the data and the process where the data is located
+ *     must both call this function.
+ *     
  * @chunk The local array chunk to communicate
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
 void comm_array_data(ary_chunk *chunk, int receiving_rank);
-
 
 #endif
