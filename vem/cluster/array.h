@@ -31,7 +31,7 @@ typedef struct
     int rank;
     //Local array chunk
     bh_array *ary;
-    //Local array chunk coordinate (in array elements)
+    //Global coordinate of the array chunk (in elements)
     bh_intp coord[BH_MAXDIM];
 }ary_chunk;
  
