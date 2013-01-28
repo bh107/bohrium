@@ -128,11 +128,12 @@ void bh_dimbound(bh_intp ndim,
     }
 }
 
-/* Set the array stride to continuous row-major
+/* Set the array stride to contiguous row-major
  *
  * @array    The array in question
+ * @return   The total number of elements in array
  */
-void bh_set_continuous_stride(bh_array *array)
+bh_intp bh_set_contiguous_stride(bh_array *array)
 {
     bh_intp s = 1;
     for(bh_intp i=array->ndim-1; i >= 0; --i)
@@ -140,6 +141,7 @@ void bh_set_continuous_stride(bh_array *array)
         array->stride[i] = s;
         s *= array->shape[i];
     }
+    return s;
 }
 
 /* Calculate the offset into an array based on element index

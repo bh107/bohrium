@@ -120,11 +120,14 @@ DLLEXPORT void bh_dimbound(bh_intp ndim,
                     const bh_index shape[],
                     bh_index dimbound[BH_MAXDIM]);
 
-/* Set the array stride to continuous row-major
+
+/* Set the array stride to contiguous row-major
  *
  * @array    The array in question
+ * @return   The total number of elements in array
  */
-void bh_set_continuous_stride(bh_array *array);
+bh_intp bh_set_contiguous_stride(bh_array *array);
+
 
 /* Number of operands for operation
  *

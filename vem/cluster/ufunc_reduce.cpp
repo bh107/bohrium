@@ -238,7 +238,7 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
             tmp->base = NULL;
             tmp->data = NULL;
             tmp->start = 0;
-            bh_set_continuous_stride(tmp);
+            bh_set_contiguous_stride(tmp);
             if(pgrid_myrank == in_chunk->rank)
             {
                 reduce_chunk(ufunc_id, opcode, axis, tmp, in);
@@ -289,7 +289,7 @@ bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis,
             tmp->base = NULL;
             tmp->data = NULL;
             tmp->start = 0;
-            bh_set_continuous_stride(tmp);
+            bh_set_contiguous_stride(tmp);
             if(pgrid_myrank == in_chunk->rank)
             {
                 reduce_chunk(ufunc_id, opcode, axis, tmp, in);

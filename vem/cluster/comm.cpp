@@ -164,12 +164,7 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
         tmp_ary->start = 0;
    
         //Compute a row-major stride for the tmp array.
-        bh_intp nelem = 1;
-        for(bh_intp i=tmp_ary->ndim-1; i >= 0; --i)
-        {    
-            tmp_ary->stride[i] = nelem;
-            nelem *= tmp_ary->shape[i];
-        }
+        bh_set_contiguous_stride(tmp_ary);
 
         //Tell the VEM to do the data copy.
         bh_array *ops[] = {tmp_ary, chunk};
