@@ -56,6 +56,9 @@ static bh_intp userfunc_count = 0;
 static bh_userfunc_impl reduce_impl = NULL;
 static bh_intp reduce_impl_id = 0;
 
+//Number of instruction fallbacks
+static bh_intp fallback_count = 0;
+
 
 /* Initialize the VEM
  *
@@ -115,6 +118,10 @@ bh_error exec_shutdown(void)
     //Finalize the process grid
     dispatch_finalize();
 
+    if(fallback_count > 0)
+        fprintf(stderr, "[CLUSTER-VEM] Warning - fallen back to "
+        "sequential executing %ld times.\n", fallback_count);
+
     return BH_SUCCESS;
 }
 
@@ -171,6 +178,8 @@ static void fallback_exec(bh_instruction *inst)
     std::set<bh_array*> arys2discard;
     
     batch_flush();
+
+    ++fallback_count;
 
     //Gather all data at the master-process
     bh_array **oprands = bh_inst_operands(inst);
