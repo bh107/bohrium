@@ -55,6 +55,8 @@ static bh_intp userfunc_count = 0;
 //User-defined function IDs.
 static bh_userfunc_impl reduce_impl = NULL;
 static bh_intp reduce_impl_id = 0;
+static bh_userfunc_impl random_impl = NULL;
+static bh_intp random_impl_id = 0;
 
 //Number of instruction fallbacks
 static bh_intp fallback_count = 0;
@@ -160,6 +162,18 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
                 return BH_USERFUNC_NOT_SUPPORTED;
 
             reduce_impl_id = *id;
+            return BH_SUCCESS;           
+        }
+    }
+    else if(strcmp("bh_random", fun) == 0)
+    {
+        if(random_impl == NULL)
+        {
+            bh_component_get_func(myself, fun, &random_impl);
+            if (random_impl == NULL)
+                return BH_USERFUNC_NOT_SUPPORTED;
+
+            random_impl_id = *id;
             return BH_SUCCESS;           
         }
     }
@@ -322,6 +336,12 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                     if(bh_reduce(inst->userfunc, NULL) != BH_SUCCESS)
                         EXCEPT("[CLUSTER-VEM] The user-defined function bh_reduce failed.");
                 }
+                if (inst->userfunc->id == random_impl_id) 
+                {
+                    //TODO: the bh_random is hardcoded for now.
+                    if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
+                        EXCEPT("[CLUSTER-VEM] The user-defined function bh_random failed.");
+                }
                 else
                 {
                     fallback_exec(inst);
@@ -386,3 +406,32 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
 
     return ufunc_reduce(opcode, axis, a->operand, reduce_impl_id);
 }
+
+bh_error bh_random( bh_userfunc *arg, void* ve_arg)
+{
+    bh_array *op = arg->operand[0];
+
+    std::vector<ary_chunk> chunks;
+    mapping_chunks(1, &op, chunks);
+    assert(chunks.size() > 0);
+    
+    //Handle one chunk at a time.
+    for(std::vector<ary_chunk>::size_type c=0; c < chunks.size(); ++c)
+    {
+        assert(bh_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
+        //The process where the output chunk is located will do the computation.
+        if(pgrid_myrank == chunks[c].rank)
+        {
+            bh_random_type *ufunc = (bh_random_type*)tmp_get_misc(sizeof(bh_random_type));
+            ufunc->id          = random_impl_id; 
+            ufunc->nout        = 1;
+            ufunc->nin         = 0;
+            ufunc->struct_size = sizeof(bh_random_type);
+            ufunc->operand[0]  = chunks[c].ary;
+            batch_schedule(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
+            batch_schedule(BH_DISCARD, chunks[c].ary);
+        }
+    }
+    return BH_SUCCESS;
+}
+
