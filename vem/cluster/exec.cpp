@@ -335,8 +335,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                     //TODO: the bh_reduce is hardcoded for now.
                     if(bh_reduce(inst->userfunc, NULL) != BH_SUCCESS)
                         EXCEPT("[CLUSTER-VEM] The user-defined function bh_reduce failed.");
-                }
-                if (inst->userfunc->id == random_impl_id) 
+                }else if (inst->userfunc->id == random_impl_id) 
                 {
                     //TODO: the bh_random is hardcoded for now.
                     if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
