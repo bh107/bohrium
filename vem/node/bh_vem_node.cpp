@@ -44,6 +44,10 @@ static bh_intp userfunc_count = 0;
 //Allocated arrays
 static std::set<bh_array*> allocated_arys;
 
+//The timing ID for executions
+static bh_intp exec_timing;
+
+
 /* Initialize the VEM
  *
  * @return Error codes (BH_SUCCESS)
@@ -72,6 +76,8 @@ bh_error bh_vem_node_init(bh_component *self)
     //Let us initiate the simple VE and register what it supports.
     if((err = ve_init(vem_node_components[0])) != 0)
         return err;
+
+    exec_timing = bh_timing_new("Node-execution");
 
     return BH_SUCCESS;
 }
@@ -111,6 +117,7 @@ bh_error bh_vem_node_shutdown(void)
             }
         }
     }
+    bh_timing_dump_all();
     return err;
 }
 
@@ -151,6 +158,8 @@ bh_error bh_vem_node_execute(bh_intp count,
 {
     if (count <= 0)
         return BH_SUCCESS;
+
+    bh_uint64 start = bh_timing();
     
     for(bh_intp i=0; i<count; ++i)
     {
@@ -188,5 +197,9 @@ bh_error bh_vem_node_execute(bh_intp count,
 
 //    bh_pprint_instr_list(inst_list, count, "NODE");
 
-    return ve_execute(count, inst_list);
+    bh_error ret = ve_execute(count, inst_list);
+
+    bh_timing_save(exec_timing, start, bh_timing());
+
+    return ret;
 }
