@@ -27,45 +27,48 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-#ifndef BH_TIMING
+//Only when BH_TIMING is defined will the bh_timing* functions do anything.
+
+#ifdef BH_TIMING
+    #define bh_timing_new(name) (_bh_timing_new(name))
+    #define bh_timing_save(id,start,end) (_bh_timing_save(id,start,end))
+    #define bh_timing() (_bh_timing()) 
+    #define bh_timing_dump_all() (_bh_timing_dump_all())
+#else
     #define bh_timing_new(name) ((bh_intp)0);
     #define bh_timing_save(id,start,end) do{(void)(id);(void)(start);(void)(end);} while (0)
     #define bh_timing() ((bh_uint64)0)
     #define bh_timing_dump_all()  {}
-#else
-    /* Initiate new timer object.
-     *
-     * @name Name of the timing.
-     * @return The timer ID.
-     */
-    #define bh_timing_new(name) (_bh_timing_new(name))
-    bh_intp _bh_timing_new(const char *name);
-
-
-    /* Save a timing.
-     *
-     * @id     The ID of the timing.
-     * @start  The start time in micro sec.
-     * @end    The end time in micro sec.
-     */
-    #define bh_timing_save(id,start,end) (_bh_timing_save(id,start,end))
-    void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end);
-
-
-    /* Get time.
-     *
-     * @return The current time.
-     */
-    #define bh_timing() (_bh_timing()) 
-    bh_uint64 _bh_timing(void);
-
-
-    /* Dumps all timings to a file in the working directory.
-     *
-     */
-    #define bh_timing_dump_all() (_bh_timing_dump_all())
-    void _bh_timing_dump_all(void);
 #endif
+
+/* Initiate new timer object.
+ *
+ * @name Name of the timing.
+ * @return The timer ID.
+ */
+bh_intp _bh_timing_new(const char *name);
+
+
+/* Save a timing.
+ *
+ * @id     The ID of the timing.
+ * @start  The start time in micro sec.
+ * @end    The end time in micro sec.
+ */
+void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end);
+
+
+/* Get time.
+ *
+ * @return The current time.
+ */
+bh_uint64 _bh_timing(void);
+
+
+/* Dumps all timings to a file in the working directory.
+ *
+ */
+void _bh_timing_dump_all(void);
 
 
 #ifdef __cplusplus
