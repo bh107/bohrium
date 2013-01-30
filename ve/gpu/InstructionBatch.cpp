@@ -161,7 +161,8 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     instructions.push_back(inst);
     // Register unknow parameters
     //catch when same input is used twice
-    if (operands.size() == 3 && bh_base_array(inst->operand[1]) == bh_base_array(inst->operand[2]))
+    if (operands.size() == 3 && !bh_is_constant(inst->operand[1]) && !bh_is_constant(inst->operand[2]) 
+	&& bh_base_array(inst->operand[1]) == bh_base_array(inst->operand[2]))
     {
         if(sameView(inst->operand[1], inst->operand[2]))
         {
