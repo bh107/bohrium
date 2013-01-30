@@ -20,48 +20,132 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sys/time.h>
 #include <bh_timing.h>
+#include <assert.h>
+#include <bh_component.h>
+#include <map>
+#include <list>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-/* Start the timer.
- *
- * @timer The timer.
- * @name Name of the timing.
- * @return The id that should be passed to bh_timing_stop().
- */
-bh_intp bh_timing_init(bh_timing *timer, char *name)
+#ifdef _WIN32
+    #include <Windows.h>
+#endif
+
+typedef struct
 {
-    bh_intp id = ++timer->count;
-    timer->names[id] = name;
-    timer->times[id] = 0;
-    return id;
+    bh_uint64 start;
+    bh_uint64 end;
+}interval;
+
+typedef struct
+{
+    char name[BH_COMPONENT_NAME_SIZE];
+    std::list<interval> *intervals;
+}timing;
+
+static std::map<bh_intp,timing> id2timing;
+static bh_intp timer_count = 0;
+
+
+/* Initiate new timer object.
+ *
+ * @name Name of the timing.
+ * @return The timer ID.
+ */
+bh_intp _bh_timing_new(const char *name)
+{
+    timing t;
+    strncpy(t.name, name, BH_COMPONENT_NAME_SIZE);
+    t.intervals = new std::list<interval>();
+    id2timing.insert(std::pair<bh_intp,timing>(++timer_count, t)); 
+    return timer_count;
 }
 
-/* Start the timer.
+
+/* Save a timing.
+ *
+ * @id     The ID of the timing.
+ * @start  The start time in micro sec.
+ * @end    The end time in micro sec.
+ */
+void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end)
+{
+    assert(id2timing.find(id) != id2timing.end());
+    const timing *t = &id2timing[id];
+    const interval i = {start, end};
+    t->intervals->push_back(i);
+}
+
+
+/* Get time.
  *
  * @return The current time.
  */
-bh_time bh_timing_start(void)
+bh_uint64 _bh_timing(void)
 {
+#ifndef _WIN32
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    return (unsigned long long) tv.tv_usec +
-           (unsigned long long) tv.tv_sec * 1000000;
+    return (bh_uint64) tv.tv_usec +
+           (bh_uint64) tv.tv_sec * 1000000;
+#else
+    LARGE_INTEGER freq;
+    LARGE_INTEGER s1;
+    QueryPerformanceFrequency(&freq);                   
+    QueryPerformanceCounter(&s1);
+    long s = s1.QuadPart/freq.QuadPart;
+    long rm = s1.QuadPart % freq.QuadPart;
+    long us = long(rm / (freq.QuadPart/1000000.0));
+    return (bh_uint64) us + (bh_uint64) s * 1000000;
+#endif
 }
 
-/* Stop the timer and save the result.
+/* Dumps all timings to a file in the working directory.
  *
- * @timer The timer.
- * @id The id that was returned by bh_timing_init().
- * @time The timed returned by bh_timing_start().
  */
-void bh_timing_stop(bh_timing *timer, bh_intp id,
-                       bh_time time)
+void _bh_timing_dump_all(void)
 {
-    struct timeval tv;
-    struct timezone tz;
-    gettimeofday(&tv, &tz);
-    bh_time delta = ((unsigned long long) tv.tv_usec +
-                        (unsigned long long) tv.tv_sec * 1000000) - time;
-    //Save the timing.
-    timer->times[id] += delta;
+    std::ofstream file;
+    std::stringstream s, f;
+    bh_intp pid;
+#ifdef _WIN32
+    pid = (bh_intp) GetCurrentProcessId();
+#else 
+    pid = (bh_intp) getpid();
+#endif
+    char hname[1024];
+    gethostname(hname, 1024);
+    char fname[1024];
+    sprintf(fname, "bh_stat.%s.%ld",hname,pid);
+    
+    for(std::map<bh_intp, timing>::iterator it=id2timing.begin(); 
+        it!=id2timing.end(); ++it)
+    {
+        //Write to file
+        f << it->second.name << ":\n";
+        bh_uint64 sum = 0;
+        for(std::list<interval>::iterator it2=it->second.intervals->begin(); 
+            it2!=it->second.intervals->end(); ++it2)
+        {
+            f << "\t" << it2->start << " > " << it2->end << "\n";
+            sum += it2->end - it2->start;
+        }
+        f << "\n";
+        
+        //Write resume to screes
+        s << "Timings of the execution (sum):\n";
+        s << "\t" << it->second.name << ": " << sum << "us\n";
+    }
+    s << "Writing timing details to file: " << fname << "\n";
+    std::cout << s.str();
+
+    file.open(fname);
+    file << f.str();
+    file.close();
 }
+
+
+
+

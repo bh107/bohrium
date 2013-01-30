@@ -27,41 +27,45 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-#define BH_TIMING_MAX 32
-
-typedef unsigned long long bh_time;
-typedef struct
-{
-    char *names[BH_TIMING_MAX];
-    bh_time times[BH_TIMING_MAX];
-    bh_intp count;
-}bh_timing;
-
-
-/* Start the timer.
- *
- * @timer The timer.
- * @name Name of the timing.
- * @return The id that should be passed to bh_timing_stop().
- */
-bh_intp bh_timing_init(bh_timing *timer, char *name);
-
-/* Start the timer.
- *
- * @return The current time.
- */
-bh_time bh_timing_start(void);
-
-/* Stop the timer and save the result.
- *
- * @timer The timer.
- * @id The id that was returned by bh_timing_init().
- * @time The timed returned by bh_timing_start().
- */
-void bh_timing_stop(bh_timing *timer, bh_intp id,
-                       bh_time time);
+#ifndef BH_TIMING
+    #define bh_timing_new(name) ((bh_intp)0);
+    #define bh_timing_save(id,start,end) do{(void)(id);(void)(start);(void)(end);} while (0)
+    #define bh_timing() ((bh_uint64)0)
+    #define bh_timing_dump_all()  {}
+#else
+    /* Initiate new timer object.
+     *
+     * @name Name of the timing.
+     * @return The timer ID.
+     */
+    #define bh_timing_new(name) (_bh_timing_new(name))
+    bh_intp _bh_timing_new(const char *name);
 
 
+    /* Save a timing.
+     *
+     * @id     The ID of the timing.
+     * @start  The start time in micro sec.
+     * @end    The end time in micro sec.
+     */
+    #define bh_timing_save(id,start,end) (_bh_timing_save(id,start,end))
+    void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end);
+
+
+    /* Get time.
+     *
+     * @return The current time.
+     */
+    #define bh_timing() (_bh_timing()) 
+    bh_uint64 _bh_timing(void);
+
+
+    /* Dumps all timings to a file in the working directory.
+     *
+     */
+    #define bh_timing_dump_all() (_bh_timing_dump_all())
+    void _bh_timing_dump_all(void);
+#endif
 
 
 #ifdef __cplusplus
