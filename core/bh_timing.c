@@ -132,6 +132,7 @@ void _bh_timing_dump_all(void)
             f << "\t" << it2->start << " > " << it2->end << "\n";
             sum += it2->end - it2->start;
         }
+        delete it->second.intervals;
         f << "\n";
         
         //Write resume to screes
