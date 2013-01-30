@@ -119,7 +119,8 @@ void _bh_timing_dump_all(void)
     gethostname(hname, 1024);
     char fname[1024];
     sprintf(fname, "bh_stat.%s.%ld",hname,pid);
-    
+        
+    s << "Timings from the execution (count):\n";
     for(std::map<bh_intp, timing>::iterator it=id2timing.begin(); 
         it!=id2timing.end(); ++it)
     {
@@ -132,12 +133,11 @@ void _bh_timing_dump_all(void)
             f << "\t" << it2->start << " > " << it2->end << "\n";
             sum += it2->end - it2->start;
         }
-        delete it->second.intervals;
         f << "\n";
         
-        //Write resume to screes
-        s << "Timings of the execution (sum):\n";
-        s << "\t" << it->second.name << ": " << sum << "us\n";
+        //Write resume to screen
+        s << "\t" << it->second.name << ": \t" << sum << "us (" << it->second.intervals->size() << ")\n";
+        delete it->second.intervals;
     }
     s << "Writing timing details to file: " << fname << "\n";
     std::cout << s.str();
