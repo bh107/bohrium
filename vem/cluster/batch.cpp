@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "except.h"
 #include "pgrid.h"
 #include "comm.h"
+#include "timing.h"
 
 static std::vector<task> task_store;
 
@@ -141,7 +142,8 @@ void batch_flush()
                 bh_array *ary = (*it).send_recv.local_ary;
                 bh_intp s     = bh_type_size(ary->type);
                 bh_intp nelem = bh_nelements(ary->ndim, ary->shape);
-                
+               
+                bh_uint64 stime = bh_timing();
                 if(dir)//Sending
                 {
                     char *data = (char*) bh_base_array(ary)->data;
@@ -162,6 +164,7 @@ void batch_flush()
                                      MPI_STATUS_IGNORE)) != MPI_SUCCESS)
                         EXCEPT_MPI(e);
                 }
+                bh_timing_save(timing_comm_p2p, stime, bh_timing());
                 break;
             }
             default:

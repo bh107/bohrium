@@ -77,7 +77,7 @@ bh_error bh_vem_node_init(bh_component *self)
     if((err = ve_init(vem_node_components[0])) != 0)
         return err;
 
-    exec_timing = bh_timing_new("Node-execution");
+    exec_timing = bh_timing_new("node-execution");
 
     return BH_SUCCESS;
 }

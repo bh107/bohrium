@@ -35,6 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "ufunc_reduce.h"
 #include "batch.h"
 #include "tmp.h"
+#include "timing.h"
 
 
 //Function pointers to the Node VEM.
@@ -93,6 +94,8 @@ bh_error exec_init(const char *component_name)
     if((err = vem_init(my_components[0])) != 0)
         return err;
 
+    timing_init();
+    
     return BH_SUCCESS;
 }
 
