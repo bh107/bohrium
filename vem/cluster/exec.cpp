@@ -324,6 +324,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
         return BH_SUCCESS;
     
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
+    bh_uint64 stime = bh_timing();
 
     for(bh_intp i=0; i < count; ++i)
     {
@@ -395,6 +396,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
     //And remove all tmp data structures
     tmp_clear();
 
+    bh_timing_save(timing_total_exec, stime, bh_timing());
     return BH_SUCCESS;
 }
 

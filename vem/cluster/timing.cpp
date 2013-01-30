@@ -21,12 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "timing.h"
 
-bh_intp timing_comm_p2p;
+bh_intp timing_comm_p2p, timing_total_exec;
 
 /* Initiate the timings related to the cluster-vem */
 void timing_init(void)
 {
     timing_comm_p2p = bh_timing_new("cluster-comm-p2p");
+    timing_total_exec = bh_timing_new("cluster-total-exec");
 }
 
 
