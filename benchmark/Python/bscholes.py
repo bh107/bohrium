@@ -31,7 +31,7 @@ def main():
     N       = B.size[0]
     year    = B.size[1]
 
-    S = np.random.random([N], bohrium=B.bohrium)
+    S = np.random.random([N], dtype=B.dtype, bohrium=B.bohrium)
     S = S*4.0-2.0 + 60.0 # Price is 58-62
 
     X   = 65.0
