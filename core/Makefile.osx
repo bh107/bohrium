@@ -1,10 +1,9 @@
 ROOT=..
 LIB=libbh.dylib
-CC?=gcc
 CXX?=g++
 WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=gnu99 -I$(ROOT)/include
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include
 LDFLAGS= $(ARCHOPTS) -shared  -Wl,-dylib_install_name,$(LIB)
 SRC=bh.c bh_opcode.c bh_type.c bh_error.c bh_component.c bh_pprint.c bh_memory.c bh_vcache.c bh_array.c bh_timing.c
 OBJ=$(SRC:.c=.o) $(ROOT)/core/compute/bh_compute.o $(ROOT)/core/compute/bh_compute_helpers.o $(ROOT)/core/compute/bh_compute_random.o $(ROOT)/core/compute/bh_compute_reduce.o $(ROOT)/core/compute/bh_compute_matmul.o $(ROOT)/core/compute/bh_compute_nselect.o $(ROOT)/core/bundler/bh_bundler.o $(ROOT)/iniparser/libiniparser.a $(ROOT)/core/compute/bh_compute_aggregate.o
@@ -13,7 +12,7 @@ INSTALLDIR?=/opt/bohrium/
 all: $(LIB)
 
 %.o: %.c $(ROOT)/include/* compute/*.hpp
-		$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS)
