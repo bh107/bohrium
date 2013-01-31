@@ -156,14 +156,11 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
         return e;
     }
 
+    //NB: For now all user-defined functions are hardcoded
     if(strcmp("bh_reduce", fun) == 0)
     {
         if(reduce_impl == NULL)
         {
-            bh_component_get_func(myself, fun, &reduce_impl);
-            if (reduce_impl == NULL)
-                return BH_USERFUNC_NOT_SUPPORTED;
-
             reduce_impl_id = *id;
             return BH_SUCCESS;           
         }
@@ -172,10 +169,6 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
     {
         if(random_impl == NULL)
         {
-            bh_component_get_func(myself, fun, &random_impl);
-            if (random_impl == NULL)
-                return BH_USERFUNC_NOT_SUPPORTED;
-
             random_impl_id = *id;
             return BH_SUCCESS;           
         }
