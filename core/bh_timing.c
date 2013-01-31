@@ -18,7 +18,12 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
+
 #include <bh_timing.h>
 #include <assert.h>
 #include <bh_component.h>
