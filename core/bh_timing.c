@@ -22,6 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 #else
 #include <sys/time.h>
+#include <unistd.h>
+#include <sys/types.h>
 #endif
 
 #include <bh_timing.h>
