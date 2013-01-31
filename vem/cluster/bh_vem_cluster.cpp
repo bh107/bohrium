@@ -28,12 +28,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "exec.h"
 #include "dispatch.h"
 #include "pgrid.h"
+#include "timing.h"
 
 
 bh_error bh_vem_cluster_init(bh_component *self)
 {
     bh_error e;
 
+    timing_init();
+    
     //Initiate the process grid
     pgrid_init();
 

@@ -115,6 +115,8 @@ void batch_schedule(bool direction, int rank, bh_array *local_ary)
  */
 void batch_flush()
 {
+    bh_uint64 stime = bh_timing();
+
     for(std::vector<task>::iterator it=task_store.begin(); 
         it != task_store.end(); ++it)
     {
@@ -176,6 +178,7 @@ void batch_flush()
         }        
     }
     task_store.clear();
+    bh_timing_save(timing_flush, stime, bh_timing());
 }
 
 

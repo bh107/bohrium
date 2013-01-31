@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "dispatch.h"
 #include "pgrid.h"
 #include "exec.h"
+#include "timing.h"
 
 
 //Check for error. Will exit on error.
@@ -41,7 +42,9 @@ static void check_error(bh_error err, const char *file, int line)
 int main()
 {
     dispatch_msg *msg;
-    
+
+    timing_init();
+ 
     //Initiate the process grid
     pgrid_init();
 

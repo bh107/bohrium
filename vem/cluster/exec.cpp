@@ -94,8 +94,6 @@ bh_error exec_init(const char *component_name)
     if((err = vem_init(my_components[0])) != 0)
         return err;
 
-    timing_init();
-    
     return BH_SUCCESS;
 }
 
@@ -389,7 +387,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
     //And remove all tmp data structures
     tmp_clear();
 
-    bh_timing_save(timing_total_exec, stime, bh_timing());
+    bh_timing_save(timing_exec_execute, stime, bh_timing());
     return BH_SUCCESS;
 }
 

@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "pgrid.h"
 #include "except.h"
 #include "comm.h"
+#include "timing.h"
 
 
 //Message buffer, current offset and buffer size
@@ -229,6 +230,8 @@ void dispatch_recv(dispatch_msg **message)
 {
     int e;
     const int dms = BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
+
+    bh_uint64 stime = bh_timing();
     
     //Get header of the message
     if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
@@ -255,6 +258,7 @@ void dispatch_recv(dispatch_msg **message)
             EXCEPT_MPI(e);
     }
     *message = msg;
+    bh_timing_save(timing_dispatch, stime, bh_timing());
 }
 
 
@@ -288,6 +292,8 @@ void dispatch_array_data(std::stack<bh_array*> arys)
 void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
 {
     dispatch_reset();
+
+    bh_uint64 stime = bh_timing();
 
     /* The execution message has the form:
      * 1   x bh_intp NOI //number of instructions
@@ -387,4 +393,6 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
 
     //Dispath the array data
     dispatch_array_data(base_darys);
+
+    bh_timing_save(timing_dispatch, stime, bh_timing());
 }
