@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "except.h"
 #include "batch.h"
 #include "tmp.h"
+#include "timing.h"
 
 
 /* Finds the largest possible array chunk that is only located on one process.
@@ -237,9 +238,13 @@ void mapping_chunks(bh_intp nop,
                            bh_array *operand[],
                            std::vector<ary_chunk>& chunks) 
 {
+    bh_uint64 stime = bh_timing();
+
     bh_intp coord[BH_MAXDIM];
     memset(coord, 0, operand[0]->ndim * sizeof(bh_intp));
     get_chunks(nop, operand, chunks, coord, operand[0]->shape);
+
+    bh_timing_save(timing_mapping, stime, bh_timing());
 }
 
 
