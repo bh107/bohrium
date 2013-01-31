@@ -5,7 +5,7 @@ CC=cl
 LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
-LIBFLAGS=/nologo /out:$(LIBNAME)
+LIBFLAGS=/nologo /out:$(LIBNAME) 
 LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 
 WARNOPTS=#-Wall
@@ -21,10 +21,10 @@ all: $(DLLNAME)
 		$(CC) $(CFLAGS) $< /Fo$@
 
 $(LIBNAME): $(OBJ)
-		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib Ws2_32.lib
 		
 $(DLLNAME): $(LIBNAME)		
-		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib Ws2_32.lib
 
 clean:
 		del *.obj *.lib *.dll *.exp *.pdb *.ilk
