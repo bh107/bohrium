@@ -27,13 +27,22 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-//Only when BH_TIMING is defined will the bh_timing* functions do anything.
 
+//When BH_TIMING_SUM is defined we only record timing sums.
+#ifdef BH_TIMING_SUM
+    #define BH_TIMING
+#endif
+
+//Only when BH_TIMING is defined will the bh_timing* functions do anything.
 #ifdef BH_TIMING
     #define bh_timing_new(name) (_bh_timing_new(name))
-    #define bh_timing_save(id,start,end) (_bh_timing_save(id,start,end))
     #define bh_timing() (_bh_timing()) 
     #define bh_timing_dump_all() (_bh_timing_dump_all())
+    #ifdef BH_TIMING_SUM
+        #define bh_timing_save(id,start,end) (_bh_timing_save_sum(id,start,end))
+    #else
+        #define bh_timing_save(id,start,end) (_bh_timing_save(id,start,end))
+    #endif
 #else
     #define bh_timing_new(name) ((bh_intp)0);
     #define bh_timing_save(id,start,end) do{(void)(id);(void)(start);(void)(end);} while (0)
@@ -56,6 +65,15 @@ bh_intp _bh_timing_new(const char *name);
  * @end    The end time in micro sec.
  */
 void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end);
+
+
+/* Save the sum of a timing. 
+ *
+ * @id     The ID of the timing.
+ * @start  The start time in micro sec.
+ * @end    The end time in micro sec.
+ */
+void _bh_timing_save_sum(bh_intp id, bh_uint64 start, bh_uint64 end);
 
 
 /* Get time.

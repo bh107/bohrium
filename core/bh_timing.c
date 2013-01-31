@@ -40,7 +40,13 @@ typedef struct
 
 typedef struct
 {
+    //The name of the timing
     char name[BH_COMPONENT_NAME_SIZE];
+    //Number of timing intervals saved
+    bh_intp count;
+    //The total sum of the timing intervals
+    bh_intp sum;
+    //The timing intervals saved
     std::list<interval> *intervals;
 }timing;
 
@@ -58,6 +64,8 @@ bh_intp _bh_timing_new(const char *name)
     timing t;
     strncpy(t.name, name, BH_COMPONENT_NAME_SIZE);
     t.intervals = new std::list<interval>();
+    t.count = 0;
+    t.sum = 0;
     id2timing.insert(std::pair<bh_intp,timing>(++timer_count, t)); 
     return timer_count;
 }
@@ -72,9 +80,26 @@ bh_intp _bh_timing_new(const char *name)
 void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end)
 {
     assert(id2timing.find(id) != id2timing.end());
-    const timing *t = &id2timing[id];
+    timing *t = &id2timing[id];
+    ++t->count;
+    t->sum += end - start;
     const interval i = {start, end};
     t->intervals->push_back(i);
+}
+
+
+/* Save the sum of a timing. 
+ *
+ * @id     The ID of the timing.
+ * @start  The start time in micro sec.
+ * @end    The end time in micro sec.
+ */
+void _bh_timing_save_sum(bh_intp id, bh_uint64 start, bh_uint64 end)
+{
+    assert(id2timing.find(id) != id2timing.end());
+    timing *t = &id2timing[id];
+    ++t->count;
+    t->sum += end - start;
 }
 
 
@@ -126,17 +151,15 @@ void _bh_timing_dump_all(void)
     {
         //Write to file
         f << it->second.name << ":\n";
-        bh_uint64 sum = 0;
         for(std::list<interval>::iterator it2=it->second.intervals->begin(); 
             it2!=it->second.intervals->end(); ++it2)
         {
             f << "\t" << it2->start << " > " << it2->end << "\n";
-            sum += it2->end - it2->start;
         }
         f << "\n";
         
         //Write resume to screen
-        s << "\t" << it->second.name << ": \t" << sum << "us (" << it->second.intervals->size() << ")\n";
+        s << "\t" << it->second.name << ": \t" << it->second.sum << "us (" << it->second.count << ")\n";
         delete it->second.intervals;
     }
     s << "Writing timing details to file: " << fname << "\n";
