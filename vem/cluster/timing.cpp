@@ -21,17 +21,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "timing.h"
 
-bh_intp timing_comm_p2p, timing_exec_execute, timing_flush, timing_dispatch, timing_reduce, timing_mapping;
+bh_intp timing_comm_p2p, timing_exec_execute, timing_flush, timing_dispatch, timing_reduce, timing_mapping, timing_dispatch_array_data;
 
 /* Initiate the timings related to the cluster-vem */
 void timing_init(void)
 {
-    timing_comm_p2p     = bh_timing_new("cluster-comm-p2p    ");
-    timing_exec_execute = bh_timing_new("cluster-exec-execute");
-    timing_flush        = bh_timing_new("cluster-flush       ");
-    timing_dispatch     = bh_timing_new("cluster-dispatch    ");
-    timing_reduce       = bh_timing_new("cluster-reduce      ");
-    timing_mapping      = bh_timing_new("cluster-mapping     ");
+    timing_comm_p2p            = bh_timing_new("cluster-comm-p2p      ");
+    timing_exec_execute        = bh_timing_new("cluster-exec-execute  ");
+    timing_flush               = bh_timing_new("cluster-flush         ");
+    timing_dispatch            = bh_timing_new("cluster-dispatch      ");
+    timing_dispatch_array_data = bh_timing_new("cluster-dispatch-data ");
+    timing_reduce              = bh_timing_new("cluster-reduce        ");
+    timing_mapping             = bh_timing_new("cluster-mapping       ");
 }
 
 

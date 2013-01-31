@@ -269,6 +269,8 @@ void dispatch_recv(dispatch_msg **message)
 */
 void dispatch_array_data(std::stack<bh_array*> arys)
 {
+    bh_uint64 stime = bh_timing();
+
     while (!arys.empty())
     {
         bh_array *ary = arys.top();
@@ -281,7 +283,8 @@ void dispatch_array_data(std::stack<bh_array*> arys)
             comm_master2slaves(ary);
         }
         arys.pop();
-    } 
+    }
+    bh_timing_save(timing_dispatch_array_data, stime, bh_timing());
 }
 
 

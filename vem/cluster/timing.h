@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_VEM_CLUSTER_TIMING_H
 
 //Timing of events
-extern bh_intp timing_comm_p2p, timing_exec_execute, timing_flush, timing_dispatch, timing_reduce, timing_mapping;
+extern bh_intp timing_comm_p2p, timing_exec_execute, timing_flush, timing_dispatch, timing_reduce, timing_mapping, timing_dispatch_array_data;
 
 /* Initiate the timings related to the cluster-vem */
 void timing_init(void);
