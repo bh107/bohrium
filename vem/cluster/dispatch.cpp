@@ -267,7 +267,7 @@ void dispatch_recv(dispatch_msg **message)
  *
  * @arys the base-arrays in question.
 */
-void dispatch_array_data(std::stack<bh_array*> arys)
+void dispatch_array_data(std::stack<bh_array*> &arys)
 {
     bh_uint64 stime = bh_timing();
 

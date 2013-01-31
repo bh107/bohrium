@@ -149,7 +149,7 @@ void dispatch_send(int type);
  *
  * @arys the base-arrays in question.
 */
-void dispatch_array_data(std::stack<bh_array*> arys);
+void dispatch_array_data(std::stack<bh_array*> &arys);
 
 
 /* Dispatch an instruction list to the slaves, which include new array-structs.
