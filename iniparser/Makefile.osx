@@ -5,13 +5,13 @@
 # Compiler settings
 CC?=gcc
 ARCHOPTS?=-arch i386 -arch x86_64
-CFLAGS  = $(ARCHOPTS) -g -O2 -fPIC -Wall -ansi -pedantic
+LCFLAGS  = $(ARCHOPTS) -g -O2 -fPIC -Wall -ansi -pedantic
 
 # Ar settings to build the library
 LIBTOOL?=libtool
 LIBFLAGS = -static
 
-SHLD = ${CC} ${CFLAGS}
+SHLD = ${CC} ${LCFLAGS}
 LDSHFLAGS = -shared $(ARCHOPTS) -Wl,-Bsymbolic  -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
 LDFLAGS = $(ARCHOPTS) -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
 
@@ -22,7 +22,7 @@ RM      = rm -f
 
 SUFFIXES = .o .c .h .a .so .sl
 
-COMPILE.c=$(CC) $(CFLAGS) -c
+COMPILE.c=$(CC) $(LCFLAGS) -c
 .c.o:
 	@(echo "compiling $< ...")
 	@($(COMPILE.c) -o $@ $<)
