@@ -25,7 +25,7 @@ Hy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
 Uy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
 Vy  = numpy.zeros((n+1,n+1),    dtype=B.dtype, bohrium=B.bohrium);
 
-H[droploc,droploc] += 5.0
+H[droploc,droploc] = 6.0
 
 B.start()
 for i in xrange(T):
