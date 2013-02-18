@@ -4,14 +4,12 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 %for $op, $opcode, $optype, $opcount in $data
-%if $optype == "operator.ext"
-%if $opcode != "CUSTOM"
-%if $opcount == 3
+%if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    std::cout << lhs << " $op " << rhs << std::endl;
+    //std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
     enqueue_aaa( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
@@ -20,7 +18,6 @@ Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 {
-    std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
     enqueue_aac( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
@@ -29,23 +26,90 @@ Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 {
-    std::cout << lhs << " $op " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
     enqueue_aca( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
 }
 
-%else
+%end if
+%end for
+
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 3
+
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & vector )
+Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    std::cout << vector << " $op " << std::endl;
-    enqueue_ac( (bh_opcode)$opcode, vector, vector );
-    return vector;
+    //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    return *vector;
 }
 
 %end if
-%end if
+%end for
+
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
+
+template <typename T>
+Vector<T> & operator $op ( Vector<T> & rhs )
+{
+    //std::cout << " $op " << rhs << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    enqueue_aa( (bh_opcode)$opcode, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $op ( T const& rhs )
+{
+    //std::cout << " $op " << rhs << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    enqueue_ac( (bh_opcode)$opcode, *vector, rhs );
+    return *vector;
+}
+
 %end if
 %end for
+
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 2
+
+template <typename T>
+Vector<T> & operator $op ( Vector<T> & rhs )
+{
+    //std::cout << " $op " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    enqueue_aa( (bh_opcode)$opcode, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator $op ( T const& rhs )
+{
+    //std::cout << " $op " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    enqueue_ac( (bh_opcode)$opcode, *vector, rhs );
+    return *vector;
+}
+
+%end if
+%end for
+
 

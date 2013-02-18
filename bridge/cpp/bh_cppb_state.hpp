@@ -24,27 +24,27 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-#define CPHVB_CPP_QUEUE_MAX 1024
-static bh_instruction queue[CPHVB_CPP_QUEUE_MAX]; // Instruction queue
+#define BH_CPP_QUEUE_MAX 1024
+static bh_instruction queue[BH_CPP_QUEUE_MAX]; // Instruction queue
 static bh_intp queue_size = 0;
 
 bh_init      vem_init;
 bh_execute   vem_execute;
 bh_shutdown  vem_shutdown;
 
-bh_reg_func      vem_reg_func;
-bh_component     **components,
-                    *self_component,
-                    *vem_component;
-bh_intp          children_count;
+bh_reg_func vem_reg_func;
+bh_component    **components,
+                *self_component,
+                *vem_component;
+bh_intp children_count;
 
 void init()
 {
     bh_error err;
-    self_component = bh_component_setup();
+    self_component = bh_component_setup(NULL);
     bh_component_children( self_component, &children_count, &components );
 
-    if(children_count != 1 || components[0]->type != CPHVB_VEM) {
+    if(children_count != 1 || components[0]->type != BH_VEM) {
 
         fprintf(stderr, "Error in the configuration: the bridge must "
                         "have exactly one child of type VEM\n");
@@ -80,13 +80,12 @@ void enqueue_aaa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> 
 {
     bh_instruction* instr;
 
-    if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
 
     instr = &queue[queue_size++];
-    instr->status = CPHVB_INST_PENDING;
     instr->opcode = opcode;
     instr->operand[0] = op0.array;
     instr->operand[1] = op1.array;
@@ -100,13 +99,12 @@ void enqueue_aac( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& o
 {
     bh_instruction* instr;
 
-    if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
 
     instr = &queue[queue_size++];
-    instr->status = CPHVB_INST_PENDING;
     instr->opcode = opcode;
     instr->operand[0] = op0.array;
     instr->operand[1] = op1.array;
@@ -121,13 +119,12 @@ void enqueue_aca( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & o
 {
     bh_instruction* instr;
 
-    if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
 
     instr = &queue[queue_size++];
-    instr->status = CPHVB_INST_PENDING;
     instr->opcode = opcode;
     instr->operand[0] = op0.array;
     instr->operand[1] = NULL;
@@ -142,13 +139,12 @@ void enqueue_aa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 {
     bh_instruction* instr;
 
-    if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
 
     instr = &queue[queue_size++];
-    instr->status = CPHVB_INST_PENDING;
     instr->opcode = opcode;
     instr->operand[0] = op0.array;
     instr->operand[1] = op1.array;
@@ -162,13 +158,12 @@ void enqueue_ac( bh_opcode opcode, Vector<T> & op0, T const& op1)
 {
     bh_instruction* instr;
 
-    if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
 
     instr = &queue[queue_size++];
-    instr->status = CPHVB_INST_PENDING;
     instr->opcode = opcode;
     instr->operand[0] = op0.array;
     instr->operand[1] = NULL;
@@ -185,20 +180,13 @@ bh_intp flush()
     char *msg = (char*) malloc(1024 * sizeof(char));
 
     bh_intp cur_size = queue_size;
-    bh_error res = CPHVB_SUCCESS;
+    bh_error res = BH_SUCCESS;
     if (queue_size > 0) {
         res = vem_execute( queue_size, queue );
 
-        if (res != CPHVB_SUCCESS) {
+        if (res != BH_SUCCESS) {
             sprintf(msg, "Error in scheduled batch of instructions: %s\n", bh_error_text(res));
             printf("%s", msg);
-            for(int i=0; i<queue_size; i++) {
-                sprintf(msg, "%s\n", bh_error_text( queue[i].status ));
-                printf("%d-%s", i, msg);
-                if ((queue[i].status != CPHVB_SUCCESS) && (queue[i].status != CPHVB_INST_PENDING)) {
-                    bh_pprint_instr( &queue[i] );
-                }
-            }
         }
 
         queue_size = 0;

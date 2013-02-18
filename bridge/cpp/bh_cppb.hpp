@@ -47,8 +47,8 @@ public:
 
 }
 
-#include "bh_cppb_state.hpp"        // Communication with Bohrium runtime
 #include "bh_cppb_traits.hpp"       // Traits for assigning constants and arrays.
+#include "bh_cppb_state.hpp"        // Communication with Bohrium runtime
 #include "bh_cppb_operators.hpp"    // Vector operations via operator-overloads, auto-generated:
                                     // see ./codegen/* on how.
 #include "bh_cppb_functions.hpp"    // Vector operations via functions, auto-generated:

@@ -1,5 +1,6 @@
 ROOT=../..
 HEADER=$(ROOT)/include/*
+CXX=clang
 
 all: hello
 

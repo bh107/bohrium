@@ -6,12 +6,10 @@
 ["int32_t", "bh_int32", "int32", "BH_INT32"],
 ["int64_t", "bh_int64", "int64", "BH_INT64"],
 
-["uint8_t",     "bh_uint8", "uint8", "BH_UINT8"],
 ["uint16_t",    "bh_uint16", "uint16", "BH_UINT16"],
 ["uint32_t",    "bh_uint32", "uint32", "BH_UINT32"],
 ["uint64_t",    "bh_uint64", "uint64", "BH_UINT64"],
 
-["uint16_t",    "bh_float16", "float16", "BH_FLOAT16"],
 ["float",       "bh_float32", "float32", "BH_FLOAT32"],
 ["double",      "bh_float64", "float64", "BH_FLOAT64"],
 

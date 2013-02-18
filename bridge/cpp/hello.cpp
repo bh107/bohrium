@@ -43,8 +43,8 @@ int main() {
     c = (float)1+a;
     c = a+b;
 
-    std::cout << "And the value is: " << a << "." << std::endl;
-    std::cout << "Flushing " << bh::flush() << " operations" << std::endl;
+    //std::cout << "And the value is: " << a << "." << std::endl;
+    //std::cout << "Flushing " << bh::flush() << " operations" << std::endl;
 
     bh::shutdown();
 

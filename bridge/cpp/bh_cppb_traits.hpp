@@ -68,13 +68,6 @@ void assign_array_type<bh_int64>( bh_array* array )
 
 template <>
 inline
-void assign_array_type<bh_uint8>( bh_array* array )
-{
-    array->type = BH_UINT8;
-}
-
-template <>
-inline
 void assign_array_type<bh_uint16>( bh_array* array )
 {
     array->type = BH_UINT16;
@@ -92,13 +85,6 @@ inline
 void assign_array_type<bh_uint64>( bh_array* array )
 {
     array->type = BH_UINT64;
-}
-
-template <>
-inline
-void assign_array_type<bh_float16>( bh_array* array )
-{
-    array->type = BH_FLOAT16;
 }
 
 template <>
@@ -176,14 +162,6 @@ void assign_const_type( bh_constant* constant, bh_int64 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_uint8 value )
-{
-    constant->value.uint8 = value;
-    constant->type = BH_UINT8;
-}
-
-template <>
-inline
 void assign_const_type( bh_constant* constant, bh_uint16 value )
 {
     constant->value.uint16 = value;
@@ -204,14 +182,6 @@ void assign_const_type( bh_constant* constant, bh_uint64 value )
 {
     constant->value.uint64 = value;
     constant->type = BH_UINT64;
-}
-
-template <>
-inline
-void assign_const_type( bh_constant* constant, bh_float16 value )
-{
-    constant->value.float16 = value;
-    constant->type = BH_FLOAT16;
 }
 
 template <>
