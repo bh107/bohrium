@@ -1,19 +1,19 @@
 ROOT=..
-LIBNAME=libcphvb.lib
-DLLNAME=libcphvb.dll
+LIBNAME=libbh.lib
+DLLNAME=libbh.dll
 CC=cl
 LIBTOOL=lib.exe
 LINKTOOL=link.exe
 
-LIBFLAGS=/nologo /out:$(LIBNAME)
+LIBFLAGS=/nologo /out:$(LIBNAME) 
 LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 
 WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
-SRC=cphvb.c cphvb_opcode.c cphvb_type.c cphvb_error.c cphvb_component.c cphvb_pprint.c cphvb_memory.c dlfcn-win32.c cphvb_vcache.c cphvb_array.c
-OBJ=$(SRC:.c=.obj) $(ROOT)/core/compute/cphvb_compute.obj $(ROOT)/core/compute/cphvb_compute_helpers.obj $(ROOT)\core\compute\cphvb_compute_random.obj $(ROOT)\core\compute\cphvb_compute_reduce.obj $(ROOT)\core\bundler\cphvb_bundler.obj $(ROOT)\core\compute\cphvb_compute_matmul.obj $(ROOT)\core\compute\cphvb_compute_nselect.obj $(ROOT)\core\compute\cphvb_compute_aggregate.obj
-INSTALLDIR=/opt/cphvb/
+SRC=bh.c bh_opcode.c bh_type.c bh_error.c bh_component.c bh_pprint.c bh_memory.c dlfcn-win32.c bh_vcache.c bh_array.c bh_timing.c
+OBJ=$(SRC:.c=.obj) $(ROOT)/core/compute/bh_compute.obj $(ROOT)/core/compute/bh_compute_helpers.obj $(ROOT)\core\compute\bh_compute_random.obj $(ROOT)\core\compute\bh_compute_reduce.obj $(ROOT)\core\bundler\bh_bundler.obj $(ROOT)\core\compute\bh_compute_matmul.obj $(ROOT)\core\compute\bh_compute_nselect.obj $(ROOT)\core\compute\bh_compute_aggregate.obj
+INSTALLDIR=/opt/bh/
 
 all: $(DLLNAME)
 
@@ -21,10 +21,10 @@ all: $(DLLNAME)
 		$(CC) $(CFLAGS) $< /Fo$@
 
 $(LIBNAME): $(OBJ)
-		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib Ws2_32.lib
 		
 $(DLLNAME): $(LIBNAME)		
-		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib
+		$(LINKTOOL) $(LINKFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib Ws2_32.lib
 
 clean:
 		del *.obj *.lib *.dll *.exp *.pdb *.ilk

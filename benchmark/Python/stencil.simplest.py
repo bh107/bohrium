@@ -1,4 +1,4 @@
-import cphvbnumpy as numpy
+import bohrium as numpy
 import util
     
 def main():
@@ -7,8 +7,8 @@ def main():
     n = b.size[0]
     i = b.size[1]
 
-    raw = numpy.empty((n+4), cphvb=b.cphvb)
-    tmp = numpy.empty((n), cphvb=b.cphvb)
+    raw = numpy.empty((n+4), bohrium=b.bohrium)
+    tmp = numpy.empty((n), bohrium=b.bohrium)
 
     center  = raw[2:-2]
     left1   = raw[1:-3]

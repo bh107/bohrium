@@ -1,67 +1,67 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
 #include <stdexcept>
-#include <cphvb.h>
+#include <bh.h>
 #include "Scalar.hpp"
 
-Scalar::Scalar(cphvb_constant constant)
+Scalar::Scalar(bh_constant constant)
     : mytype(oclType(constant.type))
 {
     switch (constant.type)
     {
-    case CPHVB_BOOL:
+    case BH_BOOL:
         value.uc = constant.value.bool8;
         break;
-    case CPHVB_INT8:
+    case BH_INT8:
         value.c = constant.value.int8;
         break;
-    case CPHVB_INT16:
+    case BH_INT16:
         value.s = constant.value.int16;
         break;
-    case CPHVB_INT32:
+    case BH_INT32:
         value.i = constant.value.int32;
         break;
-    case CPHVB_INT64:
+    case BH_INT64:
         value.l = constant.value.int64;
         break;
-    case CPHVB_UINT8:
+    case BH_UINT8:
         value.uc = constant.value.uint8;
         break;
-    case CPHVB_UINT16:
+    case BH_UINT16:
         value.us = constant.value.uint16;
         break;
-    case CPHVB_UINT32:
+    case BH_UINT32:
         value.ui = constant.value.uint32;
         break;
-    case CPHVB_UINT64:
+    case BH_UINT64:
         value.ul = constant.value.uint64;
         break;
-    case CPHVB_FLOAT16:
+    case BH_FLOAT16:
         value.h = constant.value.float16;
         break;
-    case CPHVB_FLOAT32:
+    case BH_FLOAT32:
         value.f = constant.value.float32;
         break;
-    case CPHVB_FLOAT64:
+    case BH_FLOAT64:
         value.d = constant.value.float64;
         break;
     default:
@@ -69,48 +69,48 @@ Scalar::Scalar(cphvb_constant constant)
     }
 }
 
-Scalar::Scalar(cphvb_array* spec)
+Scalar::Scalar(bh_array* spec)
     : mytype(oclType(spec->type))
 {
-    assert (cphvb_is_scalar(spec));
+    assert (bh_is_scalar(spec));
     assert (spec->data != NULL);
     switch (spec->type)
     {
-    case CPHVB_BOOL:
-        value.uc = *(cphvb_bool*)spec->data;
+    case BH_BOOL:
+        value.uc = *(bh_bool*)spec->data;
         break;
-    case CPHVB_INT8:
-        value.c = *(cphvb_int8*)spec->data;
+    case BH_INT8:
+        value.c = *(bh_int8*)spec->data;
         break;
-    case CPHVB_INT16:
-        value.s = *(cphvb_int16*)spec->data;
+    case BH_INT16:
+        value.s = *(bh_int16*)spec->data;
         break;
-    case CPHVB_INT32:
-        value.i = *(cphvb_int32*)spec->data;
+    case BH_INT32:
+        value.i = *(bh_int32*)spec->data;
         break;
-    case CPHVB_INT64:
-        value.l = *(cphvb_int64*)spec->data;
+    case BH_INT64:
+        value.l = *(bh_int64*)spec->data;
         break;
-    case CPHVB_UINT8:
-        value.uc = *(cphvb_uint8*)spec->data;
+    case BH_UINT8:
+        value.uc = *(bh_uint8*)spec->data;
         break;
-    case CPHVB_UINT16:
-        value.us = *(cphvb_uint16*)spec->data;
+    case BH_UINT16:
+        value.us = *(bh_uint16*)spec->data;
         break;
-    case CPHVB_UINT32:
-        value.ui = *(cphvb_uint32*)spec->data;
+    case BH_UINT32:
+        value.ui = *(bh_uint32*)spec->data;
         break;
-    case CPHVB_UINT64:
-        value.ul = *(cphvb_uint64*)spec->data;
+    case BH_UINT64:
+        value.ul = *(bh_uint64*)spec->data;
         break;
-    case CPHVB_FLOAT16:
-        value.h = *(cphvb_float16*)spec->data;
+    case BH_FLOAT16:
+        value.h = *(bh_float16*)spec->data;
         break;
-    case CPHVB_FLOAT32:
-        value.f = *(cphvb_float32*)spec->data;
+    case BH_FLOAT32:
+        value.f = *(bh_float32*)spec->data;
         break;
-    case CPHVB_FLOAT64:
-        value.d = *(cphvb_float64*)spec->data;
+    case BH_FLOAT64:
+        value.d = *(bh_float64*)spec->data;
         break;
     default:
         throw std::runtime_error("Scalar: Unknown type.");

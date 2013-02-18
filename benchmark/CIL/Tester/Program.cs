@@ -1,20 +1,20 @@
 ﻿#region Copyright
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium:
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -35,13 +35,13 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            //NumCIL.cphVB.Utility.SetupDebugEnvironmentVariables();
+            //NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
             Console.WriteLine("Tester execution with {0} workblock{1}", NumCIL.UFunc.Threads.BlockCount, NumCIL.UFunc.Threads.BlockCount == 1 ? "" : "s");
             Console.WriteLine("Tester UnsafeAPI is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported ? "ENABLED" : "DISABLED");
             Console.WriteLine("Tester Unsafe arrays is {0}", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? "ENABLED": "DISABLED");
             Console.WriteLine("Tester Unsafe arrays limit is {0}MB", !NumCIL.UnsafeAPI.DisableUnsafeAPI && NumCIL.UnsafeAPI.IsUnsafeSupported && !NumCIL.UnsafeAPI.DisableUnsafeArrays ? (NumCIL.UnsafeAPI.UnsafeArraysLargerThan/ (1024*1024)) : 0.0);
-            //NumCIL.cphVB.Utility.Activate();
+            //NumCIL.cphBohriumVB.Utility.Activate();
             try
             {
                 TimeJacobi();
@@ -63,7 +63,7 @@ namespace Tester
                 Console.WriteLine("Seconds consumed by threads: {0}", TimeSpan.FromTicks(NumCIL.ThreadRunner.TicksExecuted).TotalSeconds);
                 NumCIL.ThreadRunner.TicksExecuted = 0;
 
-                //NumCIL.cphVB.Utility.Activate();
+                //NumCIL.Bohrium.Utility.Activate();
 
                 //TimeJacobi();
                 //TimeJacobiFixed();

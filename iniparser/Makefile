@@ -4,13 +4,13 @@
 
 # Compiler settings
 CC      = gcc
-CFLAGS  = -g -O2 -fPIC -Wall -ansi -pedantic
+LCFLAGS  = -g -O2 -fPIC -Wall -ansi -pedantic
 
 # Ar settings to build the library
 AR	    = ar
 ARFLAGS = rcv
 
-SHLD = ${CC} ${CFLAGS}
+SHLD = ${CC} ${LCFLAGS}
 LDSHFLAGS = -shared -Wl,-Bsymbolic  -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
 LDFLAGS = -Wl,-rpath -Wl,/usr/lib -Wl,-rpath,/usr/lib
 
@@ -25,7 +25,7 @@ RM      = rm -f
 
 SUFFIXES = .o .c .h .a .so .sl
 
-COMPILE.c=$(CC) $(CFLAGS) -c
+COMPILE.c=$(CC) $(LCFLAGS) -c
 .c.o:
 	@(echo "compiling $< ...")
 	@($(COMPILE.c) -o $@ $<)

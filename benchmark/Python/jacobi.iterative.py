@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 B = util.Benchmark()
@@ -6,8 +6,8 @@ H = B.size[0]
 W = B.size[1]
 I = B.size[2]
 
-full        = np.empty((H+2,W+2),   dtype=B.dtype, cphvb=B.cphvb)
-work        = np.empty((H,W),       dtype=B.dtype, cphvb=B.cphvb)
+full        = np.empty((H+2,W+2),   dtype=B.dtype, bohrium=B.bohrium)
+work        = np.empty((H,W),       dtype=B.dtype, bohrium=B.bohrium)
 
 full[:]     = np.float32(0.0)
 full[:,0]   = np.float32(-273.15)    # left column

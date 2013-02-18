@@ -1,0 +1,40 @@
+This is the pseudocode for the mapping function
+
+
+
+#Split the operands of an instruction into chunks such that each chunk are located on a single process. Since there is no conflict within an instruction we can apply the instruction on each set of chunks and get the same result the original instruction.
+
+def chunks(operands[], start_coord=(0,...,0), end_coord=(infinity,...,infinity)):
+
+    shape = (infinity,...,infinity)
+    starts[]
+    for op in operands:
+        #Compute the global start offset
+        start = sum_{i=0}(start_coord[i] * op->stride[i])
+        #Compute the size of the local part of the global array
+        localsize = totalsize / number of processes
+        #Compute process rank
+        rank = start / localsize
+        #Convert the global start to the local start offset
+        start -= rank * localsize
+        starts.append(start)
+
+        #Find the largest possible shape that fits this process
+        offset = 0
+        for d in number of dimensions:
+            size = ceil((localsize - start - offset) / op->stride[d])
+            offset + (shape[d]-1) * op->stride[d]
+            shape[d] = min(size, end_coord[d] - start_coord[d], shape[d])
+        
+    chunks[] = A new copy of each operand with the new common shape and their respective calculated start offsets
+    
+    corners = set of binary numbers with bit-length equals the number of dimensions, excluding zero
+    for corner in corners:
+        for d in number of dimensions:
+            if corner[d]:
+                start_coord[d] += shape[d]
+            else:
+                end_start[d] = start_coord[d] + shape[d]
+        chunks(operands, start_coord, end_coord)
+    
+    return chunks 

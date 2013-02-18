@@ -23,9 +23,9 @@
     <WarningLevel>4</WarningLevel>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node" />
-        <Variable name="CPHBV_CONFIG" value="/Users/kenneth/Udvikler/cphvb/config.osx.ini" />
-        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/cphvb/core:/Users/kenneth/Udvikler/cphvb/vem/node" />
+        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
+        <Variable name="CPHBV_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>
@@ -104,10 +104,6 @@
     <Compile Include="ShallowWaterSolver.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.cphVB\NumCIL.cphVB.csproj">
-      <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
-      <Name>NumCIL.cphVB</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
       <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
       <Name>NumCIL.Unsafe</Name>

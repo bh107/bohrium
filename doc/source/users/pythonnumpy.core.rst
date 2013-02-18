@@ -1,5 +1,5 @@
 
-.. automodule:: cphvbnumpy.core
+.. automodule:: bohrium.core
    :members:
    :undoc-members:
 

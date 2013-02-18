@@ -1,31 +1,35 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
-#include "array.h"
+#include <bh.h>
+#include <limits>
 #include <cmath>
 #include <cstring>
 #include <vector>
 #include <cassert>
 #include "pgrid.h"
-#include <limits>
+#include "array.h"
+#include "except.h"
+#include "batch.h"
+#include "tmp.h"
+#include "timing.h"
 
 
 /* Finds the largest possible array chunk that is only located on one process.
@@ -37,23 +41,23 @@ If not, see <http://www.gnu.org/licenses/>.
  * @end_coord   The end coordinate of this chunk search
  * @new_coord   The new coordinate for the next chunk search (output)
  */
-static cphvb_error find_largest_chunk(cphvb_intp nop,
-                                      cphvb_array *operand[], 
+static void find_largest_chunk(bh_intp nop,
+                                      bh_array *operand[], 
                                       std::vector<ary_chunk>& chunks,  
-                                      const cphvb_intp start_coord[],
-                                      const cphvb_intp end_coord[],
-                                      cphvb_intp new_coord[])
+                                      const bh_intp start_coord[],
+                                      const bh_intp end_coord[],
+                                      bh_intp new_coord[])
 {
-    cphvb_intp first_chunk = chunks.size();
-    cphvb_intp ndim = operand[0]->ndim;
-    cphvb_intp shape[CPHVB_MAXDIM];
-    for(cphvb_intp d=0; d < ndim; ++d)
-        shape[d] = std::numeric_limits<cphvb_intp>::max();
+    bh_intp first_chunk = chunks.size();
+    bh_intp ndim = operand[0]->ndim;
+    bh_intp shape[BH_MAXDIM];
+    for(bh_intp d=0; d < ndim; ++d)
+        shape[d] = std::numeric_limits<bh_intp>::max();
 
-    for(cphvb_intp o=0; o < nop; ++o)
+    for(bh_intp o=0; o < nop; ++o)
     {
-        const cphvb_array *ary = operand[o];
-        if(cphvb_is_constant(ary))
+        const bh_array *ary = operand[o];
+        if(bh_is_constant(ary))
         {
             //Save a dummy chunk
             ary_chunk chunk;
@@ -62,16 +66,16 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
         }
 
         //Compute the global start based on the dimension start
-        cphvb_intp start = ary->start;
-        for(cphvb_intp d=0; d < ndim; ++d)
+        bh_intp start = ary->start;
+        for(bh_intp d=0; d < ndim; ++d)
             start += start_coord[d] * ary->stride[d];
      
         //Compute total array base size
-        cphvb_intp totalsize = cphvb_nelements(cphvb_base_array(ary)->ndim, 
-                                               cphvb_base_array(ary)->shape);
+        bh_intp totalsize = bh_nelements(bh_base_array(ary)->ndim, 
+                                               bh_base_array(ary)->shape);
 
         //Compute local array base size for nrank-1
-        cphvb_intp localsize = totalsize / pgrid_worldsize;
+        bh_intp localsize = totalsize / pgrid_worldsize;
 
         //Find rank and local start
         int rank;
@@ -91,14 +95,14 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
         if(rank == pgrid_worldsize-1)
            localsize = totalsize / pgrid_worldsize + totalsize % pgrid_worldsize; 
 
-        cphvb_intp offset = 0;
+        bh_intp offset = 0;
         //Find the largest possible shape
-        for(cphvb_intp d=0; d < ndim; ++d)
+        for(bh_intp d=0; d < ndim; ++d)
         {
-            cphvb_intp max_dim = end_coord[d] - start_coord[d];
-            cphvb_intp dim = max_dim;
+            bh_intp max_dim = end_coord[d] - start_coord[d];
+            bh_intp dim = max_dim;
             if(ary->stride[d] > 0)        
-                dim = (cphvb_intp) ceil((localsize - start - offset) / 
+                dim = (bh_intp) ceil((localsize - start - offset) / 
                                         (double) ary->stride[d]);
             if(dim > max_dim)
                 dim = max_dim;
@@ -108,51 +112,52 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
         }
         //Save the chunk
         ary_chunk chunk;
-        chunk.rank      = rank;
-        chunk.ary.type  = ary->type;
-        chunk.ary.ndim  = ary->ndim;
-        chunk.ary.data  = NULL;
-        memcpy(&chunk.coord, start_coord, ndim * sizeof(cphvb_intp));
+        chunk.rank       = rank;
+        chunk.ary        = tmp_get_ary();
+        chunk.ary->type  = ary->type;
+        chunk.ary->ndim  = ary->ndim;
+        chunk.ary->data  = NULL;
+        memcpy(&chunk.coord, start_coord, ndim * sizeof(bh_intp));
         if(pgrid_myrank == rank)//This is a local array
         {
-            chunk.ary.start = start;
-            chunk.ary.base = array_get_local(cphvb_base_array(ary));
-            memcpy(chunk.ary.stride, ary->stride, ary->ndim * sizeof(cphvb_intp));
+            chunk.ary->start = start;
+            chunk.ary->base = array_get_local(bh_base_array(ary));
+            memcpy(chunk.ary->stride, ary->stride, ary->ndim * sizeof(bh_intp));
         }
         else//This is a remote array thus we treat it as a base array.
         {   //Note we will set the stride when we know the final shape
-            chunk.ary.base = NULL;
-            chunk.ary.start = 0;
+            chunk.ary->base = NULL;
+            chunk.ary->start = 0;
         }
         chunks.push_back(chunk);
         assert(0 <= rank && rank < pgrid_worldsize);
     }
 
     //Save the largest possible shape found to all chunks
-    for(cphvb_intp o=0; o < nop; ++o)
+    for(bh_intp o=0; o < nop; ++o)
     {
-        if(cphvb_is_constant(operand[o]))
+        if(bh_is_constant(operand[o]))
             continue;
         ary_chunk *chunk = &chunks[first_chunk+o];
 
-        memcpy(chunk->ary.shape, shape, ndim * sizeof(cphvb_intp));
+        memcpy(chunk->ary->shape, shape, ndim * sizeof(bh_intp));
         
         if(chunk->rank != pgrid_myrank)
         {   //Now we know the strides of the remote array.
-            cphvb_intp s = 1;
-            for(cphvb_intp i=chunk->ary.ndim-1; i >= 0; --i)
+            bh_intp s = 1;
+            for(bh_intp i=chunk->ary->ndim-1; i >= 0; --i)
             {    
-                chunk->ary.stride[i] = s;
-                s *= chunk->ary.shape[i];
+                chunk->ary->stride[i] = s;
+                s *= chunk->ary->shape[i];
             }
         }
     }
 
     //Update coord
-    for(cphvb_intp d=0; d < ndim; ++d)
+    for(bh_intp d=0; d < ndim; ++d)
         new_coord[d] = start_coord[d] + shape[d];
 
-    return CPHVB_SUCCESS;
+    return;
 }
 
 /* Retrieves the set of array chunks that makes up the complete 
@@ -164,34 +169,32 @@ static cphvb_error find_largest_chunk(cphvb_intp nop,
  * @start_coord The start coordinate of this chunk search
  * @end_coord   The end coordinate of this chunk search
  */
-static cphvb_error get_chunks(cphvb_intp nop,
-                              cphvb_array *operand[], 
-                              std::vector<ary_chunk>& chunks,  
-                              const cphvb_intp start_coord[],
-                              const cphvb_intp end_coord[])
+static void get_chunks(bh_intp nop,
+                       bh_array *operand[], 
+                       std::vector<ary_chunk>& chunks,  
+                       const bh_intp start_coord[],
+                       const bh_intp end_coord[])
 {
-    cphvb_intp ndim = operand[0]->ndim;
-    cphvb_intp new_start_coord[CPHVB_MAXDIM];
-    cphvb_error err;
+    bh_intp ndim = operand[0]->ndim;
+    bh_intp new_start_coord[BH_MAXDIM];
 
     //We are finished when one of the coordinates are out of bound
-    for(cphvb_intp d=0; d < ndim; ++d)
+    for(bh_intp d=0; d < ndim; ++d)
         if(start_coord[d] >= end_coord[d])
-            return CPHVB_SUCCESS;
+            return;
    
-    if((err = find_largest_chunk(nop, operand, chunks, 
-              start_coord, end_coord, new_start_coord)) != CPHVB_SUCCESS)
-        return err;
+    find_largest_chunk(nop, operand, chunks, start_coord, 
+                       end_coord, new_start_coord);
 
-    cphvb_intp corner[CPHVB_MAXDIM];
-    memset(corner, 0, ndim * sizeof(cphvb_intp));
+    bh_intp corner[BH_MAXDIM];
+    memset(corner, 0, ndim * sizeof(bh_intp));
     ++corner[ndim-1];
     while(1)//Lets start a new chunk search at each corner of the current chunk.
     {
         //Find start and end coord based on the current corner
-        cphvb_intp start[CPHVB_MAXDIM];
-        cphvb_intp end[CPHVB_MAXDIM];
-        for(cphvb_intp d=0; d < ndim; ++d)
+        bh_intp start[BH_MAXDIM];
+        bh_intp end[BH_MAXDIM];
+        for(bh_intp d=0; d < ndim; ++d)
         {
             if(corner[d] == 1)
             {
@@ -206,23 +209,22 @@ static cphvb_error get_chunks(cphvb_intp nop,
         }
 
         //Goto the next start cood
-        if((err = get_chunks(nop, operand, chunks, start, end)) != CPHVB_SUCCESS)
-            return err;
+        get_chunks(nop, operand, chunks, start, end);
 
         //Go to next corner
-        for(cphvb_intp d=ndim-1; d >= 0; --d)
+        for(bh_intp d=ndim-1; d >= 0; --d)
         {
             if(++corner[d] > 1)
             {
                 corner[d] = 0;
                 if(d == 0)
-                    return CPHVB_SUCCESS;
+                    return;
             }
             else 
                 break;
         }
     }
-    return CPHVB_ERROR;//This shouldn't be possible
+    EXCEPT("Coordinate overflow when mapping chunks");
 }
 
 /* Creates a list of local array chunks that enables local
@@ -231,15 +233,18 @@ static cphvb_error get_chunks(cphvb_intp nop,
  * @nop         Number of global array operands
  * @operand     List of global array operands
  * @chunks      The output chunks
- * @return      Error codes (CPHVB_SUCCESS, CPHVB_ERROR)
  */
-cphvb_error mapping_chunks(cphvb_intp nop,
-                           cphvb_array *operand[],
+void mapping_chunks(bh_intp nop,
+                           bh_array *operand[],
                            std::vector<ary_chunk>& chunks) 
 {
-    cphvb_intp coord[CPHVB_MAXDIM];
-    memset(coord, 0, operand[0]->ndim * sizeof(cphvb_intp));
-    return get_chunks(nop, operand, chunks, coord, operand[0]->shape);
+    bh_uint64 stime = bh_timing();
+
+    bh_intp coord[BH_MAXDIM];
+    memset(coord, 0, operand[0]->ndim * sizeof(bh_intp));
+    get_chunks(nop, operand, chunks, coord, operand[0]->shape);
+
+    bh_timing_save(timing_mapping, stime, bh_timing());
 }
 
 

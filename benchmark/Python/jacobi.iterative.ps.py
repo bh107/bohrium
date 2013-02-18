@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 import sys
 
@@ -7,8 +7,8 @@ H = B.size[0]
 W = B.size[1]
 I = B.size[2]
 
-full    = np.empty((H+2,W+2),   dtype=np.float64, cphvb=B.cphvb)
-work    = np.empty((H+2,W+2),   dtype=np.float64, cphvb=B.cphvb)
+full    = np.empty((H+2,W+2),   dtype=np.float64, bohrium=B.bohrium)
+work    = np.empty((H+2,W+2),   dtype=np.float64, bohrium=B.bohrium)
 full[:] = np.arange((H+2)*(W+2), dtype=np.float64).reshape((H+2,W+2))
 
 B.start()

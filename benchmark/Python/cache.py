@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 def main():
@@ -7,7 +7,7 @@ def main():
     n = b.size[0]
     c = b.size[1]
 
-    x = np.random.random([n], cphvb=b.cphvb)
+    x = np.random.random([n], bohrium=b.bohrium)
 
     b.start()
 

@@ -20,12 +20,12 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
-Build cphVB with custom Python
+Build Bohrium with custom Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Build and install it::
 
-  sudo make CPHVB_PYTHON=dython
+  sudo make BH_PYTHON=dython
   sudo make install
 
 Most Used Commands
@@ -67,17 +67,17 @@ As well as a python-packages **breathe** and **numpydoc** for integrating doxyge
 
 Overview of the documentatation files::
 
-  cphvb/doc                 # Root folder of the documentation.
-  cphvb/doc/source          # Write / Edit the documentation here.
-  cphvb/doc/build           # Documentation is "rendered" and stored here.
-  cphvb/doc/Makefile        # This file instructs Sphinx on how to "render" the documentation.
-  cphvb/doc/make.bat        # ---- || ----, on Windows
-  cphvb/doc/deploy_doc.sh   # This script pushes the rendered docs to http://cphvb.bitbucket.org
+  bohrium/doc                 # Root folder of the documentation.
+  bohrium/doc/source          # Write / Edit the documentation here.
+  bohrium/doc/build           # Documentation is "rendered" and stored here.
+  bohrium/doc/Makefile        # This file instructs Sphinx on how to "render" the documentation.
+  bohrium/doc/make.bat        # ---- || ----, on Windows
+  bohrium/doc/deploy_doc.sh   # This script pushes the rendered docs to http://bohrium.bitbucket.org.
 
 Most used commands
 ~~~~~~~~~~~~~~~~~~
 
-These commands assume that your current working dir is **cphvb/doc**.
+These commands assume that your current working dir is **bohrium/doc**.
 
 Initiate doxygen::
  
@@ -87,11 +87,11 @@ Render a html version of the docs::
 
   make html
 
-Push the html-rendered docs to http://cphvb.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
+Push the html-rendered docs to http://bohrium.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
 
   make deploy
 
-The docs still needs a neat way to integrate a full API-documentation of the cphVB core, managers and engines.
+The docs still needs a neat way to integrate a full API-documentation of the Bohrium core, managers and engines.
 
 Continuous Integration
 ----------------------

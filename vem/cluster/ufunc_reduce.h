@@ -1,26 +1,26 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CPHVB_VEM_CLUSTER_UFUNC_REDUCE_H
+#ifndef __BH_VEM_CLUSTER_UFUNC_REDUCE_H
 
-#include <cphvb.h>
+#include <bh.h>
 
 /* Apply the user-defined function "reduce".
  * @opcode   The opcode of the reduce function.
@@ -29,8 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
  * @ufunc_id The ID of the reduce user-defined function
  * @return   The instruction status 
 */
-cphvb_error ufunc_reduce(cphvb_opcode opcode, cphvb_intp axis, 
-                         cphvb_array *operand[], cphvb_intp ufunc_id);
+bh_error ufunc_reduce(bh_opcode opcode, bh_intp axis, 
+                         bh_array *operand[], bh_intp ufunc_id);
 
 
 #endif

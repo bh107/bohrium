@@ -9,7 +9,7 @@ The gen.*.py scripts generates the following files:
  traverers.hpp
    Contains the logic for traversing through arrays and applying functors / element-wise operations.
 
- cphvb_compute.cpp
+ bh_compute.cpp
    Maps opcode to traversal+functor pair, either by returning a pointer to the traversal function with an inlined functor or directly invoking the traversal function.
 
 The code-generation is based on the *.ctpl files which are c/c++ code with Python Cheetah string-template annotations.

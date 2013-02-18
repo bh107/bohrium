@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 def compute_targets(base, target):
@@ -18,8 +18,8 @@ def main():
     ndims       = B.size[0]
     db_length   = B.size[1]
 
-    targets = np.random.random((ndims,db_length), cphvb=B.cphvb)
-    base    = np.random.random((ndims,db_length), cphvb=B.cphvb)
+    targets = np.random.random((ndims,db_length), bohrium=B.bohrium)
+    base    = np.random.random((ndims,db_length), bohrium=B.bohrium)
 
     B.start()
     compute_targets(base, targets)

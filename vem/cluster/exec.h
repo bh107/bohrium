@@ -1,37 +1,41 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cphvb.h>
+#include <bh.h>
+
+//Public function pointer to the Node VEM
+extern bh_execute exec_vem_execute;
+
 
 /* Initialize the VEM
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
-cphvb_error exec_init(const char *component_name);
+bh_error exec_init(const char *component_name);
 
 
 /* Shutdown the VEM, which include a instruction flush
  *
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
-cphvb_error exec_shutdown(void);
+bh_error exec_shutdown(void);
 
 
 /* Register a new user-defined function.
@@ -41,29 +45,17 @@ cphvb_error exec_shutdown(void);
  * @fun Name of the function e.g. myfunc
  * @id Identifier for the new function. The bridge should set the
  *     initial value to Zero. (in/out-put)
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
-cphvb_error exec_reg_func(char *fun, cphvb_intp *id);
+bh_error exec_reg_func(char *fun, bh_intp *id);
 
 
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
  *
  * @instruction A list of instructions to execute
- * @return Error codes (CPHVB_SUCCESS)
+ * @return Error codes (BH_SUCCESS)
  */
-cphvb_error exec_execute(cphvb_intp count, cphvb_instruction inst_list[]);
-
-
-/* Execute one instruction locally.
- *
- * @opcode   The opcode of the instruction
- * @operands The local operands in the instruction
- * @ufunc  The user-defined function struct when opcode is CPHVB_USERFUNC.
- * @inst_status The returned status of the instruction (output)
- * @return Error codes of vem_execute()
- */
-cphvb_error exec_local_inst(cphvb_opcode opcode, cphvb_array *operands[],
-                            cphvb_userfunc *ufunc, cphvb_error *inst_status);
+bh_error exec_execute(bh_intp count, bh_instruction inst_list[]);
 
 

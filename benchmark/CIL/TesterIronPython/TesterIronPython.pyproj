@@ -40,8 +40,8 @@
     <Compile Include="util.py" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.cphVB\NumCIL.cphVB.csproj">
-      <Name>NumCIL.cphVB</Name>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+      <Name>NumCIL.Bohrium</Name>
       <Project>{78cbe5f3-ad51-4b1e-a8ab-1a085f4d6a07}</Project>
       <Private>True</Private>
     </ProjectReference>

@@ -1,62 +1,62 @@
 Benchmarks
 ==========
 
-The speedup graphs below represent the latest results (raw form available `here <https://bitbucket.org/cphvb/benchpress/raw/master/results/akira/benchmark-latest.json>`_) of running benchmarks on akira.
+The speedup graphs below represent the latest results (raw form available `here <https://bitbucket.org/bohrium/benchpress/raw/master/results/akira/benchmark-latest.json>`_) of running benchmarks on akira.
 
-All benchmark results are stored in json-format and are available `here <https://bitbucket.org/cphvb/benchpress/raw/master/results>`_.
+All benchmark results are stored in json-format and are available `here <https://bitbucket.org/bohrium/benchpress/raw/master/results>`_.
 Benchmarks are run automatically in a daily fashion on akira and marge, results for p31sd and smithers01 are obtained manually.
 
-To compare benchmark-results from different machines and revisions, take a look at the `compare-tool <http://cphvb.org/benchmarks/compare.html>`_ that is where the magic is happens.
+To compare benchmark-results from different machines and revisions, take a look at the `compare-tool <http://bohrium.org/benchmarks/compare.html>`_ that is where the magic is happens.
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/black_scholes_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/black_scholes_speedup.png
    :align: center
    :alt: "Black Scholes"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/cache_synth_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/cache_synth_speedup.png
    :align: center
    :alt: "Cache Synth"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_iterative_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/jacobi_iterative_speedup.png
    :align: center
    :alt: "Jacobi Iterative"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/jacobi_iterative___reduce_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/jacobi_iterative___reduce_speedup.png
    :align: center
    :alt: "Jacobi Iterative - Reduce"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/knn_speedup.png
    :align: center
    :alt: "kNN"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_2d_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_2d_speedup.png
    :align: center
    :alt: "Lattice Boltzman 2D"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_3d_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/lattice_boltzmann_3d_speedup.png
    :align: center
    :alt: "Lattice Boltzman 3D"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___ril_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___ril_speedup.png
    :align: center
    :alt: "Monte Carlo PI"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___2xn_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___2xn_speedup.png
    :align: center
    :alt: "Monte Carlo PI - 2xN"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___nx2_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/monte_carlo_pi___nx2_speedup.png
    :align: center
    :alt: "Monte Carlo PI - Nx2"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/shallow_water_speedup.png
    :align: center
    :alt: "Shallow Water"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/stencil___1d_4way_speedup.png
    :align: center
    :alt: "Stencil 1D 4Way"
 
-.. image:: https://bitbucket.org/cphvb/benchpress/raw/master/graphs/akira/latest/stencil___2d_speedup.png
+.. image:: https://bitbucket.org/bohrium/benchpress/raw/master/graphs/akira/latest/stencil___2d_speedup.png
    :align: center
    :alt: "Stencil 2D"
 
@@ -68,7 +68,7 @@ Log into the machine you want to run benchmarks on. Then do the following::
     cd ~
     mkdir buildbot
     cd buildbot
-    git archive --remote=ssh://git@bitbucket.org/cphvb/benchpress.git HEAD: --format=tar bootstrap.sh -o bootstrap.sh.tar
+    git archive --remote=ssh://git@bitbucket.org/bohrium/benchpress.git HEAD: --format=tar bootstrap.sh -o bootstrap.sh.tar
     tar xf bootstrap.sh.tar
     rm bootstrap.sh.tar
     chmod +x bootstrap.sh

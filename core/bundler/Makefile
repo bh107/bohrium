@@ -1,14 +1,14 @@
 ROOT=../..
-LIB=cphvb_bundler
+LIB=bh_bundler
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include
-LDFLAGS=-L$(ROOT)/core -lcphvb -lrt -shared -Wl,-soname
+LDFLAGS=-L$(ROOT)/core -lbh -lrt -shared -Wl,-soname
 HEADER=$(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
-INSTALLDIR?=/opt/cphvb/
+INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB).o
 

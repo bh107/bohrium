@@ -1,7 +1,7 @@
 Python/NumPy
 ------------
 
-.. automodule:: cphvbnumpy
+.. automodule:: bohrium
    :members:
    :undoc-members:
 
@@ -11,9 +11,9 @@ Library Reference
 .. autosummary::
    :toctree: pythonnumpygen
 
-   cphvbnumpy.core
-   cphvbnumpy.linalg
-   cphvbnumpy.examples
+   bohrium.core
+   bohrium.linalg
+   bohrium.examples
 
 Glossary
 ~~~~~~~~

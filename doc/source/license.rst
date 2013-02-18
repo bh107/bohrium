@@ -3,7 +3,7 @@
 History and License
 ===================
 
-cphVB is an active research project started by Mads R. B. Kristensen, Troels Blum and Brian Vinter at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ at the `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
+Bohrium is an active research project started by Mads R. B. Kristensen, Troels Blum and Brian Vinter at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ at the `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
 
     * Troels Blum
     * Brian Vinter
@@ -13,7 +13,7 @@ cphVB is an active research project started by Mads R. B. Kristensen, Troels Blu
 
 Contributors are welcome, do not hesitate to contact us!
 
-cphVB is distributed under the LGPLv3 license::
+Bohrium is distributed under the LGPLv3 license::
 
                    GNU LESSER GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007

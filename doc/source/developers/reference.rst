@@ -8,14 +8,14 @@ Bla bla bla
 Core
 ----
 
-.. doxygenstruct:: cphvb_array
-   :project: cphVB
+.. doxygenstruct:: bh_array
+   :project: Bohrium
 
-.. doxygenfunction:: cphvb_create_array
-   :project: cphVB
+.. doxygenfunction:: bh_create_array
+   :project: Bohrium
 
-.. doxygenfunction:: cphvb_destroy_array
-   :project: cphVB
+.. doxygenfunction:: bh_destroy_array
+   :project: Bohrium
 
 
 Utilities
@@ -26,8 +26,8 @@ Utilities
 Printing
 ::::::::
 
-.. doxygensummary:: cphvb_pprint.h
-   :project: cphVB
+.. doxygensummary:: bh_pprint.h
+   :project: Bohrium
 
 Bridges / Language Frontends
 ----------------------------

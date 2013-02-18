@@ -1,19 +1,19 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "Kernel.hpp"
 
 Kernel::Kernel(ResourceManager* resourceManager_, 
-               cphvb_intp ndim_,
+               bh_intp ndim_,
                const std::string& source, 
                const std::string& name)
     : resourceManager(resourceManager_)
@@ -35,7 +35,7 @@ Kernel::Kernel(ResourceManager* resourceManager_,
     kernel = resourceManager->createKernel(source , name);
 }
 
-Kernel::Kernel(ResourceManager* resourceManager_, cphvb_intp ndim_, cl::Kernel kernel_)
+Kernel::Kernel(ResourceManager* resourceManager_, bh_intp ndim_, cl::Kernel kernel_)
     : resourceManager(resourceManager_)
     , ndim(ndim_)
     , kernel(kernel_) {}
@@ -43,7 +43,7 @@ Kernel::Kernel(ResourceManager* resourceManager_, cphvb_intp ndim_, cl::Kernel k
 
 
 std::vector<Kernel> Kernel::createKernels(ResourceManager* resourceManager, 
-                                          const std::vector<cphvb_intp> ndims,
+                                          const std::vector<bh_intp> ndims,
                                           const std::string& source, 
                                           const std::vector<std::string>& kernelNames)
 {
@@ -58,7 +58,7 @@ std::vector<Kernel> Kernel::createKernels(ResourceManager* resourceManager,
 }
  
 std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManager, 
-                                                  const std::vector<cphvb_intp> ndims,
+                                                  const std::vector<bh_intp> ndims,
                                                   const std::string& fileName, 
                                                   const std::vector<std::string>& kernelNames)
 {

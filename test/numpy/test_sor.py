@@ -1,12 +1,12 @@
-import cphvbnumpy as np
+import bohrium as np
 from numpytest import numpytest
-import cphvbnumpy.linalg as la
-from cphvbnumpy import examples as exp
+import bohrium.linalg as la
+from bohrium import examples as exp
 
-def sor_setup(W,H,dtype=np.float32,cphvb=False):
+def sor_setup(W,H,dtype=np.float32,bohrium=False):
     if W%2 > 0 or H%2 > 0:
         raise Exception("Each dimension must have an even size.")
-    full = np.zeros((H+2,W+2), dtype=dtype,cphvb=cphvb)
+    full = np.zeros((H+2,W+2), dtype=dtype,bohrium=bohrium)
     full[:,0]  += -273.15
     full[:,-1] += -273.15
     full[0,:]  +=  40.0

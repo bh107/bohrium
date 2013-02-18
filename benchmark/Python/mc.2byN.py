@@ -1,4 +1,4 @@
-import cphvbnumpy as np
+import bohrium as np
 import util
 
 if __name__ == "__main__":
@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     # scattering n points over the unit square
     p = np.random.random((2,N))
-    p.cphvb = B.cphvb
+    p.bohrium = B.bohrium
 
     B.start()
 
