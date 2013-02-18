@@ -1,20 +1,20 @@
 [
-["unsigned_char", "cphvb_bool", "bool8", "CPHVB_BOOL"],
+["unsigned_char", "bh_bool", "bool8", "BH_BOOL"],
 
-["int8_t",  "cphvb_int8", "int8", "CPHVB_INT8"],
-["int16_t", "cphvb_int16", "int16", "CPHVB_INT16"],
-["int32_t", "cphvb_int32", "int32", "CPHVB_INT32"],
-["int64_t", "cphvb_int64", "int64", "CPHVB_INT64"],
+["int8_t",  "bh_int8", "int8", "BH_INT8"],
+["int16_t", "bh_int16", "int16", "BH_INT16"],
+["int32_t", "bh_int32", "int32", "BH_INT32"],
+["int64_t", "bh_int64", "int64", "BH_INT64"],
 
-["uint8_t",     "cphvb_uint8", "uint8", "CPHVB_UINT8"],
-["uint16_t",    "cphvb_uint16", "uint16", "CPHVB_UINT16"],
-["uint32_t",    "cphvb_uint32", "uint32", "CPHVB_UINT32"],
-["uint64_t",    "cphvb_uint64", "uint64", "CPHVB_UINT64"],
+["uint8_t",     "bh_uint8", "uint8", "BH_UINT8"],
+["uint16_t",    "bh_uint16", "uint16", "BH_UINT16"],
+["uint32_t",    "bh_uint32", "uint32", "BH_UINT32"],
+["uint64_t",    "bh_uint64", "uint64", "BH_UINT64"],
 
-["uint16_t",    "cphvb_float16", "float16", "CPHVB_FLOAT16"],
-["float",       "cphvb_float32", "float32", "CPHVB_FLOAT32"],
-["double",      "cphvb_float64", "float64", "CPHVB_FLOAT64"],
+["uint16_t",    "bh_float16", "float16", "BH_FLOAT16"],
+["float",       "bh_float32", "float32", "BH_FLOAT32"],
+["double",      "bh_float64", "float64", "BH_FLOAT64"],
 
-["struct { float real, imag; }", "cphvb_complex64", "complex64", "CPHVB_COMPLEX64"],
-["struct { double real, imag; }", "cphvb_complex128", "complex128", "CPHVB_COMPLEX128"]
+["struct { float real, imag; }", "bh_complex64", "complex64", "BH_COMPLEX64"],
+["struct { double real, imag; }", "bh_complex128", "complex128", "BH_COMPLEX128"]
 ]

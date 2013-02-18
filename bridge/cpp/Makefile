@@ -4,7 +4,7 @@ HEADER=$(ROOT)/include/*
 all: hello
 
 hello: hello.cpp $(HEADER)
-	$(CXX) $< -o $@ -L$(ROOT)/core -lcphvb $(LCFLAGS) $(CFLAGS) -DDEBUG
+	$(CXX) $< -o $@ -L$(ROOT)/core -lbohrium $(LCFLAGS) $(CFLAGS) -DDEBUG
 
 install: all
 	@-(echo 'Done.')

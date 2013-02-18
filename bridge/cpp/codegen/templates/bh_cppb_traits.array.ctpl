@@ -5,15 +5,15 @@ directiveStartToken = %
 %slurp
 template <typename T>
 inline
-void assign_array_type( cphvb_array* array );
+void assign_array_type( bh_array* array );
 // NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
 
-%for $ctype, $cphvb_atype, $cphvb_ctype, $cphvb_enum in $data
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 template <>
 inline
-void assign_array_type<$cphvb_atype>( cphvb_array* array )
+void assign_array_type<$bh_atype>( bh_array* array )
 {
-    array->type = $cphvb_enum;
+    array->type = $bh_enum;
 }
 
 %end for

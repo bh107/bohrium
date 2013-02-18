@@ -5,16 +5,16 @@ directiveStartToken = %
 %slurp
 template <typename T>
 inline
-void assign_const_type( cphvb_constant* instr, T value );
+void assign_const_type( bh_constant* instr, T value );
 // NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
 
-%for $ctype, $cphvb_atype, $cphvb_ctype, $cphvb_enum in $data
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 template <>
 inline
-void assign_const_type( cphvb_constant* constant, $cphvb_atype value )
+void assign_const_type( bh_constant* constant, $bh_atype value )
 {
-    constant->value.$cphvb_ctype = value;
-    constant->type = $cphvb_enum;
+    constant->value.$bh_ctype = value;
+    constant->type = $bh_enum;
 }
 
 %end for

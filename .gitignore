@@ -37,6 +37,7 @@ bridge/NumCIL/NumCIL.Unsafe/CreateAccessor.cs
 bridge/NumCIL/NumCIL.Unsafe/Pinner.cs
 bridge/NumCIL/NumCIL.Unsafe/Reduce.cs
 bridge/NumCIL/NumCIL/TypedArrays.cs
+bridge/cpp/codegen/output/*
 include/bh_opcode.h
 core/bh_opcode.c
 core/compute/codegen/out
