@@ -5,7 +5,7 @@ directiveStartToken = %
 %slurp
 #ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
-#include "cphvb.h"
+#include "bh.h"
 
 namespace bh {
 

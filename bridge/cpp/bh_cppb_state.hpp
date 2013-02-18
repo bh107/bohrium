@@ -1,48 +1,48 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
-http://cphvb.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
+http://bohrium.bitbucket.org
 
-cphVB is free software: you can redistribute it and/or modify
+Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
 published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
-cphVB is distributed in the hope that it will be useful,
+Bohrium is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with cphVB. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_STATE
 #define __BOHRIUM_BRIDGE_CPP_STATE
 #include <iostream>
-#include "cphvb.h"
+#include "bh.h"
 
 namespace bh {
 
 #define CPHVB_CPP_QUEUE_MAX 1024
-static cphvb_instruction queue[CPHVB_CPP_QUEUE_MAX]; // Instruction queue
-static cphvb_intp queue_size = 0;
+static bh_instruction queue[CPHVB_CPP_QUEUE_MAX]; // Instruction queue
+static bh_intp queue_size = 0;
 
-cphvb_init      vem_init;
-cphvb_execute   vem_execute;
-cphvb_shutdown  vem_shutdown;
+bh_init      vem_init;
+bh_execute   vem_execute;
+bh_shutdown  vem_shutdown;
 
-cphvb_reg_func      vem_reg_func;
-cphvb_component     **components,
+bh_reg_func      vem_reg_func;
+bh_component     **components,
                     *self_component,
                     *vem_component;
-cphvb_intp          children_count;
+bh_intp          children_count;
 
 void init()
 {
-    cphvb_error err;
-    self_component = cphvb_component_setup();
-    cphvb_component_children( self_component, &children_count, &components );
+    bh_error err;
+    self_component = bh_component_setup();
+    bh_component_children( self_component, &children_count, &components );
 
     if(children_count != 1 || components[0]->type != CPHVB_VEM) {
 
@@ -70,15 +70,15 @@ void init()
 void shutdown()
 {
     vem_shutdown();
-    cphvb_component_free(self_component);
-    cphvb_component_free(vem_component);
+    bh_component_free(self_component);
+    bh_component_free(vem_component);
 }
 
 template <typename T>
 inline
-void enqueue_aaa( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
+void enqueue_aaa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
 {
-    cphvb_instruction* instr;
+    bh_instruction* instr;
 
     if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
@@ -96,9 +96,9 @@ void enqueue_aaa( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<
 
 template <typename T>
 inline
-void enqueue_aac( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
+void enqueue_aac( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 {
-    cphvb_instruction* instr;
+    bh_instruction* instr;
 
     if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
@@ -117,9 +117,9 @@ void enqueue_aac( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const
 
 template <typename T>
 inline
-void enqueue_aca( cphvb_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
+void enqueue_aca( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 {
-    cphvb_instruction* instr;
+    bh_instruction* instr;
 
     if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
@@ -138,9 +138,9 @@ void enqueue_aca( cphvb_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> 
 
 template <typename T>
 inline
-void enqueue_aa( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1)
+void enqueue_aa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 {
-    cphvb_instruction* instr;
+    bh_instruction* instr;
 
     if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
@@ -158,9 +158,9 @@ void enqueue_aa( cphvb_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 
 template <typename T>
 inline
-void enqueue_ac( cphvb_opcode opcode, Vector<T> & op0, T const& op1)
+void enqueue_ac( bh_opcode opcode, Vector<T> & op0, T const& op1)
 {
-    cphvb_instruction* instr;
+    bh_instruction* instr;
 
     if (queue_size >= CPHVB_CPP_QUEUE_MAX) {
         vem_execute( queue_size, queue );
@@ -180,23 +180,23 @@ void enqueue_ac( cphvb_opcode opcode, Vector<T> & op0, T const& op1)
 //
 // Helper functions for printing and stuff like that...
 //
-cphvb_intp flush()
+bh_intp flush()
 {
     char *msg = (char*) malloc(1024 * sizeof(char));
 
-    cphvb_intp cur_size = queue_size;
-    cphvb_error res = CPHVB_SUCCESS;
+    bh_intp cur_size = queue_size;
+    bh_error res = CPHVB_SUCCESS;
     if (queue_size > 0) {
         res = vem_execute( queue_size, queue );
 
         if (res != CPHVB_SUCCESS) {
-            sprintf(msg, "Error in scheduled batch of instructions: %s\n", cphvb_error_text(res));
+            sprintf(msg, "Error in scheduled batch of instructions: %s\n", bh_error_text(res));
             printf("%s", msg);
             for(int i=0; i<queue_size; i++) {
-                sprintf(msg, "%s\n", cphvb_error_text( queue[i].status ));
+                sprintf(msg, "%s\n", bh_error_text( queue[i].status ));
                 printf("%d-%s", i, msg);
                 if ((queue[i].status != CPHVB_SUCCESS) && (queue[i].status != CPHVB_INST_PENDING)) {
-                    cphvb_pprint_instr( &queue[i] );
+                    bh_pprint_instr( &queue[i] );
                 }
             }
         }
