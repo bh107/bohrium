@@ -1,8 +1,8 @@
 [
 ["=", "BH_IDENTITY", "operator.int"], 
-["[]", "CUSTOM", "operator.int"], 
-["()", "CUSTOM", "operator.int"], 
-["->", "CUSTOM", "operator.int"], 
+["[]", "CUSTOM_2", "operator.int"], 
+["()", "CUSTOM_2", "operator.int"], 
+["->", "CUSTOM_2", "operator.int"], 
 
 ["+", "BH_ADD",      "operator.ext"],
 ["-", "BH_SUBTRACT", "operator.ext"],
@@ -26,25 +26,25 @@
 
 ["<<",  "BH_LEFT_SHIFT",     "operator.ext"],
 [">>",  "BH_RIGHT_SHIFT",    "operator.ext"],
- 
-["++", "CUSTOM","operator.ext"],
-["++", "CUSTOM","operator.ext"], 
-["--", "CUSTOM","operator.ext"],
-["--", "CUSTOM","operator.ext"],
 
 ["!", "BH_LOGICAL_NOT",  "operator.ext"],
 ["~", "BH_INVERT",       "operator.ext"],
+ 
+["++", "CUSTOM_2","operator.ext"],
+["++", "CUSTOM_2","operator.ext"], 
+["--", "CUSTOM_2","operator.ext"],
+["--", "CUSTOM_2","operator.ext"],
 
-["+=",  "CUSTOM", "operator.ext"],
-["-=",  "CUSTOM", "operator.ext"],
-["*=",  "CUSTOM", "operator.ext"],
-["/=",  "CUSTOM", "operator.ext"],
-["%=",  "CUSTOM", "operator.ext"],
-["&=",  "CUSTOM", "operator.ext"],
-["|=",  "CUSTOM", "operator.ext"],
-["^=",  "CUSTOM", "operator.ext"],
-["<<=", "CUSTOM", "operator.ext"],
-[">>=", "CUSTOM", "operator.ext"],
+["+=",  "CUSTOM_3", "operator.ext"],
+["-=",  "CUSTOM_3", "operator.ext"],
+["*=",  "CUSTOM_3", "operator.ext"],
+["/=",  "CUSTOM_3", "operator.ext"],
+["%=",  "CUSTOM_3", "operator.ext"],
+["&=",  "CUSTOM_3", "operator.ext"],
+["|=",  "CUSTOM_3", "operator.ext"],
+["^=",  "CUSTOM_3", "operator.ext"],
+["<<=", "CUSTOM_3", "operator.ext"],
+[">>=", "CUSTOM_3", "operator.ext"],
 
 ["sqr",     "BH_SQUARE", "operator.fun"],
 ["pow",     "BH_POWER", "operator.fun"],

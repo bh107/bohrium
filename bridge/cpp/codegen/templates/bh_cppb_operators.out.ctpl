@@ -3,6 +3,15 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
+//
+// Externally defined operator overloads.
+//
+
+//
+//  Binary and implemented by code-generator.
+//  Operators such as:
+//  Mapping "a + b" to BH_ADD(t, a, b)
+//
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 
@@ -34,6 +43,11 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 %end if
 %end for
 
+//
+//  Binary and implemented by manually.
+//  Operators such as:
+//  None so far...
+//
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 3
 
@@ -42,6 +56,7 @@ Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
     //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
     return *vector;
 }
 
@@ -50,6 +65,7 @@ Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 {
     //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
     return *vector;
 }
 
@@ -58,12 +74,18 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 {
     //std::cout << "<UNKNOWN>" << " $op " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
     return *vector;
 }
 
 %end if
 %end for
 
+//
+//  Binary and implemented by code-generator.
+//  Operators such as:
+//  Mapping "!a" to BH_ADD(t, a, b)
+//
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
@@ -88,6 +110,11 @@ Vector<T> & operator $op ( T const& rhs )
 %end if
 %end for
 
+//
+//  Unary and implemented manually.
+//  Operators such as:
+//  Mapping "++a" to BH_ADD(a, a, 1)
+//
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 2
 
@@ -96,7 +123,7 @@ Vector<T> & operator $op ( Vector<T> & rhs )
 {
     //std::cout << " $op " << "UNK" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
-    enqueue_aa( (bh_opcode)$opcode, *vector, rhs );
+    // TODO: implement
     return *vector;
 }
 
@@ -105,7 +132,7 @@ Vector<T> & operator $op ( T const& rhs )
 {
     //std::cout << " $op " << "UNK" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
-    enqueue_ac( (bh_opcode)$opcode, *vector, rhs );
+    // TODO: implement
     return *vector;
 }
 

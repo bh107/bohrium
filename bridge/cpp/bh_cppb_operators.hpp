@@ -5,6 +5,12 @@
 namespace bh {
 
 
+//
+//  Binary
+//  Externally defined
+//  Directly mapped opcode to c++ operators such as:
+//  Mapping "a + b" to BH_ADD(t, a, b)
+//
 
 template <typename T>
 Vector<T> & operator + ( Vector<T> & lhs, Vector<T> & rhs )
@@ -474,7 +480,19 @@ Vector<T> & operator >> ( T const& lhs, Vector<T> & rhs )
 }
 
 
+//
+//  Binary
+//  Externally defined
+//  Custom-mapping opcode to c++ operators such as:
+//  Hmmm dunnoo...
+//
 
+//
+//  Unary
+//  Externally defined
+//  Directly mapping opcode to c++ operators such as:
+//  sin( a ) to BH_SIN(t, a)
+//
 
 template <typename T>
 Vector<T> & operator ! ( Vector<T> & rhs )
@@ -514,6 +532,12 @@ Vector<T> & operator ~ ( T const& rhs )
 }
 
 
+//
+//  Unary
+//  Externally defined
+//  Indirectly mapping opcode to c++ operators such as:
+//  Mapping the "a++" operator to BH_ADD( a, a, 1)
+//
 
 
 }

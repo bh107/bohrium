@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import os
+from pprint import pprint
 from Cheetah.Template import Template
 
 def main():
@@ -17,24 +18,42 @@ def main():
     op_map  = []
     for name, opcode, t in operators:
         code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
-        if code:
-            op_map.append( (name, opcode, t, code[0]["nop"]))
 
+        opcode_base, nop = opcode.split("_", 1)
+        if opcode_base == "CUSTOM":
+            opcode  = opcode_base
+            nop     = int(nop)
+        elif code:
+            nop = code[0]["nop"]
+        else:
+            print "The Bohrium opcodes no longer include [ %s ]." % opcode
+            continue
+
+        op_map.append( (name, opcode, t, nop ) )
+
+    pprint(op_map)
     gens = [
         ('head.ctpl',                   'bh_cppb_traits.hpp', types),
         ('bh_cppb_traits.ctpl',         'bh_cppb_traits.hpp', types),
         ('bh_cppb_traits.array.ctpl',   'bh_cppb_traits.hpp', types),
         ('bh_cppb_traits.const.ctpl',   'bh_cppb_traits.hpp', types),
         ('end.ctpl',                    'bh_cppb_traits.hpp', types),
-
         
-        ('head.ctpl',                   'bh_cppb_functions.hpp', types),
-        ('bh_cppb_functions.ctpl',      'bh_cppb_functions.hpp',   op_map),
+        ('head.ctpl',                   'bh_cppb_functions.hpp', op_map),
+        ('bh_cppb_functions.ctpl',      'bh_cppb_functions.hpp', op_map),
+        ('end.ctpl',                    'bh_cppb_functions.hpp', types),
 
-        ('bh_cppb_operators.ctpl',      'bh_cppb_operators.hpp',   op_map),
-        ('bh_cppb_operators.in.ctpl',   'bh_cppb_operators.hpp',   op_map),
-        ('bh_cppb_operators.out.ctpl',  'bh_cppb_operators.hpp',   op_map),
-        ('end.ctpl',                    'bh_cppb_operators.hpp',   op_map),
+        ('head.ctpl',                   'bh_cppb_operators.hpp', op_map),
+        ('bh_cppb_operators.ctpl',      'bh_cppb_operators.hpp', op_map),
+        ('end.ctpl',                    'bh_cppb_operators.hpp', types),
+
+        ('head.ctpl',                   'bh_cppb_operators_in.hpp', op_map),
+        ('bh_cppb_operators.in.ctpl',   'bh_cppb_operators_in.hpp', op_map),
+        ('end.ctpl',                    'bh_cppb_operators_in.hpp', op_map),
+
+        ('head.ctpl',                   'bh_cppb_operators_out.hpp', op_map),
+        ('bh_cppb_operators.out.ctpl',  'bh_cppb_operators_out.hpp', op_map),
+        ('end.ctpl',                    'bh_cppb_operators_out.hpp', op_map),
     ]
 
     prev_output_fn   = gens[0][1]
