@@ -1,3 +1,22 @@
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
+http://bohrium.bitbucket.org
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
@@ -6,9 +25,83 @@ namespace bh {
 
 
 //
-//  Binary
-//  Externally defined
-//  Directly mapped opcode to c++ operators such as:
+//  Internally defined operator overloads
+//
+
+
+template <typename T>
+Vector<T>& Vector<T>::operator = ( const T rhs )
+{
+    //std::cout << *this << " = " << rhs << std::endl;
+    enqueue_ac( (bh_opcode)BH_IDENTITY, *this, rhs );
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
+{
+    //std::cout << *this << " = " << rhs << std::endl;
+    enqueue_aa( (bh_opcode)BH_IDENTITY, *this, rhs );
+    return *this;
+}
+
+
+
+template <typename T>
+Vector<T>& Vector<T>::operator [] ( const T rhs )
+{
+    //std::cout << *this << " [] " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator [] ( Vector<T> & rhs )
+{
+    //std::cout << *this << " [] " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+
+template <typename T>
+Vector<T>& Vector<T>::operator () ( const T rhs )
+{
+    //std::cout << *this << " () " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator () ( Vector<T> & rhs )
+{
+    //std::cout << *this << " () " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+
+template <typename T>
+Vector<T>& Vector<T>::operator -> ( const T rhs )
+{
+    //std::cout << *this << " -> " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator -> ( Vector<T> & rhs )
+{
+    //std::cout << *this << " -> " << rhs << std::endl;
+    // TODO: implement
+    return *this;
+}
+
+
+
+//
+//  Binary and implemented by code-generator.
+//  Operators such as:
 //  Mapping "a + b" to BH_ADD(t, a, b)
 //
 
@@ -481,17 +574,295 @@ Vector<T> & operator >> ( T const& lhs, Vector<T> & rhs )
 
 
 //
-//  Binary
-//  Externally defined
-//  Custom-mapping opcode to c++ operators such as:
-//  Hmmm dunnoo...
+//  Binary and implemented by manually.
+//  Operators such as:
+//  None so far...
 //
 
+template <typename T>
+Vector<T> & operator += ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator += ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator -= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator *= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator /= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator %= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator &= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator |= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator ^= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator <<= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator <<= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator <<= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator >>= ( Vector<T> & lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator >>= ( Vector<T> & lhs, T const& rhs )
+{
+    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( lhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator >>= ( T const& lhs, Vector<T> & rhs )
+{
+    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
 //
-//  Unary
-//  Externally defined
-//  Directly mapping opcode to c++ operators such as:
-//  sin( a ) to BH_SIN(t, a)
+//  Binary and implemented by code-generator.
+//  Operators such as:
+//  Mapping "!a" to BH_ADD(t, a, b)
 //
 
 template <typename T>
@@ -533,11 +904,86 @@ Vector<T> & operator ~ ( T const& rhs )
 
 
 //
-//  Unary
-//  Externally defined
-//  Indirectly mapping opcode to c++ operators such as:
-//  Mapping the "a++" operator to BH_ADD( a, a, 1)
+//  Unary and implemented manually.
+//  Operators such as:
+//  Mapping "++a" to BH_ADD(a, a, 1)
 //
+
+template <typename T>
+Vector<T> & operator ++ ( Vector<T> & rhs )
+{
+    //std::cout << " ++ " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator ++ ( T const& rhs )
+{
+    //std::cout << " ++ " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator ++ ( Vector<T> & rhs )
+{
+    //std::cout << " ++ " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator ++ ( T const& rhs )
+{
+    //std::cout << " ++ " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator -- ( Vector<T> & rhs )
+{
+    //std::cout << " -- " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator -- ( T const& rhs )
+{
+    //std::cout << " -- " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+
+template <typename T>
+Vector<T> & operator -- ( Vector<T> & rhs )
+{
+    //std::cout << " -- " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & operator -- ( T const& rhs )
+{
+    //std::cout << " -- " << "UNK" << std::endl;
+    Vector<T>* vector = new Vector<T>( rhs );
+    // TODO: implement
+    return *vector;
+}
+
 
 
 }

@@ -17,4 +17,4 @@ install: all
 	@-(echo 'Done.')
 
 clean:
-	rm -rf *.o *~ hello
+	rm -rf *.o *~ hello codegen/output/*.hpp

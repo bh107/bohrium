@@ -3,9 +3,16 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
+%include raw "codegen/templates/license.txt"
 #ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
 
 namespace bh {
 
+%include "codegen/templates/bh_cppb_operators_int.ctpl"
+%include "codegen/templates/bh_cppb_operators_ext.ctpl"
+
+}
+
+#endif

@@ -3,9 +3,6 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-//
-// Externally defined operator overloads.
-//
 
 //
 //  Binary and implemented by code-generator.
@@ -138,5 +135,4 @@ Vector<T> & operator $op ( T const& rhs )
 
 %end if
 %end for
-
 

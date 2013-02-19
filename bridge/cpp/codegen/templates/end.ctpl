@@ -1,8 +1,0 @@
-#slurp
-#compiler-settings
-directiveStartToken = %
-#end compiler-settings
-%slurp
-}
-
-#endif

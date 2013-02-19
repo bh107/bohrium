@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-//
-// THIS FILE IS CONSTRUCTED BY CODE-GENERATOR; DO NOT EDIT MANUALLY.
-//
+
 #ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "bh.h"
@@ -27,204 +25,205 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 
-template <typename T>
-Vector<T> & pow ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_POWER, vector, vector );
-    return vector;
+    template <typename T>
+    Vector<T> & pow ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_POWER, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & abs ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_ABSOLUTE, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & max ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_MAXIMUM, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & min ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_MINIMUM, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & sin ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_SIN, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & cos ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_COS, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & tan ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_TAN, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & sinh ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_SINH, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & cosh ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_COSH, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & tanh ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_TANH, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & exp ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_EXP, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & exp2 ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_EXP2, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & expm1 ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_EXPM1, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & log ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_LOG, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & log2 ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_LOG2, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & log10 ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_LOG10, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & log1p ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_LOG1P, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & sqrt ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_SQRT, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & ceil ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_CEIL, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & trunc ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_TRUNC, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & floor ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_FLOOR, vector, vector );
+        return vector;
+    }
+
+
+    template <typename T>
+    Vector<T> & rint ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) BH_RINT, vector, vector );
+        return vector;
+    }
+
+
 }
 
-
-template <typename T>
-Vector<T> & abs ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_ABSOLUTE, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & max ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_MAXIMUM, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & min ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_MINIMUM, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & sin ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_SIN, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & cos ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_COS, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & tan ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_TAN, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & sinh ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_SINH, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & cosh ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_COSH, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & tanh ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_TANH, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & exp ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_EXP, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & exp2 ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_EXP2, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & expm1 ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_EXPM1, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & log ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_LOG, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & log2 ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_LOG2, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & log10 ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_LOG10, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & log1p ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_LOG1P, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & sqrt ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_SQRT, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & ceil ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_CEIL, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & trunc ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_TRUNC, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & floor ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_FLOOR, vector, vector );
-    return vector;
-}
-
-
-template <typename T>
-Vector<T> & rint ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) BH_RINT, vector, vector );
-    return vector;
-}
-
-
-}
 #endif
 

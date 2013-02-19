@@ -3,26 +3,29 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
+%include raw 'codegen/templates/license.txt'
+
 #ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "bh.h"
 
 namespace bh {
 
-%for $function in $data
-%if $function[2] == "operator.fun"
+    %for $function in $data
+    %if $function[2] == "operator.fun"
 
-template <typename T>
-Vector<T> & $function[0] ( Vector<T> & vector )
-{
-    std::cout << vector << std::endl;
-    enqueue_aa( (bh_opcode) $function[1], vector, vector );
-    return vector;
+    template <typename T>
+    Vector<T> & $function[0] ( Vector<T> & vector )
+    {
+        std::cout << vector << std::endl;
+        enqueue_aa( (bh_opcode) $function[1], vector, vector );
+        return vector;
+    }
+
+    %end if
+    %end for
+
 }
 
-%end if
-%end for
-
-}
 #endif
 
