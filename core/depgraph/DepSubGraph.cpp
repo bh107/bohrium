@@ -73,7 +73,7 @@ DepSubGraph* DepSubGraph::merge(bh_instruction* inst,
     DepSubGraph* res = new DepSubGraph(inst);
     for (DepSubGraph* sg: subGraphs)
     {
-        for (cphvb_instruction* i: sg->instructions)
+        for (bh_instruction* i: sg->instructions)
             res->instructions.push_front(i);
         for (auto &mp: sg->modificationMap)
             res->modificationMap.insert(mp);
