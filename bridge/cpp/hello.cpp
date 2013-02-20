@@ -20,34 +20,144 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include "bh_cppb.hpp"
 
+using namespace bh;
+
+void ac()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    x = 1.0;
+}
+
+void aa()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+
+    x = 1.0;
+    y = 2.0;
+
+    x = y;
+}
+
+void aaa()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+    Vector<double> z = Vector<double>(1024, 1024);
+
+    x = 1.0;
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void aac()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+    double z;
+
+    x = 1.0;
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void aca()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    double y;
+    Vector<double> z = Vector<double>(1024, 1024);
+
+    x = 1.0;
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void aa_u()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+
+    y = 2.0;
+
+    x = y;
+}
+
+void aaa_u()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+    Vector<double> z = Vector<double>(1024, 1024);
+
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void aac_u()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+    double z;
+
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void aca_u()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    double y;
+    Vector<double> z = Vector<double>(1024, 1024);
+
+    y = 2.0;
+    z = 3.0;
+
+    x = y + z;
+}
+
+void prefix()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    ++x;
+}
+
+void postfix()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    x++;
+}
+
 int main() {
 
-    bh::init();
-    bh::Vector<float> a = bh::Vector<float>(1024, 1024);
-    bh::Vector<float> b = bh::Vector<float>(1024, 1024);
-    bh::Vector<float> c = bh::Vector<float>(1024, 1024);
+    init();
 
-    //
-    // Beautiful code
-    //
-    a = (float)1;
-    b = (float)2;
-    a = (float)3;
-    c = a;
-    ++c;
-    c++;
-    --c;
-    c--;
-    c = ((a+(float)1)++)--;
+    ac();
+    aa();
 
-    c = (float)1+a;
-    c = a+b;
+    aaa();
+    aac();
+    aca();
 
-    //std::cout << "And the value is: " << a << "." << std::endl;
-    //std::cout << "Flushing " << bh::flush() << " operations" << std::endl;
+    aa_u();
+    aaa_u();
+    aac_u();
+    aca_u();
 
-    bh::shutdown();
+    prefix();
+    postfix();
+
+    shutdown();
 
     return 0;
 
 }
+

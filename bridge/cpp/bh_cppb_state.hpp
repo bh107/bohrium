@@ -67,8 +67,29 @@ void init()
 
 }
 
+bh_intp flush()
+{
+    char *msg = (char*) malloc(1024 * sizeof(char));
+
+    bh_intp cur_size = queue_size;
+    bh_error res = BH_SUCCESS;
+    if (queue_size > 0) {
+        res = vem_execute( queue_size, queue );
+
+        if (res != BH_SUCCESS) {
+            sprintf(msg, "Error in scheduled batch of instructions: %s\n", bh_error_text(res));
+            printf("%s", msg);
+        }
+
+        queue_size = 0;
+    }
+    return cur_size;
+   
+}
+
 void shutdown()
 {
+    flush();
     vem_shutdown();
     bh_component_free(self_component);
     bh_component_free(vem_component);
@@ -175,25 +196,7 @@ void enqueue_ac( bh_opcode opcode, Vector<T> & op0, T const& op1)
 //
 // Helper functions for printing and stuff like that...
 //
-bh_intp flush()
-{
-    char *msg = (char*) malloc(1024 * sizeof(char));
 
-    bh_intp cur_size = queue_size;
-    bh_error res = BH_SUCCESS;
-    if (queue_size > 0) {
-        res = vem_execute( queue_size, queue );
-
-        if (res != BH_SUCCESS) {
-            sprintf(msg, "Error in scheduled batch of instructions: %s\n", bh_error_text(res));
-            printf("%s", msg);
-        }
-
-        queue_size = 0;
-    }
-    return cur_size;
-   
-}
 
 }
 

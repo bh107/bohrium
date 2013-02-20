@@ -33,6 +33,8 @@ public:
     Vector( int d0 );
     Vector( int d0, int d1 );
 
+    ~Vector();
+
     //
     // Operators: 
     //

@@ -53,7 +53,7 @@ def main():
             continue
 
         op_map.append( (name, opcode, t, nop ) )
-    pprint(op_map)
+    #pprint(op_map)
     gens = [
         ('bh_cppb_traits.ctpl',     'bh_cppb_traits.hpp',    types),
         ('bh_cppb_functions.ctpl',  'bh_cppb_functions.hpp', op_map),

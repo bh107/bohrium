@@ -17,6 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <iostream>
 namespace bh {
 
 template <typename T>
@@ -68,29 +69,46 @@ Vector<T>::Vector( int d0, int d1 )
 }
 
 template <typename T>
+Vector<T>::~Vector()
+{
+    enqueue_aa( (bh_opcode)BH_FREE, *this, *this);
+    enqueue_aa( (bh_opcode)BH_DISCARD, *this, *this);
+    flush();
+
+    delete this->array;
+}
+
+template <typename T>
 Vector<T>& Vector<T>::operator++()
 {
+    std::cout << this << ": ++ v{ " << this << " }" << std::endl;
+    enqueue_aac( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator++(int)
 {
+    std::cout << this << ": v{ " << this << " } ++" << std::endl;
+    enqueue_aac( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator--()
 {
+    std::cout << this << ": -- v{ " << this << " }" << std::endl;
+    enqueue_aac( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator--(int)
 {
+    std::cout << this << ": v{ " << this << " } --" << std::endl;
+    enqueue_aac( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
-
 
 }
 
