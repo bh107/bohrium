@@ -39,7 +39,7 @@ def main():
     operators   = json.loads(open(script_dir +'operators.json').read())
 
     op_map  = []
-    for name, opcode, t in operators:
+    for name, opcode, t, mapped in (x for x in operators if x[3]):
         code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
 
         opcode_base, nop = opcode.split("_", 1)
@@ -53,7 +53,7 @@ def main():
             continue
 
         op_map.append( (name, opcode, t, nop ) )
-
+    pprint(op_map)
     gens = [
         ('bh_cppb_traits.ctpl',     'bh_cppb_traits.hpp',    types),
         ('bh_cppb_functions.ctpl',  'bh_cppb_functions.hpp', op_map),

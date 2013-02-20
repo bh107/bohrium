@@ -1,8 +1,9 @@
 ROOT=../..
 HEADER=$(ROOT)/include/*
 CXX=clang
+#CXX=gcc
 
-all: hello
+all: gen genm hello
 
 gen:
 	./codegen/gen.py
@@ -11,7 +12,7 @@ genm:
 	mv codegen/output/*.hpp .
 
 hello: hello.cpp $(HEADER)
-	$(CXX) $< -o $@ -L$(ROOT)/core -I$(ROOT)/include -lbohrium $(LCFLAGS) $(CFLAGS) -DDEBUG
+	$(CXX) $< -o $@ -L$(ROOT)/core -I$(ROOT)/include -lbh $(LCFLAGS) $(CFLAGS)
 
 install: all
 	@-(echo 'Done.')

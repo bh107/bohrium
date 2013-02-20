@@ -17,6 +17,13 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+
+//
+//  WARN:   This file is generated; changes to it will be overwritten.
+//          If you wish to change its functionality then change the code-generator for this file.
+//          Take a look at: codegen/README
+//
+
 #ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
@@ -32,70 +39,19 @@ namespace bh {
 template <typename T>
 Vector<T>& Vector<T>::operator = ( const T rhs )
 {
-    //std::cout << *this << " = " << rhs << std::endl;
     enqueue_ac( (bh_opcode)BH_IDENTITY, *this, rhs );
+    std::cout << this << ": = " << rhs << std::endl;
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
 {
-    //std::cout << *this << " = " << rhs << std::endl;
     enqueue_aa( (bh_opcode)BH_IDENTITY, *this, rhs );
+    std::cout << this << ": = " << &rhs << std::endl;
     return *this;
 }
 
-
-
-template <typename T>
-Vector<T>& Vector<T>::operator [] ( const T rhs )
-{
-    //std::cout << *this << " [] " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
-
-template <typename T>
-Vector<T>& Vector<T>::operator [] ( Vector<T> & rhs )
-{
-    //std::cout << *this << " [] " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
-
-
-template <typename T>
-Vector<T>& Vector<T>::operator () ( const T rhs )
-{
-    //std::cout << *this << " () " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
-
-template <typename T>
-Vector<T>& Vector<T>::operator () ( Vector<T> & rhs )
-{
-    //std::cout << *this << " () " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
-
-
-template <typename T>
-Vector<T>& Vector<T>::operator -> ( const T rhs )
-{
-    //std::cout << *this << " -> " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
-
-template <typename T>
-Vector<T>& Vector<T>::operator -> ( Vector<T> & rhs )
-{
-    //std::cout << *this << " -> " << rhs << std::endl;
-    // TODO: implement
-    return *this;
-}
 
 
 
@@ -108,8 +64,8 @@ Vector<T>& Vector<T>::operator -> ( Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator + ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " + " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " + " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -118,6 +74,7 @@ template <typename T>
 Vector<T> & operator + ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " + " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -126,6 +83,7 @@ template <typename T>
 Vector<T> & operator + ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " + " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -134,8 +92,8 @@ Vector<T> & operator + ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator - ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " - " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " - " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -144,6 +102,7 @@ template <typename T>
 Vector<T> & operator - ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " - " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -152,6 +111,7 @@ template <typename T>
 Vector<T> & operator - ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " - " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -160,8 +120,8 @@ Vector<T> & operator - ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator * ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " * " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " * " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -170,6 +130,7 @@ template <typename T>
 Vector<T> & operator * ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " * " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -178,6 +139,7 @@ template <typename T>
 Vector<T> & operator * ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " * " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -186,8 +148,8 @@ Vector<T> & operator * ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator / ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " / " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " / " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -196,6 +158,7 @@ template <typename T>
 Vector<T> & operator / ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " / " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -204,6 +167,7 @@ template <typename T>
 Vector<T> & operator / ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " / " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -212,8 +176,8 @@ Vector<T> & operator / ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator % ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " % " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " % " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -222,6 +186,7 @@ template <typename T>
 Vector<T> & operator % ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " % " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -230,6 +195,7 @@ template <typename T>
 Vector<T> & operator % ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " % " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -238,8 +204,8 @@ Vector<T> & operator % ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator == ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " == " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " == " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -248,6 +214,7 @@ template <typename T>
 Vector<T> & operator == ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " == " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -256,6 +223,7 @@ template <typename T>
 Vector<T> & operator == ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " == " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -264,8 +232,8 @@ Vector<T> & operator == ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator != ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " != " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " != " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -274,6 +242,7 @@ template <typename T>
 Vector<T> & operator != ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " != " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -282,6 +251,7 @@ template <typename T>
 Vector<T> & operator != ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " != " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -290,8 +260,8 @@ Vector<T> & operator != ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator > ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " > " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " > " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -300,6 +270,7 @@ template <typename T>
 Vector<T> & operator > ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " > " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -308,6 +279,7 @@ template <typename T>
 Vector<T> & operator > ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " > " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -316,8 +288,8 @@ Vector<T> & operator > ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator >= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " >= " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " >= " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -326,6 +298,7 @@ template <typename T>
 Vector<T> & operator >= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " >= " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -334,6 +307,7 @@ template <typename T>
 Vector<T> & operator >= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " >= " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -342,8 +316,8 @@ Vector<T> & operator >= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator < ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " < " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " < " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -352,6 +326,7 @@ template <typename T>
 Vector<T> & operator < ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " < " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -360,6 +335,7 @@ template <typename T>
 Vector<T> & operator < ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " < " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -368,8 +344,8 @@ Vector<T> & operator < ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator <= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " <= " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " <= " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -378,6 +354,7 @@ template <typename T>
 Vector<T> & operator <= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " <= " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -386,6 +363,7 @@ template <typename T>
 Vector<T> & operator <= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " <= " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -394,8 +372,8 @@ Vector<T> & operator <= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator && ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " && " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " && " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -404,6 +382,7 @@ template <typename T>
 Vector<T> & operator && ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " && " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -412,6 +391,7 @@ template <typename T>
 Vector<T> & operator && ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " && " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -420,8 +400,8 @@ Vector<T> & operator && ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator || ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " || " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " || " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -430,6 +410,7 @@ template <typename T>
 Vector<T> & operator || ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " || " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -438,6 +419,7 @@ template <typename T>
 Vector<T> & operator || ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " || " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -446,8 +428,8 @@ Vector<T> & operator || ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator & ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " & " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " & " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -456,6 +438,7 @@ template <typename T>
 Vector<T> & operator & ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " & " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -464,6 +447,7 @@ template <typename T>
 Vector<T> & operator & ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " & " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -472,8 +456,8 @@ Vector<T> & operator & ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator | ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " | " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " | " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -482,6 +466,7 @@ template <typename T>
 Vector<T> & operator | ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " | " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -490,6 +475,7 @@ template <typename T>
 Vector<T> & operator | ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " | " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -498,8 +484,8 @@ Vector<T> & operator | ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ^ ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << lhs << " ^ " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " ^ " << &rhs << std::endl;
     enqueue_aaa( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
@@ -508,6 +494,7 @@ template <typename T>
 Vector<T> & operator ^ ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " ^ " << rhs << std::endl;
     enqueue_aac( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
@@ -516,59 +503,8 @@ template <typename T>
 Vector<T> & operator ^ ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " ^ " << &rhs << std::endl;
     enqueue_aca( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator << ( Vector<T> & lhs, Vector<T> & rhs )
-{
-    //std::cout << lhs << " << " << rhs << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aaa( (bh_opcode)BH_LEFT_SHIFT, *vector, lhs, rhs );
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator << ( Vector<T> & lhs, T const& rhs )
-{
-    Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aac( (bh_opcode)BH_LEFT_SHIFT, *vector, lhs, rhs );
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator << ( T const& lhs, Vector<T> & rhs )
-{
-    Vector<T>* vector = new Vector<T>( rhs );
-    enqueue_aca( (bh_opcode)BH_LEFT_SHIFT, *vector, lhs, rhs );
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator >> ( Vector<T> & lhs, Vector<T> & rhs )
-{
-    //std::cout << lhs << " >> " << rhs << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aaa( (bh_opcode)BH_RIGHT_SHIFT, *vector, lhs, rhs );
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator >> ( Vector<T> & lhs, T const& rhs )
-{
-    Vector<T>* vector = new Vector<T>( lhs );
-    enqueue_aac( (bh_opcode)BH_RIGHT_SHIFT, *vector, lhs, rhs );
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator >> ( T const& lhs, Vector<T> & rhs )
-{
-    Vector<T>* vector = new Vector<T>( rhs );
-    enqueue_aca( (bh_opcode)BH_RIGHT_SHIFT, *vector, lhs, rhs );
     return *vector;
 }
 
@@ -582,8 +518,8 @@ Vector<T> & operator >> ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator += ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " += " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -591,8 +527,8 @@ Vector<T> & operator += ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator += ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " += " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -600,8 +536,8 @@ Vector<T> & operator += ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " += " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " += " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -610,8 +546,8 @@ Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " -= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -619,8 +555,8 @@ Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator -= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " -= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -628,8 +564,8 @@ Vector<T> & operator -= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " -= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " -= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -638,8 +574,8 @@ Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " *= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -647,8 +583,8 @@ Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator *= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " *= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -656,8 +592,8 @@ Vector<T> & operator *= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " *= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " *= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -666,8 +602,8 @@ Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " /= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -675,8 +611,8 @@ Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator /= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " /= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -684,8 +620,8 @@ Vector<T> & operator /= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " /= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " /= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -694,8 +630,8 @@ Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " %= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -703,8 +639,8 @@ Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator %= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " %= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -712,8 +648,8 @@ Vector<T> & operator %= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " %= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " %= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -722,8 +658,8 @@ Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " &= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -731,8 +667,8 @@ Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator &= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " &= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -740,8 +676,8 @@ Vector<T> & operator &= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " &= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " &= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -750,8 +686,8 @@ Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " |= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -759,8 +695,8 @@ Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator |= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " |= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -768,8 +704,8 @@ Vector<T> & operator |= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " |= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " |= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -778,8 +714,8 @@ Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " ^= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -787,8 +723,8 @@ Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ^= ( Vector<T> & lhs, T const& rhs )
 {
-    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( lhs );
+    std::cout << &vector << ": " << &lhs << " ^= " << rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -796,64 +732,8 @@ Vector<T> & operator ^= ( Vector<T> & lhs, T const& rhs )
 template <typename T>
 Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
 {
-    //std::cout << "<UNKNOWN>" << " ^= " << "<UNKNOWN>" << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator <<= ( Vector<T> & lhs, Vector<T> & rhs )
-{
-    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator <<= ( Vector<T> & lhs, T const& rhs )
-{
-    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator <<= ( T const& lhs, Vector<T> & rhs )
-{
-    //std::cout << "<UNKNOWN>" << " <<= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator >>= ( Vector<T> & lhs, Vector<T> & rhs )
-{
-    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator >>= ( Vector<T> & lhs, T const& rhs )
-{
-    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( lhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator >>= ( T const& lhs, Vector<T> & rhs )
-{
-    //std::cout << "<UNKNOWN>" << " >>= " << "<UNKNOWN>" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << lhs << " ^= " << &rhs << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -868,8 +748,8 @@ Vector<T> & operator >>= ( T const& lhs, Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ! ( Vector<T> & rhs )
 {
-    //std::cout << " ! " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << " ! " << &rhs << std::endl;
     enqueue_aa( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
     return *vector;
 }
@@ -877,8 +757,8 @@ Vector<T> & operator ! ( Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ! ( T const& rhs )
 {
-    //std::cout << " ! " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << " ! " << rhs << std::endl;
     enqueue_ac( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
     return *vector;
 }
@@ -887,8 +767,8 @@ Vector<T> & operator ! ( T const& rhs )
 template <typename T>
 Vector<T> & operator ~ ( Vector<T> & rhs )
 {
-    //std::cout << " ~ " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << " ~ " << &rhs << std::endl;
     enqueue_aa( (bh_opcode)BH_INVERT, *vector, rhs );
     return *vector;
 }
@@ -896,8 +776,8 @@ Vector<T> & operator ~ ( Vector<T> & rhs )
 template <typename T>
 Vector<T> & operator ~ ( T const& rhs )
 {
-    //std::cout << " ~ " << rhs << std::endl;
     Vector<T>* vector = new Vector<T>( rhs );
+    std::cout << &vector << ": " << " ~ " << rhs << std::endl;
     enqueue_ac( (bh_opcode)BH_INVERT, *vector, rhs );
     return *vector;
 }
@@ -908,82 +788,6 @@ Vector<T> & operator ~ ( T const& rhs )
 //  Operators such as:
 //  Mapping "++a" to BH_ADD(a, a, 1)
 //
-
-template <typename T>
-Vector<T> & operator ++ ( Vector<T> & rhs )
-{
-    //std::cout << " ++ " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator ++ ( T const& rhs )
-{
-    //std::cout << " ++ " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator ++ ( Vector<T> & rhs )
-{
-    //std::cout << " ++ " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator ++ ( T const& rhs )
-{
-    //std::cout << " ++ " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator -- ( Vector<T> & rhs )
-{
-    //std::cout << " -- " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator -- ( T const& rhs )
-{
-    //std::cout << " -- " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-
-template <typename T>
-Vector<T> & operator -- ( Vector<T> & rhs )
-{
-    //std::cout << " -- " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
-template <typename T>
-Vector<T> & operator -- ( T const& rhs )
-{
-    //std::cout << " -- " << "UNK" << std::endl;
-    Vector<T>* vector = new Vector<T>( rhs );
-    // TODO: implement
-    return *vector;
-}
-
 
 
 }

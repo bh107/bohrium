@@ -33,26 +33,31 @@ public:
     Vector( int d0 );
     Vector( int d0, int d1 );
 
+    //
     // Operators: 
     //
-    // =, [], (), -> must be "internal" (nonstatic member functions),
-    // these are defined in bh_cppb_vector.hpp
+    // =, [], (), -> must be "internal" (nonstatic member functions) and thus declared here.
     //
-    // The remaining operators are defined "externally" in: bh_cppb_operators.hpp
+    // Implementations / definitions of operator-overloads are provided in:
+    // 
+    // - bh_cppb.vector.hpp:    defined / implemented manually.
+    // - bh_cppb_operators.hpp: defined / implemented by code-generator.
     //
     Vector& operator=( const T rhs );
     Vector& operator=( Vector & rhs );
+    Vector& operator++();
+    Vector& operator++( int );
+    Vector& operator--();
+    Vector& operator--( int );
 
 };
 
 }
 
-#include "bh_cppb_traits.hpp"       // Traits for assigning constants and arrays.
+#include "bh_cppb_traits.hpp"       // Traits for assigning type to constants and arrays.
 #include "bh_cppb_state.hpp"        // Communication with Bohrium runtime
-#include "bh_cppb_operators.hpp"    // Vector operations via operator-overloads, auto-generated:
-                                    // see ./codegen/* on how.
-#include "bh_cppb_functions.hpp"    // Vector operations via functions, auto-generated:
-                                    // see ./codegen/* on how.
-#include "bh_cppb_vector.hpp"       // (De)Constructor, "internal" operator overloads.
+#include "bh_cppb_vector.hpp"       // Vector (De)Constructor.
+#include "bh_cppb_operators.hpp"    // Vector operations via operator-overloads.
+#include "bh_cppb_functions.hpp"    // Vector operations via functions.
 
 #endif

@@ -4,6 +4,9 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 %include raw "codegen/templates/license.txt"
+
+%include raw "codegen/templates/warn.txt"
+
 #ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
 #define __BOHRIUM_BRIDGE_CPP_TRAITS
 #include "bh.h"
@@ -14,3 +17,5 @@ namespace bh {
 %include "codegen/templates/bh_cppb_traits.array.ctpl"
 
 }
+
+#endif

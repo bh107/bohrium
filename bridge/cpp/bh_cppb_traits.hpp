@@ -17,6 +17,13 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+
+//
+//  WARN:   This file is generated; changes to it will be overwritten.
+//          If you wish to change its functionality then change the code-generator for this file.
+//          Take a look at: codegen/README
+//
+
 #ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
 #define __BOHRIUM_BRIDGE_CPP_TRAITS
 #include "bh.h"
@@ -215,3 +222,5 @@ void assign_array_type<bh_complex128>( bh_array* array )
 
 
 }
+
+#endif

@@ -18,6 +18,12 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+//
+//  WARN:   This file is generated; changes to it will be overwritten.
+//          If you wish to change its functionality then change the code-generator for this file.
+//          Take a look at: codegen/README
+//
+
 #ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "bh.h"

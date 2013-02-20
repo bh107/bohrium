@@ -3,7 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-%include raw 'codegen/templates/license.txt'
+%include raw "codegen/templates/license.txt"
+
+%include raw "codegen/templates/warn.txt"
 
 #ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS

@@ -67,5 +67,30 @@ Vector<T>::Vector( int d0, int d1 )
     this->array->data        = NULL;
 }
 
+template <typename T>
+Vector<T>& Vector<T>::operator++()
+{
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator++(int)
+{
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator--()
+{
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator--(int)
+{
+    return *this;
+}
+
+
 }
 
