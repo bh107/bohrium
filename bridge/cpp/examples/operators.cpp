@@ -231,8 +231,8 @@ void yk_xky_b()
     x = 2.0 + y;
 }
 
-int main() {
-
+int main()
+{
     init();
 
     xk();
@@ -255,6 +255,5 @@ int main() {
     shutdown();
 
     return 0;
-
 }
 

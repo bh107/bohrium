@@ -34,13 +34,12 @@ void compute()
     x = y + z;
 }
 
-int main() {
-
+int main()
+{
     init();
     compute();
     shutdown();
 
     return 0;
-
 }
 
