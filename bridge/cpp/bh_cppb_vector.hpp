@@ -71,8 +71,8 @@ Vector<T>::Vector( int d0, int d1 )
 template <typename T>
 Vector<T>::~Vector()
 {
-    enqueue_aa( (bh_opcode)BH_FREE, *this, *this);
-    enqueue_aa( (bh_opcode)BH_DISCARD, *this, *this);
+    enqueue( (bh_opcode)BH_FREE, *this, *this);
+    enqueue( (bh_opcode)BH_DISCARD, *this, *this);
 
     //delete this->array;
 }
@@ -81,7 +81,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator++()
 {
     std::cout << this << ": ++ v{ " << this << " }" << std::endl;
-    enqueue_aac( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
@@ -89,7 +89,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator++(int)
 {
     std::cout << this << ": v{ " << this << " } ++" << std::endl;
-    enqueue_aac( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
@@ -97,7 +97,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator--()
 {
     std::cout << this << ": -- v{ " << this << " }" << std::endl;
-    enqueue_aac( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
 
@@ -105,7 +105,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator--(int)
 {
     std::cout << this << ": v{ " << this << " } --" << std::endl;
-    enqueue_aac( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
 
@@ -113,7 +113,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator+=( const T rhs )
 {
     std::cout << this << ": += v{ " << this << " } " << std::endl;
-    enqueue_aac( (bh_opcode)BH_ADD, *this, *this, rhs );
+    enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
 
@@ -121,7 +121,7 @@ template <typename T>
 Vector<T>& Vector<T>::operator+=( Vector & rhs )
 {
     std::cout << this << ": += v{ " << this << " } " << std::endl;
-    enqueue_aaa( (bh_opcode)BH_ADD, *this, *this, rhs );
+    enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
 

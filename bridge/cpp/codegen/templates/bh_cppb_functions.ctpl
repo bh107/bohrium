@@ -22,7 +22,7 @@ namespace bh {
         Vector<T>* vector = new Vector<T>( rhs );
 
         std::cout << &vector << ": $function[0] v{ " << &rhs << " }" << std::endl;
-        enqueue_aa( (bh_opcode) $function[1], *vector, rhs );
+        enqueue( (bh_opcode) $function[1], *vector, rhs );
         return *vector;
     }
 

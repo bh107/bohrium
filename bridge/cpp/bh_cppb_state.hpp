@@ -97,7 +97,7 @@ void shutdown()
 
 template <typename T>
 inline
-void enqueue_aaa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
+void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
 {
     bh_instruction* instr;
 
@@ -116,7 +116,7 @@ void enqueue_aaa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> 
 
 template <typename T>
 inline
-void enqueue_aac( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
+void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 {
     bh_instruction* instr;
 
@@ -136,7 +136,7 @@ void enqueue_aac( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& o
 
 template <typename T>
 inline
-void enqueue_aca( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
+void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 {
     bh_instruction* instr;
 
@@ -156,7 +156,7 @@ void enqueue_aca( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & o
 
 template <typename T>
 inline
-void enqueue_aa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
+void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 {
     bh_instruction* instr;
 
@@ -175,7 +175,7 @@ void enqueue_aa( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 
 template <typename T>
 inline
-void enqueue_ac( bh_opcode opcode, Vector<T> & op0, T const& op1)
+void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
 {
     bh_instruction* instr;
 

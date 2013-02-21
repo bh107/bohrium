@@ -3,19 +3,20 @@ HEADER=$(ROOT)/include/*
 CXX=clang
 #CXX=gcc
 
-all: gen genm hello
+all: gen operators hw
 
 gen:
 	./codegen/gen.py
-
-genm:
 	mv codegen/output/*.hpp .
 
-hello: hello.cpp $(HEADER)
-	$(CXX) $< -o $@ -L$(ROOT)/core -I$(ROOT)/include -lbh $(LCFLAGS) $(CFLAGS)
+hw: examples/hw.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)
+
+operators: examples/operators.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)
 
 install: all
 	@-(echo 'Done.')
 
 clean:
-	rm -rf *.o *~ hello codegen/output/*.hpp
+	rm -rf *.o *~ hello codegen/output/*.hpp bin/*
