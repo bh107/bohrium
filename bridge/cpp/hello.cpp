@@ -22,13 +22,57 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bh;
 
-void ac()
+/**
+ * x = 1.0
+ * Assignment Operator:
+ * Assign a constant-value to every element of x.
+ *
+ */
+void xk()
 {
     Vector<double> x = Vector<double>(1024, 1024);
+
     x = 1.0;
 }
 
-void aa()
+/**
+ * x = x
+ * Assignment Operator:
+ * Assign every element of x to to every element of x.
+ *
+ */
+void xk_xx()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+
+    x = 1.0;
+
+    x = x;
+}
+
+/**
+ * x = y
+ * Assignment Operator:
+ * Assign every element of y to to every element of x.
+ *
+ */
+void yk_xy()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+
+    y = 2.0;
+
+    x = y;
+}
+
+/**
+ * x = y
+ * Assignment Operator:
+ * Assign every element of y to to every element of x.
+ *
+ */
+void xk_yk_xy()
 {
     Vector<double> x = Vector<double>(1024, 1024);
     Vector<double> y = Vector<double>(1024, 1024);
@@ -39,121 +83,174 @@ void aa()
     x = y;
 }
 
-void aaa()
+/**
+ * x += k
+ * Algebraic operator:
+ * Add a constant value to every element of x.
+ *
+ */
+void xk_xxk()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+
+    x = 1.0;
+
+    x += 2.0;
+}
+
+/**
+ *  x += x
+ *  Algebraic operator:
+ *  Add every value of x to every element of x.
+ *
+ */
+void xk_xxx()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    x = 1.0;
+
+    x += x;
+}
+
+/**
+ *  x += y
+ *  Algebraic operator:
+ *  Add every value of y to every element of x.
+ *
+ */
+void xk_yk_xxy()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+    x = 1.0;
+    y = 1.0;
+
+    x += y;
+}
+
+/**
+ *  x = x + y
+ *  Algebraic operator:
+ *  Add every value of y to every element of x.
+ *
+ */
+void xk_yk_xxy_b()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+
+    x = 1.0;
+    y = 1.0;
+
+    x = x + y;
+}
+
+/**
+ *  x = y + x
+ *  Algebraic operator:
+ *  Add every value of x to every element of y.
+ *
+ */
+void xk_yk_xyx_b()
+{
+    Vector<double> x = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
+
+    x = 1.0;
+    y = 1.0;
+
+    x = y + x;
+}
+
+/**
+ *  x = y + z
+ *  Algebraic operator:
+ *  Add every value of x to every element of y.
+ *
+ */
+void xk_yk_zk_xyz_b()
 {
     Vector<double> x = Vector<double>(1024, 1024);
     Vector<double> y = Vector<double>(1024, 1024);
     Vector<double> z = Vector<double>(1024, 1024);
 
     x = 1.0;
-    y = 2.0;
-    z = 3.0;
+    y = 1.0;
+    z = 1.0;
 
     x = y + z;
 }
 
-void aac()
-{
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
-    double z;
-
-    x = 1.0;
-    y = 2.0;
-    z = 3.0;
-
-    x = y + z;
-}
-
-void aca()
-{
-    Vector<double> x = Vector<double>(1024, 1024);
-    double y;
-    Vector<double> z = Vector<double>(1024, 1024);
-
-    x = 1.0;
-    y = 2.0;
-    z = 3.0;
-
-    x = y + z;
-}
-
-void aa_u()
-{
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
-
-    y = 2.0;
-
-    x = y;
-}
-
-void aaa_u()
+/**
+ *  x = y + z
+ *  Algebraic operator:
+ *  Add every value of x to every element of y.
+ *
+ */
+void yk_zk_xyz_b()
 {
     Vector<double> x = Vector<double>(1024, 1024);
     Vector<double> y = Vector<double>(1024, 1024);
     Vector<double> z = Vector<double>(1024, 1024);
 
-    y = 2.0;
-    z = 3.0;
+    y = 1.0;
+    z = 1.0;
 
     x = y + z;
 }
 
-void aac_u()
+/**
+ *  x = y + k
+ *  Algebraic operator:
+ *  Add every value of x to every element of y.
+ *
+ */
+void yk_xyk_b()
 {
     Vector<double> x = Vector<double>(1024, 1024);
     Vector<double> y = Vector<double>(1024, 1024);
-    double z;
 
-    y = 2.0;
-    z = 3.0;
+    y = 1.0;
 
-    x = y + z;
+    x = y + 2.0;
 }
 
-void aca_u()
+/**
+ *  x = y + k
+ *  Algebraic operator:
+ *  Add every value of x to every element of y.
+ *
+ */
+void yk_xky_b()
 {
     Vector<double> x = Vector<double>(1024, 1024);
-    double y;
-    Vector<double> z = Vector<double>(1024, 1024);
+    Vector<double> y = Vector<double>(1024, 1024);
 
-    y = 2.0;
-    z = 3.0;
+    y = 1.0;
 
-    x = y + z;
-}
-
-void prefix()
-{
-    Vector<double> x = Vector<double>(1024, 1024);
-    ++x;
-}
-
-void postfix()
-{
-    Vector<double> x = Vector<double>(1024, 1024);
-    x++;
+    x = 2.0 + y;
 }
 
 int main() {
 
     init();
 
-    ac();
-    aa();
+    xk();
+    xk_xx();
+    yk_xy();
+    xk_xxk();
+    xk_xxx();
+    xk_yk_xy();
+    xk_yk_xxy();
 
-    aaa();
-    aac();
-    aca();
+    yk_xky_b();
+    yk_xyk_b();
 
-    aa_u();
-    aaa_u();
-    aac_u();
-    aca_u();
+    xk_yk_xxy_b();
+    xk_yk_xyx_b();
 
-    prefix();
-    postfix();
+    yk_zk_xyz_b();
+    xk_yk_zk_xyz_b();
 
     shutdown();
 

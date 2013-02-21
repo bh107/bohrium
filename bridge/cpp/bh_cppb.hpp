@@ -52,6 +52,9 @@ public:
     Vector& operator--();
     Vector& operator--( int );
 
+    Vector& operator+=( const T rhs );
+    Vector& operator+=( Vector & rhs );
+
 };
 
 }
