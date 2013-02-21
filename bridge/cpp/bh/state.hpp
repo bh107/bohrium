@@ -84,7 +84,6 @@ bh_intp flush()
         queue_size = 0;
     }
     return cur_size;
-   
 }
 
 void shutdown()
@@ -111,7 +110,6 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op
     instr->operand[0] = op0.array;
     instr->operand[1] = op1.array;
     instr->operand[2] = op2.array;
-
 }
 
 template <typename T>
@@ -131,7 +129,6 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
     instr->operand[1] = op1.array;
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
-
 }
 
 template <typename T>
@@ -151,7 +148,6 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
     instr->operand[1] = NULL;
     instr->operand[2] = op2.array;
     assign_const_type( &instr->constant, op1 );
-
 }
 
 template <typename T>
@@ -170,7 +166,6 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
     instr->operand[0] = op0.array;
     instr->operand[1] = op1.array;
     instr->operand[2] = NULL;
-
 }
 
 template <typename T>
@@ -190,13 +185,7 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op1 );
-
 }
-
-//
-// Helper functions for printing and stuff like that...
-//
-
 
 }
 
