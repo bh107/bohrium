@@ -55,9 +55,9 @@ def main():
         op_map.append( (name, opcode, t, nop ) )
     #pprint(op_map)
     gens = [
-        ('bh_cppb_traits.ctpl',     'bh_cppb_traits.hpp',    types),
-        ('bh_cppb_functions.ctpl',  'bh_cppb_functions.hpp', op_map),
-        ('bh_cppb_operators.ctpl',  'bh_cppb_operators.hpp', op_map),
+        ('traits.ctpl',     'traits.hpp',    types),
+        ('functions.ctpl',  'functions.hpp', op_map),
+        ('operators.ctpl',  'operators.hpp', op_map),
     ]
 
     render( gens, tmpl_dir, output_dir )

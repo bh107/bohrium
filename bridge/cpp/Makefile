@@ -7,7 +7,7 @@ all: gen operators hw
 
 gen:
 	./codegen/gen.py
-	mv codegen/output/*.hpp .
+	mv codegen/output/*.hpp bh/.
 
 hw: examples/hw.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)

@@ -18,7 +18,7 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include "bh_cppb.hpp"
+#include "bh/cppb.hpp"
 
 using namespace bh;
 

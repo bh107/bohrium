@@ -1,9 +1,17 @@
-bh_cppb.hpp                 - Wrapping
-bh_cppb_vector.hpp          - Vector-abstraction
-bh_cppb_state.hpp           - Communication with Bohrium runtime
+bh_cppb.hpp                 - Vector definition.
+bh_cppb_vector.hpp          - Vector (De)Constructor + implementation.
+
 bh_cppb_functions.hpp       - Generated code (see codegen)
+                              Vector operations via functions.
+
 bh_cppb_operators.hpp       - Generated code (see codegen)
+                              Vector operations via operator-overloads.
+
+bh_cppb_state.hpp           - Communication with Bohrium runtime
+
 bh_cppb_traits.hpp          - Generated code (see codegen)
+                              Template-traits for assigning type to constants and arrays.
+
 codegen/                    - Code generator
 examples/                   - Examples of using the bridge
 Makefile                    - Build stuff...

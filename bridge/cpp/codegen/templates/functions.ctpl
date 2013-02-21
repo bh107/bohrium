@@ -1,0 +1,35 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include raw "codegen/templates/license.txt"
+
+%include raw "codegen/templates/warn.txt"
+
+#ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
+#define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
+#include "bh.h"
+
+namespace bh {
+
+    %for $function in $data
+    %if $function[2] == "operator.fun"
+
+    template <typename T>
+    Vector<T> & $function[0] ( Vector<T> & rhs )
+    {
+        Vector<T>* vector = new Vector<T>( rhs );
+
+        std::cout << &vector << ": $function[0] v{ " << &rhs << " }" << std::endl;
+        enqueue( (bh_opcode) $function[1], *vector, rhs );
+        return *vector;
+    }
+
+    %end if
+    %end for
+
+}
+
+#endif
+
