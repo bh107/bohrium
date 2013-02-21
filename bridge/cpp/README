@@ -1,18 +1,26 @@
-bh_cppb.hpp                 - Vector definition.
-bh_cppb_vector.hpp          - Vector (De)Constructor + implementation.
+bh/                 - The Bohrium c++ language-bridge / vector library.
+bh/cppb.hpp         - Vector definition.
+bh/vector.hpp       - Vector (De)Constructor + implementation.
+bh/functions.hpp    - Vector operations via functions.
+                      Note: Generated code -> see codegen.
+bh/operators.hpp    - Vector operations via operator-overloads.
+                      Note: Generated code -> see codegen.
+bh/state.hpp        - Communication with Bohrium runtime
+bh/traits.hpp       - Template-traits for assigning type to constants and arrays.
+                      Note: Generated code -> see codegen.
 
-bh_cppb_functions.hpp       - Generated code (see codegen)
-                              Vector operations via functions.
+codegen/                    - Home of the code-generator.
+codegen/operators.json      - A mapping between C++ operators and Bohrium operators.
+codegen/element_types.json  - A mapping between bohrium types and C++ primitive types.
+codegen/
+codegen/gen.py              - Code generator script; does the actual code-generation.
+codegen/output/             - Temporary storage for generated code.
+codegen/templates/          - Cheetah string templates for code generator.
 
-bh_cppb_operators.hpp       - Generated code (see codegen)
-                              Vector operations via operator-overloads.
+examples/               - Examples of using the Bohrium c++ library.
+examples/operators.cpp  - Shows how the operator overloads operates.
+examples/hw.cpp         - Simples example of using the bridge.
 
-bh_cppb_state.hpp           - Communication with Bohrium runtime
+Makefile            - Build stuff...
 
-bh_cppb_traits.hpp          - Generated code (see codegen)
-                              Template-traits for assigning type to constants and arrays.
-
-codegen/                    - Code generator
-examples/                   - Examples of using the bridge
-Makefile                    - Build stuff...
-README                      - This file.
+README              - This file.

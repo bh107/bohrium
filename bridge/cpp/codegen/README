@@ -1,6 +1,1 @@
-codegen/operators.json      - A mapping between C++ operators and Bohrium operators.
-codegen/element_types.json  - A mapping between bohrium types and C++ primitive types.
-codegen/
-codegen/gen.py      - Code generator
-codegen/output/     - Temporary storage for generated code.
-codegen/templates/  - Cheetah string templates for code generator.
+
