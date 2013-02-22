@@ -26,12 +26,16 @@ namespace bh {
 template <typename T>
 class Vector {
 
+private:
+    int key;
+
 public:
-    bh_array* array;
 
     Vector( Vector const& vector );
     Vector( int d0 );
     Vector( int d0, int d1 );
+
+    int getKey() const;
 
     ~Vector();
 

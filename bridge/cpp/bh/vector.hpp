@@ -20,55 +20,65 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include "traits.hpp"       // Traits for assigning type to constants and arrays.
+#include "state.hpp"
 
 namespace bh {
 
 template <typename T>
 Vector<T>::Vector( Vector<T> const& vector )
 {
-    this->array = new bh_array;
+    this->key = keys++;
+    storage.insert(this->key, new bh_array);
 
-    this->array->type        = vector.array->type;
-    this->array->base        = vector.array->base;
-    this->array->ndim        = vector.array->ndim;
-    this->array->start       = vector.array->start;
-    for(bh_index i=0; i< vector.array->ndim; i++) {
-        this->array->shape[i] = vector.array->shape[i];
+    storage[this->key].type        = storage[vector.getKey()].type;
+    storage[this->key].base        = storage[vector.getKey()].base;
+    storage[this->key].ndim        = storage[vector.getKey()].ndim;
+    storage[this->key].start       = storage[vector.getKey()].start;
+    for(bh_index i=0; i< storage[vector.getKey()].ndim; i++) {
+        storage[this->key].shape[i] = storage[vector.getKey()].shape[i];
     }
-    for(bh_index i=0; i< vector.array->ndim; i++) {
-        this->array->stride[i] = vector.array->stride[i];
+    for(bh_index i=0; i< storage[vector.getKey()].ndim; i++) {
+        storage[this->key].stride[i] = storage[vector.getKey()].stride[i];
     }
-    this->array->data        = vector.array->data;
+    storage[this->key].data        = storage[vector.getKey()].data;
 }
 
 template <typename T>
 Vector<T>::Vector( int d0 )
 {
-    this->array = new bh_array;
+    this->key = keys++;
+    storage.insert(this->key, new bh_array);
 
-    assign_array_type<T>( this->array );
-    this->array->base        = NULL;
-    this->array->ndim        = 1;
-    this->array->start       = 0;
-    this->array->shape[0]    = d0;
-    this->array->stride[0]   = 1;
-    this->array->data        = NULL;
+    assign_array_type<T>( &storage[this->key] );
+    storage[this->key].base        = NULL;
+    storage[this->key].ndim        = 1;
+    storage[this->key].start       = 0;
+    storage[this->key].shape[0]    = d0;
+    storage[this->key].stride[0]   = 1;
+    storage[this->key].data        = NULL;
 }
 
 template <typename T>
 Vector<T>::Vector( int d0, int d1 )
 {
-    this->array = new bh_array;
+    this->key = keys++;
+    storage.insert(this->key, new bh_array);
 
-    assign_array_type<T>( this->array );
-    this->array->base        = NULL;
-    this->array->ndim        = 2;
-    this->array->start       = 0;
-    this->array->shape[0]    = d0;
-    this->array->stride[0]   = d1;
-    this->array->shape[1]    = d1;
-    this->array->stride[1]   = 1;
-    this->array->data        = NULL;
+    assign_array_type<T>( &storage[this->key] );
+    storage[this->key].base        = NULL;
+    storage[this->key].ndim        = 2;
+    storage[this->key].start       = 0;
+    storage[this->key].shape[0]    = d0;
+    storage[this->key].stride[0]   = d1;
+    storage[this->key].shape[1]    = d1;
+    storage[this->key].stride[1]   = 1;
+    storage[this->key].data        = NULL;
+}
+
+template <typename T>
+int Vector<T>::getKey() const
+{
+    return this->key;
 }
 
 template <typename T>

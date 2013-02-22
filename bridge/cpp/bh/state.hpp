@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_STATE
 #define __BOHRIUM_BRIDGE_CPP_STATE
 #include <iostream>
+#include <boost/ptr_container/ptr_map.hpp>
 #include "bh.h"
 
 namespace bh {
@@ -37,6 +38,11 @@ bh_component    **components,
                 *self_component,
                 *vem_component;
 bh_intp children_count;
+
+typedef boost::ptr_map<int, bh_array> storage_type;
+storage_type    storage;
+
+int keys = 0;
 
 void init()
 {
@@ -105,11 +111,23 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op
         queue_size = 0;
     }
 
+    std::cout   << op0.getKey() << " [" << &storage.at(op0.getKey()) << "] " << " = " \
+                << op1.getKey() << " [" << &storage.at(op1.getKey()) << "] " << " OP " \
+                << op2.getKey() << " [" << &storage.at(op2.getKey()) << "] " << std::endl;
+
+    std::cout   << op0.getKey() << " [" << &storage.at(op0.getKey()) << "] " << " = " \
+                << op1.getKey() << " [" << &storage.at(op1.getKey()) << "] " << " OP " \
+                << op2.getKey() << " [" << &storage.at(op2.getKey()) << "] " << std::endl;
+
+    bh_pprint_array( &storage.at(op0.getKey()));
+    bh_pprint_array( &storage.at(op1.getKey()));
+    bh_pprint_array( &storage.at(op2.getKey()));
+
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = op0.array;
-    instr->operand[1] = op1.array;
-    instr->operand[2] = op2.array;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
+    instr->operand[2] = &storage[op2.getKey()];
 }
 
 template <typename T>
@@ -125,8 +143,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = op0.array;
-    instr->operand[1] = op1.array;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 }
@@ -144,9 +162,9 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = op0.array;
+    instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = NULL;
-    instr->operand[2] = op2.array;
+    instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 }
 
@@ -163,8 +181,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = op0.array;
-    instr->operand[1] = op1.array;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
 }
 
@@ -181,7 +199,7 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = op0.array;
+    instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op1 );
