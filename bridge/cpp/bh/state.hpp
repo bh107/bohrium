@@ -94,6 +94,8 @@ bh_intp flush()
 
 void shutdown()
 {
+    std::cout << "Keys: " << keys << std::endl;
+
     flush();
     vem_shutdown();
     bh_component_free(self_component);
@@ -128,6 +130,27 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op
     instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = &storage[op2.getKey()];
+
+    if (op1.isTemp()) {
+        instr = &queue[queue_size++];
+        instr->opcode = BH_FREE;
+        instr->operand[0] = &storage[op1.getKey()];
+
+        instr = &queue[queue_size++];
+        instr->opcode = BH_DISCARD;
+        instr->operand[0] = &storage[op1.getKey()];
+    }
+
+    if (op2.isTemp()) {
+        instr = &queue[queue_size++];
+        instr->opcode = BH_FREE;
+        instr->operand[0] = &storage[op2.getKey()];
+
+        instr = &queue[queue_size++];
+        instr->opcode = BH_DISCARD;
+        instr->operand[0] = &storage[op2.getKey()];
+    }
+
 }
 
 template <typename T>
@@ -147,6 +170,18 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
+
+
+    if (op1.isTemp()) {
+        instr = &queue[queue_size++];
+        instr->opcode = BH_FREE;
+        instr->operand[0] = &storage[op1.getKey()];
+
+        instr = &queue[queue_size++];
+        instr->opcode = BH_DISCARD;
+        instr->operand[0] = &storage[op1.getKey()];
+    }
+
 }
 
 template <typename T>
@@ -166,6 +201,18 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
     instr->operand[1] = NULL;
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
+
+
+    if (op2.isTemp()) {
+        instr = &queue[queue_size++];
+        instr->opcode = BH_FREE;
+        instr->operand[0] = &storage[op2.getKey()];
+
+        instr = &queue[queue_size++];
+        instr->opcode = BH_DISCARD;
+        instr->operand[0] = &storage[op2.getKey()];
+    }
+
 }
 
 template <typename T>
@@ -184,6 +231,17 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
     instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
+
+    if (op1.isTemp()) {
+        instr = &queue[queue_size++];
+        instr->opcode = BH_FREE;
+        instr->operand[0] = &storage[op1.getKey()];
+
+        instr = &queue[queue_size++];
+        instr->opcode = BH_DISCARD;
+        instr->operand[0] = &storage[op1.getKey()];
+    }
+
 }
 
 template <typename T>

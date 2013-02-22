@@ -27,6 +27,8 @@ namespace bh {
 template <typename T>
 Vector<T>::Vector( Vector<T> const& vector )
 {
+    this->setTemp( false );
+
     this->key = keys++;
     storage.insert(this->key, new bh_array);
 
@@ -46,6 +48,8 @@ Vector<T>::Vector( Vector<T> const& vector )
 template <typename T>
 Vector<T>::Vector( int d0 )
 {
+    this->setTemp( false );
+
     this->key = keys++;
     storage.insert(this->key, new bh_array);
 
@@ -61,6 +65,8 @@ Vector<T>::Vector( int d0 )
 template <typename T>
 Vector<T>::Vector( int d0, int d1 )
 {
+    this->setTemp( false );
+
     this->key = keys++;
     storage.insert(this->key, new bh_array);
 
@@ -82,12 +88,22 @@ int Vector<T>::getKey() const
 }
 
 template <typename T>
+bool Vector<T>::isTemp() const
+{
+    return this->is_temp;
+}
+
+template <typename T>
+void Vector<T>::setTemp(bool is_temp)
+{
+    this->is_temp = is_temp;
+}
+
+template <typename T>
 Vector<T>::~Vector()
 {
     enqueue( (bh_opcode)BH_FREE, *this, *this);
     enqueue( (bh_opcode)BH_DISCARD, *this, *this);
-
-    //delete this->array;
 }
 
 template <typename T>

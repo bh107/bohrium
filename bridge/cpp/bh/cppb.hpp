@@ -28,6 +28,7 @@ class Vector {
 
 private:
     int key;
+    bool is_temp;
 
 public:
 
@@ -36,6 +37,8 @@ public:
     Vector( int d0, int d1 );
 
     int getKey() const;
+    bool isTemp() const;
+    void setTemp(bool is_temp);
 
     ~Vector();
 

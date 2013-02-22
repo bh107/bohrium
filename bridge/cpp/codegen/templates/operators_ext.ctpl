@@ -16,6 +16,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    vector->setTemp(true);
     std::cout << &vector << ": v{ " << &lhs << " } $op v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
@@ -25,6 +26,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    vector->setTemp(true);
     std::cout << &vector << ": v{ " << &lhs << " } $op c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
@@ -34,6 +36,7 @@ template <typename T>
 Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": c{ " << lhs << " } $op v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
@@ -54,6 +57,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    vector->setTemp(true);
     std::cout << &vector << ": v{ " << &lhs << " } $op v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
@@ -63,6 +67,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
+    vector->setTemp(true);
     std::cout << &vector << ": v{ " << &lhs << " } $op c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
@@ -72,6 +77,7 @@ template <typename T>
 Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": c{ " << lhs << " } $op v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
@@ -92,6 +98,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": " << " $op v{ " << &rhs << " } " << std::endl;
     enqueue( (bh_opcode)$opcode, *vector, rhs );
     return *vector;
@@ -101,6 +108,7 @@ template <typename T>
 Vector<T> & operator $op ( T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": " << " $op c{ " << rhs << " } " << std::endl;
     enqueue( (bh_opcode)$opcode, *vector, rhs );
     return *vector;
@@ -121,6 +129,7 @@ template <typename T>
 Vector<T> & operator $op ( Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": " << " $op v{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
@@ -130,6 +139,7 @@ template <typename T>
 Vector<T> & operator $op ( T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
+    vector->setTemp(true);
     std::cout << &vector << ": " << " $op c{ " << rhs << " }" << std::endl;
     // TODO: implement
     return *vector;
