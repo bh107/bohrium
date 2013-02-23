@@ -40,7 +40,6 @@ template <typename T>
 Vector<T>& Vector<T>::operator = ( const T rhs )
 {
     enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
-    std::cout << this << ": = c{ " << rhs << " } " << std::endl;
     return *this;
 }
 
@@ -48,7 +47,6 @@ template <typename T>
 Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
 {
     enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
-    std::cout << this << ": = v{ " << &rhs << " } " << std::endl;
     return *this;
 }
 
@@ -66,7 +64,6 @@ Vector<T> & operator + ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } + v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -76,7 +73,6 @@ Vector<T> & operator + ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } + c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -86,7 +82,6 @@ Vector<T> & operator + ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } + v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
     return *vector;
 }
@@ -97,7 +92,6 @@ Vector<T> & operator - ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } - v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -107,7 +101,6 @@ Vector<T> & operator - ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } - c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -117,7 +110,6 @@ Vector<T> & operator - ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } - v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
@@ -128,7 +120,6 @@ Vector<T> & operator * ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } * v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -138,7 +129,6 @@ Vector<T> & operator * ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } * c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -148,7 +138,6 @@ Vector<T> & operator * ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } * v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
     return *vector;
 }
@@ -159,7 +148,6 @@ Vector<T> & operator / ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } / v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -169,7 +157,6 @@ Vector<T> & operator / ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } / c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -179,7 +166,6 @@ Vector<T> & operator / ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } / v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
@@ -190,7 +176,6 @@ Vector<T> & operator % ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } % v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -200,7 +185,6 @@ Vector<T> & operator % ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } % c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -210,7 +194,6 @@ Vector<T> & operator % ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } % v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
     return *vector;
 }
@@ -221,7 +204,6 @@ Vector<T> & operator == ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } == v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -231,7 +213,6 @@ Vector<T> & operator == ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } == c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -241,7 +222,6 @@ Vector<T> & operator == ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } == v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -252,7 +232,6 @@ Vector<T> & operator != ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } != v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -262,7 +241,6 @@ Vector<T> & operator != ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } != c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -272,7 +250,6 @@ Vector<T> & operator != ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } != v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -283,7 +260,6 @@ Vector<T> & operator > ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } > v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -293,7 +269,6 @@ Vector<T> & operator > ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } > c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -303,7 +278,6 @@ Vector<T> & operator > ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } > v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
@@ -314,7 +288,6 @@ Vector<T> & operator >= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } >= v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -324,7 +297,6 @@ Vector<T> & operator >= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } >= c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -334,7 +306,6 @@ Vector<T> & operator >= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } >= v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -345,7 +316,6 @@ Vector<T> & operator < ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } < v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -355,7 +325,6 @@ Vector<T> & operator < ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } < c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -365,7 +334,6 @@ Vector<T> & operator < ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } < v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
@@ -376,7 +344,6 @@ Vector<T> & operator <= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } <= v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -386,7 +353,6 @@ Vector<T> & operator <= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } <= c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -396,7 +362,6 @@ Vector<T> & operator <= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } <= v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
@@ -407,7 +372,6 @@ Vector<T> & operator && ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } && v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -417,7 +381,6 @@ Vector<T> & operator && ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } && c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -427,7 +390,6 @@ Vector<T> & operator && ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } && v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -438,7 +400,6 @@ Vector<T> & operator || ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } || v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -448,7 +409,6 @@ Vector<T> & operator || ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } || c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -458,7 +418,6 @@ Vector<T> & operator || ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } || v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -469,7 +428,6 @@ Vector<T> & operator & ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } & v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -479,7 +437,6 @@ Vector<T> & operator & ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } & c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -489,7 +446,6 @@ Vector<T> & operator & ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } & v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
@@ -500,7 +456,6 @@ Vector<T> & operator | ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } | v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -510,7 +465,6 @@ Vector<T> & operator | ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } | c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -520,7 +474,6 @@ Vector<T> & operator | ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } | v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
     return *vector;
 }
@@ -531,7 +484,6 @@ Vector<T> & operator ^ ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } ^ v{ " << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
@@ -541,7 +493,6 @@ Vector<T> & operator ^ ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } ^ c{ " << rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
@@ -551,7 +502,6 @@ Vector<T> & operator ^ ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } ^ v{" << &rhs << " }" << std::endl;
     enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
@@ -568,7 +518,6 @@ Vector<T> & operator += ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } += v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -578,7 +527,6 @@ Vector<T> & operator += ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } += c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -588,7 +536,6 @@ Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } += v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -599,7 +546,6 @@ Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } -= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -609,7 +555,6 @@ Vector<T> & operator -= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } -= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -619,7 +564,6 @@ Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } -= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -630,7 +574,6 @@ Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } *= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -640,7 +583,6 @@ Vector<T> & operator *= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } *= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -650,7 +592,6 @@ Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } *= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -661,7 +602,6 @@ Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } /= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -671,7 +611,6 @@ Vector<T> & operator /= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } /= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -681,7 +620,6 @@ Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } /= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -692,7 +630,6 @@ Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } %= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -702,7 +639,6 @@ Vector<T> & operator %= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } %= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -712,7 +648,6 @@ Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } %= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -723,7 +658,6 @@ Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } &= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -733,7 +667,6 @@ Vector<T> & operator &= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } &= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -743,7 +676,6 @@ Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } &= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -754,7 +686,6 @@ Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } |= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -764,7 +695,6 @@ Vector<T> & operator |= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } |= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -774,7 +704,6 @@ Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } |= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -785,7 +714,6 @@ Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } ^= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -795,7 +723,6 @@ Vector<T> & operator ^= ( Vector<T> & lhs, T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
-    std::cout << &vector << ": v{ " << &lhs << " } ^= c{ " << rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -805,7 +732,6 @@ Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": c{ " << lhs << " } ^= v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *vector;
 }
@@ -822,7 +748,6 @@ Vector<T> & operator ! ( Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": " << " ! v{ " << &rhs << " } " << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
     return *vector;
 }
@@ -832,7 +757,6 @@ Vector<T> & operator ! ( T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": " << " ! c{ " << rhs << " } " << std::endl;
     enqueue( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
     return *vector;
 }
@@ -843,7 +767,6 @@ Vector<T> & operator ~ ( Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": " << " ~ v{ " << &rhs << " } " << std::endl;
     enqueue( (bh_opcode)BH_INVERT, *vector, rhs );
     return *vector;
 }
@@ -853,7 +776,6 @@ Vector<T> & operator ~ ( T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
-    std::cout << &vector << ": " << " ~ c{ " << rhs << " } " << std::endl;
     enqueue( (bh_opcode)BH_INVERT, *vector, rhs );
     return *vector;
 }

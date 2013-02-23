@@ -94,8 +94,6 @@ bh_intp flush()
 
 void shutdown()
 {
-    std::cout << "Keys: " << keys << std::endl;
-
     flush();
     vem_shutdown();
     bh_component_free(self_component);
@@ -112,19 +110,7 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
-
-    std::cout   << op0.getKey() << " [" << &storage.at(op0.getKey()) << "] " << " = " \
-                << op1.getKey() << " [" << &storage.at(op1.getKey()) << "] " << " OP " \
-                << op2.getKey() << " [" << &storage.at(op2.getKey()) << "] " << std::endl;
-
-    std::cout   << op0.getKey() << " [" << &storage.at(op0.getKey()) << "] " << " = " \
-                << op1.getKey() << " [" << &storage.at(op1.getKey()) << "] " << " OP " \
-                << op2.getKey() << " [" << &storage.at(op2.getKey()) << "] " << std::endl;
-
-    bh_pprint_array( &storage.at(op0.getKey()));
-    bh_pprint_array( &storage.at(op1.getKey()));
-    bh_pprint_array( &storage.at(op2.getKey()));
-
+    
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = &storage[op0.getKey()];

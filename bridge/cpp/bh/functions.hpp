@@ -36,7 +36,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": pow v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_POWER, *vector, rhs );
         return *vector;
     }
@@ -47,7 +46,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": abs v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_ABSOLUTE, *vector, rhs );
         return *vector;
     }
@@ -58,7 +56,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": max v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_MAXIMUM, *vector, rhs );
         return *vector;
     }
@@ -69,7 +66,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": min v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_MINIMUM, *vector, rhs );
         return *vector;
     }
@@ -80,7 +76,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": sin v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_SIN, *vector, rhs );
         return *vector;
     }
@@ -91,7 +86,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": cos v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_COS, *vector, rhs );
         return *vector;
     }
@@ -102,7 +96,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": tan v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_TAN, *vector, rhs );
         return *vector;
     }
@@ -113,7 +106,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": sinh v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_SINH, *vector, rhs );
         return *vector;
     }
@@ -124,7 +116,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": cosh v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_COSH, *vector, rhs );
         return *vector;
     }
@@ -135,7 +126,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": tanh v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_TANH, *vector, rhs );
         return *vector;
     }
@@ -146,7 +136,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": exp v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_EXP, *vector, rhs );
         return *vector;
     }
@@ -157,7 +146,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": exp2 v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_EXP2, *vector, rhs );
         return *vector;
     }
@@ -168,7 +156,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": expm1 v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_EXPM1, *vector, rhs );
         return *vector;
     }
@@ -179,7 +166,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": log v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_LOG, *vector, rhs );
         return *vector;
     }
@@ -190,7 +176,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": log2 v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_LOG2, *vector, rhs );
         return *vector;
     }
@@ -201,7 +186,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": log10 v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_LOG10, *vector, rhs );
         return *vector;
     }
@@ -212,7 +196,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": log1p v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_LOG1P, *vector, rhs );
         return *vector;
     }
@@ -223,7 +206,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": sqrt v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_SQRT, *vector, rhs );
         return *vector;
     }
@@ -234,7 +216,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": ceil v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_CEIL, *vector, rhs );
         return *vector;
     }
@@ -245,7 +226,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": trunc v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_TRUNC, *vector, rhs );
         return *vector;
     }
@@ -256,7 +236,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": floor v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_FLOOR, *vector, rhs );
         return *vector;
     }
@@ -267,7 +246,6 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        std::cout << &vector << ": rint v{ " << &rhs << " }" << std::endl;
         enqueue( (bh_opcode) BH_RINT, *vector, rhs );
         return *vector;
     }

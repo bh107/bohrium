@@ -109,7 +109,6 @@ Vector<T>::~Vector()
 template <typename T>
 Vector<T>& Vector<T>::operator++()
 {
-    std::cout << this << ": ++ v{ " << this << " }" << std::endl;
     enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
@@ -117,7 +116,6 @@ Vector<T>& Vector<T>::operator++()
 template <typename T>
 Vector<T>& Vector<T>::operator++(int)
 {
-    std::cout << this << ": v{ " << this << " } ++" << std::endl;
     enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
@@ -125,7 +123,6 @@ Vector<T>& Vector<T>::operator++(int)
 template <typename T>
 Vector<T>& Vector<T>::operator--()
 {
-    std::cout << this << ": -- v{ " << this << " }" << std::endl;
     enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
@@ -133,7 +130,6 @@ Vector<T>& Vector<T>::operator--()
 template <typename T>
 Vector<T>& Vector<T>::operator--(int)
 {
-    std::cout << this << ": v{ " << this << " } --" << std::endl;
     enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
@@ -141,7 +137,6 @@ Vector<T>& Vector<T>::operator--(int)
 template <typename T>
 Vector<T>& Vector<T>::operator+=( const T rhs )
 {
-    std::cout << this << ": += v{ " << this << " } " << std::endl;
     enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
@@ -149,7 +144,6 @@ Vector<T>& Vector<T>::operator+=( const T rhs )
 template <typename T>
 Vector<T>& Vector<T>::operator+=( Vector & rhs )
 {
-    std::cout << this << ": += v{ " << this << " } " << std::endl;
     enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }

@@ -15,7 +15,6 @@ template <typename T>
 Vector<T>& Vector<T>::operator $op ( const T rhs )
 {
     enqueue( (bh_opcode)$opcode, *this, rhs );
-    std::cout << this << ": $op c{ " << rhs << " } " << std::endl;
     return *this;
 }
 
@@ -23,7 +22,6 @@ template <typename T>
 Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
 {
     enqueue( (bh_opcode)$opcode, *this, rhs );
-    std::cout << this << ": $op v{ " << &rhs << " } " << std::endl;
     return *this;
 }
 
@@ -36,7 +34,6 @@ Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
 template <typename T>
 Vector<T>& Vector<T>::operator $op ( const T rhs )
 {
-    std::cout << this << ": $op c{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *this;
 }
@@ -44,7 +41,6 @@ Vector<T>& Vector<T>::operator $op ( const T rhs )
 template <typename T>
 Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
 {
-    std::cout << this << ": $op v{ " << &rhs << " } " << std::endl;
     // TODO: implement
     return *this;
 }

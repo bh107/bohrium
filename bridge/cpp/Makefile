@@ -3,7 +3,7 @@ HEADER=$(ROOT)/include/*
 CXX=clang
 #CXX=gcc
 
-all: gen operators hw
+all: gen operators hw loop
 
 gen:
 	./codegen/gen.py
@@ -13,6 +13,9 @@ hw: examples/hw.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)
 
 operators: examples/operators.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)
+
+loop: examples/loop.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CFLAGS)
 
 install: all
