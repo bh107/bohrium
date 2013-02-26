@@ -28,7 +28,7 @@ def solve(grid, epsilon=0.005, max_iterations=None):
         delta = np.amax(np.absolute(work-center))
         center[:] = work
         if max_iterations != None and max_iterations <= iteration:
-            return grid
+            break
     return grid
 
 def iterate(grid, iterations):
