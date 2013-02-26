@@ -16,7 +16,7 @@ b1 r1 b1 r1 b1 r1
 """
 import bohrium as np
 
-def frezetrap(height, width, dtype=np.float32, bohrium=True):
+def freezetrap(height, width, dtype=np.float32, bohrium=True):
     r0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
     r1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
     b0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)

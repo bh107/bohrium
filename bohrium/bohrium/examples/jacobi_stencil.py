@@ -6,7 +6,7 @@ So what does this code example illustrate?
 """
 import bohrium as np
 
-def frezetrap(height, width, dtype=np.float32, bohrium=True):
+def freezetrap(height, width, dtype=np.float32, bohrium=True):
     grid = np.zeros((height+2,width+2), dtype=dtype, bohrium=bohrium)
     grid[:,0]  = -273.15
     grid[:,-1] = -273.15
