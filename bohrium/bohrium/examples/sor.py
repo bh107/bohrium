@@ -44,8 +44,10 @@ def solve(grid, epsilon=0.005, max_iterations=None):
         r0[1:,1:]   = (r0[1:,1:] + b1[:-1,1:] + b1[1:,1:] + b0[1:,:-1] + b0[1:,1:])*0.2
         b1[:-1,1:]  = (b1[:-1,1:] + r0[:-1,1:] + r0[1:,1:] + r1[:-1,:-1] + r1[:-1,1:])*0.2
         b0[1:,:-1]  = (b0[1:,:-1] + r1[:-1,:-1] + r1[1:,:-1] + r0[1:,:-1] + r0[1:,1:])*0.2
-        delta = max([np.amax(np.absolute(r0-b0)), np.amax(np.absolute(r1-b1)), 
-                     np.amax(np.absolute(r0-b1)), np.amax(np.absolute(b0-r1))])   
+        delta = np.add.reduce(np.add.reduce(np.absolute(r0[1:,1:] - b0[1:,:-1]))) + \
+            np.add.reduce(np.add.reduce(np.absolute(r1[:-1,:-1] - b1[:-1,1:]))) + \
+            np.add.reduce(np.add.reduce(np.absolute(r0[1:,1:] - b1[:-1,1:]))) + \
+            np.add.reduce(np.add.reduce(np.absolute(b0[1:,:-1] - r1[:-1,:-1]))) 
         if max_iterations != None and max_iterations <= iteration:
             break
     return (r0,r1,b0,b1)
