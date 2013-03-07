@@ -9,7 +9,7 @@ type = vem
 
 [node]
 impl = /opt/bohrium/libbh_vem_node.so
-children = tile
+children = simple
 type = vem
 
 [print]
