@@ -5,8 +5,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -77,7 +77,7 @@ def install(components,prefix,interpreter):
 def install_config(prefix):
     if os.geteuid() == 0:#Root user
         HOME_CONFIG = "/etc/bohrium"
-    else: 
+    else:
         HOME_CONFIG = join(join(expanduser("~"),".bohrium"))
     if not exists(HOME_CONFIG):
         os.mkdir(HOME_CONFIG)
@@ -99,7 +99,10 @@ def install_config(prefix):
 if __name__ == "__main__":
     debug = False
     interactive = False
-    prefix = "/opt/bohrium"
+    if os.geteuid() == 0:#Root user
+        prefix = "/opt/bohrium"
+    else:
+        prefix = join(join(expanduser("~"),".local"))
     interpreter = sys.executable
     try:
         install_dir = os.path.abspath(os.path.dirname(__file__))
@@ -129,10 +132,10 @@ if __name__ == "__main__":
         makefilename="Makefile.win"
     elif sys.platform.startswith('darwin'):
         makefilename="Makefile.osx"
-    
+
     if interactive:
         import readline, glob
-        def complete(text, state):#For autocomplete 
+        def complete(text, state):#For autocomplete
             return (glob.glob(text+'*')+[None])[state]
         readline.set_completer_delims(' \t\n;')
         readline.parse_and_bind("tab: complete")
@@ -172,18 +175,18 @@ if __name__ == "__main__":
                  ]
 
     if cmd == "rebuild":
-        clean(components)        
+        clean(components)
     if cmd == "build" or cmd == "rebuild":
-        build(components,interpreter)        
+        build(components,interpreter)
     elif cmd == "clean":
-        clean(components)        
+        clean(components)
     elif cmd == "install":
         prefix = os.path.abspath(prefix)
         if exists(prefix):
             assert os.path.isdir(prefix),"The prefix points to an existing file"
-        else:            
+        else:
             os.makedirs(prefix)
-        install(components,prefix,interpreter)        
+        install(components,prefix,interpreter)
         install_config(prefix);
     else:
         print "Unknown command: '%s'."%cmd
