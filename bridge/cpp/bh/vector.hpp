@@ -84,8 +84,8 @@ Vector<T>::Vector( int d0, int d1 )
 template <typename T>
 typename Vector<T>::iterator Vector<T>::begin()
 {
-    enqueue( BH_SYNC, *this, *this );
-    flush();
+    Runtime::instance()->enqueue( BH_SYNC, *this, *this );
+    Runtime::instance()->flush();
 
     return Vector<T>::iterator( storage[this->key] );
 }
@@ -117,49 +117,49 @@ void Vector<T>::setTemp(bool is_temp)
 template <typename T>
 Vector<T>::~Vector()
 {
-    enqueue( (bh_opcode)BH_FREE, *this, *this);
-    enqueue( (bh_opcode)BH_DISCARD, *this, *this);
+    Runtime::instance()->enqueue( (bh_opcode)BH_FREE, *this, *this);
+    Runtime::instance()->enqueue( (bh_opcode)BH_DISCARD, *this, *this);
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator++()
 {
-    enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator++(int)
 {
-    enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator--()
 {
-    enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator--(int)
 {
-    enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator+=( const T rhs )
 {
-    enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator+=( Vector & rhs )
 {
-    enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
 

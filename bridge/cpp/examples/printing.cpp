@@ -32,9 +32,9 @@ void compute()
 
 int main()
 {
-    init();
+    std::cout << "Printing example." << std::endl;
+
     compute();
-    shutdown();
 
     return 0;
 }

@@ -36,9 +36,7 @@ int main()
 {
     std::cout << "Init example." << std::endl;
 
-    init();
     compute();
-    shutdown();
 
     return 0;
 }

@@ -21,7 +21,7 @@ namespace bh {
     {
         Vector<T>* vector = new Vector<T>( rhs );
 
-        enqueue( (bh_opcode) $function[1], *vector, rhs );
+        Runtime::instance()->enqueue( (bh_opcode) $function[1], *vector, rhs );
         return *vector;
     }
 

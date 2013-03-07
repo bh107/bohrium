@@ -233,7 +233,7 @@ void yk_xky_b()
 
 int main()
 {
-    init();
+    std::cout << "Operators example." << std::endl;
 
     xk();
     xk_xx();
@@ -251,8 +251,6 @@ int main()
 
     yk_zk_xyz_b();
     xk_yk_zk_xyz_b();
-
-    shutdown();
 
     return 0;
 }

@@ -38,9 +38,7 @@ int main()
 {
     std::cout << "HW example." << std::endl;
 
-    init();
     compute();
-    shutdown();
 
     return 0;
 }

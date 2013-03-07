@@ -37,9 +37,9 @@ void compute()
 
 int main()
 {
-    init();
+    std::cout << "LOOP example." << std::endl;
+
     compute();
-    shutdown();
 
     return 0;
 }

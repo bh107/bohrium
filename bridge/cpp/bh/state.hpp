@@ -26,41 +26,68 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 #define BH_CPP_QUEUE_MAX 1024
-static bh_instruction queue[BH_CPP_QUEUE_MAX]; // Instruction queue
-static bh_intp queue_size = 0;
-
-bh_init      vem_init;
-bh_execute   vem_execute;
-bh_shutdown  vem_shutdown;
-
-bh_reg_func vem_reg_func;
-bh_component    **components,
-                *self_component,
-                *vem_component;
-bh_intp children_count;
 
 typedef boost::ptr_map<int, bh_array> storage_type;
-storage_type    storage;
+storage_type storage;
 
 int keys = 0;
 
 /**
- * State should be encapsulated into this "Runtime" singleton.
+ *  Encapsulation of communication with Bohrium runtime.
+ *  Implemented as a singleton.
  *
+ *  Note: not thread-safe.
  */
 class Runtime {
 public:
     static Runtime* instance();
 
+    ~Runtime();
+
     template <typename T>
     void enqueue( T cool );
 
-private:
-    static Runtime* pInstance;
+    template <typename T>
+    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2);
 
-    Runtime(); // No external instanciation.
+    template <typename T>
+    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2);
+
+    template <typename T>
+    void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2);
+
+    template <typename T>
+    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1);
+
+    template <typename T>
+    void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1);
+
+    bh_intp flush();
+
+private:
+    static Runtime* pInstance;                  // Singleton instance pointer.
+
+    bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
+    bh_intp         queue_size;
+
+    bh_init         vem_init;                   // Bohrium interface
+    bh_execute      vem_execute;
+    bh_shutdown     vem_shutdown;
+    bh_reg_func     vem_reg_func;
+
+    bh_component    **components,               // Bohrium component setup
+                    *self_component,
+                    *vem_component;
+
+    bh_intp children_count;
+
+    Runtime();                                  // Ensure no external instantiation.
 
 };
+
+//
+//  Implementation
+//
 
 Runtime* Runtime::pInstance = 0;
 
@@ -72,18 +99,11 @@ Runtime* Runtime::instance() {
 }
 
 Runtime::Runtime() {
-    std::cout << "Creating!" << std::endl;
-}
 
-template <typename T>
-void Runtime::enqueue( T cool ) {
-    std::cout << "Cool " << cool << std::endl;
-}
+    queue_size = 0;
 
-// put this into runtime constructor
-void init()
-{
     bh_error err;
+
     self_component = bh_component_setup(NULL);
     bh_component_children( self_component, &children_count, &components );
 
@@ -99,7 +119,7 @@ void init()
     vem_execute     = vem_component->execute;
     vem_shutdown    = vem_component->shutdown;
 
-    vem_reg_func        = vem_component->reg_func;
+    vem_reg_func    = vem_component->reg_func;
     free(components);
 
     err = vem_init(vem_component);
@@ -110,8 +130,16 @@ void init()
 
 }
 
-// member function of runtime
-bh_intp flush()
+Runtime::~Runtime() {
+
+    flush();
+    vem_shutdown();
+    bh_component_free(self_component);
+    bh_component_free(vem_component);
+
+}
+
+bh_intp Runtime::flush()
 {
     char *msg = (char*) malloc(1024 * sizeof(char));
 
@@ -130,22 +158,10 @@ bh_intp flush()
     return cur_size;
 }
 
-// Put this into runtime deconstructor
-void shutdown()
-{
-    flush();
-    vem_shutdown();
-    bh_component_free(self_component);
-    bh_component_free(vem_component);
-}
-
-// member function of runtime
 template <typename T>
 inline
-void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
 {
-    Runtime::instance()->enqueue( 1 );
-
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -183,10 +199,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op
 
 template <typename T>
 inline
-void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
+void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 {
-    Runtime::instance()->enqueue( 2 );
-
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -216,10 +230,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 
 template <typename T>
 inline
-void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 {
-    Runtime::instance()->enqueue( 3 );
-
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -249,10 +261,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 
 template <typename T>
 inline
-void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
+void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 {
-    Runtime::instance()->enqueue( 4 );
-
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -280,10 +290,8 @@ void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 
 template <typename T>
 inline
-void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
+void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
 {
-    Runtime::instance()->enqueue( 5 );
-
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {

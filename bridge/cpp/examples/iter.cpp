@@ -47,9 +47,9 @@ void compute()
 
 int main()
 {
-    init();
+    std::cout << "Iter example." << std::endl;
+
     compute();
-    shutdown();
 
     return 0;
 }
