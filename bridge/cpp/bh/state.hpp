@@ -44,6 +44,43 @@ storage_type    storage;
 
 int keys = 0;
 
+/**
+ * State should be encapsulated into this "Runtime" singleton.
+ *
+ */
+class Runtime {
+public:
+    static Runtime* instance();
+
+    template <typename T>
+    void enqueue( T cool );
+
+private:
+    static Runtime* pInstance;
+
+    Runtime(); // No external instanciation.
+
+};
+
+Runtime* Runtime::pInstance = 0;
+
+Runtime* Runtime::instance() {
+    if (pInstance == 0) {
+        pInstance = new Runtime;
+    }
+    return pInstance;
+}
+
+Runtime::Runtime() {
+    std::cout << "Creating!" << std::endl;
+}
+
+template <typename T>
+void Runtime::enqueue( T cool ) {
+    std::cout << "Cool " << cool << std::endl;
+}
+
+// put this into runtime constructor
 void init()
 {
     bh_error err;
@@ -73,6 +110,7 @@ void init()
 
 }
 
+// member function of runtime
 bh_intp flush()
 {
     char *msg = (char*) malloc(1024 * sizeof(char));
@@ -92,6 +130,7 @@ bh_intp flush()
     return cur_size;
 }
 
+// Put this into runtime deconstructor
 void shutdown()
 {
     flush();
@@ -100,10 +139,13 @@ void shutdown()
     bh_component_free(vem_component);
 }
 
+// member function of runtime
 template <typename T>
 inline
 void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
 {
+    Runtime::instance()->enqueue( 1 );
+
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -143,6 +185,8 @@ template <typename T>
 inline
 void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
 {
+    Runtime::instance()->enqueue( 2 );
+
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -174,6 +218,8 @@ template <typename T>
 inline
 void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
 {
+    Runtime::instance()->enqueue( 3 );
+
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -205,6 +251,8 @@ template <typename T>
 inline
 void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
 {
+    Runtime::instance()->enqueue( 4 );
+
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {
@@ -234,6 +282,8 @@ template <typename T>
 inline
 void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
 {
+    Runtime::instance()->enqueue( 5 );
+
     bh_instruction* instr;
 
     if (queue_size >= BH_CPP_QUEUE_MAX) {

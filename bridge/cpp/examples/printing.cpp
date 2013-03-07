@@ -24,15 +24,10 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(10240, 1024);
-    Vector<double> y = Vector<double>(10240, 1024);
-    Vector<double> z = Vector<double>(10240, 1024);
+    Vector<double> x = Vector<double>(3, 3);
+    x = 3.0;
 
-    y = 1.0;
-    z = 1.0;
-
-    for(int i=0; i<2000; i++)
-        x = y + z;
+    pprint( x );
 }
 
 int main()
@@ -43,4 +38,3 @@ int main()
 
     return 0;
 }
-

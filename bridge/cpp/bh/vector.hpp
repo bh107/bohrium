@@ -82,6 +82,21 @@ Vector<T>::Vector( int d0, int d1 )
 }
 
 template <typename T>
+typename Vector<T>::iterator Vector<T>::begin()
+{
+    enqueue( BH_SYNC, *this, *this );
+    flush();
+
+    return Vector<T>::iterator( storage[this->key] );
+}
+
+template <typename T>
+typename Vector<T>::iterator Vector<T>::end()
+{
+    return Vector<T>::iterator();
+}
+
+template <typename T>
 int Vector<T>::getKey() const
 {
     return this->key;
@@ -147,6 +162,23 @@ Vector<T>& Vector<T>::operator+=( Vector & rhs )
     enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
+
+/*
+
+This might be fun to do an initializer on the form:
+
+x = 1,2,3,
+    4,5,6,
+    7,8,8;
+
+*/
+template <typename T>
+Vector<T>& operator, ( Vector<T>& lhs, T rhs )
+{
+    std::cout << "[" << lhs.getKey() << "," << rhs << "]" << std::endl;
+    return lhs;
+}
+
 
 }
 

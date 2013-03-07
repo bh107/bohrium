@@ -24,15 +24,25 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(10240, 1024);
-    Vector<double> y = Vector<double>(10240, 1024);
-    Vector<double> z = Vector<double>(10240, 1024);
+    bool first = true;
 
-    y = 1.0;
-    z = 1.0;
+    Vector<double> x = Vector<double>(3, 3);
+    Vector<double> y = Vector<double>(3, 3);
+    x = 3.0;
 
-    for(int i=0; i<2000; i++)
-        x = y + z;
+    std::cout << "Priting values: ";
+    for(Vector<double>::iterator it=x.begin(); it != x.end(); it++) {
+
+        if (!first) {
+            std::cout  << ", ";
+        } else {
+            first = false;
+        }
+        std::cout << *it;
+    }
+
+    std::cout << "." << std::endl;
+
 }
 
 int main()
@@ -43,4 +53,3 @@ int main()
 
     return 0;
 }
-

@@ -36,6 +36,8 @@ void compute()
 
 int main()
 {
+    std::cout << "HW example." << std::endl;
+
     init();
     compute();
     shutdown();

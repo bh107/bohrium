@@ -24,19 +24,18 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(10240, 1024);
-    Vector<double> y = Vector<double>(10240, 1024);
-    Vector<double> z = Vector<double>(10240, 1024);
+    Vector<int> x = Vector<int>(3,3);
 
-    y = 1.0;
-    z = 1.0;
+    x = 1, 2, 3,
+        4, 5, 6,
+        7, 8, 9;
 
-    for(int i=0; i<2000; i++)
-        x = y + z;
 }
 
 int main()
 {
+    std::cout << "Init example." << std::endl;
+
     init();
     compute();
     shutdown();

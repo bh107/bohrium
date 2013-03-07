@@ -21,16 +21,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
 
+#include "iterator.hpp"
+
 namespace bh {
 
 template <typename T>
 class Vector {
 
-private:
-    int key;
-    bool is_temp;
-
 public:
+    // Types:
+    typedef Vector_iter<T> iterator;
 
     Vector( Vector const& vector );
     Vector( int d0 );
@@ -62,6 +62,15 @@ public:
     Vector& operator+=( const T rhs );
     Vector& operator+=( Vector & rhs );
 
+    iterator begin();
+    iterator end();
+
+private:
+
+    int key;
+    bool is_temp;
+    bool synced;
+
 };
 
 }
@@ -70,5 +79,6 @@ public:
 #include "state.hpp"        // Communication with Bohrium runtime
 #include "operators.hpp"    // Vector operations via operator-overloads.
 #include "functions.hpp"    // Vector operations via functions.
+#include "sugar.hpp"        // Pretty print functions and the like...
 
 #endif
