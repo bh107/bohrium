@@ -27,7 +27,6 @@ namespace bh {
 
 template <typename T>
 class Vector {
-
 public:
     // Types:
     typedef Vector_iter<T> iterator;

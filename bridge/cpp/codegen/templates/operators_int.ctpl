@@ -3,11 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-
 //
 //  Internally defined operator overloads
 //
-
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
@@ -24,10 +22,10 @@ Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *this, rhs );
     return *this;
 }
-
+%slurp
 %end if
 %end for
-
+%slurp
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.int" and $opcode == "CUSTOM" and $opcount == 2
 
@@ -44,7 +42,6 @@ Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
     // TODO: implement
     return *this;
 }
-
+%slurp
 %end if
 %end for
-

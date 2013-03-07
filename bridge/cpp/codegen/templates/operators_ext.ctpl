@@ -38,7 +38,7 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
     return *vector;
 }
-
+%slurp
 %end if
 %end for
 
@@ -76,7 +76,7 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
     // TODO: implement
     return *vector;
 }
-
+%slurp
 %end if
 %end for
 
@@ -105,7 +105,7 @@ Vector<T> & operator $op ( T const& rhs )
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, rhs );
     return *vector;
 }
-
+%slurp
 %end if
 %end for
 
@@ -134,7 +134,6 @@ Vector<T> & operator $op ( T const& rhs )
     // TODO: implement
     return *vector;
 }
-
+%slurp
 %end if
 %end for
-

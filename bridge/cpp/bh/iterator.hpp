@@ -25,17 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class Vector_iter : public std::iterator<std::input_iterator_tag, T>
-{
-
+class Vector_iter : public std::iterator<std::input_iterator_tag, T> {
 public:
-
+    // Types
     typedef T  value_type;
     typedef T* pointer;
     typedef T& reference;
 
     typedef typename Vector_iter<T>::iterator iterator;
 
+    // Constructors
     Vector_iter() : data(NULL) {}
 
     Vector_iter(bh_array x) : operand(x) {
@@ -50,6 +49,7 @@ public:
 
     }
 
+    // Operator overloads
     friend bool operator==(const Vector_iter& i, const Vector_iter& j)
     {
         return i->data == j->data;

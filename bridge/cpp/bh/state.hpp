@@ -91,15 +91,16 @@ private:
 
 Runtime* Runtime::pInstance = 0;
 
-Runtime* Runtime::instance() {
+Runtime* Runtime::instance()
+{
     if (pInstance == 0) {
         pInstance = new Runtime;
     }
     return pInstance;
 }
 
-Runtime::Runtime() {
-
+Runtime::Runtime()
+{
     queue_size = 0;
 
     bh_error err;
@@ -108,7 +109,6 @@ Runtime::Runtime() {
     bh_component_children( self_component, &children_count, &components );
 
     if(children_count != 1 || components[0]->type != BH_VEM) {
-
         fprintf(stderr, "Error in the configuration: the bridge must "
                         "have exactly one child of type VEM\n");
         exit(-1);
@@ -123,20 +123,19 @@ Runtime::Runtime() {
     free(components);
 
     err = vem_init(vem_component);
-    if(err) {
+    if (err) {
         fprintf(stderr, "Error in vem_init()\n");
         exit(-1);
     }
 
 }
 
-Runtime::~Runtime() {
-
+Runtime::~Runtime()
+{
     flush();
     vem_shutdown();
     bh_component_free(self_component);
     bh_component_free(vem_component);
-
 }
 
 bh_intp Runtime::flush()
@@ -308,5 +307,4 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
 }
 
 }
-
 #endif

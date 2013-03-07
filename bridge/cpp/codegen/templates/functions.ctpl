@@ -12,23 +12,23 @@ directiveStartToken = %
 #include "bh.h"
 
 namespace bh {
+%slurp
+%for $function in $data
+%if $function[2] == "operator.fun"
+%slurp
 
-    %for $function in $data
-    %if $function[2] == "operator.fun"
+template <typename T>
+Vector<T> & $function[0] ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
 
-    template <typename T>
-    Vector<T> & $function[0] ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) $function[1], *vector, rhs );
-        return *vector;
-    }
-
-    %end if
-    %end for
+    Runtime::instance()->enqueue( (bh_opcode) $function[1], *vector, rhs );
+    return *vector;
+}
+%slurp
+%end if
+%end for
 
 }
-
 #endif
 

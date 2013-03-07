@@ -43,7 +43,6 @@ inline
 int compatible( Vector<T> & op1, Vector<T> op2 )
 {
     int c = 0;
-
 }
 
 }

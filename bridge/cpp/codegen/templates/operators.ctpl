@@ -12,10 +12,7 @@ directiveStartToken = %
 #include "bh.h"
 
 namespace bh {
-
 %include "codegen/templates/operators_int.ctpl"
 %include "codegen/templates/operators_ext.ctpl"
-
 }
-
 #endif

@@ -29,12 +29,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh.h"
 
 namespace bh {
-
-
 //
 //  Internally defined operator overloads
 //
-
 
 template <typename T>
 Vector<T>& Vector<T>::operator = ( const T rhs )
@@ -49,9 +46,6 @@ Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
     return *this;
 }
-
-
-
 
 //
 //  Binary and implemented by code-generator.
@@ -86,7 +80,6 @@ Vector<T> & operator + ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator - ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -113,7 +106,6 @@ Vector<T> & operator - ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator * ( Vector<T> & lhs, Vector<T> & rhs )
@@ -142,7 +134,6 @@ Vector<T> & operator * ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator / ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -169,7 +160,6 @@ Vector<T> & operator / ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator % ( Vector<T> & lhs, Vector<T> & rhs )
@@ -198,7 +188,6 @@ Vector<T> & operator % ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator == ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -225,7 +214,6 @@ Vector<T> & operator == ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator != ( Vector<T> & lhs, Vector<T> & rhs )
@@ -254,7 +242,6 @@ Vector<T> & operator != ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator > ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -281,7 +268,6 @@ Vector<T> & operator > ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator >= ( Vector<T> & lhs, Vector<T> & rhs )
@@ -310,7 +296,6 @@ Vector<T> & operator >= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator < ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -337,7 +322,6 @@ Vector<T> & operator < ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator <= ( Vector<T> & lhs, Vector<T> & rhs )
@@ -366,7 +350,6 @@ Vector<T> & operator <= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator && ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -393,7 +376,6 @@ Vector<T> & operator && ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator || ( Vector<T> & lhs, Vector<T> & rhs )
@@ -422,7 +404,6 @@ Vector<T> & operator || ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator & ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -449,7 +430,6 @@ Vector<T> & operator & ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator | ( Vector<T> & lhs, Vector<T> & rhs )
@@ -478,7 +458,6 @@ Vector<T> & operator | ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator ^ ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -505,7 +484,6 @@ Vector<T> & operator ^ ( T const& lhs, Vector<T> & rhs )
     Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
     return *vector;
 }
-
 
 //
 //  Binary and implemented by manually.
@@ -540,7 +518,6 @@ Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -567,7 +544,6 @@ Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
     // TODO: implement
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
@@ -596,7 +572,6 @@ Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -623,7 +598,6 @@ Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
     // TODO: implement
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
@@ -652,7 +626,6 @@ Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -679,7 +652,6 @@ Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
     // TODO: implement
     return *vector;
 }
-
 
 template <typename T>
 Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
@@ -708,7 +680,6 @@ Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
 {
@@ -736,7 +707,6 @@ Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
     return *vector;
 }
 
-
 //
 //  Unary and implemented by code-generator.
 //  Operators such as:
@@ -761,7 +731,6 @@ Vector<T> & operator ! ( T const& rhs )
     return *vector;
 }
 
-
 template <typename T>
 Vector<T> & operator ~ ( Vector<T> & rhs )
 {
@@ -780,14 +749,10 @@ Vector<T> & operator ~ ( T const& rhs )
     return *vector;
 }
 
-
 //
 //  Unary and implemented manually.
 //  Operators such as:
 //  Mapping "++a" to BH_ADD(a, a, 1)
 //
-
-
 }
-
 #endif

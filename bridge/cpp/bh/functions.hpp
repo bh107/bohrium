@@ -30,228 +30,204 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-
-    template <typename T>
-    Vector<T> & pow ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_POWER, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & abs ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_ABSOLUTE, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & max ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_MAXIMUM, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & min ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_MINIMUM, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & sin ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_SIN, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & cos ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_COS, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & tan ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_TAN, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & sinh ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_SINH, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & cosh ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_COSH, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & tanh ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_TANH, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & exp ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_EXP, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & exp2 ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_EXP2, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & expm1 ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_EXPM1, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & log ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_LOG, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & log2 ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_LOG2, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & log10 ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_LOG10, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & log1p ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_LOG1P, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & sqrt ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_SQRT, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & ceil ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_CEIL, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & trunc ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_TRUNC, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & floor ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_FLOOR, *vector, rhs );
-        return *vector;
-    }
-
-
-    template <typename T>
-    Vector<T> & rint ( Vector<T> & rhs )
-    {
-        Vector<T>* vector = new Vector<T>( rhs );
-
-        Runtime::instance()->enqueue( (bh_opcode) BH_RINT, *vector, rhs );
-        return *vector;
-    }
-
-
+template <typename T>
+Vector<T> & pow ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_POWER, *vector, rhs );
+    return *vector;
 }
 
+template <typename T>
+Vector<T> & abs ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_ABSOLUTE, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & max ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_MAXIMUM, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & min ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_MINIMUM, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & sin ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_SIN, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & cos ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_COS, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & tan ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_TAN, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & sinh ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_SINH, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & cosh ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_COSH, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & tanh ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_TANH, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & exp ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXP, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & exp2 ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXP2, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & expm1 ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXPM1, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & log ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & log2 ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG2, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & log10 ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG10, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & log1p ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG1P, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & sqrt ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_SQRT, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & ceil ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_CEIL, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & trunc ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_TRUNC, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & floor ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_FLOOR, *vector, rhs );
+    return *vector;
+}
+
+template <typename T>
+Vector<T> & rint ( Vector<T> & rhs )
+{
+    Vector<T>* vector = new Vector<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) BH_RINT, *vector, rhs );
+    return *vector;
+}
+
+}
 #endif
 
