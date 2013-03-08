@@ -44,23 +44,23 @@ public:
 
     ~Runtime();
 
-    template <typename T>
-    void enqueue( T cool );
+    template <typename T>   // x = y + z
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2); 
 
-    template <typename T>
-    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2);
+    template <typename T>   // x = y + 1;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2);    
 
-    template <typename T>
-    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2);
+    template <typename T>   // x = 1 + y;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2);    
 
-    template <typename T>
-    void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2);
+    template <typename T>   // x = y;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1);                  
 
-    template <typename T>
-    void enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1);
+    template <typename T>   // x = 1.0;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1);                     
 
-    template <typename T>
-    void enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1);
+    template <typename T>   // SYS: FREE, SYNC, DISCARD;
+    void enqueue( bh_opcode opcode, Operand<T> & op0);
 
     bh_intp flush();
 
@@ -138,6 +138,12 @@ Runtime::~Runtime()
     bh_component_free(vem_component);
 }
 
+/**
+ * Flush the instruction-queue.
+ * This will force the runtime system to execute the queued up instructions.
+ *
+ * @return The number of instructions flushed.
+ */
 bh_intp Runtime::flush()
 {
     char *msg = (char*) malloc(1024 * sizeof(char));
@@ -159,7 +165,7 @@ bh_intp Runtime::flush()
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vector<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2)
 {
     bh_instruction* instr;
 
@@ -175,30 +181,17 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, Vecto
     instr->operand[2] = &storage[op2.getKey()];
 
     if (op1.isTemp()) {
-        instr = &queue[queue_size++];
-        instr->opcode = BH_FREE;
-        instr->operand[0] = &storage[op1.getKey()];
-
-        instr = &queue[queue_size++];
-        instr->opcode = BH_DISCARD;
-        instr->operand[0] = &storage[op1.getKey()];
+        delete &op1;
     }
 
     if (op2.isTemp()) {
-        instr = &queue[queue_size++];
-        instr->opcode = BH_FREE;
-        instr->operand[0] = &storage[op2.getKey()];
-
-        instr = &queue[queue_size++];
-        instr->opcode = BH_DISCARD;
-        instr->operand[0] = &storage[op2.getKey()];
+        delete &op2;
     }
-
 }
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T const& op2)
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2)
 {
     bh_instruction* instr;
 
@@ -214,22 +207,14 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1, T con
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
-
     if (op1.isTemp()) {
-        instr = &queue[queue_size++];
-        instr->opcode = BH_FREE;
-        instr->operand[0] = &storage[op1.getKey()];
-
-        instr = &queue[queue_size++];
-        instr->opcode = BH_DISCARD;
-        instr->operand[0] = &storage[op1.getKey()];
+        delete &op1;
     }
-
 }
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2)
 {
     bh_instruction* instr;
 
@@ -245,22 +230,14 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1, Vector<T
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 
-
     if (op2.isTemp()) {
-        instr = &queue[queue_size++];
-        instr->opcode = BH_FREE;
-        instr->operand[0] = &storage[op2.getKey()];
-
-        instr = &queue[queue_size++];
-        instr->opcode = BH_DISCARD;
-        instr->operand[0] = &storage[op2.getKey()];
+        delete &op2;
     }
-
 }
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1)
 {
     bh_instruction* instr;
 
@@ -276,20 +253,13 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, Vector<T> & op1)
     instr->operand[2] = NULL;
 
     if (op1.isTemp()) {
-        instr = &queue[queue_size++];
-        instr->opcode = BH_FREE;
-        instr->operand[0] = &storage[op1.getKey()];
-
-        instr = &queue[queue_size++];
-        instr->opcode = BH_DISCARD;
-        instr->operand[0] = &storage[op1.getKey()];
+        delete &op1;
     }
-
 }
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1)
 {
     bh_instruction* instr;
 
@@ -304,6 +274,24 @@ void Runtime::enqueue( bh_opcode opcode, Vector<T> & op0, T const& op1)
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op1 );
+}
+
+template <typename T>
+inline
+void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0)
+{
+    bh_instruction* instr;
+
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
+        vem_execute( queue_size, queue );
+        queue_size = 0;
+    }
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = NULL;
+    instr->operand[2] = NULL;
 }
 
 }

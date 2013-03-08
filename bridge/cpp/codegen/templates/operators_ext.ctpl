@@ -17,7 +17,9 @@ Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
 {
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
+
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+
     return *vector;
 }
 
@@ -27,6 +29,7 @@ Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
     Vector<T>* vector = new Vector<T>( lhs );
     vector->setTemp(true);
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+
     return *vector;
 }
 
@@ -36,12 +39,14 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+
     return *vector;
 }
 %slurp
 %end if
 %end for
 
+/*
 //
 //  Binary and implemented by manually.
 //  Operators such as:
@@ -79,6 +84,7 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 %slurp
 %end if
 %end for
+*/
 
 //
 //  Unary and implemented by code-generator.
@@ -94,21 +100,27 @@ Vector<T> & operator $op ( Vector<T> & rhs )
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, rhs );
+
     return *vector;
 }
 
+/*
 template <typename T>
 Vector<T> & operator $op ( T const& rhs )
 {
     Vector<T>* vector = new Vector<T>( rhs );
     vector->setTemp(true);
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, rhs );
+
     return *vector;
 }
+*/
+
 %slurp
 %end if
 %end for
 
+/*
 //
 //  Unary and implemented manually.
 //  Operators such as:
@@ -137,3 +149,5 @@ Vector<T> & operator $op ( T const& rhs )
 %slurp
 %end if
 %end for
+
+*/

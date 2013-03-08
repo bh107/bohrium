@@ -29,15 +29,18 @@ void compute()
     Vector<double> z = Vector<double>(3,3);
 
     y = 1.0;
-    z = 1.0;
+    x = 1.0;
+    
+    x += 1.0;
+    pprint( x );
 
-    x = y + z;
+    x += y;
     pprint( x );
 }
 
 int main()
 {
-    std::cout << "HW example." << std::endl;
+    std::cout << "Compound example." << std::endl;
 
     compute();
 

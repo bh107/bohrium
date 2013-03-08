@@ -27,14 +27,20 @@ void compute()
     Vector<double> x = Vector<double>(3, 3);
     Vector<double> y = Vector<double>(3, 3);
     Vector<double> z = Vector<double>(3, 3);
-
+    //x = 1.0;
     y = 1.0;
     z = 1.0;
+    // vcache issue!
+    for(int i=0; i<20000; i++) {
 
-    for(int i=0; i<2000; i++)
         x = y + z;
+        std::cout   << i << ": [x=" << x.getKey()  \
+                    << ",y="<<y.getKey()    \
+                    << ",z=" << z.getKey()  \
+                    << "] [" << storage.size() << "] ";
+        pprint( x );
+    }
 
-    pprint( x );
 }
 
 int main()

@@ -20,9 +20,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include "traits.hpp"       // Traits for assigning type to constants and arrays.
-#include "state.hpp"
+#include "runtime.hpp"
 
 namespace bh {
+
+// Vector, Matrix, NDArray : Operand
 
 template <typename T>
 Vector<T>::Vector( Vector<T> const& vector )
@@ -84,7 +86,7 @@ Vector<T>::Vector( int d0, int d1 )
 template <typename T>
 typename Vector<T>::iterator Vector<T>::begin()
 {
-    Runtime::instance()->enqueue( BH_SYNC, *this, *this );
+    Runtime::instance()->enqueue( BH_SYNC, *this );
     Runtime::instance()->flush();
 
     return Vector<T>::iterator( storage[this->key] );
@@ -97,28 +99,11 @@ typename Vector<T>::iterator Vector<T>::end()
 }
 
 template <typename T>
-int Vector<T>::getKey() const
-{
-    return this->key;
-}
-
-template <typename T>
-bool Vector<T>::isTemp() const
-{
-    return this->is_temp;
-}
-
-template <typename T>
-void Vector<T>::setTemp(bool is_temp)
-{
-    this->is_temp = is_temp;
-}
-
-template <typename T>
 Vector<T>::~Vector()
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_FREE, *this, *this);
-    Runtime::instance()->enqueue( (bh_opcode)BH_DISCARD, *this, *this);
+    std::cout << "De-allocating=" << this->key << std::endl;
+    Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+    Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
 }
 
 template <typename T>

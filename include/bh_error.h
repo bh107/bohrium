@@ -32,7 +32,7 @@ enum /* bh_error */
     BH_TYPE_NOT_SUPPORTED,    // Data type not supported
     BH_OUT_OF_MEMORY,         // Out of memory
     BH_INST_NOT_SUPPORTED,    // Instruction not supported
-    BH_USERFUNC_NOT_SUPPORTED,// User-defined function not supported
+    BH_USERFUNC_NOT_SUPPORTED // User-defined function not supported
 };
 
 

@@ -26,7 +26,33 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class Vector {
+class Operand {
+public:
+    Operand() : key(0), is_temp(false) {}
+
+    int getKey() const
+    {
+        return key;
+    }
+
+    bool isTemp() const
+    {
+        return is_temp;
+    }
+
+    void setTemp(bool is_temp)
+    {
+        is_temp = is_temp;
+    }
+
+protected:
+    int key;
+    bool is_temp;
+
+};
+
+template <typename T>
+class Vector : public Operand<T> {
 public:
     // Types:
     typedef Vector_iter<T> iterator;
@@ -34,10 +60,6 @@ public:
     Vector( Vector const& vector );
     Vector( int d0 );
     Vector( int d0, int d1 );
-
-    int getKey() const;
-    bool isTemp() const;
-    void setTemp(bool is_temp);
 
     ~Vector();
 
@@ -51,31 +73,55 @@ public:
     // - vector.hpp:    defined / implemented manually.
     // - operators.hpp: defined / implemented by code-generator.
     //
-    Vector& operator=( const T rhs );
+    Vector& operator=( T const& rhs );  // Used for initialization / assignment.
     Vector& operator=( Vector & rhs );
-    Vector& operator++();
+
+    Vector& operator[]( int index );    // This is a performance killer.
+
+    Vector& operator++();               // Increment all elements in container
     Vector& operator++( int );
-    Vector& operator--();
+    Vector& operator--();               // Decrement all elements in container
     Vector& operator--( int );
 
-    Vector& operator+=( const T rhs );
+    Vector& operator+=( const T rhs );  // Compound assignment operators
     Vector& operator+=( Vector & rhs );
+
+    Vector& operator-=( const T rhs );
+    Vector& operator-=( Vector & rhs );
+
+    Vector& operator*=( const T rhs );
+    Vector& operator*=( Vector & rhs );
+
+    Vector& operator/=( const T rhs );
+    Vector& operator/=( Vector & rhs );
+
+    Vector& operator%=( const T rhs );
+    Vector& operator%=( Vector & rhs );
+
+    Vector& operator>>=( const T rhs );
+    Vector& operator>>=( Vector & rhs );
+
+    Vector& operator<<=( const T rhs );
+    Vector& operator<<=( Vector & rhs );
+
+    Vector& operator&=( const T rhs );
+    Vector& operator&=( Vector & rhs );
+
+    Vector& operator^=( const T rhs );
+    Vector& operator^=( Vector & rhs );
+
+    Vector& operator|=( const T rhs );
+    Vector& operator|=( Vector & rhs );
 
     iterator begin();
     iterator end();
-
-private:
-
-    int key;
-    bool is_temp;
-    bool synced;
 
 };
 
 }
 
 #include "vector.hpp"       // Vector (De)Constructor.
-#include "state.hpp"        // Communication with Bohrium runtime
+#include "runtime.hpp"      // Communication with Bohrium runtime
 #include "operators.hpp"    // Vector operations via operator-overloads.
 #include "functions.hpp"    // Vector operations via functions.
 #include "sugar.hpp"        // Pretty print functions and the like...

@@ -6,15 +6,15 @@ directiveStartToken = %
 //
 //  Internally defined operator overloads
 //
-%for $op, $opcode, $optype, $opcount in $data
-%if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
-
 template <typename T>
-Vector<T>& Vector<T>::operator $op ( const T rhs )
+Vector<T>& Vector<T>::operator= ( T const& rhs )
 {
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *this, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
     return *this;
 }
+
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
 Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
