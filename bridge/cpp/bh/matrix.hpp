@@ -17,32 +17,12 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_CPP_SUGAR
-#define __BOHRIUM_BRIDGE_CPP_SUGAR
+#include <iostream>
 
 namespace bh {
 
 template <typename T>
-void pprint( Operand<T> & operand )
-{
-    bool first = true;
-
-    Operand<double>::iterator it  = operand.begin();
-    Operand<double>::iterator end = operand.end();
-
-    std::cout << "[ ";
-    for(; it != end; it++) {
-
-        if (!first) {
-            std::cout  << ", ";
-        } else {
-            first = false;
-        }
-        std::cout << *it;
-    }
-    std::cout << " ]" << std::endl;
+class matrix : public Operand;
 
 }
 
-}
-#endif

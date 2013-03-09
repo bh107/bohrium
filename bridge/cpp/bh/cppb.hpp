@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
 
+#define BH_CPP_QUEUE_MAX 1024
 #include "iterator.hpp"
 
 namespace bh {
@@ -28,22 +29,18 @@ namespace bh {
 template <typename T>
 class Operand {
 public:
-    Operand() : key(0), is_temp(false) {}
+    Operand();
+    ~Operand();
 
-    int getKey() const
-    {
-        return key;
-    }
+    // Types:
+    typedef Operand_iter<T> iterator;
 
-    bool isTemp() const
-    {
-        return is_temp;
-    }
+    int getKey() const;
+    bool isTemp() const;
+    void setTemp(bool is_temp);
 
-    void setTemp(bool is_temp)
-    {
-        is_temp = is_temp;
-    }
+    iterator begin();
+    iterator end();
 
 protected:
     int key;
@@ -51,17 +48,68 @@ protected:
 
 };
 
+/**
+ *  Encapsulation of communication with Bohrium runtime.
+ *  Implemented as a singleton.
+ *
+ *  Note: not thread-safe.
+ */
+class Runtime {
+public:
+    static Runtime* instance();
+
+    ~Runtime();
+
+    template <typename T>   // x = y + z
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2); 
+
+    template <typename T>   // x = y + 1;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2);    
+
+    template <typename T>   // x = 1 + y;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2);    
+
+    template <typename T>   // x = y;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1);                  
+
+    template <typename T>   // x = 1.0;
+    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1);                     
+
+    template <typename T>   // SYS: FREE, SYNC, DISCARD;
+    void enqueue( bh_opcode opcode, Operand<T> & op0);
+
+    bh_intp flush();
+
+private:
+    static Runtime* pInstance;                  // Singleton instance pointer.
+
+    bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
+    bh_intp         queue_size;
+
+    bh_init         vem_init;                   // Bohrium interface
+    bh_execute      vem_execute;
+    bh_shutdown     vem_shutdown;
+    bh_reg_func     vem_reg_func;
+
+    bh_component    **components,               // Bohrium component setup
+                    *self_component,
+                    *vem_component;
+
+    bh_intp children_count;
+
+    Runtime();                                  // Ensure no external instantiation.
+
+};
+
 template <typename T>
 class Vector : public Operand<T> {
 public:
-    // Types:
-    typedef Vector_iter<T> iterator;
 
     Vector( Vector const& vector );
     Vector( int d0 );
     Vector( int d0, int d1 );
 
-    ~Vector();
+    //~Vector();
 
     //
     // Operators: 
@@ -113,15 +161,12 @@ public:
     Vector& operator|=( const T rhs );
     Vector& operator|=( Vector & rhs );
 
-    iterator begin();
-    iterator end();
-
 };
 
 }
 
-#include "vector.hpp"       // Vector (De)Constructor.
 #include "runtime.hpp"      // Communication with Bohrium runtime
+#include "vector.hpp"       // Vector (De)Constructor.
 #include "operators.hpp"    // Vector operations via operator-overloads.
 #include "functions.hpp"    // Vector operations via functions.
 #include "sugar.hpp"        // Pretty print functions and the like...

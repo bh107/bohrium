@@ -25,20 +25,20 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class Vector_iter : public std::iterator<std::input_iterator_tag, T> {
+class Operand_iter : public std::iterator<std::input_iterator_tag, T> {
 public:
     // Types
     typedef T  value_type;
     typedef T* pointer;
     typedef T& reference;
 
-    typedef typename Vector_iter<T>::iterator iterator;
+    typedef typename Operand_iter<T>::iterator iterator;
 
     // Constructors
-    Vector_iter() : data(NULL) {}
+    Operand_iter() : data(NULL) {}
 
-    Vector_iter(bh_array x) : operand(x) {
-
+    Operand_iter(bh_array x) : operand(x)
+    {
         data        = (pointer)bh_base_array( &operand )->data;
         last_dim    = operand.ndim-1;
         last_e      = bh_nelements(operand.ndim, operand.shape )-1;
@@ -46,21 +46,20 @@ public:
         offset      = operand.start;
 
         memset(coord, 0, BH_MAXDIM * sizeof(bh_index));
-
     }
 
     // Operator overloads
-    friend bool operator==(const Vector_iter& i, const Vector_iter& j)
+    friend bool operator==(const Operand_iter& i, const Operand_iter& j)
     {
         return i->data == j->data;
     }
 
-    friend bool operator!=(const Vector_iter& i, const Vector_iter& j)
+    friend bool operator!=(const Operand_iter& i, const Operand_iter& j)
     {
         return i.data != j.data;
     }
 
-    Vector_iter& operator++()   // prefix
+    Operand_iter& operator++()   // prefix
     {
         data++;
         cur_e++;
@@ -70,7 +69,7 @@ public:
         return *this;
     }
 
-    Vector_iter operator++(int) // postfix
+    Operand_iter operator++(int) // postfix
     {
         data++;
         cur_e++;

@@ -17,77 +17,19 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_CPP_STATE
-#define __BOHRIUM_BRIDGE_CPP_STATE
+#ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME
+#define __BOHRIUM_BRIDGE_CPP_RUNTIME
 #include <iostream>
 #include <boost/ptr_container/ptr_map.hpp>
 #include "bh.h"
 
 namespace bh {
 
-#define BH_CPP_QUEUE_MAX 1024
-
 typedef boost::ptr_map<int, bh_array> storage_type;
 storage_type storage;
-
 int keys = 0;
 
-/**
- *  Encapsulation of communication with Bohrium runtime.
- *  Implemented as a singleton.
- *
- *  Note: not thread-safe.
- */
-class Runtime {
-public:
-    static Runtime* instance();
-
-    ~Runtime();
-
-    template <typename T>   // x = y + z
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2); 
-
-    template <typename T>   // x = y + 1;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2);    
-
-    template <typename T>   // x = 1 + y;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2);    
-
-    template <typename T>   // x = y;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1);                  
-
-    template <typename T>   // x = 1.0;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1);                     
-
-    template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue( bh_opcode opcode, Operand<T> & op0);
-
-    bh_intp flush();
-
-private:
-    static Runtime* pInstance;                  // Singleton instance pointer.
-
-    bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
-    bh_intp         queue_size;
-
-    bh_init         vem_init;                   // Bohrium interface
-    bh_execute      vem_execute;
-    bh_shutdown     vem_shutdown;
-    bh_reg_func     vem_reg_func;
-
-    bh_component    **components,               // Bohrium component setup
-                    *self_component,
-                    *vem_component;
-
-    bh_intp children_count;
-
-    Runtime();                                  // Ensure no external instantiation.
-
-};
-
-//
-//  Implementation
-//
+// Runtime : Definition
 
 Runtime* Runtime::pInstance = 0;
 
