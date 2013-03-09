@@ -76,7 +76,7 @@ typename Operand<T>::iterator Operand<T>::end()
 template <typename T>
 Vector<T>::Vector( Vector<T> const& vector )
 {
-    storage[this->key].base        = storage[vector.getKey()].base;
+    storage[this->key].base        = NULL;
     storage[this->key].ndim        = storage[vector.getKey()].ndim;
     storage[this->key].start       = storage[vector.getKey()].start;
     for(bh_index i=0; i< storage[vector.getKey()].ndim; i++) {
@@ -85,7 +85,7 @@ Vector<T>::Vector( Vector<T> const& vector )
     for(bh_index i=0; i< storage[vector.getKey()].ndim; i++) {
         storage[this->key].stride[i] = storage[vector.getKey()].stride[i];
     }
-    storage[this->key].data        = storage[vector.getKey()].data;
+    storage[this->key].data        = NULL;
 }
 
 template <typename T>
