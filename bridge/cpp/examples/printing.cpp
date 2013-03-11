@@ -24,7 +24,7 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(3, 3);
+    multi_array<double> x(9);
     x = 3.0;
 
     pprint( x );

@@ -22,7 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class matrix : public Operand;
+matrix<T>::matrix(int m, int n) : multi_array<T>(m, n) {
+    std::cout << "<Matrix>" << std::endl;
+};
 
 }
 

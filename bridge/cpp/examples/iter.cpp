@@ -26,12 +26,12 @@ void compute()
 {
     bool first = true;
 
-    Vector<double> x = Vector<double>(3, 3);
-    Vector<double> y = Vector<double>(3, 3);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
     x = 3.0;
 
     std::cout << "Priting values: ";
-    for(Vector<double>::iterator it=x.begin(); it != x.end(); it++) {
+    for(multi_array<double>::iterator it=x.begin(); it != x.end(); it++) {
 
         if (!first) {
             std::cout  << ", ";

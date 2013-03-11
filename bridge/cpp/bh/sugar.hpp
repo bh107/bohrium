@@ -23,12 +23,12 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-void pprint( Operand<T> & operand )
+void pprint( multi_array<T> & operand )
 {
     bool first = true;
 
-    Operand<double>::iterator it  = operand.begin();
-    Operand<double>::iterator end = operand.end();
+    multi_array<double>::iterator it  = operand.begin();
+    multi_array<double>::iterator end = operand.end();
 
     std::cout << "[ ";
     for(; it != end; it++) {

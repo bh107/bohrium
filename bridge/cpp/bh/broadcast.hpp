@@ -17,15 +17,15 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_CPP
-#define __BOHRIUM_BRIDGE_CPP
+#ifndef __BOHRIUM_BRIDGE_CPP_BROADCAST
+#define __BOHRIUM_BRIDGE_CPP_BROADCAST
 #include "bh.h"
 
 namespace bh {
 
 template <typename T>
 inline
-Vector<T> & broadcast( Vector<T> & from, Vector<T> & to )
+multi_array<T> & broadcast( multi_array<T> & from, multi_array<T> & to )
 {
 
 }
@@ -40,7 +40,7 @@ Vector<T> & broadcast( Vector<T> & from, Vector<T> & to )
  */
 template <typename T>
 inline
-int compatible( Vector<T> & op1, Vector<T> op2 )
+int compatible( multi_array<T> & op1, multi_array<T> op2 )
 {
     int c = 0;
 }

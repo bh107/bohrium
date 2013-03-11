@@ -7,7 +7,7 @@ directiveStartToken = %
 //  Internally defined operator overloads
 //
 template <typename T>
-Vector<T>& Vector<T>::operator= ( T const& rhs )
+multi_array<T>& multi_array<T>::operator= ( T const& rhs )
 {
     Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
     return *this;
@@ -17,7 +17,7 @@ Vector<T>& Vector<T>::operator= ( T const& rhs )
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
+multi_array<T>& multi_array<T>::operator $op ( multi_array<T> & rhs )
 {
     Runtime::instance()->enqueue( (bh_opcode)$opcode, *this, rhs );
     return *this;
@@ -30,14 +30,14 @@ Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
 %if $optype == "operator.int" and $opcode == "CUSTOM" and $opcount == 2
 
 template <typename T>
-Vector<T>& Vector<T>::operator $op ( const T rhs )
+multi_array<T>& multi_array<T>::operator $op ( const T rhs )
 {
     // TODO: implement
     return *this;
 }
 
 template <typename T>
-Vector<T>& Vector<T>::operator $op ( Vector<T> & rhs )
+multi_array<T>& multi_array<T>::operator $op ( multi_array<T> & rhs )
 {
     // TODO: implement
     return *this;

@@ -25,19 +25,19 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class Operand_iter : public std::iterator<std::input_iterator_tag, T> {
+class multi_array_iter : public std::iterator<std::input_iterator_tag, T> {
 public:
     // Types
     typedef T  value_type;
     typedef T* pointer;
     typedef T& reference;
 
-    typedef typename Operand_iter<T>::iterator iterator;
+    typedef typename multi_array_iter<T>::iterator iterator;
 
     // Constructors
-    Operand_iter() : data(NULL) {}
+    multi_array_iter() : data(NULL) {}
 
-    Operand_iter(bh_array x) : operand(x)
+    multi_array_iter(bh_array x) : operand(x)
     {
         data        = (pointer)bh_base_array( &operand )->data;
         last_dim    = operand.ndim-1;
@@ -49,17 +49,17 @@ public:
     }
 
     // Operator overloads
-    friend bool operator==(const Operand_iter& i, const Operand_iter& j)
+    friend bool operator==(const multi_array_iter& i, const multi_array_iter& j)
     {
         return i->data == j->data;
     }
 
-    friend bool operator!=(const Operand_iter& i, const Operand_iter& j)
+    friend bool operator!=(const multi_array_iter& i, const multi_array_iter& j)
     {
         return i.data != j.data;
     }
 
-    Operand_iter& operator++()   // prefix
+    multi_array_iter& operator++()   // prefix
     {
         data++;
         cur_e++;
@@ -69,7 +69,7 @@ public:
         return *this;
     }
 
-    Operand_iter operator++(int) // postfix
+    multi_array_iter operator++(int) // postfix
     {
         data++;
         cur_e++;

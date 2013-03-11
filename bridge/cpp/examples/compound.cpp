@@ -24,9 +24,9 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(3,3);
-    Vector<double> y = Vector<double>(3,3);
-    Vector<double> z = Vector<double>(3,3);
+    multi_array<double> x(3);
+    multi_array<double> y(3);
+    multi_array<double> z(3);
 
     y = 1.0;
     x = 1.0;

@@ -24,7 +24,7 @@ using namespace bh;
 
 void compute()
 {
-    Vector<int> x = Vector<int>(3,3);
+    multi_array<int> x;
 
     x = 1, 2, 3,
         4, 5, 6,

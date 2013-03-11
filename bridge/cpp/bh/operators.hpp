@@ -33,7 +33,7 @@ namespace bh {
 //  Internally defined operator overloads
 //
 template <typename T>
-Vector<T>& Vector<T>::operator= ( T const& rhs )
+multi_array<T>& multi_array<T>::operator= ( T const& rhs )
 {
     Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
     return *this;
@@ -41,7 +41,7 @@ Vector<T>& Vector<T>::operator= ( T const& rhs )
 
 
 template <typename T>
-Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
+multi_array<T>& multi_array<T>::operator = ( multi_array<T> & rhs )
 {
     Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
     return *this;
@@ -54,499 +54,499 @@ Vector<T>& Vector<T>::operator = ( Vector<T> & rhs )
 //
 
 template <typename T>
-Vector<T> & operator + ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator + ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator + ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator + ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator + ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator + ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator - ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator - ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator - ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator - ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator - ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator - ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator * ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator * ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator * ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator * ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator * ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator * ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_MULTIPLY, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator / ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator / ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator / ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator / ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator / ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator / ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_DIVIDE, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator % ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator % ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator % ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator % ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator % ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator % ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_MOD, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator == ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator == ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator == ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator == ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator == ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator == ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator != ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator != ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator != ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator != ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator != ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator != ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator > ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator > ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator > ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator > ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator > ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator > ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator >= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator >= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator >= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator >= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator >= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator >= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator < ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator < ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator < ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator < ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator < ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator < ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator <= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator <= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator <= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator <= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator <= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator <= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator && ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator && ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator && ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator && ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator && ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator && ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator || ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator || ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator || ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator || ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator || ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator || ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator & ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator & ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator & ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator & ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator & ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator & ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator | ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator | ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator | ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator | ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator | ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator | ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^ ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator ^ ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^ ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator ^ ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^ ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator ^ ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 /*
@@ -557,219 +557,219 @@ Vector<T> & operator ^ ( T const& lhs, Vector<T> & rhs )
 //
 
 template <typename T>
-Vector<T> & operator += ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator += ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator += ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator += ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator += ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator += ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator -= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator -= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator -= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator -= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator -= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator -= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator *= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator *= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator *= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator *= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator *= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator *= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator /= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator /= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator /= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator /= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator /= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator /= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator %= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator %= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator %= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator %= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator %= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator %= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator &= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator &= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator &= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator &= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator &= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator &= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator |= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator |= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator |= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator |= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator |= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator |= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^= ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator ^= ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^= ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator ^= ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator ^= ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 */
 
@@ -780,47 +780,47 @@ Vector<T> & operator ^= ( T const& lhs, Vector<T> & rhs )
 //
 
 template <typename T>
-Vector<T> & operator ! ( Vector<T> & rhs )
+multi_array<T> & operator ! ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_NOT, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 /*
 template <typename T>
-Vector<T> & operator ! ( T const& rhs )
+multi_array<T> & operator ! ( T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_NOT, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_LOGICAL_NOT, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 */
 
 
 template <typename T>
-Vector<T> & operator ~ ( Vector<T> & rhs )
+multi_array<T> & operator ~ ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_INVERT, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_INVERT, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 /*
 template <typename T>
-Vector<T> & operator ~ ( T const& rhs )
+multi_array<T> & operator ~ ( T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)BH_INVERT, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)BH_INVERT, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 */
 

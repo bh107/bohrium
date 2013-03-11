@@ -30,7 +30,7 @@ using namespace bh;
  */
 void xk()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
 
     x = 1.0;
 }
@@ -43,7 +43,7 @@ void xk()
  */
 void xk_xx()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
 
     x = 1.0;
 
@@ -58,8 +58,8 @@ void xk_xx()
  */
 void yk_xy()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     y = 2.0;
 
@@ -74,8 +74,8 @@ void yk_xy()
  */
 void xk_yk_xy()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     x = 1.0;
     y = 2.0;
@@ -91,7 +91,7 @@ void xk_yk_xy()
  */
 void xk_xxk()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
 
     x = 1.0;
 
@@ -106,7 +106,7 @@ void xk_xxk()
  */
 void xk_xxx()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
     x = 1.0;
 
     x += x;
@@ -120,8 +120,8 @@ void xk_xxx()
  */
 void xk_yk_xxy()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
     x = 1.0;
     y = 1.0;
 
@@ -136,8 +136,8 @@ void xk_yk_xxy()
  */
 void xk_yk_xxy_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     x = 1.0;
     y = 1.0;
@@ -153,8 +153,8 @@ void xk_yk_xxy_b()
  */
 void xk_yk_xyx_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     x = 1.0;
     y = 1.0;
@@ -170,9 +170,9 @@ void xk_yk_xyx_b()
  */
 void xk_yk_zk_xyz_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
-    Vector<double> z = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
+    multi_array<double> z(9);
 
     x = 1.0;
     y = 1.0;
@@ -189,9 +189,9 @@ void xk_yk_zk_xyz_b()
  */
 void yk_zk_xyz_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
-    Vector<double> z = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
+    multi_array<double> z(9);
 
     y = 1.0;
     z = 1.0;
@@ -207,8 +207,8 @@ void yk_zk_xyz_b()
  */
 void yk_xyk_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     y = 1.0;
 
@@ -223,8 +223,8 @@ void yk_xyk_b()
  */
 void yk_xky_b()
 {
-    Vector<double> x = Vector<double>(1024, 1024);
-    Vector<double> y = Vector<double>(1024, 1024);
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
     y = 1.0;
 

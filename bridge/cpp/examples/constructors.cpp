@@ -22,19 +22,50 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bh;
 
-void compute()
+void copy()
 {
-    Vector<double> x = Vector<double>(3, 3);
-    x = 1.0;
-
+    std::cout << "Vector - Copy Constructor." << std::endl;
+    multi_array<double> x = vector<double>(9);
+    x = 2.0;
     pprint( x );
 }
+
+void matrix_con()
+{
+    std::cout << "Matrix - Copy Constructor." << std::endl;
+    multi_array<double> x = matrix<double>(3,3);
+    x = 2.0;
+    pprint( x );
+}
+
+void regular()
+{
+    std::cout << "Regular Constructor." << std::endl;
+    multi_array<double> x(9);
+    x = 3.0;
+    pprint( x );
+}
+
+void compare()
+{
+    multi_array<double> x(3);
+    multi_array<double> y(3);
+
+    y = 2.0;
+    x = y;
+
+    pprint( x );
+
+}
+
 
 int main()
 {
     std::cout << "Constructor example." << std::endl;
 
-    compute();
+    copy();
+    matrix_con();
+    regular();
 
     return 0;
 }

@@ -24,14 +24,13 @@ using namespace bh;
 
 void compute()
 {
-    Vector<double> x = Vector<double>(3,3);
-    Vector<double> y = Vector<double>(3,3);
-    Vector<double> z = Vector<double>(3,3);
+    std::cout << "Construct...";
+    multi_array<double> x(9);
 
-    y = 1.0;
-    z = 1.0;
+    std::cout << "Assign...";
+    x = 1.0;
 
-    x = y + z;
+    std::cout << "Print...";
     pprint( x );
 }
 

@@ -31,201 +31,201 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-Vector<T> & pow ( Vector<T> & rhs )
+multi_array<T> & pow ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_POWER, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_POWER, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & abs ( Vector<T> & rhs )
+multi_array<T> & abs ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_ABSOLUTE, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_ABSOLUTE, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & max ( Vector<T> & rhs )
+multi_array<T> & max ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_MAXIMUM, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_MAXIMUM, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & min ( Vector<T> & rhs )
+multi_array<T> & min ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_MINIMUM, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_MINIMUM, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & sin ( Vector<T> & rhs )
+multi_array<T> & sin ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_SIN, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_SIN, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & cos ( Vector<T> & rhs )
+multi_array<T> & cos ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_COS, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_COS, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & tan ( Vector<T> & rhs )
+multi_array<T> & tan ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_TAN, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_TAN, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & sinh ( Vector<T> & rhs )
+multi_array<T> & sinh ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_SINH, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_SINH, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & cosh ( Vector<T> & rhs )
+multi_array<T> & cosh ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_COSH, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_COSH, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & tanh ( Vector<T> & rhs )
+multi_array<T> & tanh ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_TANH, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_TANH, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & exp ( Vector<T> & rhs )
+multi_array<T> & exp ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_EXP, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXP, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & exp2 ( Vector<T> & rhs )
+multi_array<T> & exp2 ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_EXP2, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXP2, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & expm1 ( Vector<T> & rhs )
+multi_array<T> & expm1 ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_EXPM1, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_EXPM1, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & log ( Vector<T> & rhs )
+multi_array<T> & log ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_LOG, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & log2 ( Vector<T> & rhs )
+multi_array<T> & log2 ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_LOG2, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG2, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & log10 ( Vector<T> & rhs )
+multi_array<T> & log10 ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_LOG10, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG10, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & log1p ( Vector<T> & rhs )
+multi_array<T> & log1p ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_LOG1P, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_LOG1P, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & sqrt ( Vector<T> & rhs )
+multi_array<T> & sqrt ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_SQRT, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_SQRT, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & ceil ( Vector<T> & rhs )
+multi_array<T> & ceil ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_CEIL, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_CEIL, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & trunc ( Vector<T> & rhs )
+multi_array<T> & trunc ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_TRUNC, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_TRUNC, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & floor ( Vector<T> & rhs )
+multi_array<T> & floor ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_FLOOR, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_FLOOR, *operand, rhs );
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & rint ( Vector<T> & rhs )
+multi_array<T> & rint ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
 
-    Runtime::instance()->enqueue( (bh_opcode) BH_RINT, *vector, rhs );
-    return *vector;
+    Runtime::instance()->enqueue( (bh_opcode) BH_RINT, *operand, rhs );
+    return *operand;
 }
 
 }

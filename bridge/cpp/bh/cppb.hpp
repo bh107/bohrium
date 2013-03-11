@@ -27,13 +27,16 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-class Operand {
+class multi_array {
 public:
-    Operand();
-    ~Operand();
+    multi_array();
+    multi_array( int n );
+    multi_array( int m, int n );
+    multi_array( multi_array<T> const& operand );
+    ~multi_array();
 
     // Types:
-    typedef Operand_iter<T> iterator;
+    typedef multi_array_iter<T> iterator;
 
     int getKey() const;
     bool isTemp() const;
@@ -42,10 +45,80 @@ public:
     iterator begin();
     iterator end();
 
+    //
+    // Operators: 
+    //
+    // =, [], (), -> must be "internal" (nonstatic member functions) and thus declared here.
+    //
+    // Implementations / definitions of operator-overloads are provided in:
+    // 
+    // - vector.hpp:    defined / implemented manually.
+    // - operators.hpp: defined / implemented by code-generator.
+    //
+    multi_array& operator=( T const& rhs );  // Used for initialization / assignment.
+    multi_array& operator=( multi_array & rhs );
+
+    multi_array& operator[]( int index );    // This is a performance killer.
+
+    multi_array& operator++();               // Increment all elements in container
+    multi_array& operator++( int );
+    multi_array& operator--();               // Decrement all elements in container
+    multi_array& operator--( int );
+
+    multi_array& operator+=( const T rhs );  // Compound assignment operators
+    multi_array& operator+=( multi_array & rhs );
+
+    multi_array& operator-=( const T rhs );
+    multi_array& operator-=( multi_array & rhs );
+
+    multi_array& operator*=( const T rhs );
+    multi_array& operator*=( multi_array & rhs );
+
+    multi_array& operator/=( const T rhs );
+    multi_array& operator/=( multi_array & rhs );
+
+    multi_array& operator%=( const T rhs );
+    multi_array& operator%=( multi_array & rhs );
+
+    multi_array& operator>>=( const T rhs );
+    multi_array& operator>>=( multi_array & rhs );
+
+    multi_array& operator<<=( const T rhs );
+    multi_array& operator<<=( multi_array & rhs );
+
+    multi_array& operator&=( const T rhs );
+    multi_array& operator&=( multi_array & rhs );
+
+    multi_array& operator^=( const T rhs );
+    multi_array& operator^=( multi_array & rhs );
+
+    multi_array& operator|=( const T rhs );
+    multi_array& operator|=( multi_array & rhs );
+
 protected:
     int key;
     bool is_temp;
 
+private:
+    void init();
+
+};
+
+template <typename T>
+class vector : public multi_array<T> {
+public:
+    vector(int n);
+    
+    using multi_array<T>::operator=;
+
+};
+
+template <typename T>
+class matrix : public multi_array<T> {
+public:
+    matrix(int m, int n);
+
+    using multi_array<T>::operator=;
 };
 
 /**
@@ -61,22 +134,22 @@ public:
     ~Runtime();
 
     template <typename T>   // x = y + z
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2); 
+    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, multi_array<T> & op2); 
 
     template <typename T>   // x = y + 1;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2);    
+    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, T const& op2);    
 
     template <typename T>   // x = 1 + y;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2);    
+    void enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1, multi_array<T> & op2);    
 
     template <typename T>   // x = y;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1);                  
+    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1);                  
 
     template <typename T>   // x = 1.0;
-    void enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1);                     
+    void enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1);                     
 
     template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue( bh_opcode opcode, Operand<T> & op0);
+    void enqueue( bh_opcode opcode, multi_array<T> & op0);
 
     bh_intp flush();
 
@@ -101,74 +174,15 @@ private:
 
 };
 
-template <typename T>
-class Vector : public Operand<T> {
-public:
-
-    Vector( Vector const& vector );
-    Vector( int d0 );
-    Vector( int d0, int d1 );
-
-    //~Vector();
-
-    //
-    // Operators: 
-    //
-    // =, [], (), -> must be "internal" (nonstatic member functions) and thus declared here.
-    //
-    // Implementations / definitions of operator-overloads are provided in:
-    // 
-    // - vector.hpp:    defined / implemented manually.
-    // - operators.hpp: defined / implemented by code-generator.
-    //
-    Vector& operator=( T const& rhs );  // Used for initialization / assignment.
-    Vector& operator=( Vector & rhs );
-
-    Vector& operator[]( int index );    // This is a performance killer.
-
-    Vector& operator++();               // Increment all elements in container
-    Vector& operator++( int );
-    Vector& operator--();               // Decrement all elements in container
-    Vector& operator--( int );
-
-    Vector& operator+=( const T rhs );  // Compound assignment operators
-    Vector& operator+=( Vector & rhs );
-
-    Vector& operator-=( const T rhs );
-    Vector& operator-=( Vector & rhs );
-
-    Vector& operator*=( const T rhs );
-    Vector& operator*=( Vector & rhs );
-
-    Vector& operator/=( const T rhs );
-    Vector& operator/=( Vector & rhs );
-
-    Vector& operator%=( const T rhs );
-    Vector& operator%=( Vector & rhs );
-
-    Vector& operator>>=( const T rhs );
-    Vector& operator>>=( Vector & rhs );
-
-    Vector& operator<<=( const T rhs );
-    Vector& operator<<=( Vector & rhs );
-
-    Vector& operator&=( const T rhs );
-    Vector& operator&=( Vector & rhs );
-
-    Vector& operator^=( const T rhs );
-    Vector& operator^=( Vector & rhs );
-
-    Vector& operator|=( const T rhs );
-    Vector& operator|=( Vector & rhs );
-
-};
-
 }
 
+#include "multi_array.hpp"  // Operand definition.
 #include "runtime.hpp"      // Communication with Bohrium runtime
-#include "vector.hpp"       // Vector (De)Constructor.
-#include "operators.hpp"    // Vector operations via operator-overloads.
-#include "functions.hpp"    // Vector operations via functions.
-#include "sugar.hpp"        // Pretty print functions and the like...
+
+#include "operators.hpp"    // DSEL Operations via operator-overloads.
+#include "functions.hpp"    // DSEL Operations via functions.
+#include "vector.hpp"       // DSEL Vector (De)Constructor.
+#include "matrix.hpp"       // DSEL Matrix (De)Constructor.
+#include "sugar.hpp"        // DSEL Sugar: pretty print functions and the like...
 
 #endif

@@ -107,7 +107,7 @@ bh_intp Runtime::flush()
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Operand<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, multi_array<T> & op2)
 {
     bh_instruction* instr;
 
@@ -133,7 +133,7 @@ void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, Ope
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T const& op2)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, T const& op2)
 {
     bh_instruction* instr;
 
@@ -156,7 +156,7 @@ void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1, T c
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand<T> & op2)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1, multi_array<T> & op2)
 {
     bh_instruction* instr;
 
@@ -179,7 +179,7 @@ void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1, Operand
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1)
 {
     bh_instruction* instr;
 
@@ -201,7 +201,7 @@ void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, Operand<T> & op1)
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1)
 {
     bh_instruction* instr;
 
@@ -220,7 +220,7 @@ void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0, T const& op1)
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, Operand<T> & op0)
+void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0)
 {
     bh_instruction* instr;
 

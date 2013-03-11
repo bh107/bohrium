@@ -13,34 +13,34 @@ directiveStartToken = %
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator $op ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator $op ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator $op ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, lhs, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
 
-    return *vector;
+    return *operand;
 }
 %slurp
 %end if
@@ -56,30 +56,30 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 %if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 3
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & lhs, Vector<T> & rhs )
+multi_array<T> & operator $op ( multi_array<T> & lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & lhs, T const& rhs )
+multi_array<T> & operator $op ( multi_array<T> & lhs, T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( lhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( lhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
+multi_array<T> & operator $op ( T const& lhs, multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 %slurp
 %end if
@@ -95,24 +95,24 @@ Vector<T> & operator $op ( T const& lhs, Vector<T> & rhs )
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & rhs )
+multi_array<T> & operator $op ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 
 /*
 template <typename T>
-Vector<T> & operator $op ( T const& rhs )
+multi_array<T> & operator $op ( T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *vector, rhs );
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
+    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, rhs );
 
-    return *vector;
+    return *operand;
 }
 */
 
@@ -130,21 +130,21 @@ Vector<T> & operator $op ( T const& rhs )
 %if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 2
 
 template <typename T>
-Vector<T> & operator $op ( Vector<T> & rhs )
+multi_array<T> & operator $op ( multi_array<T> & rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 
 template <typename T>
-Vector<T> & operator $op ( T const& rhs )
+multi_array<T> & operator $op ( T const& rhs )
 {
-    Vector<T>* vector = new Vector<T>( rhs );
-    vector->setTemp(true);
+    multi_array<T>* operand = new multi_array<T>( rhs );
+    operand->setTemp(true);
     // TODO: implement
-    return *vector;
+    return *operand;
 }
 %slurp
 %end if
