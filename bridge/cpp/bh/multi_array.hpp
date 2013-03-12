@@ -32,10 +32,10 @@ void multi_array<T>::init()     // Pseudo-default constructor
     is_temp = false;
 
     storage.insert(key, new bh_array);
-    assign_array_type<T>( &storage[key] );
+    assign_array_type<T>(&storage[key]);
 }
 
-template <typename T>       // Deconstructor
+template <typename T>       // Default constructor
 multi_array<T>::multi_array()
 {
     init();
@@ -62,11 +62,11 @@ multi_array<T>::multi_array( const multi_array<T>& operand )
 }
 
 template <typename T>       // "Vector-like" constructor
-multi_array<T>::multi_array( int n )
+multi_array<T>::multi_array( unsigned int n )
 {
     init();
 
-    std::cout << "[array-vec: " << this->key << "]" << std::endl;
+    std::cout << "[array-1d: " << this->key << "]" << std::endl;
     storage[this->key].base        = NULL;
     storage[this->key].ndim        = 1;
     storage[this->key].start       = 0;
@@ -77,11 +77,11 @@ multi_array<T>::multi_array( int n )
 
 
 template <typename T>       // "Matrix-like" constructor
-multi_array<T>::multi_array( int m, int n )
+multi_array<T>::multi_array( unsigned int m, unsigned int n )
 {
     init();
 
-    std::cout << "[array-mat: " << this->key << "]" << std::endl;
+    std::cout << "[array-2d: " << this->key << "]" << std::endl;
     storage[this->key].base        = NULL;
     storage[this->key].ndim        = 2;
     storage[this->key].start       = 0;
@@ -92,7 +92,26 @@ multi_array<T>::multi_array( int m, int n )
     storage[this->key].data        = NULL;
 }
 
-template <typename T>
+template <typename T>       // "Matrix-like" constructor
+multi_array<T>::multi_array( unsigned int d2, unsigned int d1, unsigned int d0 )
+{
+    init();
+
+    std::cout << "[array-3d: " << this->key << "]" << std::endl;
+    storage[this->key].base        = NULL;
+    storage[this->key].ndim        = 3;
+    storage[this->key].start       = 0;
+    storage[this->key].shape[0]    = d2;
+    storage[this->key].stride[0]   = d1;
+    storage[this->key].shape[1]    = d1;
+    storage[this->key].stride[1]   = d0;
+    storage[this->key].shape[2]    = d0;
+    storage[this->key].stride[2]   = 1;
+    storage[this->key].data        = NULL;
+}
+
+
+template <typename T>       // Deconstructor
 multi_array<T>::~multi_array()
 {
     std::cout << "De-allocating=" << this->key << std::endl;
@@ -101,7 +120,7 @@ multi_array<T>::~multi_array()
 }
 
 template <typename T>
-int multi_array<T>::getKey() const
+unsigned int multi_array<T>::getKey() const
 {
     return this->key;
 }
@@ -158,20 +177,6 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator--(int)
 {
     Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
-    return *this;
-}
-
-template <typename T>
-multi_array<T>& multi_array<T>::operator+=( const T rhs )
-{
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
-    return *this;
-}
-
-template <typename T>
-multi_array<T>& multi_array<T>::operator+=( multi_array & rhs )
-{
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, rhs );
     return *this;
 }
 

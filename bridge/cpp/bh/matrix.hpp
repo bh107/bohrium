@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-matrix<T>::matrix(int m, int n) : multi_array<T>(m, n) {
+matrix<T>::matrix(unsigned int m, unsigned int n) : multi_array<T>(m, n) {
     std::cout << "<Matrix>" << std::endl;
 };
 

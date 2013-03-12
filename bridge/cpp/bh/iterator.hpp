@@ -63,7 +63,7 @@ public:
     {
         data++;
         cur_e++;
-        if (cur_e == last_e) {
+        if (cur_e > last_e) {
             data = NULL;
         }
         return *this;
@@ -71,12 +71,10 @@ public:
 
     multi_array_iter operator++(int) // postfix
     {
-        data++;
-        cur_e++;
-        if (cur_e == last_e) {
-            data = NULL;
-        }
-        return *this;
+        multi_array_iter result = *this;
+        ++(*this);
+
+        return result;
     }
 
     reference operator*()

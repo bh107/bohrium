@@ -6,42 +6,42 @@ directiveStartToken = %
 //
 //  Internally defined operator overloads
 //
+%for $op, $opcode, $optype, $opcount in $data
+%if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 3
+
 template <typename T>
-multi_array<T>& multi_array<T>::operator= ( T const& rhs )
+multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_IDENTITY, *this, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *this, rhs);
     return *this;
 }
 
+template <typename T>
+multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
+{
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *this, rhs);
+    return *this;
+}
+%slurp
+%end if
+%end for
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator $op ( multi_array<T> & rhs )
+multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 {
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *this, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, rhs);
+    return *this;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
+{
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, rhs);
     return *this;
 }
 %slurp
 %end if
 %end for
-%slurp
-%for $op, $opcode, $optype, $opcount in $data
-%if $optype == "operator.int" and $opcode == "CUSTOM" and $opcount == 2
 
-template <typename T>
-multi_array<T>& multi_array<T>::operator $op ( const T rhs )
-{
-    // TODO: implement
-    return *this;
-}
-
-template <typename T>
-multi_array<T>& multi_array<T>::operator $op ( multi_array<T> & rhs )
-{
-    // TODO: implement
-    return *this;
-}
-%slurp
-%end if
-%end for

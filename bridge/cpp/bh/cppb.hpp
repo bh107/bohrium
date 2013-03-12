@@ -30,15 +30,16 @@ template <typename T>
 class multi_array {
 public:
     multi_array();
-    multi_array( int n );
-    multi_array( int m, int n );
+    multi_array( unsigned int n );
+    multi_array( unsigned int m, unsigned int n );
+    multi_array( unsigned int d2, unsigned int d1, unsigned int d0 );
     multi_array( multi_array<T> const& operand );
     ~multi_array();
 
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    int getKey() const;
+    unsigned int getKey() const;
     bool isTemp() const;
     void setTemp(bool is_temp);
 
@@ -55,48 +56,49 @@ public:
     // - vector.hpp:    defined / implemented manually.
     // - operators.hpp: defined / implemented by code-generator.
     //
-    multi_array& operator=( T const& rhs );  // Used for initialization / assignment.
-    multi_array& operator=( multi_array & rhs );
 
     multi_array& operator[]( int index );    // This is a performance killer.
 
+    multi_array& operator=( T const& rhs );  // Used for initialization / assignment.
+    multi_array& operator=( multi_array & rhs );
+
+    multi_array& operator+=(const T& rhs);   // Compound assignment operators / increment
+    multi_array& operator+=(multi_array& rhs);
+
+    multi_array& operator-=(const T& rhs);
+    multi_array& operator-=(multi_array& rhs);
+
+    multi_array& operator*=(const T& rhs);
+    multi_array& operator*=(multi_array& rhs);
+
+    multi_array& operator/=(const T& rhs);
+    multi_array& operator/=(multi_array &rhs);
+
+    multi_array& operator%=(const T& rhs);
+    multi_array& operator%=(multi_array &rhs);
+
+    multi_array& operator>>=(const T& rhs);
+    multi_array& operator>>=(multi_array& rhs);
+
+    multi_array& operator<<=(const T& rhs);
+    multi_array& operator<<=(multi_array& rhs);
+
+    multi_array& operator&=(const T& rhs);
+    multi_array& operator&=(multi_array& rhs);
+
+    multi_array& operator^=(const T& rhs);
+    multi_array& operator^=(multi_array& rhs);
+
+    multi_array& operator|=(const T& rhs);
+    multi_array& operator|=(multi_array& rhs);
+
     multi_array& operator++();               // Increment all elements in container
-    multi_array& operator++( int );
+    multi_array& operator++(int);
     multi_array& operator--();               // Decrement all elements in container
-    multi_array& operator--( int );
-
-    multi_array& operator+=( const T rhs );  // Compound assignment operators
-    multi_array& operator+=( multi_array & rhs );
-
-    multi_array& operator-=( const T rhs );
-    multi_array& operator-=( multi_array & rhs );
-
-    multi_array& operator*=( const T rhs );
-    multi_array& operator*=( multi_array & rhs );
-
-    multi_array& operator/=( const T rhs );
-    multi_array& operator/=( multi_array & rhs );
-
-    multi_array& operator%=( const T rhs );
-    multi_array& operator%=( multi_array & rhs );
-
-    multi_array& operator>>=( const T rhs );
-    multi_array& operator>>=( multi_array & rhs );
-
-    multi_array& operator<<=( const T rhs );
-    multi_array& operator<<=( multi_array & rhs );
-
-    multi_array& operator&=( const T rhs );
-    multi_array& operator&=( multi_array & rhs );
-
-    multi_array& operator^=( const T rhs );
-    multi_array& operator^=( multi_array & rhs );
-
-    multi_array& operator|=( const T rhs );
-    multi_array& operator|=( multi_array & rhs );
+    multi_array& operator--(int);
 
 protected:
-    int key;
+    unsigned int key;
     bool is_temp;
 
 private:
@@ -107,7 +109,7 @@ private:
 template <typename T>
 class vector : public multi_array<T> {
 public:
-    vector(int n);
+    vector(unsigned int n);
     
     using multi_array<T>::operator=;
 
@@ -116,7 +118,7 @@ public:
 template <typename T>
 class matrix : public multi_array<T> {
 public:
-    matrix(int m, int n);
+    matrix(unsigned int m, unsigned int n);
 
     using multi_array<T>::operator=;
 };
@@ -177,6 +179,7 @@ private:
 }
 
 #include "multi_array.hpp"  // Operand definition.
+#include "broadcast.hpp"  // Operand definition.
 #include "runtime.hpp"      // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.

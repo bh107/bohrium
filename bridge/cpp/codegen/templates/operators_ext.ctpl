@@ -3,42 +3,42 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-
 //
-//  Binary and implemented by code-generator.
-//  Operators such as:
+//  Binary operators such as:
 //  Mapping "a + b" to BH_ADD(t, a, b)
+//  Mapping "a + 1.0" to BH_ADD(t, a, 1.0)
+//  Mapping "1.0 + a" to BH_ADD(t, 1.0, a)
 //
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & lhs, multi_array<T> & rhs )
+multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     multi_array<T>* operand = new multi_array<T>( lhs );
     operand->setTemp(true);
 
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
 
     return *operand;
 }
 
 template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & lhs, T const& rhs )
+multi_array<T> & operator$op (multi_array<T>& lhs, const T& rhs)
 {
     multi_array<T>* operand = new multi_array<T>( lhs );
     operand->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
 
     return *operand;
 }
 
 template <typename T>
-multi_array<T> & operator $op ( T const& lhs, multi_array<T> & rhs )
+multi_array<T> & operator$op (const T& lhs, multi_array<T>& rhs)
 {
     multi_array<T>* operand = new multi_array<T>( rhs );
     operand->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, lhs, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
 
     return *operand;
 }
@@ -46,108 +46,23 @@ multi_array<T> & operator $op ( T const& lhs, multi_array<T> & rhs )
 %end if
 %end for
 
-/*
 //
-//  Binary and implemented by manually.
-//  Operators such as:
-//  None so far...
-//
-%for $op, $opcode, $optype, $opcount in $data
-%if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 3
-
-template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & lhs, multi_array<T> & rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    // TODO: implement
-    return *operand;
-}
-
-template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & lhs, T const& rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    // TODO: implement
-    return *operand;
-}
-
-template <typename T>
-multi_array<T> & operator $op ( T const& lhs, multi_array<T> & rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    // TODO: implement
-    return *operand;
-}
-%slurp
-%end if
-%end for
-*/
-
-//
-//  Unary and implemented by code-generator.
-//  Operators such as:
+//  Unary operators such as:
 //  Mapping "!a" to BH_NEGATE(t, a)
 //
 %for $op, $opcode, $optype, $opcount in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & rhs )
+multi_array<T> & operator$op (multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
+    multi_array<T>* operand = new multi_array<T>(rhs);
     operand->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, rhs);
 
-    return *operand;
-}
-
-/*
-template <typename T>
-multi_array<T> & operator $op ( T const& rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue( (bh_opcode)$opcode, *operand, rhs );
-
-    return *operand;
-}
-*/
-
-%slurp
-%end if
-%end for
-
-/*
-//
-//  Unary and implemented manually.
-//  Operators such as:
-//  Mapping "++a" to BH_ADD(a, a, 1)
-//
-%for $op, $opcode, $optype, $opcount in $data
-%if $optype == "operator.ext" and $opcode == "CUSTOM" and $opcount == 2
-
-template <typename T>
-multi_array<T> & operator $op ( multi_array<T> & rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    // TODO: implement
-    return *operand;
-}
-
-template <typename T>
-multi_array<T> & operator $op ( T const& rhs )
-{
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    // TODO: implement
     return *operand;
 }
 %slurp
 %end if
 %end for
 
-*/

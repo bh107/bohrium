@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-void pprint( multi_array<T> & operand )
+void pprint(multi_array<T> & operand)
 {
     bool first = true;
 
@@ -41,7 +41,18 @@ void pprint( multi_array<T> & operand )
         std::cout << *it;
     }
     std::cout << " ]" << std::endl;
+}
 
+template <typename T>
+bool equal(multi_array<T>& i, multi_array<T> j)
+{
+    return false;
+}
+
+template <typename T>
+bool equivalent(multi_array<T>& i, multi_array<T> j)
+{
+    return false;
 }
 
 }

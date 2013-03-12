@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-typedef boost::ptr_map<int, bh_array> storage_type;
+typedef boost::ptr_map<unsigned int, bh_array> storage_type;
 storage_type storage;
-int keys = 0;
+unsigned int keys = 0;
 
 // Runtime : Definition
 
@@ -115,6 +115,8 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & 
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
+
+    //broadcast_shape(op1, op2, op0);
     
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -141,6 +143,8 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & 
         vem_execute( queue_size, queue );
         queue_size = 0;
     }
+
+    //broadcast_shape(op1, op2, op0);
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;

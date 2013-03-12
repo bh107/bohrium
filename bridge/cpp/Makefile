@@ -3,7 +3,7 @@ HEADER=$(ROOT)/include/*
 SOURCES=$(wildcard examples/*.cpp)
 OBJECTS=$(subst .cpp,.o, $(SOURCES))
 EXAMPLES=$(subst .cpp,, $(subst examples/,,$(SOURCES)))
-#EXAMPLES=constructors
+#EXAMPLES=broadcast
 #CXX=clang
 CXX=g++
 #CXXFLAGS=-Wall
@@ -25,6 +25,10 @@ print:
 
 hw: examples/hw.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
+
+broadcast: examples/broadcast.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
+
 
 compound: examples/compound.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)

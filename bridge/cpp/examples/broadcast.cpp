@@ -24,19 +24,21 @@ using namespace bh;
 
 void compute()
 {
-    std::cout << "Construct...";
     multi_array<double> x(3);
+    multi_array<double> y(9,3);
+    multi_array<double> z(9,3);
 
-    std::cout << "Assign...";
-    x = 1.0;
+    x = 2.0;
+    y = 3.0;
 
-    std::cout << "Print...";
-    pprint( x );
+    std::cout << "Compatible? " << broadcast_shape(x, y, z) << "." << std::endl;
+    z = x + y;
+    pprint(z);
 }
 
 int main()
 {
-    std::cout << "HW example." << std::endl;
+    std::cout << "Broadcast example." << std::endl;
 
     compute();
 

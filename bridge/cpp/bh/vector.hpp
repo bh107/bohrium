@@ -19,14 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 
-#include "traits.hpp"       // Traits for assigning type to constants and arrays.
-#include "cppb.hpp"
-#include "runtime.hpp"
-
 namespace bh {
 
 template <typename T>
-vector<T>::vector(int n) : multi_array<T>(n) { std::cout << "<Vector>" << std::endl; };
+vector<T>::vector(unsigned int n) : multi_array<T>(n) {
+    std::cout << "<Vector>" << std::endl;
+};
 
 /*
 
