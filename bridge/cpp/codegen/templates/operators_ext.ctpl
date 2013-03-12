@@ -18,6 +18,13 @@ multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* operand = new multi_array<T>( lhs );
     operand->setTemp(true);
 
+    if (!compatible_shape(lhs, rhs)) {
+        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
+        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+    }
+
+    // shape of "operand" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
 
     return *operand;
@@ -58,6 +65,7 @@ multi_array<T> & operator$op (multi_array<T>& rhs)
 {
     multi_array<T>* operand = new multi_array<T>(rhs);
     operand->setTemp(true);
+
     Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, rhs);
 
     return *operand;

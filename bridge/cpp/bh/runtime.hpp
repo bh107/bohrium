@@ -86,20 +86,28 @@ Runtime::~Runtime()
  *
  * @return The number of instructions flushed.
  */
+inline
 bh_intp Runtime::flush()
 {
-    char *msg = (char*) malloc(1024 * sizeof(char));
-
     bh_intp cur_size = queue_size;
-    bh_error res = BH_SUCCESS;
     if (queue_size > 0) {
-        res = vem_execute( queue_size, queue );
+        vem_execute( queue_size, queue );
+        queue_size = 0;
+    }
+    return cur_size;
+}
 
-        if (res != BH_SUCCESS) {
-            sprintf(msg, "Error in scheduled batch of instructions: %s\n", bh_error_text(res));
-            printf("%s", msg);
-        }
-
+/**
+ * Flush the instruction-queue if it is about to get overflowed.
+ *
+ * @return The number of instructions flushed.
+ */
+inline
+bh_intp Runtime::guard()
+{
+    bh_intp cur_size = queue_size;
+    if (queue_size >= BH_CPP_QUEUE_MAX) {
+        vem_execute( queue_size, queue );
         queue_size = 0;
     }
     return cur_size;
@@ -107,16 +115,30 @@ bh_intp Runtime::flush()
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, multi_array<T> & op2)
+multi_array<T>& Runtime::create_view()
+{
+    multi_array<T>* operand = new multi_array<T>();
+
+    return *operand;
+}
+
+template <typename T>
+inline
+multi_array<T>& Runtime::create_temp()
+{
+    multi_array<T>* operand = new multi_array<T>();
+    operand->setTemp(true);
+
+    return *operand;
+}
+
+template <typename T>
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1, multi_array<T>& op2)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
-
-    //broadcast_shape(op1, op2, op0);
+    guard();
     
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -135,16 +157,11 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & 
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, T const& op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1, const T& op2)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
-
-    //broadcast_shape(op1, op2, op0);
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -160,14 +177,11 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & 
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1, multi_array<T> & op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T>& op2)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -183,14 +197,11 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1, mul
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1)
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -205,14 +216,11 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & 
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1)
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
@@ -224,14 +232,11 @@ void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1)
 
 template <typename T>
 inline
-void Runtime::enqueue( bh_opcode opcode, multi_array<T> & op0)
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
 {
     bh_instruction* instr;
 
-    if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute( queue_size, queue );
-        queue_size = 0;
-    }
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;

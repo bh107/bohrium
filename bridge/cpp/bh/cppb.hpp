@@ -155,7 +155,15 @@ public:
 
     bh_intp flush();
 
+    template <typename T>
+    multi_array<T>& create_temp();
+
+    template <typename T>
+    multi_array<T>& create_view();
+
 private:
+
+    bh_intp guard();
     static Runtime* pInstance;                  // Singleton instance pointer.
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
