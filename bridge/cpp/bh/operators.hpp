@@ -43,11 +43,15 @@ multi_array<T>& multi_array<T>::operator+= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *this, *this, *input);
     return *this;
 }
 
@@ -61,11 +65,15 @@ multi_array<T>& multi_array<T>::operator-= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *this, *this, *input);
     return *this;
 }
 
@@ -79,11 +87,15 @@ multi_array<T>& multi_array<T>::operator*= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *this, *this, *input);
     return *this;
 }
 
@@ -97,11 +109,15 @@ multi_array<T>& multi_array<T>::operator/= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *this, *this, *input);
     return *this;
 }
 
@@ -115,11 +131,15 @@ multi_array<T>& multi_array<T>::operator%= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *this, *this, *input);
     return *this;
 }
 
@@ -133,11 +153,15 @@ multi_array<T>& multi_array<T>::operator&= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, *input);
     return *this;
 }
 
@@ -151,11 +175,15 @@ multi_array<T>& multi_array<T>::operator|= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, *input);
     return *this;
 }
 
@@ -169,11 +197,15 @@ multi_array<T>& multi_array<T>::operator^= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, *input);
     return *this;
 }
 
@@ -187,11 +219,14 @@ multi_array<T>& multi_array<T>::operator= (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to rhs
+        input = &Runtime::instance()->view(rhs);
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, *input);
     return *this;
 }
 
@@ -205,609 +240,593 @@ multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator+ (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator+ (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator- (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator- (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator* (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator* (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator/ (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator/ (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator% (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator% (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator== (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator== (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator!= (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator!= (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator> (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator> (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator>= (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator>= (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator< (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator< (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator<= (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator<= (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator&& (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator&& (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator|| (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator|| (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator& (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator& (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator| (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator| (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the smallest operand.
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator^ (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator^ (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+
+    return *result;
 }
 
 //
@@ -818,23 +837,21 @@ multi_array<T> & operator^ (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T> & operator! (multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>(rhs);
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_NOT, *operand, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
 
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator~ (multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>(rhs);
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)BH_INVERT, *operand, rhs);
+    Runtime::instance()->enqueue((bh_opcode)BH_INVERT, *result, rhs);
 
-    return *operand;
+    return *result;
 }
 
 }

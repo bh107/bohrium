@@ -19,11 +19,17 @@ multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides
+
+        // Create view pointing to rhs as base
+        input = &Runtime::instance()->view(rhs);
+
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *this, *input);
     return *this;
 }
 %slurp
@@ -42,11 +48,17 @@ multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 {
-    if (!compatible_shape(*this, rhs)) {
+    multi_array<T>* input = &rhs;
+
+    if (!compatible_shape(*this, *input)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+
+        // Create a view pointing to rhs
+        input = &Runtime::instance()->view(rhs);
+
+        // Broadcast the view
     }
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, rhs);
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *input);
     return *this;
 }
 %slurp

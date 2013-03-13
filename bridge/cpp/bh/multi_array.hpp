@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 
-#include "traits.hpp"       // Traits for assigning type to constants and multi_arrays.
+#include "traits.hpp"           // Traits for assigning type to constants and multi_arrays.
 #include "cppb.hpp"
 #include "runtime.hpp"
 
@@ -35,15 +35,15 @@ void multi_array<T>::init()     // Pseudo-default constructor
     assign_array_type<T>(&storage[key]);
 }
 
-template <typename T>       // Default constructor
+template <typename T>           // Default constructor
 multi_array<T>::multi_array()
 {
     init();
     std::cout << "[array-none" << key << "]" << std::endl;
 }
 
-template <typename T>       // Copy constructor
-multi_array<T>::multi_array( const multi_array<T>& operand )
+template <typename T>           // Copy constructor
+multi_array<T>::multi_array(const multi_array<T>& operand)
 {
     init();
 
@@ -62,7 +62,7 @@ multi_array<T>::multi_array( const multi_array<T>& operand )
 }
 
 template <typename T>       // "Vector-like" constructor
-multi_array<T>::multi_array( unsigned int n )
+multi_array<T>::multi_array(unsigned int n)
 {
     init();
 
@@ -77,7 +77,7 @@ multi_array<T>::multi_array( unsigned int n )
 
 
 template <typename T>       // "Matrix-like" constructor
-multi_array<T>::multi_array( unsigned int m, unsigned int n )
+multi_array<T>::multi_array(unsigned int m, unsigned int n)
 {
     init();
 
@@ -93,7 +93,7 @@ multi_array<T>::multi_array( unsigned int m, unsigned int n )
 }
 
 template <typename T>       // "Matrix-like" constructor
-multi_array<T>::multi_array( unsigned int d2, unsigned int d1, unsigned int d0 )
+multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 {
     init();
 
@@ -140,10 +140,10 @@ void multi_array<T>::setTemp(bool is_temp)
 template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
-    Runtime::instance()->enqueue( BH_SYNC, *this );
+    Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance()->flush();
 
-    return multi_array<T>::iterator( storage[this->key] );
+    return multi_array<T>::iterator(storage[this->key]);
 }
 
 template <typename T>
@@ -155,28 +155,28 @@ typename multi_array<T>::iterator multi_array<T>::end()
 template <typename T>
 multi_array<T>& multi_array<T>::operator++()
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
 
 template <typename T>
 multi_array<T>& multi_array<T>::operator++(int)
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_ADD, *this, *this, (T)1 );
+    Runtime::instance()->enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
 
 template <typename T>
 multi_array<T>& multi_array<T>::operator--()
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
 
 template <typename T>
 multi_array<T>& multi_array<T>::operator--(int)
 {
-    Runtime::instance()->enqueue( (bh_opcode)BH_SUBTRACT, *this, *this, (T)1 );
+    Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
 

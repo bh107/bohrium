@@ -156,10 +156,16 @@ public:
     bh_intp flush();
 
     template <typename T>
-    multi_array<T>& create_temp();
+    multi_array<T>& op();
 
     template <typename T>
-    multi_array<T>& create_view();
+    multi_array<T>& temp();
+
+    template <typename T>
+    multi_array<T>& temp(multi_array<T>& input);
+
+    template <typename T>
+    multi_array<T>& view(multi_array<T>& base);
 
 private:
 

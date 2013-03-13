@@ -115,19 +115,52 @@ bh_intp Runtime::guard()
 
 template <typename T>
 inline
-multi_array<T>& Runtime::create_view()
+multi_array<T>& Runtime::op()
 {
     multi_array<T>* operand = new multi_array<T>();
 
     return *operand;
 }
 
+/**
+ * Create an intermediate operand.
+ */
 template <typename T>
 inline
-multi_array<T>& Runtime::create_temp()
+multi_array<T>& Runtime::temp()
 {
     multi_array<T>* operand = new multi_array<T>();
     operand->setTemp(true);
+
+    return *operand;
+}
+
+/**
+ * Create an intermediate operand.
+ */
+template <typename T>
+inline
+multi_array<T>& Runtime::temp(multi_array<T>& input)
+{
+    multi_array<T>* operand = new multi_array<T>(input);
+    operand->setTemp(true);
+
+    return *operand;
+}
+
+/**
+ * Create an alias/segment/view of the supplied base operand.
+ */
+template <typename T>
+inline
+multi_array<T>& Runtime::view(multi_array<T>& base)
+{
+    multi_array<T>* operand = new multi_array<T>(base);
+    operand->setTemp(true);
+    storage[operand->getKey()].base = &storage[base.getKey()];
+
+    bh_pprint_array(&storage[base.getKey()]);
+    bh_pprint_array(&storage[operand->getKey()]);
 
     return *operand;
 }

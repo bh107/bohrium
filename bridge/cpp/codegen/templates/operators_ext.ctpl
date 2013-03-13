@@ -15,39 +15,38 @@ directiveStartToken = %
 template <typename T>
 multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
     if (!compatible_shape(lhs, rhs)) {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs with broadcasted shape and fixed strides.
+        // Create a view pointing to the operand with lowest rank
+        // Broadcast the shape and stride for the view
     }
 
-    // shape of "operand" should be defined by broadcast
+    // Shape of "result" should be defined by broadcast
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
-
-    return *operand;
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator$op (multi_array<T>& lhs, const T& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( lhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
 }
 
 template <typename T>
 multi_array<T> & operator$op (const T& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
-    operand->setTemp(true);
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, lhs, rhs);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    return *operand;
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
 }
 %slurp
 %end if
@@ -63,12 +62,11 @@ multi_array<T> & operator$op (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T> & operator$op (multi_array<T>& rhs)
 {
-    multi_array<T>* operand = new multi_array<T>(rhs);
-    operand->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    Runtime::instance()->enqueue((bh_opcode)$opcode, *operand, rhs);
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, rhs);
 
-    return *operand;
+    return *result;
 }
 %slurp
 %end if
