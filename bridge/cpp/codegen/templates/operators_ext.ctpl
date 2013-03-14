@@ -15,15 +15,23 @@ directiveStartToken = %
 template <typename T>
 multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
+
         // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;

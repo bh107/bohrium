@@ -179,11 +179,11 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = &storage[op2.getKey()];
 
-    if (op1.isTemp()) {
+    if (op1.getTemp()) {
         delete &op1;
     }
 
-    if (op2.isTemp()) {
+    if (op2.getTemp()) {
         delete &op2;
     }
 }
@@ -203,7 +203,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
-    if (op1.isTemp()) {
+    if (op1.getTemp()) {
         delete &op1;
     }
 }
@@ -223,7 +223,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 
-    if (op2.isTemp()) {
+    if (op2.getTemp()) {
         delete &op2;
     }
 }
@@ -242,7 +242,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
 
-    if (op1.isTemp()) {
+    if (op1.getTemp()) {
         delete &op1;
     }
 }

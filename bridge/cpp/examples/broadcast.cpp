@@ -24,16 +24,50 @@ using namespace bh;
 
 void compute()
 {
-    multi_array<double> x(3);
-    multi_array<double> y(9,3);
-    multi_array<double> z(9,3);
+    multi_array<double> x(9,3);
+    multi_array<double> s(3);
+    multi_array<double> t(9,3);
 
-    x = 2.0;
-    y = 3.0;
+    x = 3.0;
 
-    std::cout << "Compatible? " << broadcast_shape(x, y, z) << "." << std::endl;
-    z = x + y;
-    pprint(z);
+    s = 6.0;
+    t = 8.0;
+
+    std::cout << "[Broadcast: Matrix = Vector]" << std::endl;
+    x = s;
+    pprint(x);
+
+    try {
+        std::cout << "[Broadcast: Vector = Matrix]" << std::endl;
+        s = x;
+        pprint(x);
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+
+    std::cout << "[Broadcast: Vector + Matrix]" << std::endl;
+    x = s + t;
+    pprint(x);
+
+    std::cout << "[Broadcast: Matrix + Vector]" << std::endl;
+    x = t + s;
+    pprint(x);
+
+    std::cout << "[Broadcast manual]" << std::endl;
+    multi_array<double> vector(3);
+    multi_array<double> matrix(9,3);
+    multi_array<double> tensor(3,9,3);
+    multi_array<double>& view = Runtime::instance()->view(vector);
+
+    vector = 2.0;
+    matrix = 3.0;
+    tensor = 3.0;
+
+    std::cout << "<DOIT>" << std::endl;
+    //broadcast(vector, matrix, view);
+    broadcast(vector, tensor, view);
+    pprint( tensor + view );
+
 }
 
 int main()

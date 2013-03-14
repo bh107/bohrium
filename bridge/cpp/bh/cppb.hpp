@@ -23,26 +23,33 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BH_CPP_QUEUE_MAX 1024
 #include "iterator.hpp"
+#include <stdexcept>
 
 namespace bh {
 
 template <typename T>
 class multi_array {
 public:
+    // Constructors:
     multi_array();
     multi_array( unsigned int n );
     multi_array( unsigned int m, unsigned int n );
     multi_array( unsigned int d2, unsigned int d1, unsigned int d0 );
     multi_array( multi_array<T> const& operand );
+
+    // Deconstructor:
     ~multi_array();
 
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    unsigned int getKey() const;
-    bool isTemp() const;
-    void setTemp(bool is_temp);
+    // Getter / Setter:
+    const unsigned int getKey() const;
+    const unsigned int getRank() const;
+    const bool getTemp() const;
+    void setTemp(bool temp);
 
+    // Iterator
     iterator begin();
     iterator end();
 
@@ -51,12 +58,11 @@ public:
     //
     // =, [], (), -> must be "internal" (nonstatic member functions) and thus declared here.
     //
-    // Implementations / definitions of operator-overloads are provided in:
-    // 
-    // - vector.hpp:    defined / implemented manually.
-    // - operators.hpp: defined / implemented by code-generator.
+    // Definitions are provided in:
     //
-
+    // - multi_array.hpp for those implemented by hand.
+    // - operators.hpp: defined code-generator.
+    //
     multi_array& operator[]( int index );    // This is a performance killer.
 
     multi_array& operator=( T const& rhs );  // Used for initialization / assignment.
@@ -99,7 +105,8 @@ public:
 
 protected:
     unsigned int key;
-    bool is_temp;
+    unsigned int rank;
+    bool temp;
 
 private:
     void init();
@@ -193,7 +200,7 @@ private:
 }
 
 #include "multi_array.hpp"  // Operand definition.
-#include "broadcast.hpp"  // Operand definition.
+#include "broadcast.hpp"    // Operand definition.
 #include "runtime.hpp"      // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.

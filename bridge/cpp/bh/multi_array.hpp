@@ -29,7 +29,7 @@ template <typename T>
 void multi_array<T>::init()     // Pseudo-default constructor
 {
     key     = keys++;
-    is_temp = false;
+    temp    = false;
 
     storage.insert(key, new bh_array);
     assign_array_type<T>(&storage[key]);
@@ -38,25 +38,26 @@ void multi_array<T>::init()     // Pseudo-default constructor
 template <typename T>           // Default constructor
 multi_array<T>::multi_array()
 {
-    init();
+    init(); rank = 0;
+
     std::cout << "[array-none" << key << "]" << std::endl;
 }
 
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand)
 {
-    init();
+    init(); rank = operand.getRank();
 
-    storage[this->key].base        = NULL;
-    storage[this->key].ndim        = storage[operand.getKey()].ndim;
-    storage[this->key].start       = storage[operand.getKey()].start;
+    storage[key].base        = NULL;
+    storage[key].ndim        = rank;
+    storage[key].start       = storage[operand.getKey()].start;
     for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
-        storage[this->key].shape[i] = storage[operand.getKey()].shape[i];
+        storage[key].shape[i] = storage[operand.getKey()].shape[i];
     }
     for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
-        storage[this->key].stride[i] = storage[operand.getKey()].stride[i];
+        storage[key].stride[i] = storage[operand.getKey()].stride[i];
     }
-    storage[this->key].data        = NULL;
+    storage[key].data        = NULL;
 
     std::cout << "[array-copy: " << this->key << "]" << std::endl;
 }
@@ -64,50 +65,53 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
 template <typename T>       // "Vector-like" constructor
 multi_array<T>::multi_array(unsigned int n)
 {
-    init();
+    init(); rank = 1;
 
-    std::cout << "[array-1d: " << this->key << "]" << std::endl;
     storage[this->key].base        = NULL;
-    storage[this->key].ndim        = 1;
+    storage[this->key].ndim        = rank;
     storage[this->key].start       = 0;
     storage[this->key].shape[0]    = n;
     storage[this->key].stride[0]   = 1;
     storage[this->key].data        = NULL;
+
+    std::cout << "[array-1d: " << this->key << "]" << std::endl;
 }
 
 
 template <typename T>       // "Matrix-like" constructor
 multi_array<T>::multi_array(unsigned int m, unsigned int n)
 {
-    init();
+    init(); rank = 2;
 
-    std::cout << "[array-2d: " << this->key << "]" << std::endl;
     storage[this->key].base        = NULL;
-    storage[this->key].ndim        = 2;
+    storage[this->key].ndim        = rank;
     storage[this->key].start       = 0;
     storage[this->key].shape[0]    = m;
     storage[this->key].stride[0]   = n;
     storage[this->key].shape[1]    = n;
     storage[this->key].stride[1]   = 1;
     storage[this->key].data        = NULL;
+
+    std::cout << "[array-2d: " << this->key << "]" << std::endl;
 }
 
 template <typename T>       // "Matrix-like" constructor
 multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 {
-    init();
+    init(); rank = 3;
 
-    std::cout << "[array-3d: " << this->key << "]" << std::endl;
-    storage[this->key].base        = NULL;
-    storage[this->key].ndim        = 3;
-    storage[this->key].start       = 0;
-    storage[this->key].shape[0]    = d2;
-    storage[this->key].stride[0]   = d1;
-    storage[this->key].shape[1]    = d1;
-    storage[this->key].stride[1]   = d0;
-    storage[this->key].shape[2]    = d0;
-    storage[this->key].stride[2]   = 1;
-    storage[this->key].data        = NULL;
+    storage[key].base        = NULL;
+    storage[key].ndim        = rank;
+    storage[key].start       = 0;
+    storage[key].shape[0]    = d2;
+    storage[key].stride[0]   = d1;
+    storage[key].shape[1]    = d1;
+    storage[key].stride[1]   = d0;
+    storage[key].shape[2]    = d0;
+    storage[key].stride[2]   = 1;
+    storage[key].data        = NULL;
+
+    std::cout << "[array-3d: " << key << "]" << std::endl;
 }
 
 
@@ -120,21 +124,31 @@ multi_array<T>::~multi_array()
 }
 
 template <typename T>
-unsigned int multi_array<T>::getKey() const
+inline
+const unsigned int multi_array<T>::getKey() const
 {
-    return this->key;
+    return key;
 }
 
 template <typename T>
-bool multi_array<T>::isTemp() const
+inline
+const unsigned int multi_array<T>::getRank() const
 {
-    return is_temp;
+    return rank;
 }
 
 template <typename T>
-void multi_array<T>::setTemp(bool is_temp)
+inline
+const bool multi_array<T>::getTemp() const
 {
-    is_temp = is_temp;
+    return temp;
+}
+
+template <typename T>
+inline
+void multi_array<T>::setTemp(bool temp)
+{
+    temp = temp;
 }
 
 template <typename T>

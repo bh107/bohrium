@@ -44,13 +44,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_ADD, *this, *this, *input);
     return *this;
 }
@@ -66,13 +72,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *this, *this, *input);
     return *this;
 }
@@ -88,13 +100,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *this, *this, *input);
     return *this;
 }
@@ -110,13 +128,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *this, *this, *input);
     return *this;
 }
@@ -132,13 +156,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_MOD, *this, *this, *input);
     return *this;
 }
@@ -154,13 +184,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, *input);
     return *this;
 }
@@ -176,13 +212,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, *input);
     return *this;
 }
@@ -198,13 +240,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-
-        // Create view pointing to rhs as base
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, *input);
     return *this;
 }
@@ -220,12 +268,19 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
-    if (!compatible_shape(*this, *input)) {
-        std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to rhs
-        input = &Runtime::instance()->view(rhs);
-        // Broadcast the view
+                                            
+    if (this->getRank() < input->getRank()) {       // This would be illogical...
+        throw std::runtime_error("ARE YOU INSANE!");
     }
+
+    if (!compatible_shape(*this, *input)) {         // We need to broadcast
+        input = &Runtime::instance()->view(rhs);    // Create view pointing to rhs as base
+        
+        if (!broadcast(rhs, *this, *input)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+    }
+
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, *input);
     return *this;
 }
@@ -240,15 +295,23 @@ multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
 
     return *result;
@@ -277,15 +340,23 @@ multi_array<T> & operator+ (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
 
     return *result;
@@ -314,15 +385,23 @@ multi_array<T> & operator- (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
 
     return *result;
@@ -351,15 +430,23 @@ multi_array<T> & operator* (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
 
     return *result;
@@ -388,15 +475,23 @@ multi_array<T> & operator/ (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
 
     return *result;
@@ -425,15 +520,23 @@ multi_array<T> & operator% (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
     return *result;
@@ -462,15 +565,23 @@ multi_array<T> & operator== (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 
     return *result;
@@ -499,15 +610,23 @@ multi_array<T> & operator!= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
 
     return *result;
@@ -536,15 +655,23 @@ multi_array<T> & operator> (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
 
     return *result;
@@ -573,15 +700,23 @@ multi_array<T> & operator>= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
     return *result;
@@ -610,15 +745,23 @@ multi_array<T> & operator< (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
     return *result;
@@ -647,15 +790,23 @@ multi_array<T> & operator<= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
 
     return *result;
@@ -684,15 +835,23 @@ multi_array<T> & operator&& (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
 
     return *result;
@@ -721,15 +880,23 @@ multi_array<T> & operator|| (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
 
     return *result;
@@ -758,15 +925,23 @@ multi_array<T> & operator& (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
 
     return *result;
@@ -795,15 +970,23 @@ multi_array<T> & operator| (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+    multi_array<T>* broadcast;
+    multi_array<T>* result; 
 
-    if (!compatible_shape(lhs, rhs)) {
+    if (compatible_shape(lhs, rhs)) {
+        result = &Runtime::instance()->temp(lhs);
+    } else {
         std::cout << "Incompatible shape, possibly broadcastable." << std::endl;
-        // Create a view pointing to the smallest operand.
+
+        // Create a view pointing to the operand with lowest rank
+        broadcast = &Runtime::instance()->view(rhs);
+        
         // Broadcast the shape and stride for the view
+        result    = &Runtime::instance()->temp(rhs);
     }
 
     // Shape of "result" should be defined by broadcast
+
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
 
     return *result;

@@ -51,49 +51,50 @@ bool compatible_shape(multi_array<T> & left, multi_array<T> & right)
 }
 
 /**
- * Broadcast shape of operands.
+ * Broadcast operands.
  *
- * @return Whether or not the shapes are compatible.
+ * @param lower,higher 'lower' much have a rank <= to the rank of 'higher'.
+ * @param output Will have its shape and stride broadcasted.
+ * 
+ * @return Whether or not the operand is broadcastable.
  *
  */
 template <typename T>
 inline
-bool broadcast_shape(multi_array<T> & stretch, multi_array<T> operand, multi_array<T> output)
+bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& output)
 {
-    bool compatible = true;
-    
-    bh_array *stretch_a = &storage[stretch.getKey()];   // The operand which will be "stretched"
-    bh_array *operand_a = &storage[operand.getKey()];   // The possibly larger shape
+    bh_array *lower_a   = &storage[lower.getKey()];     // The operand which will be "stretched"
+    bh_array *higher_a  = &storage[higher.getKey()];    // The possibly "larger" shape
     bh_array *output_a  = &storage[output.getKey()];    // The new "broadcasted" shape
+    bool broadcastable = true;
 
-    bh_intp stretch_dim = stretch_a->ndim-1;            
-    bh_intp operand_dim = operand_a->ndim-1;
-
-    while((stretch_dim>=0) && compatible) {             // Shape compatibility-check + copy
-        compatible =   ((stretch_a->shape[stretch_dim] == operand_a->shape[operand_dim]) || \
-                        (stretch_a->shape[stretch_dim] == 1) || \
-                        (operand_a->shape[operand_dim] == 1)
+    bh_intp stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility
+    bh_intp operand_dim = higher_a->ndim-1;             // Create: shape and stride.
+    while((stretch_dim>=0) && broadcastable) {             
+        broadcastable =   ((lower_a->shape[stretch_dim] == higher_a->shape[operand_dim]) || \
+                        (lower_a->shape[stretch_dim] == 1) || \
+                        (higher_a->shape[operand_dim] == 1)
                         );
 
-        output_a->shape[operand_dim] = operand_a->shape[operand_dim] >= stretch_a->shape[stretch_dim] ? \
-                            operand_a->shape[operand_dim] : \
-                            stretch_a->shape[stretch_dim];
+        output_a->shape[operand_dim] = higher_a->shape[operand_dim] >= lower_a->shape[stretch_dim] ? \
+                                        higher_a->shape[operand_dim] : \
+                                        lower_a->shape[stretch_dim];
+
+        output_a->stride[operand_dim] = higher_a->shape[operand_dim] > lower_a->shape[stretch_dim] ? \
+                                        0 : \
+                                        lower_a->stride[stretch_dim];
+
         stretch_dim--;
         operand_dim--;
     }
-                                                        // Copy the remaining shapes
-    memcpy(output_a->shape, operand_a->shape, (operand_dim+1) * sizeof(bh_index));
+                                                        // Copy the remaining shapes.
+    memcpy(output_a->shape, higher_a->shape, (operand_dim+1) * sizeof(bh_index));
+                                                        // And set the remaining strides.
+    memset(output_a->stride, 0, (operand_dim+1) * sizeof(bh_index));
 
-    output_a->ndim = operand_a->ndim;                   // Set ndim
-                                                        // TODO: Set remaining meta-data.
-                                                        //       This should probably be
-                                                        //       managed somewhere else...
+    output_a->ndim = higher_a->ndim;                   // Set ndim
 
-    bh_pprint_array( stretch_a );
-    bh_pprint_array( operand_a );
-    bh_pprint_array( output_a );
-
-    return compatible;
+    return broadcastable;
 }
 
 }
