@@ -25,7 +25,7 @@ install: gen
 	@-(echo 'Done.')
 
 clean:
-	rm -r *.o *~ codegen/output/*.hpp
+	rm -rf *.o *~ codegen/output/*.hpp
 	find bin/ -type f -name "*" -exec rm  {} \;
 
 gen:
@@ -70,5 +70,9 @@ printing: examples/printing.cpp $(HEADER)
 #
 assignment: testing/assignment.cpp $(HEADER)
 	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
+broadcasting: testing/broadcasting.cpp $(HEADER)
+	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
 
 
