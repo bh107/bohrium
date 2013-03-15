@@ -10,3 +10,4 @@ import jacobi_stencil
 import k_nearest_neighbor
 import shallow_water
 import sor
+import black_scholes
