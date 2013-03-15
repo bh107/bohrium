@@ -24,7 +24,7 @@ namespace bh {
 template <typename T>
 matrix<T>::matrix(unsigned int m, unsigned int n) : multi_array<T>(m, n) {
     DEBUG_PRINT("<Matrix>\n");
-};
+}
 
 }
 

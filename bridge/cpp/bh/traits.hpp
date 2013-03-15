@@ -32,8 +32,13 @@ namespace bh {
 
 template <typename T>
 inline
-void assign_const_type( bh_constant* instr, T value ) {};
-// NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
+void assign_const_type( bh_constant* instr, T value );
+//
+// We do not want a general definition of the assign_array_type, it should simply
+// fail at compile-type if the type is not one the known types.
+// Adding a definition for the general cause would cause the error to be catch at runtime.
+// Please do not do that...
+//
 
 template <>
 inline
@@ -133,8 +138,13 @@ void assign_const_type( bh_constant* constant, bh_complex128 value )
 
 template <typename T>
 inline
-void assign_array_type( bh_array* array ) {};
-// NOTE: The general implementation could output an error at runtime instead of failing at compile-time.
+void assign_array_type( bh_array* array );
+//
+// We do not want a general definition of the assign_array_type, it should simply
+// fail at compile-type if the type is not one the known types.
+// Adding a definition for the general cause would cause the error to be catch at runtime.
+// Please do not do that...
+//
 
 template <>
 inline

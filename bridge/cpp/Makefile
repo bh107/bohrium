@@ -1,35 +1,45 @@
 ROOT=../..
 HEADER=$(ROOT)/include/*
-SOURCES=$(wildcard examples/*.cpp)
-OBJECTS=$(subst .cpp,.o, $(SOURCES))
-EXAMPLES=$(subst .cpp,, $(subst examples/,,$(SOURCES)))
+
+EXAMPLE_SRC	= $(wildcard examples/*.cpp)
+TEST_SRC	= $(wildcard testing/*.cpp)
+
+TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
+EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 #EXAMPLES=broadcast
+
 #CXX=clang
 CXX=g++
-#CXXFLAGS=-Wall
-CXXFLAGS=-DDEBUG
+#CXXFLAGS=-DDEBUG
+CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 
-all: $(EXAMPLES)
+all: gen testing examples
+
+examples: $(EXAMPLES)
+testing: $(TESTS)
+
+print:
+	echo $(TESTS)
+
+install: gen
+	@-(echo 'Done.')
+
+clean:
+	rm -r *.o *~ codegen/output/*.hpp
+	find bin/ -type f -name "*" -exec rm  {} \;
 
 gen:
 	./codegen/gen.py
 	mv codegen/output/*.hpp bh/.
 
-print:
-	echo $(EXAMPLES)
-
-#$(EXAMPLES): $(SOURCES)
-#	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
-#$(SOURCES): $(OBJECTS)
-#	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
+#
+# Examples
+#
 hw: examples/hw.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 broadcast: examples/broadcast.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
 
 compound: examples/compound.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
@@ -55,8 +65,10 @@ init: examples/init.cpp $(HEADER)
 printing: examples/printing.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
-install: gen $(EXAMPLES)
-	@-(echo 'Done.')
+#
+# Testing
+#
+assignment: testing/assignment.cpp $(HEADER)
+	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
 
-clean:
-	rm -rf *.o *~ hello codegen/output/*.hpp bin/*
+

@@ -24,7 +24,7 @@ namespace bh {
 template <typename T>
 vector<T>::vector(unsigned int n) : multi_array<T>(n) {
     DEBUG_PRINT("<Vector>\n");
-};
+}
 
 /*
 

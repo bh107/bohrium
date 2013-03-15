@@ -50,9 +50,9 @@ public:
     typedef multi_array_iter<T> iterator;
 
     // Getter / Setter:
-    const unsigned int getKey() const;
-    const unsigned long getRank() const;
-    const bool getTemp() const;
+    unsigned int getKey() const;
+    unsigned long getRank() const;
+    bool getTemp() const;
     void setTemp(bool temp);
 
     // Iterator

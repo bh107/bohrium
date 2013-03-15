@@ -127,21 +127,21 @@ multi_array<T>::~multi_array()
 
 template <typename T>
 inline
-const unsigned int multi_array<T>::getKey() const
+unsigned int multi_array<T>::getKey() const
 {
     return key;
 }
 
 template <typename T>
 inline
-const unsigned long multi_array<T>::getRank() const
+unsigned long multi_array<T>::getRank() const
 {
     return (unsigned long)*(&storage[key].ndim);
 }
 
 template <typename T>
 inline
-const bool multi_array<T>::getTemp() const
+bool multi_array<T>::getTemp() const
 {
     return temp;
 }

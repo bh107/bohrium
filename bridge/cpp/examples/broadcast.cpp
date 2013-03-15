@@ -85,10 +85,26 @@ void vm()
     std::cout << "]}" << std::endl;
 }
 
+void t_v()
+{
+    std::cout << "\n\n{[ Broadcast: Tensor = Vector" << std::endl;
+    multi_array<double> t(12, 9,3);
+    multi_array<double> v(3);
+
+    t = 2.0;
+    v = 3.0;
+
+    std::cout << "<<NOW>>" << std::endl;
+    t = v;
+    pprint(t);
+    std::cout << "]}" << std::endl;
+}
+
 int main()
 {
     std::cout << "<< Broadcast example >>" << std::endl;
     m_v();
+    t_v();
     vm();
     mv();
 
