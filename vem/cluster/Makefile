@@ -3,7 +3,7 @@ LIB=libbh_vem_cluster.so
 SLAVE=bh_vem_cluster_slave
 CXX=mpic++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -fno-strict-aliasing -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS=-L../../core -lbh -ldl -o
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
