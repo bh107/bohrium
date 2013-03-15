@@ -22,59 +22,77 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bh;
 
-void compute()
+void m_v()
 {
-    multi_array<double> x(9,3);
-    multi_array<double> s(3);
-    multi_array<double> t(9,3);
+    std::cout << "\n\n{[ Broadcast: Matrix = Vector" << std::endl;
+    multi_array<double> m(9,3);
+    multi_array<double> v(3);
 
-    x = 3.0;
+    m = 2.0;
+    v = 3.0;
 
-    s = 6.0;
-    t = 8.0;
+    std::cout << "<<NOW>>" << std::endl;
+    m = v;
+    pprint(m);
+    std::cout << "]}" << std::endl;
+}
 
-    std::cout << "[Broadcast: Matrix = Vector]" << std::endl;
-    x = s;
-    pprint(x);
+void v_m()
+{
+    std::cout << "\n\n{[ Broadcast: Vector = Matrix" << std::endl;
+    multi_array<double> m(9,3);
+    multi_array<double> v(3);
 
+    m = 2.0;
+    v = 3.0;
+
+    std::cout << "<<NOW>>" << std::endl;
     try {
-        std::cout << "[Broadcast: Vector = Matrix]" << std::endl;
-        s = x;
-        pprint(x);
+        v = m;
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
+    pprint(v);
+    std::cout << "]}" << std::endl;
+}
 
-    std::cout << "[Broadcast: Vector + Matrix]" << std::endl;
-    x = s + t;
-    pprint(x);
+void mv()
+{
+    std::cout << "\n\n{[ Broadcast: Matrix + Vector" << std::endl;
+    multi_array<double> m(9,3);
+    multi_array<double> v(3);
 
-    std::cout << "[Broadcast: Matrix + Vector]" << std::endl;
-    x = t + s;
-    pprint(x);
+    m = 2.0;
+    v = 3.0;
 
-    std::cout << "[Broadcast manual]" << std::endl;
-    multi_array<double> vector(3);
-    multi_array<double> matrix(9,3);
-    multi_array<double> tensor(3,9,3);
-    multi_array<double>& view = Runtime::instance()->view(vector);
+    std::cout << "<<NOW>>" << std::endl;
+    m+v;
+    //pprint(m+v);
+    std::cout << "]}" << std::endl;
+}
 
-    vector = 2.0;
-    matrix = 3.0;
-    tensor = 3.0;
+void vm()
+{
+    std::cout << "\n\n{[ Broadcast: Vector + Matrix" << std::endl;
+    multi_array<double> m(9,3);
+    multi_array<double> v(3);
 
-    std::cout << "<DOIT>" << std::endl;
-    //broadcast(vector, matrix, view);
-    broadcast(vector, tensor, view);
-    pprint( tensor + view );
+    m = 2.0;
+    v = 3.0;
 
+    std::cout << "<<NOW>>" << std::endl;
+    pprint(v+m);
+    std::cout << "]}" << std::endl;
 }
 
 int main()
 {
-    std::cout << "Broadcast example." << std::endl;
+    std::cout << "<< Broadcast example >>" << std::endl;
+    m_v();
+    vm();
+    mv();
 
-    compute();
+    v_m();
 
     return 0;
 }

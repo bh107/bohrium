@@ -23,7 +23,7 @@ namespace bh {
 
 template <typename T>
 vector<T>::vector(unsigned int n) : multi_array<T>(n) {
-    std::cout << "<Vector>" << std::endl;
+    DEBUG_PRINT("<Vector>\n");
 };
 
 /*
@@ -38,7 +38,7 @@ x = 1,2,3,
 template <typename T>
 vector<T>& operator, ( vector<T>& lhs, T rhs )
 {
-    std::cout << "[" << lhs.getKey() << "," << rhs << "]" << std::endl;
+    DEBUG_PRINT("[%d,%d]", lhs.getKey(), rhs);
     return lhs;
 }
 

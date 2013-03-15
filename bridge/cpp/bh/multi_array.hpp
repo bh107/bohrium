@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "traits.hpp"           // Traits for assigning type to constants and multi_arrays.
 #include "cppb.hpp"
 #include "runtime.hpp"
+#include <sstream>
 
 namespace bh {
 
@@ -38,18 +39,18 @@ void multi_array<T>::init()     // Pseudo-default constructor
 template <typename T>           // Default constructor
 multi_array<T>::multi_array()
 {
-    init(); rank = 0;
+    init(); //rank = 0;
 
-    std::cout << "[array-none" << key << "]" << std::endl;
+    DEBUG_PRINT(">> array(): key(%d)\n", key);
 }
 
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand)
 {
-    init(); rank = operand.getRank();
+    init(); //rank = operand.getRank();
 
     storage[key].base        = NULL;
-    storage[key].ndim        = rank;
+    storage[key].ndim        = storage[operand.getKey()].ndim;
     storage[key].start       = storage[operand.getKey()].start;
     for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
         storage[key].shape[i] = storage[operand.getKey()].shape[i];
@@ -59,49 +60,49 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
     }
     storage[key].data        = NULL;
 
-    std::cout << "[array-copy: " << this->key << "]" << std::endl;
+    DEBUG_PRINT(">> array(op): key(%d)\n", key);
 }
 
 template <typename T>       // "Vector-like" constructor
 multi_array<T>::multi_array(unsigned int n)
 {
-    init(); rank = 1;
+    init(); //rank = 1;
 
-    storage[this->key].base        = NULL;
-    storage[this->key].ndim        = rank;
-    storage[this->key].start       = 0;
-    storage[this->key].shape[0]    = n;
-    storage[this->key].stride[0]   = 1;
-    storage[this->key].data        = NULL;
+    storage[key].base        = NULL;
+    storage[key].ndim        = 1;
+    storage[key].start       = 0;
+    storage[key].shape[0]    = n;
+    storage[key].stride[0]   = 1;
+    storage[key].data        = NULL;
 
-    std::cout << "[array-1d: " << this->key << "]" << std::endl;
+    DEBUG_PRINT(">> array(int): key(%d)\n", key);
 }
 
 
 template <typename T>       // "Matrix-like" constructor
 multi_array<T>::multi_array(unsigned int m, unsigned int n)
 {
-    init(); rank = 2;
+    init(); //rank = 2;
 
-    storage[this->key].base        = NULL;
-    storage[this->key].ndim        = rank;
-    storage[this->key].start       = 0;
-    storage[this->key].shape[0]    = m;
-    storage[this->key].stride[0]   = n;
-    storage[this->key].shape[1]    = n;
-    storage[this->key].stride[1]   = 1;
-    storage[this->key].data        = NULL;
+    storage[key].base        = NULL;
+    storage[key].ndim        = 2;
+    storage[key].start       = 0;
+    storage[key].shape[0]    = m;
+    storage[key].stride[0]   = n;
+    storage[key].shape[1]    = n;
+    storage[key].stride[1]   = 1;
+    storage[key].data        = NULL;
 
-    std::cout << "[array-2d: " << this->key << "]" << std::endl;
+    DEBUG_PRINT(">> array(int, int): key(%d)\n", key );
 }
 
 template <typename T>       // "Matrix-like" constructor
 multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 {
-    init(); rank = 3;
+    init(); //rank = 3;
 
     storage[key].base        = NULL;
-    storage[key].ndim        = rank;
+    storage[key].ndim        = 3;
     storage[key].start       = 0;
     storage[key].shape[0]    = d2;
     storage[key].stride[0]   = d1;
@@ -111,14 +112,15 @@ multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
     storage[key].stride[2]   = 1;
     storage[key].data        = NULL;
 
-    std::cout << "[array-3d: " << key << "]" << std::endl;
+    DEBUG_PRINT(">> array(int, int, int): key(%d)\n", key);
 }
 
 
 template <typename T>       // Deconstructor
 multi_array<T>::~multi_array()
 {
-    std::cout << "De-allocating=" << this->key << std::endl;
+    DEBUG_PRINT("> Deconstructing(): key(%d)\n", key);
+
     Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
     Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
 }
@@ -132,9 +134,9 @@ const unsigned int multi_array<T>::getKey() const
 
 template <typename T>
 inline
-const unsigned int multi_array<T>::getRank() const
+const unsigned long multi_array<T>::getRank() const
 {
-    return rank;
+    return (unsigned long)*(&storage[key].ndim);
 }
 
 template <typename T>
@@ -148,7 +150,7 @@ template <typename T>
 inline
 void multi_array<T>::setTemp(bool temp)
 {
-    temp = temp;
+    this->temp = temp;
 }
 
 template <typename T>

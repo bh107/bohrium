@@ -7,6 +7,7 @@ EXAMPLES=$(subst .cpp,, $(subst examples/,,$(SOURCES)))
 #CXX=clang
 CXX=g++
 #CXXFLAGS=-Wall
+CXXFLAGS=-DDEBUG
 
 all: $(EXAMPLES)
 

@@ -54,33 +54,39 @@ bool compatible_shape(multi_array<T> & left, multi_array<T> & right)
  * Broadcast operands.
  *
  * @param lower,higher 'lower' much have a rank <= to the rank of 'higher'.
- * @param output Will have its shape and stride broadcasted.
+ * @param view Is a view on 'lower'; It will contain the resulting broadcast shape/stride/ndim.
  * 
  * @return Whether or not the operand is broadcastable.
  *
  */
 template <typename T>
 inline
-bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& output)
+bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& view)
 {
+    DEBUG_PRINT(">>>> BROADCASTING\n");
     bh_array *lower_a   = &storage[lower.getKey()];     // The operand which will be "stretched"
     bh_array *higher_a  = &storage[higher.getKey()];    // The possibly "larger" shape
-    bh_array *output_a  = &storage[output.getKey()];    // The new "broadcasted" shape
+    bh_array *view_a  = &storage[view.getKey()];    // The new "broadcasted" shape
     bool broadcastable = true;
-
+    
     bh_intp stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility
     bh_intp operand_dim = higher_a->ndim-1;             // Create: shape and stride.
+
+    DEBUG_PRINT(">>>> IS: '%ld < %ld' true?\n", lower.getRank(), higher.getRank());
+    bh_pprint_array(lower_a);
+    bh_pprint_array(higher_a);
+    bh_pprint_array(view_a);
     while((stretch_dim>=0) && broadcastable) {             
         broadcastable =   ((lower_a->shape[stretch_dim] == higher_a->shape[operand_dim]) || \
                         (lower_a->shape[stretch_dim] == 1) || \
                         (higher_a->shape[operand_dim] == 1)
                         );
 
-        output_a->shape[operand_dim] = higher_a->shape[operand_dim] >= lower_a->shape[stretch_dim] ? \
+        view_a->shape[operand_dim] = higher_a->shape[operand_dim] >= lower_a->shape[stretch_dim] ? \
                                         higher_a->shape[operand_dim] : \
                                         lower_a->shape[stretch_dim];
 
-        output_a->stride[operand_dim] = higher_a->shape[operand_dim] > lower_a->shape[stretch_dim] ? \
+        view_a->stride[operand_dim] = higher_a->shape[operand_dim] > lower_a->shape[stretch_dim] ? \
                                         0 : \
                                         lower_a->stride[stretch_dim];
 
@@ -88,12 +94,18 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& ou
         operand_dim--;
     }
                                                         // Copy the remaining shapes.
-    memcpy(output_a->shape, higher_a->shape, (operand_dim+1) * sizeof(bh_index));
+    memcpy(view_a->shape, higher_a->shape, (operand_dim+1) * sizeof(bh_index));
                                                         // And set the remaining strides.
-    memset(output_a->stride, 0, (operand_dim+1) * sizeof(bh_index));
+    memset(view_a->stride, 0, (operand_dim+1) * sizeof(bh_index));
 
-    output_a->ndim = higher_a->ndim;                   // Set ndim
+    view_a->ndim = higher_a->ndim;                   // Set ndim
 
+    DEBUG_PRINT(">>>> BROADCAST RESULT\n");
+    bh_pprint_array(lower_a);
+    bh_pprint_array(higher_a);
+    bh_pprint_array(view_a);
+
+    DEBUG_PRINT("<<<< BROADCAST DONE\n");
     return broadcastable;
 }
 

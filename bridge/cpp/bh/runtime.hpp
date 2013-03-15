@@ -129,9 +129,10 @@ template <typename T>
 inline
 multi_array<T>& Runtime::temp()
 {
+    DEBUG_PRINT(">>> CREATING: temp()\n");
     multi_array<T>* operand = new multi_array<T>();
     operand->setTemp(true);
-
+    DEBUG_PRINT("<<< RETURNING: temp()\n");
     return *operand;
 }
 
@@ -142,9 +143,10 @@ template <typename T>
 inline
 multi_array<T>& Runtime::temp(multi_array<T>& input)
 {
+    DEBUG_PRINT(">>> CREATING: temp(op)\n");
     multi_array<T>* operand = new multi_array<T>(input);
     operand->setTemp(true);
-
+    DEBUG_PRINT("<<< RETURNING: temp(op)\n");
     return *operand;
 }
 
@@ -155,13 +157,25 @@ template <typename T>
 inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
-    multi_array<T>* operand = new multi_array<T>(base);
+    DEBUG_PRINT(">>> CREATING: view(base)\n");
+    multi_array<T>* operand = new multi_array<T>();
+    storage[operand->getKey()].base = bh_base_array(&storage[base.getKey()]);
+    DEBUG_PRINT("<<< RETURNING: view(base)\n");
+    return *operand;
+}
+
+/**
+ * Create an intermediate alias/segment/view of the supplied base operand.
+ */
+template <typename T>
+inline
+multi_array<T>& Runtime::temp_view(multi_array<T>& base)
+{
+    DEBUG_PRINT(">>> CREATING: temp_view(base)\n");
+    multi_array<T>* operand = new multi_array<T>();
+    storage[operand->getKey()].base = bh_base_array(&storage[base.getKey()]);
     operand->setTemp(true);
-    storage[operand->getKey()].base = &storage[base.getKey()];
-
-    bh_pprint_array(&storage[base.getKey()]);
-    bh_pprint_array(&storage[operand->getKey()]);
-
+    DEBUG_PRINT("<<< RETURNING: temp_view(base)\n");
     return *operand;
 }
 

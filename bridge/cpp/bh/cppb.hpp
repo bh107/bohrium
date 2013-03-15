@@ -25,6 +25,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "iterator.hpp"
 #include <stdexcept>
 
+#ifdef DEBUG
+#define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
+#else
+#define DEBUG_PRINT(...) do{ } while ( false )
+#endif
+
 namespace bh {
 
 template <typename T>
@@ -45,7 +51,7 @@ public:
 
     // Getter / Setter:
     const unsigned int getKey() const;
-    const unsigned int getRank() const;
+    const unsigned long getRank() const;
     const bool getTemp() const;
     void setTemp(bool temp);
 
@@ -105,7 +111,6 @@ public:
 
 protected:
     unsigned int key;
-    unsigned int rank;
     bool temp;
 
 private:
@@ -174,6 +179,9 @@ public:
     template <typename T>
     multi_array<T>& view(multi_array<T>& base);
 
+    template <typename T>
+    multi_array<T>& temp_view(multi_array<T>& base);
+
 private:
 
     bh_intp guard();
@@ -200,7 +208,7 @@ private:
 }
 
 #include "multi_array.hpp"  // Operand definition.
-#include "broadcast.hpp"    // Operand definition.
+#include "broadcast.hpp"    // Operand manipulations.
 #include "runtime.hpp"      // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
