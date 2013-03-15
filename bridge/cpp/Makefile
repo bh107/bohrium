@@ -35,13 +35,10 @@ gen:
 #
 # Examples
 #
-hw: examples/hw.cpp $(HEADER)
+hello_world: examples/hello_world.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 broadcast: examples/broadcast.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
-compound: examples/compound.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 constructors: examples/constructors.cpp $(HEADER)
@@ -73,6 +70,14 @@ assignment: testing/assignment.cpp $(HEADER)
 
 broadcasting: testing/broadcasting.cpp $(HEADER)
 	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
+compound: testing/compound.cpp $(HEADER)
+	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
+iterator: testing/iterator.cpp $(HEADER)
+	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
+
 
 
 

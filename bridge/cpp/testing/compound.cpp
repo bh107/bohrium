@@ -17,39 +17,40 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
-#include "bh/cppb.hpp"
+#define BOOST_TEST_MODULE compound
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+#include <stdexcept>
 
+#include "bh/cppb.hpp"
 using namespace bh;
 
-void compute()
+#define V_SIZE 9
+#define M_SIZE 9
+#define T_SIZE 27
+const double res [] = {
+    3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5
+};
+
+BOOST_AUTO_TEST_CASE(vector_ADD_EQ_const)
 {
-    bool first = true;
-
     multi_array<double> x(9);
-    multi_array<double> y(9);
-    x = 3.0;
 
-    std::cout << "Priting values: ";
-    for(multi_array<double>::iterator it=x.begin(); it != x.end(); it++) {
+    x = 2.0;
+    x += 1.5;   /// This is the subject of the test
 
-        if (!first) {
-            std::cout  << ", ";
-        } else {
-            first = false;
-        }
-        std::cout << *it;
-    }
-
-    std::cout << "." << std::endl;
-
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+V_SIZE);
 }
 
-int main()
+BOOST_AUTO_TEST_CASE(vector_ADD_EQ_vector)
 {
-    std::cout << "Iter example." << std::endl;
+    multi_array<double> x(9);
+    multi_array<double> y(9);
 
-    compute();
+    x = 2.0;
+    y = 1.5;
 
-    return 0;
+    x += y;   /// This is the subject of the test
+
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+V_SIZE);
 }
