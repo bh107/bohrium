@@ -46,19 +46,6 @@ void regular()
     pprint( x );
 }
 
-void compare()
-{
-    multi_array<double> x(3);
-    multi_array<double> y(3);
-
-    y = 2.0;
-    x = y;
-
-    pprint( x );
-
-}
-
-
 int main()
 {
     std::cout << "Constructor example." << std::endl;

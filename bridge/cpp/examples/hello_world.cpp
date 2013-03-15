@@ -22,23 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bh;
 
-void compute()
-{
-    std::cout << "Construct...";
-    multi_array<double> x(3);
-
-    std::cout << "Assign...";
-    x = 1.0;
-
-    std::cout << "Print...";
-    pprint( x );
-}
-
 int main()
 {
     std::cout << "HW example." << std::endl;
-
-    compute();
+    multi_array<double> x(3);
+    x = 1.0;
+    pprint( x );
 
     return 0;
 }
