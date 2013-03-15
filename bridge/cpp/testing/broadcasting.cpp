@@ -92,8 +92,7 @@ BOOST_AUTO_TEST_CASE(tensor_EQ_vector)
 
     v = 3.5;
     t = v;
-    pprint(t);
-    bh_pprint_array(&storage[t.getKey()]);
+
     BOOST_CHECK_EQUAL_COLLECTIONS(t.begin(), t.end(), res, res+T_SIZE);
 }
 

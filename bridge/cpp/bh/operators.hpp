@@ -352,9 +352,11 @@ multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, *left, *right);
     DEBUG_PRINT("< operator+\n");
     return *result;
@@ -415,9 +417,11 @@ multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
     DEBUG_PRINT("< operator-\n");
     return *result;
@@ -478,9 +482,11 @@ multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
     DEBUG_PRINT("< operator*\n");
     return *result;
@@ -541,9 +547,11 @@ multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
     DEBUG_PRINT("< operator/\n");
     return *result;
@@ -604,9 +612,11 @@ multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, *left, *right);
     DEBUG_PRINT("< operator%\n");
     return *result;
@@ -667,9 +677,11 @@ multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
     DEBUG_PRINT("< operator==\n");
     return *result;
@@ -730,9 +742,11 @@ multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
     DEBUG_PRINT("< operator!=\n");
     return *result;
@@ -793,9 +807,11 @@ multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
     DEBUG_PRINT("< operator>\n");
     return *result;
@@ -856,9 +872,11 @@ multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
     DEBUG_PRINT("< operator>=\n");
     return *result;
@@ -919,9 +937,11 @@ multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, *left, *right);
     DEBUG_PRINT("< operator<\n");
     return *result;
@@ -982,9 +1002,11 @@ multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
     DEBUG_PRINT("< operator<=\n");
     return *result;
@@ -1045,9 +1067,11 @@ multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
     DEBUG_PRINT("< operator&&\n");
     return *result;
@@ -1108,9 +1132,11 @@ multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
     DEBUG_PRINT("< operator||\n");
     return *result;
@@ -1171,9 +1197,11 @@ multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
     DEBUG_PRINT("< operator&\n");
     return *result;
@@ -1234,9 +1262,11 @@ multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
     DEBUG_PRINT("< operator|\n");
     return *result;
@@ -1297,9 +1327,11 @@ multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
     DEBUG_PRINT("< operator^\n");
     return *result;

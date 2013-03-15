@@ -47,9 +47,11 @@ multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
         }
         
     }
+    #ifdef DEBUG
     bh_pprint_array(&storage[left->getKey()]);
     bh_pprint_array(&storage[right->getKey()]);
     bh_pprint_array(&storage[result->getKey()]);
+    #endif
     Runtime::instance()->enqueue((bh_opcode)$opcode, *result, *left, *right);
     DEBUG_PRINT("< operator$op\n");
     return *result;
