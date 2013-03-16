@@ -20,21 +20,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include "bh/cppb.hpp"
 
+using namespace std;
 using namespace bh;
 
-void compute()
+int main()
 {
+    cout << "Printing example." << endl;
+
     multi_array<double> x(9);
     x = 3.0;
 
     pprint( x );
-}
-
-int main()
-{
-    std::cout << "Printing example." << std::endl;
-
-    compute();
 
     return 0;
 }

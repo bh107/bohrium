@@ -182,6 +182,8 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
+    bh_intp queued() { return queue_size; }
+
 private:
 
     bh_intp guard();
