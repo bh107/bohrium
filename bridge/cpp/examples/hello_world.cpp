@@ -20,14 +20,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include "bh/cppb.hpp"
 
+using namespace std;
 using namespace bh;
 
 int main()
 {
-    std::cout << "HW example." << std::endl;
+    cout << "Hello World." << endl;
+
     multi_array<double> x(3);
     x = 1.0;
-    pprint( x );
+
+    cout << x;
 
     return 0;
 }

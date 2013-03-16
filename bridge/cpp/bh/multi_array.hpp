@@ -196,5 +196,26 @@ multi_array<T>& multi_array<T>::operator--(int)
     return *this;
 }
 
+template <typename T>
+std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
+{
+    bool first = true;
+    multi_array<double>::iterator it  = rhs.begin();
+    multi_array<double>::iterator end = rhs.end();
+
+    stream << "[ ";
+    for(; it != end; it++) {
+        if (!first) {
+            stream  << ", ";
+        } else {
+            first = false;
+        }
+        stream << *it;
+    }
+    stream << " ]" << std::endl;
+
+    return stream;
+}
+
 }
 
