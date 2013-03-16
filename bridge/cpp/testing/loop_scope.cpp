@@ -17,40 +17,48 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
-#include "bh/cppb.hpp"
+#define BOOST_TEST_MODULE iterator
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+#include <stdexcept>
 
+#include "bh/cppb.hpp"
 using namespace bh;
 
-void compute()
+#define V_SIZE 3
+#define M_SIZE 9
+#define T_SIZE 27
+const double res [] = {
+    3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5
+};
+
+BOOST_AUTO_TEST_CASE(loop)
 {
     multi_array<double> x(3,3);
     multi_array<double> y(3,3);
     multi_array<double> z(3,3);
     
-    //x = 1.0;
     y = 1.0;
-    z = 2.0;
+    z = 2.5;
 
-    // vcache issue!
     for(int i=0; i<20000; i++) {
-
         x = y + z;
-        std::cout   << i << ": [x=" << x.getKey()  \
-                    << ",y=" << y.getKey()    \
-                    << ",z=" << z.getKey()  \
-                    << "] [" << storage.size() << "] ";
-        pprint( x );
     }
-
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+M_SIZE);
 }
 
-int main()
+BOOST_AUTO_TEST_CASE(loop_int)
 {
-    std::cout << "LOOP example." << std::endl;
+    multi_array<double> x(3,3);
+    for(int i=0; i<20000; i++) {
+        multi_array<double> y(3,3);
+        multi_array<double> z(3,3);
+        
+        y = 1.0;
+        z = 2.5;
 
-    compute();
-
-    return 0;
+        x = y + z;
+    }
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+M_SIZE);
 }
 

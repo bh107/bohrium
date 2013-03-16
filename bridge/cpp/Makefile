@@ -78,4 +78,7 @@ iterator: testing/iterator.cpp $(HEADER)
 operators: testing/operators.cpp $(HEADER)
 	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
 
+loop_scope: testing/loop_scope.cpp $(HEADER)
+	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
+
 
