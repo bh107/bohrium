@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_RUNTIME
 #include <iostream>
 #include <boost/ptr_container/ptr_map.hpp>
-#include "bh.h"
 
 namespace bh {
 

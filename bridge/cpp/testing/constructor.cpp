@@ -35,7 +35,7 @@ const double res [] = {
 BOOST_AUTO_TEST_CASE(copy_constructor_I)
 {
     /// This is the subject of the test
-    multi_array<double> x = vector<double>(V_SIZE);
+    multi_array<double> x = multi_array<double>(V_SIZE);
 
     x = 3.5;
     
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(copy_constructor_I)
 BOOST_AUTO_TEST_CASE(copy_constructor_I_I)
 {
     /// This is the subject of the test
-    multi_array<double> x = matrix<double>(V_SIZE, V_SIZE);
+    multi_array<double> x = multi_array<double>(V_SIZE, V_SIZE);
 
     x = 3.5;
     

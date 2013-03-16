@@ -118,23 +118,6 @@ private:
 
 };
 
-template <typename T>
-class vector : public multi_array<T> {
-public:
-    vector(unsigned int n);
-    
-    using multi_array<T>::operator=;
-
-};
-
-template <typename T>
-class matrix : public multi_array<T> {
-public:
-    matrix(unsigned int m, unsigned int n);
-
-    using multi_array<T>::operator=;
-};
-
 /**
  *  Encapsulation of communication with Bohrium runtime.
  *  Implemented as a singleton.
@@ -215,8 +198,6 @@ private:
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.
-#include "vector.hpp"       // DSEL Vector (De)Constructor.
-#include "matrix.hpp"       // DSEL Matrix (De)Constructor.
-#include "sugar.hpp"        // DSEL Sugar: pretty print functions and the like...
+#include "sugar.hpp"        // DSEL Additional sugar... 
 
 #endif

@@ -93,8 +93,7 @@ private:
 
     bh_index    offset,
                 last_dim,
-                last_e,
-                k;
+                last_e;
 
     bh_index cur_e; 
     bh_index coord[BH_MAXDIM];
