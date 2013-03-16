@@ -55,5 +55,11 @@ bool equivalent(multi_array<T>& i, multi_array<T> j)
     return false;
 }
 
+template <typename T>
+void reshape(multi_array<T>& lhs, bh_intp* dims, bh_intp* strides)
+{
+    
+}
+
 }
 #endif

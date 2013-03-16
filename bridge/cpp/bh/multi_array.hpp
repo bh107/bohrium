@@ -88,7 +88,7 @@ multi_array<T>::multi_array(unsigned int m, unsigned int n)
     storage[key].ndim        = 2;
     storage[key].start       = 0;
     storage[key].shape[0]    = m;
-    storage[key].stride[0]   = n;
+    storage[key].stride[0]   = n*1;
     storage[key].shape[1]    = n;
     storage[key].stride[1]   = 1;
     storage[key].data        = NULL;
@@ -105,9 +105,11 @@ multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
     storage[key].ndim        = 3;
     storage[key].start       = 0;
     storage[key].shape[0]    = d2;
-    storage[key].stride[0]   = d1;
+    storage[key].stride[0]   = d1*d0*1;
+
     storage[key].shape[1]    = d1;
-    storage[key].stride[1]   = d0;
+    storage[key].stride[1]   = d0*1;
+
     storage[key].shape[2]    = d0;
     storage[key].stride[2]   = 1;
     storage[key].data        = NULL;

@@ -33,6 +33,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+class slice {
+public:
+    // Constructors
+    slice(unsigned int base, unsigned int stride, unsigned int bound);
+};
+
 template <typename T>
 class multi_array {
 public:
@@ -58,6 +64,9 @@ public:
     // Iterator
     iterator begin();
     iterator end();
+
+    // Slicing
+    multi_array slice(unsigned int base, unsigned int stride, unsigned int bound);
 
     //
     // Operators: 
