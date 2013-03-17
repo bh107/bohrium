@@ -17,9 +17,8 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#define BOOST_TEST_MODULE construction
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include "gtest/gtest.h"
+#include "check_collections.hpp"
 
 #include "bh/cppb.hpp"
 using namespace bh;
@@ -27,16 +26,16 @@ using namespace bh;
 #define CONTAINER_SIZE 9
 const double res [] = { 3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5 };
 
-BOOST_AUTO_TEST_CASE(assignment_vector_eq_const)
+TEST(constructors,assignment_vector_eq_const)
 {
     multi_array<double> x(CONTAINER_SIZE);
 
     x = 3.5;    // The thing being tested...
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+CONTAINER_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-BOOST_AUTO_TEST_CASE(assignment_vector_eq_vector)
+TEST(constructors,assignment_vector_eq_vector)
 {
     multi_array<double> x(9);
     multi_array<double> y(9);
@@ -44,17 +43,17 @@ BOOST_AUTO_TEST_CASE(assignment_vector_eq_vector)
 
     x = y;      // The thing being tested...
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+CONTAINER_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-BOOST_AUTO_TEST_CASE(assignment_matrix_eq_vector)
+TEST(constructors,assignment_matrix_eq_vector)
 {
     multi_array<double> x(3,3);
     multi_array<double> y(3);
     y = 3.5;
 
     x = y;      // The thing being tested...
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+CONTAINER_SIZE);
+    
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 

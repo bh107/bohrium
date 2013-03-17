@@ -17,10 +17,8 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#define BOOST_TEST_MODULE compound
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <stdexcept>
+#include "gtest/gtest.h"
+#include "check_collections.hpp"
 
 #include "bh/cppb.hpp"
 using namespace bh;
@@ -32,17 +30,17 @@ const double res [] = {
     3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5
 };
 
-BOOST_AUTO_TEST_CASE(vector_ADD_EQ_const)
+TEST(compound,vector_ADD_EQ_const)
 {
     multi_array<double> x(9);
 
     x = 2.0;
     x += 1.5;   /// This is the subject of the test
 
-    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+V_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-BOOST_AUTO_TEST_CASE(vector_ADD_EQ_vector)
+TEST(compound,vector_ADD_EQ_vector)
 {
     multi_array<double> x(9);
     multi_array<double> y(9);
@@ -52,5 +50,5 @@ BOOST_AUTO_TEST_CASE(vector_ADD_EQ_vector)
 
     x += y;   /// This is the subject of the test
 
-    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+V_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }

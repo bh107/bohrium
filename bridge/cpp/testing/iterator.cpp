@@ -17,10 +17,8 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#define BOOST_TEST_MODULE iterator
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <stdexcept>
+#include "gtest/gtest.h"
+#include "check_collections.hpp"
 
 #include "bh/cppb.hpp"
 using namespace bh;
@@ -32,34 +30,34 @@ const double res [] = {
     3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5
 };
 
-BOOST_AUTO_TEST_CASE(vector_iter)
+TEST(iterator, vector)
 {
     multi_array<double> x(V_SIZE);
 
     x = 3.5;
 
     /// This is the subject of the test
-    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+V_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-BOOST_AUTO_TEST_CASE(matrix_iter)
+TEST(iterator, matrix)
 {
     multi_array<double> x(3,3);
 
     x = 3.5;
 
     /// This is the subject of the test
-    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+M_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-BOOST_AUTO_TEST_CASE(tensor_iter)
+TEST(iterator, tensor)
 {
     multi_array<double> x(3,3,3);
 
     x = 3.5;
 
     /// This is the subject of the test
-    BOOST_REQUIRE_EQUAL_COLLECTIONS(x.begin(), x.end(), res, res+T_SIZE);
+    EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
 

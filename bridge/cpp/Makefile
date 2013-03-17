@@ -13,7 +13,7 @@ CXX=g++
 #CXXFLAGS=-DDEBUG
 CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 
-all: gen testing examples
+all: gen examples
 
 examples: $(EXAMPLES)
 testing: $(TESTS)
@@ -32,10 +32,6 @@ gen:
 	./codegen/gen.py
 	mv codegen/output/*.hpp bh/.
 
-run:
-	@echo 'Running Tests'
-	@for TEST in $(TESTS); do bin/testing/$$TEST --log_level=error --report_level=no; done
-
 #
 # Examples
 #
@@ -45,28 +41,4 @@ hello_world: examples/hello_world.cpp $(HEADER)
 slicing: examples/slicing.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
-#
-# Testing
-#
-#
-constructor: testing/constructor.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-assignment: testing/assignment.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-broadcasting: testing/broadcasting.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-compound: testing/compound.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-iterator: testing/iterator.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-operators: testing/operators.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
-
-loop_scope: testing/loop_scope.cpp $(HEADER)
-	$(CXX) $< -o bin/testing/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh -lboost_unit_test_framework $(LCFLAGS) $(CXXFLAGS)
 
