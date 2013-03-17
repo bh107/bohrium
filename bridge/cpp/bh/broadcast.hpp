@@ -35,9 +35,12 @@ void bh_pprint_shape(bh_index shape[], bh_intp len)
     std::cout << "." << std::endl;
 }
 
+/**
+ * Determine whether or not the shapes of the provides operands are the same.
+ */
 template <typename T>
 inline
-bool compatible_shape(multi_array<T> & left, multi_array<T> & right)
+bool same_shape(multi_array<T> & left, multi_array<T> & right)
 {
     bh_array *left_a     = &storage[left.getKey()];
     bh_array *right_a    = &storage[right.getKey()];

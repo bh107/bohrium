@@ -54,7 +54,7 @@ multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -84,7 +84,7 @@ multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -114,7 +114,7 @@ multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -144,7 +144,7 @@ multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -174,7 +174,7 @@ multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -204,7 +204,7 @@ multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -234,7 +234,7 @@ multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -264,7 +264,7 @@ multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -296,7 +296,7 @@ multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
         throw std::runtime_error(s.str());
     }
 
-    if (!compatible_shape(*this, *input)) {             // We need to broadcast
+    if (!same_shape(*this, *input)) {             // We need to broadcast
         input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
         
         if (!broadcast(rhs, *this, *input)) {
@@ -325,7 +325,7 @@ multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -390,7 +390,7 @@ multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -455,7 +455,7 @@ multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -520,7 +520,7 @@ multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -585,7 +585,7 @@ multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -650,7 +650,7 @@ multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -715,7 +715,7 @@ multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -780,7 +780,7 @@ multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -845,7 +845,7 @@ multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -910,7 +910,7 @@ multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -975,7 +975,7 @@ multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -1040,7 +1040,7 @@ multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -1105,7 +1105,7 @@ multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -1170,7 +1170,7 @@ multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -1235,7 +1235,7 @@ multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
@@ -1300,7 +1300,7 @@ multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");

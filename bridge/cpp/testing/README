@@ -11,6 +11,9 @@ Requires that you have the Google Test Framework as well as CMake installed::
     mv gtest-1.6.0/* gtest/
     rmdir gtest-1.6.0
 
-The source distribution contains a bunch of unittest-samples and examples of build-environment setup.
-For your aquantance with gtest you could explore it further, however for the purpose of setting up testing for the Bohrium CPP bridge just::
+The source distribution contains a bunch of unittest-samples and examples of build-environment setup. You can explore gtest/samples for inspiration on writing tests. Anyway... compile and run the tests with::
 
+    make clean all
+    make run
+
+A bunch of green and possibly red should then light up your terminal.

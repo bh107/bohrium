@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+    /*
 template <typename T>
 void pprint(multi_array<T> & operand)
 {
@@ -60,6 +61,6 @@ void reshape(multi_array<T>& lhs, bh_intp* dims, bh_intp* strides)
 {
     
 }
-
+*/
 }
 #endif

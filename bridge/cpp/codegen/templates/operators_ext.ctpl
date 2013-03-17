@@ -20,7 +20,7 @@ multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
 
-    if (compatible_shape(lhs, rhs)) {
+    if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
         DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");

@@ -66,7 +66,7 @@ public:
     iterator end();
 
     // Slicing
-    multi_array slice(unsigned int base, unsigned int stride, unsigned int bound);
+    multi_array& slice(int base, int bound, int stride);
 
     //
     // Operators: 
