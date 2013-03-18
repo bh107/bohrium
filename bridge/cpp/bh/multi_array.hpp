@@ -170,6 +170,9 @@ typename multi_array<T>::iterator multi_array<T>::end()
     return multi_array<T>::iterator();
 }
 
+//
+// Increment / decrement
+//
 template <typename T>
 multi_array<T>& multi_array<T>::operator++()
 {
@@ -198,6 +201,9 @@ multi_array<T>& multi_array<T>::operator--(int)
     return *this;
 }
 
+//
+// Output / Printing
+//
 template <typename T>
 std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 {
@@ -217,6 +223,24 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     stream << " ]" << std::endl;
 
     return stream;
+}
+
+//
+// Slicing
+//
+template <typename T>
+slice<T>& multi_array<T>::operator[](int rhs) {
+    return (*(new slice<T>(*this)))[rhs];
+}
+
+template <typename T>
+slice<T>& multi_array<T>::operator[](slice_bound rhs) {
+    return (*(new slice<T>(*this)))[rhs];
+}
+                                                        
+template <typename T>
+slice<T>& multi_array<T>::operator[](slice_range& rhs) {
+    return (*(new slice<T>(*this)))[rhs];
 }
 
 }

@@ -8,8 +8,8 @@ TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 #EXAMPLES=broadcast
 
-#CXX=clang
-CXX=g++
+CXX=clang
+#CXX=g++
 #CXXFLAGS=-DDEBUG
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 CXXFLAGS=-Wall -Wextra -pedantic -std=c++0x -Wno-variadic-macros -Wno-newline-eof
@@ -40,6 +40,6 @@ hello_world: examples/hello_world.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 slicing: examples/slicing.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
 

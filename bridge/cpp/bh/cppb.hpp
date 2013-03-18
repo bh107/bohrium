@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define BH_CPP_QUEUE_MAX 1024
 #include "iterator.hpp"
 #include <stdexcept>
+#include <array>
 
 #ifdef DEBUG
 #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
@@ -33,10 +34,69 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+class slice_range {
+public:
+    slice_range() : begin(0), end(-1), stride(1) {}
+    slice_range(int begin, int end, unsigned int stride) : begin(begin), end(end), stride(stride) {}
+
+    int begin, end;
+    unsigned int stride;
+};
+
+enum slice_bound { ALL, FIRST, LAST };
+
+template <typename T>
+class multi_array;
+
+template <typename T>
 class slice {
 public:
-    // Constructors
-    slice(unsigned int base, unsigned int stride, unsigned int bound);
+    slice(multi_array<T>& op) : op(&op), dims(0) {}
+
+    slice& operator[](int rhs)
+    {
+        std::cout << "slice[int] [dim=" << dims << "] " << rhs <<std::endl;
+        ranges[dims].begin = rhs;
+        ranges[dims].end   = rhs;
+        dims++;
+        return *this;
+    }
+
+    slice& operator[](slice_bound rhs)
+    {
+        std::cout << "slice[ALL] [dim=" << dims << "] " << rhs <<std::endl;
+        dims++;
+        return *this;
+    }
+
+    slice& operator[](slice_range& rhs)
+    {
+        std::cout << "slice[range] [dim=" << dims << "]" <<std::endl;
+        ranges[dims] = rhs;
+        dims++;
+        return *this;
+    }
+
+    // Create a actual view of the slice.
+    bh::multi_array<T> view()
+    {
+        std::cout << " Create the view! " << dims <<std::endl;
+        for(int i=0; i<dims; ++i ) {
+            std::cout << "[Dim="<< i << "; " << ranges[i].begin << "," \
+                                        << ranges[i].end << "," \
+                                        << ranges[i].stride << "]" \
+                                        <<std::endl;
+            //std::cout << "PUKE" <<std::endl;
+        }
+        return NULL;
+    }
+
+private:
+    multi_array<T>* op;             // The op getting sliced
+
+    int dims;                               // The amount of dims covered by the slice
+    std::array<slice_range, BH_MAXDIM> ranges;    // The ranges...
+
 };
 
 template <typename T>
@@ -65,9 +125,6 @@ public:
     iterator begin();
     iterator end();
 
-    // Slicing
-    multi_array& slice(int base, int bound, int stride);
-
     //
     // Operators: 
     //
@@ -75,15 +132,19 @@ public:
     //
     // Definitions are provided in:
     //
-    // - multi_array.hpp for those implemented by hand.
+    // - multi_array.hpp for those implemented by hand ([], ++, --, ostream<< ).
+    // - slicing.hpp: Auxilary behavior of the [] operator.
     // - operators.hpp: defined code-generator.
     //
-    multi_array& operator[]( int index );    // This is a performance killer.
+                                                    // Slicing / explicit view
+    slice<T>& operator[](int rhs);                  // Select a single element / dimension
+    slice<T>& operator[](slice_bound rhs);          // Select the entire dimension
+    slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
-    multi_array& operator=( T const& rhs );  // Used for initialization / assignment.
+    multi_array& operator=( T const& rhs );         // Initialization / assignment.
     multi_array& operator=( multi_array & rhs );
 
-    multi_array& operator+=(const T& rhs);   // Compound assignment operators / increment
+    multi_array& operator+=(const T& rhs);          // Compound assignment / increment
     multi_array& operator+=(multi_array& rhs);
 
     multi_array& operator-=(const T& rhs);
@@ -126,6 +187,16 @@ private:
     void init();
 
 };
+
+
+
+
+
+inline
+slice_range& _(int base, int end, unsigned int stride)
+{
+    return *(new slice_range(base, stride, end));
+}
 
 /**
  *  Encapsulation of communication with Bohrium runtime.
@@ -203,6 +274,7 @@ private:
 
 #include "multi_array.hpp"  // Operand definition.
 #include "broadcast.hpp"    // Operand manipulations.
+#include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
