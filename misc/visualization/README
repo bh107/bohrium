@@ -1,9 +1,19 @@
 Notes on Visualization
 ======================
 
-Run::
+One can use the graph-visualization script like so::
 
-  ./visualize.sh
+    # Install a version of naive with debugging enabled
+    cd ve/naive
+
+    # Make sure that INSTALLDIR points to where you install your bohrium libs...
+    DEBUG="-DDEBUG" INSTALLDIR=~/bohrium.lib/ make clean all install
+
+    # Then run whatever you want to get a graph of, such as
+    python ../../benchmark/Python/jacobi.iterative.py --size=10*10*10 --bohrium=True > example.trace
+    
+    # Then run the "visualizer"
+    ./visualize.sh
 
 This should generate a .svg file based on the 'example.trace' file and start a browser to show it.
 
