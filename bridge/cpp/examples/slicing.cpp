@@ -25,20 +25,17 @@ using namespace bh;
 
 int main()
 {
-    cout << "Hello World." << endl;
+    cout << "Slicing." << endl;
 
-    multi_array<double> x(3,3);
-    multi_array<double> y(3,3);
-
-    x(9);
-
-    bh_pprint_array(&storage[x.getKey()]);
+    multi_array<double> x(9,9);
+    multi_array<double>& y = Runtime::instance()->view(x);
     x = 1.0;
-    bh_pprint_array(&storage[x.getKey()]);
-    x = x + 1.0;
-    bh_pprint_array(&storage[x.getKey()]);
-    cout << x;
-    bh_pprint_array(&storage[x.getKey()]);
+    bh_pprint_array(&storage[y.getKey()]);
+    //y = x[ALL][_(0,8,2)];
+    bh_pprint_array(&storage[y.getKey()]);
+
+    //bh_pprint_array(y);
+    cout << y;
 
     return 0;
 }

@@ -1,5 +1,5 @@
 [
-["=", "BH_IDENTITY", "operator.int", true], 
+["=", "BH_IDENTITY", "operator.int", false], 
 ["[]", "CUSTOM_2", "operator.int", false], 
 ["()", "CUSTOM_2", "operator.int", false], 
 ["->", "CUSTOM_2", "operator.int", false], 

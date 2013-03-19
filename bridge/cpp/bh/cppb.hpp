@@ -34,68 +34,37 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+enum slice_bound { ALL, FIRST, LAST };
+
 class slice_range {
 public:
-    slice_range() : begin(0), end(-1), stride(1) {}
-    slice_range(int begin, int end, unsigned int stride) : begin(begin), end(end), stride(stride) {}
+    slice_range();
+    slice_range(int begin, int end, unsigned int stride);
 
     int begin, end;
     unsigned int stride;
 };
 
-enum slice_bound { ALL, FIRST, LAST };
-
-template <typename T>
+template <typename T>   // Forward declaration
 class multi_array;
 
 template <typename T>
 class slice {
 public:
-    slice(multi_array<T>& op) : op(&op), dims(0) {}
+    slice(multi_array<T>& op);
 
-    slice& operator[](int rhs)
-    {
-        std::cout << "slice[int] [dim=" << dims << "] " << rhs <<std::endl;
-        ranges[dims].begin = rhs;
-        ranges[dims].end   = rhs;
-        dims++;
-        return *this;
-    }
+    slice& operator[](int rhs);
+    slice& operator[](slice_bound rhs);
+    slice& operator[](slice_range& rhs);
 
-    slice& operator[](slice_bound rhs)
-    {
-        std::cout << "slice[ALL] [dim=" << dims << "] " << rhs <<std::endl;
-        dims++;
-        return *this;
-    }
-
-    slice& operator[](slice_range& rhs)
-    {
-        std::cout << "slice[range] [dim=" << dims << "]" <<std::endl;
-        ranges[dims] = rhs;
-        dims++;
-        return *this;
-    }
-
-    // Create a actual view of the slice.
-    bh::multi_array<T> view()
-    {
-        std::cout << " Create the view! " << dims <<std::endl;
-        for(int i=0; i<dims; ++i ) {
-            std::cout << "[Dim="<< i << "; " << ranges[i].begin << "," \
-                                        << ranges[i].end << "," \
-                                        << ranges[i].stride << "]" \
-                                        <<std::endl;
-            //std::cout << "PUKE" <<std::endl;
-        }
-        return NULL;
-    }
+    // Create a actual view of the slice
+    bh::multi_array<T>& view();
 
 private:
-    multi_array<T>* op;             // The op getting sliced
+    multi_array<T>* op;                             // The op getting sliced
 
-    int dims;                               // The amount of dims covered by the slice
-    std::array<slice_range, BH_MAXDIM> ranges;    // The ranges...
+    int dims;                                       // The amount of dims covered by the slice
+    std::array<slice_range, BH_MAXDIM> ranges;      // The ranges...
 
 };
 
@@ -141,8 +110,16 @@ public:
     slice<T>& operator[](slice_bound rhs);          // Select the entire dimension
     slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
-    multi_array& operator=( T const& rhs );         // Initialization / assignment.
-    multi_array& operator=( multi_array & rhs );
+    multi_array& operator()(const T& n);              // Shaping / reshaping
+    multi_array& operator()(const T& m, const T& n);              // Shaping / reshaping
+    multi_array& operator()(const T& d2, const T& d1, const T& d0);              // Shaping / reshaping
+   
+    multi_array& operator=(const T& rhs);         // Initialization / assignment.
+    multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
+
+    /* 
+    multi_array& operator=(multi_array & rhs );
+    */
 
     multi_array& operator+=(const T& rhs);          // Compound assignment / increment
     multi_array& operator+=(multi_array& rhs);
@@ -189,14 +166,6 @@ private:
 };
 
 
-
-
-
-inline
-slice_range& _(int base, int end, unsigned int stride)
-{
-    return *(new slice_range(base, stride, end));
-}
 
 /**
  *  Encapsulation of communication with Bohrium runtime.

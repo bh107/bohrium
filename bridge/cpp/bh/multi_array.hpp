@@ -243,5 +243,22 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
     return (*(new slice<T>(*this)))[rhs];
 }
 
+//
+// Reshaping
+//
+template <typename T>
+multi_array<T>& multi_array<T>::operator()(const T& n) {
+    std::cout << "Reshape to: " << n << std::endl;
+    return *this;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
+    multi_array<T>* vv = &rhs.view();
+    bh_pprint_array(&storage[vv->getKey()]);
+    storage[getKey()] = storage[vv->getKey()];
+    return *this;
+}
+
 }
 

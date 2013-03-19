@@ -35,6 +35,13 @@ namespace bh {
 //
 //  Internally defined operator overloads
 //
+template <typename T>
+multi_array<T>& multi_array<T>::operator= (const T& rhs)
+{
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+    return *this;
+}
+
 
 template <typename T>
 multi_array<T>& multi_array<T>::operator+= (const T& rhs)
@@ -273,40 +280,6 @@ multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
     }
 
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, *input);
-    return *this;
-}
-
-template <typename T>
-multi_array<T>& multi_array<T>::operator= (const T& rhs)
-{
-    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
-    return *this;
-}
-
-template <typename T>
-multi_array<T>& multi_array<T>::operator= (multi_array<T>& rhs)
-{
-    DEBUG_PRINT("{{ %ld = ", this->getRank());
-    multi_array<T>* input = &rhs;
-    DEBUG_PRINT("%ld\n", input->getRank());
-                                            
-    if (this->getRank() < input->getRank()) {           // This would be illogical...
-        std::stringstream s;
-        s << "Incompatible shape in 'operator='; lrank(" << this->getRank() << ") is less than rrank(" << input->getRank() << ")." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    if (!same_shape(*this, *input)) {             // We need to broadcast
-        input = &Runtime::instance()->temp_view(rhs);   // Create view pointing to rhs as base
-        
-        if (!broadcast(rhs, *this, *input)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-
-    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, *input);
-
-    DEBUG_PRINT("}}\n");
     return *this;
 }
 
