@@ -32,6 +32,7 @@ def BS(CallPutFlag,S,X,T,r,v):
 def price(S,I,flag='c',X=65.0,dT=(1.0/365.0),r=0.08,v=0.3):
     T = dT
     p = []
+    N = len(S)
     for i in xrange (I):
         p += [np.sum(BS(flag,S,X,T,r,v)) / N]
         T += dT
