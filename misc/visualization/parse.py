@@ -19,13 +19,13 @@ class Instruction(object):
         """Returns a list of operands."""
         return self.operands()
 
-    def out(self):
-        """Returns a list of output-operands."""
-        return self.operands()
-
-    def in(self):
-        """Returns a list of input-operands."""
-        return self.operands()
+    #def out(self):
+    #    """Returns a list of output-operands."""
+    #    return self.operands()
+    
+    #def in(self):
+    #   """Returns a list of input-operands."""
+    #    return self.operands()
 
     def ref(self):
         return self.opcode
