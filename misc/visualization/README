@@ -1,0 +1,9 @@
+Notes on Visualization
+======================
+
+Run::
+
+  ./visualize.sh
+
+This should generate a .svg file based on the 'example.trace' file and start a browser to show it.
+

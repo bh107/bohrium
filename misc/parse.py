@@ -249,6 +249,6 @@ class Parser(object):
 
 if __name__ == "__main__":
 
-    p = Parser( 'knn.trace' )
+    p = Parser( 'example.trace' )
     print(p.dotify_list(p.parse()))
     
