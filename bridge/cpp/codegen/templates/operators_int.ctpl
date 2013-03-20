@@ -64,9 +64,7 @@ multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 {
-    DEBUG_PRINT("{{ %ld $op ", this->getRank());
     multi_array<T>* input = &rhs;
-    DEBUG_PRINT("%ld\n", input->getRank());
                                             
     if (this->getRank() < input->getRank()) {           // This would be illogical...
         std::stringstream s;
@@ -84,7 +82,6 @@ multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 
     Runtime::instance()->enqueue((bh_opcode)$opcode, *this, *input);
 
-    DEBUG_PRINT("}}\n");
     return *this;
 }
 %slurp

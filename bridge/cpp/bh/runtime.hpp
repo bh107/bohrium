@@ -192,6 +192,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = &storage[op2.getKey()];
 
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
+
     if (op1.getTemp()) {
         delete &op1;
     }
@@ -216,6 +219,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
+
     if (op1.getTemp()) {
         delete &op1;
     }
@@ -236,6 +242,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
+
     if (op2.getTemp()) {
         delete &op2;
     }
@@ -254,6 +263,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
+
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
 
     if (op1.getTemp()) {
         delete &op1;
@@ -274,6 +286,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1)
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op1 );
+
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
 }
 
 template <typename T>
@@ -289,6 +304,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
     instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
+
+    DEBUG_PRINT("Queueing: ");
+    bh_pprint_instr(instr);
 }
 
 }

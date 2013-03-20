@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "gtest/gtest.h"
 #include "check_collections.hpp"
 
-#include "bh/cppb.hpp"
+#include "bh/bh.hpp"
 using namespace bh;
 
 #define V_SIZE 9

@@ -15,7 +15,6 @@ directiveStartToken = %
 template <typename T>
 multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator$op %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -23,26 +22,21 @@ multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -53,7 +47,6 @@ multi_array<T>& operator$op (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)$opcode, *result, *left, *right);
-    DEBUG_PRINT("< operator$op\n");
     return *result;
 }
 

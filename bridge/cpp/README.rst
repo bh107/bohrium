@@ -7,7 +7,7 @@ You have found the exclusive home of the c++ language bridge.
 A list of inhabitants (along with brief descriptions) of this part of the repository is provided below::
 
     bh/                 - The Bohrium c++ language-bridge / vector library.
-    bh/cppb.hpp         - Declarations.
+    bh/bh.hpp           - Declarations.
     bh/multi_array.hpp  - Operand definition.
     bh/functions.hpp    - Operations via functions.
                           Note: Generated code -> see codegen.

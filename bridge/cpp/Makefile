@@ -12,7 +12,8 @@ CXX=clang
 #CXX=g++
 #CXXFLAGS=-DDEBUG
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
-CXXFLAGS=-Wall -Wextra -pedantic -std=c++0x -Wno-variadic-macros -Wno-newline-eof
+EXTRAS+=""
+CXXFLAGS=-Wall -Wextra -pedantic -std=c++0x -Wno-variadic-macros -Wno-newline-eof $(EXTRAS)
 
 all: gen examples
 

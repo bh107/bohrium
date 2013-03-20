@@ -18,7 +18,7 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include "bh/cppb.hpp"
+#include "bh/bh.hpp"
 
 using namespace std;
 using namespace bh;
@@ -30,14 +30,22 @@ int main()
     multi_array<double> x(3,3);
     multi_array<double> y(3,3);
 
+    //bh_pprint_array(&storage[x.getKey()]);
     x(9);
-
+    cout << "\n1" << endl;
     bh_pprint_array(&storage[x.getKey()]);
     x = 1.0;
-    bh_pprint_array(&storage[x.getKey()]);
-    x = x + 1.0;
+
+//    cout << "\n2" << endl;
+//    bh_pprint_array(&storage[x.getKey()]);
+//    x = x + 1.0;
+
+
+    cout << "\n3" << endl;
     bh_pprint_array(&storage[x.getKey()]);
     cout << x;
+
+    cout << "\n4" << endl;
     bh_pprint_array(&storage[x.getKey()]);
 
     return 0;

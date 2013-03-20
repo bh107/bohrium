@@ -293,7 +293,6 @@ multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator+ %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -301,26 +300,21 @@ multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -331,7 +325,6 @@ multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-    DEBUG_PRINT("< operator+\n");
     return *result;
 }
 
@@ -358,7 +351,6 @@ multi_array<T> & operator+ (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator- %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -366,26 +358,21 @@ multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -396,7 +383,6 @@ multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-    DEBUG_PRINT("< operator-\n");
     return *result;
 }
 
@@ -423,7 +409,6 @@ multi_array<T> & operator- (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator* %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -431,26 +416,21 @@ multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -461,7 +441,6 @@ multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-    DEBUG_PRINT("< operator*\n");
     return *result;
 }
 
@@ -488,7 +467,6 @@ multi_array<T> & operator* (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator/ %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -496,26 +474,21 @@ multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -526,7 +499,6 @@ multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-    DEBUG_PRINT("< operator/\n");
     return *result;
 }
 
@@ -553,7 +525,6 @@ multi_array<T> & operator/ (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator% %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -561,26 +532,21 @@ multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -591,7 +557,6 @@ multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-    DEBUG_PRINT("< operator%\n");
     return *result;
 }
 
@@ -618,7 +583,6 @@ multi_array<T> & operator% (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator== %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -626,26 +590,21 @@ multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -656,7 +615,6 @@ multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-    DEBUG_PRINT("< operator==\n");
     return *result;
 }
 
@@ -683,7 +641,6 @@ multi_array<T> & operator== (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator!= %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -691,26 +648,21 @@ multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -721,7 +673,6 @@ multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-    DEBUG_PRINT("< operator!=\n");
     return *result;
 }
 
@@ -748,7 +699,6 @@ multi_array<T> & operator!= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator> %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -756,26 +706,21 @@ multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -786,7 +731,6 @@ multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-    DEBUG_PRINT("< operator>\n");
     return *result;
 }
 
@@ -813,7 +757,6 @@ multi_array<T> & operator> (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator>= %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -821,26 +764,21 @@ multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -851,7 +789,6 @@ multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-    DEBUG_PRINT("< operator>=\n");
     return *result;
 }
 
@@ -878,7 +815,6 @@ multi_array<T> & operator>= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator< %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -886,26 +822,21 @@ multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -916,7 +847,6 @@ multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-    DEBUG_PRINT("< operator<\n");
     return *result;
 }
 
@@ -943,7 +873,6 @@ multi_array<T> & operator< (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator<= %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -951,26 +880,21 @@ multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -981,7 +905,6 @@ multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
-    DEBUG_PRINT("< operator<=\n");
     return *result;
 }
 
@@ -1008,7 +931,6 @@ multi_array<T> & operator<= (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator&& %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -1016,26 +938,21 @@ multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -1046,7 +963,6 @@ multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
-    DEBUG_PRINT("< operator&&\n");
     return *result;
 }
 
@@ -1073,7 +989,6 @@ multi_array<T> & operator&& (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator|| %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -1081,26 +996,21 @@ multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -1111,7 +1021,6 @@ multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
-    DEBUG_PRINT("< operator||\n");
     return *result;
 }
 
@@ -1138,7 +1047,6 @@ multi_array<T> & operator|| (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator& %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -1146,26 +1054,21 @@ multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -1176,7 +1079,6 @@ multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-    DEBUG_PRINT("< operator&\n");
     return *result;
 }
 
@@ -1203,7 +1105,6 @@ multi_array<T> & operator& (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator| %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -1211,26 +1112,21 @@ multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -1241,7 +1137,6 @@ multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-    DEBUG_PRINT("< operator|\n");
     return *result;
 }
 
@@ -1268,7 +1163,6 @@ multi_array<T> & operator| (const T& lhs, multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    DEBUG_PRINT("> %ld operator^ %ld\n", lhs.getRank(), rhs.getRank());
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
     multi_array<T>* result; 
@@ -1276,26 +1170,21 @@ multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance()->temp(lhs);
     } else {
-        DEBUG_PRINT("> Incompatible shape, possibly broadcastable.\n");
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            DEBUG_PRINT("> Creating view of left\n");
             left    = &Runtime::instance()->temp_view(lhs);
             right   = &rhs;
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*left);
         } else {                                // Right-handside has lowest rank
-            DEBUG_PRINT("> Creating view of right\n");
             left    = &lhs;
             right   = &Runtime::instance()->temp_view(rhs);
             right->setTemp(true);
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            DEBUG_PRINT("> Creating temp\n");
             result  = &Runtime::instance()->temp(*right);
         }
         
@@ -1306,7 +1195,6 @@ multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
     bh_pprint_array(&storage[result->getKey()]);
     #endif
     Runtime::instance()->enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-    DEBUG_PRINT("< operator^\n");
     return *result;
 }
 

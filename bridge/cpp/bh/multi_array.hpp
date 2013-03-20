@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include "traits.hpp"           // Traits for assigning type to constants and multi_arrays.
-#include "cppb.hpp"
 #include "runtime.hpp"
 #include <sstream>
 
@@ -36,18 +35,16 @@ void multi_array<T>::init()     // Pseudo-default constructor
     assign_array_type<T>(&storage[key]);
 }
 
-template <typename T>           // Default constructor
+template <typename T>           // Default constructor - rank 0
 multi_array<T>::multi_array()
 {
-    init(); //rank = 0;
-
-    DEBUG_PRINT(">> array(): key(%d)\n", key);
+    init();
 }
 
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand)
 {
-    init(); //rank = operand.getRank();
+    init();
 
     storage[key].base        = NULL;
     storage[key].ndim        = storage[operand.getKey()].ndim;
@@ -59,14 +56,12 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
         storage[key].stride[i] = storage[operand.getKey()].stride[i];
     }
     storage[key].data        = NULL;
-
-    DEBUG_PRINT(">> array(op): key(%d)\n", key);
 }
 
-template <typename T>       // "Vector-like" constructor
+template <typename T>       // "Vector-like" constructor - rank 1
 multi_array<T>::multi_array(unsigned int n)
 {
-    init(); //rank = 1;
+    init();
 
     storage[key].base        = NULL;
     storage[key].ndim        = 1;
@@ -74,15 +69,12 @@ multi_array<T>::multi_array(unsigned int n)
     storage[key].shape[0]    = n;
     storage[key].stride[0]   = 1;
     storage[key].data        = NULL;
-
-    DEBUG_PRINT(">> array(int): key(%d)\n", key);
 }
 
-
-template <typename T>       // "Matrix-like" constructor
+template <typename T>       // "Matrix-like" constructor - rank 2
 multi_array<T>::multi_array(unsigned int m, unsigned int n)
 {
-    init(); //rank = 2;
+    init();
 
     storage[key].base        = NULL;
     storage[key].ndim        = 2;
@@ -92,14 +84,12 @@ multi_array<T>::multi_array(unsigned int m, unsigned int n)
     storage[key].shape[1]    = n;
     storage[key].stride[1]   = 1;
     storage[key].data        = NULL;
-
-    DEBUG_PRINT(">> array(int, int): key(%d)\n", key );
 }
 
-template <typename T>       // "Matrix-like" constructor
+template <typename T>       // "Tensor-like" constructor - rank 3
 multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 {
-    init(); //rank = 3;
+    init();
 
     storage[key].base        = NULL;
     storage[key].ndim        = 3;
@@ -113,16 +103,11 @@ multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
     storage[key].shape[2]    = d0;
     storage[key].stride[2]   = 1;
     storage[key].data        = NULL;
-
-    DEBUG_PRINT(">> array(int, int, int): key(%d)\n", key);
 }
-
 
 template <typename T>       // Deconstructor
 multi_array<T>::~multi_array()
 {
-    DEBUG_PRINT("> Deconstructing(): key(%d)\n", key);
-
     Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
     Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
 }
@@ -219,7 +204,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
             first = false;
         }
         stream << *it;
-    }
+    } 
     stream << " ]" << std::endl;
 
     return stream;

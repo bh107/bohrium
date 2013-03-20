@@ -66,7 +66,6 @@ template <typename T>
 inline
 bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& view)
 {
-    DEBUG_PRINT(">>>> BROADCASTING\n");
     bh_array *lower_a   = &storage[lower.getKey()];     // The operand which will be "stretched"
     bh_array *higher_a  = &storage[higher.getKey()];    // The possibly "larger" shape
     bh_array *view_a    = &storage[view.getKey()];      // The new "broadcasted" shape
@@ -75,12 +74,6 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& vi
     bh_intp stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility
     bh_intp operand_dim = higher_a->ndim-1;             // Create: shape and stride.
 
-    DEBUG_PRINT(">>>> IS: '%ld < %ld' true?\n", lower.getRank(), higher.getRank());
-    #ifdef DEBUG
-    bh_pprint_array(lower_a);
-    bh_pprint_array(higher_a);
-    bh_pprint_array(view_a);
-    #endif
     while((stretch_dim>=0) && broadcastable) {             
         broadcastable =   ((lower_a->shape[stretch_dim] == higher_a->shape[operand_dim]) || \
                         (lower_a->shape[stretch_dim] == 1) || \
@@ -105,13 +98,6 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& vi
 
     view_a->ndim = higher_a->ndim;                   // Set ndim
 
-    DEBUG_PRINT(">>>> BROADCAST RESULT\n");
-    #ifdef DEBUG
-    bh_pprint_array(lower_a);
-    bh_pprint_array(higher_a);
-    bh_pprint_array(view_a);
-    #endif
-    DEBUG_PRINT("<<<< BROADCAST DONE\n");
     return broadcastable;
 }
 
