@@ -40,7 +40,6 @@ int main()
 //    bh_pprint_array(&storage[x.getKey()]);
 //    x = x + 1.0;
 
-
     cout << "\n3" << endl;
     bh_pprint_array(&storage[x.getKey()]);
     cout << x;
