@@ -19,13 +19,13 @@ class Instruction(object):
         """Returns a list of operands."""
         return self.operands()
 
-    def out(self):
-        """Returns a list of output-operands."""
-        return self.operands()
-
-    def in(self):
-        """Returns a list of input-operands."""
-        return self.operands()
+    #def out(self):
+    #    """Returns a list of output-operands."""
+    #    return self.operands()
+    
+    #def in(self):
+    #   """Returns a list of input-operands."""
+    #    return self.operands()
 
     def ref(self):
         return self.opcode
@@ -150,7 +150,7 @@ class Parser(object):
 
                     if constant:            # Constant
                         operands.append( Constant( "%0.2f" % float(constant) ) )
-                    elif "(nil)" in base:   # Base
+                    elif "(nil)" in base or "0x0" == base:   # Base
                         operands.append( Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data) )
                     else:                   # View
                         view = View(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, base)
@@ -249,6 +249,6 @@ class Parser(object):
 
 if __name__ == "__main__":
 
-    p = Parser( 'knn.trace' )
+    p = Parser( 'example.trace' )
     print(p.dotify_list(p.parse()))
     

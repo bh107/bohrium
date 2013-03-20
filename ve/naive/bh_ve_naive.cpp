@@ -63,6 +63,9 @@ bh_error bh_ve_naive_execute( bh_intp instruction_count, bh_instruction* instruc
     for (count=0; count < instruction_count; count++) {
 
         inst = &instruction_list[count];
+        #ifdef DEBUG
+        bh_pprint_instr(inst);
+        #endif
 
         res = bh_vcache_malloc( inst );          // Allocate memory for operands
         if ( res != BH_SUCCESS ) {

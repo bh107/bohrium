@@ -1,0 +1,663 @@
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16ab5d0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: (nil)  ]
+  ]
+  OP1 [ CONST=0.000000 ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16ab5d0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16648f0 Dims: 1 Start: 0 Shape:  12 Stride:  12 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ CONST=-273.149994 ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16648f0 Dims: 1 Start: 0 Shape:  12 Stride:  12 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x1664a20 Dims: 1 Start: 11 Shape:  12 Stride:  12 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ CONST=-273.149994 ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x1664a20 Dims: 1 Start: 11 Shape:  12 Stride:  12 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b9ff0 Dims: 1 Start: 0 Shape:  12 Stride:  1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ CONST=40.000000 ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b9ff0 Dims: 1 Start: 0 Shape:  12 Stride:  1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16ba120 Dims: 1 Start: 132 Shape:  12 Stride:  1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ CONST=-273.130005 ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16ba120 Dims: 1 Start: 132 Shape:  12 Stride:  1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x1248bc0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x1248bc0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16648f0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16648f0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x1664a20 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x1664a20 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c3f90 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c3f90 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c40c0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c40c0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b8d40 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b8d40 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b8e70 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b8e70 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b8fa0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b8fa0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b90d0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b90d0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b2260 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b2260 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b2390 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b2390 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b24c0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b24c0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b25f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b25f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b2720 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b2720 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16b2850 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b2850 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c73e0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c73e0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c7510 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c7510 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c7640 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c7640 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c7770 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c7770 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16b45f0 -->
+      [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_ADD OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_MULTIPLY OPS=3{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+  OP2 [ CONST=0.200000 ]
+}
+BH_IDENTITY OPS=2{
+  OP0 [ Addr: 0x16c78a0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+  OP1 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c78a0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+jacobi.iterative.py - bohrium: True, nthd: 4, nblocks: 16 size: [10, 10, 10], total time: 0.005286
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c3e60 Dims: 2 Start: 25 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16ab5d0 Dims: 2 Start: 13 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_FREE OPS=1{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: 0x7f3912e9d000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b45f0 Dims: 2 Start: 0 Shape:  10,10 Stride:  10,1 Type: BH_FLOAT64 Data: (nil), Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c3d30 Dims: 2 Start: 1 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16ba120 Dims: 2 Start: 14 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16b9ff0 Dims: 2 Start: 12 Shape:  10,10 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: 0x16c44f0 -->
+      [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+  ]
+}
+BH_FREE OPS=1{
+  OP0 [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: 0x7f3912e9e000, Base: (nil)  ]
+}
+BH_DISCARD OPS=1{
+  OP0 [ Addr: 0x16c44f0 Dims: 2 Start: 0 Shape:  12,12 Stride:  12,1 Type: BH_FLOAT64 Data: (nil), Base: (nil)  ]
+}

@@ -1,0 +1,34 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include raw "codegen/templates/license.txt"
+
+%include raw "codegen/templates/warn.txt"
+
+#ifndef __BOHRIUM_BRIDGE_CPP_FUNCTIONS
+#define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
+#include "bh.h"
+
+namespace bh {
+%slurp
+%for $function in $data
+%if $function[2] == "operator.fun"
+%slurp
+
+template <typename T>
+multi_array<T> & $function[0] ( multi_array<T> & rhs )
+{
+    multi_array<T>* operand = new multi_array<T>( rhs );
+
+    Runtime::instance()->enqueue( (bh_opcode) $function[1], *operand, rhs );
+    return *operand;
+}
+%slurp
+%end if
+%end for
+
+}
+#endif
+

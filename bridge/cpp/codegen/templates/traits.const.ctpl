@@ -1,0 +1,25 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+template <typename T>
+inline
+void assign_const_type( bh_constant* instr, T value );
+//
+// We do not want a general definition of the assign_array_type, it should simply
+// fail at compile-type if the type is not one the known types.
+// Adding a definition for the general cause would cause the error to be catch at runtime.
+// Please do not do that...
+//
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
+template <>
+inline
+void assign_const_type( bh_constant* constant, $bh_atype value )
+{
+    constant->value.$bh_ctype = value;
+    constant->type = $bh_enum;
+}
+
+%end for

@@ -52,9 +52,9 @@ bh_error bh_create_array(bh_array*   base,
     memcpy(ary->stride, stride, ndim * sizeof(bh_index));
 
 #ifdef BH_TRACE
-    fprintf(stderr, "Created array %lld", array);
-    if (array->base != NULL)
-        fprintf(stderr, " -> %lld", array->base);
+    fprintf(stderr, "Created array %lld", ary);
+    if (ary->base != NULL)
+        fprintf(stderr, " -> %lld", ary->base);
     fprintf(stderr, "\n");
 #endif
     

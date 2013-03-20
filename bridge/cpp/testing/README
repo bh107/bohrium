@@ -1,0 +1,19 @@
+Testing the Bohrium CPP Interface
+---------------------------------
+
+Requires that you have the Google Test Framework as well as CMake installed::
+
+    # Install dependencies from your package repository
+    sudo apt-get instal cmake make
+    # Download gtest source and unpack it
+    wget https://googletest.googlecode.com/files/gtest-1.6.0.zip
+    unzip gtest-1.6.0.zip
+    mv gtest-1.6.0/* gtest/
+    rmdir gtest-1.6.0
+
+The source distribution contains a bunch of unittest-samples and examples of build-environment setup. You can explore gtest/samples for inspiration on writing tests. Anyway... compile and run the tests with::
+
+    make clean all
+    make run
+
+A bunch of green and possibly red should then light up your terminal.
