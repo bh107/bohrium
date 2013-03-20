@@ -47,6 +47,10 @@ static std::set<bh_array*> allocated_arys;
 //The timing ID for executions
 static bh_intp exec_timing;
 
+#ifdef BH_TIMING
+    //Number of elements executed
+    static bh_intp total_execution_size = 0;
+#endif
 
 /* Initialize the VEM
  *
@@ -118,6 +122,11 @@ bh_error bh_vem_node_shutdown(void)
         }
     }
     bh_timing_dump_all();
+    
+    #ifdef BH_TIMING
+        printf("Number of elements executed: %ld\n", total_execution_size);
+    #endif
+    
     return err;
 }
 
@@ -176,6 +185,14 @@ bh_error bh_vem_node_execute(bh_intp count,
             if(operands[o] != NULL)
                 allocated_arys.insert(operands[o]);
         }
+
+        #ifdef BH_TIMING
+            if(operands[nop-1] != NULL)
+            {
+                bh_array *a = operands[nop-1];
+                total_execution_size += bh_nelements(a->ndim, a->shape);
+            }
+        #endif
 
         //And remove discared arrays
         if(inst->opcode == BH_DISCARD)

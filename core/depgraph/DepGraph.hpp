@@ -32,9 +32,9 @@ private:
     std::list<DepSubGraph*> subGraphs;
     LastModifiedByMap lastModifiedBy;
     void ufunc(bh_instruction* inst);
-    void sync(cphvb_array* operand);
-    void discard(cphvb_array* operand);
-    void free(cphvb_array* operand);
+    void sync(bh_array* operand);
+    void discard(bh_array* operand);
+    void free(bh_array* operand);
 public:
     DepGraph(bh_intp instruction_count,
              bh_instruction instruction_list[]);

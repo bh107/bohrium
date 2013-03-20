@@ -42,7 +42,7 @@ private:
     ModificationMap modificationMap;
     std::list<DepSubGraph*> dependsOn;
     ArrayAtributes arrayAtributes;
-    friend DepSubGraph* merge(cphvb_instruction* inst, std::list<DepSubGraph*> subGraphs);
+    friend DepSubGraph* merge(bh_instruction* inst, std::list<DepSubGraph*> subGraphs);
 public:
 <<<<<<< HEAD
     DepSubGraph(bh_instruction* inst);

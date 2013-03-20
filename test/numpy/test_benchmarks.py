@@ -16,7 +16,7 @@ class test_jacobi(numpytest):
             cmd += "a[0] += np.diag(np.add.reduce(a[0],-1));"
             exec cmd
             yield (a,cmd)
-    
+
     def test_jacobi(self,a):
         cmd = "res = la.jacobi(a[0],a[1]);"
         exec cmd
@@ -29,7 +29,7 @@ class test_jacobi_stencil(numpytest):
         self.size = 20
     def init(self):
         a = {}
-        cmd = "a[0] = exp.jacobi_stencil.frezetrap({0},{0},bohrium=False);".format(self.size)
+        cmd = "a[0] = exp.jacobi_stencil.freezetrap({0},{0},bohrium=False);".format(self.size)
         exec cmd
         yield (a,cmd)
 
@@ -44,7 +44,7 @@ class test_gameoflife(numpytest):
         cmd  = "a[0] = exp.gameoflife.randomstate({0},{0},bohrium=False);".format(10)
         exec cmd
         yield (a,cmd)
-    
+
     def test_gameoflife(self,a):
         cmd = "res = exp.gameoflife.play(a[0].copy(), 50);"
         exec cmd
@@ -54,10 +54,10 @@ class test_shallow_water(numpytest):
     def init(self):
         for t in ['np.float32','np.float64']:
             a = {}
-            cmd  = "a[0] = exp.shallow_water.setup(({0},{0}),dtype={1},bohrium=False);".format(10,t)
+            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(10,t)
             exec cmd
             yield (a,cmd)
-    
+
     def test_shallow_water(self,a):
         cmd = "res = exp.shallow_water.simulate(a[0],10);"
         exec cmd

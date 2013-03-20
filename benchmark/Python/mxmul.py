@@ -2,6 +2,7 @@ import bohrium as numpy
 import util
 
 def main():
+
     B = util.Benchmark()
     N, = B.size
 
@@ -13,17 +14,9 @@ def main():
     y.shape = (N, N)
     x.bohrium = B.bohrium
 
-    z = numpy.empty((N,N), dtype=numpy.float32)
-    z.bohrium = B.bohrium
-
     B.start()
-    for i in xrange(N):
-        for j in xrange(N):
-            col = x[i,:]
-            row = y[:,j]
-            v   = col * row 
-            r   = numpy.add.reduce(v)
-            #z[i,j] = r     # This is unsupported.
+
+    numpy.add.reduce(x[:,numpy.newaxis]*numpy.transpose(y),-1)
 
     B.stop()
     B.pprint()

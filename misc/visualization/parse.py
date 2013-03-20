@@ -150,7 +150,7 @@ class Parser(object):
 
                     if constant:            # Constant
                         operands.append( Constant( "%0.2f" % float(constant) ) )
-                    elif "(nil)" in base:   # Base
+                    elif "(nil)" in base or "0x0" == base:   # Base
                         operands.append( Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data) )
                     else:                   # View
                         view = View(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, base)

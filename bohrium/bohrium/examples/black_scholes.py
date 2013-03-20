@@ -1,5 +1,9 @@
 import bohrium as np
-import util
+
+def model(N, dtype=np.float32, bohrium=True):
+    S = np.random.random([N], dtype=dtype, bohrium=bohrium)
+    S = S*4.0-2.0 + 60.0 # Price is 58-62
+    return S
 
 # Cumulative normal distribution
 def CND(X):
@@ -25,27 +29,12 @@ def BS(CallPutFlag,S,X,T,r,v):
     else:
         return X*np.exp(-r*T)*CND(-d2)-S*CND(-d1)
 
-def main():
+def price(S,I,flag='c',X=65.0,dT=(1.0/365.0),r=0.08,v=0.3):
+    T = dT
+    p = []
+    N = len(S)
+    for i in xrange (I):
+        p += [np.sum(BS(flag,S,X,T,r,v)) / N]
+        T += dT
+    return p
 
-    B       = util.Benchmark()
-    N       = B.size[0]
-    year    = B.size[1]
-
-    S = np.random.random([N], dtype=B.dtype, bohrium=B.bohrium)
-    S = S*4.0-2.0 + 60.0 # Price is 58-62
-
-    X   = 65.0
-    r   = 0.08
-    v   = 0.3
-    day = 1.0/year
-    T   = day
-
-    B.start()
-    for t in xrange(year):
-        np.sum(BS('c', S, X, T, r, v)) / N
-        T += day
-    B.stop()
-    B.pprint()   
-
-if __name__ == "__main__":
-    main()
