@@ -2,6 +2,9 @@
 import itertools
 import pprint
 import re
+import os
+import sys
+import subprocess
 
 class Instruction(object):
 
@@ -249,6 +252,25 @@ class Parser(object):
 
 if __name__ == "__main__":
 
-    p = Parser( 'example.trace' )
-    print(p.dotify_list(p.parse()))
+    tracename = ''
+    if len(sys.argv) > 1:
+        tracename = sys.argv[1]
+        
+    if os.path.exists(tracename) and os.path.isfile(tracename):
+        p = Parser( tracename )
+        dotdata = p.dotify_list(p.parse())
+        dot = None
+        try:
+            dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
+        except:
+            pass
+            
+        if dot == 0:
+            proc = subprocess.Popen(["dot", "-T", "svg", "-o" + tracename + ".svg"], stdin=subprocess.PIPE)
+            proc.communicate(dotdata)
+        else:
+            print "Could not find 'dot' on your machine"
+    else:    
+        print "Usage: parser.py <tracefile>"
+        
     
