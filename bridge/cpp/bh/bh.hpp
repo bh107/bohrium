@@ -21,10 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
 
-#define BH_CPP_QUEUE_MAX 1024
+#define BH_CPP_QUEUE_MAX 512
 #include "iterator.hpp"
 #include <stdexcept>
-#include <array>
+#include <vector>
 
 #ifdef DEBUG
 #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
@@ -61,10 +61,10 @@ public:
     bh::multi_array<T>& view();
 
 private:
-    multi_array<T>* op;                             // The op getting sliced
+    multi_array<T>* op;                 // The op getting sliced
 
-    int dims;                                       // The amount of dims covered by the slice
-    std::array<slice_range, BH_MAXDIM> ranges;      // The ranges...
+    int dims;                           // The amount of dims covered by the slice
+    slice_range ranges[BH_MAXDIM];      // The ranges...
 
 };
 
@@ -115,6 +115,7 @@ public:
     multi_array& operator()(const T& d2, const T& d1, const T& d0);              // Shaping / reshaping
    
     multi_array& operator=(const T& rhs);         // Initialization / assignment.
+    multi_array& operator=(multi_array<T>& rhs);         // Initialization / assignment.
     multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
 
     /* 

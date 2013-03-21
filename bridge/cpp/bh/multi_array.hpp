@@ -237,11 +237,45 @@ multi_array<T>& multi_array<T>::operator()(const T& n) {
     return *this;
 }
 
+
+
+// Initialization
 template <typename T>
-multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
-    multi_array<T>* vv = &rhs.view();
-    bh_pprint_array(&storage[vv->getKey()]);
-    storage[getKey()] = storage[vv->getKey()];
+multi_array<T>& multi_array<T>::operator=(const T& rhs)
+{
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+    return *this;
+}
+
+// Aliasing
+template <typename T>
+multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
+{
+    // TODO:    what about the old one???
+    //          will the ptr_map clean it up for us?
+    //          should we send a discard?
+
+    // TODO: if rhs is a temp then there is no reason for creating a new
+
+    if (key != rhs.getKey()) {  // Prevent self-aliasing
+                                
+        init();                 // Create a new view / alias
+
+        storage[key].base       = bh_base_array(&storage[rhs.getKey()]);
+        storage[key].ndim       = storage[rhs.getKey()].ndim;
+        storage[key].start      = storage[rhs.getKey()].start;
+        for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+            storage[key].shape[i] = storage[rhs.getKey()].shape[i];
+        }
+        for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+            storage[key].stride[i] = storage[rhs.getKey()].stride[i];
+        }
+        storage[key].data        = NULL;
+    }
+    if (rhs.getTemp()) {
+        delete &rhs;
+    }
+
     return *this;
 }
 

@@ -35,12 +35,14 @@ namespace bh {
 //
 //  Internally defined operator overloads
 //
+/*
 template <typename T>
 multi_array<T>& multi_array<T>::operator= (const T& rhs)
 {
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
     return *this;
 }
+*/
 
 
 template <typename T>

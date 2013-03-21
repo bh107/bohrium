@@ -35,18 +35,11 @@ int main()
     cout << "\n1" << endl;
     bh_pprint_array(&storage[x.getKey()]);
     x = 1.0;
+    y = 1.0;
 
-//    cout << "\n2" << endl;
-//    bh_pprint_array(&storage[x.getKey()]);
-//    x = x + 1.0;
-
-    cout << "\n3" << endl;
-    bh_pprint_array(&storage[x.getKey()]);
-    cout << x;
-
-    cout << "\n4" << endl;
-    bh_pprint_array(&storage[x.getKey()]);
-
+    x = y+1.0;
+    x = y+1.0;
+    x = x;
     return 0;
 }
 

@@ -33,6 +33,9 @@ slice_range& _(int begin, int end, unsigned int stride)
 template <typename T>
 slice<T>::slice(multi_array<T>& op) : op(&op), dims(0)
 {
+    for(int i=0; i<BH_MAXDIM; i++) {
+        ranges[i] = slice_range();
+    }
 }
 
 template <typename T>
@@ -63,24 +66,45 @@ slice<T>& slice<T>::operator[](slice_range& rhs)
 }
 
 template <typename T>
+multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
+    std::cout << " Calling stuff! " << std::endl;
+    multi_array<T>* vv = &rhs.view();
+    bh_pprint_array(&storage[vv->getKey()]);
+    storage[getKey()] = storage[vv->getKey()];
+    return *this;
+}
+
+template <typename T>
 bh::multi_array<T>& slice<T>::view()
 {
     std::cout << " Create the view! " << dims <<std::endl;
+    multi_array<T>* alias = &Runtime::instance()->view(*op);
 
-    bh_array* array = &storage[op->getKey()];
-    array->start        += ranges[1].begin;
-    array->stride[1]    += ranges[1].stride;
-    array->shape[1]     = array->shape[1] - ranges[1].begin;
-    array->shape[1]     = array->shape[1] / ranges[1].stride;
+    bh_array* rhs = &storage[op->getKey()];
+    bh_array* lhs = &storage[alias->getKey()];
 
+    lhs->start  = rhs->start;
+    lhs->ndim   = rhs->ndim;
     for(int i=0; i<dims; ++i ) {
         std::cout << "[Dim="<< i << "; " << ranges[i].begin << "," \
                                     << ranges[i].end << "," \
                                     << ranges[i].stride << "]" \
-                                    <<std::endl;
-    }
+                                    << std::endl;
 
-    return *op;
+        lhs->start        += rhs->stride[i] * ranges[i].begin;
+        lhs->stride[i]    = rhs->stride[i] * ranges[i].stride;
+        
+        lhs->shape[i] = ranges[i].begin;
+        if (ranges[i].end < 0) {
+            lhs->shape[i] = rhs->shape[i] + ranges[i].end;
+        } else {
+            lhs->shape[i] = ranges[i].end;
+        }
+    }
+    std::cout << ">>>>>" << std::endl;
+    bh_pprint_array(lhs);
+    std::cout << "<<<<<" << std::endl;
+    return *alias;
 }
 
 }

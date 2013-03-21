@@ -10,10 +10,9 @@ EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 
 CXX=clang
 #CXX=g++
-#CXXFLAGS=-DDEBUG
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
-EXTRAS+=""
-CXXFLAGS=-Wall -Wextra -pedantic -std=c++0x -Wno-variadic-macros -Wno-newline-eof $(EXTRAS)
+EXTRAS+=
+CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros -Wno-newline-eof $(EXTRAS)
 
 all: gen examples
 

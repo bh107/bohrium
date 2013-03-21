@@ -30,11 +30,8 @@ int main()
     multi_array<double> x(9,9);
     multi_array<double>& y = Runtime::instance()->view(x);
     x = 1.0;
-    bh_pprint_array(&storage[y.getKey()]);
-    //y = x[ALL][_(0,8,2)];
-    bh_pprint_array(&storage[y.getKey()]);
+    y = x[ALL][_(3,6,2)];
 
-    //bh_pprint_array(y);
     cout << y;
 
     return 0;
