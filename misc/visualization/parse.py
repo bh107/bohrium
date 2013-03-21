@@ -195,8 +195,8 @@ class Parser(object):
         prevs    = []
         prevs_id = []
 
-        for instr in instructions:
-        #for instr in (i for i in instructions if i.opcode not in ['FREE', 'DISCARD']):
+        #for instr in instructions:
+        for instr in (i for i in instructions if i.opcode not in ['FREE', 'DISCARD']):
 
             self._inc += 1
             instr_id    = "%s%d" % (instr.ref(), self._inc)
@@ -240,8 +240,8 @@ class Parser(object):
                     if ps.symbol == cs.symbol:
                         dots += self._edge( op_ids[cs.symbol], prev_id )
 
-            #prev    = instr
-            #prev_id = instr_id
+            prev    = instr
+            prev_id = instr_id
 
             prevs.append( instr )
             prevs_id.append( instr_id )

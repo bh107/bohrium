@@ -17,11 +17,11 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include "gtest/gtest.h"
-#include "check_collections.hpp"
-
 #include "bh/bh.hpp"
 using namespace bh;
+
+#include "gtest/gtest.h"
+#include "check_collections.hpp"
 
 #define CONTAINER_SIZE 9
 const double res [] = { 3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5 };

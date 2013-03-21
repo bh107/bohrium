@@ -28,18 +28,11 @@ int main()
     cout << "Hello World." << endl;
 
     multi_array<double> x(3,3);
-    multi_array<double> y(3,3);
 
-    //bh_pprint_array(&storage[x.getKey()]);
-    x(9);
-    cout << "\n1" << endl;
-    bh_pprint_array(&storage[x.getKey()]);
     x = 1.0;
-    y = 1.0;
 
-    x = y+1.0;
-    x = y+1.0;
-    x = x;
+    cout << x;
+
     return 0;
 }
 

@@ -17,11 +17,13 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bh/bh.hpp"
+using namespace bh;
+
+
 #include "gtest/gtest.h"
 #include "check_collections.hpp"
 
-#include "bh/bh.hpp"
-using namespace bh;
 
 #define V_SIZE 3
 #define M_SIZE 9

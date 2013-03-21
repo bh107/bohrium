@@ -30,7 +30,7 @@ CXXFLAGS += -g -Wall -Wextra
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = assignment broadcasting compound constructor iterator loop_scope operators
+TESTS = assignment broadcasting compound constructor iterator loop_scope operators slicing
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -108,5 +108,10 @@ operators.o : $(USER_DIR)/operators.cpp $(GTEST_HEADERS)
 operators: operators.o gtest_main.a
 	$(CXX) -L$(BH_ROOT)/core $(CPPFLAGS) $(CXXFLAGS) $^ -o $(BIN_DIR)/$@ -lpthread -lbh
 
+slicing.o : $(USER_DIR)/slicing.cpp $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/slicing.cpp
+
+slicing: slicing.o gtest_main.a
+	$(CXX) -L$(BH_ROOT)/core $(CPPFLAGS) $(CXXFLAGS) $^ -o $(BIN_DIR)/$@ -lpthread -lbh
 
 

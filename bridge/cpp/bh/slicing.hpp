@@ -30,6 +30,21 @@ slice_range& _(int begin, int end, unsigned int stride)
     return *(new slice_range(begin, end, stride));
 }
 
+slice_range& _(slice_bound begin, int end, unsigned int stride)
+{
+    return *(new slice_range(begin, end, stride));
+}
+
+slice_range& _(int begin, slice_bound end, unsigned int stride)
+{
+    return *(new slice_range(begin, end, stride));
+}
+
+slice_range& _(slice_bound begin, slice_bound end, unsigned int stride)
+{
+    return *(new slice_range(begin, end, stride));
+}
+
 template <typename T>
 slice<T>::slice(multi_array<T>& op) : op(&op), dims(0)
 {
@@ -41,7 +56,6 @@ slice<T>::slice(multi_array<T>& op) : op(&op), dims(0)
 template <typename T>
 slice<T>& slice<T>::operator[](int rhs)
 {
-    std::cout << "slice[int] [dim=" << dims << "] " << rhs <<std::endl;
     ranges[dims].begin = rhs;
     ranges[dims].end   = rhs;
     dims++;
@@ -51,7 +65,6 @@ slice<T>& slice<T>::operator[](int rhs)
 template <typename T>
 slice<T>& slice<T>::operator[](slice_bound rhs)
 {
-    std::cout << "slice[ALL] [dim=" << dims << "] " << rhs <<std::endl;
     dims++;
     return *this;
 }
@@ -59,7 +72,6 @@ slice<T>& slice<T>::operator[](slice_bound rhs)
 template <typename T>
 slice<T>& slice<T>::operator[](slice_range& rhs)
 {
-    std::cout << "slice[range] [dim=" << dims << "]" <<std::endl;
     ranges[dims] = rhs;
     dims++;
     return *this;
@@ -67,9 +79,7 @@ slice<T>& slice<T>::operator[](slice_range& rhs)
 
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
-    std::cout << " Calling stuff! " << std::endl;
     multi_array<T>* vv = &rhs.view();
-    bh_pprint_array(&storage[vv->getKey()]);
     storage[getKey()] = storage[vv->getKey()];
     return *this;
 }
@@ -77,7 +87,6 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
 template <typename T>
 bh::multi_array<T>& slice<T>::view()
 {
-    std::cout << " Create the view! " << dims <<std::endl;
     multi_array<T>* alias = &Runtime::instance()->view(*op);
 
     bh_array* rhs = &storage[op->getKey()];
@@ -86,10 +95,6 @@ bh::multi_array<T>& slice<T>::view()
     lhs->start  = rhs->start;
     lhs->ndim   = rhs->ndim;
     for(int i=0; i<dims; ++i ) {
-        std::cout << "[Dim="<< i << "; " << ranges[i].begin << "," \
-                                    << ranges[i].end << "," \
-                                    << ranges[i].stride << "]" \
-                                    << std::endl;
 
         lhs->start        += rhs->stride[i] * ranges[i].begin;
         lhs->stride[i]    = rhs->stride[i] * ranges[i].stride;
@@ -101,9 +106,6 @@ bh::multi_array<T>& slice<T>::view()
             lhs->shape[i] = ranges[i].end;
         }
     }
-    std::cout << ">>>>>" << std::endl;
-    bh_pprint_array(lhs);
-    std::cout << "<<<<<" << std::endl;
     return *alias;
 }
 
