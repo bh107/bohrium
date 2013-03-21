@@ -9,6 +9,47 @@ import numpy
 from numpy import *
 import bohriumbridge as bridge
 
+def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
+    """
+    Create an array.
+
+    Parameters
+    ----------
+    object : array_like
+        An array, any object exposing the array interface, an object 
+        whose __array__ method returns an array, or any (nested) sequence.
+    dtype : data-type, optional
+        The desired data-type for the array. If not given, then the type 
+        will be determined as the minimum type required to hold the objects 
+        in the sequence. This argument can only be used to 'upcast' the array. 
+        For downcasting, use the .astype(t) method.
+    copy : bool, optional
+        If true (default), then the object is copied. Otherwise, a copy will only 
+        be made if __array__ returns a copy, if obj is a nested sequence, or if a 
+        copy is needed to satisfy any of the other requirements (dtype, order, etc.).
+    order : {'C', 'F', 'A'}, optional
+        Specify the order of the array. If order is 'C' (default), then the array 
+        will be in C-contiguous order (last-index varies the fastest). If order is 'F', 
+        then the returned array will be in Fortran-contiguous order (first-index varies 
+        the fastest). If order is 'A', then the returned array may be in any order 
+        (either C-, Fortran-contiguous, or even discontiguous).
+    subok : bool, optional
+        If True, then sub-classes will be passed-through, otherwise the returned array 
+        will be forced to be a base-class array (default).
+    ndmin : int, optional
+        Specifies the minimum number of dimensions that the resulting array should have. 
+        Ones will be pre-pended to the shape as needed to meet this requirement.
+    bohrium : boolean, optional
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
+
+    Returns
+    -------
+    out : ndarray
+        An array object satisfying the specified requirements.
+    """
+    return numpy.array(object, dtype=dtype, copy=copy, order=order, \
+                       subok=subok, ndmin=ndmin, bohrium=bohrium)
+
 def empty(shape, dtype=float, bohrium=True):
     """
     Return a new matrix of given shape and type, without initializing entries.
