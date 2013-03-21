@@ -261,7 +261,7 @@ if __name__ == "__main__":
         dotdata = p.dotify_list(p.parse())
         dot = None
         try:
-            dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
+            dot = subprocess.check_call(["which", "-s", "dot"])
         except:
             pass
             
