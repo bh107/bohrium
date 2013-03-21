@@ -1,7 +1,7 @@
 Notes on Visualization
 ======================
 
-One can use the graph-visualization script like so::
+One can use the graph-visualization script like so:
 
     # Install a version of naive with debugging enabled
     cd ve/naive
@@ -13,7 +13,7 @@ One can use the graph-visualization script like so::
     python ../../benchmark/Python/jacobi.iterative.py --size=10*10*10 --bohrium=True > example.trace
     
     # Then run the "visualizer"
-    ./visualize.sh
+    ./visualize.sh example.trace
 
-This should generate a .svg file based on the 'example.trace' file and start a browser to show it.
+This should generate a example.trace.svg file based on the 'example.trace' file and start a browser to show it.
 
