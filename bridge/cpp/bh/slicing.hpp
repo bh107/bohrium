@@ -30,20 +30,6 @@ slice_range& _(int begin, int end, unsigned int stride)
     return *(new slice_range(begin, end, stride));
 }
 
-slice_range& _(slice_bound begin, int end, unsigned int stride)
-{
-    return *(new slice_range(begin, end, stride));
-}
-
-slice_range& _(int begin, slice_bound end, unsigned int stride)
-{
-    return *(new slice_range(begin, end, stride));
-}
-
-slice_range& _(slice_bound begin, slice_bound end, unsigned int stride)
-{
-    return *(new slice_range(begin, end, stride));
-}
 
 template <typename T>
 slice<T>::slice(multi_array<T>& op) : op(&op), dims(0)
@@ -58,13 +44,6 @@ slice<T>& slice<T>::operator[](int rhs)
 {
     ranges[dims].begin = rhs;
     ranges[dims].end   = rhs;
-    dims++;
-    return *this;
-}
-
-template <typename T>
-slice<T>& slice<T>::operator[](slice_bound rhs)
-{
     dims++;
     return *this;
 }
@@ -89,23 +68,27 @@ bh::multi_array<T>& slice<T>::view()
 {
     multi_array<T>* alias = &Runtime::instance()->view(*op);
 
-    bh_array* rhs = &storage[op->getKey()];
-    bh_array* lhs = &storage[alias->getKey()];
+    bh_array* rhs = &storage[op->getKey()];     // The operand getting sliced
+    bh_array* lhs = &storage[alias->getKey()];  // The view as a result of slicing
 
-    lhs->start  = rhs->start;
-    lhs->ndim   = rhs->ndim;
-    for(int i=0; i<dims; ++i ) {
+    lhs->ndim   = rhs->ndim;                    // Rank is maintained
+    lhs->start  = rhs->start;                   // Start is initialy the same
+    int b, e;
 
-        lhs->start        += rhs->stride[i] * ranges[i].begin;
-        lhs->stride[i]    = rhs->stride[i] * ranges[i].stride;
-        
-        lhs->shape[i] = ranges[i].begin;
-        if (ranges[i].end < 0) {
-            lhs->shape[i] = rhs->shape[i] + ranges[i].end;
+    for(int i=rhs->ndim-1; i >= 0; --i ) {
+                                                // Compute the "[beginning, end[" indexes
+        b = ranges[i].begin < 0 ? rhs->shape[i] + ranges[i].begin : ranges[i].begin;
+        e = ranges[i].end   < 0 ? rhs->shape[i] + ranges[i].end   : ranges[i].end;
+
+        if (b<=e) {                             // Ensure that the range is valid
+            lhs->start      += b * rhs->stride[i];
+            lhs->shape[i]   = 1 + (((e-b) - 1) / ranges[i].stride); // ceil
+            lhs->stride[i]  = ranges[i].stride * rhs->stride[i];
         } else {
-            lhs->shape[i] = ranges[i].end;
+            throw std::runtime_error("Invalid range.");
         }
     }
+
     return *alias;
 }
 
