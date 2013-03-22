@@ -34,8 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-enum slice_bound { ALL, FIRST, LAST };
-
 class slice_range {
 public:
     slice_range();
@@ -54,7 +52,6 @@ public:
     slice(multi_array<T>& op);
 
     slice& operator[](int rhs);
-    slice& operator[](slice_bound rhs);
     slice& operator[](slice_range& rhs);
 
     // Create a actual view of the slice
@@ -107,7 +104,6 @@ public:
     //
                                                     // Slicing / explicit view
     slice<T>& operator[](int rhs);                  // Select a single element / dimension
-    slice<T>& operator[](slice_bound rhs);          // Select the entire dimension
     slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
     multi_array& operator()(const T& n);              // Shaping / reshaping
