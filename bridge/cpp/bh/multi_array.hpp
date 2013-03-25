@@ -274,5 +274,6 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     return *this;
 }
 
+
 }
 

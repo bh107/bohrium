@@ -45,6 +45,7 @@ Runtime::Runtime()
     queue_size = 0;
 
     bh_error err;
+    char err_msg[100];
 
     self_component = bh_component_setup(NULL);
     bh_component_children( self_component, &children_count, &components );
@@ -67,6 +68,41 @@ Runtime::Runtime()
     if (err) {
         fprintf(stderr, "Error in vem_init()\n");
         exit(-1);
+    }
+
+    //
+    // Register extensions
+    //
+    reduce_id = 0;          // Reduce
+
+    err = vem_reg_func("bh_reduce", &reduce_id);
+    if (err != BH_SUCCESS) {
+        sprintf(err_msg, "Fatal error in the initialization of the user"
+                        "-defined reduce operation: %s.\n",
+                        bh_error_text(err));
+        throw std::runtime_error(err_msg);
+    }
+    if (reduce_id <= 0) {
+        sprintf(err_msg, "Fatal error in the initialization of the user"
+                        "-defined reduce operation: invalid ID returned"
+                        " (%ld).\n", (long)reduce_id);
+        throw std::runtime_error(err_msg);
+    }
+
+    random_id = 0;          // Random
+
+    err = vem_reg_func("bh_random", &random_id);
+    if (err != BH_SUCCESS) {
+        sprintf(err_msg, "Fatal error in the initialization of the user"
+                        "-defined random operation: %s.\n",
+                        bh_error_text(err));
+        throw std::runtime_error(err_msg);
+    }
+    if (random_id <= 0) {
+        sprintf(err_msg, "Fatal error in the initialization of the user"
+                        "-defined random operation: invalid ID returned"
+                        " (%ld).\n", (long)random_id);
+        throw std::runtime_error(err_msg);
     }
 
 }
@@ -283,6 +319,19 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
     instr->operand[0] = &storage[op0.getKey()];
     instr->operand[1] = NULL;
     instr->operand[2] = NULL;
+}
+
+template <typename T>
+inline
+void Runtime::enqueue(bh_userfunc* rinstr)
+{
+    bh_instruction* instr;
+
+    guard();   
+
+    instr = &queue[queue_size++];
+    instr->opcode        = BH_USERFUNC;
+    instr->userfunc      = (bh_userfunc *) rinstr;
 }
 
 }
