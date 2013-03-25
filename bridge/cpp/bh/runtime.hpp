@@ -126,10 +126,18 @@ Runtime::~Runtime()
 inline
 bh_intp Runtime::flush()
 {
+    char err_msg[100];
+    bh_error status;
+
     bh_intp cur_size = queue_size;
+
     if (queue_size > 0) {
-        vem_execute( queue_size, queue );
+        status = vem_execute( queue_size, queue );
         queue_size = 0;
+        if (status != BH_SUCCESS) {
+            sprintf(err_msg, "vem_execute failed: %s", bh_error_text(status));
+            throw std::runtime_error(err_msg);
+        }
     }
     return cur_size;
 }
