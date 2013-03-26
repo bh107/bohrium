@@ -65,7 +65,7 @@ typedef bh_error (*bh_shutdown)(void);
 typedef bh_error (*bh_execute)(bh_intp count,
                                      bh_instruction inst_list[]);
 
-/* Registre a new user-defined function.
+/* Register a new user-defined function.
  *
  * @lib Name of the shared library e.g. libmyfunc.so
  *      When NULL the default library is used.
@@ -74,7 +74,7 @@ typedef bh_error (*bh_execute)(bh_intp count,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (BH_SUCCESS)
  */
-typedef bh_error (*bh_reg_func)(char *fun,
+typedef bh_error (*bh_reg_func)(const char *fun,
                                       bh_intp *id);
 
 

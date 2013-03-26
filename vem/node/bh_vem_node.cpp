@@ -140,7 +140,7 @@ bh_error bh_vem_node_shutdown(void)
  *     initial value to Zero. (in/out-put)
  * @return Error codes (BH_SUCCESS)
  */
-bh_error bh_vem_node_reg_func(char *fun, bh_intp *id)
+bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
 {
 	bh_error e;
     

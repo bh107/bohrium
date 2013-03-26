@@ -34,8 +34,24 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-enum slice_bound { ALL, FIRST, LAST };
+template <typename T>   // Forward declaration
+class multi_array;
 
+//
+// Extensions
+//
+static bh_intp reduce_id;
+static bh_intp random_id;
+
+enum reducible {
+    ADD         = BH_ADD,
+    SUBTRACT    = BH_SUBTRACT,
+    MULTIPLY    = BH_MULTIPLY
+};
+
+//
+// Slicing
+//
 class slice_range {
 public:
     slice_range();
@@ -45,16 +61,12 @@ public:
     unsigned int stride;
 };
 
-template <typename T>   // Forward declaration
-class multi_array;
-
 template <typename T>
 class slice {
 public:
     slice(multi_array<T>& op);
 
     slice& operator[](int rhs);
-    slice& operator[](slice_bound rhs);
     slice& operator[](slice_range& rhs);
 
     // Create a actual view of the slice
@@ -68,6 +80,9 @@ private:
 
 };
 
+//
+// The Abstraction
+//
 template <typename T>
 class multi_array {
 public:
@@ -107,7 +122,6 @@ public:
     //
                                                     // Slicing / explicit view
     slice<T>& operator[](int rhs);                  // Select a single element / dimension
-    slice<T>& operator[](slice_bound rhs);          // Select the entire dimension
     slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
     multi_array& operator()(const T& n);              // Shaping / reshaping
@@ -121,7 +135,6 @@ public:
     /* 
     multi_array& operator=(multi_array & rhs );
     */
-
     multi_array& operator+=(const T& rhs);          // Compound assignment / increment
     multi_array& operator+=(multi_array& rhs);
 
@@ -152,10 +165,16 @@ public:
     multi_array& operator|=(const T& rhs);
     multi_array& operator|=(multi_array& rhs);
 
-    multi_array& operator++();               // Increment all elements in container
+    multi_array& operator++();              // Increment all elements in container
     multi_array& operator++(int);
-    multi_array& operator--();               // Decrement all elements in container
+    multi_array& operator--();              // Decrement all elements in container
     multi_array& operator--(int);
+
+    multi_array<T>& copy();                 // Explicity create a copy of array
+    multi_array<T>& flatten();              // Create a flat copy of the array
+
+                                            // Extensions
+    multi_array<T>& reduce(reducible op, int axis);
 
 protected:
     unsigned int key;
@@ -165,8 +184,6 @@ private:
     void init();
 
 };
-
-
 
 /**
  *  Encapsulation of communication with Bohrium runtime.
@@ -193,10 +210,12 @@ public:
     void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1);                  
 
     template <typename T>   // x = 1.0;
-    void enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1);                     
-
+    void enqueue(bh_opcode opcode, multi_array<T> & op0, T const& op1);                     
     template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue( bh_opcode opcode, multi_array<T> & op0);
+    void enqueue(bh_opcode opcode, multi_array<T> & op0);
+
+    template <typename T>
+    void enqueue(bh_userfunc* rinstr);
 
     bh_intp flush();
 
@@ -215,11 +234,10 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    bh_intp queued() { return queue_size; }
+    bh_intp guard();
 
 private:
 
-    bh_intp guard();
     static Runtime* pInstance;                  // Singleton instance pointer.
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
@@ -240,12 +258,31 @@ private:
 
 };
 
+template <typename T>       // These should be "generators"...
+multi_array<T>& empty();
+
+template <typename T>
+multi_array<T>& zeros();
+
+template <typename T>
+multi_array<T>& ones();
+
+template <typename T>
+multi_array<T>& arange();
+
+template <typename T>
+multi_array<T>& random();
+
+template <typename T>
+multi_array<T>& random(int n);
+
 }
 
 #include "multi_array.hpp"  // Operand definition.
 #include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
+#include "extensions.hpp"   // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.

@@ -217,11 +217,6 @@ template <typename T>
 slice<T>& multi_array<T>::operator[](int rhs) {
     return (*(new slice<T>(*this)))[rhs];
 }
-
-template <typename T>
-slice<T>& multi_array<T>::operator[](slice_bound rhs) {
-    return (*(new slice<T>(*this)))[rhs];
-}
                                                         
 template <typename T>
 slice<T>& multi_array<T>::operator[](slice_range& rhs) {
@@ -278,6 +273,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 
     return *this;
 }
+
 
 }
 

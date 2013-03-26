@@ -39,7 +39,7 @@ gen:
 hello_world: examples/hello_world.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
-slicing: examples/slicing.cpp $(HEADER)
+monte_carlo_pi: examples/monte_carlo_pi.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
 
