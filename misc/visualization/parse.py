@@ -267,18 +267,19 @@ class Parser(object):
 
         return dots
 
-def dot_to_svg(filename, dotstring):
-    """Call dot to convert dot-string into svg."""
+def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
+    """Call dot to convert dot-string into one a file."""
 
     dot = None
     try:
         dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
     except:
         dot = None
-        
+    
     if dot == 0:
-        proc = subprocess.Popen(["dot", "-T", "svg", "-o" + filename + ".svg"], stdin=subprocess.PIPE)
-        out, err = proc.communicate(dotstring)
+        for f in formats:
+            proc = subprocess.Popen(["dot", "-T", f, "-o" + filename + ".%s"%f], stdin=subprocess.PIPE)
+            out, err = proc.communicate(dotstring)
         return "%s,%s" %(out, err)
     else:
         return "Could not find 'dot' on your machine."
@@ -296,6 +297,13 @@ def main():
         default=[],
         help="List of opcodes to exclude from parsing.\nExample: FREE,DISCARD,SYNC"
     )
+    p.add_argument(
+        '--formats',
+        nargs='+',
+        default=["svg"],
+        help="List output formats for the visualized tree. See 'man dot' for supported formats"
+    )
+
     args = p.parse_args()
 
     if not os.path.exists(args.filename) or not os.path.isfile(args.filename):
@@ -303,7 +311,7 @@ def main():
 
     p = Parser( args.filename )
     dotdata = p.dotify_list(p.parse(), args.exclude)
-    return dot_to_svg(args.filename, dotdata)
+    return dot_to_file(args.filename, dotdata, args.formats)
     
 if __name__ == "__main__":
     print main()
