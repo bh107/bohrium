@@ -4,37 +4,38 @@ import pprint
 import re
 import os
 import sys
+import argparse
 import subprocess
 
 class Instruction(object):
 
     def __init__(self, opcode, operands):
+        self.opcode = opcode
+        self.o_ops   = [operands[0]]
+        self.i_ops   = [] + operands[1:]
 
-        self.opcode     = opcode
-        self.operands   = operands
+        if (opcode in ["SYNC", "FREE", "DISCARD"]):
+            self.i_ops.append(operands[0])
 
     def __str__(self):
-
         op_dots = "\n".join([op.dot() for op in self.operands])
         return "%s %s" % (self.opcode, ', '.join((str(op) for op in self.operands)))
 
-    def ops(self):
-        """Returns a list of operands."""
-        return self.operands()
+    def operands(self):
+        return self.o_ops + self.i_ops
 
-    #def out(self):
-    #    """Returns a list of output-operands."""
-    #    return self.operands()
-    
-    #def in(self):
-    #   """Returns a list of input-operands."""
-    #    return self.operands()
+    def inputs(self):
+        """Returns a list of operands."""
+        return self.i_ops
+
+    def outputs(self):
+        """Returns a list of output-operands."""
+        return self.o_ops
 
     def ref(self):
         return self.opcode
 
     def dot(self):
-
         return '[shape=box, style=filled, fillcolor="#CBD5E8", label=%s]' % self.opcode
 
 class Operand(object):
@@ -43,6 +44,9 @@ class Operand(object):
         self.symbol = symbol
 
     def ref(self):
+        return self.symbol
+
+    def b(self):
         return self.symbol
 
 class Base(Operand):
@@ -58,6 +62,9 @@ class Base(Operand):
         self.data   = data
 
         super(Base, self).__init__(symbol)
+
+    def b(self):
+        return self.addr
 
     def __str__(self):
         return 'Base-%s' % self.addr
@@ -78,6 +85,9 @@ class View(Operand):
         self.base   = base
 
         super(View, self).__init__(symbol)
+
+    def b(self):
+        return self.base.addr
 
     def __str__(self):
         return 'View-%s' % self.ref()
@@ -130,6 +140,7 @@ class Parser(object):
         self._names.pop(operand.addr, None)
 
     def _tuplify(self, lines):
+        """Generate a list of 'Instruction' objects; includes symbol translation."""
 
         instructions = []
 
@@ -151,11 +162,11 @@ class Parser(object):
                     op_n, addr, ndims, start, shape, stride, dtype, data, base, constant = op_m.groups()
                     i += 1
 
-                    if constant:            # Constant
+                    if constant:                            # Constant
                         operands.append( Constant( "%0.2f" % float(constant) ) )
-                    elif "(nil)" in base or "0x0" == base:   # Base
+                    elif "(nil)" in base or "0x0" == base:  # Base
                         operands.append( Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data) )
-                    else:                   # View
+                    else:                                   # View
                         view = View(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, base)
 
                         base_m = re.match(Parser.re_meta, lines[i], re.DOTALL)
@@ -172,7 +183,7 @@ class Parser(object):
 
                 # When a view is discarded the address no longer refers to the same symbol
                 if 'DISCARD' in instr.opcode:
-                    for op in instr.operands:
+                    for op in instr.operands():
                         self._desymbolize( op )
 
         return instructions
@@ -185,9 +196,10 @@ class Parser(object):
         return self._instructions
 
     def _edge(self, l, r, head="none"):
+        """Do a 'dot-string' for connecting to entities."""
         return "%s -> %s [arrowhead=%s]\n" % (l, r, head)
 
-    def dotify_list(self, instructions):
+    def dotify_list(self, instructions, exclude=[]):
         """Create a dot-representation of an instruction-list."""
 
         dots = "digraph G {\n"
@@ -195,8 +207,7 @@ class Parser(object):
         prevs    = []
         prevs_id = []
 
-        #for instr in instructions:
-        for instr in (i for i in instructions if i.opcode not in ['FREE', 'DISCARD']):
+        for instr in (i for i in instructions if i.opcode not in exclude):
 
             self._inc += 1
             instr_id    = "%s%d" % (instr.ref(), self._inc)
@@ -208,7 +219,9 @@ class Parser(object):
             self._rank += 1
 
             op_ids = []
-            for op in instr.operands:
+
+            for op in instr.operands(): # Draw the operands
+
 
                 i = self._inc
                 self._inc += 1
@@ -236,7 +249,8 @@ class Parser(object):
                 prev    = prevs[prev_ind]
                 prev_id = prevs_id[prev_ind]
 
-                for (ps, cs) in itertools.product( [prev.operands[0]], instr.operands[1:] ):
+                for (ps, cs) in itertools.product(prev.outputs(),
+                                                    instr.inputs()):
                     if ps.symbol == cs.symbol:
                         dots += self._edge( op_ids[cs.symbol], prev_id )
 
@@ -250,27 +264,44 @@ class Parser(object):
 
         return dots
 
-if __name__ == "__main__":
+def dot_to_svg(filename, dotstring):
+    """Call dot to convert dot-string into svg."""
 
-    tracename = ''
-    if len(sys.argv) > 1:
-        tracename = sys.argv[1]
-        
-    if os.path.exists(tracename) and os.path.isfile(tracename):
-        p = Parser( tracename )
-        dotdata = p.dotify_list(p.parse())
+    dot = None
+    try:
+        dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
+    except:
         dot = None
-        try:
-            dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
-        except:
-            pass
-            
-        if dot == 0:
-            proc = subprocess.Popen(["dot", "-T", "svg", "-o" + tracename + ".svg"], stdin=subprocess.PIPE)
-            proc.communicate(dotdata)
-        else:
-            print "Could not find 'dot' on your machine"
-    else:    
-        print "Usage: parser.py <tracefile>"
         
+    if dot == 0:
+        proc = subprocess.Popen(["dot", "-T", "svg", "-o" + filename + ".svg"], stdin=subprocess.PIPE)
+        out, err = proc.communicate(dotstring)
+        return "%s,%s" %(out, err)
+    else:
+        return "Could not find 'dot' on your machine."
+
+def main():
+
+    p = argparse.ArgumentParser(description='Creates a .svg representation of a trace-file')
+    p.add_argument(
+        'filename',
+        help='Path / filename of the trace-file'
+    )
+    p.add_argument(
+        '--exclude',
+        nargs='+',
+        default=[],
+        help="List of opcodes to exclude from parsing.\nExample: FREE,DISCARD,SYNC"
+    )
+    args = p.parse_args()
+
+    if not os.path.exists(args.filename) or not os.path.isfile(args.filename):
+        return "Error: invalid filename <%s>." % args.filename
+
+    p = Parser( args.filename )
+    dotdata = p.dotify_list(p.parse(), args.exclude)
+    return dot_to_svg(args.filename, dotdata)
     
+if __name__ == "__main__":
+    print main()
+
