@@ -9,10 +9,11 @@ import subprocess
 
 class Instruction(object):
 
-    def __init__(self, opcode, operands):
+    def __init__(self, opcode, operands, order):
         self.opcode = opcode
-        self.o_ops   = [operands[0]]
-        self.i_ops   = [] + operands[1:]
+        self.o_ops  = [operands[0]]
+        self.i_ops  = [] + operands[1:]
+        self.order  = order
 
         if (opcode in ["SYNC", "FREE", "DISCARD"]):
             self.i_ops.append(operands[0])
@@ -36,7 +37,7 @@ class Instruction(object):
         return self.opcode
 
     def dot(self):
-        return '[shape=box, style=filled, fillcolor="#CBD5E8", label=%s]' % self.opcode
+        return '[shape=box, style=filled, fillcolor="#CBD5E8", label="%s\\n%d"]' % (self.opcode, self.order)
 
 class Operand(object):
 
@@ -145,6 +146,7 @@ class Parser(object):
         instructions = []
 
         i = 0
+        count = 0   # Instruction count, as to maintain the sequential order
         while( i<len(lines) ):
 
             m = re.match(Parser.re_instr, lines[i], re.MULTILINE + re.DOTALL)
@@ -178,8 +180,9 @@ class Parser(object):
 
                         operands.append( view )
 
-                instr = Instruction(opcode, operands)
+                instr = Instruction(opcode, operands, count)
                 instructions.append( instr )
+                count += 1
 
                 # When a view is discarded the address no longer refers to the same symbol
                 if 'DISCARD' in instr.opcode:
@@ -207,6 +210,7 @@ class Parser(object):
         prevs    = []
         prevs_id = []
 
+        # This code needs documentation...
         for instr in (i for i in instructions if i.opcode not in exclude):
 
             self._inc += 1
@@ -221,7 +225,6 @@ class Parser(object):
             op_ids = []
 
             for op in instr.operands(): # Draw the operands
-
 
                 i = self._inc
                 self._inc += 1
@@ -249,9 +252,9 @@ class Parser(object):
                 prev    = prevs[prev_ind]
                 prev_id = prevs_id[prev_ind]
 
-                for (ps, cs) in itertools.product(prev.outputs(),
-                                                    instr.inputs()):
-                    if ps.symbol == cs.symbol:
+                for (ps, cs) in itertools.product(prev.outputs(), instr.inputs()):
+                    #if ps.symbol == cs.symbol:
+                    if ps.b() == cs.b():
                         dots += self._edge( op_ids[cs.symbol], prev_id )
 
             prev    = instr
