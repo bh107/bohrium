@@ -278,7 +278,7 @@ def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
     
     if dot == 0:
         for f in formats:
-            proc = subprocess.Popen(["dot", "-T", f, "-o" + filename + ".%s"%f], stdin=subprocess.PIPE)
+            proc = subprocess.Popen(["dot", "-T", f, "-o", "%s.%s" % (filename, f)], stdin=subprocess.PIPE)
             out, err = proc.communicate(dotstring)
         return "%s,%s" %(out, err)
     else:
@@ -290,6 +290,11 @@ def main():
     p.add_argument(
         'filename',
         help='Path / filename of the trace-file'
+    )
+    p.add_argument(
+        '--output',
+        default="./",
+        help="Where to dump the output."
     )
     p.add_argument(
         '--exclude',
@@ -309,9 +314,16 @@ def main():
     if not os.path.exists(args.filename) or not os.path.isfile(args.filename):
         return "Error: invalid filename <%s>." % args.filename
 
+    if not os.path.exists(args.output) or os.path.isfile(args.output):
+        return "Error: invalid output directory: <%s>" % args.output
+
+    tracefile = args.filename
+    output_fn = "%s%s%s" % (args.output, os.sep,
+                            os.path.splitext(os.path.basename(tracefile))[0])
+
     p = Parser( args.filename )
     dotdata = p.dotify_list(p.parse(), args.exclude)
-    return dot_to_file(args.filename, dotdata, args.formats)
+    return dot_to_file(output_fn, dotdata, args.formats)
     
 if __name__ == "__main__":
     print main()

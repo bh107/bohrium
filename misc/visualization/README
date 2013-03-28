@@ -10,10 +10,13 @@ One can use the graph-visualization script like so:
     DEBUG="-DDEBUG" INSTALLDIR=~/bohrium.lib/ make clean all install
 
     # Then run whatever you want to get a graph of, such as
-    python ../../benchmark/Python/jacobi.iterative.py --size=10*10*10 --bohrium=True > example.trace
+    cd BOHRIUM_SRC/misc/visualization/
+    python ../../benchmark/Python/jacobi.iterative.py --size=10*10*10 --bohrium=True > traces/example.trace
     
     # Then run the "visualizer"
-    ./visualize.sh example.trace
+    ./parse.py traces/example.trace --output output/ --exclude FREE DISCARD
 
-This should generate a example.trace.svg file based on the 'example.trace' file and start a browser to show it.
+    # The example.svg in output/ is a result of the above command.
+
+This will generate the file: "output/example.svg", try opening it with your browser.
 
