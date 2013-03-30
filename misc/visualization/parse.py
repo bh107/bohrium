@@ -272,7 +272,7 @@ def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
 
     dot = None
     try:
-        dot = subprocess.check_call(["which", "dot"], stdout=subprocess.PIPE)
+        dot = subprocess.check_call(["which", "-s", "dot"])
     except:
         dot = None
     
