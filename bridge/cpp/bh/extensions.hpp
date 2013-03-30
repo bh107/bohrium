@@ -26,9 +26,8 @@ template <typename T>
 multi_array<T>& multi_array<T>::reduce(reducible op, int axis)
 {
     char err_msg[100];
-
     bh_reduce_type* rinstr;
-    multi_array<T>* result = &Runtime::instance()->temp(*this);
+    multi_array<T>* result = new multi_array<T>(*this);
     
     rinstr = (bh_reduce_type*)malloc(sizeof(bh_reduce_type)); //Allocate the user-defined function.
     if (rinstr == NULL) {
@@ -45,6 +44,7 @@ multi_array<T>& multi_array<T>::reduce(reducible op, int axis)
     rinstr->opcode      = (bh_opcode)op;
     rinstr->axis        = axis;
 
+    std::cout << "Enqueuering REDUUUUCE!." << std::endl;
     Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
 
     return *result;
@@ -53,11 +53,11 @@ multi_array<T>& multi_array<T>::reduce(reducible op, int axis)
 template <typename T>
 multi_array<T>& random(int n)
 {
-    multi_array<T>* result = new multi_array<T>(n);
 
     char err_msg[100];
-
     bh_random_type* rinstr;
+
+    multi_array<T>* result = new multi_array<T>(n);
     
     rinstr = (bh_random_type*)malloc(sizeof(bh_random_type)); //Allocate the user-defined function.
     if (rinstr == NULL) {
@@ -71,6 +71,7 @@ multi_array<T>& random(int n)
     rinstr->struct_size = sizeof(bh_random_type);
     rinstr->operand[0]  = &storage[result->getKey()];
 
+    std::cout << "Enqueuering random!." << std::endl;
     Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
 
     return *result;
