@@ -270,19 +270,27 @@ class Parser(object):
 def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
     """Call dot to convert dot-string into one a file."""
 
-    dot = None
+    cmd = ''
     try:
-        dot = subprocess.check_call(["which", "-s", "dot"])
+        p = subprocess.Popen(["which", "dot"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        out.strip()
+        dot = p.returncode
+        cmd = out.strip()
     except:
-        dot = None
+        pass
     
-    if dot == 0:
+    if cmd == 0:
+        errors = ''
+        output = ''
         for f in formats:
-            proc = subprocess.Popen(["dot", "-T", f, "-o", "%s.%s" % (filename, f)], stdin=subprocess.PIPE)
+            proc = subprocess.Popen([cmd, "-T", f, "-o", "%s.%s" % (filename, f)], stdin=subprocess.PIPE)
             out, err = proc.communicate(dotstring)
-        return "%s,%s" %(out, err)
+            output += out if out else ''
+            errors += err if err else ''
+        return (output, errors)
     else:
-        return "Could not find 'dot' on your machine."
+        return ("", "Could not find 'dot' on your machine.")
 
 def main():
 
@@ -326,5 +334,9 @@ def main():
     return dot_to_file(output_fn, dotdata, args.formats)
     
 if __name__ == "__main__":
-    print main()
+    out, err = main()
+    if err:
+        print "Error: %s" % err
+    if out:
+        print "Info: %s" % out
 
