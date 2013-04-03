@@ -55,10 +55,10 @@ class Base(Operand):
     def __init__(self, symbol, addr, dims, start, shape, stride, dtype, data):
 
         self.addr   = addr
-        self.dims   = dims
-        self.start  = start
-        self.shape  = shape
-        self.stride = stride
+        self.dims   = int(dims)
+        self.start  = int(start)
+        self.shape  = [int(x) for x in shape.split(',')]
+        self.stride = [int(x) for x in stride.split(',')]
         self.dtype  = dtype
         self.data   = data
 
@@ -78,10 +78,10 @@ class View(Operand):
     def __init__(self, symbol, addr, dims, start, shape, stride, dtype, base):
 
         self.addr   = addr
-        self.dims   = dims
-        self.start  = start
-        self.shape  = shape
-        self.stride = stride
+        self.dims   = int(dims)
+        self.start  = int(start)
+        self.shape  = [int(x) for x in shape.split(',')]
+        self.stride = [int(x) for x in stride.split(',')]
         self.dtype  = dtype
         self.base   = base
 
@@ -107,7 +107,7 @@ class Constant(Operand):
 class Parser(object):
 
     re_instr    = "BH_(?P<OPCODE>\w+)\sOPS=(?P<N_OPS>\d+)"
-    re_meta     = "\s+(?P<OPN>\w+)?\s+\[(?:(?:\s+Addr:\s+(?P<ADDR>\w+)\s+Dims:\s+(?P<DIMS>\d+)\s+Start:\s+(?P<START>\d+)\s+Shape:\s+(?P<SHAPE>[\d,]+)\s+Stride:\s+\s+(?P<STRIDE>[\d,]+)\s+Type:\s+(?P<TYPE>\w+)\s+Data:\s(?P<DATA>.*?)\s+Base:\s+(?P<BASE>.*?)\s+)|(?:\s+CONST=(?P<CONST>[\d.,\-~]+)\s+))"
+    re_meta     = "\s+(?P<OPN>\w+)?\s+\[(?:(?:\s+Addr:\s+(?P<ADDR>\w+)\s+Dims:\s+(?P<DIMS>\d+)\s+Start:\s+(?P<START>\d+)\s+Shape:\s+(?P<SHAPE>[\d,]+)\s+Stride:\s+\s+(?P<STRIDE>[\d,]+)\s+Type:\s+(?P<TYPE>\w+)\s+Data:\s(?P<DATA>.*?),\s+Base:\s+(?P<BASE>.*?)\s+)|(?:\s+CONST=(?P<CONST>[\d.,\-~]+)\s+))"
 
     def __init__(self, path):
 
