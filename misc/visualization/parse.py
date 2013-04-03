@@ -270,7 +270,7 @@ class Parser(object):
 def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
     """Call dot to convert dot-string into one a file."""
 
-    cmd = ''
+    cmd = None
     try:
         p = subprocess.Popen(["which", "dot"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
@@ -280,7 +280,7 @@ def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
     except:
         pass
     
-    if cmd == 0:
+    if cmd:
         errors = ''
         output = ''
         for f in formats:

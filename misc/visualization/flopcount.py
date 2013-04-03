@@ -6,11 +6,17 @@ import sys
 import re
 import os
 
+from parse import *
+
 def count(fn):
+
+    p = Parser(fn)
+
     with open(fn) as fd:
         pass
     stats = {}
-    return stats
+    #return stats
+    return p.parse()
 
 def main():
 
@@ -32,7 +38,7 @@ def main():
         return "Error: invalid filename <%s>." % args.filename
 
     tracefile = args.filename
-    
+
     # Count
     return pprint.pformat(count(tracefile)), ""
 
