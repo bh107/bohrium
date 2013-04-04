@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME
 #define __BOHRIUM_BRIDGE_CPP_RUNTIME
 #include <iostream>
+#include <sstream>
 #include <boost/ptr_container/ptr_map.hpp>
 
 namespace bh {
@@ -126,17 +127,20 @@ Runtime::~Runtime()
 inline
 bh_intp Runtime::flush()
 {
-    char err_msg[100];
     bh_error status;
-
     bh_intp cur_size = queue_size;
 
     if (queue_size > 0) {
         status = vem_execute( queue_size, queue );
         queue_size = 0;
         if (status != BH_SUCCESS) {
-            sprintf(err_msg, "vem_execute failed: %s", bh_error_text(status));
-            throw std::runtime_error(err_msg);
+            std::stringstream err_msg;
+            err_msg << "vem_execute(queue_size=" << cur_size << ") failed: " << bh_error_text(status) << std::endl;
+            for(int i=0; i<cur_size; i++) {
+                bh_pprint_instr( &queue[i] );
+            }
+
+            throw std::runtime_error(err_msg.str());
         }
     }
     return cur_size;
@@ -259,6 +263,10 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     }
 }
 
+
+
+
+
 template <typename T>
 inline
 void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T>& op2)
@@ -329,7 +337,89 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
     instr->operand[2] = NULL;
 }
 
-template <typename T>
+template <typename Ret, typename In>    // x = y
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
+    instr->operand[2] = NULL;
+
+    if (op1.getTemp()) {
+        delete &op1;
+    }
+}
+
+template <typename Ret, typename In>    // x = y < z
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
+    instr->operand[2] = &storage[op2.getKey()];
+    assign_const_type( &instr->constant, op2 );
+
+    if (op1.getTemp()) {
+        delete &op1;
+    }
+    if (op2.getTemp()) {
+        delete &op2;
+    }
+}
+
+template <typename Ret, typename In>    // x = y < 1
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
+    instr->operand[2] = NULL;
+    assign_const_type( &instr->constant, op2 );
+
+    if (op1.getTemp()) {
+        delete &op1;
+    }
+}
+
+template <typename Ret, typename In>    // x = 1 < y
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = NULL;
+    instr->operand[2] = &storage[op2.getKey()];
+    assign_const_type( &instr->constant, op1 );
+
+    if (op2.getTemp()) {
+        delete &op2;
+    }
+}
+
+template <typename T>           // Userfunc / extensions
 inline
 void Runtime::enqueue(bh_userfunc* rinstr)
 {
@@ -340,6 +430,29 @@ void Runtime::enqueue(bh_userfunc* rinstr)
     instr = &queue[queue_size++];
     instr->opcode        = BH_USERFUNC;
     instr->userfunc      = (bh_userfunc *) rinstr;
+}
+
+//
+//  Copy... properties
+//
+template <typename Ret, typename In>
+void equiv(multi_array<Ret>& ret, multi_array<In>& in)
+{
+    bh_array *ret_a, *in_a;
+
+    ret_a   = &storage[ret.getKey()];
+    in_a    = &storage[in.getKey()];
+
+    ret_a->base        = NULL;
+    ret_a->ndim        = in_a->ndim;
+    ret_a->start       = in_a->start;
+    for(bh_index i=0; i< in_a->ndim; i++) {
+        ret_a->shape[i] = in_a->shape[i];
+    }
+    for(bh_index i=0; i< in_a->ndim; i++) {
+        ret_a->stride[i] = in_a->stride[i];
+    }
+    ret_a->data        = NULL;
 }
 
 }

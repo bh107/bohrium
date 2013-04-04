@@ -193,8 +193,8 @@ template <typename T>
 std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 {
     bool first = true;
-    multi_array<double>::iterator it  = rhs.begin();
-    multi_array<double>::iterator end = rhs.end();
+    typename multi_array<T>::iterator it  = rhs.begin();
+    typename multi_array<T>::iterator end = rhs.end();
 
     stream << "[ ";
     for(; it != end; it++) {
@@ -251,7 +251,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     //          should we send a discard?
 
     // TODO: if rhs is a temp then there is no reason for creating a new
-
+    DEBUG_PRINT("Aliasing...");
     if (key != rhs.getKey()) {  // Prevent self-aliasing
                                 
         init();                 // Create a new view / alias
@@ -266,14 +266,40 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
             storage[key].stride[i] = storage[rhs.getKey()].stride[i];
         }
         storage[key].data        = NULL;
-    }
-    if (rhs.getTemp()) {
-        delete &rhs;
+
+        if (rhs.getTemp()) {
+            delete &rhs;
+        }
     }
 
     return *this;
 }
 
+//
+// Typecasting
+//
+template <typename T>
+template <typename Ret>
+multi_array<Ret>& multi_array<T>::as()
+{
+    multi_array<Ret>* result = new multi_array<Ret>();
+    result->setTemp(true);
+
+    storage[result->getKey()].base        = NULL;
+    storage[result->getKey()].ndim        = storage[this->getKey()].ndim;
+    storage[result->getKey()].start       = storage[this->getKey()].start;
+    for(bh_index i=0; i< storage[this->getKey()].ndim; i++) {
+        storage[result->getKey()].shape[i] = storage[this->getKey()].shape[i];
+    }
+    for(bh_index i=0; i< storage[this->getKey()].ndim; i++) {
+        storage[result->getKey()].stride[i] = storage[this->getKey()].stride[i];
+    }
+    storage[result->getKey()].data        = NULL;
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
+
+    return *result;
+}
 
 }
 

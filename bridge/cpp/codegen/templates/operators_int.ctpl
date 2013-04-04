@@ -18,7 +18,7 @@ multi_array<T>& multi_array<T>::operator= (const T& rhs)
 }
 */
 
-%for $op, $opcode, $optype, $opcount in $data
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
@@ -53,7 +53,7 @@ multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 %slurp
 %end if
 %end for
-%for $op, $opcode, $optype, $opcount in $data
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>

@@ -6,24 +6,36 @@ using namespace bh;
 
 multi_array<double>& monte_carlo_pi(int samples, int iterations)
 {
-    multi_array<double> x, y, z, r, sum(1);
+    multi_array<double> x, y, m, c, sum(1);         // Operands
 
-    sum = 0.0;                              // Acculumate across iterations
+    sum = (double)0.0;                              // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
-        x = random<double>(samples);        // Sample random numbers
+        x = random<double>(samples);                // Sample random numbers
         y = random<double>(samples);
 
-        z = sqrt(x * x + y * y);    // Approximate
-        r = z <= 1.0;               // Filter
+        m = sqrt(x*x + y*y);                        // Model
+        c = (m <= 1.0).as<double>().reduce(ADD,0);  // Count
 
-        sum += (r.reduce(ADD,0)*4.0) / (double)samples; // 
+        sum += (c*4.0) / (double)samples;           // Approximate
     }
-    return sum / (double)iterations;
+    return sum / (double)iterations;                // Accumulated approximations
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    cout << "Pi Approximation: " << monte_carlo_pi(1000, 2) << endl;
+    int samples, iterations;
+    if (argc < 3) {
+        cout << "Error: Not enough argumnts, call like: " << endl;
+        cout << argv[0] << " 1000 2" << endl;
+        cout << "For 1000 samples and 2 iterations." << endl;
+        return 0;
+    }
+    samples     = atoi(argv[1]);
+    iterations  = atoi(argv[2]);
+
+    cout << "[Pi Approximation (samples=" << samples << \
+            ",iter=" <<iterations<< ")]" << endl;
+    cout << monte_carlo_pi(samples, iterations) << endl;
 
     return 0;
 }

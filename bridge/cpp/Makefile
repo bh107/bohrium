@@ -6,7 +6,7 @@ TEST_SRC	= $(wildcard testing/*.cpp)
 
 TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
-#EXAMPLES=broadcast
+EXAMPLES=hello_world monte_carlo_pi
 
 CXX=clang
 #CXX=g++
@@ -42,4 +42,6 @@ hello_world: examples/hello_world.cpp $(HEADER)
 monte_carlo_pi: examples/monte_carlo_pi.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
+jacobi_stencil: examples/jacobi_stencil.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 

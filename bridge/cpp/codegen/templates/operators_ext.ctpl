@@ -9,7 +9,7 @@ directiveStartToken = %
 //  Mapping "a + 1.0" to BH_ADD(t, a, 1.0)
 //  Mapping "1.0 + a" to BH_ADD(t, 1.0, a)
 //
-%for $op, $opcode, $optype, $opcount in $data
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
@@ -64,6 +64,71 @@ multi_array<T> & operator$op (const T& lhs, multi_array<T>& rhs)
 
     return *result;
 }
+
+%for $ret_type, $op1_type, $op2_type in $typesigs
+%if $ret_type != $op1_type
+
+multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
+{
+    multi_array<$op1_type>* left    = &lhs;
+    multi_array<$op2_type>* right   = &rhs;
+    multi_array<$ret_type>* result  = new multi_array<$ret_type>(); 
+
+    if (same_shape(lhs, rhs)) {
+        equiv<$ret_type, $op1_type>(*result, lhs);
+        result->setTemp(true);
+    } else {
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            left    = &Runtime::instance()->temp_view(lhs);
+            right   = &rhs;
+            if (!broadcast(lhs, rhs, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+            equiv<$ret_type, $op1_type>(*result, *left);
+            result->setTemp(true);
+
+        } else {                                // Right-handside has lowest rank
+            left    = &lhs;
+            right   = &Runtime::instance()->temp_view(rhs);
+            right->setTemp(true);
+            if (!broadcast(rhs, lhs, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+            equiv<$ret_type, $op1_type>(*result, *right);
+            result->setTemp(true);
+        }
+        
+    }
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, *left, *right);
+    return *result;
+}
+
+multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_type& rhs)
+{
+    multi_array<$ret_type>* result = new multi_array<$ret_type>();
+    result->setTemp(true);
+    equiv<$ret_type, $op1_type>(*result, lhs);
+
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
+}
+
+multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_type>& rhs)
+{
+    multi_array<$ret_type>* result = new multi_array<$ret_type>();
+    result->setTemp(true);
+    equiv<$ret_type, $op1_type>(*result, rhs);
+
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
+}
+
+%end if
+%end for
+
 %slurp
 %end if
 %end for
@@ -72,7 +137,7 @@ multi_array<T> & operator$op (const T& lhs, multi_array<T>& rhs)
 //  Unary operators such as:
 //  Mapping "!a" to BH_NEGATE(t, a)
 //
-%for $op, $opcode, $optype, $opcount in $data
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>

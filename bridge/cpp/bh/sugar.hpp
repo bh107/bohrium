@@ -22,45 +22,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-    /*
 template <typename T>
-void pprint(multi_array<T> & operand)
+void pprint(multi_array<T>& op)
 {
-    bool first = true;
-
-    multi_array<double>::iterator it  = operand.begin();
-    multi_array<double>::iterator end = operand.end();
-
-    std::cout << "[ ";
-    for(; it != end; it++) {
-
-        if (!first) {
-            std::cout  << ", ";
-        } else {
-            first = false;
-        }
-        std::cout << *it;
-    }
-    std::cout << " ]" << std::endl;
+    bh_pprint_array(&storage[op.getKey()]);
 }
 
-template <typename T>
-bool equal(multi_array<T>& i, multi_array<T> j)
-{
-    return false;
-}
-
-template <typename T>
-bool equivalent(multi_array<T>& i, multi_array<T> j)
-{
-    return false;
-}
-
-template <typename T>
-void reshape(multi_array<T>& lhs, bh_intp* dims, bh_intp* strides)
-{
-    
-}
-*/
 }
 #endif

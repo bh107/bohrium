@@ -27,6 +27,16 @@ Execute 'parse.py' to generate an image of the bytecode::
 This will generate the file: "output/example.svg", try opening it with your browser.
 parse.py has other options, inspect them with "-h".
 
+Counting FLOPS in a trace
+=========================
+
+Do stuff like::
+
+  ./flopcount traces/example.trace
+
+This should print out some instruction-counts. Beware, the complexity of
+USERFUNC is unknown and thus poorly modeled.
+
 Making the trace easier to read: symbolize.py
 =============================================
 

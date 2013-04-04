@@ -34,6 +34,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+typedef struct complex64 { float real, imag; } complex64_t;
+typedef struct complex128 { double real, imag; } complex128_t;
+
 template <typename T>   // Forward declaration
 class multi_array;
 
@@ -128,13 +131,14 @@ public:
     multi_array& operator()(const T& m, const T& n);              // Shaping / reshaping
     multi_array& operator()(const T& d2, const T& d1, const T& d0);              // Shaping / reshaping
    
-    multi_array& operator=(const T& rhs);         // Initialization / assignment.
-    multi_array& operator=(multi_array<T>& rhs);         // Initialization / assignment.
+    multi_array& operator=(const T& rhs);           // Initialization / assignment.
+    multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
+
+    template <typename In>
+    multi_array<T>& operator=(multi_array<In>& rhs);    // Initialization / assignment.
+
     multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
 
-    /* 
-    multi_array& operator=(multi_array & rhs );
-    */
     multi_array& operator+=(const T& rhs);          // Compound assignment / increment
     multi_array& operator+=(multi_array& rhs);
 
@@ -172,7 +176,9 @@ public:
 
     multi_array<T>& copy();                 // Explicity create a copy of array
     multi_array<T>& flatten();              // Create a flat copy of the array
-
+    
+    template <typename Ret>                 // Typecast, creates a copy.
+    multi_array<Ret>& as();
                                             // Extensions
     multi_array<T>& reduce(reducible op, int axis);
 
@@ -196,25 +202,40 @@ public:
     static Runtime* instance();
 
     ~Runtime();
+                            // Input and output are of the same type
+                            
+    template <typename T>   // SYS: FREE, SYNC, DISCARD;
+    void enqueue(bh_opcode opcode, multi_array<T>& op0);
 
     template <typename T>   // x = y + z
-    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, multi_array<T> & op2); 
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2); 
 
     template <typename T>   // x = y + 1;
-    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1, T const& op2);    
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);    
 
     template <typename T>   // x = 1 + y;
-    void enqueue( bh_opcode opcode, multi_array<T> & op0, T const& op1, multi_array<T> & op2);    
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
 
     template <typename T>   // x = y;
-    void enqueue( bh_opcode opcode, multi_array<T> & op0, multi_array<T> & op1);                  
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);                  
 
     template <typename T>   // x = 1.0;
-    void enqueue(bh_opcode opcode, multi_array<T> & op0, T const& op1);                     
-    template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue(bh_opcode opcode, multi_array<T> & op0);
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1);
 
-    template <typename T>
+                                            // Same input but different output type
+    template <typename Ret, typename In>    // x = y;
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1);
+
+    template <typename Ret, typename In>    // x = y < z
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2); 
+
+    template <typename Ret, typename In>    // x = y < 1;
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2);    
+
+    template <typename Ret, typename In>    // x = 1 < y;
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);    
+
+    template <typename T>                   // Userfunc / extensions
     void enqueue(bh_userfunc* rinstr);
 
     bh_intp flush();
@@ -276,6 +297,8 @@ multi_array<T>& random();
 template <typename T>
 multi_array<T>& random(int n);
 
+template <typename T>
+void pprint(multi_array<T>& op);
 }
 
 #include "multi_array.hpp"  // Operand definition.

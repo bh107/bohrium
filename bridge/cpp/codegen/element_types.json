@@ -1,5 +1,5 @@
 [
-["unsigned_char", "bh_bool", "bool8", "BH_BOOL"],
+["unsigned char", "bh_bool", "bool8", "BH_BOOL"],
 
 ["int8_t",  "bh_int8", "int8", "BH_INT8"],
 ["int16_t", "bh_int16", "int16", "BH_INT16"],
@@ -13,6 +13,6 @@
 ["float",       "bh_float32", "float32", "BH_FLOAT32"],
 ["double",      "bh_float64", "float64", "BH_FLOAT64"],
 
-["struct { float real, imag; }", "bh_complex64", "complex64", "BH_COMPLEX64"],
-["struct { double real, imag; }", "bh_complex128", "complex128", "BH_COMPLEX128"]
+["complex64_t", "bh_complex64", "complex64", "BH_COMPLEX64"],
+["complex128_t", "bh_complex128", "complex128", "BH_COMPLEX128"]
 ]

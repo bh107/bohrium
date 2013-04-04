@@ -27,6 +27,13 @@ def render( gens, tmpl_dir, output_dir ):
 
         prev_output_fn = output_fn
 
+def map_type(typename, types):
+    for t in types:
+        if typename in t:
+            return t[0]
+
+    return "ERR"
+
 def main():
 
     script_dir  = "." + os.sep + "codegen" + os.sep
@@ -42,6 +49,18 @@ def main():
     for name, opcode, t, mapped in (x for x in operators if x[3]):
         code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
 
+        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
+        typesigs = typesigs[0] if typesigs else []
+        
+        new_typesigs = []
+        for ttt in typesigs:
+            if 'BH_UINT8' in ttt: # UINT8 not supported by cpp-bridge
+               continue
+            sig = [map_type(typesig,types)  for typesig in ttt]
+            new_typesigs.append(sig)
+
+        typesigs = new_typesigs
+
         opcode_base, nop = opcode.split("_", 1)
         if opcode_base == "CUSTOM":
             opcode  = opcode_base
@@ -52,8 +71,8 @@ def main():
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
 
-        op_map.append( (name, opcode, t, nop ) )
-    #pprint(op_map)
+        op_map.append((name, opcode, t, nop, typesigs))
+
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
         ('functions.ctpl',  'functions.hpp', op_map),
