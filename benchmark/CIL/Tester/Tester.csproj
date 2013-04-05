@@ -24,7 +24,7 @@
     <EnvironmentVariables>
       <EnvironmentVariables>
         <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
-        <Variable name="CPHBV_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
+        <Variable name="BOHRIUM_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
         <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core:/Users/kenneth/Udvikler/bohrium/vem/node" />
       </EnvironmentVariables>
     </EnvironmentVariables>
@@ -48,6 +48,13 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="BOHRIUM_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core" />
+        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -69,6 +76,13 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="BOHRIUM_CONFIG" value="/Users/kenneth/Udvikler/bohrium/config.osx.ini" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core" />
+        <Variable name="LD_LIBRARY_PATH" value="/Users/kenneth/Udvikler/bohrium/core" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -111,6 +125,10 @@
     <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
       <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
       <Name>NumCIL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+      <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
+      <Name>NumCIL.Bohrium</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
