@@ -1427,7 +1427,7 @@ namespace NumCIL.Bohrium
         /// <param name="stride">The stride of each dimension</param>
         /// <param name="new_array">The allocated array</param>
         /// <returns>A status code</returns>
-        [DllImport("libbohrium", EntryPoint = "bh_create_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("libbh", EntryPoint = "bh_create_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
         public extern static bh_error bh_create_array(
                                    bh_array_ptr basearray,
                                    bh_type     type,
@@ -1442,7 +1442,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="array">The array to deallocate</param>
         /// <returns>A status code</returns>
-        [DllImport("libbohrium", EntryPoint = "bh_destroy_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("libbh", EntryPoint = "bh_destroy_array", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
         public extern static bh_error bh_destroy_array(bh_array_ptr array);
 
         /// <summary>
@@ -1450,7 +1450,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="name">The component name</param>
         /// <returns>A new component object</returns>
-        [DllImport("libbohrium", EntryPoint = "bh_component_setup", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("libbh", EntryPoint = "bh_component_setup", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
         private extern static IntPtr bh_component_setup_masked(string name);
 
         /// <summary>
@@ -1472,7 +1472,7 @@ namespace NumCIL.Bohrium
         /// <param name="count">Number of children components</param>
         /// <param name="children">Array of children components (output)</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", EntryPoint = "bh_component_children", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("libbh", EntryPoint = "bh_component_children", CallingConvention = CallingConvention.Cdecl, SetLastError = true, CharSet = CharSet.Auto)]
         private extern static bh_error bh_component_children_masked([In] ref bh_component parent, [Out] out bh_intp count, [Out] out IntPtr children);
 
         /// <summary>
@@ -1510,7 +1510,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="component">The component to free</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_free([In] ref bh_component component);
 
         /// <summary>
@@ -1518,7 +1518,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="component">The component to free</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_free(IntPtr component);
 
         /// <summary>
@@ -1526,7 +1526,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="component">The component to free</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_free_ptr([In] IntPtr component);
         
         /// <summary>
@@ -1536,7 +1536,7 @@ namespace NumCIL.Bohrium
         /// <param name="func">Name of the function e.g. myfunc</param>
         /// <param name="ret_func">Pointer to the function (output), Is NULL if the function doesn't exist</param>
         /// <returns>Error codes (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_get_func([In] ref bh_component self, [In] string func,
                                [Out] IntPtr ret_func);
 
@@ -1546,7 +1546,7 @@ namespace NumCIL.Bohrium
         /// <param name="self">The component</param>
         /// <param name="ary">The array to trace</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_trace_array([In] ref bh_component self, [In] ref bh_array ary);
 
 
@@ -1556,7 +1556,7 @@ namespace NumCIL.Bohrium
         /// <param name="self">The component</param>
         /// <param name="inst">The instruction to trace</param>
         /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_trace_inst([In] ref bh_component self, [In] ref bh_instruction inst);
 
         /// <summary>
@@ -1566,7 +1566,7 @@ namespace NumCIL.Bohrium
         /// <param name="array">The array in question</param>
         /// <param name="data">The new data pointer</param>
         /// <returns>Error code (BH_SUCCESS, BH_ERROR)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_data_set([In] bh_array_ptr array, [In] IntPtr data);
 
         /// <summary>
@@ -1575,7 +1575,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="array">The array in question</param>
         /// <returns>Error code (BH_SUCCESS, BH_ERROR)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_data_malloc([In] bh_array_ptr array);
 
         /// <summary>
@@ -1584,7 +1584,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="array">The array in question</param>
         /// <returns>Error code (BH_SUCCESS, BH_ERROR)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_data_free([In] bh_array_ptr array);
 
         /// <summary>
@@ -1593,7 +1593,7 @@ namespace NumCIL.Bohrium
         /// <param name="array">The array in question</param>
         /// <param name="data">The data pointer</param>
         /// <returns>Error code (BH_SUCCESS, BH_ERROR)</returns>
-        [DllImport("libbohrium", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_data_get([In] bh_array_ptr array, [Out] out IntPtr data);
 
     }
