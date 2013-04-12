@@ -59,7 +59,7 @@ DLLEXPORT bh_error bh_vem_node_execute(bh_intp count,
  *     initial value to Zero. (in/out-put)
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_vem_node_reg_func(char *fun, bh_intp *id);
+DLLEXPORT bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id);
 
 #ifdef __cplusplus
 }
