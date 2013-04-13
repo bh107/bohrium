@@ -32,13 +32,10 @@ namespace bh {
 
 template <typename T>
 inline
-void assign_const_type( bh_constant* instr, T value );
-//
-// We do not want a general definition of the assign_array_type, it should simply
-// fail at compile-type if the type is not one the known types.
-// Adding a definition for the general cause would cause the error to be catch at runtime.
-// Please do not do that...
-//
+void assign_const_type( bh_constant* constant, T value ) {
+    //TODO: The general case should result in a meaning-ful compile-time error.
+    std::cout << "Unsupported type [%s," << constant->type << "] " << &value << std::cout;
+}
 
 template <>
 inline
@@ -138,13 +135,10 @@ void assign_const_type( bh_constant* constant, bh_complex128 value )
 
 template <typename T>
 inline
-void assign_array_type( bh_array* array );
-//
-// We do not want a general definition of the assign_array_type, it should simply
-// fail at compile-type if the type is not one the known types.
-// Adding a definition for the general cause would cause the error to be catch at runtime.
-// Please do not do that...
-//
+void assign_array_type( bh_array* array ) {
+    // TODO: The general case should result in a meaning-ful compile-time error.
+    std::cout << "Unsupported type!" << array << std::cout;
+}
 
 template <>
 inline
@@ -234,3 +228,4 @@ void assign_array_type<bh_complex128>( bh_array* array )
 }
 
 #endif
+

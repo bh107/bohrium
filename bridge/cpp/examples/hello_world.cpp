@@ -27,9 +27,9 @@ int main()
 {
     cout << "Hello World." << endl;
 
-    multi_array<double> x(3,3);
+    multi_array<float> x(3,3);
 
-    x = 1.0;
+    x = (float)1.0;
 
     cout << x;
 

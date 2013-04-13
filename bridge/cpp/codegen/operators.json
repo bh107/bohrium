@@ -46,10 +46,8 @@
 ["!", "BH_LOGICAL_NOT",  "operator.ext", true],
 ["~", "BH_INVERT",       "operator.ext", true],
 
-["sqr",     "BH_SQUARE", "operator.fun", true],
 ["pow",     "BH_POWER", "operator.fun", true],
 ["abs",     "BH_ABSOLUTE", "operator.fun", true],
-["sign",    "BH_SIGN", "operator.fun", true],
 ["max",     "BH_MAXIMUM", "operator.fun", true],
 ["min",     "BH_MINIMUM", "operator.fun", true],
 ["sin",     "BH_SIN", "operator.fun", true],
@@ -58,13 +56,6 @@
 ["sinh",    "BH_SINH", "operator.fun", true],
 ["cosh",    "BH_COSH", "operator.fun", true],
 ["tanh",    "BH_TANH", "operator.fun", true],
-["asin",    "BH_ASIN", "operator.fun", true],
-["acos",    "BH_ACOS", "operator.fun", true],
-["atan",    "BH_ATAN", "operator.fun", true],
-["atan",    "BH_ATAN2", "operator.fun", true],
-["asinh",   "BH_ASINH", "operator.fun", true],
-["acosh",   "BH_ACOSH", "operator.fun", true],
-["atanh",   "BH_ATANH", "operator.fun", true],
 ["exp",     "BH_EXP", "operator.fun", true],
 ["exp2",    "BH_EXP2", "operator.fun", true],
 ["expm1",   "BH_EXPM1", "operator.fun", true],
@@ -78,8 +69,6 @@
 ["ceil",    "BH_CEIL", "operator.fun", true],
 ["trunc",   "BH_TRUNC", "operator.fun", true],
 ["floor",   "BH_FLOOR", "operator.fun", true],
-["rint",    "BH_RINT", "operator.fun", true],
-["hypot",   "BH_HYPOT", "operator.fun", true],
-["signbit", "BH_SIGNBIT", "operator.fun", true]
+["rint",    "BH_RINT", "operator.fun", true]
 
 ]
