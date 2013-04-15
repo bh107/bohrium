@@ -41,6 +41,11 @@ Runtime* Runtime::instance()
     return pInstance;
 }
 
+void stop()
+{
+    delete Runtime::instance();
+}
+
 Runtime::Runtime()
 {
     queue_size = 0;

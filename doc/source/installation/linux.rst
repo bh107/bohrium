@@ -1,6 +1,9 @@
 Linux
 -----
 
+Python
+------
+
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
 You need to install all packages required to build NumPy::
@@ -37,9 +40,9 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
 The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
 
-  export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH="<install dir>:$LD_LIBRARY_PATH"
   #Example
-  export LD_LIBRARY_PATH=/opt/bohrium:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH="$HOME/.local:$LD_LIBRARY_PATH"
   
 Now the basic installation should work. Try running the NumPy test suite::
 
@@ -47,22 +50,31 @@ Now the basic installation should work. Try running the NumPy test suite::
 
 And you should see a result similar to this::
 
-    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
-    Testing test_array_create.py/array_create/zeros
-    Testing test_sor.py/sor/sor
-    Testing test_primitives.py/bh_opcodes/ufunc
-    Testing test_primitives.py/numpy_ufunc/ufunc
-    Testing test_reduce.py/reduce/reduce
-    Testing test_benchmarks.py/gameoflife/gameoflife
-    Testing test_benchmarks.py/jacobi/jacobi
-    Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
-    Testing test_benchmarks.py/shallow_water/shallow_water
-    Testing test_matmul.py/matmul/dot
-    Testing test_matmul.py/matmul/matmul
-    Testing test_views.py/diagonal/diagonal
-    Testing test_views.py/flatten/flatten
-    ************************ Finish ************************
+  *** Testing the equivalency of Bohrium-NumPy and NumPy ***
+  Testing test_array_create.py/array_create/zeros
+  Testing test_sor.py/sor/sor
+  Testing test_primitives.py/bh_opcodes/ufunc
+  Testing test_primitives.py/numpy_ufunc/ufunc
+  Testing test_reduce.py/reduce/reduce
+  Testing test_benchmarks.py/gameoflife/gameoflife
+  Testing test_benchmarks.py/jacobi/jacobi
+  Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
+  Testing test_benchmarks.py/shallow_water/shallow_water
+  Testing test_matmul.py/matmul/dot
+  Testing test_matmul.py/matmul/matmul
+  Testing test_views.py/diagonal/diagonal
+  Testing test_views.py/flatten/flatten
+  ************************ Finish ************************
 
+Microsoft CIL
+-------------
+
+...
+
+C++
+---
+
+...
 
 OpenCL / GPU Engine
 ~~~~~~~~~~~~~~~~~~~

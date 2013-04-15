@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
 
-#define BH_CPP_QUEUE_MAX 512
+#define BH_CPP_QUEUE_MAX 1000
 #include "iterator.hpp"
 #include <stdexcept>
 #include <vector>

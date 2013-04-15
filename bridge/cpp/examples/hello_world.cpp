@@ -23,16 +23,18 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace bh;
 
-int main()
+void compute()
 {
     cout << "Hello World." << endl;
-
     multi_array<float> x(3,3);
-
     x = (float)1.0;
-
     cout << x;
+}
 
+int main()
+{
+    compute();
+    stop();
     return 0;
 }
 

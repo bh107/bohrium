@@ -4,21 +4,24 @@
 using namespace std;
 using namespace bh;
 
-multi_array<double>& monte_carlo_pi(int samples, int iterations)
+void monte_carlo_pi(int samples, int iterations)
 {
     multi_array<double> x, y, m, c, sum(1);         // Operands
 
     sum = (double)0.0;                              // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
-        x = random<double>(samples);                // Sample random numbers
-        y = random<double>(samples);
+        //x = random<double>(samples);                // Sample random numbers
+        //y = random<double>(samples);
 
-        m = sqrt(x*x + y*y);                        // Model
-        c = (m <= 1.0).as<double>().reduce(ADD,0);  // Count
+        //m = sqrt(x*x + y*y);                        // Model
+        //c = (m <= 1.0).as<double>().reduce(ADD,0);  // Count
 
-        sum += (c*4.0) / (double)samples;           // Approximate
+        //sum += (c*4.0) / (double)samples;           // Approximate
     }
-    return sum / (double)iterations;                // Accumulated approximations
+
+    x = (sum/(double)iterations);
+    cout << x << endl;
+    //cout << sum / (double)iterations << endl;       // Accumulated approximations
 }
 
 int main(int argc, char* argv[])
@@ -35,7 +38,8 @@ int main(int argc, char* argv[])
 
     cout << "[Pi Approximation (samples=" << samples << \
             ",iter=" <<iterations<< ")]" << endl;
-    cout << monte_carlo_pi(samples, iterations) << endl;
+    monte_carlo_pi(samples, iterations);
+    stop();
 
     return 0;
 }
