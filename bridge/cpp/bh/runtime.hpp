@@ -49,6 +49,7 @@ void stop()
 Runtime::Runtime()
 {
     queue_size = 0;
+    ext_in_queue = 0;
 
     bh_error err;
     char err_msg[100];
@@ -141,6 +142,20 @@ bh_intp Runtime::flush()
         status = vem_execute(queue_size, queue);
         std::cout << "RES" << status << std::endl;
         queue_size = 0;
+
+        if (ext_in_queue>0) {
+            for(bh_intp i=0; i<ext_in_queue; i++) {
+                if (ext_queue[i]->id == reduce_id){
+                    free((bh_reduce_type*)ext_queue[i]);
+                } else if(ext_queue[i]->id == random_id) {
+                    free((bh_random_type*)ext_queue[i]);
+                } else {
+                    throw std::runtime_error("Cannot de-allocate extension...");
+                }
+            }
+            ext_in_queue = 0;
+        }
+
         if (status != BH_SUCCESS) {
             std::stringstream err_msg;
             err_msg << "vem_execute(queue_size=" << cur_size << ") failed: " << bh_error_text(status) << std::endl;
@@ -171,7 +186,22 @@ bh_intp Runtime::guard()
     if (queue_size >= BH_CPP_QUEUE_MAX) {
         vem_execute(queue_size, queue);
         queue_size = 0;
+
+        if (ext_in_queue>0) {
+            for(bh_intp i=0; i<ext_in_queue; i++) {
+                if (ext_queue[i]->id == reduce_id){
+                    free((bh_reduce_type*)ext_queue[i]);
+                } else if(ext_queue[i]->id == random_id) {
+                    free((bh_random_type*)ext_queue[i]);
+                } else {
+                    throw std::runtime_error("Cannot de-allocate extension...");
+                }
+            }
+            ext_in_queue = 0;
+        }
+
     }
+
     return cur_size;
 }
 
@@ -452,6 +482,9 @@ void Runtime::enqueue(bh_userfunc* rinstr)
     instr = &queue[queue_size++];
     instr->opcode        = BH_USERFUNC;
     instr->userfunc      = (bh_userfunc *) rinstr;
+    instr->userfunc->struct_size = rinstr->struct_size;
+
+    ext_queue[ext_in_queue++] = instr->userfunc;
 }
 
 //

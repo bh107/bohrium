@@ -267,6 +267,8 @@ private:
     static Runtime* pInstance;                  // Singleton instance pointer.
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
+    bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
+    bh_intp         ext_in_queue;
     bh_intp         queue_size;
 
     bh_init         vem_init;                   // Bohrium interface

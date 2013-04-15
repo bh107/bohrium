@@ -64,9 +64,6 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, int axis)
     rinstr->axis        = axis;
 
     Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
-    if (getTemp()) {
-        delete this;
-    }
 
     return *result;
 }
