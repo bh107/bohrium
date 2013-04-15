@@ -20,10 +20,10 @@ namespace bh {
 template <typename T>
 multi_array<T> & $function[0] ( multi_array<T> & rhs )
 {
-    multi_array<T>* operand = new multi_array<T>( rhs );
+    multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    Runtime::instance()->enqueue( (bh_opcode) $function[1], *operand, rhs );
-    return *operand;
+    Runtime::instance()->enqueue( (bh_opcode) $function[1], *result, rhs );
+    return *result;
 }
 %slurp
 %end if

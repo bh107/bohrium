@@ -28,6 +28,7 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, int axis)
     char err_msg[100];
     bh_reduce_type* rinstr;
     multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
 
     storage[result->getKey()].base  = NULL;
     storage[result->getKey()].data  = NULL;
@@ -77,6 +78,7 @@ multi_array<T>& random(int n)
     bh_random_type* rinstr;
 
     multi_array<T>* result = new multi_array<T>(n);
+    result->setTemp(true);
     
     rinstr = (bh_random_type*)malloc(sizeof(bh_random_type)); //Allocate the user-defined function.
     if (rinstr == NULL) {

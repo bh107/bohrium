@@ -6,24 +6,20 @@ using namespace bh;
 
 void monte_carlo_pi(int samples, int iterations)
 {
-    multi_array<double> x, y, m, c, sum(1), res(1);         // Operands
+    multi_array<double> x, y, m, mask, c, sum(1), res(1);         // Operands
     sum = (double)0.0;                              // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
-        //x = random<double>(samples);                // Sample random numbers
-        //y = random<double>(samples);
+        x = random<double>(samples);                // Sample random numbers
+        y = random<double>(samples);
 
-        //m = sqrt(x*x + y*y);                        // Model
-        //c = (m <= 1.0).as<double>().reduce(ADD,0);  // Count
+        m = sqrt(x*x + y*y);                        // Model
+        mask = (m<=1.0).as<double>();
+        c = mask.reduce(ADD,0);  // Count
 
-        //sum += (c*4.0) / (double)samples;           // Approximate
+        sum += (c*4.0) / (double)samples;           // Approximate
     }
-    x = sum / (double)iterations;
-    
-    cout << x << endl;
-    //res = 
-    //cout << "is temp?" << res.getTemp() << endl;
-    //Runtime::instance()->flush();
-    // cout << res << endl;       // Accumulated approximations
+    res = sum / (double)iterations;
+    cout << res << endl;
 }
 
 int main(int argc, char* argv[])
