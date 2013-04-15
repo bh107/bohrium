@@ -182,9 +182,13 @@ public:
                                             // Extensions
     multi_array<T>& reduce(reducible op, int axis);
 
+    // Hack...
+    unsigned int unlink();
+
 protected:
     unsigned int key;
     bool temp;
+    bool linked;
 
 private:
     void init();
@@ -239,6 +243,7 @@ public:
     void enqueue(bh_userfunc* rinstr);
 
     bh_intp flush();
+    bh_intp get_queue_size();
 
     template <typename T>
     multi_array<T>& op();

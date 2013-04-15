@@ -30,6 +30,7 @@ void multi_array<T>::init()     // Pseudo-default constructor
 {
     key     = keys++;
     temp    = false;
+    linked  = true;
 
     storage.insert(key, new bh_array);
     assign_array_type<T>(&storage[key]);
@@ -108,8 +109,10 @@ multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 template <typename T>       // Deconstructor
 multi_array<T>::~multi_array()
 {
-    Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
-    Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+    if (linked) {
+        Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+    }
 }
 
 template <typename T>
@@ -143,6 +146,7 @@ void multi_array<T>::setTemp(bool temp)
 template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
+    std::cout << "flushing... " << this->getKey() << std::endl;
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance()->flush();
 
@@ -242,6 +246,13 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
     return *this;
 }
 
+template <typename T>
+unsigned int multi_array<T>::unlink()
+{
+    linked = false;
+    return key;
+}
+
 // Aliasing
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
@@ -249,26 +260,30 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     // TODO:    what about the old one???
     //          will the ptr_map clean it up for us?
     //          should we send a discard?
-
-    // TODO: if rhs is a temp then there is no reason for creating a new
     DEBUG_PRINT("Aliasing...");
-    if (key != rhs.getKey()) {  // Prevent self-aliasing
-                                
-        init();                 // Create a new view / alias
+    if (key != rhs.getKey()) {      // Prevent self-aliasing
+        
+        Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);          // Discard the existing view
 
-        storage[key].base       = bh_base_array(&storage[rhs.getKey()]);
-        storage[key].ndim       = storage[rhs.getKey()].ndim;
-        storage[key].start      = storage[rhs.getKey()].start;
-        for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
-            storage[key].shape[i] = storage[rhs.getKey()].shape[i];
-        }
-        for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
-            storage[key].stride[i] = storage[rhs.getKey()].stride[i];
-        }
-        storage[key].data        = NULL;
-
-        if (rhs.getTemp()) {
+        if (rhs.getTemp()) {        // Take over temporary reference
+            key     = rhs.unlink();
+            temp    = false;
+            linked  = true;
             delete &rhs;
+        } else {                    // Create a view of rhs
+            init();
+
+            storage[key].base       = bh_base_array(&storage[rhs.getKey()]);
+            storage[key].ndim       = storage[rhs.getKey()].ndim;
+            storage[key].start      = storage[rhs.getKey()].start;
+            for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+                storage[key].shape[i] = storage[rhs.getKey()].shape[i];
+            }
+            for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+                storage[key].stride[i] = storage[rhs.getKey()].stride[i];
+            }
+            storage[key].data        = NULL;
         }
     }
 

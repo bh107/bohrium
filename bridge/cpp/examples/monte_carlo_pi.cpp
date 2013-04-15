@@ -6,8 +6,7 @@ using namespace bh;
 
 void monte_carlo_pi(int samples, int iterations)
 {
-    multi_array<double> x, y, m, c, sum(1);         // Operands
-
+    multi_array<double> x, y, m, c, sum(1), res(1);         // Operands
     sum = (double)0.0;                              // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
         //x = random<double>(samples);                // Sample random numbers
@@ -18,10 +17,13 @@ void monte_carlo_pi(int samples, int iterations)
 
         //sum += (c*4.0) / (double)samples;           // Approximate
     }
-
-    x = (sum/(double)iterations);
+    x = sum / (double)iterations;
+    
     cout << x << endl;
-    //cout << sum / (double)iterations << endl;       // Accumulated approximations
+    //res = 
+    //cout << "is temp?" << res.getTemp() << endl;
+    //Runtime::instance()->flush();
+    // cout << res << endl;       // Accumulated approximations
 }
 
 int main(int argc, char* argv[])
