@@ -117,7 +117,6 @@ Runtime::Runtime()
 Runtime::~Runtime()
 {
     // Deconstructor is not called in a timely fashion.
-    std::cout << "Going down!" << std::endl;
     flush();
     vem_shutdown();
     bh_component_free(self_component);
@@ -137,10 +136,7 @@ bh_intp Runtime::flush()
     bh_intp cur_size = queue_size;
 
     if (queue_size > 0) {
-        std::cout << "EXECUTING!" << std::endl;
-        bh_pprint_instr_list(queue, queue_size, "HERE THEY ARE!");
         status = vem_execute(queue_size, queue);
-        std::cout << "RES" << status << std::endl;
         queue_size = 0;
 
         if (ext_in_queue>0) {
@@ -278,12 +274,10 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[2] = &storage[op2.getKey()];
 
     if (op1.getTemp()) {
-        std::cout << "[DELETING,op1=" << &op1 << "]" << std::endl;
         delete &op1;
     }
 
     if (op2.getTemp()) {
-        std::cout << "[DELETING,op2=" << &op2 << "]" << std::endl;
         delete &op2;
     }
 }
@@ -304,7 +298,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) {
-        std::cout << "[DELETING,op1=" << &op1 << "]" << std::endl;
         delete &op1;
     }
 }
@@ -329,7 +322,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     assign_const_type( &instr->constant, op1 );
 
     if (op2.getTemp()) {
-        std::cout << "[DELETING,op2=" << &op2 << "]" << std::endl;
         delete &op2;
     }
 }
@@ -349,7 +341,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[2] = NULL;
 
     if (op1.getTemp()) {
-        std::cout << "[DELETING,op1=" << &op1 << "]" << std::endl;
         delete &op1;
     }
 }
@@ -420,11 +411,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) {
-        std::cout << "[DELETING,op1=" << &op1 << "]" << std::endl;
         delete &op1;
     }
     if (op2.getTemp()) {
-        std::cout << "[DELETING,op2=" << &op2 << "]" << std::endl;
         delete &op2;
     }
 }
@@ -445,7 +434,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) {
-        std::cout << "[DELETING,op1=" << &op1 << "]" << std::endl;
         delete &op1;
     }
 }
@@ -466,7 +454,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
     assign_const_type( &instr->constant, op1 );
 
     if (op2.getTemp()) {
-        std::cout << "[DELETING,op2=" << &op2 << "]" << std::endl;
         delete &op2;
     }
 }

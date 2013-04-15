@@ -146,7 +146,6 @@ void multi_array<T>::setTemp(bool temp)
 template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
-    std::cout << "flushing... " << this->getKey() << std::endl;
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance()->flush();
 
