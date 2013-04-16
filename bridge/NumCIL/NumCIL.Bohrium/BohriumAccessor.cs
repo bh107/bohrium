@@ -197,8 +197,7 @@ namespace NumCIL.Bohrium
 				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.BH_USERFUNC; }
 				catch {}
 			}
-            if (VEM.Instance.SupportsReduce)
-                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
+            res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
                 res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.BH_USERFUNC;
             if (VEM.Instance.SupportsAggregate)
@@ -719,43 +718,66 @@ namespace NumCIL.Bohrium
                         base.ExecuteOperations(unsupported);
                         unsupported.Clear();
                     }
-
-                    bool isSupported = true;
-
+					
                     if (opcode == bh_opcode.BH_USERFUNC)
                     {
-                        if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
-                        {
-                            //Bohrium only supports random for plain arrays
-                            if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].DataAccessor.Length)
-                            {
-                                supported.Add(VEM.CreateRandomInstruction<T>(BH_TYPE, operands[0]));
-                                isSupported = true;
-                            }
-                        }
-                        else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
-                        {
-                            NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
-                            bh_opcode rop;
-                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
-                            {
-                                supported.Add(VEM.CreateReduceInstruction<T>(BH_TYPE, rop, lzop.Axis, operands[0], operands[1]));
-                                isSupported = true;
-                            }
-                        }
-                        else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
-                        {
-                            supported.Add(VEM.CreateMatmulInstruction<T>(BH_TYPE, operands[0], operands[1], operands[2]));
-                        }
-                        else if (VEM.SupportsAggregate && ops is NumCIL.UFunc.LazyAggregateOperation<T>)
-                        {
-                            NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
-                            bh_opcode rop;
-                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
-                            {
-                                supported.Add(VEM.CreateAggregateInstruction<T>(BH_TYPE, rop, operands[0], operands[1]));
-                                isSupported = true;
-                            }
+						bool isSupported = false;
+						if (ops is NumCIL.UFunc.LazyReduceOperation<T>)
+						{
+							NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
+							bh_opcode rop;
+							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+							{
+								if (rop == bh_opcode.BH_ADD)
+								{
+									supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_ADD_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
+									isSupported = true;
+								}
+								else if (rop == bh_opcode.BH_MULTIPLY)
+								{
+									supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_MUL_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
+									isSupported = true;
+								}
+							}
+						}
+						
+						if (!isSupported)
+						{
+							if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
+	                        {
+	                            //Bohrium only supports random for plain arrays
+	                            if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].DataAccessor.Length)
+	                            {
+	                                supported.Add(VEM.CreateRandomInstruction<T>(BH_TYPE, operands[0]));
+	                                isSupported = true;
+	                            }
+	                        }
+							else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
+	                        {
+	                        	// For now, we allow fallback if the systems supports it, so we do not break the GPGPU
+	                            NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
+	                            bh_opcode rop;
+	                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+	                            {
+	                                supported.Add(VEM.CreateReduceInstruction<T>(BH_TYPE, rop, lzop.Axis, operands[0], operands[1]));
+	                                isSupported = true;
+	                            }
+	                        }
+	                        else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
+	                        {
+	                            supported.Add(VEM.CreateMatmulInstruction<T>(BH_TYPE, operands[0], operands[1], operands[2]));
+								isSupported = true;
+							}
+	                        else if (VEM.SupportsAggregate && ops is NumCIL.UFunc.LazyAggregateOperation<T>)
+	                        {
+	                            NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
+	                            bh_opcode rop;
+	                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+	                            {
+	                                supported.Add(VEM.CreateAggregateInstruction<T>(BH_TYPE, rop, operands[0], operands[1]));
+	                                isSupported = true;
+	                            }
+	                        }
                         }
 
                         if (!isSupported)
