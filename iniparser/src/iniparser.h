@@ -271,3 +271,4 @@ dictionary * iniparser_load(const char * ininame);
 void iniparser_freedict(dictionary * d);
 
 #endif
+

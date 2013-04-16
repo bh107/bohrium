@@ -281,3 +281,4 @@ DLLEXPORT bool bh_disjoint_views(const bh_array *a, const bh_array *b);
 #endif
 
 #endif
+

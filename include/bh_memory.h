@@ -48,3 +48,4 @@ bh_intp bh_memory_free(bh_data_ptr data, bh_intp size);
 #endif
 
 #endif
+

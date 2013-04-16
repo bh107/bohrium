@@ -186,3 +186,4 @@ DLLEXPORT char* bh_component_config_lookup(bh_component *component, const char* 
 #endif
 
 #endif
+

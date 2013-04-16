@@ -88,3 +88,4 @@ DLLEXPORT bh_error bh_destroy_array(bh_array* array);
 #endif
 
 #endif
+
