@@ -22,8 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_vcache.h>
 
 static bh_component *myself = NULL;
-static bh_userfunc_impl reduce_impl = NULL;
-static bh_intp reduce_impl_id = 0;
 static bh_userfunc_impl random_impl = NULL;
 static bh_intp random_impl_id = 0;
 static bh_userfunc_impl matmul_impl = NULL;
@@ -105,11 +103,7 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
 
             case BH_USERFUNC:                    // External libraries
 
-                if (inst->userfunc->id == reduce_impl_id) {
-
-                    res = reduce_impl(inst->userfunc, NULL);
-
-                } else if(inst->userfunc->id == random_impl_id) {
+                if(inst->userfunc->id == random_impl_id) {
 
                     res = random_impl(inst->userfunc, NULL);
 
@@ -158,24 +152,7 @@ bh_error bh_ve_simple_shutdown( void )
 
 bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id) 
 {
-    if(strcmp("bh_reduce", fun) == 0)
-    {
-    	if (reduce_impl == NULL)
-    	{
-			bh_component_get_func(myself, fun, &reduce_impl);
-			if (reduce_impl == NULL)
-				return BH_USERFUNC_NOT_SUPPORTED;
-
-			reduce_impl_id = *id;
-			return BH_SUCCESS;			
-        }
-        else
-        {
-        	*id = reduce_impl_id;
-        	return BH_SUCCESS;
-        }
-    }
-    else if(strcmp("bh_random", fun) == 0)
+    if(strcmp("bh_random", fun) == 0)
     {
     	if (random_impl == NULL)
     	{
@@ -245,11 +222,6 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
     }
     
     return BH_USERFUNC_NOT_SUPPORTED;
-}
-
-bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_reduce( arg, ve_arg );
 }
 
 bh_error bh_random( bh_userfunc *arg, void* ve_arg)
