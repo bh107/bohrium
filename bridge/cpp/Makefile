@@ -7,13 +7,12 @@ TEST_SRC	= $(wildcard testing/*.cpp)
 TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 EXAMPLES=hello_world monte_carlo_pi
-EXAMPLES=monte_carlo_pi
 
 #CXX=clang
 CXX=g++
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 EXTRAS+=
-CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros $(EXTRAS)
+CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
 
 all: gen examples
 

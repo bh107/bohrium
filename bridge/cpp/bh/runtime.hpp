@@ -469,7 +469,6 @@ void Runtime::enqueue(bh_userfunc* rinstr)
     instr = &queue[queue_size++];
     instr->opcode        = BH_USERFUNC;
     instr->userfunc      = (bh_userfunc *) rinstr;
-    instr->userfunc->struct_size = rinstr->struct_size;
 
     ext_queue[ext_in_queue++] = instr->userfunc;
 }
