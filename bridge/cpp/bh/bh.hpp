@@ -106,15 +106,11 @@ public:
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    // Getter / Setter:
-    unsigned int getKey() const;
-    unsigned long getRank() const;
-    bool getTemp() const;
-    void setTemp(bool temp);
-
     // Iterator
     iterator begin();
     iterator end();
+
+    size_t len();
 
     //
     // Operators: 
@@ -186,8 +182,12 @@ public:
                                             // Extensions
     multi_array<T>& reduce(reducible op, int axis);
 
-    // Hack...
+    // This stuff should not be used by the regular user...
     unsigned int unlink();
+    unsigned int getKey() const;
+    unsigned long getRank() const;
+    bool getTemp() const;
+    void setTemp(bool temp);
 
 protected:
     unsigned int key;
