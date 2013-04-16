@@ -90,7 +90,7 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
             	reduce_data.struct_size = sizeof(bh_reduce_type);
             	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
             	reduce_data.operand[0] = inst->operand[0];
-            	reduce_data.operand[0] = inst->operand[1];
+            	reduce_data.operand[1] = inst->operand[1];
             	
 	            if (inst->constant.type == BH_INT64) {
 	            	reduce_data.axis = inst->constant.value.int64;
