@@ -34,6 +34,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+const double PI_D = 3.141592653589793238462;
+const float  PI_F = 3.14159265358979f;
+const float  PI   = 3.14159265358979f;
+
 typedef struct complex64 { float real, imag; } complex64_t;
 typedef struct complex128 { double real, imag; } complex128_t;
 

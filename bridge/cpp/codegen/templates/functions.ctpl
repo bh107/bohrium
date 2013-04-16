@@ -13,19 +13,53 @@ directiveStartToken = %
 
 namespace bh {
 %slurp
-%for $function in $data
-%if $function[2] == "operator.fun"
-%slurp
 
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
+%if $optype == "operator.fun"
+%slurp
+%if $opcount == 2
 template <typename T>
-multi_array<T> & $function[0] ( multi_array<T> & rhs )
+multi_array<T>& $op (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance()->temp(rhs);
 
-    Runtime::instance()->enqueue( (bh_opcode) $function[1], *result, rhs );
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, rhs);
     return *result;
 }
-%slurp
+%end if
+%if $opcount == 3
+template <typename T>
+multi_array<T>& $op (multi_array<T>&lhs, multi_array<T>& rhs)
+{
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& $op (multi_array<T>&lhs, const T& rhs)
+{
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
+
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+T& $op (const T& lhs, const T& rhs)
+{
+    return lhs;
+}
+
+template <typename T>
+T& $op (const T& lhs, const int& rhs)
+{
+    return lhs;
+}
+
+
+%end if
 %end if
 %end for
 
