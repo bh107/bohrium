@@ -198,10 +198,10 @@ namespace NumCIL.Bohrium
 				catch {}
 			}
             res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
-            if (VEM.Instance.SupportsMatmul)
+			res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.BH_USERFUNC;
+			
+			if (VEM.Instance.SupportsMatmul)
                 res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.BH_USERFUNC;
-            if (VEM.Instance.SupportsAggregate)
-                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.BH_USERFUNC;
 
 
             if (typeof(T) == typeof(NumCIL.Complex64.DataType))
@@ -726,38 +726,37 @@ namespace NumCIL.Bohrium
 						{
 							NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
 							bh_opcode rop;
-							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop) && (rop == bh_opcode.BH_ADD || rop == bh_opcode.BH_MULTIPLY))
 							{
-								if (rop == bh_opcode.BH_ADD)
-								{
-									supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_ADD_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
-									isSupported = true;
-								}
-								else if (rop == bh_opcode.BH_MULTIPLY)
-								{
-									supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_MUL_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
-									isSupported = true;
-								}
+								supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop == bh_opcode.BH_ADD ? bh_opcode.BH_ADD_REDUCE : bh_opcode.BH_MUL_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
+								isSupported = true;
 							}
 						} 
 						else if (ops is NumCIL.UFunc.LazyAggregateOperation<T>)
 						{
 							NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
 							bh_opcode rop;
-							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop) && (rop == bh_opcode.BH_ADD || rop == bh_opcode.BH_MULTIPLY))
 							{
-								if (rop == bh_opcode.BH_ADD)
+								var sourceOp = operands[1];
+								NumCIL.Generic.NdArray<T> targetOp;
+								
+								if (sourceOp.Shape.Dimensions.LongLength > 1)
 								{
-									for(var i = operands[1].Shape.Dimensions.LongLength -1; i >= 0; i--)
-										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_ADD_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(i)));
-									isSupported = true;
+									do
+									{
+										var targetShape = new Shape.ShapeDimension[sourceOp.Shape.Dimensions.LongLength - 1];
+										Array.Copy(sourceOp.Shape.Dimensions, targetShape, targetShape.LongLength);
+										targetOp = new NumCIL.Generic.NdArray<T>(new Shape(targetShape));
+
+										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop == bh_opcode.BH_ADD ? bh_opcode.BH_ADD_REDUCE : bh_opcode.BH_MUL_REDUCE, targetOp, sourceOp, new PInvoke.bh_constant(targetOp.Shape.Dimensions.LongLength)));
+										sourceOp = targetOp;
+	
+									} while(targetOp.Shape.Dimensions.LongLength > 1);
 								}
-								else if (rop == bh_opcode.BH_MULTIPLY)
-								{
-									for(var i = operands[1].Shape.Dimensions.LongLength -1; i >= 0; i--)
-										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_MUL_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(i)));
-									isSupported = true;
-								}
+								
+								supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop == bh_opcode.BH_ADD ? bh_opcode.BH_ADD_REDUCE : bh_opcode.BH_MUL_REDUCE, operands[0], sourceOp, new PInvoke.bh_constant(0L)));
+								isSupported = true;
 							}
 						}
 						
