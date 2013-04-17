@@ -13,7 +13,7 @@ EXAMPLES=black_scholes
 CXX=g++
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 EXTRAS+=
-CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
+CXXFLAGS=-Wall -g -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
 
 all: gen examples
 

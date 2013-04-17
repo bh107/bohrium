@@ -18,8 +18,9 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include "bh/bh.hpp"
+#include <cstdlib>
 #include <cmath>
+#include "bh/bh.hpp"
 
 using namespace std;
 using namespace bh;
@@ -49,10 +50,25 @@ multi_array<T>& cnd(multi_array<T>& x)
 template <typename T>
 multi_array<T>& black_scholes(multi_array<T>& s, char flag, T x, T u, T r, T v)
 {
-    multi_array<T> d1, d2;
+    multi_array<T> d1, d2, t1, t1_1, t2, t3, t4, top, top2;
 
-    d1 = (log(s/x) + (r+v*v/2.0) * u) / (v*sqrt(u));
-    d2 = d1 - v * sqrt(u);
+    t1 = s/x;
+    t1_1 = log(t1);
+    t2 = (r+v*v/2.0);
+    t3 = v*sqrt(u);
+    cout << "1" << endl;
+    top = t2 * u;
+    cout << "2" << endl;
+    top2 = top + t1;
+    cout << "3" << endl;
+    d1 = top2 / t3;
+    cout << "4" << endl;
+
+    cout << "5" << endl;
+    t4 = d1 - v;
+    cout << "6" << endl;
+    d2 = t4 * sqrt(u);
+    cout << "7" << endl;
     if (flag == 'c') {
         return s * cnd(d1) - x * exp(-1.0*r*u) * cnd(d2);
     } else {
@@ -64,10 +80,13 @@ template <typename T>
 T* price(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
 {
     size_t n = s.len();
-    T* p = (T*)malloc(sizeof(T)*n);
+    cout << "Alloc this much=" << sizeof(T)*n << "." << endl;
+    T* p = (T*)malloc(sizeof(T)*iterations);
 
+    cout << "w000t." << endl;
     T t = d_t;
     for(size_t i=0; i<iterations; i++) {    // Why sync after every iteration?
+        cout << "asdfw000t." << endl;
         p[i] = *(black_scholes(s, flag, x, t, r, v).reduce(ADD,0).begin()) / (T)n;
         t += d_t;
     }
