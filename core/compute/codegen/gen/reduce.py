@@ -2,7 +2,7 @@ from pprint import pprint as pp
 
 def gen( opcodes, ignore ):
 
-    filtered    = [f for f in opcodes if not f['system_opcode'] and f['nop'] > 0 and f['opcode'] not in ignore]
+    filtered    = [f for f in opcodes if not f['system_opcode'] and f['nop'] > 0 and f['elementwise'] and f['opcode'] in ['BH_ADD', 'BH_MULTIPLY'] ]
     fname       = [dict(f.items()+{'fname': f['opcode'].lower().replace('bh_', '')}.items()) for f in filtered]
 
     data = []
