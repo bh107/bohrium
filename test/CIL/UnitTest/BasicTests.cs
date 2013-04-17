@@ -69,6 +69,10 @@ namespace UnitTest
             var e = b.Flatten();
             if (e.AsArray().LongLength != 12 || e.AsArray()[3] != 12)
                 throw new Exception("Failure in flatten");
+                
+            var bsum = b.Sum();
+            if (bsum != 228)
+            	throw new Exception("Failure in aggregate");
 
             List<T> fln = new List<T>(b[1, 0, 1].Value);
             if (fln.Count != 3) throw new Exception("Failure in basic test");
