@@ -223,6 +223,26 @@ bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruct
                 res = bh_vcache_free( inst );
                 break;
 
+            case BH_ADD_REDUCE:
+            case BH_MUL_REDUCE:
+
+            	reduce_data.id = 0;
+            	reduce_data.nout = 1;
+            	reduce_data.nin = 1;
+            	reduce_data.struct_size = sizeof(bh_reduce_type);
+            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
+            	reduce_data.operand[0] = inst->operand[0];
+            	reduce_data.operand[1] = inst->operand[1];
+            	
+	            if (inst->constant.type == BH_INT64) {
+	            	reduce_data.axis = inst->constant.value.int64;
+	            	res = bh_compute_reduce_naive((bh_userfunc *)&reduce_data, NULL);
+	            }
+	            else
+	            	res = BH_TYPE_NOT_SUPPORTED;
+            	
+            	break;
+
             case BH_USERFUNC:                // External libraries
 
                 if(inst->userfunc->id == reduce_impl_id)
