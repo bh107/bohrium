@@ -276,6 +276,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     bh_instruction* inst;
     bh_index  nelements;
     bh_error res = BH_SUCCESS;
+    bh_reduce_type reduce_data;
 
     for(count=0; count < instruction_count; count++)
     {

@@ -188,6 +188,7 @@ bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruct
 {
     bh_intp cur_index,  j;
     bh_instruction *inst, *binst;
+    bh_reduce_type reduce_data;
 
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;

@@ -188,6 +188,7 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 {
     bh_intp cur_index,  j;
     bh_instruction *inst, *binst;
+    bh_reduce_type reduce_data;
 
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;
