@@ -28,8 +28,6 @@ static bh_userfunc_impl matmul_impl = NULL;
 static bh_intp matmul_impl_id = 0;
 static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
-static bh_userfunc_impl aggregate_impl = NULL;
-static bh_intp aggregate_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
 
@@ -117,10 +115,6 @@ bh_error bh_ve_naive_execute( bh_intp instruction_count, bh_instruction* instruc
 
                     res = nselect_impl(inst->userfunc, NULL);
 
-                } else if(inst->userfunc->id == aggregate_impl_id) {
-
-                    res = aggregate_impl(inst->userfunc, NULL);
-
                 } else {                            // Unsupported userfunc
                 
                     res = BH_USERFUNC_NOT_SUPPORTED;
@@ -205,23 +199,6 @@ bh_error bh_ve_naive_reg_func(char *fun, bh_intp *id)
             return BH_SUCCESS;
         }
     }
-    else if(strcmp("bh_aggregate", fun) == 0)
-    {
-        if (aggregate_impl == NULL)
-        {
-            bh_component_get_func(myself, fun, &aggregate_impl);
-            if (aggregate_impl == NULL)
-                return BH_USERFUNC_NOT_SUPPORTED;
-            
-            aggregate_impl_id = *id;
-            return BH_SUCCESS;
-        }
-        else
-        {
-            *id = aggregate_impl_id;
-            return BH_SUCCESS;
-        }
-    }
         
     return BH_USERFUNC_NOT_SUPPORTED;
 }
@@ -239,10 +216,5 @@ bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
 bh_error bh_nselect( bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_nselect( arg, ve_arg );
-}
-
-bh_error bh_aggregate( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_aggregate( arg, ve_arg );
 }
 

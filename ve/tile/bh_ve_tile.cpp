@@ -34,8 +34,6 @@ static bh_userfunc_impl fft_impl = NULL;
 static bh_intp fft_impl_id = 0;
 static bh_userfunc_impl fft2_impl = NULL;
 static bh_intp fft2_impl_id = 0;
-static bh_userfunc_impl aggregate_impl = NULL;
-static bh_intp aggregate_impl_id = 0;
 
 static bh_intp bh_ve_tile_buffersizes = 0;
 static bh_computeloop_naive* bh_ve_tile_compute_loops = NULL;
@@ -263,10 +261,6 @@ bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruct
                 {
                     res = fft2_impl(inst->userfunc, NULL);
                 } 
-                else if(inst->userfunc->id == aggregate_impl_id) 
-                {
-                    res = aggregate_impl(inst->userfunc, NULL);
-                }
                 else                            // Unsupported userfunc
                 {
                     res = BH_USERFUNC_NOT_SUPPORTED;
@@ -444,24 +438,7 @@ bh_error bh_ve_tile_reg_func(char *fun, bh_intp *id) {
         	return BH_SUCCESS;
         }
     }
-    else if(strcmp("bh_aggregate", fun) == 0)
-    {
-        if (aggregate_impl == NULL)
-        {
-            bh_component_get_func(myself, fun, &aggregate_impl);
-            if (aggregate_impl == NULL)
-                return BH_USERFUNC_NOT_SUPPORTED;
-            
-            aggregate_impl_id = *id;
-            return BH_SUCCESS;
-        }
-        else
-        {
-            *id = aggregate_impl_id;
-            return BH_SUCCESS;
-        }
-    }    
-    
+
     return BH_USERFUNC_NOT_SUPPORTED;
 }
 
@@ -475,7 +452,3 @@ bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
     return bh_compute_matmul( arg, ve_arg );
 }
 
-bh_error bh_aggregate( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_aggregate( arg, ve_arg );
-}
