@@ -33,6 +33,7 @@ namespace UserFunctionReduce
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
     void reduce(bh_reduce_type* reduceDef, UserFuncArg* userFuncArg);
+	bh_error reduce_impl(bh_userfunc* arg, void* ve_arg);
     Kernel getKernel(bh_reduce_type* reduceDef,
                      UserFuncArg* userFuncArg,
                      std::vector<bh_index> shape);
