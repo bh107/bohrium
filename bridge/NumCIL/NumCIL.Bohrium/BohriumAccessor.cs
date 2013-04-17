@@ -739,6 +739,26 @@ namespace NumCIL.Bohrium
 									isSupported = true;
 								}
 							}
+						} 
+						else if (ops is NumCIL.UFunc.LazyAggregateOperation<T>)
+						{
+							NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
+							bh_opcode rop;
+							if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
+							{
+								if (rop == bh_opcode.BH_ADD)
+								{
+									for(var i = operands[1].Shape.Dimensions.LongLength -1; i >= 0; i--)
+										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_ADD_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(i)));
+									isSupported = true;
+								}
+								else if (rop == bh_opcode.BH_MULTIPLY)
+								{
+									for(var i = operands[1].Shape.Dimensions.LongLength -1; i >= 0; i--)
+										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, bh_opcode.BH_MUL_REDUCE, operands[0], operands[1], new PInvoke.bh_constant(i)));
+									isSupported = true;
+								}
+							}
 						}
 						
 						if (!isSupported)
