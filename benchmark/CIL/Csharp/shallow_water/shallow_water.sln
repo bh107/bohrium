@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shallow_water", "shallow_water.csproj", "{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|x86.ActiveCfg = Debug|x86
+		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|x86.Build.0 = Debug|x86
+		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|x86.ActiveCfg = Release|x86
+		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = shallow_water.csproj
+	EndGlobalSection
+EndGlobal
