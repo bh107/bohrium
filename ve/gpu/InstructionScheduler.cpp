@@ -24,7 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
-#include "UserFunctionReduce.hpp"
 #include "Scalar.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
