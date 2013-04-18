@@ -80,7 +80,7 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
             	
 	            if (inst->constant.type == BH_INT64) {
 	            	reduce_data.axis = inst->constant.value.int64;
-	            	res = UserFunctionReduce::reduce_impl((bh_userfunc *)&reduce_data, NULL);
+	            	res = userdeffunc((bh_userfunc *)&reduce_data);
 	            }
 	            else
 	            	res = BH_TYPE_NOT_SUPPORTED;
