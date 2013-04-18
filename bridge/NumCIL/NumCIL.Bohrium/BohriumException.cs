@@ -51,7 +51,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         /// <param name="errorcode">The error code to report</param>
         public BohriumException(PInvoke.bh_error errorcode)
-            : this(errorcode, string.Format("CPBohriumHVB Error: {0}", errorcode))
+            : this(errorcode, string.Format("Bohrium Error: {0}", errorcode))
         { 
         }
 

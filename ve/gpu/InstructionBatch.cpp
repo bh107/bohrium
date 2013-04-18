@@ -195,14 +195,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                     parameters[kp] = ss.str();
                     parameterList.push_back(kp);
                 }
-                if (ba->type() == OCL_FLOAT64)
-                {
-                    float64 = true;
-                } 
-                else if (ba->type() == OCL_FLOAT16)
-                {
-                    float16 = true;
-                }
             }
             else //scalar
             {
@@ -210,6 +202,14 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 kernelVariables[&(inst->operand[op])] = ss.str();
                 parameters[kp] = ss.str();
                 parameterList.push_back(kp);
+            }
+            if (kp->type() == OCL_FLOAT64)
+            {
+                float64 = true;
+            } 
+            else if (kp->type() == OCL_FLOAT16)
+            {
+                float16 = true;
             }
         }
     }
