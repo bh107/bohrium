@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "GenerateSourceCode.hpp"
 #include "UserFunctionReduce.hpp"
 
-bh_error bh_reduce(bh_userfunc* arg, void* ve_arg)
+bh_error UserFunctionReduce::reduce_impl(bh_userfunc* arg, void* ve_arg)
 {
     bh_reduce_type* reduceDef = (bh_reduce_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;

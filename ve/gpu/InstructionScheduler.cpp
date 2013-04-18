@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
+#include "UserFunctionReduce.hpp"
 #include "Scalar.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
@@ -66,6 +67,24 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
             case BH_USERFUNC:
                 res = userdeffunc(inst->userfunc);
                 break;
+            case BH_ADD_REDUCE:
+            case BH_MUL_REDUCE:
+				bh_reduce_type reduce_data;
+            	reduce_data.id = 0;
+            	reduce_data.nout = 1;
+            	reduce_data.nin = 1;
+            	reduce_data.struct_size = sizeof(bh_reduce_type);
+            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
+            	reduce_data.operand[0] = inst->operand[0];
+            	reduce_data.operand[1] = inst->operand[1];
+            	
+	            if (inst->constant.type == BH_INT64) {
+	            	reduce_data.axis = inst->constant.value.int64;
+	            	res = UserFunctionReduce::reduce_impl((bh_userfunc *)&reduce_data, NULL);
+	            }
+	            else
+	            	res = BH_TYPE_NOT_SUPPORTED;
+
             default:
                 res = ufunc(inst);
                 break;

@@ -47,17 +47,6 @@ typedef struct
 
 DLLEXPORT bh_error bh_reduce(bh_userfunc* arg, void* ve_arg);
 
-//The type of the user-defined aggregate function.
-typedef struct
-{
-    //User-defined function header with two operands.
-    BH_USER_FUNC_HEADER(2)
-    //The opcode to aggregate with
-    bh_opcode  opcode;
-} bh_aggregate_type;
-
-DLLEXPORT bh_error bh_aggregate(bh_userfunc* arg, void* ve_arg);
-
 //The type of the user-defined random function.
 typedef struct
 {
