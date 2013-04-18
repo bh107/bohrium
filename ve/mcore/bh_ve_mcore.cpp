@@ -42,6 +42,9 @@ static bh_intp fft_impl_id = 0;
 static bh_userfunc_impl fft2_impl = NULL;
 static bh_intp fft2_impl_id = 0;
 
+//Forward definition of the function
+bh_error bh_reduce_impl( bh_userfunc *arg, void* ve_arg );
+
 //static bh_intp bh_ve_mcore_buffersizes = 0;
 //static computeloop* bh_ve_mcore_compute_loops = NULL;
 //static bh_tstate_naive* bh_ve_mcore_tstates = NULL;
