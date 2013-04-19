@@ -151,20 +151,6 @@ DLLEXPORT int bh_operands_in_instruction(const bh_instruction *inst);
  */
 DLLEXPORT const char* bh_opcode_text(bh_opcode opcode);
 
-/* Determines if the operation is a system operation
- *
- * @opcode Opcode for operation
- * @return TRUE if the operation is a system opcode, FALSE otherwise
- */
-DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
-
-/* Determines if the operation is performed elementwise
- *
- * @opcode Opcode for operation
- * @return TRUE if the operation is performed elementwise, FALSE otherwise
- */
-DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
-
 
 /* Byte size for type
  *

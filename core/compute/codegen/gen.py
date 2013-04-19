@@ -16,6 +16,7 @@ def main():
         ('functors',    'functors.ctpl',        'functors.hpp'),
         ('compute',     'bh_compute.ctpl',   'bh_compute.cpp'),
         ('reduce',      'bh_reduce.ctpl',    'bh_compute_reduce.cpp'),
+        ('reduce',      'bh_aggregate.ctpl', 'bh_compute_aggregate.cpp'),
     ]
 
     ignore  = json.load(open(script_dir+'ignore.json'))

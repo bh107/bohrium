@@ -33,8 +33,6 @@ nop
   The amount of operands the instruction uses.
 system_opcode
   Specifies whether a given opcode is a regular arithmetic instruction or a special system instruction.
-elementwise
-  Specifies whether a given opcode is an arithmetic instruction that is performed elementwise.
 types
   A list of lists, where each list is a valid type-signature for the opcode. In the example above the ADD opcode can add bools, floats and unsigned short integers. NB: the first type is the output type and the rest is the input types.
 

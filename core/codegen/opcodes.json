@@ -6,7 +6,6 @@
         "nop": 3, 
         "id": 1, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -82,7 +81,6 @@
         "nop": 3, 
         "id": 2, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -158,7 +156,6 @@
         "nop": 3, 
         "id": 3, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -234,7 +231,6 @@
         "nop": 3, 
         "id": 4, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -305,7 +301,6 @@
         "nop": 3, 
         "id": 5, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -366,7 +361,6 @@
         "nop": 2, 
         "id": 6, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -421,7 +415,6 @@
         "nop": 3, 
         "id": 7, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -487,7 +480,6 @@
         "nop": 3, 
         "id": 8, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -553,7 +545,6 @@
         "nop": 3, 
         "id": 9, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -619,7 +610,6 @@
         "nop": 3, 
         "id": 10, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -685,7 +675,6 @@
         "nop": 3, 
         "id": 11, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -761,7 +750,6 @@
         "nop": 3, 
         "id": 12, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -837,7 +825,6 @@
         "nop": 3, 
         "id": 13, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -903,7 +890,6 @@
         "nop": 3, 
         "id": 14, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -969,7 +955,6 @@
         "nop": 3, 
         "id": 15, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -1035,7 +1020,6 @@
         "nop": 2, 
         "id": 16, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -1090,7 +1074,6 @@
         "nop": 3, 
         "id": 17, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1156,7 +1139,6 @@
         "nop": 3, 
         "id": 18, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1222,7 +1204,6 @@
         "nop": 3, 
         "id": 19, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1278,7 +1259,6 @@
         "nop": 3, 
         "id": 20, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1334,7 +1314,6 @@
         "nop": 3, 
         "id": 21, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1390,7 +1369,6 @@
         "nop": 2, 
         "id": 22, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1437,7 +1415,6 @@
         "nop": 3, 
         "id": 23, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1488,7 +1465,6 @@
         "nop": 3, 
         "id": 24, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -1539,7 +1515,6 @@
         "nop": 2, 
         "id": 25, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1566,7 +1541,6 @@
         "nop": 2, 
         "id": 26, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1593,7 +1567,6 @@
         "nop": 2, 
         "id": 27, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1620,7 +1593,6 @@
         "nop": 2, 
         "id": 28, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1647,7 +1619,6 @@
         "nop": 2, 
         "id": 29, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1674,7 +1645,6 @@
         "nop": 2, 
         "id": 30, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1701,7 +1671,6 @@
         "nop": 2, 
         "id": 31, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1720,7 +1689,6 @@
         "nop": 2, 
         "id": 32, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1739,7 +1707,6 @@
         "nop": 2, 
         "id": 33, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1758,7 +1725,6 @@
         "nop": 2, 
         "id": 34, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1777,7 +1743,6 @@
         "nop": 2, 
         "id": 35, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1796,7 +1761,6 @@
         "nop": 2, 
         "id": 36, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1815,7 +1779,6 @@
         "nop": 3, 
         "id": 37, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1836,7 +1799,6 @@
         "nop": 2, 
         "id": 38, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1863,7 +1825,6 @@
         "nop": 2, 
         "id": 39, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1882,7 +1843,6 @@
         "nop": 2, 
         "id": 40, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1901,7 +1861,6 @@
         "nop": 2, 
         "id": 41, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1928,7 +1887,6 @@
         "nop": 2, 
         "id": 42, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1947,7 +1905,6 @@
         "nop": 2, 
         "id": 43, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1974,7 +1931,6 @@
         "nop": 2, 
         "id": 44, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -1993,7 +1949,6 @@
         "nop": 2, 
         "id": 45, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -2020,7 +1975,6 @@
         "nop": 2, 
         "id": 46, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -2039,7 +1993,6 @@
         "nop": 2, 
         "id": 47, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -2058,7 +2011,6 @@
         "nop": 2, 
         "id": 48, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -2077,7 +2029,6 @@
         "nop": 2, 
         "id": 49, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_FLOAT32", 
@@ -2096,7 +2047,6 @@
         "nop": 3, 
         "id": 50, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_INT8", 
@@ -2157,7 +2107,6 @@
         "nop": 2, 
         "id": 51, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -2176,7 +2125,6 @@
         "nop": 2, 
         "id": 52, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -2195,7 +2143,6 @@
         "nop": 2, 
         "id": 53, 
         "system_opcode": false, 
-        "elementwise": true, 
         "types": [
             [
                 "BH_BOOL", 
@@ -2794,7 +2741,6 @@
         "nop": 1, 
         "id": 54, 
         "system_opcode": true, 
-        "elementwise": false, 
         "types": []
     }, 
     {
@@ -2804,7 +2750,6 @@
         "nop": 1, 
         "id": 55, 
         "system_opcode": true, 
-        "elementwise": false, 
         "types": []
     }, 
     {
@@ -2814,7 +2759,6 @@
         "nop": 1, 
         "id": 56, 
         "system_opcode": true, 
-        "elementwise": false, 
         "types": []
     }, 
     {
@@ -2824,7 +2768,6 @@
         "nop": 0, 
         "id": 57, 
         "system_opcode": true, 
-        "elementwise": true, 
         "types": []
     }, 
     {
@@ -2834,27 +2777,6 @@
         "nop": 0, 
         "id": 58, 
         "system_opcode": true, 
-        "elementwise": false, 
-        "types": []
-    },
-    {
-        "opcode": "BH_ADD_REDUCE", 
-        "doc": "Sums all elements in the specified dimension.", 
-        "code": "add_reduce(a, axis)", 
-        "nop": 0, 
-        "id": 59, 
-        "system_opcode": true, 
-        "elementwise": false, 
-        "types": []
-    },
-    {
-        "opcode": "BH_MUL_REDUCE", 
-        "doc": "Multiplies all elements in the specified dimension.", 
-        "code": "mul_reduce(a, axis)", 
-        "nop": 0, 
-        "id": 60, 
-        "system_opcode": true, 
-        "elementwise": false, 
         "types": []
     }
 ]
