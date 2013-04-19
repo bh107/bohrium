@@ -144,6 +144,18 @@ void multi_array<T>::setTemp(bool temp)
 }
 
 template <typename T>
+inline
+size_t multi_array<T>::len()
+{
+    size_t nelements = 1;
+    for (int i = 0; i < storage[key].ndim; ++i)
+    {
+        nelements *= storage[key].shape[i];
+    }
+    return nelements;
+}
+
+template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);

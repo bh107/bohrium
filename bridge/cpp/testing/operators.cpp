@@ -53,12 +53,12 @@ TEST(operators,self_assignment)
     x = 3.5;
 
     unsigned int prior_k = keys;
-    unsigned int prior_q = Runtime::instance()->queued();
+    unsigned int prior_q = Runtime::instance()->get_queue_size();
     
     x = x;
 
     EXPECT_EQ(prior_k, keys);
-    EXPECT_EQ(prior_q, Runtime::instance()->queued());
+    EXPECT_EQ(prior_q, Runtime::instance()->get_queue_size());
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 

@@ -13,6 +13,6 @@
 ["float",       "bh_float32", "float32", "BH_FLOAT32"],
 ["double",      "bh_float64", "float64", "BH_FLOAT64"],
 
-["complex64_t", "bh_complex64", "complex64", "BH_COMPLEX64"],
-["complex128_t", "bh_complex128", "complex128", "BH_COMPLEX128"]
+["std::complex<float> ", "bh_complex64", "complex64", "BH_COMPLEX64"],
+["std::complex<double> ", "bh_complex128", "complex128", "BH_COMPLEX128"]
 ]
