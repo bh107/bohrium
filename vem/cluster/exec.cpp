@@ -344,6 +344,30 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                 }
                 break;
             }
+            
+            case BH_ADD_REDUCE:
+            case BH_MUL_REDUCE:
+            {
+                bh_reduce_type reduce_data;
+            	reduce_data.id = 0;
+            	reduce_data.nout = 1;
+            	reduce_data.nin = 1;
+            	reduce_data.struct_size = sizeof(bh_reduce_type);
+            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
+            	reduce_data.operand[0] = inst->operand[0];
+            	reduce_data.operand[1] = inst->operand[1];
+            	
+	            if (inst->constant.type == BH_INT64) {
+                    bh_uint64 stime_reduce = bh_timing();
+	            	reduce_data.axis = inst->constant.value.int64;
+	            	res = bh_reduce((bh_userfunc *)&reduce_data, NULL);
+                    bh_timing_save(timing_reduce, stime_reduce, bh_timing());
+	            }
+	            else
+	            	res = BH_TYPE_NOT_SUPPORTED;
+            	
+            	break;
+            }
             case BH_DISCARD:
             {
                 bh_array *g_ary = inst->operand[0];
