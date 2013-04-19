@@ -20,11 +20,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
+#include <complex>
 
 #define BH_CPP_QUEUE_MAX 1000
 #include "iterator.hpp"
 #include <stdexcept>
-#include <vector>
 
 #ifdef DEBUG
 #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
@@ -38,9 +38,6 @@ const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
 const float  PI   = 3.14159265358979f;
 
-typedef struct complex64 { float real, imag; } complex64_t;
-typedef struct complex128 { double real, imag; } complex128_t;
-
 template <typename T>   // Forward declaration
 class multi_array;
 
@@ -52,8 +49,13 @@ static bh_intp random_id;
 
 enum reducible {
     ADD         = BH_ADD,
-    SUBTRACT    = BH_SUBTRACT,
-    MULTIPLY    = BH_MULTIPLY
+    MULTIPLY    = BH_MULTIPLY,
+    MIN         = BH_MINIMUM,
+    MAX         = BH_MAXIMUM,
+    LOGICAL_AND = BH_LOGICAL_AND,
+    LOGICAL_OR  = BH_LOGICAL_OR,
+    BITWISE_AND = BH_BITWISE_AND,
+    BITWISE_OR  = BH_BITWISE_OR
 };
 
 //
@@ -180,7 +182,7 @@ public:
     template <typename Ret>                 // Typecast, creates a copy.
     multi_array<Ret>& as();
                                             // Extensions
-    multi_array<T>& reduce(reducible op, int axis);
+    multi_array<T>& reduce(reducible op, unsigned int axis);
 
     // This stuff should not be used by the regular user...
     unsigned int unlink();

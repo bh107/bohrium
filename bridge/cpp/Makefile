@@ -6,8 +6,7 @@ TEST_SRC	= $(wildcard testing/*.cpp)
 
 TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
-#EXAMPLES=hello_world monte_carlo_pi
-EXAMPLES=black_scholes
+EXAMPLES=hello_world monte_carlo_pi black_scholes
 
 #CXX=clang
 CXX=g++

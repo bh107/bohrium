@@ -28,7 +28,7 @@ using namespace bh;
 template <typename T>
 multi_array<T>& cnd(multi_array<T>& x)
 {
-    multi_array<T> L, K, w, mask;
+    multi_array<T> L, K, w, mask, res1, res2, res3;
     multi_array<bh_bool> mask_b;
     T a1 = 0.31938153,
       a2 =-0.356563782,
@@ -37,41 +37,48 @@ multi_array<T>& cnd(multi_array<T>& x)
       a5 = 1.330274429,
       pp = 2.50662827463; // sqrt(2.0*PI)
 
+    cout << "cnd-in" << endl;
     L = abs(x);
     K = 1.0 / (1.0 + 0.2316419 * L);
     w = 1.0 - 1.0 / (pp * exp(~L*L/2.0) * (a1*K + a2*(pow(K,(T)2)) + a3*(pow(K,(T)3)) + a4*(pow(K,(T)4)) + a5*(pow(K,(T)5))));
 
     mask_b = (x <= 0.0);
     mask = mask_b.as<T>();
+    res1 = w* ~mask;
+    res2 = (1.0-w) * mask;
+    cout << "cnd-ret" << endl;
 
-    return w * ~mask + (1.0-w) * mask;
+    Runtime::instance()->flush();
+
+    return res1 + res2;
 }
 
 template <typename T>
 multi_array<T>& black_scholes(multi_array<T>& s, char flag, T x, T u, T r, T v)
 {
-    multi_array<T> d1, d2, t1, t1_1, t2, t3, t4, top, top2;
+    multi_array<T> d1, d2, t1, t1_1, t2, t3, t4, top, top2, c1, c1_1, c2;
 
     t1 = s/x;
     t1_1 = log(t1);
     t2 = (r+v*v/2.0);
     t3 = v*sqrt(u);
-    cout << "1" << endl;
     top = t2 * u;
-    cout << "2" << endl;
     top2 = top + t1;
-    cout << "3" << endl;
     d1 = top2 / t3;
-    cout << "4" << endl;
-
-    cout << "5" << endl;
     t4 = d1 - v;
-    cout << "6" << endl;
     d2 = t4 * sqrt(u);
-    cout << "7" << endl;
+
     if (flag == 'c') {
-        return s * cnd(d1) - x * exp(-1.0*r*u) * cnd(d2);
+        cout << "c1" << endl;
+        c1_1 = cnd(d1);
+        cout << "c1_1" << endl;
+        c1 = s * c1_1;
+        cout << "c2" << endl;
+        c2 = x * exp(-1.0*r*u) * cnd(d2);
+        cout << "c1 - c2" << endl;
+        return c1 - c2;
     } else {
+        cout << "notc" << endl;
         return x * exp(-r*u) * cnd(~d2) - s * cnd(~d1);
     }
 }
@@ -83,13 +90,21 @@ T* price(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
     cout << "Alloc this much=" << sizeof(T)*n << "." << endl;
     T* p = (T*)malloc(sizeof(T)*iterations);
 
+        multi_array<T> ttt,uuu;
     cout << "w000t." << endl;
     T t = d_t;
     for(size_t i=0; i<iterations; i++) {    // Why sync after every iteration?
-        cout << "asdfw000t." << endl;
-        p[i] = *(black_scholes(s, flag, x, t, r, v).reduce(ADD,0).begin()) / (T)n;
+        cout << "[scholes=" << i << "]" << endl;
+        ttt = black_scholes(s, flag, x, t, r, v);
+        cout << "[reduce=" << i << "]" << endl;
+        uuu = ttt.reduce(ADD,0);
+        cout << "[assign=" << i << "]" << endl;
+        //p[i] = *(uuu.begin()) / (T)n;
         t += d_t;
     }
+
+    Runtime::instance()->flush();
+
     return p;
 }
 
@@ -98,6 +113,8 @@ multi_array<T>& model(size_t& n)
 {
     multi_array<T>& s = random<T>(n);
     s = s * 4.0 - 2.0 + 60.0; // Price is 58-62
+
+    Runtime::instance()->flush();
     return s;
 }
 

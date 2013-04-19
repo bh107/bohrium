@@ -22,11 +22,43 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-template <typename T>
-multi_array<T>& multi_array<T>::reduce(reducible opcode, int axis)
+bh_opcode reducible_to_opcode(reducible opcode)
 {
-    char err_msg[100];
-    bh_reduce_type* rinstr;
+    switch(opcode) {
+        case ADD:
+            return (bh_opcode)BH_ADD_REDUCE;
+            break;
+        case MULTIPLY:
+            return (bh_opcode)BH_MUL_REDUCE;
+            break;
+            /*
+        case MIN:
+            return (bh_opcode)BH_MIN_REDUCE;
+            break;
+        case MAX:
+            return (bh_opcode)BH_MAX_REDUCE;
+            break;
+        case LOGICAL_AND:
+            return (bh_opcode)BH_LOGICAL_AND_REDUCE;
+            break;
+        case LOGICAL_OR:
+            return (bh_opcode)BH_LOGICAL_OR_REDUCE;
+            break;
+        case BITWISE_AND:
+            return (bh_opcode)BH_BITWISE_AND_REDUCE;
+            break;
+        case BITWISE_OR:
+            return (bh_opcode)BH_BITWISE_OR_REDUCE;
+            break;
+            */
+        default:
+            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
+    }
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
+{
     multi_array<T>* result = new multi_array<T>();
     result->setTemp(true);
 
@@ -47,23 +79,8 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, int axis)
             storage[result->getKey()].stride[i] = storage[key].stride[i+1];
         }
     }
-    
-    rinstr = (bh_reduce_type*)malloc(sizeof(bh_reduce_type)); //Allocate the user-defined function.
-    if (rinstr == NULL) {
-        sprintf(err_msg, "Failed alllocating memory for extension-call.");
-        throw std::runtime_error(err_msg);
-    }
-   
-    rinstr->id          = reduce_id;        //Set the instruction
-    rinstr->nout        = 1;
-    rinstr->nin         = 1;
-    rinstr->struct_size = sizeof(bh_reduce_type);
-    rinstr->operand[0]  = &storage[result->getKey()];
-    rinstr->operand[1]  = &storage[key];
-    rinstr->opcode      = (bh_opcode)opcode;
-    rinstr->axis        = axis;
 
-    Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
+    Runtime::instance()->enqueue<T>(reducible_to_opcode(opcode), *result, *this, (T)axis);
 
     return *result;
 }

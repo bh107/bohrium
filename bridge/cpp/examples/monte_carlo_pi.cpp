@@ -12,7 +12,7 @@ double monte_carlo_pi(int samples, int iterations)
         x = random<double>(samples);                // Sample random numbers
         y = random<double>(samples);
         m = (sqrt(x*x + y*y)<=1.0).as<double>();    // Model
-        c = m.reduce(ADD,0);                        // Count
+        c = m.reduce(ADD, 0);                       // Count
 
         sum += (c*4.0) / (double)samples;           // Approximate
     }
