@@ -66,7 +66,7 @@ bh_error bh_ve_gpu_reg_func(char *fun,
     bh_component_get_func(component, fun, &userfunc);
     if (userfunc != NULL)
     {
-        instructionScheduler->registerFunction(*id, userfunc);
+        instructionScheduler->registerFunction(fun, id, userfunc);
     	return BH_SUCCESS;
     }
     else
