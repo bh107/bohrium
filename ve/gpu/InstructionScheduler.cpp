@@ -46,8 +46,8 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
 #ifdef DEBUG
             bh_pprint_instr(inst);
 #endif
-            bh_error res;
-
+			bh_error res;
+			
             switch (inst->opcode)
             {
             case BH_SYNC:
@@ -66,25 +66,6 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
             case BH_USERFUNC:
                 res = userdeffunc(inst->userfunc);
                 break;
-            case BH_ADD_REDUCE:
-            case BH_MUL_REDUCE:
-                bh_reduce_type reduce_data;
-                reduce_data.id = functionNameMap["bh_reduce"];
-                reduce_data.nout = 1;
-                reduce_data.nin = 1;
-                reduce_data.struct_size = sizeof(bh_reduce_type);
-                reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
-                reduce_data.operand[0] = inst->operand[0];
-                reduce_data.operand[1] = inst->operand[1];
-
-                if (inst->constant.type == BH_INT64) {
-                    reduce_data.axis = inst->constant.value.int64;
-                    res = userdeffunc((bh_userfunc *)&reduce_data);
-                }
-                else
-                     res = BH_TYPE_NOT_SUPPORTED;
-
-                break;
             default:
                 res = ufunc(inst);
                 break;
@@ -92,7 +73,7 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
 
             if (res != BH_SUCCESS)
             {
-                 return res;
+            	return res;
             }
         }
     }
@@ -263,16 +244,7 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
     return BH_SUCCESS;
 }
 
-void InstructionScheduler::registerFunction(const char* fun, bh_intp* id, bh_userfunc_impl userfunc)
+void InstructionScheduler::registerFunction(bh_intp id, bh_userfunc_impl userfunc)
 {
-    FunctionNameMap::iterator fit = functionNameMap.find(fun);
-    if (fit == functionNameMap.end())
-    {
-        functionMap[*id] = userfunc;
-        functionNameMap[fun] = *id;
-    }
-    else
-    {
-        *id = fit->second;
-    }
+    functionMap[id] = userfunc;
 }

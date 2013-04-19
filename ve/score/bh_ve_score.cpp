@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_vcache.h>
 
 static bh_component *myself = NULL;
+static bh_userfunc_impl reduce_impl = NULL;
+static bh_intp reduce_impl_id = 0;
 static bh_userfunc_impl random_impl = NULL;
 static bh_intp random_impl_id = 0;
 static bh_userfunc_impl matmul_impl = NULL;
@@ -34,6 +36,8 @@ static bh_userfunc_impl fft_impl = NULL;
 static bh_intp fft_impl_id = 0;
 static bh_userfunc_impl fft2_impl = NULL;
 static bh_intp fft2_impl_id = 0;
+static bh_userfunc_impl aggregate_impl = NULL;
+static bh_intp aggregate_impl_id = 0;
 
 static bh_intp bh_ve_score_buffersizes = 0;
 static bh_computeloop_naive* bh_ve_score_compute_loops = NULL;
@@ -188,7 +192,6 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 {
     bh_intp cur_index,  j;
     bh_instruction *inst, *binst;
-    bh_reduce_type reduce_data;
 
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;
@@ -220,29 +223,13 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                 res = bh_vcache_free( inst );
                 break;
 
-            case BH_ADD_REDUCE:
-            case BH_MUL_REDUCE:
-
-            	reduce_data.id = 0;
-            	reduce_data.nout = 1;
-            	reduce_data.nin = 1;
-            	reduce_data.struct_size = sizeof(bh_reduce_type);
-            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
-            	reduce_data.operand[0] = inst->operand[0];
-            	reduce_data.operand[1] = inst->operand[1];
-            	
-	            if (inst->constant.type == BH_INT64) {
-	            	reduce_data.axis = inst->constant.value.int64;
-	            	res = bh_compute_reduce_naive((bh_userfunc *)&reduce_data, NULL);
-	            }
-	            else
-	            	res = BH_TYPE_NOT_SUPPORTED;
-            	
-            	break;
-
             case BH_USERFUNC:                // External libraries
 
-                if(inst->userfunc->id == random_impl_id)
+                if(inst->userfunc->id == reduce_impl_id)
+                {
+                    res = reduce_impl(inst->userfunc, NULL);
+                }
+                else if(inst->userfunc->id == random_impl_id)
                 {
                     res = random_impl(inst->userfunc, NULL);
                 }
@@ -262,6 +249,10 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                 {
                     res = fft2_impl(inst->userfunc, NULL);
                 }
+                else if(inst->userfunc->id == aggregate_impl_id)
+                {
+                    res = aggregate_impl(inst->userfunc, NULL);
+				}
                 else                            // Unsupported userfunc
                 {
                     res = BH_USERFUNC_NOT_SUPPORTED;
@@ -355,7 +346,24 @@ bh_error bh_ve_score_shutdown( void )
 
 bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
 
-    if(strcmp("bh_random", fun) == 0)
+    if(strcmp("bh_reduce", fun) == 0)
+    {
+    	if (reduce_impl == NULL)
+    	{
+			bh_component_get_func(myself, fun, &reduce_impl);
+			if (reduce_impl == NULL)
+				return BH_USERFUNC_NOT_SUPPORTED;
+
+			reduce_impl_id = *id;
+			return BH_SUCCESS;			
+        }
+        else
+        {
+        	*id = reduce_impl_id;
+        	return BH_SUCCESS;
+        }
+    }
+    else if(strcmp("bh_random", fun) == 0)
     {
     	if (random_impl == NULL)
     	{
@@ -440,8 +448,30 @@ bh_error bh_ve_score_reg_func(char *fun, bh_intp *id) {
         	return BH_SUCCESS;
         }
     }
+    else if(strcmp("bh_aggregate", fun) == 0)
+    {
+        if (aggregate_impl == NULL)
+        {
+            bh_component_get_func(myself, fun, &aggregate_impl);
+            if (aggregate_impl == NULL)
+                return BH_USERFUNC_NOT_SUPPORTED;
+            
+            aggregate_impl_id = *id;
+            return BH_SUCCESS;
+        }
+        else
+        {
+            *id = aggregate_impl_id;
+            return BH_SUCCESS;
+        }
+    }
     
     return BH_USERFUNC_NOT_SUPPORTED;
+}
+
+bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
+{
+    return bh_compute_reduce_naive( arg, ve_arg );
 }
 
 bh_error bh_random( bh_userfunc *arg, void* ve_arg)
@@ -452,4 +482,9 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
 bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_matmul( arg, ve_arg );    
+}
+
+bh_error bh_aggregate( bh_userfunc *arg, void* ve_arg)
+{
+    return bh_compute_aggregate( arg, ve_arg );
 }
