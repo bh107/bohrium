@@ -1,10 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Solver.tt">
     <Files>
-      <File FileName="Solver.tt" Line="85" Column="9" />
+      <File FileName="Solver.tt" Line="127" Column="10" />
       <File FileName="Solver.cs" Line="206" Column="14" />
-      <File FileName="Main.cs" Line="24" Column="1" />
+      <File FileName="Main.cs" Line="44" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

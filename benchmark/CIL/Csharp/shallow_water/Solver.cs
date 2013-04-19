@@ -123,7 +123,6 @@ namespace shallow_water
             for (int i = 0; i < timesteps; i++)
             {
                 H.Flush();
-				System.Console.WriteLine(timesteps);
                 // Reflecting boundary conditions
                 H[ALL, FIRST] = H[ALL, SECOND];
                 U[ALL, FIRST] = U[ALL, SECOND];

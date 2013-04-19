@@ -35,8 +35,9 @@ namespace shallow_water
     {
 		public static void Main(string[] args)
 		{
+			NumCIL.Bohrium.Utility.Activate();
 			var data = new ShallowWaterSolver.DataDouble(10);
-			ShallowWaterSolver.SolveDouble(1, data);
+			ShallowWaterSolver.SolveDouble(10, data);
 		}
     }
 }
