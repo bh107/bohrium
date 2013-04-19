@@ -3,16 +3,48 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shallow_water", "shallow_water.csproj", "{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL", "..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj", "{08C17283-4F2A-466C-AE28-1923837A2F58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|x64.ActiveCfg = Debug|x64
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|x64.Build.0 = Debug|x64
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|x86.ActiveCfg = Debug|x86
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|x86.Build.0 = Debug|x86
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|x64.ActiveCfg = Release|x64
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|x64.Build.0 = Release|x64
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|x86.ActiveCfg = Release|x86
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|x86.Build.0 = Release|x86
 		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|x86.ActiveCfg = Debug|x86
 		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|x86.Build.0 = Debug|x86
 		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|x86.ActiveCfg = Release|x86
 		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|x86.Build.0 = Release|x86
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|x64.ActiveCfg = Debug|x64
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|x64.Build.0 = Debug|x64
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|x86.ActiveCfg = Debug|x86
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|x86.Build.0 = Debug|x86
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|x64.ActiveCfg = Release|x64
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|x64.Build.0 = Release|x64
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|x86.ActiveCfg = Release|x86
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|x86.Build.0 = Release|x86
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|x64.ActiveCfg = Debug|x64
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|x64.Build.0 = Debug|x64
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|x86.ActiveCfg = Debug|x86
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|x86.Build.0 = Debug|x86
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|x64.ActiveCfg = Release|x64
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|x64.Build.0 = Release|x64
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|x86.ActiveCfg = Release|x86
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = shallow_water.csproj

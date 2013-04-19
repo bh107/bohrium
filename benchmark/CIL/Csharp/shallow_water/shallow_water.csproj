@@ -32,10 +32,34 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Solver.cs">
+      <DependentUpon>Solver.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
+      <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
+      <Name>NumCIL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+      <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
+      <Name>NumCIL.Bohrium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+      <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
+      <Name>NumCIL.Unsafe</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Solver.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Solver.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 </Project>
