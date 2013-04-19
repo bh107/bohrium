@@ -28,15 +28,25 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 
+struct cmp_str
+{
+   bool operator()(char const *a, char const *b)
+   {
+      return std::strcmp(a, b) < 0;
+   }
+};
+
 class InstructionScheduler
 {
 private:
     typedef std::map<bh_array*, BaseArray*> ArrayMap;
     typedef std::map<bh_intp, bh_userfunc_impl> FunctionMap;
+    typedef std::map<const char*, bh_intp, cmp_str> FunctionNameMap;
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
+    FunctionNameMap functionNameMap;
     std::set<BaseArray*> discardSet;
     void sync(bh_array* base);
     void discard(bh_array* base);
@@ -45,7 +55,7 @@ private:
     bh_error userdeffunc(bh_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);
-    void registerFunction(bh_intp id, bh_userfunc_impl userfunc);
+    void registerFunction(const char* name, bh_intp* id, bh_userfunc_impl userfunc);
     bh_error schedule(bh_intp instructionCount,
                          bh_instruction* instructionList);
 };
