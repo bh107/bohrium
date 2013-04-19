@@ -34,6 +34,7 @@ multi_array<T>& cnd(multi_array<T>& x)
       a5 = 1.330274429,
       pp = 2.50662827463; // sqrt(2.0*PI)
 
+    cout << "cnd-in" << endl;
     L = abs(x);
     K = 1.0 / (1.0 + 0.2316419 * L);
     w = 1.0 - 1.0 / (pp * exp(~L*L/2.0) * (a1*K + a2*(pow(K,2)) + a3*(pow(K,3)) + a4*(pow(K,4)) + a5*(pow(K,5))));
@@ -70,6 +71,9 @@ T* price(multi_array<T>& S, char flag, T X, T dU, T r, T v, size_t iterations)
         p[i] = (sum(black_scholes(flag, S, X, U, r, v)) / N).first();
         U += dU;
     }
+
+    Runtime::instance()->flush();
+
     return p;
 }
 
@@ -79,6 +83,8 @@ multi_array<T>& model(size_t& n)
     multi_array<T>& s;
     s = random<T>(n);
     s = s * 4.0 - 2.0 + 60.0; // Price is 58-62
+
+    Runtime::instance()->flush();
     return s;
 }
 
