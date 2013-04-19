@@ -124,7 +124,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// The number of already executed operations
         /// </summary>
-        long PendignOperationOffset { get; set; }
+        long PendingOperationOffset { get; set; }
 
         /// <summary>
         /// Flushes all pending operations on this element
@@ -400,7 +400,7 @@ namespace NumCIL.Generic
             List<PendingOperation<T>> res = new List<PendingOperation<T>>();
             Dictionary<ILazyAccessor<T>, long> completedOps = new Dictionary<ILazyAccessor<T>, long>();
             res.AddRange(target.PendingOperations);
-            completedOps[target] = target.PendingOperations.Count + target.PendignOperationOffset;
+            completedOps[target] = target.PendingOperations.Count + target.PendingOperationOffset;
 
             //Figure out which operations we need
             long i = 0;
@@ -416,7 +416,7 @@ namespace NumCIL.Generic
                         long dest_cp = cur.OperandIndex[j] + (j == 0 ? -1 : 0);
 
                         if (!completedOps.TryGetValue(lz, out cp))
-                            cp = lz.PendignOperationOffset;
+                            cp = lz.PendingOperationOffset;
 
                         long max_cp = Math.Max(cp, dest_cp);
                         for (long k = cp; k < max_cp; k++)
@@ -431,7 +431,7 @@ namespace NumCIL.Generic
             //Now we collect the operations that we need to execute and mark them as executed in the accessor
             foreach (var kp in completedOps)
             {
-                long oldOffset = kp.Key.PendignOperationOffset;
+                long oldOffset = kp.Key.PendingOperationOffset;
 
                 if (kp.Value - oldOffset == 0)
                     kp.Key.PendingOperations.Clear();
@@ -439,7 +439,7 @@ namespace NumCIL.Generic
                     for (i = oldOffset; i < kp.Value; i++)
                         kp.Key.PendingOperations.RemoveAt(0);
                 
-                kp.Key.PendignOperationOffset = kp.Value;
+                kp.Key.PendingOperationOffset = kp.Value;
             }
 
             //Sort list by clock
@@ -587,7 +587,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// The number of already executed operations
         /// </summary>
-        public long PendignOperationOffset
+        public long PendingOperationOffset
         {
             get { return m_pendingOperationOffset; }
             set { m_pendingOperationOffset = value; }
@@ -646,7 +646,7 @@ namespace NumCIL.Generic
                 if (x.DataAccessor is ILazyAccessor<T>)
                 {
                     ILazyAccessor<T> lz = (ILazyAccessor<T>)x.DataAccessor;
-                    indx[i] = (lz.PendingOperations.Count + lz.PendignOperationOffset) + (i == 0 ? 1 : 0);
+                    indx[i] = (lz.PendingOperations.Count + lz.PendingOperationOffset) + (i == 0 ? 1 : 0);
                 }
                 else
                     indx[i] = i == 0 ? 1 : 0;
@@ -708,7 +708,7 @@ namespace NumCIL.Generic
             if (input.DataAccessor is ILazyAccessor<Tb>)
             {
                 ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)input.DataAccessor;
-                InputOperandIndex = (lz.PendingOperations.Count + lz.PendignOperationOffset);
+                InputOperandIndex = (lz.PendingOperations.Count + lz.PendingOperationOffset);
             }
             else
                 InputOperandIndex = 0;
@@ -759,7 +759,7 @@ namespace NumCIL.Generic
             if (in2.DataAccessor is ILazyAccessor<Tb>)
             {
                 ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)in2.DataAccessor;
-                InputOperandIndexRhs = (lz.PendingOperations.Count + lz.PendignOperationOffset);
+                InputOperandIndexRhs = (lz.PendingOperations.Count + lz.PendingOperationOffset);
             }
             else
                 InputOperandIndexRhs = 0;
