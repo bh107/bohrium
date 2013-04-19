@@ -84,7 +84,6 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
 	            else
 	            	res = BH_TYPE_NOT_SUPPORTED;
 
-				break;
             default:
                 res = ufunc(inst);
                 break;
