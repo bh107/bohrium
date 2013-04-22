@@ -53,3 +53,4 @@ bh_vem_cluster_slave
 *.user
 benchmark/CIL/Csharp/shallow_water/bin
 benchmark/CIL/Csharp/shallow_water/obj
+*.userprefs
