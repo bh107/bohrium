@@ -898,248 +898,28 @@ bh_computeloop_naive bh_compute_get_naive( bh_instruction *instr ) {
             return &traverse_naive_aac<bh_bool,std::complex<double>,std::complex<double>, not_equal_functor<bh_bool,std::complex<double>,std::complex<double> > >;
         case BH_NOT_EQUAL + (BH_BOOL << 8) +(BH_COMPLEX128 <<12) + (BH_COMPLEX128 <<16) + (1 << 17):
             return &traverse_naive_aca<bh_bool,std::complex<double>,std::complex<double>, not_equal_functor<bh_bool,std::complex<double>,std::complex<double> > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_naive_aaa<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_naive_aac<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_naive_aca<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_naive_aaa<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_naive_aac<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_naive_aca<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_naive_aaa<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_naive_aac<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_naive_aca<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_naive_aaa<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_naive_aac<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_naive_aca<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT8 <<12):
-            return &traverse_naive_aa<bh_bool,bh_int8, logical_not_functor<bh_bool,bh_int8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT8 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_int8, logical_not_functor<bh_bool,bh_int8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT64 <<12):
-            return &traverse_naive_aa<bh_bool,bh_float64, logical_not_functor<bh_bool,bh_float64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_float64, logical_not_functor<bh_bool,bh_float64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT16 <<12):
-            return &traverse_naive_aa<bh_bool,bh_uint16, logical_not_functor<bh_bool,bh_uint16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT16 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_uint16, logical_not_functor<bh_bool,bh_uint16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT64 <<12):
-            return &traverse_naive_aa<bh_bool,bh_uint64, logical_not_functor<bh_bool,bh_uint64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT64 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_uint64, logical_not_functor<bh_bool,bh_uint64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT16 <<12):
-            return &traverse_naive_aa<bh_bool,bh_int16, logical_not_functor<bh_bool,bh_int16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT16 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_int16, logical_not_functor<bh_bool,bh_int16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT32 <<12):
-            return &traverse_naive_aa<bh_bool,bh_float32, logical_not_functor<bh_bool,bh_float32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_float32, logical_not_functor<bh_bool,bh_float32 > >;
         case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_BOOL <<12):
             return &traverse_naive_aa<bh_bool,bh_bool, logical_not_functor<bh_bool,bh_bool > >;
         case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_BOOL <<12) + (1 << 17):
             return &traverse_naive_ac<bh_bool,bh_bool, logical_not_functor<bh_bool,bh_bool > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT32 <<12):
-            return &traverse_naive_aa<bh_bool,bh_int32, logical_not_functor<bh_bool,bh_int32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT32 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_int32, logical_not_functor<bh_bool,bh_int32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT8 <<12):
-            return &traverse_naive_aa<bh_bool,bh_uint8, logical_not_functor<bh_bool,bh_uint8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT8 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_uint8, logical_not_functor<bh_bool,bh_uint8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT64 <<12):
-            return &traverse_naive_aa<bh_bool,bh_int64, logical_not_functor<bh_bool,bh_int64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT64 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_int64, logical_not_functor<bh_bool,bh_int64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT32 <<12):
-            return &traverse_naive_aa<bh_bool,bh_uint32, logical_not_functor<bh_bool,bh_uint32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT32 <<12) + (1 << 17):
-            return &traverse_naive_ac<bh_bool,bh_uint32, logical_not_functor<bh_bool,bh_uint32 > >;
         case BH_MAXIMUM + (BH_INT8 << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
             return &traverse_naive_aaa<bh_int8,bh_int8,bh_int8, maximum_functor<bh_int8,bh_int8,bh_int8 > >;
         case BH_MAXIMUM + (BH_INT8 << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
@@ -3397,248 +3177,28 @@ bh_computeloop bh_compute_get( bh_instruction *instr ) {
             return &traverse_aac<bh_bool,std::complex<double>,std::complex<double>, not_equal_functor<bh_bool,std::complex<double>,std::complex<double> > >;
         case BH_NOT_EQUAL + (BH_BOOL << 8) +(BH_COMPLEX128 <<12) + (BH_COMPLEX128 <<16) + (1 << 17):
             return &traverse_aca<bh_bool,std::complex<double>,std::complex<double>, not_equal_functor<bh_bool,std::complex<double>,std::complex<double> > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_aaa<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int8,bh_int8, logical_and_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_aaa<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float64,bh_float64, logical_and_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_aaa<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint16,bh_uint16, logical_and_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_aaa<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint64,bh_uint64, logical_and_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_aaa<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int16,bh_int16, logical_and_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_aaa<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float32,bh_float32, logical_and_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_aaa<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_aac<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_aca<bh_bool,bh_bool,bh_bool, logical_and_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_aaa<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int32,bh_int32, logical_and_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_aaa<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint8,bh_uint8, logical_and_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_aaa<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int64,bh_int64, logical_and_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_aaa<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_AND + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint32,bh_uint32, logical_and_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_aaa<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int8,bh_int8, logical_or_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_aaa<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float64,bh_float64, logical_or_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_aaa<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint16,bh_uint16, logical_or_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_aaa<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint64,bh_uint64, logical_or_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_aaa<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int16,bh_int16, logical_or_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_aaa<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float32,bh_float32, logical_or_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_aaa<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_aac<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_aca<bh_bool,bh_bool,bh_bool, logical_or_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_aaa<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int32,bh_int32, logical_or_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_aaa<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint8,bh_uint8, logical_or_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_aaa<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int64,bh_int64, logical_or_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_aaa<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_OR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint32,bh_uint32, logical_or_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
-            return &traverse_aaa<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int8,bh_int8, logical_xor_functor<bh_bool,bh_int8,bh_int8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16):
-            return &traverse_aaa<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (BH_FLOAT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float64,bh_float64, logical_xor_functor<bh_bool,bh_float64,bh_float64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16):
-            return &traverse_aaa<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT16 <<12) + (BH_UINT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint16,bh_uint16, logical_xor_functor<bh_bool,bh_uint16,bh_uint16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16):
-            return &traverse_aaa<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT64 <<12) + (BH_UINT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint64,bh_uint64, logical_xor_functor<bh_bool,bh_uint64,bh_uint64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16):
-            return &traverse_aaa<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT16 <<12) + (BH_INT16 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int16,bh_int16, logical_xor_functor<bh_bool,bh_int16,bh_int16 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16):
-            return &traverse_aaa<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (BH_FLOAT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_float32,bh_float32, logical_xor_functor<bh_bool,bh_float32,bh_float32 > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16):
             return &traverse_aaa<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 18):
             return &traverse_aac<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
         case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_BOOL <<12) + (BH_BOOL <<16) + (1 << 17):
             return &traverse_aca<bh_bool,bh_bool,bh_bool, logical_xor_functor<bh_bool,bh_bool,bh_bool > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16):
-            return &traverse_aaa<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT32 <<12) + (BH_INT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int32,bh_int32, logical_xor_functor<bh_bool,bh_int32,bh_int32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16):
-            return &traverse_aaa<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT8 <<12) + (BH_UINT8 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint8,bh_uint8, logical_xor_functor<bh_bool,bh_uint8,bh_uint8 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16):
-            return &traverse_aaa<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_INT64 <<12) + (BH_INT64 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_int64,bh_int64, logical_xor_functor<bh_bool,bh_int64,bh_int64 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16):
-            return &traverse_aaa<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 18):
-            return &traverse_aac<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_XOR + (BH_BOOL << 8) +(BH_UINT32 <<12) + (BH_UINT32 <<16) + (1 << 17):
-            return &traverse_aca<bh_bool,bh_uint32,bh_uint32, logical_xor_functor<bh_bool,bh_uint32,bh_uint32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT8 <<12):
-            return &traverse_aa<bh_bool,bh_int8, logical_not_functor<bh_bool,bh_int8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT8 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_int8, logical_not_functor<bh_bool,bh_int8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT64 <<12):
-            return &traverse_aa<bh_bool,bh_float64, logical_not_functor<bh_bool,bh_float64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT64 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_float64, logical_not_functor<bh_bool,bh_float64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT16 <<12):
-            return &traverse_aa<bh_bool,bh_uint16, logical_not_functor<bh_bool,bh_uint16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT16 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_uint16, logical_not_functor<bh_bool,bh_uint16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT64 <<12):
-            return &traverse_aa<bh_bool,bh_uint64, logical_not_functor<bh_bool,bh_uint64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT64 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_uint64, logical_not_functor<bh_bool,bh_uint64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT16 <<12):
-            return &traverse_aa<bh_bool,bh_int16, logical_not_functor<bh_bool,bh_int16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT16 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_int16, logical_not_functor<bh_bool,bh_int16 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT32 <<12):
-            return &traverse_aa<bh_bool,bh_float32, logical_not_functor<bh_bool,bh_float32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_FLOAT32 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_float32, logical_not_functor<bh_bool,bh_float32 > >;
         case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_BOOL <<12):
             return &traverse_aa<bh_bool,bh_bool, logical_not_functor<bh_bool,bh_bool > >;
         case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_BOOL <<12) + (1 << 17):
             return &traverse_ac<bh_bool,bh_bool, logical_not_functor<bh_bool,bh_bool > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT32 <<12):
-            return &traverse_aa<bh_bool,bh_int32, logical_not_functor<bh_bool,bh_int32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT32 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_int32, logical_not_functor<bh_bool,bh_int32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT8 <<12):
-            return &traverse_aa<bh_bool,bh_uint8, logical_not_functor<bh_bool,bh_uint8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT8 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_uint8, logical_not_functor<bh_bool,bh_uint8 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT64 <<12):
-            return &traverse_aa<bh_bool,bh_int64, logical_not_functor<bh_bool,bh_int64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_INT64 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_int64, logical_not_functor<bh_bool,bh_int64 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT32 <<12):
-            return &traverse_aa<bh_bool,bh_uint32, logical_not_functor<bh_bool,bh_uint32 > >;
-        case BH_LOGICAL_NOT + (BH_BOOL << 8) +(BH_UINT32 <<12) + (1 << 17):
-            return &traverse_ac<bh_bool,bh_uint32, logical_not_functor<bh_bool,bh_uint32 > >;
         case BH_MAXIMUM + (BH_INT8 << 8) +(BH_INT8 <<12) + (BH_INT8 <<16):
             return &traverse_aaa<bh_int8,bh_int8,bh_int8, maximum_functor<bh_int8,bh_int8,bh_int8 > >;
         case BH_MAXIMUM + (BH_INT8 << 8) +(BH_INT8 <<12) + (BH_INT8 <<16) + (1 << 18):

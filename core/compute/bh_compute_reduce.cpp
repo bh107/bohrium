@@ -270,22 +270,6 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
             return bh_compute_reduce_any_naive<bh_uint8, maximum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_LOGICAL_AND + (BH_BOOL << 8):
             return bh_compute_reduce_any_naive<bh_bool, logical_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT16 << 8):
-            return bh_compute_reduce_any_naive<bh_int16, logical_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT32 << 8):
-            return bh_compute_reduce_any_naive<bh_int32, logical_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT64 << 8):
-            return bh_compute_reduce_any_naive<bh_int64, logical_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT8 << 8):
-            return bh_compute_reduce_any_naive<bh_int8, logical_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT16 << 8):
-            return bh_compute_reduce_any_naive<bh_uint16, logical_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT32 << 8):
-            return bh_compute_reduce_any_naive<bh_uint32, logical_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT64 << 8):
-            return bh_compute_reduce_any_naive<bh_uint64, logical_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT8 << 8):
-            return bh_compute_reduce_any_naive<bh_uint8, logical_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_AND + (BH_BOOL << 8):
             return bh_compute_reduce_any_naive<bh_bool, bitwise_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_AND + (BH_INT16 << 8):
@@ -306,22 +290,6 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
             return bh_compute_reduce_any_naive<bh_uint8, bitwise_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_LOGICAL_OR + (BH_BOOL << 8):
             return bh_compute_reduce_any_naive<bh_bool, logical_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT16 << 8):
-            return bh_compute_reduce_any_naive<bh_int16, logical_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT32 << 8):
-            return bh_compute_reduce_any_naive<bh_int32, logical_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT64 << 8):
-            return bh_compute_reduce_any_naive<bh_int64, logical_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT8 << 8):
-            return bh_compute_reduce_any_naive<bh_int8, logical_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT16 << 8):
-            return bh_compute_reduce_any_naive<bh_uint16, logical_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT32 << 8):
-            return bh_compute_reduce_any_naive<bh_uint32, logical_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT64 << 8):
-            return bh_compute_reduce_any_naive<bh_uint64, logical_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT8 << 8):
-            return bh_compute_reduce_any_naive<bh_uint8, logical_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_BOOL << 8):
             return bh_compute_reduce_any_naive<bh_bool, bitwise_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_INT16 << 8):
@@ -637,22 +605,6 @@ bh_error bh_compute_reduce(bh_instruction *inst)
             return bh_compute_reduce_any<bh_uint8, maximum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_LOGICAL_AND + (BH_BOOL << 8):
             return bh_compute_reduce_any<bh_bool, logical_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT16 << 8):
-            return bh_compute_reduce_any<bh_int16, logical_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT32 << 8):
-            return bh_compute_reduce_any<bh_int32, logical_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT64 << 8):
-            return bh_compute_reduce_any<bh_int64, logical_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_INT8 << 8):
-            return bh_compute_reduce_any<bh_int8, logical_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT16 << 8):
-            return bh_compute_reduce_any<bh_uint16, logical_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT32 << 8):
-            return bh_compute_reduce_any<bh_uint32, logical_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT64 << 8):
-            return bh_compute_reduce_any<bh_uint64, logical_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_AND + (BH_UINT8 << 8):
-            return bh_compute_reduce_any<bh_uint8, logical_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_AND + (BH_BOOL << 8):
             return bh_compute_reduce_any<bh_bool, bitwise_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_AND + (BH_INT16 << 8):
@@ -673,22 +625,6 @@ bh_error bh_compute_reduce(bh_instruction *inst)
             return bh_compute_reduce_any<bh_uint8, bitwise_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_LOGICAL_OR + (BH_BOOL << 8):
             return bh_compute_reduce_any<bh_bool, logical_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT16 << 8):
-            return bh_compute_reduce_any<bh_int16, logical_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT32 << 8):
-            return bh_compute_reduce_any<bh_int32, logical_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT64 << 8):
-            return bh_compute_reduce_any<bh_int64, logical_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_INT8 << 8):
-            return bh_compute_reduce_any<bh_int8, logical_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT16 << 8):
-            return bh_compute_reduce_any<bh_uint16, logical_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT32 << 8):
-            return bh_compute_reduce_any<bh_uint32, logical_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT64 << 8):
-            return bh_compute_reduce_any<bh_uint64, logical_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
-        case BH_LOGICAL_OR + (BH_UINT8 << 8):
-            return bh_compute_reduce_any<bh_uint8, logical_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_BOOL << 8):
             return bh_compute_reduce_any<bh_bool, bitwise_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_INT16 << 8):

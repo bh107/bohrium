@@ -841,58 +841,8 @@
         "types": [
             [
                 "BH_BOOL", 
-                "BH_INT8", 
-                "BH_INT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT64", 
-                "BH_FLOAT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT16", 
-                "BH_UINT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT64", 
-                "BH_UINT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT16", 
-                "BH_INT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT32", 
-                "BH_FLOAT32"
-            ], 
-            [
-                "BH_BOOL", 
                 "BH_BOOL", 
                 "BH_BOOL"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT32", 
-                "BH_INT32"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT8", 
-                "BH_UINT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT64", 
-                "BH_INT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT32", 
-                "BH_UINT32"
             ]
         ]
     }, 
@@ -907,58 +857,8 @@
         "types": [
             [
                 "BH_BOOL", 
-                "BH_INT8", 
-                "BH_INT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT64", 
-                "BH_FLOAT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT16", 
-                "BH_UINT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT64", 
-                "BH_UINT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT16", 
-                "BH_INT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT32", 
-                "BH_FLOAT32"
-            ], 
-            [
-                "BH_BOOL", 
                 "BH_BOOL", 
                 "BH_BOOL"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT32", 
-                "BH_INT32"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT8", 
-                "BH_UINT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT64", 
-                "BH_INT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT32", 
-                "BH_UINT32"
             ]
         ]
     },
@@ -973,58 +873,8 @@
         "types": [
             [
                 "BH_BOOL", 
-                "BH_INT8", 
-                "BH_INT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT64", 
-                "BH_FLOAT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT16", 
-                "BH_UINT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT64", 
-                "BH_UINT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT16", 
-                "BH_INT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT32", 
-                "BH_FLOAT32"
-            ], 
-            [
-                "BH_BOOL", 
                 "BH_BOOL", 
                 "BH_BOOL"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT32", 
-                "BH_INT32"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT8", 
-                "BH_UINT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT64", 
-                "BH_INT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT32", 
-                "BH_UINT32"
             ]
         ]
     },
@@ -1039,47 +889,7 @@
         "types": [
             [
                 "BH_BOOL", 
-                "BH_INT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT16"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_FLOAT32"
-            ], 
-            [
-                "BH_BOOL", 
                 "BH_BOOL"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT32"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT8"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_INT64"
-            ], 
-            [
-                "BH_BOOL", 
-                "BH_UINT32"
             ]
         ]
     },  
@@ -2938,15 +2748,7 @@
         "system_opcode": false, 
         "elementwise": false, 
         "types": [
-            ["BH_BOOL", "BH_INT8",      "BH_INT8"], 
-            ["BH_BOOL", "BH_UINT16",    "BH_UINT16"], 
-            ["BH_BOOL", "BH_UINT64",    "BH_UINT64"], 
-            ["BH_BOOL", "BH_INT16",     "BH_INT16"], 
-            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"], 
-            ["BH_BOOL", "BH_INT32",     "BH_INT32"], 
-            ["BH_BOOL", "BH_UINT8",     "BH_UINT8"], 
-            ["BH_BOOL", "BH_INT64",     "BH_INT64"], 
-            ["BH_BOOL", "BH_UINT32",    "BH_UINT32"]
+            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"]
         ]
     },
     {
@@ -2978,15 +2780,7 @@
         "system_opcode": false, 
         "elementwise": false, 
         "types": [
-            ["BH_BOOL", "BH_INT8",      "BH_INT8"], 
-            ["BH_BOOL", "BH_UINT16",    "BH_UINT16"], 
-            ["BH_BOOL", "BH_UINT64",    "BH_UINT64"], 
-            ["BH_BOOL", "BH_INT16",     "BH_INT16"], 
-            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"], 
-            ["BH_BOOL", "BH_INT32",     "BH_INT32"], 
-            ["BH_BOOL", "BH_UINT8",     "BH_UINT8"], 
-            ["BH_BOOL", "BH_INT64",     "BH_INT64"], 
-            ["BH_BOOL", "BH_UINT32",    "BH_UINT32"]
+            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"]
         ]
     },
     {
