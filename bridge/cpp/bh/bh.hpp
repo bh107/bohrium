@@ -182,19 +182,28 @@ public:
 
     multi_array<T>& copy();                 // Explicity create a copy of array
     multi_array<T>& flatten();              // Create a flat copy of the array
-    
-    template <typename Ret>                 // Typecast, creates a copy.
-    multi_array<Ret>& as();
-                                            // Extensions
-    multi_array<T>& reduce(reducible op, unsigned int axis);
 
-    // Hack...
+    multi_array<T>& transpose();
+
+    multi_array<T>& sum();                  // Reductions
+    multi_array<T>& product();
+    multi_array<T>& min();
+    multi_array<T>& max();
+    multi_array<bool>& any();
+    multi_array<bool>& all();
+    multi_array<size_t>& count();
+                                            // Partial reduction
+    multi_array<T>& reduce(reducible op, unsigned int axis);
+    
+    template <typename Ret>                 // Typecast; implicit copy
+    multi_array<Ret>& as();
+
+    void link(unsigned int);
     unsigned int unlink();
 
 protected:
     unsigned int key;
     bool temp;
-    bool linked;
 
 private:
     void init();
@@ -318,7 +327,8 @@ void pprint(multi_array<T>& op);
 #include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
-#include "extensions.hpp"   // Communication with Bohrium runtime
+#include "reduction.hpp"   // Communication with Bohrium runtime
+#include "generator.hpp"   // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.

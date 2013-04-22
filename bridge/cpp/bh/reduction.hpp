@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_CPP_EXTENSIONS
-#define __BOHRIUM_BRIDGE_CPP_EXTENSIONS
+#ifndef __BOHRIUM_BRIDGE_CPP_REDUCTION
+#define __BOHRIUM_BRIDGE_CPP_REDUCTION
 
 namespace bh {
 
@@ -31,7 +31,6 @@ bh_opcode reducible_to_opcode(reducible opcode)
         case MULTIPLY:
             return (bh_opcode)BH_MUL_REDUCE;
             break;
-            /*
         case MIN:
             return (bh_opcode)BH_MIN_REDUCE;
             break;
@@ -50,7 +49,6 @@ bh_opcode reducible_to_opcode(reducible opcode)
         case BITWISE_OR:
             return (bh_opcode)BH_BITWISE_OR_REDUCE;
             break;
-            */
         default:
             throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
     }
@@ -86,30 +84,68 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
 }
 
 template <typename T>
-multi_array<T>& random(int n)
+multi_array<T>& multi_array<T>::sum()
 {
-    char err_msg[100];
-    bh_random_type* rinstr;
-
-    multi_array<T>* result = new multi_array<T>(n);
+    multi_array<T>* result = new multi_array<T>();
     result->setTemp(true);
-    
-    rinstr = (bh_random_type*)malloc(sizeof(bh_random_type)); //Allocate the user-defined function.
-    if (rinstr == NULL) {
-        sprintf(err_msg, "Failed alllocating memory for extension-call.");
-        throw std::runtime_error(err_msg);
-    }
-    
-    rinstr->id          = random_id;        //Set the instruction
-    rinstr->nout        = 1;
-    rinstr->nin         = 0;
-    rinstr->struct_size = sizeof(bh_random_type);
-    rinstr->operand[0]  = &storage[result->getKey()];
 
-    Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::product()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::min()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::max()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& multi_array<T>::any()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& multi_array<T>::all()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<size_t>& multi_array<T>::count()
+{
+    multi_array<T>* result = new multi_array<T>();
+    result->setTemp(true);
 
     return *result;
 }
 
 }
 #endif
+

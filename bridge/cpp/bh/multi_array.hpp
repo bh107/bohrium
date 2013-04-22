@@ -30,7 +30,6 @@ void multi_array<T>::init()     // Pseudo-default constructor
 {
     key     = keys++;
     temp    = false;
-    linked  = true;
 
     storage.insert(key, new bh_array);
     assign_array_type<T>(&storage[key]);
@@ -109,7 +108,7 @@ multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
 template <typename T>       // Deconstructor
 multi_array<T>::~multi_array()
 {
-    if (linked) {
+    if (key>0) {
         Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
     }
@@ -235,8 +234,6 @@ multi_array<T>& multi_array<T>::operator()(const T& n) {
     return *this;
 }
 
-
-
 // Initialization
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
@@ -245,11 +242,13 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
     return *this;
 }
 
+// Linking
 template <typename T>
 unsigned int multi_array<T>::unlink()
 {
-    linked = false;
-    return key;
+    unsigned int retKey = key;
+    key = 0;
+    return retKey;
 }
 
 // Aliasing
@@ -268,7 +267,6 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         if (rhs.getTemp()) {        // Take over temporary reference
             key     = rhs.unlink();
             temp    = false;
-            linked  = true;
             delete &rhs;
         } else {                    // Create a view of rhs
             init();
@@ -313,6 +311,18 @@ multi_array<Ret>& multi_array<T>::as()
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
 
     return *result;
+}
+
+// How many elements in array / length
+template <typename T>
+inline
+size_t multi_array<T>::len()
+{
+    size_t nelements = 1;
+    for (int i = 0; i < storage[key].ndim; ++i) {
+        nelements *= storage[key].shape[i];
+    }
+    return nelements;
 }
 
 }
