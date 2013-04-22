@@ -2840,21 +2840,181 @@
     {
         "opcode": "BH_ADD_REDUCE", 
         "doc": "Sums all elements in the specified dimension.", 
-        "code": "add_reduce(a, axis)", 
-        "nop": 0, 
+        "code": "sum(a, axis)", 
+        "nop": 2, 
         "id": 59, 
         "system_opcode": true, 
         "elementwise": false, 
-        "types": []
+        "types": [
+            ["BH_INT8",     "BH_INT8","BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64","BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16","BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64","BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16","BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32","BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL","BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32","BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8","BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64","BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32","BH_UINT32"], 
+            ["BH_COMPLEX64",    "BH_COMPLEX64","BH_COMPLEX64"], 
+            ["BH_COMPLEX128",   "BH_COMPLEX128","BH_COMPLEX128"]
+        ]
     },
     {
         "opcode": "BH_MUL_REDUCE", 
         "doc": "Multiplies all elements in the specified dimension.", 
-        "code": "mul_reduce(a, axis)", 
-        "nop": 0, 
+        "code": "product(a, axis)", 
+        "nop": 2, 
         "id": 60, 
         "system_opcode": true, 
         "elementwise": false, 
-        "types": []
+        "types": [
+            ["BH_INT8",     "BH_INT8","BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64","BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16","BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64","BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16","BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32","BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL","BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32","BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8","BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64","BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32","BH_UINT32"], 
+            ["BH_COMPLEX64",    "BH_COMPLEX64","BH_COMPLEX64"], 
+            ["BH_COMPLEX128",   "BH_COMPLEX128","BH_COMPLEX128"]
+        ] 
+    },
+    {
+        "opcode": "BH_MIN_REDUCE", 
+        "doc": "Multiplies all elements in the specified dimension.", 
+        "code": "min(a, axis)", 
+        "nop": 2, 
+        "id": 61, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_INT8",     "BH_INT8",      "BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16",    "BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16",     "BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL",      "BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32",     "BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8",     "BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
+        ]
+    },
+    {
+        "opcode": "BH_MAX_REDUCE", 
+        "doc": "Multiplies all elements in the specified dimension.", 
+        "code": "max(a, axis)", 
+        "nop": 2, 
+        "id": 62, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_INT8",     "BH_INT8",      "BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16",    "BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16",     "BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL",      "BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32",     "BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8",     "BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
+        ]
+    },
+    {
+        "opcode": "BH_LOGICAL_AND_REDUCE", 
+        "doc": "Logicly AND of all elements in the specified dimension.", 
+        "code": "all(a, axis)", 
+        "nop": 2,
+        "id": 63, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_BOOL", "BH_INT8",      "BH_INT8"], 
+            ["BH_BOOL", "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_BOOL", "BH_UINT16",    "BH_UINT16"], 
+            ["BH_BOOL", "BH_UINT64",    "BH_UINT64"], 
+            ["BH_BOOL", "BH_INT16",     "BH_INT16"], 
+            ["BH_BOOL", "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"], 
+            ["BH_BOOL", "BH_INT32",     "BH_INT32"], 
+            ["BH_BOOL", "BH_UINT8",     "BH_UINT8"], 
+            ["BH_BOOL", "BH_INT64",     "BH_INT64"], 
+            ["BH_BOOL", "BH_UINT32",    "BH_UINT32"]
+        ]
+    },
+    {
+        "opcode": "BH_BITWISE_AND_REDUCE", 
+        "doc": "Logicly ANDs all elements in the specified dimension.", 
+        "code": "all(a, axis)", 
+        "nop": 2,
+        "id": 64, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_INT8",     "BH_INT8",      "BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16",    "BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16",     "BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL",      "BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32",     "BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8",     "BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
+        ]
+    },
+    {
+        "opcode": "BH_LOGICAL_OR_REDUCE", 
+        "doc": "Logicly OR of all elements in the specified dimension.", 
+        "code": "any(a, axis)", 
+        "nop": 2,
+        "id": 65, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_BOOL", "BH_INT8",      "BH_INT8"], 
+            ["BH_BOOL", "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_BOOL", "BH_UINT16",    "BH_UINT16"], 
+            ["BH_BOOL", "BH_UINT64",    "BH_UINT64"], 
+            ["BH_BOOL", "BH_INT16",     "BH_INT16"], 
+            ["BH_BOOL", "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"], 
+            ["BH_BOOL", "BH_INT32",     "BH_INT32"], 
+            ["BH_BOOL", "BH_UINT8",     "BH_UINT8"], 
+            ["BH_BOOL", "BH_INT64",     "BH_INT64"], 
+            ["BH_BOOL", "BH_UINT32",    "BH_UINT32"]
+        ]
+    },
+    {
+        "opcode": "BH_BITWISE_OR_REDUCE", 
+        "doc": "Bitwise OR of all elements in the specified dimension.", 
+        "code": "any(a, axis)", 
+        "nop": 2,
+        "id": 66, 
+        "system_opcode": true, 
+        "elementwise": false, 
+        "types": [
+            ["BH_INT8",     "BH_INT8",      "BH_INT8"], 
+            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_FLOAT64"], 
+            ["BH_UINT16",   "BH_UINT16",    "BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16",     "BH_INT16"], 
+            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_FLOAT32"], 
+            ["BH_BOOL",     "BH_BOOL",      "BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32",     "BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8",     "BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
+        ]
     }
 ]
