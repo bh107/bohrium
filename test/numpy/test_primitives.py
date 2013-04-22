@@ -30,7 +30,7 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
             self.name = op['opcode']
             self.nops = op['nop']
 
-            if op['system_opcode'] or self.name in ["BH_IDENTITY"]:
+            if self.name in ["BH_IDENTITY"] or not op['elementwise']:
                 continue
             for t in op['types']:
                 a = {}
