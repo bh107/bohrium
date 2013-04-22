@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NumCIL;
-using Timer;
+using Utilities;
 
 namespace shallow_water
 {

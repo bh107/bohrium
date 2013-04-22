@@ -24,7 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Timer
+namespace Utilities
 {
  /// <summary>Implementation of a High Performance timer, that falls back to DateTime.Ticks if not present</summary>
     public class CustomTimer

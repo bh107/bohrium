@@ -1,8 +1,9 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MyClass.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Timer.cs">
     <Files>
-      <File FileName="MyClass.cs" Line="25" Column="1" />
+      <File FileName="Timer.cs" Line="107" Column="6" />
+      <File FileName="CommandLineParser.cs" Line="29" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -56,9 +56,9 @@
       <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
       <Name>NumCIL.Unsafe</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Timer\Timer.csproj">
+    <ProjectReference Include="..\..\Utilities\Utilites.csproj">
       <Project>{D6CA1418-5885-4311-AFD8-94916E437EFE}</Project>
-      <Name>Timer</Name>
+      <Name>Utilites</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
