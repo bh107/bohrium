@@ -44,8 +44,7 @@ class multi_array;
 //
 // Extensions
 //
-static bh_intp reduce_id;
-static bh_intp random_id;
+//static bh_intp random_id;
 
 enum reducible {
     ADD         = BH_ADD,
@@ -180,6 +179,7 @@ public:
     multi_array& operator--();              // Decrement all elements in container
     multi_array& operator--(int);
 
+    size_t len();
     multi_array<T>& copy();                 // Explicity create a copy of array
     multi_array<T>& flatten();              // Create a flat copy of the array
 
@@ -230,7 +230,7 @@ public:
     void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2); 
 
     template <typename T>   // x = y + 1;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);    
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);
 
     template <typename T>   // x = 1 + y;
     void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
@@ -254,6 +254,10 @@ public:
     template <typename Ret, typename In>    // x = 1 < y;
     void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);    
 
+                                            // Mixed input, ret is same as first operand
+    template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);    
+
     template <typename T>                   // Userfunc / extensions
     void enqueue(bh_userfunc* rinstr);
 
@@ -276,6 +280,8 @@ public:
     multi_array<T>& temp_view(multi_array<T>& base);
 
     bh_intp guard();
+
+    bh_intp random_id;                          // Extension IDs
 
 private:
 
