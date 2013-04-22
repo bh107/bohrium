@@ -188,7 +188,6 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
 {
     bh_intp cur_index,  j;
     bh_instruction *inst, *binst;
-    bh_reduce_type reduce_data;
 
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;
@@ -221,23 +220,14 @@ bh_error bh_ve_score_execute( bh_intp instruction_count, bh_instruction* instruc
                 break;
 
             case BH_ADD_REDUCE:
-            case BH_MUL_REDUCE:
-
-            	reduce_data.id = 0;
-            	reduce_data.nout = 1;
-            	reduce_data.nin = 1;
-            	reduce_data.struct_size = sizeof(bh_reduce_type);
-            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
-            	reduce_data.operand[0] = inst->operand[0];
-            	reduce_data.operand[1] = inst->operand[1];
-            	
-	            if (inst->constant.type == BH_INT64) {
-	            	reduce_data.axis = inst->constant.value.int64;
-	            	res = bh_compute_reduce_naive((bh_userfunc *)&reduce_data, NULL);
-	            }
-	            else
-	            	res = BH_TYPE_NOT_SUPPORTED;
-            	
+            case BH_MULTIPLY_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
+            case BH_LOGICAL_AND_REDUCE:
+            case BH_BITWISE_AND_REDUCE:
+            case BH_LOGICAL_OR_REDUCE:
+            case BH_BITWISE_OR_REDUCE:
+				res = bh_compute_reduce_naive( inst );
             	break;
 
             case BH_USERFUNC:                // External libraries

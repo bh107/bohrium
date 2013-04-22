@@ -111,24 +111,39 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
 
 }
 
-bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg)
+bh_error bh_compute_reduce_naive(bh_instruction *inst)
 {
-    bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
+    if (inst->constant.type != BH_INT64)
+        return BH_TYPE_NOT_SUPPORTED;
 
-    bh_opcode opcode = a->opcode;                    // Opcode
-    bh_index axis    = a->axis;                      // The axis to reduce "around"
-
-    bh_array *op_out = a->operand[0];                // Output operand
-    bh_array *op_in  = a->operand[1];                // Input operand
-
+    bh_index axis = inst->constant.value.int64;
+    bh_opcode opcode;
+    bh_array *op_out = inst->operand[0];
+    bh_array *op_in  = inst->operand[1];
+    
+    switch (inst->opcode)
+    {
+		%set $lastopcode = ''
+        %for $case in $data
+		%if $case.opcode != $lastopcode
+        case ${case.opcode}_REDUCE:
+        	opcode = ${case.opcode};
+        	break;
+        %end if
+        %set $lastopcode = $case.opcode
+        %end for
+        default:
+            return BH_TYPE_NOT_SUPPORTED;
+    }
+    
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return BH_ERROR;
     }
 
-	if (bh_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
+	if (bh_base_array(op_in)->data == NULL) {
+        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
 	}
 
@@ -284,24 +299,39 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 	return BH_SUCCESS;
 }
 
-bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
+bh_error bh_compute_reduce(bh_instruction *inst)
 {
-    bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
+    if (inst->constant.type != BH_INT64)
+        return BH_TYPE_NOT_SUPPORTED;
 
-    bh_opcode opcode = a->opcode;                    // Opcode
-    bh_index axis    = a->axis;                      // The axis to reduce "around"
-
-    bh_array *op_out = a->operand[0];                // Output operand
-    bh_array *op_in  = a->operand[1];                // Input operand
-
+    bh_index axis = inst->constant.value.int64;
+    bh_opcode opcode;
+    bh_array *op_out = inst->operand[0];
+    bh_array *op_in  = inst->operand[1];
+    
+    switch (inst->opcode)
+    {
+		%set $lastopcode = ''
+        %for $case in $data
+		%if $case.opcode != $lastopcode
+        case ${case.opcode}_REDUCE:
+        	opcode = ${case.opcode};
+        	break;
+        %end if
+        %set $lastopcode = $case.opcode
+        %end for
+        default:
+            return BH_TYPE_NOT_SUPPORTED;
+    }
+    
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return BH_ERROR;
     }
 
-	if (bh_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
+	if (bh_base_array(op_in)->data == NULL) {
+        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
 	}
 

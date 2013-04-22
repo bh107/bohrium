@@ -34,19 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-//The type of the user-defined reduce function.
-typedef struct
-{
-    //User-defined function header with two operands.
-    BH_USER_FUNC_HEADER(2)
-    //The Axis to reduce
-    bh_index   axis;
-    //The opcode to reduce with
-    bh_opcode  opcode;
-} bh_reduce_type;
-
-DLLEXPORT bh_error bh_reduce(bh_userfunc* arg, void* ve_arg);
-
 //The type of the user-defined random function.
 typedef struct
 {

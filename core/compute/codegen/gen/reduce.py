@@ -2,8 +2,8 @@ from pprint import pprint as pp
 
 def gen( opcodes, ignore ):
 
-    filtered    = [f for f in opcodes if not f['system_opcode'] and f['nop'] > 0 and f['elementwise'] and f['opcode'] in ['BH_ADD', 'BH_MULTIPLY'] ]
-    fname       = [dict(f.items()+{'fname': f['opcode'].lower().replace('bh_', '')}.items()) for f in filtered]
+    filtered    = [f for f in opcodes if f['nop'] == 2 and not f['elementwise'] and f['opcode'].endswith("_REDUCE") ]
+    fname       = [dict(f.items()+{'fname': f['opcode'][:-len("_REDUCE")].lower().replace('bh_', '')}.items()) for f in filtered]
 
     data = []
     for f in fname:
@@ -30,8 +30,8 @@ def gen( opcodes, ignore ):
             del(op['doc'])
             del(op['system_opcode'])
             del(op['types'])
-            if op['nop'] == 3:
-                data.append(op)
+            op['opcode'] = op['opcode'][:-len("_REDUCE")]
+            data.append(op)
         
     return data
 

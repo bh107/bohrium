@@ -94,12 +94,12 @@ void bh_tstate_reset( bh_tstate *state, bh_instruction *instr ) {
 bh_error bh_compute_apply( bh_instruction *instr ) {
 
     bh_computeloop comp = bh_compute_get( instr );
-    bh_tstate state;
-    bh_tstate_reset( &state, instr );
     
     if (comp == NULL) {
-        return BH_TYPE_NOT_SUPPORTED;
+    	return bh_compute_reduce(instr);
     } else {
+		bh_tstate state;
+		bh_tstate_reset( &state, instr );
         return comp( instr, &state );
     }
 
@@ -116,12 +116,12 @@ void bh_tstate_reset_naive( bh_tstate_naive *state ) {
 bh_error bh_compute_apply_naive( bh_instruction *instr ) {
 
     bh_computeloop_naive comp = bh_compute_get_naive( instr );
-    bh_tstate_naive state;
-    bh_tstate_reset_naive( &state );
     
     if (comp == NULL) {
-        return BH_TYPE_NOT_SUPPORTED;
+    	return bh_compute_reduce_naive(instr);
     } else {
+    	bh_tstate_naive state;
+	    bh_tstate_reset_naive( &state );
         return comp( instr, &state, 0 );
     }
 

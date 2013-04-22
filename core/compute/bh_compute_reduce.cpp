@@ -106,24 +106,54 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
 
 }
 
-bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg)
+bh_error bh_compute_reduce_naive(bh_instruction *inst)
 {
-    bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
+    if (inst->constant.type != BH_INT64)
+        return BH_TYPE_NOT_SUPPORTED;
 
-    bh_opcode opcode = a->opcode;                    // Opcode
-    bh_index axis    = a->axis;                      // The axis to reduce "around"
-
-    bh_array *op_out = a->operand[0];                // Output operand
-    bh_array *op_in  = a->operand[1];                // Input operand
-
+    bh_index axis = inst->constant.value.int64;
+    bh_opcode opcode;
+    bh_array *op_out = inst->operand[0];
+    bh_array *op_in  = inst->operand[1];
+    
+    switch (inst->opcode)
+    {
+        case BH_ADD_REDUCE:
+        	opcode = BH_ADD;
+        	break;
+        case BH_MULTIPLY_REDUCE:
+        	opcode = BH_MULTIPLY;
+        	break;
+        case BH_MINIMUM_REDUCE:
+        	opcode = BH_MINIMUM;
+        	break;
+        case BH_MAXIMUM_REDUCE:
+        	opcode = BH_MAXIMUM;
+        	break;
+        case BH_LOGICAL_AND_REDUCE:
+        	opcode = BH_LOGICAL_AND;
+        	break;
+        case BH_BITWISE_AND_REDUCE:
+        	opcode = BH_BITWISE_AND;
+        	break;
+        case BH_LOGICAL_OR_REDUCE:
+        	opcode = BH_LOGICAL_OR;
+        	break;
+        case BH_BITWISE_OR_REDUCE:
+        	opcode = BH_BITWISE_OR;
+        	break;
+        default:
+            return BH_TYPE_NOT_SUPPORTED;
+    }
+    
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return BH_ERROR;
     }
 
-	if (bh_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
+	if (bh_base_array(op_in)->data == NULL) {
+        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
 	}
 
@@ -194,6 +224,122 @@ bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg)
             return bh_compute_reduce_any_naive<bh_uint64, multiply_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
         case BH_MULTIPLY + (BH_UINT8 << 8):
             return bh_compute_reduce_any_naive<bh_uint8, multiply_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, minimum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_FLOAT32 << 8):
+            return bh_compute_reduce_any_naive<bh_float32, minimum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_FLOAT64 << 8):
+            return bh_compute_reduce_any_naive<bh_float64, minimum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, minimum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, minimum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, minimum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, minimum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, minimum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, minimum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, minimum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, minimum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, maximum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_FLOAT32 << 8):
+            return bh_compute_reduce_any_naive<bh_float32, maximum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_FLOAT64 << 8):
+            return bh_compute_reduce_any_naive<bh_float64, maximum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, maximum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, maximum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, maximum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, maximum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, maximum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, maximum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, maximum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, maximum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, logical_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, logical_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, logical_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, logical_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, logical_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, logical_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, logical_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, logical_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, logical_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, bitwise_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, bitwise_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, bitwise_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, bitwise_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, bitwise_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, bitwise_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, bitwise_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, bitwise_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, bitwise_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, logical_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, logical_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, logical_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, logical_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, logical_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, logical_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, logical_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, logical_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, logical_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, bitwise_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, bitwise_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, bitwise_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, bitwise_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, bitwise_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, bitwise_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, bitwise_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, bitwise_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, bitwise_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
             
@@ -327,24 +473,54 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 	return BH_SUCCESS;
 }
 
-bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
+bh_error bh_compute_reduce(bh_instruction *inst)
 {
-    bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
+    if (inst->constant.type != BH_INT64)
+        return BH_TYPE_NOT_SUPPORTED;
 
-    bh_opcode opcode = a->opcode;                    // Opcode
-    bh_index axis    = a->axis;                      // The axis to reduce "around"
-
-    bh_array *op_out = a->operand[0];                // Output operand
-    bh_array *op_in  = a->operand[1];                // Input operand
-
+    bh_index axis = inst->constant.value.int64;
+    bh_opcode opcode;
+    bh_array *op_out = inst->operand[0];
+    bh_array *op_in  = inst->operand[1];
+    
+    switch (inst->opcode)
+    {
+        case BH_ADD_REDUCE:
+        	opcode = BH_ADD;
+        	break;
+        case BH_MULTIPLY_REDUCE:
+        	opcode = BH_MULTIPLY;
+        	break;
+        case BH_MINIMUM_REDUCE:
+        	opcode = BH_MINIMUM;
+        	break;
+        case BH_MAXIMUM_REDUCE:
+        	opcode = BH_MAXIMUM;
+        	break;
+        case BH_LOGICAL_AND_REDUCE:
+        	opcode = BH_LOGICAL_AND;
+        	break;
+        case BH_BITWISE_AND_REDUCE:
+        	opcode = BH_BITWISE_AND;
+        	break;
+        case BH_LOGICAL_OR_REDUCE:
+        	opcode = BH_LOGICAL_OR;
+        	break;
+        case BH_BITWISE_OR_REDUCE:
+        	opcode = BH_BITWISE_OR;
+        	break;
+        default:
+            return BH_TYPE_NOT_SUPPORTED;
+    }
+    
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
         return BH_ERROR;
     }
 
-	if (bh_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op[1] ) is null.\n");
+	if (bh_base_array(op_in)->data == NULL) {
+        fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
 	}
 
@@ -415,6 +591,122 @@ bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg)
             return bh_compute_reduce_any<bh_uint64, multiply_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
         case BH_MULTIPLY + (BH_UINT8 << 8):
             return bh_compute_reduce_any<bh_uint8, multiply_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, minimum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_FLOAT32 << 8):
+            return bh_compute_reduce_any<bh_float32, minimum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_FLOAT64 << 8):
+            return bh_compute_reduce_any<bh_float64, minimum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, minimum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, minimum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, minimum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, minimum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, minimum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, minimum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, minimum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_MINIMUM + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, minimum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, maximum_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_FLOAT32 << 8):
+            return bh_compute_reduce_any<bh_float32, maximum_functor<bh_float32, bh_float32, bh_float32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_FLOAT64 << 8):
+            return bh_compute_reduce_any<bh_float64, maximum_functor<bh_float64, bh_float64, bh_float64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, maximum_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, maximum_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, maximum_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, maximum_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, maximum_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, maximum_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, maximum_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_MAXIMUM + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, maximum_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, logical_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, logical_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, logical_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, logical_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, logical_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, logical_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, logical_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, logical_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_AND + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, logical_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, bitwise_and_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, bitwise_and_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, bitwise_and_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, bitwise_and_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, bitwise_and_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, bitwise_and_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, bitwise_and_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, bitwise_and_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_AND + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, bitwise_and_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, logical_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, logical_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, logical_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, logical_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, logical_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, logical_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, logical_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, logical_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_OR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, logical_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, bitwise_or_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, bitwise_or_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, bitwise_or_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, bitwise_or_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, bitwise_or_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, bitwise_or_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, bitwise_or_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, bitwise_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_OR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, bitwise_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
             

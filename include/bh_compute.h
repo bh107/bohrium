@@ -47,12 +47,11 @@ typedef bh_error (*bh_computeloop_naive)( bh_instruction*, bh_tstate_naive*, bh_
 
 bh_computeloop_naive bh_compute_get_naive( bh_instruction *instr );
 bh_error bh_compute_apply_naive( bh_instruction *instr );
-bh_error bh_compute_reduce_naive(bh_userfunc *arg, void* ve_arg);
+bh_error bh_compute_reduce_naive( bh_instruction *instr );
 
 bh_computeloop bh_compute_get( bh_instruction *instr );
 bh_error bh_compute_apply( bh_instruction *instr );
-bh_error bh_compute_reduce(bh_userfunc *arg, void* ve_arg);
-bh_error bh_compute_aggregate(bh_userfunc *arg, void* ve_arg);
+bh_error bh_compute_reduce( bh_instruction *instr );
 
 bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg);
 bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg);
