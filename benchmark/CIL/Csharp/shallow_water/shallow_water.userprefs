@@ -1,10 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Solver.tt">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../Timer/Timer.cs">
     <Files>
-      <File FileName="Solver.tt" Line="127" Column="10" />
-      <File FileName="Solver.cs" Line="206" Column="14" />
-      <File FileName="Main.cs" Line="44" Column="1" />
+      <File FileName="../../../../test/CIL/old_benchmarks/Tester/Program.cs" Line="142" Column="33" />
+      <File FileName="Main.cs" Line="41" Column="47" />
+      <File FileName="Solver.tt" Line="120" Column="1" />
+      <File FileName="Solver.cs" Line="97" Column="69" />
+      <File FileName="../../Timer/Timer.cs" Line="25" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
