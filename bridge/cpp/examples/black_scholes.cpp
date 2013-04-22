@@ -26,7 +26,7 @@ using namespace bh;
 template <typename T>
 multi_array<T>& cnd(multi_array<T>& x)
 {
-    multi_array<T> L, K, w, mask;
+    multi_array<T> l, k, w, mask;
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
@@ -34,9 +34,10 @@ multi_array<T>& cnd(multi_array<T>& x)
       a5 = 1.330274429,
       pp = 2.50662827463; // sqrt(2.0*PI)
 
-    L = abs(x);
-    K = 1.0 / (1.0 + 0.2316419 * L);
-    w = 1.0 - 1.0 / (pp * exp(~L*L/2.0) * (a1*K + a2*(pow(K,2)) + a3*(pow(K,3)) + a4*(pow(K,4)) + a5*(pow(K,5))));
+    cout << "cnd-in" << endl;
+    l = abs(x);
+    k = 1.0 / (1.0 + 0.2316419 * l);
+    w = 1.0 - 1.0 / (pp * exp(~l*l/2.0) * (a1*k + a2*(pow(k,2)) + a3*(pow(k,3)) + a4*(pow(k,4)) + a5*(pow(k,5))));
 
     mask    = x < 0;
     w       = w * ~mask + (1.0-w)*mask;
@@ -45,51 +46,47 @@ multi_array<T>& cnd(multi_array<T>& x)
 }
 
 template <typename T>
-multi_array<T>& black_scholes(multi_array<T>& S, char flag, T X, T U, T r, T v)
+multi_array<T>& black_scholes(multi_array<T>& s, char flag, T x, T t, T r, T v)
 {
     multi_array<T> d1, d2;
 
-    d1 = (log(S/X)+(r+v*v/2.0)*U)/(v*sqrt(U));
-    d2 = d1-v*sqrt(U);
+    d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
+    d2 = d1-v*sqrt(t);
+
     if (flag == 'c') {
-        return S * cnd(d1) - X * exp(-1.0 * r * U) * cnd(d2);
+        return s * cnd(d1) - x * exp(-1.0 * r * t) * cnd(d2);
     } else {
-        return X * exp(~r*U) * cnd(~d2) - S*cnd(~d1);
+        return x * exp(~r*t) * cnd(~d2) - s*cnd(~d1);
     }
 }
 
 template <typename T>
-T* price(multi_array<T>& S, char flag, T X, T dU, T r, T v, size_t iterations)
+T* price(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
 {
-    T U = dU;
-    T N = (T)S.len();
+    T t = d_t;
+    T n = (T)s.len();
     T* p;
-    p = new T[N];
+    p = new T[n];
 
     for(size_t i=0; i<iterations; i++) {
-        p[i] = (sum(black_scholes(flag, S, X, U, r, v)) / N).first();
-        U += dU;
+        p[i] = *(black_scholes(s, flag, x, d_t, r, v).sum().begin()) / n;
+        t += d_t;
     }
+
     return p;
 }
 
-template <typename T>
-multi_array<T>& model(size_t& n)
-{
-    multi_array<T>& s;
-    s = random<T>(n);
-    s = s * 4.0 - 2.0 + 60.0; // Price is 58-62
-    return s;
-}
 
 int main()
 {
     size_t sample_size  = 1000,
            iterations   = 10;
 
-    multi_array<double> S;
-    S = model(sample_size);
-    double* prices = price(S, 'c', 65.0, 1.0/365.0, 0.08, 0.3, iterations);
+    multi_array<double> s;
+
+    s = random<double>(sample_size) * (-2.0) + 60.0; // Model price between 58-62
+
+    double* prices = price(s, 'c', 65.0, 1.0/365.0, 0.08, 0.3, iterations);
     stop();
 
     cout << "Prices found: ";
