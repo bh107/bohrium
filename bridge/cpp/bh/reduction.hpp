@@ -26,28 +26,28 @@ bh_opcode reducible_to_opcode(reducible opcode)
 {
     switch(opcode) {
         case ADD:
-            return (bh_opcode)BH_ADD_REDUCE;
+            return BH_ADD_REDUCE;
             break;
         case MULTIPLY:
-            return (bh_opcode)BH_MUL_REDUCE;
+            return BH_MULTIPLY_REDUCE;
             break;
         case MIN:
-            return (bh_opcode)BH_MIN_REDUCE;
+            return BH_MINIMUM_REDUCE;
             break;
         case MAX:
-            return (bh_opcode)BH_MAX_REDUCE;
+            return BH_MAXIMUM_REDUCE;
             break;
         case LOGICAL_AND:
-            return (bh_opcode)BH_LOGICAL_AND_REDUCE;
+            return BH_LOGICAL_AND_REDUCE;
             break;
         case LOGICAL_OR:
-            return (bh_opcode)BH_LOGICAL_OR_REDUCE;
+            return BH_LOGICAL_OR_REDUCE;
             break;
         case BITWISE_AND:
-            return (bh_opcode)BH_BITWISE_AND_REDUCE;
+            return BH_BITWISE_AND_REDUCE;
             break;
         case BITWISE_OR:
-            return (bh_opcode)BH_BITWISE_OR_REDUCE;
+            return BH_BITWISE_OR_REDUCE;
             break;
         default:
             throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
@@ -78,7 +78,7 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
         }
     }
 
-    Runtime::instance()->enqueue<T>(reducible_to_opcode(opcode), *result, *this, (T)axis);
+    Runtime::instance()->enqueue<T>(reducible_to_opcode(opcode), *result, *this, axis);
 
     return *result;
 }

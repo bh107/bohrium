@@ -6,11 +6,11 @@ TEST_SRC	= $(wildcard testing/*.cpp)
 
 TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
-#EXAMPLES=hello_world monte_carlo_pi black_scholes
-EXAMPLES=black_scholes
+EXAMPLES=hello_world monte_carlo_pi black_scholes
+#EXAMPLES=black_scholes
 
-#CXX=clang
-CXX=g++
+CXX=clang
+#CXX=g++
 #CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 EXTRAS+=
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)

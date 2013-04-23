@@ -49,19 +49,6 @@ multi_array<T>& pow (multi_array<T>&lhs, const T& rhs)
 }
 
 template <typename T>
-T& pow (const T& lhs, const T& rhs)
-{
-    return lhs;
-}
-
-template <typename T>
-T& pow (const T& lhs, const int& rhs)
-{
-    return lhs;
-}
-
-
-template <typename T>
 multi_array<T>& abs (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance()->temp(rhs);
@@ -88,19 +75,6 @@ multi_array<T>& max (multi_array<T>&lhs, const T& rhs)
 }
 
 template <typename T>
-T& max (const T& lhs, const T& rhs)
-{
-    return lhs;
-}
-
-template <typename T>
-T& max (const T& lhs, const int& rhs)
-{
-    return lhs;
-}
-
-
-template <typename T>
 multi_array<T>& min (multi_array<T>&lhs, multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance()->temp(lhs);
@@ -117,19 +91,6 @@ multi_array<T>& min (multi_array<T>&lhs, const T& rhs)
     Runtime::instance()->enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
     return *result;
 }
-
-template <typename T>
-T& min (const T& lhs, const T& rhs)
-{
-    return lhs;
-}
-
-template <typename T>
-T& min (const T& lhs, const int& rhs)
-{
-    return lhs;
-}
-
 
 template <typename T>
 multi_array<T>& sin (multi_array<T>& rhs)

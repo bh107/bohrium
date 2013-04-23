@@ -46,19 +46,6 @@ multi_array<T>& $op (multi_array<T>&lhs, const T& rhs)
     return *result;
 }
 
-template <typename T>
-T& $op (const T& lhs, const T& rhs)
-{
-    return lhs;
-}
-
-template <typename T>
-T& $op (const T& lhs, const int& rhs)
-{
-    return lhs;
-}
-
-
 %end if
 %end if
 %end for

@@ -80,25 +80,10 @@ Runtime::Runtime()
     //
     // Register extensions
     //
-    reduce_id = 0;          // Reduce
-
-    err = vem_reg_func("bh_reduce", &reduce_id);
-    if (err != BH_SUCCESS) {
-        sprintf(err_msg, "Fatal error in the initialization of the user"
-                        "-defined reduce operation: %s.\n",
-                        bh_error_text(err));
-        throw std::runtime_error(err_msg);
-    }
-    if (reduce_id <= 0) {
-        sprintf(err_msg, "Fatal error in the initialization of the user"
-                        "-defined reduce operation: invalid ID returned"
-                        " (%ld).\n", (long)reduce_id);
-        throw std::runtime_error(err_msg);
-    }
-
-    random_id = 0;          // Random
+    //random_id = 200;          // Random
 
     err = vem_reg_func("bh_random", &random_id);
+    std::cout << "WTF!" << random_id << std::endl;
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
                         "-defined random operation: %s.\n",
@@ -141,9 +126,7 @@ bh_intp Runtime::flush()
 
         if (ext_in_queue>0) {
             for(bh_intp i=0; i<ext_in_queue; i++) {
-                if (ext_queue[i]->id == reduce_id){
-                    free((bh_reduce_type*)ext_queue[i]);
-                } else if(ext_queue[i]->id == random_id) {
+                if(ext_queue[i]->id == random_id) {
                     free((bh_random_type*)ext_queue[i]);
                 } else {
                     throw std::runtime_error("Cannot de-allocate extension...");
@@ -185,9 +168,7 @@ bh_intp Runtime::guard()
 
         if (ext_in_queue>0) {
             for(bh_intp i=0; i<ext_in_queue; i++) {
-                if (ext_queue[i]->id == reduce_id){
-                    free((bh_reduce_type*)ext_queue[i]);
-                } else if(ext_queue[i]->id == random_id) {
+                if (ext_queue[i]->id == random_id) {
                     free((bh_random_type*)ext_queue[i]);
                 } else {
                     throw std::runtime_error("Cannot de-allocate extension...");
@@ -301,10 +282,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
         delete &op1;
     }
 }
-
-
-
-
 
 template <typename T>
 inline
@@ -421,6 +398,26 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
 template <typename Ret, typename In>    // x = y < 1
 inline
 void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = &storage[op0.getKey()];
+    instr->operand[1] = &storage[op1.getKey()];
+    instr->operand[2] = NULL;
+    assign_const_type( &instr->constant, op2 );
+
+    if (op1.getTemp()) {
+        delete &op1;
+    }
+}
+
+template <typename Ret, typename In>    // pow(float, int), reduce(a, axis)
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2)
 {
     bh_instruction* instr;
 

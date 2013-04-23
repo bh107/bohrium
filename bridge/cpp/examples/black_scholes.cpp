@@ -34,15 +34,20 @@ multi_array<T>& cnd(multi_array<T>& x)
       a5 = 1.330274429,
       pp = 2.50662827463; // sqrt(2.0*PI)
 
-    cout << "cnd-in" << endl;
     l = abs(x);
     k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / (pp * exp(~l*l/2.0) * (a1*k + a2*(pow(k,2)) + a3*(pow(k,3)) + a4*(pow(k,4)) + a5*(pow(k,5))));
+    w = 1.0 - 1.0 / (pp * exp(~l*l/2.0) * \
+        (a1*k + \
+         a2*(pow(k,(T)2)) + \
+         a3*(pow(k,(T)3)) + \
+         a4*(pow(k,(T)4)) + \
+         a5*(pow(k,(T)5))
+        )
+    );
 
-    mask    = x < 0;
-    w       = w * ~mask + (1.0-w)*mask;
-
-    return w;
+    mask = (x<0.0).template as<T>();
+    //return w * ~mask + (1.0-w)*mask;
+    return w * mask + (1.0-w)*mask;
 }
 
 template <typename T>
@@ -56,7 +61,8 @@ multi_array<T>& black_scholes(multi_array<T>& s, char flag, T x, T t, T r, T v)
     if (flag == 'c') {
         return s * cnd(d1) - x * exp(-1.0 * r * t) * cnd(d2);
     } else {
-        return x * exp(~r*t) * cnd(~d2) - s*cnd(~d1);
+        //return x * exp(~r*t) * cnd(~d2) - s*cnd(~d1);
+        return x * exp(r*t) * cnd(d2) - s*cnd(d1);
     }
 }
 
@@ -64,12 +70,12 @@ template <typename T>
 T* price(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
 {
     T t = d_t;
-    T n = (T)s.len();
+    size_t n = (T)s.len();
     T* p;
     p = new T[n];
 
     for(size_t i=0; i<iterations; i++) {
-        p[i] = *(black_scholes(s, flag, x, d_t, r, v).sum().begin()) / n;
+        p[i] = *(black_scholes(s, flag, x, d_t, r, v).sum().begin()) / (T)n;
         t += d_t;
     }
 

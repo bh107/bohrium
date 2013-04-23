@@ -58,6 +58,7 @@ multi_array<T>& range(size_t start, size_t end, size_t skip)
 {
     multi_array<T>* result = new multi_array<T>();
     result->setTemp(true);
+    std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
 
     return *result;
 }
@@ -77,7 +78,7 @@ multi_array<T>& random(int n)
         throw std::runtime_error(err_msg);
     }
     
-    rinstr->id          = random_id;        //Set the instruction
+    rinstr->id          = Runtime::instance()->random_id;        //Set the instruction
     rinstr->nout        = 1;
     rinstr->nin         = 0;
     rinstr->struct_size = sizeof(bh_random_type);
