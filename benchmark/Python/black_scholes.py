@@ -9,6 +9,7 @@ I = B.size[1]
 S = bs.model(N,dtype=B.dtype,bohrium=B.bohrium)
 
 B.start()
-bs.price(S,I)
+R = bs.price(S,I)
+print R
 B.stop()
 B.pprint()

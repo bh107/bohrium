@@ -78,7 +78,7 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
         }
     }
 
-    Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, *this, axis);
+    Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, *this, (bh_int64)axis);
 
     return *result;
 }
@@ -87,7 +87,12 @@ template <typename T>
 multi_array<T>& multi_array<T>::sum()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
+
+    *result = this->reduce(ADD, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(ADD, 0);
+    }
 
     return *result;
 }
@@ -96,7 +101,12 @@ template <typename T>
 multi_array<T>& multi_array<T>::product()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
+
+    *result = this->reduce(MULTIPLY, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(MULTIPLY, 0);
+    }
 
     return *result;
 }
@@ -105,8 +115,12 @@ template <typename T>
 multi_array<T>& multi_array<T>::min()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
 
+    *result = this->reduce(MIN, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(MIN, 0);
+    }
     return *result;
 }
 
@@ -114,8 +128,12 @@ template <typename T>
 multi_array<T>& multi_array<T>::max()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
 
+    *result = this->reduce(MAX, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(MAX, 0);
+    }
     return *result;
 }
 
@@ -123,8 +141,12 @@ template <typename T>
 multi_array<bool>& multi_array<T>::any()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
 
+    *result = this->reduce(LOGICAL_OR, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(LOGICAL_OR, 0);
+    }
     return *result;
 }
 
@@ -132,8 +154,12 @@ template <typename T>
 multi_array<bool>& multi_array<T>::all()
 {
     multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    size_t dims = storage[this->getKey()].ndim;
 
+    *result = this->reduce(LOGICAL_AND, 0);
+    for(size_t i=1; i<dims; i++) {
+        *result = result->reduce(LOGICAL_AND, 0);
+    }
     return *result;
 }
 
