@@ -30,13 +30,16 @@ import subprocess
 class Instruction(object):
 
     def __init__(self, opcode, operands, order):
-        self.opcode = opcode
-        self.o_ops  = [operands[0]]
-        self.i_ops  = [] + operands[1:]
-        self.order  = order
+        try:
+            self.opcode = opcode
+            self.o_ops  = [operands[0]]
+            self.i_ops  = [] + operands[1:]
+            self.order  = order
 
-        if (opcode in ["SYNC", "FREE", "DISCARD"]):
-            self.i_ops.append(operands[0])
+            if (opcode in ["SYNC", "FREE", "DISCARD"]):
+                self.i_ops.append(operands[0])
+        except:
+            print "Something went unbelievably wrong! [%s,%s,%s]" % (str(opcode), str(operands), str(order))
 
     def __str__(self):
         op_dots = "\n".join([op.dot() for op in self.operands])
@@ -175,6 +178,7 @@ class Parser(object):
             if m:                           # We got an instruction
                 opcode, n_ops = (m.group('OPCODE'), int(m.group('N_OPS')))
                 operands = []
+                op_line = i
                 while(True):                # Parse instruction operands
 
                     op_m = re.match(Parser.re_meta, lines[i], re.DOTALL)
@@ -199,6 +203,9 @@ class Parser(object):
                         view.base = base
 
                         operands.append( view )
+
+                if len(operands) < 1:
+                    raise Exception("Failed parsing operands around line #%d." % op_line)
 
                 instr = Instruction(opcode, operands, count)
                 instructions.append( instr )
@@ -354,7 +361,14 @@ def main():
     return dot_to_file(output_fn, dotdata, args.formats)
     
 if __name__ == "__main__":
-    out, err = main()
+
+    out = None
+    err = None
+    try:
+        out, err = main()
+    except Exception as e:
+        err = str(e)
+
     if err:
         print "Error: %s" % err
     if out:
