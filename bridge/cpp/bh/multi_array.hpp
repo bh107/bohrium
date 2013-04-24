@@ -30,16 +30,12 @@ void multi_array<T>::init()     // Pseudo-default constructor
 {
     key     = keys++;
     temp    = false;
-
     storage.insert(key, new bh_array);
     assign_array_type<T>(&storage[key]);
 }
 
 template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array()
-{
-    init();
-}
+multi_array<T>::multi_array() : key(0), temp(false) { }
 
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand)
@@ -244,6 +240,12 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
 
 // Linking
 template <typename T>
+void multi_array<T>::link(const unsigned int ext_key)
+{
+    key = ext_key;
+}
+
+template <typename T>
 unsigned int multi_array<T>::unlink()
 {
     unsigned int retKey = key;
@@ -265,8 +267,8 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);          // Discard the existing view
 
         if (rhs.getTemp()) {        // Take over temporary reference
-            key     = rhs.unlink();
-            temp    = false;
+            link(rhs.unlink());
+            temp = false;
             delete &rhs;
         } else {                    // Create a view of rhs
             init();
