@@ -78,7 +78,7 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
         }
     }
 
-    Runtime::instance()->enqueue<T>(reducible_to_opcode(opcode), *result, *this, axis);
+    Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, *this, axis);
 
     return *result;
 }

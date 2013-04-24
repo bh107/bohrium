@@ -256,7 +256,7 @@ public:
 
                                             // Mixed input, ret is same as first operand
     template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);    
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
 
     template <typename T>                   // Userfunc / extensions
     void enqueue(bh_userfunc* rinstr);

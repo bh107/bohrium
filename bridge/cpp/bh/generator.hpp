@@ -66,18 +66,16 @@ multi_array<T>& range(size_t start, size_t end, size_t skip)
 template <typename T>
 multi_array<T>& random(int n)
 {
-    char err_msg[100];
-    bh_random_type* rinstr;
-
-    multi_array<T>* result = new multi_array<T>(n);
-    result->setTemp(true);
-    
-    rinstr = (bh_random_type*)malloc(sizeof(bh_random_type)); //Allocate the user-defined function.
+    bh_random_type* rinstr = (bh_random_type*)malloc(sizeof(bh_random_type));
     if (rinstr == NULL) {
+        char err_msg[100];
         sprintf(err_msg, "Failed alllocating memory for extension-call.");
         throw std::runtime_error(err_msg);
     }
-    
+
+    multi_array<T>* result = new multi_array<T>(n);
+    result->setTemp(true);
+
     rinstr->id          = Runtime::instance()->random_id;        //Set the instruction
     rinstr->nout        = 1;
     rinstr->nin         = 0;

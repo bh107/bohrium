@@ -36,7 +36,7 @@ multi_array<T>& cnd(multi_array<T>& x)
 
     l = abs(x);
     k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / (pp * exp(~l*l/2.0) * \
+    w = 1.0 - 1.0 / (pp * exp(-1.0*l*l/2.0) * \
         (a1*k + \
          a2*(pow(k,(T)2)) + \
          a3*(pow(k,(T)3)) + \
@@ -46,42 +46,34 @@ multi_array<T>& cnd(multi_array<T>& x)
     );
 
     mask = (x<0.0).template as<T>();
-    //return w * ~mask + (1.0-w)*mask;
-    return w * mask + (1.0-w)*mask;
+    return w * -1.0*mask + (1.0-w)*mask;
 }
 
 template <typename T>
-multi_array<T>& black_scholes(multi_array<T>& s, char flag, T x, T t, T r, T v)
+T* pricing(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
 {
-    multi_array<T> d1, d2;
-
-    d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
-    d2 = d1-v*sqrt(t);
-
-    if (flag == 'c') {
-        return s * cnd(d1) - x * exp(-1.0 * r * t) * cnd(d2);
-    } else {
-        //return x * exp(~r*t) * cnd(~d2) - s*cnd(~d1);
-        return x * exp(r*t) * cnd(d2) - s*cnd(d1);
-    }
-}
-
-template <typename T>
-T* price(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
-{
+    multi_array<T> d1, d2, res;
     T t = d_t;
     size_t n = (T)s.len();
-    T* p;
-    p = new T[n];
+    T* p = (T*)malloc(sizeof(T)*n);
 
     for(size_t i=0; i<iterations; i++) {
-        p[i] = *(black_scholes(s, flag, x, d_t, r, v).sum().begin()) / (T)n;
+
+        d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
+        d2 = d1-v*sqrt(t);
+
+        if (flag == 'c') {
+            res = s * cnd(d1) - x * exp(-1.0 * r * t) * cnd(d2);
+        } else {
+            res = x * exp(-1.0*r*t) * cnd(-1.0*d2) - s*cnd(-1.0*d1);
+        }
+
+        p[i] = *(res.sum().begin()) / (T)n;
         t += d_t;
     }
 
     return p;
 }
-
 
 int main()
 {
@@ -92,7 +84,7 @@ int main()
 
     s = random<double>(sample_size) * (-2.0) + 60.0; // Model price between 58-62
 
-    double* prices = price(s, 'c', 65.0, 1.0/365.0, 0.08, 0.3, iterations);
+    double* prices = pricing(s, 'c', 65.0, 1.0/365.0, 0.08, 0.3, iterations);
     stop();
 
     cout << "Prices found: ";

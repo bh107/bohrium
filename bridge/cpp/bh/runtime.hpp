@@ -83,7 +83,6 @@ Runtime::Runtime()
     //random_id = 200;          // Random
 
     err = vem_reg_func("bh_random", &random_id);
-    std::cout << "WTF!" << random_id << std::endl;
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
                         "-defined random operation: %s.\n",
@@ -138,9 +137,10 @@ bh_intp Runtime::flush()
         if (status != BH_SUCCESS) {
             std::stringstream err_msg;
             err_msg << "vem_execute(queue_size=" << cur_size << ") failed: " << bh_error_text(status) << std::endl;
+            /*
             for(int i=0; i<cur_size; i++) {
                 bh_pprint_instr( &queue[i] );
-            }
+            }*/
 
             throw std::runtime_error(err_msg.str());
         }
@@ -415,7 +415,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     }
 }
 
-template <typename Ret, typename In>    // pow(float, int), reduce(a, axis)
+template <typename Ret, typename In>    // reduce(), pow()
 inline
 void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2)
 {
