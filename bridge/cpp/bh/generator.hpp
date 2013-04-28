@@ -25,8 +25,7 @@ namespace bh {
 template <typename T>
 multi_array<T>& empty()
 {
-    multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
 
     return *result;
 }
@@ -34,8 +33,7 @@ multi_array<T>& empty()
 template <typename T>
 multi_array<T>& ones()
 {
-    multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
 
     result = (T)1;
 
@@ -45,8 +43,7 @@ multi_array<T>& ones()
 template <typename T>
 multi_array<T>& zeros()
 {
-    multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
 
     result = (T)0;
 
@@ -56,8 +53,7 @@ multi_array<T>& zeros()
 template <typename T>
 multi_array<T>& range(size_t start, size_t end, size_t skip)
 {
-    multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
     std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
 
     return *result;
@@ -73,8 +69,7 @@ multi_array<T>& random(int n)
         throw std::runtime_error(err_msg);
     }
 
-    multi_array<T>* result = new multi_array<T>(n);
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>((size_t)n);
 
     rinstr->id          = Runtime::instance()->random_id;        //Set the instruction
     rinstr->nout        = 1;
