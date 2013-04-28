@@ -16,6 +16,7 @@ EXTRAS+=
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
 
 all: gen examples
+#all: examples
 
 examples: $(EXAMPLES)
 testing: $(TESTS)
