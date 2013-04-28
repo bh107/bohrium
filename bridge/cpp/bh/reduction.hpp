@@ -57,24 +57,26 @@ bh_opcode reducible_to_opcode(reducible opcode)
 template <typename T>
 multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
 {
-    multi_array<T>* result = new multi_array<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
 
-    storage[result->getKey()].base  = NULL;
-    storage[result->getKey()].data  = NULL;
-    storage[result->getKey()].start = 0;
+    bh_array* res_a     = &storage[result->getKey()];
+    bh_array* this_a    = &storage[key];
 
-    if (storage[key].ndim == 1) {               // Reduce to "scalar", 1d with one element
-        storage[result->getKey()].ndim      = 1;
-        storage[result->getKey()].shape[0]  = 1;
-        storage[result->getKey()].stride[0] = storage[key].stride[0];
-    } else {                                    // Reduce dimensionality by one
-        storage[result->getKey()].ndim  = storage[key].ndim -1;
-        for(bh_index i=0; i< storage[result->getKey()].ndim; i++) {
-            storage[result->getKey()].shape[i] = storage[key].shape[i+1];
+    res_a->base  = NULL;
+    res_a->data  = NULL;
+    res_a->start = 0;
+
+    if (this_a->ndim == 1) {                // Reduce to "scalar", 1d with one element
+        res_a->ndim      = 1;
+        res_a->shape[0]  = 1;
+        res_a->stride[0] = this_a->stride[0];
+    } else {                                // Reduce dimensionality by one
+        res_a->ndim  = this_a->ndim -1;
+        for(bh_index i=0; i< res_a->ndim; i++) {
+            res_a->shape[i] = this_a->shape[i+1];
         }
-        for(bh_index i=0; i< storage[result->getKey()].ndim; i++) {
-            storage[result->getKey()].stride[i] = storage[key].stride[i+1];
+        for(bh_index i=0; i< res_a->ndim; i++) {
+            res_a->stride[i] = this_a->stride[i+1];
         }
     }
 
@@ -86,24 +88,21 @@ multi_array<T>& multi_array<T>::reduce(reducible opcode, unsigned int axis)
 template <typename T>
 multi_array<T>& multi_array<T>::sum()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = &this->reduce(ADD, 0);
 
-    *result = this->reduce(ADD, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(ADD, 0);
     }
-
     return *result;
 }
 
 template <typename T>
 multi_array<T>& multi_array<T>::product()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = &this->reduce(MULTIPLY, 0);
 
-    *result = this->reduce(MULTIPLY, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(MULTIPLY, 0);
     }
@@ -114,10 +113,9 @@ multi_array<T>& multi_array<T>::product()
 template <typename T>
 multi_array<T>& multi_array<T>::min()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = &this->reduce(MIN, 0);
 
-    *result = this->reduce(MIN, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(MIN, 0);
     }
@@ -127,10 +125,9 @@ multi_array<T>& multi_array<T>::min()
 template <typename T>
 multi_array<T>& multi_array<T>::max()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = &this->reduce(MAX, 0);
 
-    *result = this->reduce(MAX, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(MAX, 0);
     }
@@ -140,10 +137,9 @@ multi_array<T>& multi_array<T>::max()
 template <typename T>
 multi_array<bool>& multi_array<T>::any()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = &this->reduce(LOGICAL_OR, 0);
 
-    *result = this->reduce(LOGICAL_OR, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(LOGICAL_OR, 0);
     }
@@ -153,10 +149,9 @@ multi_array<bool>& multi_array<T>::any()
 template <typename T>
 multi_array<bool>& multi_array<T>::all()
 {
-    multi_array<T>* result = new multi_array<T>();
-    size_t dims = storage[this->getKey()].ndim;
+    multi_array<T>* result = this->reduce(LOGICAL_AND, 0);
 
-    *result = this->reduce(LOGICAL_AND, 0);
+    size_t dims = storage[this->getKey()].ndim;
     for(size_t i=1; i<dims; i++) {
         *result = result->reduce(LOGICAL_AND, 0);
     }
@@ -166,7 +161,7 @@ multi_array<bool>& multi_array<T>::all()
 template <typename T>
 multi_array<size_t>& multi_array<T>::count()
 {
-    multi_array<T>* result = new multi_array<T>();
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
     result->setTemp(true);
 
     return *result;
