@@ -242,12 +242,19 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
 template <typename T>
 void multi_array<T>::link(const unsigned int ext_key)
 {
+    if (0!=key) {
+        throw std::runtime_error("Dude you are ALREADY linked!");
+    }
     key = ext_key;
 }
 
 template <typename T>
 unsigned int multi_array<T>::unlink()
 {
+    if (0==key) {
+        throw std::runtime_error("Dude! THis one aint linked at all!");
+    }
+
     unsigned int retKey = key;
     key = 0;
     return retKey;
@@ -263,8 +270,11 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     DEBUG_PRINT("Aliasing...");
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
-        Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
-        Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);          // Discard the existing view
+        if (key>0) {                // Release current linkage
+            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+            Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+            unlink();
+        }
 
         if (rhs.getTemp()) {        // Take over temporary reference
             link(rhs.unlink());
@@ -292,11 +302,10 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 //
 // Typecasting
 //
-template <typename T>
-template <typename Ret>
+template <typename T> template <typename Ret>
 multi_array<Ret>& multi_array<T>::as()
 {
-    multi_array<Ret>* result = new multi_array<Ret>();
+    multi_array<Ret>* result = &Runtime::instance()->temp<Ret>();
     result->setTemp(true);
 
     storage[result->getKey()].base        = NULL;
