@@ -27,7 +27,7 @@ namespace bh {
 
 typedef boost::ptr_map<unsigned int, bh_array> storage_type;
 storage_type storage;
-unsigned int keys = 0;
+unsigned int keys = 1;
 
 // Runtime : Definition
 
@@ -80,8 +80,6 @@ Runtime::Runtime()
     //
     // Register extensions
     //
-    //random_id = 200;          // Random
-
     err = vem_reg_func("bh_random", &random_id);
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
@@ -95,7 +93,6 @@ Runtime::Runtime()
                         " (%ld).\n", (long)random_id);
         throw std::runtime_error(err_msg);
     }
-
 }
 
 Runtime::~Runtime()
@@ -199,6 +196,20 @@ inline
 multi_array<T>& Runtime::temp()
 {
     multi_array<T>* operand = new multi_array<T>();
+    unsigned int key = keys++;
+    operand->link(key);
+    operand->setTemp(true);
+    storage.insert(key, new bh_array);
+    assign_array_type<T>(&storage[key]);
+
+    return *operand;
+}
+
+template <typename T>
+inline
+multi_array<T>& Runtime::temp(size_t n)
+{
+    multi_array<T>* operand = new multi_array<T>(n);
     operand->setTemp(true);
     return *operand;
 }
@@ -254,13 +265,8 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = &storage[op2.getKey()];
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
-
-    if (op2.getTemp()) {
-        delete &op2;
-    }
+    if (op1.getTemp()) { delete &op1; }
+    if (op2.getTemp()) { delete &op2; }
 }
 
 template <typename T>
@@ -278,9 +284,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
+    if (op1.getTemp()) { delete &op1; }
 }
 
 template <typename T>
@@ -298,9 +302,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 
-    if (op2.getTemp()) {
-        delete &op2;
-    }
+    if (op2.getTemp()) { delete &op2; }
 }
 
 template <typename T>
@@ -317,9 +319,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
+    if (op1.getTemp()) { delete &op1; }
 }
 
 template <typename T>
@@ -367,9 +367,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->operand[1] = &storage[op1.getKey()];
     instr->operand[2] = NULL;
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
+    if (op1.getTemp()) { delete &op1; }
 }
 
 template <typename Ret, typename In>    // x = y < z
@@ -387,12 +385,8 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op2 );
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
-    if (op2.getTemp()) {
-        delete &op2;
-    }
+    if (op1.getTemp()) { delete &op1; }
+    if (op2.getTemp()) { delete &op2; }
 }
 
 template <typename Ret, typename In>    // x = y < 1
@@ -402,7 +396,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     bh_instruction* instr;
 
     guard();
-
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = &storage[op0.getKey()];
@@ -410,9 +403,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
+    if (op1.getTemp()) { delete &op1; }
 }
 
 template <typename Ret, typename In>    // reduce(), pow()
@@ -430,9 +421,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>&
     instr->operand[2] = NULL;
     assign_const_type( &instr->constant, op2 );
 
-    if (op1.getTemp()) {
-        delete &op1;
-    }
+    if (op1.getTemp()) { delete &op1; }
 }
 
 template <typename Ret, typename In>    // x = 1 < y
@@ -450,9 +439,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
     instr->operand[2] = &storage[op2.getKey()];
     assign_const_type( &instr->constant, op1 );
 
-    if (op2.getTemp()) {
-        delete &op2;
-    }
+    if (op2.getTemp()) { delete &op2; }
 }
 
 template <typename T>           // Userfunc / extensions
@@ -491,7 +478,10 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
         ret_a->stride[i] = in_a->stride[i];
     }
     ret_a->data        = NULL;
+
+    assign_array_type<Ret>(ret_a);
 }
 
 }
 #endif
+
