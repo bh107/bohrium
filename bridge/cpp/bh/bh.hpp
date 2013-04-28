@@ -271,6 +271,9 @@ public:
     multi_array<T>& temp();
 
     template <typename T>
+    multi_array<T>& temp(size_t n);
+
+    template <typename T>
     multi_array<T>& temp(multi_array<T>& input);
 
     template <typename T>
