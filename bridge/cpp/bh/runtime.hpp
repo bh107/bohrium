@@ -46,11 +46,8 @@ void stop()
     delete Runtime::instance();
 }
 
-Runtime::Runtime()
+Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
-    queue_size = 0;
-    ext_in_queue = 0;
-
     bh_error err;
     char err_msg[100];
 
