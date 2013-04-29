@@ -51,5 +51,6 @@ OpCodes_fix.cs
 bh-release
 bh_vem_cluster_slave
 *.user
+misc/tools/output/*.svg
 benchmark/CIL/Csharp/shallow_water/bin
 benchmark/CIL/Csharp/shallow_water/obj
