@@ -479,6 +479,23 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
     assign_array_type<Ret>(ret_a);
 }
 
+template <typename T>
+T& scalar(multi_array<T>& op)
+{
+    Runtime::instance()->enqueue((bh_opcode)BH_SYNC, op);
+    Runtime::instance()->flush();
+
+    bh_array* op_a = &storage[op.getKey()];
+    T* data = (T*)(bh_base_array( op_a )->data);
+    data += op_a->start;
+
+    if (op.getTemp()) {
+        delete &op;
+    }
+
+    return data[0];
+}
+
 }
 #endif
 

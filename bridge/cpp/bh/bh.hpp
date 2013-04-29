@@ -328,6 +328,9 @@ template <typename T>
 multi_array<T>& random(int n);
 
 template <typename T>
+T& scalar(multi_array<T>& op);
+
+template <typename T>
 void pprint(multi_array<T>& op);
 }
 
