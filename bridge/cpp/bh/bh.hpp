@@ -183,16 +183,6 @@ public:
     multi_array<T>& flatten();              // Create a flat copy of the array
 
     multi_array<T>& transpose();
-
-    multi_array<T>& sum();                  // Reductions
-    multi_array<T>& product();
-    multi_array<T>& min();
-    multi_array<T>& max();
-    multi_array<bool>& any();
-    multi_array<bool>& all();
-    multi_array<size_t>& count();
-                                            // Partial reduction
-    multi_array<T>& reduce(reducible op, unsigned int axis);
     
     template <typename Ret>                 // Typecast; implicit copy
     multi_array<Ret>& as();
@@ -309,7 +299,7 @@ private:
 
 };
 
-template <typename T>       // These should be "generators"...
+template <typename T>       // Generators / Initializers
 multi_array<T>& empty();
 
 template <typename T>
@@ -327,7 +317,32 @@ multi_array<T>& random();
 template <typename T>
 multi_array<T>& random(int n);
 
+                            // REDUCTIONS
+template <typename T>       // Partial
+multi_array<T>& reduce(multi_array<T>& op, reducible opc, unsigned int axis);
+                            // FULL
+template <typename T>       // Numeric 
+multi_array<T>& sum(multi_array<T>& op);      
+
 template <typename T>
+multi_array<T>& product(multi_array<T>& op);
+
+template <typename T>
+multi_array<T>& min(multi_array<T>& op);
+
+template <typename T>       // Boolean
+multi_array<T>& max(multi_array<T>& op);
+
+template <typename T>
+multi_array<bool>& any(multi_array<T>& op);
+
+template <typename T>
+multi_array<bool>& all(multi_array<T>& op);
+
+template <typename T>       // Mixed...
+multi_array<size_t>& count(multi_array<T>& op);
+
+template <typename T>       // Turn the result of full reduction into a scalar
 T& scalar(multi_array<T>& op);
 
 template <typename T>
@@ -338,8 +353,8 @@ void pprint(multi_array<T>& op);
 #include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
-#include "reduction.hpp"   // Communication with Bohrium runtime
-#include "generator.hpp"   // Communication with Bohrium runtime
+#include "reduction.hpp"    // Communication with Bohrium runtime
+#include "generator.hpp"    // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.

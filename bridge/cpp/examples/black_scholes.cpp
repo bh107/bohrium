@@ -26,13 +26,13 @@ using namespace bh;
 template <typename T>
 multi_array<T>& cnd(multi_array<T>& x)
 {
-    multi_array<T> l, k, w, mask;
+    multi_array<T> l, k, w, mask, mask_neg;
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
       a4 =-1.821255978,
       a5 = 1.330274429,
-      pp = 2.50662827463; // sqrt(2.0*PI)
+      pp = 2.5066282746310002; // sqrt(2.0*PI)
 
     l = abs(x);
     k = 1.0 / (1.0 + 0.2316419 * l);
@@ -44,32 +44,40 @@ multi_array<T>& cnd(multi_array<T>& x)
          a5*(pow(k,(T)5))
         )
     );
-
-    mask = (x<0.0).template as<T>();
-    return w * -1.0*mask + (1.0-w)*mask;
+    mask        = (x<0.0).template as<T>();
+    mask_neg    = (~(x<0.0)).template as<T>();
+    /*
+    cout << "[x]" << x << endl;
+    cout << "[l]" << l << endl;
+    cout << "[k]" << k << endl;
+    cout << "[w]" << w << endl;
+    cout << "[mask]" << mask << endl;
+    cout << "[mask_neg]" << mask_neg << endl;
+    */
+    return w * mask_neg + (1.0-w)*mask;
 }
 
 template <typename T>
-T* pricing(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations)
+T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 {
-    multi_array<T> d1, d2, res;
-    T t = d_t;
-    size_t n = (T)s.len();
-    T* p = (T*)malloc(sizeof(T)*n);
+    multi_array<T> d1, d2, res, s;
+    T* p = (T*)malloc(sizeof(T)*samples);   // Intermediate results
+    T t = d_t;                              // Initial delta
+
+    s = random<T>(samples)*4.0 +58.0;       // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
-
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
         d2 = d1-v*sqrt(t);
 
         if (flag == 'c') {
-            res = s * cnd(d1) - x * exp(-1.0 * r * t) * cnd(d2);
+            res = s * cnd(d1) - x * exp(-r * t) * cnd(d2);
         } else {
-            res = x * exp(-1.0*r*t) * cnd(-1.0*d2) - s*cnd(-1.0*d1);
+            res = x * exp(-r*t) * cnd(-1.0*d2) - s*cnd(-1.0*d1);
         }
 
-        p[i] = *(res.sum().begin()) / (T)n;
-        t += d_t;
+        t += d_t;                               // Increment delta
+        p[i] = scalar(sum(res)) / (T)samples;  // Result from timestep
     }
 
     return p;
@@ -77,21 +85,18 @@ T* pricing(multi_array<T>& s, char flag, T x, T d_t, T r, T v, size_t iterations
 
 int main()
 {
+    double* prices;
     size_t sample_size  = 1000,
            iterations   = 10;
 
-    multi_array<double> s;
-
-    s = random<double>(sample_size) * (-2.0) + 60.0; // Model price between 58-62
-
-    double* prices = pricing(s, 'c', 65.0, 1.0/365.0, 0.08, 0.3, iterations);
+    prices = pricing(sample_size, iterations, 'c', 65.0, 1.0/365.0, 0.08, 0.3);
     stop();
 
     cout << "Prices found: ";
     for(size_t i=0; i<iterations; i++) {
         cout << prices[i] << endl;
     }
-    delete prices;
+    free(prices);
     return 0;
 }
 
