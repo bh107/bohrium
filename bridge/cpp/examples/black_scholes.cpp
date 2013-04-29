@@ -36,17 +36,17 @@ multi_array<T>& cnd(multi_array<T>& x)
 
     l = abs(x);
     k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / (pp * exp(-1.0*l*l/2.0) * \
+    w = 1.0 - (1.0 / (pp * exp(-1.0*l*l/2.0) * \
         (a1*k + \
          a2*(pow(k,(T)2)) + \
          a3*(pow(k,(T)3)) + \
          a4*(pow(k,(T)4)) + \
          a5*(pow(k,(T)5))
         )
-    );
+    ));
     mask        = (x<0.0).template as<T>();
     mask_neg    = (~(x<0.0)).template as<T>();
-    /*
+    /* 
     cout << "[x]" << x << endl;
     cout << "[l]" << l << endl;
     cout << "[k]" << k << endl;
@@ -61,10 +61,10 @@ template <typename T>
 T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 {
     multi_array<T> d1, d2, res, s;
-    T* p = (T*)malloc(sizeof(T)*samples);   // Intermediate results
-    T t = d_t;                              // Initial delta
+    T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
+    T t     = d_t;                              // Initial delta
 
-    s = random<T>(samples)*4.0 +58.0;       // Model between 58-62
+    s = random<T>(samples)*4.0-2.0 +58.0;           // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
