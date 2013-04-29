@@ -44,7 +44,6 @@ class multi_array;
 //
 // Extensions
 //
-//static bh_intp random_id;
 
 enum reducible {
     ADD         = BH_ADD,
