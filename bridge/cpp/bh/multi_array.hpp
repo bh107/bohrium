@@ -107,6 +107,7 @@ multi_array<T>::~multi_array()
     if (key>0) {
         Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+        Runtime::instance()->trash(key);
     }
 }
 
@@ -266,8 +267,9 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
     // TODO:    what about the old one???
     //          will the ptr_map clean it up for us?
-    //          should we send a discard?
-    DEBUG_PRINT("Aliasing...");
+    //          Ref-count!
+    //          You forgot broadcasting on assignment!
+    DEBUG_PRINT("Aliasing... dude! ");
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage

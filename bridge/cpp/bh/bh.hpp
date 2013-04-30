@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP
 #include "bh.h"
 #include <complex>
+#include <list>
 
 #define BH_CPP_QUEUE_MAX 1000
 #include "iterator.hpp"
@@ -273,6 +274,8 @@ public:
 
     bh_intp random_id;                          // Extension IDs
 
+    void trash(unsigned int key);
+
 private:
 
     size_t deallocate_meta(bh_intp count);      // De-allocate bh_arrays
@@ -298,6 +301,8 @@ private:
                     *vem_component;
 
     bh_intp children_count;
+
+    std::list<unsigned int> garbage;
 
     Runtime();                                  // Ensure no external instantiation.
 

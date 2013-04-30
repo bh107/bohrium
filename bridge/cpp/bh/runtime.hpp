@@ -27,6 +27,7 @@ namespace bh {
 
 typedef boost::ptr_map<unsigned int, bh_array> storage_type;
 storage_type storage;
+
 unsigned int keys = 1;
 
 // Runtime : Definition
@@ -117,13 +118,11 @@ size_t Runtime::deallocate_meta(bh_intp count)
 {
     size_t deallocated = 0;
     if (count > BH_CPP_QUEUE_MAX) {
-        throw std::runtime_error("Trying to de-allocate more that physically possible.");
+        throw std::runtime_error("Trying to de-allocate more than physically possible.");
     }
-
-    for(bh_intp i=0; i<count; i++) {
-        if (BH_DISCARD == queue[i].opcode) {
-            free(&queue[i].operand[0]);
-        }
+    while(!garbage.empty()) {
+        storage.erase(garbage.front());
+        garbage.pop_front();
     }
     return deallocated;
 }
@@ -176,7 +175,7 @@ size_t Runtime::execute()
     }
 
     deallocate_ext();
-    //deallocate_meta(cur_size);
+    deallocate_meta(cur_size);
 
     return cur_size;
 }
@@ -532,6 +531,12 @@ T& scalar(multi_array<T>& op)
     }
 
     return data[0];
+}
+
+
+void Runtime::trash(unsigned int key)
+{
+    garbage.push_back(key);
 }
 
 }
