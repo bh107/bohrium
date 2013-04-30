@@ -11,8 +11,9 @@
 # Please tweak the following variable definitions as needed by your
 # project, except GTEST_HEADERS, which you can use in your own targets
 # but shouldn't modify.
-BH_ROOT=../../..
+BH_ROOT=../..
 BH_HEADER=$(BH_ROOT)/include
+BH_CPP_BRIDGE=$(BH_ROOT)/bridge/cpp/
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
@@ -20,10 +21,10 @@ GTEST_DIR = gtest
 
 # Where to find user code.
 USER_DIR = .
-BIN_DIR = ../bin/testing
+BIN_DIR = bin
 
 # Flags passed to the preprocessor.
-CPPFLAGS += -I$(GTEST_DIR)/include -I../ -I$(BH_HEADER)
+CPPFLAGS += -I$(GTEST_DIR)/include -I$(BH_CPP_BRIDGE) -I$(BH_HEADER)
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra
