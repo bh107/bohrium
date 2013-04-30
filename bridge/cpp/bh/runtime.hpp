@@ -101,80 +101,120 @@ Runtime::~Runtime()
     bh_component_free(vem_component);
 }
 
-/**
- * Flush the instruction-queue.
- * This will force the runtime system to execute the queued up instructions.
- *
- * @return The number of instructions flushed.
- */
-inline
-bh_intp Runtime::flush()
-{
-    bh_error status;
-    bh_intp cur_size = queue_size;
-
-    if (queue_size > 0) {
-        status = vem_execute(queue_size, queue);
-        queue_size = 0;
-
-        if (ext_in_queue>0) {
-            for(bh_intp i=0; i<ext_in_queue; i++) {
-                if(ext_queue[i]->id == random_id) {
-                    free((bh_random_type*)ext_queue[i]);
-                } else {
-                    throw std::runtime_error("Cannot de-allocate extension...");
-                }
-            }
-            ext_in_queue = 0;
-        }
-
-        if (status != BH_SUCCESS) {
-            std::stringstream err_msg;
-            err_msg << "vem_execute(queue_size=" << cur_size << ") failed: " << bh_error_text(status) << std::endl;
-            /*
-            for(int i=0; i<cur_size; i++) {
-                bh_pprint_instr( &queue[i] );
-            }*/
-
-            throw std::runtime_error(err_msg.str());
-        }
-    }
-    return cur_size;
-}
-
 bh_intp Runtime::get_queue_size()
 {
     return queue_size;
 }
 
 /**
+ * De-allocate all bh_arrays associated with BH_DISCARD instruction in the queue.
+ *
+ * @param count The max number of instructions to look at.
+ * @return The number of bh_arrays that got de-allocated.
+ */
+inline
+size_t Runtime::deallocate_meta(bh_intp count)
+{
+    size_t deallocated = 0;
+    if (count > BH_CPP_QUEUE_MAX) {
+        throw std::runtime_error("Trying to de-allocate more that physically possible.");
+    }
+
+    for(bh_intp i=0; i<count; i++) {
+        if (BH_DISCARD == queue[i].opcode) {
+            free(&queue[i].operand[0]);
+        }
+    }
+    return deallocated;
+}
+
+/**
+ * De-allocate all meta-data associated with any USERFUNCs in the instruction queue.
+ *
+ * @return The number of USERFUNCs that got de-allocated.
+ */
+inline
+size_t Runtime::deallocate_ext()
+{
+    size_t deallocated = 0;
+
+    if (ext_in_queue>0) {
+        for(bh_intp i=0; i<ext_in_queue; i++) {
+            if (ext_queue[i]->id == random_id) {
+                free((bh_random_type*)ext_queue[i]);
+                deallocated++;
+            } else {
+                throw std::runtime_error("Cannot de-allocate extension...");
+            }
+        }
+        ext_in_queue = 0;
+    }
+    return deallocated;
+}
+
+/**
+ * Sends the instruction-list to the bohrium runtime.
+ *
+ * NOTE: Assumes that the list is none-empty.
+ *
+ */
+inline
+void Runtime::execute()
+{
+    bh_error status = vem_execute(queue_size, queue);   // Send instructions to Bohrium
+    queue_size = 0;                                     // Reset size of the queue
+
+    if (status != BH_SUCCESS) {
+        std::stringstream err_msg;
+        err_msg << "Runtime::execute() -> vem_execute() failed: " << bh_error_text(status) << std::endl;
+        /*
+        for(int i=0; i<cur_size; i++) {
+            bh_pprint_instr( &queue[i] );
+        }*/
+
+        throw std::runtime_error(err_msg.str());
+    }
+
+    deallocate_ext();
+    //deallocate_meta();
+}
+
+
+/**
  * Flush the instruction-queue if it is about to get overflowed.
+ *
+ * This is used as a pre-condition to adding instructions to the queue.
  *
  * @return The number of instructions flushed.
  */
 inline
-bh_intp Runtime::guard()
+size_t Runtime::guard()
 {
     bh_intp cur_size = queue_size;
     if (queue_size >= BH_CPP_QUEUE_MAX) {
-        vem_execute(queue_size, queue);
-        queue_size = 0;
-
-        if (ext_in_queue>0) {
-            for(bh_intp i=0; i<ext_in_queue; i++) {
-                if (ext_queue[i]->id == random_id) {
-                    free((bh_random_type*)ext_queue[i]);
-                } else {
-                    throw std::runtime_error("Cannot de-allocate extension...");
-                }
-            }
-            ext_in_queue = 0;
-        }
-
+        execute();
     }
-
     return cur_size;
 }
+
+/**
+ * Flush the instruction-queue.
+ *
+ * This will force the runtime system to execute the queued up instructions,
+ * at least if there are any queued instructions.
+ *
+ * @return The number of instructions flushed.
+ */
+inline
+size_t Runtime::flush()
+{
+    bh_intp cur_size = queue_size;
+    if (queue_size > 0) {
+        execute();
+    }
+    return cur_size;
+}
+
 
 template <typename T>
 inline

@@ -250,7 +250,7 @@ public:
     template <typename T>                   // Userfunc / extensions
     void enqueue(bh_userfunc* rinstr);
 
-    bh_intp flush();
+    size_t flush();
     bh_intp get_queue_size();
 
     template <typename T>
@@ -271,11 +271,15 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    bh_intp guard();
-
     bh_intp random_id;                          // Extension IDs
 
 private:
+
+    size_t deallocate_meta(bh_intp count);      // De-allocate bh_arrays
+    size_t deallocate_ext();                    // De-allocate user functions structs
+
+    void execute();                             // Send instructions to Bohrium
+    size_t guard();                             // Prevent overflow of instruction-queue
 
     static Runtime* pInstance;                  // Singleton instance pointer.
 
