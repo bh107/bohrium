@@ -278,7 +278,7 @@ private:
     size_t deallocate_meta(bh_intp count);      // De-allocate bh_arrays
     size_t deallocate_ext();                    // De-allocate user functions structs
 
-    void execute();                             // Send instructions to Bohrium
+    size_t execute();                             // Send instructions to Bohrium
     size_t guard();                             // Prevent overflow of instruction-queue
 
     static Runtime* pInstance;                  // Singleton instance pointer.

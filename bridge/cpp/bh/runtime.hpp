@@ -155,12 +155,12 @@ size_t Runtime::deallocate_ext()
 /**
  * Sends the instruction-list to the bohrium runtime.
  *
- * NOTE: Assumes that the list is none-empty.
- *
+ * NOTE: Assumes that the list is non-empty.
  */
 inline
-void Runtime::execute()
+size_t Runtime::execute()
 {
+    size_t cur_size = queue_size;
     bh_error status = vem_execute(queue_size, queue);   // Send instructions to Bohrium
     queue_size = 0;                                     // Reset size of the queue
 
@@ -176,9 +176,10 @@ void Runtime::execute()
     }
 
     deallocate_ext();
-    //deallocate_meta();
-}
+    //deallocate_meta(cur_size);
 
+    return cur_size;
+}
 
 /**
  * Flush the instruction-queue if it is about to get overflowed.
@@ -190,11 +191,10 @@ void Runtime::execute()
 inline
 size_t Runtime::guard()
 {
-    bh_intp cur_size = queue_size;
     if (queue_size >= BH_CPP_QUEUE_MAX) {
-        execute();
+        return execute();
     }
-    return cur_size;
+    return 0;
 }
 
 /**
@@ -208,13 +208,11 @@ size_t Runtime::guard()
 inline
 size_t Runtime::flush()
 {
-    bh_intp cur_size = queue_size;
     if (queue_size > 0) {
-        execute();
+        return execute();
     }
-    return cur_size;
+    return 0;
 }
-
 
 template <typename T>
 inline
