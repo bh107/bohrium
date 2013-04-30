@@ -46,7 +46,7 @@ float resser(multi_array<float>& res)
 
     x = (float)5.0;
     x = adder(1.5);
-    val = *(x.begin());
+    val = scalar(x);
 
     return val;
 }

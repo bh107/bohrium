@@ -44,74 +44,68 @@ const double res1D [] = {
 const double resS1 [] = {94.5};
 const double resS = 94.5;
 
-TEST(reduction, partial_3D)
+TEST(reduction, partial_3D_to_2D)
 {
     multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-
-    y = x.reduce(ADD, 0.0);
+    y = reduce(x, ADD, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), res2D));
 }
 
-TEST(reduction, partial_2D)
+TEST(reduction, partial_3D_to_1D)
 {
-    multi_array<double> x(3,3), y;
+    multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-
-    y = x.reduce(ADD, 0.0);
+    y = reduce(x, ADD, 0.0);
+    y = reduce(y, ADD, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), res1D));
 }
 
-TEST(reduction, partial_1D)
+TEST(reduction, partial_3D_to_0D)
 {
-    multi_array<double> x(3), y;
+    multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-
-    y = x.reduce(ADD, 0.0);
+    y = reduce(x, ADD, 0.0);
+    y = reduce(y, ADD, 0.0);
+    y = reduce(y, ADD, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), resS1));
 }
 
-TEST(reduction, full_3D)
+TEST(reduction, full____3D_to_S)
 {
-    multi_array<double> x(3,3,3), y;
+    multi_array<double> x(3,3,3);
     double res;
 
-    x = 3.5;
-
-    y = x.sum();
-    res = *(y.begin());
+    x   = 3.5;
+    res = scalar(sum(x));
 
     EXPECT_TRUE(res == 94.5);
 }
 
-TEST(reduction, full_2D)
+TEST(reduction, full____2D_to_S)
 {
     multi_array<double> x(3,3), y;
     double res;
 
-    x = 3.5;
-
-    y = x.sum();
-    res = *(y.begin());
+    x   = 3.5;
+    res = scalar(sum(x));
 
     EXPECT_TRUE(res == 31.5);
 }
 
-TEST(reduction, full_1D)
+TEST(reduction, full____1D_to_S)
 {
     multi_array<double> x(3), y;
     double res;
 
-    x = 3.5;
-
-    y = x.sum();
-    res = *(y.begin());
+    x   = 3.5;
+    res = scalar(sum(x));
 
     EXPECT_TRUE(res == 10.5);
 }

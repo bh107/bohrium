@@ -26,34 +26,31 @@ using namespace bh;
 #define CONTAINER_SIZE 9
 const double res [] = { 3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5 };
 
-TEST(constructors,assignment_vector_eq_const)
+TEST(assignment,vector_eq_const)
 {
     multi_array<double> x(CONTAINER_SIZE);
 
     x = 3.5;    // The thing being tested...
-
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-TEST(constructors,assignment_vector_eq_vector)
+TEST(assignment,vector_eq_vector)
 {
     multi_array<double> x(9);
     multi_array<double> y(9);
     y = 3.5;
 
     x = y;      // The thing being tested...
-
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-TEST(constructors,assignment_matrix_eq_vector)
+TEST(assignment,matrix_eq_vector)
 {
     multi_array<double> x(3,3);
     multi_array<double> y(3);
     y = 3.5;
 
     x = y;      // The thing being tested...
-    
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
