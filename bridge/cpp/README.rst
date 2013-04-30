@@ -8,9 +8,12 @@ A list of inhabitants (along with brief descriptions) of this part of the reposi
 
     bh/         - The Bohrium c++ language-bridge / vector library.
     examples/   - Examples of using the Bohrium c++ library.
-    bin/        - Compiled examples and benchmarks go here..
+    bin/        - Compiled examples and go here..
     codegen/    - Home of the code-generator.
     Makefile    - Builds examples and runs code-generator.
 
     README.rst  - This file.
+
+Benchmarks are available in: bohrium/benchmark/cpp.
+Tests are available in: bohrium/test/cpp.
 

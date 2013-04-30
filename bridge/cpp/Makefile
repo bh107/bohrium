@@ -2,21 +2,14 @@ ROOT=../..
 HEADER=$(ROOT)/include/*
 
 EXAMPLE_SRC	= $(wildcard examples/*.cpp)
-TEST_SRC	= $(wildcard testing/*.cpp)
-
-TESTS		= $(subst .cpp,, $(subst testing/,,$(TEST_SRC)))
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
-EXAMPLES=hello_world monte_carlo_pi black_scholes
-#EXAMPLES=black_scholes
 
 CXX=clang
 #CXX=g++
-#CXXFLAGS=-Wall -Wextra -pedantic -std=c++98 -Wno-variadic-macros
 EXTRAS+=
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
 
 all: gen examples
-#all: examples
 
 examples: $(EXAMPLES)
 testing: $(TESTS)
@@ -40,13 +33,4 @@ gen:
 #
 hello_world: examples/hello_world.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
-monte_carlo_pi: examples/monte_carlo_pi.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
-
-black_scholes: examples/black_scholes.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
-
-jacobi_stencil: examples/jacobi_stencil.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
