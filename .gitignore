@@ -41,6 +41,7 @@ test/cpp/gtest
 test/cpp/bin/*
 bridge/cpp/codegen/output/*
 bridge/cpp/bin/*
+benchmark/cpp/bin/*
 include/bh_opcode.h
 core/bh_opcode.c
 core/compute/codegen/out
