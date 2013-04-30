@@ -88,7 +88,7 @@ namespace Utilities
 
         protected virtual void ReportTime(double seconds)
         {
-            Console.WriteLine("{0}: {1}", m_activity, seconds);
+            Console.WriteLine("{0} elapsed-time: {1}", m_activity, seconds);
         }
 
         #region IDisposable Members
