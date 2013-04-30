@@ -14,8 +14,9 @@ def main():
     gens = [
         ('traverser',   'traverser.ctpl',       'traverser.hpp'),
         ('functors',    'functors.ctpl',        'functors.hpp'),
-        ('compute',     'bh_compute.ctpl',   'bh_compute.cpp'),
-        ('reduce',      'bh_reduce.ctpl',    'bh_compute_reduce.cpp'),
+        ('compute',     'bh_compute.ctpl',      'bh_compute.cpp'),
+        ('reduce',      'bh_reduce.ctpl',       'bh_compute_reduce.cpp'),
+        ('typeutil',    'bh_typeutil.ctpl',     'bh_typeutil.cpp'),
     ]
 
     ignore  = json.load(open(script_dir+'ignore.json'))

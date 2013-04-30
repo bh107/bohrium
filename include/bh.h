@@ -165,6 +165,29 @@ DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
  */
 DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
 
+/* Determines if the types are acceptable for the operation
+ *
+ * @opcode Opcode for operation
+ * @outtype The type of the output
+ * @inputtype1 The type of the first input operand
+ * @inputtype2 The type of the second input operand
+ * @constanttype The type of the constant
+ * @return TRUE if the types are accepted, FALSE otherwise
+ */
+DLLEXPORT bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh_type inputtype2, bh_type constanttype);
+
+/* Determines if the types are acceptable for the operation, 
+ * and provides a suggestion for converting them
+ *
+ * @opcode Opcode for operation
+ * @outtype The type of the output
+ * @inputtype1 The type of the first input operand
+ * @inputtype2 The type of the second input operand
+ * @constanttype The type of the constant
+ * @return TRUE if the types can be converted, FALSE otherwise
+ */
+DLLEXPORT bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtype1, bh_type* inputtype2, bh_type* constanttype);
+
 
 /* Byte size for type
  *
