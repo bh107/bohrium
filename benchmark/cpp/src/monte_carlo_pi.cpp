@@ -6,7 +6,7 @@ using namespace bh;
 
 double monte_carlo_pi(int samples, int iterations)
 {
-    multi_array<double> x, y, m, c, accu(1), res(1);// Operands
+    multi_array<double> x, y, m, c, accu(1);// Operands
     accu = (double)0.0;                             // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
         x = random<double>(samples);                // Sample random numbers
