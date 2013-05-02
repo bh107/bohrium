@@ -27,9 +27,7 @@ namespace Utilities
 			if (sizes.Length != size_count)
 				throw new ArgumentException(string.Format("The size argument must consist of {0} dimensions (e.g. --size=1000*1000{1})", size_count, size_count == 3 ? "*10" : ""));
 			
-			string s;
-			dict.TryGetValue("bohrium", out s);
-			var use_bohrium = new string[] {"t", "true", "1", "on", "yes" }.Any(f => f.Equals(s, StringComparison.InvariantCultureIgnoreCase));
+			var use_bohrium = ParseBoolOption(dict, "bohrium", true);
 			
 			var t = typeof(float);
 			switch (dtype.ToLowerInvariant())
@@ -84,6 +82,19 @@ namespace Utilities
 			
 			if (use_bohrium)
 				NumCIL.Bohrium.Utility.Deactivate();
+		}
+		
+		public static bool ParseBoolOption(IDictionary<string, string> opts, string name, bool @default = false)
+		{
+			string s;
+			opts.TryGetValue(name, out s);
+			
+			if (new string[] {"t", "true", "1", "on", "yes" }.Any(f => f.Equals(s, StringComparison.InvariantCultureIgnoreCase)))
+				return true;
+			if (new string[] {"f", "false", "0", "off", "no" }.Any(f => f.Equals(s, StringComparison.InvariantCultureIgnoreCase)))
+				return false;
+
+			return @default;
 		}
 	}
 }
