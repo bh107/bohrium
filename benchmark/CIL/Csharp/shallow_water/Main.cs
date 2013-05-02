@@ -35,35 +35,30 @@ namespace shallow_water
     {
 		public static void Main (string[] args)
 		{
-			Dictionary<string, string> dict = CommandLineParser.ExtractOptions (args.ToList ());
-			if (!dict.ContainsKey ("size"))
-				throw new ArgumentException ("Main() needs the size argument (fx --size=1000*1000*10)");
-			string size = dict ["size"];
-			string dtype = "";
-			if (dict.ContainsKey ("dtype"))
-				dtype = dict ["dtype"];
-
-			string[] sizes = size.Split ('*');
-			if(sizes.Length != 3)
-				throw new ArgumentException ("The size argument must consist of three dimensions (fx --size=1000*1000*10)");
-
-			long sizeX = Convert.ToInt64 (sizes [0]);
-			long sizeY = Convert.ToInt64 (sizes [1]);
-			long iterations = Convert.ToInt64 (sizes [2]);
-
-			if(sizeX != sizeY)
-				throw new ArgumentException ("The two dimension arguments must be identical (fx --size=1000*1000*10)");
-
-			NumCIL.Bohrium.Utility.Activate ();
-			if (dtype.StartsWith ("D", StringComparison.OrdinalIgnoreCase)) {
-				var data = new ShallowWaterSolver.DataDouble (sizeX);
-				using (new DispTimer(string.Format("ShallowWater (Double) {0}*{1}*{2}", sizeX, sizeY, iterations)))
-					ShallowWaterSolver.SolveDouble (iterations, data);
-			} else {
-				var data = new ShallowWaterSolver.DataFloat (sizeX);
-				using (new DispTimer(string.Format("ShallowWater (Float) {0}*{1}*{2}", sizeX, sizeY, iterations)))
-					ShallowWaterSolver.SolveFloat (iterations, data);
-			}
+			Utilities.RunBenchmark.Run(args, 3,
+				// Running the benchmark
+				(input) => {
+					var sizeX = input.sizes[0];
+					var sizeY = input.sizes[1];
+					var iterations = input.sizes[2];
+				
+					if (input.type == typeof(double)) {
+						var data = new ShallowWaterSolver.DataDouble (sizeX);
+						using (new DispTimer(string.Format("ShallowWater (Double) {0}*{1}*{2}", sizeX, sizeY, iterations)))
+							ShallowWaterSolver.SolveDouble (iterations, data);
+					} else {
+						var data = new ShallowWaterSolver.DataFloat (sizeX);
+						using (new DispTimer(string.Format("ShallowWater (Float) {0}*{1}*{2}", sizeX, sizeY, iterations)))
+							ShallowWaterSolver.SolveFloat (iterations, data);
+					}
+				}, 
+				
+				// Validating the input
+				(input) => { 
+					if (input.sizes[0] != input.sizes[1]) 
+						throw new ArgumentException ("The two dimension arguments must be identical (e.g. --size=1000*1000*10)"); 
+				}
+			);
 		}
     }
 }
