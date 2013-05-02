@@ -26,7 +26,7 @@ using System.Linq;
 using System.Text;
 using NumCIL.Double;
 
-namespace Tester
+namespace UnitTest.Benchmarks
 {
     using DATA = System.Double;
 

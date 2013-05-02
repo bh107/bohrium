@@ -34,23 +34,23 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var jacobiResult = Tester.JacobiSolver.Solve(100, 100, true, 10);
+			var jacobiResult = UnitTest.Benchmarks.JacobiSolver.Solve(100, 100, true, 10);
             if (Math.Abs(jacobiResult - 6529.6474649484189) > 0.01)
                 throw new Exception(string.Format("Jacobi solver failed: {0}, diff: {1}", jacobiResult, Math.Abs(jacobiResult - 6529.6474649484189)));
 
-            var blackScholesResult = Tester.BlackScholesSolver.Solve(36000, 10, false);
+			var blackScholesResult = UnitTest.Benchmarks.BlackScholesSolver.Solve(36000, 10, false);
             if (Math.Abs(blackScholesResult - 51.855494520660294) > 0.01)
                 throw new Exception(string.Format("BlackScholes solver failed: {0}, diff: {1}", blackScholesResult, Math.Abs(blackScholesResult - 51.855494520660294)));
 
-            var kNNResult = Tester.kNNSolver.Solve(100, 64, 4, false).Sum();
+			var kNNResult = UnitTest.Benchmarks.kNNSolver.Solve(100, 64, 4, false).Sum();
             if (Math.Abs(kNNResult - 2460) > 0.01)
                 throw new Exception(string.Format("kNN solver failed: {0}, diff: {1}", kNNResult, Math.Abs(kNNResult - 9969336320)));
 
-            var shallowWaterResult = Tester.ShallowWaterSolver.Solve(200, 4);
+			var shallowWaterResult = UnitTest.Benchmarks.ShallowWaterSolver.Solve(200, 4);
             if (Math.Abs(shallowWaterResult - 204.04741883859941) > 0.01)
                 throw new Exception(string.Format("ShallowWater solver failed: {0}, diff {1}", shallowWaterResult, Math.Abs(shallowWaterResult - 204.04741883859941)));
 
-            Tester.nBodySolver.Solve(100, 2);
+			UnitTest.Benchmarks.nBodySolver.Solve(100, 2);
         }
     }
 }
