@@ -39,6 +39,6 @@ Global
 		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = ..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj
+		StartupItem = nbody.csproj
 	EndGlobalSection
 EndGlobal

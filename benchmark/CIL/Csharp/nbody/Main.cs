@@ -33,20 +33,38 @@ namespace nbody
     {
 		public static void Main (string[] args)
 		{
+			var opts = Utilities.CommandLineParser.ExtractOptions(args.ToList());
+			var manualTempRemoval = Utilities.RunBenchmark.ParseBoolOption(opts, "no-temp-arrays");
+		
 			Utilities.RunBenchmark.Run(args, 2,
                // Running the benchmark
                (input) => {
 					var size = input.sizes[0];
 					var iterations = input.sizes[1];
 					
-					if (input.type == typeof(double)) {
-						var data = new nBodySolverDouble.Galaxy(size);
-						using (new DispTimer(string.Format("nBody (Double) {0}*{1}", size, iterations)))
-							nBodySolverDouble.Solve(data, iterations);
-					} else {
-						var data = new nBodySolverDouble.Galaxy (size);
-						using (new DispTimer(string.Format("nBody (Float) {0}*{1}", size, iterations)))
-							nBodySolverDouble.Solve(data, iterations);
+					if (manualTempRemoval)
+					{
+						if (input.type == typeof(double)) {
+							var data = new nBodySolverDoubleNoTempArrays.Galaxy(size);
+							using (new DispTimer(string.Format("nBodyNoTemp (Double) {0}*{1}", size, iterations)))
+								nBodySolverDoubleNoTempArrays.Solve(data, iterations);
+						} else {
+							var data = new nBodySolverDoubleNoTempArrays.Galaxy (size);
+							using (new DispTimer(string.Format("nBodyNoTemp (Float) {0}*{1}", size, iterations)))
+								nBodySolverDoubleNoTempArrays.Solve(data, iterations);
+						}
+					}
+					else
+					{
+						if (input.type == typeof(double)) {
+							var data = new nBodySolverDouble.Galaxy(size);
+							using (new DispTimer(string.Format("nBody (Double) {0}*{1}", size, iterations)))
+								nBodySolverDouble.Solve(data, iterations);
+						} else {
+							var data = new nBodySolverDouble.Galaxy (size);
+							using (new DispTimer(string.Format("nBody (Float) {0}*{1}", size, iterations)))
+								nBodySolverDouble.Solve(data, iterations);
+						}
 					}
 				}
 			);
