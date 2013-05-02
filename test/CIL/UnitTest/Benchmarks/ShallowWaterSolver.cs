@@ -31,7 +31,7 @@ using T = System.Double;
 using R = NumCIL.Range;
 using NumCIL;
 
-namespace Tester
+namespace UnitTest.Benchmarks
 {
     public static class ShallowWaterSolver
     {

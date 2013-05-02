@@ -30,7 +30,7 @@ using R = NumCIL.Range;
 using NumCIL.Double;
 using DATA = System.Double;
 
-namespace Tester
+namespace UnitTest.Benchmarks
 {
 	public static class nBodySolver
 	{
