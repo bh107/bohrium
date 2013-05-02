@@ -49,10 +49,8 @@ __OPCODES__
 
 def gen_cfile(opcodes):
 
-    text     = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
-    nops     = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
-    issys    = ['        case %s: return %s;' % (opcode['opcode'], 'true' if opcode['system_opcode'] else 'false') for opcode in opcodes]
-    iselw    = ['        case %s: return %s;' % (opcode['opcode'], 'true' if opcode['elementwise'] else 'false') for opcode in opcodes]
+    text    = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
+    nops    = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
     stamp   = time.strftime("%d/%m/%Y")
 
     return """
@@ -115,40 +113,7 @@ __TEXT__
         default: return "Unknown opcode";
     }
 }
-
-/* Determines if the operation is a system operation
- *
- * @opcode Opcode for operation
- * @return TRUE if the operation is a system opcode, FALSE otherwise
- */
-bool bh_opcode_is_system(bh_opcode opcode)
-{
-    switch(opcode) 
-    {
-__ISSYS__
-
-    default:
-        return false;
-    }
-}
-
-/* Determines if the operation is performed elementwise
- *
- * @opcode Opcode for operation
- * @return TRUE if the operation is performed elementwise, FALSE otherwise
- */
-bool bh_opcode_is_elementwise(bh_opcode opcode)
-{
-    switch(opcode) 
-    {
-__ISELW__
-
-    default:
-        return false;
-    }
-}
-
-    """.replace('__TIMESTAMP__', stamp).replace('__NOPS__', '\n'.join(nops)).replace('__ISSYS__', '\n'.join(issys)).replace('__ISELW__', '\n'.join(iselw)).replace('__TEXT__', '\n'.join(text))
+    """.replace('__TIMESTAMP__', stamp).replace('__NOPS__', '\n'.join(nops)).replace('__TEXT__', '\n'.join(text))
 
 def get_timestamp(f):
     st = os.stat(f)

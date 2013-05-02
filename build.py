@@ -99,7 +99,7 @@ def install_config(prefix):
 if __name__ == "__main__":
     debug = False
     interactive = False
-    if os.geteuid() == 0:#Root user
+    if not sys.platform.startswith('win32') and os.geteuid() == 0:#Root user
         prefix = "/opt/bohrium"
     else:
         prefix = join(join(expanduser("~"),".local"))

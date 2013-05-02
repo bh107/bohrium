@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as
-published by the Free Software Foundation, either version 3
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the
-GNU Lesser General Public License along with Bohrium.
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -74,17 +74,17 @@ bh_error exec_init(const char *component_name)
     myself = bh_component_setup(component_name);
     if(myself == NULL)
         return BH_ERROR;
-
+    
     err = bh_component_children(myself, &children_count, &my_components);
-    if (children_count != 1)
+    if (children_count != 1) 
     {
 		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
 		return BH_ERROR;
     }
-
+    
     if (err != BH_SUCCESS)
 	    return err;
-
+    
     vem_init = my_components[0]->init;
     exec_vem_execute = my_components[0]->execute;
     vem_shutdown = my_components[0]->shutdown;
@@ -141,7 +141,7 @@ bh_error exec_shutdown(void)
 bh_error exec_reg_func(char *fun, bh_intp *id)
 {
     bh_error e;
-
+    
     if(*id == 0)//Only if parent didn't set the ID.
     {
         *id = ++userfunc_count;
@@ -160,7 +160,7 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
         if(reduce_impl == NULL)
         {
             reduce_impl_id = *id;
-            return BH_SUCCESS;
+            return BH_SUCCESS;           
         }
     }
     else if(strcmp("bh_random", fun) == 0)
@@ -168,7 +168,7 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
         if(random_impl == NULL)
         {
             random_impl_id = *id;
-            return BH_SUCCESS;
+            return BH_SUCCESS;           
         }
     }
 
@@ -184,7 +184,7 @@ static void fallback_exec(bh_instruction *inst)
 {
     int nop = bh_operands_in_instruction(inst);
     std::set<bh_array*> arys2discard;
-
+    
     batch_flush();
 
     ++fallback_count;
@@ -200,7 +200,7 @@ static void fallback_exec(bh_instruction *inst)
         bh_array *base = bh_base_array(op);
         comm_slaves2master(base);
     }
-
+    
     //Do global instruction
     if(pgrid_myrank == 0)
     {
@@ -214,12 +214,12 @@ static void fallback_exec(bh_instruction *inst)
         if(bh_is_constant(op))
             continue;
         bh_array *base = bh_base_array(op);
-
+        
         //We have to make sure that the master-process has allocated memory
         //because the slaves cannot determine it.
-        if(pgrid_myrank == 0)
+        if(pgrid_myrank == 0)        
             bh_data_malloc(base);
-
+        
         comm_master2slaves(base);
 
         //All local arrays should be discarded
@@ -227,16 +227,16 @@ static void fallback_exec(bh_instruction *inst)
         arys2discard.insert(base);
     }
     //Discard all local views
-    for(std::set<bh_array*>::iterator it=arys2discard.begin();
+    for(std::set<bh_array*>::iterator it=arys2discard.begin(); 
         it != arys2discard.end(); ++it)
     {
         if((*it)->base != NULL)
         {
             batch_schedule(BH_DISCARD, *it);
         }
-    }
+    }    
     //Free and discard all local base arrays
-    for(std::set<bh_array*>::iterator it=arys2discard.begin();
+    for(std::set<bh_array*>::iterator it=arys2discard.begin(); 
         it != arys2discard.end(); ++it)
     {
         if((*it)->base == NULL)
@@ -244,7 +244,7 @@ static void fallback_exec(bh_instruction *inst)
             batch_schedule(BH_FREE, *it);
             batch_schedule(BH_DISCARD, *it);
         }
-    }
+    }    
 }
 
 
@@ -260,7 +260,7 @@ static void execute_regular(bh_instruction *inst)
 
     mapping_chunks(nop, operands, chunks);
     assert(chunks.size() > 0);
-
+    
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {
@@ -287,13 +287,13 @@ static void execute_regular(bh_instruction *inst)
 
         //Schedule task
         batch_schedule(local_inst);
-
+    
         //Free and discard all local chunk arrays
         for(bh_intp k=0; k < nop; ++k)
         {
             if(bh_is_constant(inst->operand[k]))
                 continue;
-
+            
             bh_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
                 batch_schedule(BH_FREE, ary);
@@ -313,7 +313,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
 {
     if(count <= 0)
         return BH_SUCCESS;
-
+    
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
     bh_uint64 stime = bh_timing();
 
@@ -321,18 +321,18 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
     {
         bh_instruction* inst = &inst_list[i];
         assert(inst->opcode >= 0);
-        switch(inst->opcode)
+        switch(inst->opcode) 
         {
             case BH_USERFUNC:
             {
-                if (inst->userfunc->id == reduce_impl_id)
+                if (inst->userfunc->id == reduce_impl_id) 
                 {
                     bh_uint64 stime_reduce = bh_timing();
                     //TODO: the bh_reduce is hardcoded for now.
                     if(bh_reduce(inst->userfunc, NULL) != BH_SUCCESS)
                         EXCEPT("[CLUSTER-VEM] The user-defined function bh_reduce failed.");
                     bh_timing_save(timing_reduce, stime_reduce, bh_timing());
-                }else if (inst->userfunc->id == random_impl_id)
+                }else if (inst->userfunc->id == random_impl_id) 
                 {
                     //TODO: the bh_random is hardcoded for now.
                     if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
@@ -344,27 +344,6 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                 }
                 break;
             }
-            case BH_ADD_REDUCE:
-            case BH_MUL_REDUCE:
-            {
-                if(inst->constant.type != BH_INT64)
-                    EXCEPT("[CLUSTER-VEM] The axis operand in BH_MUL_REDUCE must be of type BH_INT64.");
-
-                bh_reduce_type reduce_data;
-            	reduce_data.id = 0;
-            	reduce_data.nout = 1;
-            	reduce_data.nin = 1;
-            	reduce_data.struct_size = sizeof(bh_reduce_type);
-            	reduce_data.opcode = inst->opcode == BH_ADD_REDUCE ? BH_ADD : BH_MULTIPLY;
-            	reduce_data.operand[0] = inst->operand[0];
-            	reduce_data.operand[1] = inst->operand[1];
-                bh_uint64 stime_reduce = bh_timing();
-	        reduce_data.axis = inst->constant.value.int64;
-	        if(bh_reduce((bh_userfunc *)&reduce_data, NULL) != BH_SUCCESS)
-                    EXCEPT("[CLUSTER-VEM] The user-defined function failed.");
-                bh_timing_save(timing_reduce, stime_reduce, bh_timing());
-            	break;
-            }
             case BH_DISCARD:
             {
                 bh_array *g_ary = inst->operand[0];
@@ -375,7 +354,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                     {
                         batch_schedule(BH_DISCARD, l_ary);
                     }
-                }
+                }   
                 dispatch_slave_known_remove(g_ary);
                 break;
             }
@@ -404,7 +383,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
             }
         }
     }
-
+    
     //Lets flush all scheduled tasks
     batch_flush();
     //And remove all tmp data structures
@@ -420,7 +399,7 @@ bh_error bh_reduce( bh_userfunc *arg, void* ve_arg)
 {
     bh_reduce_type *a = (bh_reduce_type *) arg;   // Grab function arguments
     bh_opcode opcode = a->opcode;                    // Opcode
-    bh_index axis    = a->axis;                      // The axis to reduce
+    bh_index axis    = a->axis;                      // The axis to reduce 
 
     return ufunc_reduce(opcode, axis, a->operand, reduce_impl_id);
 }
@@ -432,7 +411,7 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
     std::vector<ary_chunk> chunks;
     mapping_chunks(1, &op, chunks);
     assert(chunks.size() > 0);
-
+    
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size(); ++c)
     {
@@ -441,7 +420,7 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
         if(pgrid_myrank == chunks[c].rank)
         {
             bh_random_type *ufunc = (bh_random_type*)tmp_get_misc(sizeof(bh_random_type));
-            ufunc->id          = random_impl_id;
+            ufunc->id          = random_impl_id; 
             ufunc->nout        = 1;
             ufunc->nin         = 0;
             ufunc->struct_size = sizeof(bh_random_type);

@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shallow_water", "shallow_water.csproj", "{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL", "..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj", "{08C17283-4F2A-466C-AE28-1923837A2F58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nbody", "nbody.csproj", "{226D254B-E858-4964-BC99-4B3D93A78080}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilites", "..\..\Utilities\Utilites.csproj", "{D6CA1418-5885-4311-AFD8-94916E437EFE}"
 EndProject
@@ -21,10 +21,10 @@ Global
 		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{226D254B-E858-4964-BC99-4B3D93A78080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{226D254B-E858-4964-BC99-4B3D93A78080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{226D254B-E858-4964-BC99-4B3D93A78080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{226D254B-E858-4964-BC99-4B3D93A78080}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +39,6 @@ Global
 		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = shallow_water.csproj
+		StartupItem = nbody.csproj
 	EndGlobalSection
 EndGlobal

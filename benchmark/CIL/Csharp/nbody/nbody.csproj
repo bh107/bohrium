@@ -5,32 +5,29 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{46D2B3E7-DA6C-4E65-B111-A79F47A4A2FC}</ProjectGuid>
+    <ProjectGuid>{226D254B-E858-4964-BC99-4B3D93A78080}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>shallow_water</RootNamespace>
-    <AssemblyName>shallow_water</AssemblyName>
+    <RootNamespace>nbody</RootNamespace>
+    <AssemblyName>nbody</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
+    <Commandlineparameters>--size=1000*5 --bohrium=false --no-temp-arrays=true</Commandlineparameters>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
+    <Externalconsole>True</Externalconsole>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -38,8 +35,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
-    <Compile Include="Solver.cs">
-      <DependentUpon>Solver.tt</DependentUpon>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="nbody.cs">
+      <DependentUpon>nbody.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -62,9 +60,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Solver.tt">
+    <None Include="nbody.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Solver.cs</LastGenOutput>
+      <LastGenOutput>nbody.cs</LastGenOutput>
     </None>
   </ItemGroup>
 </Project>

@@ -56,3 +56,6 @@ bh_vem_cluster_slave
 misc/tools/output/*.svg
 benchmark/CIL/Csharp/shallow_water/bin
 benchmark/CIL/Csharp/shallow_water/obj
+*.userprefs
+benchmark/CIL/Csharp/nbody/bin
+benchmark/CIL/Csharp/nbody/obj
