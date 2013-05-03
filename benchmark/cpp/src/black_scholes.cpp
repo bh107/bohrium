@@ -45,14 +45,6 @@ multi_array<T>& cnd(multi_array<T>& x)
          a5*(pow(k,(T)5)));
 
     mask = x < 0.0;
-    /*
-    cout << "[x]" << x << endl;
-    cout << "[l]" << l << endl;
-    cout << "[k]" << k << endl;
-    cout << "[w]" << w << endl;
-    cout << "[mask]" << mask << endl;
-    cout << "[mask_neg]" << mask_neg << endl;
-    */
     return w * (!mask).template as<T>() + (1.0-w)* (mask.template as<T>());
 }
 
@@ -76,26 +68,51 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
         }
 
         t += d_t;                               // Increment delta
-        p[i] = scalar(sum(res)) / (T)samples;  // Result from timestep
+        p[i] = scalar(sum(res)) / (T)samples;   // Result from timestep
     }
 
     return p;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    double* prices;
-    size_t sample_size  = 1000,
-           iterations   = 10;
+    arguments_t args;                   // Parse command-line
+    if (!parse_args(argc, argv, args)) {
+        cout << "You are doing it wrong!" << endl;
+        return 1;
+    }
+    if (2 < args.size.size()) {
+        cout << "Not enough arguments." << endl;
+        return 1;
+    }
+    if (2 > args.size.size()) {
+        cout << "Not enough arguments." << endl;
+        return 1;
+    }
 
-    prices = pricing(sample_size, iterations, 'c', 65.0, 1.0/365.0, 0.08, 0.3);
+    bh_intp start = _bh_timing();
+
+    double* prices = pricing(           // Do the computations...
+        args.size[0], args.size[1],
+        'c', 65.0, 1.0 / 365.0,
+        0.08, 0.3
+    );
     stop();
 
-    cout << "Prices found: ";
-    for(size_t i=0; i<iterations; i++) {
-        cout << prices[i] << endl;
+    cout << "{\"elapsed\": "<< (_bh_timing()-start)/1000000.0 <<"";          // Output benchmark results
+    if (args.verbose) {                 // And values
+        cout << ", \"prices\": [";
+        for(size_t i=0; i<args.size[1]; i++) {
+            cout << prices[i];
+            if (args.size[1]-1!=i) {
+                cout << ", ";
+            }
+        }
+        cout << "]" << endl;
     }
-    free(prices);
+    cout << "}" << endl;
+
+    free(prices);                       // Cleanup
     return 0;
 }
 

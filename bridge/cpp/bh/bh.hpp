@@ -368,5 +368,6 @@ void pprint(multi_array<T>& op);
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.
 #include "sugar.hpp"        // DSEL Additional sugar... 
+#include "misc.hpp"         // Stuff that probably should not be here...
 
 #endif
