@@ -76,17 +76,27 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 
 int main(int argc, char* argv[])
 {
-    arguments_t args;                   // Parse command-line
-    if (!parse_args(argc, argv, args)) {
-        cout << "You are doing it wrong!" << endl;
+    const char usage[] = "usage: ./black_scholes --size=1000*10 [--verbose]";
+
+    if (2>argc) {
+        cout << usage << endl;
         return 1;
     }
-    if (2 < args.size.size()) {
-        cout << "Not enough arguments." << endl;
+    
+    arguments_t args;                   // Parse command-line
+    if (!parse_args(argc, argv, args)) {
+        cout << "Err: Invalid argument(s)." << endl;
+        cout << usage << endl;
         return 1;
     }
     if (2 > args.size.size()) {
-        cout << "Not enough arguments." << endl;
+        cout << "Err: Not enough arguments." << endl;
+        cout << usage << endl;
+        return 1;
+    }
+    if (2 < args.size.size()) {
+        cout << "Err: Too many arguments." << endl;
+        cout << usage << endl;
         return 1;
     }
 
