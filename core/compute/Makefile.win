@@ -10,7 +10,7 @@ LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
-SRC=bh_compute_random.cpp bh_compute_reduce.cpp bh_compute.cpp bh_compute_nselect.cpp bh_compute_helpers.cpp bh_compute_matmul.cpp bh_compute_aggregate.cpp
+SRC=bh_compute_random.cpp bh_compute_reduce.cpp bh_compute.cpp bh_compute_nselect.cpp bh_compute_helpers.cpp bh_compute_matmul.cpp bh_compute_aggregate.cpp bh_typeutil.cpp
 OBJ=$(SRC:.cpp=.obj)
 INSTALLDIR=/opt/bh/
 
@@ -22,9 +22,6 @@ bh_compute_matmul.obj: bh_compute_matmul.cpp
 bh_compute_random.obj: bh_compute_random.cpp
 		$(CC) $(CFLAGS) bh_compute_random.cpp /Fo$@
 
-bh_compute_reduce.obj: bh_compute_reduce.cpp
-		$(CC) $(CFLAGS) bh_compute_reduce.cpp /Fo$@
-
 bh_compute.obj: bh_compute.cpp
 		$(CC) $(CFLAGS) bh_compute.cpp /Fo$@
 
@@ -34,8 +31,8 @@ bh_compute_nselect.obj: bh_compute_nselect.cpp
 bh_compute_helpers.obj: bh_compute_helpers.cpp
 		$(CC) $(CFLAGS) bh_compute_helpers.cpp /Fo$@
 
-bh_compute_aggregate.obj: bh_compute_aggregate.cpp
-		$(CC) $(CFLAGS) bh_compute_aggregate.cpp /Fo$@
+bh_typeutil.obj: bh_typeutil.cpp
+		$(CC) $(CFLAGS) bh_typeutil.cpp /Fo$@
 
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ)
