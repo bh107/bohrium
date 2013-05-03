@@ -144,8 +144,7 @@ inline
 size_t multi_array<T>::len()
 {
     size_t nelements = 1;
-    for (int i = 0; i < storage[key].ndim; ++i)
-    {
+    for (int i = 0; i < storage[key].ndim; ++i) {
         nelements *= storage[key].shape[i];
     }
     return nelements;
@@ -336,18 +335,6 @@ multi_array<Ret>& multi_array<T>::as()
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
 
     return *result;
-}
-
-// How many elements in array / length
-template <typename T>
-inline
-size_t multi_array<T>::len()
-{
-    size_t nelements = 1;
-    for (int i = 0; i < storage[key].ndim; ++i) {
-        nelements *= storage[key].shape[i];
-    }
-    return nelements;
 }
 
 }
