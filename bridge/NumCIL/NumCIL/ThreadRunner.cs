@@ -140,19 +140,40 @@ namespace NumCIL
         /// </summary>
         public void Dispose()
         {
-            if (!m_disposed)
-            {
-                m_disposed = true;
-                m_startBarrier.RemoveParticipant();
-                m_finishBarrier.RemoveParticipant();
-
-                var ok = true;
-                foreach (var t in m_thread)
-                    ok &= t.Join(TimeSpan.FromSeconds(10));
-
-                if (!ok)
-                    throw new Exception("Failed to shut down threads?");
-            }
+			Dispose(true);
+        }
+        
+        /// <summary>
+        /// Disposes the resources and shuts down the threadpool.
+        /// </summary>
+        /// <param name="disposing">Set to <c>true</c> if disposing, false otherwise.</param>
+        protected void Dispose(bool disposing)
+		{
+			if (!m_disposed)
+			{
+				m_disposed = true;
+				m_startBarrier.RemoveParticipant();
+				m_finishBarrier.RemoveParticipant();
+				
+				if (disposing)
+					GC.SuppressFinalize(this);
+				
+				var ok = true;
+				foreach (var t in m_thread)
+					ok &= t.Join(TimeSpan.FromSeconds(10));
+				
+				if (!ok)
+					throw new Exception("Failed to shut down threads?");
+			}
+		}
+        
+        /// <summary>
+        /// Releases unmanaged resources and performs other cleanup operations before the
+        /// <see cref="NumCIL.ThreadRunner"/> is reclaimed by garbage collection.
+        /// </summary>
+        ~ThreadRunner()
+        {
+        	Dispose(false);
         }
     }
 }
