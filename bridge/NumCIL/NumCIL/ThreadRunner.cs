@@ -115,7 +115,7 @@ namespace NumCIL
 				bool work = m_startBarrier.SignalAndWait(m_finalizeGuardTimeout);
 				if (m_disposed)
 					return;
-               	if (!work) //In case we woke up due to inactivity
+				if (!work) //In case we woke up due to inactivity
                		continue;
 #if COUNT_TICKS
                 long ticks = DateTime.Now.Ticks;
