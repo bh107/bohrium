@@ -117,16 +117,6 @@ namespace NumCIL.Generic
         void AddConversionOperation<Tb>(IBinaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> in1, NdArray<Tb> in2);
 
         /// <summary>
-        /// Gets a list of registered pending operations on the accessor
-        /// </summary>
-        IList<PendingOperation<T>> PendingOperations { get; }
-
-        /// <summary>
-        /// The number of already executed operations
-        /// </summary>
-        long PendingOperationOffset { get; set; }
-
-        /// <summary>
         /// Flushes all pending operations on this element
         /// </summary>
         void Flush();
@@ -241,6 +231,83 @@ namespace NumCIL.Generic
         public virtual bool IsAllocated { get { return m_data != null; } }
     }
 
+	public static class LazyAccessorCollector
+	{
+		/// <summary>
+		/// We keep a global clock on all operations so we can easily sort them later
+		/// </summary>
+		private static long _globalClock = 0;
+
+		/// <summary>
+		/// List of operations registered on this array but not yet executed
+		/// </summary>
+		private static List<IPendingOperation> _pendingOperations = new List<IPendingOperation>();
+		
+		/// <summary>
+		/// The lock guarding the pending operations
+		/// </summary>
+		private static readonly object _pendingOperationsLock = new object();
+		
+		/// <summary>
+		/// The clock of the maximum operation already executed
+		/// </summary>
+		private static long _pendingOperationOffset;
+		
+		/// <summary>
+		/// Adds an operation to the list of pending operations
+		/// </summary>
+		/// <returns>The operation clock</returns>
+		/// <param name="op">The operation to add</param>
+		public static long AddOperation(IPendingOperation op)
+		{
+			lock(_pendingOperationsLock)
+				_pendingOperations.Add(op);
+			
+			return op.Clock;
+		}
+		
+		/// <summary>
+		/// Gets the clock tick and increments it atomically.
+		/// </summary>
+		/// <value>The clock tick.</value>
+		public static long ClockTick { get { return System.Threading.Interlocked.Increment(ref _globalClock); } }
+
+		/// <summary>
+		/// Extracts all operations with a clock less than or equal to the specified clock
+		/// </summary>
+		/// <returns>All operations with a clock less than or equal to the specified max</returns>
+		/// <param name="maxclock">The maximum clock</param>
+		public static IList<IPendingOperation> ExtractUntilClock(long maxclock)
+		{
+			lock (_pendingOperationsLock)
+			{
+				var tmp = new List<IPendingOperation>();
+				while (_pendingOperations.Count > 0 && _pendingOperations[0].Clock <= maxclock)
+				{
+					_pendingOperationOffset = _pendingOperations[0].Clock;
+					tmp.Add(_pendingOperations[0]);
+					_pendingOperations.RemoveAt(0);
+				}
+			
+				return tmp;
+			}
+		}
+		
+		/// <summary>
+		/// Helper function that converts a typed list into another type
+		/// </summary>
+		/// <returns>TA converted sequence</returns>
+		/// <param name="input">The input list</param>
+		/// <typeparam name="T">The type of the data in the returned enumerable.</typeparam>
+		public static IEnumerable<T> ConvertList<T>(System.Collections.IEnumerable input)
+		{
+			var en = input.GetEnumerator();
+			while(en.MoveNext())
+				yield return (T)en.Current;
+		}
+		
+	}
+
     /// <summary>
     /// Implementation of a lazy initialized array, will collect operations until data is accessed
     /// </summary>
@@ -292,20 +359,10 @@ namespace NumCIL.Generic
         /// </summary>
         protected static readonly Dictionary<object, System.Reflection.MethodInfo> specializedAggregateMethods = new Dictionary<object, System.Reflection.MethodInfo>();
 
-        /// <summary>
-        /// List of operations registered on this array but not yet executed
-        /// </summary>
-        protected List<PendingOperation<T>> m_pendingOperations = new List<PendingOperation<T>>();
-        /// <summary>
-        /// Offset used to calculate index after cleaning the pending operations
-        /// </summary>
-        protected long m_pendingOperationOffset;
-
-        /// <summary>
-        /// Locking object to allow nice threading properties
-        /// </summary>
-        public readonly object Lock = new object();
-
+		/// <summary>
+		/// The clock required to get this accessor
+		/// </summary>
+       	protected long m_clock;
 
         /// <summary>
         /// Constructs a wrapper around an existing arrray
@@ -324,9 +381,7 @@ namespace NumCIL.Generic
         /// </summary>
         public override void Allocate()
         {
-            if (PendingOperations.Count != 0)
-                this.ExecutePendingOperations();
-
+			this.ExecutePendingOperations();
             base.Allocate();
         }
 
@@ -336,9 +391,8 @@ namespace NumCIL.Generic
         /// <param name="operation">The operation performed</param>
         /// <param name="operands">The operands involved, operand 0 is the target</param>
         public virtual void AddOperation(IOp<T> operation, params NdArray<T>[] operands)
-        {
-            lock (Lock)
-                PendingOperations.Add(new PendingOperation<T>(operation, operands));
+		{
+			m_clock = LazyAccessorCollector.AddOperation(new PendingOperation<T>(operation, operands));
         }
 
 		/// <summary>
@@ -348,9 +402,8 @@ namespace NumCIL.Generic
         /// <param name="output">The output operand</param>
         /// <param name="input">The input operand</param>
         public virtual void AddConversionOperation<Ta>(IUnaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> input)
-        {
-            lock (Lock)
-                PendingOperations.Add(new PendingUnaryConversionOperation<T, Ta>(operation, output, input));
+		{
+			m_clock = LazyAccessorCollector.AddOperation(new PendingUnaryConversionOperation<T, Ta>(operation, output, input));
         }
 
         /// <summary>
@@ -361,9 +414,8 @@ namespace NumCIL.Generic
         /// <param name="in1">An input operand</param>
         /// <param name="in2">An input operand</param>
         public virtual void AddConversionOperation<Ta>(IBinaryConvOp<Ta, T> operation, NdArray<T> output, NdArray<Ta> in1, NdArray<Ta> in2)
-        {
-            lock (Lock)
-                PendingOperations.Add(new PendingBinaryConversionOperation<T, Ta>(operation, output, in1, in2));
+		{
+			m_clock = LazyAccessorCollector.AddOperation(new PendingBinaryConversionOperation<T, Ta>(operation, output, in1, in2));
         }
 
         /// <summary>
@@ -371,15 +423,9 @@ namespace NumCIL.Generic
         /// </summary>
         protected virtual void ExecutePendingOperations()
         {
-            if (PendingOperations.Count > 0)
-            {
-                lock (Lock)
-                {
-                    var lst = UnrollWorkList(this);
-                    PendingOperations.Clear();
-                    ExecuteOperations(lst);
-                }
-            }
+            var lst = UnrollWorkList(this.m_clock);
+            if (lst.Count > 0)
+            	ExecuteOperations(lst);
         }
 
         /// <summary>
@@ -395,84 +441,50 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="target">The target output</param>
         /// <returns>A list of operations to perform</returns>
-        public virtual IEnumerable<PendingOperation<T>> UnrollWorkList(ILazyAccessor<T> target)
-        {
-            List<PendingOperation<T>> res = new List<PendingOperation<T>>();
-            Dictionary<ILazyAccessor<T>, long> completedOps = new Dictionary<ILazyAccessor<T>, long>();
-            res.AddRange(target.PendingOperations);
-            completedOps[target] = target.PendingOperations.Count + target.PendingOperationOffset;
-
-            //Figure out which operations we need
-            long i = 0;
-            while (i < res.Count)
-            {
-                PendingOperation<T> cur = res[(int)i];
-
-                for (int j = 0; j < cur.Operands.Length; j++)
-                    if (cur.Operands[j].DataAccessor is ILazyAccessor<T>)
-                    {
-                        ILazyAccessor<T> lz = (ILazyAccessor<T>)cur.Operands[j].DataAccessor;
-                        long cp;
-                        long dest_cp = cur.OperandIndex[j] + (j == 0 ? -1 : 0);
-
-                        if (!completedOps.TryGetValue(lz, out cp))
-                            cp = lz.PendingOperationOffset;
-
-                        long max_cp = Math.Max(cp, dest_cp);
-                        for (long k = cp; k < max_cp; k++)
-                            res.Add(lz.PendingOperations[(int)(k - cp)]);
-
-                        completedOps[lz] = max_cp;
-                    }
-
-                i++;
-            }
-
-            //Now we collect the operations that we need to execute and mark them as executed in the accessor
-            foreach (var kp in completedOps)
-            {
-                long oldOffset = kp.Key.PendingOperationOffset;
-
-                if (kp.Value - oldOffset == 0)
-                    kp.Key.PendingOperations.Clear();
-                else
-                    for (i = oldOffset; i < kp.Value; i++)
-                        kp.Key.PendingOperations.RemoveAt(0);
-                
-                kp.Key.PendingOperationOffset = kp.Value;
-            }
-
-            //Sort list by clock
-            IEnumerable<PendingOperation<T>> tmp = res.OrderBy(x => x.Clock);
-
-            //Remove duplicates
-            /*long prevclock = -1;
-            tmp = tmp.Where((x) =>
-            {
-                if (x.Clock == prevclock)
-                    return false;
-
-                prevclock = x.Clock;
-                return true;
-            });*/
-
-            return tmp;
+        public virtual IList<IPendingOperation> UnrollWorkList(long maxclock)
+		{
+			return LazyAccessorCollector.ExtractUntilClock(maxclock);
         }
 
         /// <summary>
         /// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
         /// </summary>
         /// <param name="work">The list of operations to perform</param>
-        public virtual void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
+        public virtual void ExecuteOperations(IList<IPendingOperation> work)
         {
             DoExecute(work);
         }
 
+		/// <summary>
+		/// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
+		/// </summary>
+		/// <param name="work">The list of operations to perform</param>
+		public virtual void DoExecute(IList<IPendingOperation> work)
+		{
+			var tmp = new List<IPendingOperation>();
+			while (work.Count > 0)
+			{
+				var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
+				var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType } );
+
+				while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
+				{
+					tmp.Add(work[0]);
+					work.RemoveAt(0);
+				}
+				
+				var typedEnum = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType }).Invoke(null, new object[] { tmp });
+				tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null ).Invoke(tmp[0].TargetAccessor, new object[] { typedEnum });
+				
+				tmp.Clear();
+			}
+		}
+				
         /// <summary>
         /// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
         /// </summary>
         /// <param name="work">The list of operations to perform</param>
-        public static void DoExecute(IEnumerable<PendingOperation<T>> work)
+        public virtual void DoExecute(IEnumerable<PendingOperation<T>> work)
         {
             foreach (var n in work)
             {
@@ -574,42 +586,35 @@ namespace NumCIL.Generic
                 }
             }
         }
-
-
-        /// <summary>
-        /// Gets a list of registered pending operations on the accessor
-        /// </summary>
-        public IList<PendingOperation<T>> PendingOperations
-        {
-            get { return m_pendingOperations; }
-        }
-
-        /// <summary>
-        /// The number of already executed operations
-        /// </summary>
-        public long PendingOperationOffset
-        {
-            get { return m_pendingOperationOffset; }
-            set { m_pendingOperationOffset = value; }
-        }
     }
 
+	/// <summary>
+	/// Marker interface for a pending operation
+	/// </summary>
+	public interface IPendingOperation
+	{
+		long Clock { get; }
+		Type TargetOperandType { get; }
+		Type DataType { get; }
+		object TargetAccessor { get; }
+	}
 
     /// <summary>
     /// Representation of a pending operation
     /// </summary>
     /// <typeparam name="T">The type of data in the array</typeparam>
-    public class PendingOperation<T>
+    public class PendingOperation<T> : IPendingOperation
     {
-        /// <summary>
-        /// We keep a global clock on all operations so we can easily sort them later
-        /// </summary>
-        protected static long _globalClock = 0;
-
         /// <summary>
         /// The relative time this operation was registered
         /// </summary>
-        public readonly long Clock;
+        private readonly long m_clock;
+        
+		/// <summary>
+		/// The relative time this operation was registered
+		/// </summary>
+		public long Clock { get { return m_clock; } }
+        
         /// <summary>
         /// The operation to perform, usually a IBinaryOp&lt;T&gt; or IUnaryOp&lt;T&gt;
         /// </summary>
@@ -620,11 +625,6 @@ namespace NumCIL.Generic
         /// the target operand is at index 0
         /// </summary>
         public readonly NdArray<T>[] Operands;
-        /// <summary>
-        /// The size of pending operations after the execution,
-        /// for each of the operands
-        /// </summary>
-        public readonly long[] OperandIndex;
 
         /// <summary>
         /// Constructs a new pending operation
@@ -633,35 +633,48 @@ namespace NumCIL.Generic
         /// <param name="operands">The operands involved</param>
         public PendingOperation(IOp<T> operation, params NdArray<T>[] operands)
         {
-            this.Clock = System.Threading.Interlocked.Increment(ref _globalClock);
+            this.m_clock = LazyAccessorCollector.ClockTick;
             this.Operation = operation;
-
-            NdArray<T>[] oprs = new NdArray<T>[operands.Length];
-            long[] indx = new long[operands.Length];
-            int i = 0;
-
-            foreach (var x in operands)
-            {
-                oprs[i] = x;
-                if (x.DataAccessor is ILazyAccessor<T>)
-                {
-                    ILazyAccessor<T> lz = (ILazyAccessor<T>)x.DataAccessor;
-                    indx[i] = (lz.PendingOperations.Count + lz.PendingOperationOffset) + (i == 0 ? 1 : 0);
-                }
-                else
-                    indx[i] = i == 0 ? 1 : 0;
-                i++;
-            }
-
             this.Operands = operands;
-            this.OperandIndex = indx;
+        }
+        
+        /// <summary>
+        /// Gets the type of the target operand
+        /// </summary>
+        /// <value>The type of the target operand.</value>
+        public Type TargetOperandType
+        {
+        	get
+        	{
+        		return Operands[0].DataAccessor.GetType();
+        	}
+        }
+        
+        /// <summary>
+        /// Gets the type of the data
+        /// </summary>
+        /// <value>The type of the data.</value>
+        public Type DataType
+        {
+        	get
+        	{
+        		return typeof(T);
+        	}
+        }
+        
+        public object TargetAccessor
+        {
+        	get
+        	{
+        		return Operands[0].DataAccessor;
+        	}
         }
     }
 
 	/// <summary>
 	/// Marker interface for quick recognition of conversion operations
 	/// </summary>
-	public interface IPendingUnaryConversionOp 
+	public interface IPendingUnaryConversionOp : IPendingOperation
 	{
         /// <summary>
         /// Gets the untyped input operand
@@ -672,7 +685,7 @@ namespace NumCIL.Generic
     /// <summary>
     /// Marker interface for quick recognition of conversion operations
     /// </summary>
-    public interface IPendingBinaryConversionOp
+	public interface IPendingBinaryConversionOp : IPendingOperation
     {
         /// <summary>
         /// Gets the untyped input operand
@@ -690,11 +703,6 @@ namespace NumCIL.Generic
 		/// </summary>
 		public readonly NdArray<Tb> InputOperand;
 
-		/// <summary>
-		/// The size of pending operations after the execution.
-		/// </summary>
-		public readonly long InputOperandIndex;
-
         /// <summary>
         /// Constructs a new pending unary operation
         /// </summary>
@@ -705,13 +713,6 @@ namespace NumCIL.Generic
             : base(operation, output)
         {
             InputOperand = input;
-            if (input.DataAccessor is ILazyAccessor<Tb>)
-            {
-                ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)input.DataAccessor;
-                InputOperandIndex = (lz.PendingOperations.Count + lz.PendingOperationOffset);
-            }
-            else
-                InputOperandIndex = 0;
         }
 
 
@@ -741,11 +742,6 @@ namespace NumCIL.Generic
         public readonly NdArray<Tb> InputOperandRhs;
 
         /// <summary>
-        /// The size of pending operations after the execution.
-        /// </summary>
-        public readonly long InputOperandIndexRhs;
-
-        /// <summary>
         /// Constructs a new pending binary operation
         /// </summary>
         /// <param name="operation">The operation to perform</param>
@@ -756,13 +752,6 @@ namespace NumCIL.Generic
             :base(operation, output, in1)
         {
             InputOperandRhs = in2;
-            if (in2.DataAccessor is ILazyAccessor<Tb>)
-            {
-                ILazyAccessor<Tb> lz = (ILazyAccessor<Tb>)in2.DataAccessor;
-                InputOperandIndexRhs = (lz.PendingOperations.Count + lz.PendingOperationOffset);
-            }
-            else
-                InputOperandIndexRhs = 0;
         }
 
         #region IPendingBinaryConversionOp implementation

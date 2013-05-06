@@ -670,37 +670,65 @@ namespace NumCIL.Bohrium
             get { return m_size < int.MaxValue; }
         }
 
-        /// <summary>
-        /// Continues exectuion started on another type
-        /// </summary>
-        /// <param name="i">The execution so far was started on</param>
-        internal void ContinueExecution(List<IInstruction> i)
-        {
-            lock (Lock)
-            {
-                var lst = UnrollWorkList(this);
-                PendingOperations.Clear();
-                ExecuteOperations(lst, i);
-            }
-        }
+		public override void DoExecute(IList<IPendingOperation> work)
+		{
+			var tmp = new List<IPendingOperation>();
+			var continuationList = new List<IInstruction>();
+			while (work.Count > 0)
+			{
+				var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
+				var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType } );
+				
+				while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
+				{
+					tmp.Add(work[0]);
+					work.RemoveAt(0);
+				}
+				
+				var typedEnum = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType }).Invoke(null, new object[] { tmp });
+				if (tmp[0].TargetOperandType.GetGenericTypeDefinition() == typeof(BohriumAccessor<>))
+				{
+					tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType, typeof(List<IInstruction>) }, null ).Invoke(tmp[0].TargetAccessor, new object[] { typedEnum, continuationList });
+				}
+				else
+				{
+					if (continuationList.Count > 0)
+					{
+						ExecuteWithFailureDetection(continuationList);
+						continuationList.Clear();
+					}
+					
+					tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null ).Invoke(tmp[0].TargetAccessor, new object[] { typedEnum });
+				}
+				
+				tmp.Clear();
+			}
+			
+			if (continuationList.Count > 0)
+				ExecuteWithFailureDetection(continuationList);
+				
+			
+		}
 
-        /// <summary>
-        /// Executes all pending operations in the list
-        /// </summary>
-        /// <param name="work">The list of operations to execute</param>
-        public override void ExecuteOperations(IEnumerable<PendingOperation<T>> work)
-        {
-            ExecuteOperations(work, null);
-        }
-
+		/// <summary>
+		/// Executes all pending operations in the list
+		/// </summary>
+		/// <param name="work">The list of operations to execute</param>
+		/// <param name="supported">A list of supported instructions that is produced from another context</param>
+		public override void DoExecute(IEnumerable<PendingOperation<T>> work)
+		{
+			//TODO: We need the continuation to ensure that the batches are as large as possible
+			DoExecute(work, null);
+		}
+		
         /// <summary>
         /// Executes all pending operations in the list
         /// </summary>
         /// <param name="work">The list of operations to execute</param>
         /// <param name="supported">A list of supported instructions that is produced from another context</param>
-        private void ExecuteOperations(IEnumerable<PendingOperation<T>> work, List<IInstruction> supported)
+        private void DoExecute(IEnumerable<PendingOperation<T>> work, List<IInstruction> supported)
         {
-            List<PendingOperation<T>> unsupported = new List<PendingOperation<T>>();
+            var unsupported = new List<PendingOperation<T>>();
             bool isContinuation = supported != null;
 
             if (supported == null)
@@ -716,7 +744,7 @@ namespace NumCIL.Bohrium
                 {
                     if (unsupported.Count > 0)
                     {
-                        base.ExecuteOperations(unsupported);
+                        base.DoExecute(unsupported);
                         unsupported.Clear();
                     }
 
@@ -815,7 +843,7 @@ namespace NumCIL.Bohrium
                 throw new InvalidOperationException("Unexpected result, both supported and non-supported operations");
 
             if (unsupported.Count > 0)
-                base.ExecuteOperations(unsupported);
+                base.DoExecute(unsupported);
 
             if (supported.Count > 0 && !isContinuation)
             {
@@ -827,12 +855,17 @@ namespace NumCIL.Bohrium
         /// Performs GC-gen0 collection and then executes the instrucions in the list
         /// </summary>
         /// <param name="instructions">The list of instructions to execute</param>
-        protected void ExecuteWithFailureDetection(List<IInstruction> instructions)
+        protected static void ExecuteWithFailureDetection(List<IInstruction> instructions)
         {
             //Reclaim everything in gen 0
             GC.Collect(0);
 
-            VEM.Execute(instructions);
+			if (instructions.Count == 1)
+				Console.WriteLine("Executing: {0}", instructions[0].OpCode);
+			else            
+				Console.WriteLine("Executing: {0}", instructions.Count);
+			
+			VEM.Execute(instructions);
             instructions.Clear();
             return;
         }
