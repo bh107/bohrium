@@ -117,6 +117,8 @@ namespace NumCIL
 					return;
 				if (!work) //In case we woke up due to inactivity
                		continue;
+               	if (m_action == null) //Should not happen, but it does :(
+               		continue;
 #if COUNT_TICKS
                 long ticks = DateTime.Now.Ticks;
 #endif
