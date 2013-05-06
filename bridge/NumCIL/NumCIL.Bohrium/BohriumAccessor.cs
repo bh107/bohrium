@@ -860,11 +860,6 @@ namespace NumCIL.Bohrium
             //Reclaim everything in gen 0
             GC.Collect(0);
 
-			if (instructions.Count == 1)
-				Console.WriteLine("Executing: {0}", instructions[0].OpCode);
-			else            
-				Console.WriteLine("Executing: {0}", instructions.Count);
-			
 			VEM.Execute(instructions);
             instructions.Clear();
             return;
