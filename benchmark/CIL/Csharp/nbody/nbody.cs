@@ -83,7 +83,7 @@ namespace nbody
 			galaxy.z += galaxy.vz;
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -206,7 +206,7 @@ namespace nbody
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -316,7 +316,7 @@ namespace nbody
 			galaxy.z += galaxy.vz;
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -439,7 +439,7 @@ namespace nbody
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
