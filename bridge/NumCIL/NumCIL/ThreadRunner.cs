@@ -37,6 +37,12 @@ namespace NumCIL
         /// A counter for the number of ticks executed in the threads
         /// </summary>
         private static long _ticks = 0;
+        
+        /// <summary>
+        /// The maximum number of milliseconds to wait for work
+        /// before checking the dispose flag
+        /// </summary>
+        private static int m_finalizeGuardTimeout = (int)TimeSpan.FromSeconds(60).TotalMilliseconds;
 
         /// <summary>
         /// Constructs a new instance of the ThreadParallel class
@@ -106,12 +112,14 @@ namespace NumCIL
             var index = (int)data;
             while (!m_disposed)
             {
-                m_startBarrier.SignalAndWait();
+				bool work = m_startBarrier.SignalAndWait(m_finalizeGuardTimeout);
+				if (m_disposed)
+					return;
+               	if (!work) //In case we woke up due to inactivity
+               		continue;
 #if COUNT_TICKS
                 long ticks = DateTime.Now.Ticks;
 #endif
-                if (m_disposed)
-                    return;
                 m_action.Invoke(index);
 #if COUNT_TICKS
                 Interlocked.Add(ref _ticks, DateTime.Now.Ticks - ticks);
