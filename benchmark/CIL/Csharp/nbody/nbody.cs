@@ -108,11 +108,9 @@ namespace nbody
 				this.vz = Generate.Zeroes(size);			
 			}
 			
-			public void Sync()
+			public DATA Sync()
 			{
-				this.x.Flush();
-				this.y.Flush();
-				this.z.Flush();
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -245,11 +243,9 @@ namespace nbody
 				this.t0 = new NdArray(this.x.Shape);
 			}
 			
-			public void Sync()
+			public DATA Sync()
 			{
-				this.x.Flush();
-				this.y.Flush();
-				this.z.Flush();
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -341,11 +337,9 @@ namespace nbody
 				this.vz = Generate.Zeroes(size);			
 			}
 			
-			public void Sync()
+			public DATA Sync()
 			{
-				this.x.Flush();
-				this.y.Flush();
-				this.z.Flush();
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -478,11 +472,9 @@ namespace nbody
 				this.t0 = new NdArray(this.x.Shape);
 			}
 			
-			public void Sync()
+			public DATA Sync()
 			{
-				this.x.Flush();
-				this.y.Flush();
-				this.z.Flush();
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
