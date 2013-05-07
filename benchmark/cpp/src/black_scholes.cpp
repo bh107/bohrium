@@ -100,17 +100,16 @@ int main(int argc, char* argv[])
     }
 
     bh_intp start = _bh_timing();
-
     double* prices = pricing(           // Do the computations...
         args.size[0], args.size[1],
         'c', 65.0, 1.0 / 365.0,
         0.08, 0.3
     );
     stop();
-
-    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          // Output benchmark results
-    if (args.verbose) {                 // And values
-        cout << ", \"prices\": [";
+                                        // Output timing
+    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          
+    if (args.verbose) {                 // and values.
+        cout << ", \"output\": [";
         for(size_t i=0; i<args.size[1]; i++) {
             cout << prices[i];
             if (args.size[1]-1!=i) {
