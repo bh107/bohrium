@@ -77,7 +77,6 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 int main(int argc, char* argv[])
 {
     const char usage[] = "usage: ./black_scholes --size=1000*10 [--verbose]";
-
     if (2>argc) {
         cout << usage << endl;
         return 1;
@@ -109,7 +108,7 @@ int main(int argc, char* argv[])
     );
     stop();
 
-    cout << "{\"elapsed\": "<< (_bh_timing()-start)/1000000.0 <<"";          // Output benchmark results
+    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          // Output benchmark results
     if (args.verbose) {                 // And values
         cout << ", \"prices\": [";
         for(size_t i=0; i<args.size[1]; i++) {

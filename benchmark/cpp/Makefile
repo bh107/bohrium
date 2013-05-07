@@ -4,7 +4,7 @@ CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
-BENCHMARKS = black_scholes monte_carlo_pi
+BENCHMARKS = black_scholes
 
 #CXX=clang
 CXX=g++
