@@ -111,6 +111,12 @@ namespace NumCIL.Bohrium
         /// </summary>
         private Dictionary<PInvoke.bh_array_ptr, GCHandle> m_managedHandles = new Dictionary<PInvoke.bh_array_ptr, GCHandle>();
 
+		/// <summary>
+		/// Gets a value indicating whether this instance is disposed.
+		/// </summary>
+		/// <value><c>true</c> if this instance is disposed; otherwise, <c>false</c>.</value>
+		public bool IsDisposed { get; private set; }
+
         /// <summary>
         /// Constructs a new VEM
         /// </summary>
@@ -571,12 +577,25 @@ namespace NumCIL.Bohrium
 
             return res;
         }
-
+		/// <summary>
+		/// Releases all resources held
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+		
         /// <summary>
         /// Releases all resources held
         /// </summary>
-        public void Dispose()
+        private void Dispose(bool disposing)
         {
+        	if (IsDisposed)
+        		return;
+        	
+        	if (disposing)
+        		GC.SuppressFinalize(this);
+        		
             //Ensure all views are collected
             GC.Collect();
 
@@ -599,6 +618,9 @@ namespace NumCIL.Bohrium
 
             m_preventCleanup = false;
             ExecuteCleanups();
+            
+            //From here on, we no longer accept new discards
+            IsDisposed = true;
 
             lock (m_executelock)
             {
@@ -637,7 +659,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         ~VEM()
         {
-            Dispose();
+            Dispose(false);
         }
 
         /// <summary>
