@@ -717,7 +717,6 @@ namespace NumCIL.Bohrium
 		/// <param name="supported">A list of supported instructions that is produced from another context</param>
 		public override void DoExecute(IEnumerable<PendingOperation<T>> work)
 		{
-			//TODO: We need the continuation to ensure that the batches are as large as possible
 			DoExecute(work, null);
 		}
 		
