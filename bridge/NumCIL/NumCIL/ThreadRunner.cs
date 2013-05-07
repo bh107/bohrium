@@ -37,6 +37,12 @@ namespace NumCIL
         /// A counter for the number of ticks executed in the threads
         /// </summary>
         private static long _ticks = 0;
+        
+        /// <summary>
+        /// The maximum number of milliseconds to wait for work
+        /// before checking the dispose flag
+        /// </summary>
+        private static int m_finalizeGuardTimeout = (int)TimeSpan.FromSeconds(60).TotalMilliseconds;
 
         /// <summary>
         /// Constructs a new instance of the ThreadParallel class
@@ -106,12 +112,16 @@ namespace NumCIL
             var index = (int)data;
             while (!m_disposed)
             {
-                m_startBarrier.SignalAndWait();
+				bool work = m_startBarrier.SignalAndWait(m_finalizeGuardTimeout);
+				if (m_disposed)
+					return;
+				if (!work) //In case we woke up due to inactivity
+               		continue;
+               	if (m_action == null) //Should not happen, but it does :(
+               		continue;
 #if COUNT_TICKS
                 long ticks = DateTime.Now.Ticks;
 #endif
-                if (m_disposed)
-                    return;
                 m_action.Invoke(index);
 #if COUNT_TICKS
                 Interlocked.Add(ref _ticks, DateTime.Now.Ticks - ticks);
@@ -140,19 +150,40 @@ namespace NumCIL
         /// </summary>
         public void Dispose()
         {
-            if (!m_disposed)
-            {
-                m_disposed = true;
-                m_startBarrier.RemoveParticipant();
-                m_finishBarrier.RemoveParticipant();
-
-                var ok = true;
-                foreach (var t in m_thread)
-                    ok &= t.Join(TimeSpan.FromSeconds(10));
-
-                if (!ok)
-                    throw new Exception("Failed to shut down threads?");
-            }
+			Dispose(true);
+        }
+        
+        /// <summary>
+        /// Disposes the resources and shuts down the threadpool.
+        /// </summary>
+        /// <param name="disposing">Set to <c>true</c> if disposing, false otherwise.</param>
+        protected void Dispose(bool disposing)
+		{
+			if (!m_disposed)
+			{
+				m_disposed = true;
+				m_startBarrier.RemoveParticipant();
+				m_finishBarrier.RemoveParticipant();
+				
+				if (disposing)
+					GC.SuppressFinalize(this);
+				
+				var ok = true;
+				foreach (var t in m_thread)
+					ok &= t.Join(TimeSpan.FromSeconds(10));
+				
+				if (!ok)
+					throw new Exception("Failed to shut down threads?");
+			}
+		}
+        
+        /// <summary>
+        /// Releases unmanaged resources and performs other cleanup operations before the
+        /// <see cref="NumCIL.ThreadRunner"/> is reclaimed by garbage collection.
+        /// </summary>
+        ~ThreadRunner()
+        {
+        	Dispose(false);
         }
     }
 }

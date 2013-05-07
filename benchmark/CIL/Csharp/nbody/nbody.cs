@@ -83,7 +83,7 @@ namespace nbody
 			galaxy.z += galaxy.vz;
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -106,6 +106,11 @@ namespace nbody
 				this.vx = Generate.Zeroes(size);
 				this.vy = Generate.Zeroes(size);
 				this.vz = Generate.Zeroes(size);			
+			}
+			
+			public DATA Sync()
+			{
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -199,7 +204,7 @@ namespace nbody
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -236,6 +241,11 @@ namespace nbody
 				this.r0 = new NdArray(this.dx.Shape);
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
+			}
+			
+			public DATA Sync()
+			{
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -302,7 +312,7 @@ namespace nbody
 			galaxy.z += galaxy.vz;
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -325,6 +335,11 @@ namespace nbody
 				this.vx = Generate.Zeroes(size);
 				this.vy = Generate.Zeroes(size);
 				this.vz = Generate.Zeroes(size);			
+			}
+			
+			public DATA Sync()
+			{
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 
@@ -418,7 +433,7 @@ namespace nbody
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
 		
-		public struct Galaxy
+		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
@@ -455,6 +470,11 @@ namespace nbody
 				this.r0 = new NdArray(this.dx.Shape);
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
+			}
+			
+			public DATA Sync()
+			{
+				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
 			}
 		}
 

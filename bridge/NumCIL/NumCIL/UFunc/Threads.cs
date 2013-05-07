@@ -68,7 +68,6 @@ namespace NumCIL
                 {
                     _threads = new ThreadRunner(_no_blocks);
                 }
-
             }
 
             /// <summary>

@@ -47,11 +47,17 @@ namespace nbody
 						if (input.type == typeof(double)) {
 							var data = new nBodySolverDoubleNoTempArrays.Galaxy(size);
 							using (new DispTimer(string.Format("nBodyNoTemp (Double) {0}*{1}", size, iterations)))
+							{
 								nBodySolverDoubleNoTempArrays.Solve(data, iterations);
+								data.Sync();
+							}
 						} else {
 							var data = new nBodySolverDoubleNoTempArrays.Galaxy (size);
 							using (new DispTimer(string.Format("nBodyNoTemp (Float) {0}*{1}", size, iterations)))
+							{
 								nBodySolverDoubleNoTempArrays.Solve(data, iterations);
+								data.Sync();
+							}
 						}
 					}
 					else
@@ -59,11 +65,17 @@ namespace nbody
 						if (input.type == typeof(double)) {
 							var data = new nBodySolverDouble.Galaxy(size);
 							using (new DispTimer(string.Format("nBody (Double) {0}*{1}", size, iterations)))
+							{
 								nBodySolverDouble.Solve(data, iterations);
+								data.Sync();
+							}
 						} else {
 							var data = new nBodySolverDouble.Galaxy (size);
 							using (new DispTimer(string.Format("nBody (Float) {0}*{1}", size, iterations)))
+							{
 								nBodySolverDouble.Solve(data, iterations);
+								data.Sync();
+							}
 						}
 					}
 				}
