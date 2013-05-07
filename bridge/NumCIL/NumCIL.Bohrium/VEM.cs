@@ -64,11 +64,6 @@ namespace NumCIL.Bohrium
         private object m_releaselock = new object();
 
         /// <summary>
-        /// ID for the user-defined reduce operation
-        /// </summary>
-        private readonly long m_reduceFunctionId;
-
-        /// <summary>
         /// ID for the user-defined random operation
         /// </summary>
         private readonly long m_randomFunctionId;
@@ -77,11 +72,6 @@ namespace NumCIL.Bohrium
         /// ID for the user-defined maxtrix multiplication operation
         /// </summary>
         private readonly long m_matmulFunctionId;
-
-        /// <summary>
-        /// ID for the user-defined aggregate operation
-        /// </summary>
-        private readonly long m_aggregateFunctionId;
 
         /// <summary>
         /// A reference to the Bohrium component for "self" aka the bridge
@@ -144,10 +134,8 @@ namespace NumCIL.Bohrium
             if (e != PInvoke.bh_error.BH_SUCCESS)
                 throw new BohriumException(e);
 
-            m_reduceFunctionId = GetUserFuncId("bh_reduce");
             m_randomFunctionId = GetUserFuncId("bh_random");
             m_matmulFunctionId = GetUserFuncId("bh_matmul");
-            m_aggregateFunctionId = GetUserFuncId("bh_aggregate");
         }
 
         /// <summary>
@@ -1013,42 +1001,6 @@ namespace NumCIL.Bohrium
         }
 
         /// <summary>
-        /// Creates a new reduce instruction
-        /// </summary>
-        /// <typeparam name="T">The data type to operate on</typeparam>
-        /// <param name="type">The Bohrium datatype</param>
-        /// <param name="opcode">The opcode used for the reduction</param>
-        /// <param name="axis">The axis to reduce over</param>
-        /// <param name="op1">The output operand</param>
-        /// <param name="op2">The input operand</param>
-        /// <returns>A new instruction</returns>
-        public IInstruction CreateReduceInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, long axis, NdArray<T> op1, NdArray<T>op2)
-        {
-            if (!SupportsReduce)
-                throw new BohriumException("The VEM/VE setup does not support the reduce function");
-
-            GCHandle gh = GCHandle.Alloc(
-                new PInvoke.bh_userfunc_reduce(
-                    m_reduceFunctionId,
-                    opcode,
-                    axis,
-                    CreateViewPtr<T>(type, op1).Pointer,
-                    CreateViewPtr<T>(type, op2).Pointer
-                ), 
-                GCHandleType.Pinned
-            );
-
-            IntPtr adr = gh.AddrOfPinnedObject();
-
-            m_allocatedUserfuncs.Add(adr, gh);
-
-            return new PInvoke.bh_instruction(
-                bh_opcode.BH_USERFUNC,
-                adr
-            );
-        }
-
-        /// <summary>
         /// Creats a new matmul userfunc
         /// </summary>
         /// <typeparam name="T">The type of data to operate on</typeparam>
@@ -1083,40 +1035,6 @@ namespace NumCIL.Bohrium
         }
 
         /// <summary>
-        /// Creates a new reduce instruction
-        /// </summary>
-        /// <typeparam name="T">The data type to operate on</typeparam>
-        /// <param name="type">The Bohrium datatype</param>
-        /// <param name="opcode">The opcode used for the reduction</param>
-        /// <param name="op1">The output operand</param>
-        /// <param name="op2">The input operand</param>
-        /// <returns>A new instruction</returns>
-        public IInstruction CreateAggregateInstruction<T>(PInvoke.bh_type type, bh_opcode opcode, NdArray<T> op1, NdArray<T> op2)
-        {
-            if (!SupportsAggregate)
-                throw new BohriumException("The VEM/VE setup does not support the reduce function");
-
-            GCHandle gh = GCHandle.Alloc(
-                new PInvoke.bh_userfunc_aggregate(
-                    m_aggregateFunctionId,
-                    opcode,
-                    CreateViewPtr<T>(type, op1).Pointer,
-                    CreateViewPtr<T>(type, op2).Pointer
-                ),
-                GCHandleType.Pinned
-            );
-
-            IntPtr adr = gh.AddrOfPinnedObject();
-
-            m_allocatedUserfuncs.Add(adr, gh);
-
-            return new PInvoke.bh_instruction(
-                bh_opcode.BH_USERFUNC,
-                adr
-            );
-        }
-
-        /// <summary>
         /// Returns a value indicating if a value is a scalar
         /// </summary>
         /// <typeparam name="T">The type of data in the array</typeparam>
@@ -1134,12 +1052,6 @@ namespace NumCIL.Bohrium
         }
 
         /// <summary>
-        /// Gets a value indicating if the Reduce operation is supported
-        /// </summary>
-        public bool SupportsReduce { get { return m_reduceFunctionId > 0; } }
-        //public bool SupportsReduce { get { return false; } }
-
-        /// <summary>
         /// Gets a value indicating if the Random operation is supported
         /// </summary>
         public bool SupportsRandom { get { return m_randomFunctionId > 0; } }
@@ -1148,10 +1060,5 @@ namespace NumCIL.Bohrium
         /// Gets a value indicating if the Matrix Multiplication operation is supported
         /// </summary>
         public bool SupportsMatmul { get { return m_matmulFunctionId > 0; } }
-
-        /// <summary>
-        /// Gets a value indicating if the aggregate operation is supported
-        /// </summary>
-        public bool SupportsAggregate { get { return m_aggregateFunctionId > 0; } }
     }
 }

@@ -91,17 +91,9 @@ namespace NumCIL.Bohrium
         /// </summary>
         public static readonly int RANDOMFUNC_SIZE = Marshal.SizeOf(typeof(bh_userfunc_random));
         /// <summary>
-        /// The size of the reduce userfunc struct
-        /// </summary>
-        public static readonly int REDUCEFUNC_SIZE = Marshal.SizeOf(typeof(bh_userfunc_reduce));
-        /// <summary>
         /// The size of the matmul userfunc struct
         /// </summary>
         public static readonly int MATMULFUNC_SIZE = Marshal.SizeOf(typeof(bh_userfunc_matmul));
-        /// <summary>
-        /// The size of the aggregate userfunc struct
-        /// </summary>
-        public static readonly int AGGREGATEFUNC_SIZE = Marshal.SizeOf(typeof(bh_userfunc_aggregate));
         /// <summary>
         /// The size of the plain userfunc struct
         /// </summary>
@@ -849,33 +841,16 @@ namespace NumCIL.Bohrium
             public bh_userfunc_random random;
 
             /// <summary>
-            /// The reduce userfunc
-            /// </summary>
-            [FieldOffset(0)]
-            public bh_userfunc_reduce reduce;
-
-            /// <summary>
             /// The matmul userfunc
             /// </summary>
             [FieldOffset(0)]
             public bh_userfunc_matmul matmul;
 
             /// <summary>
-            /// The aggregate userfunc
-            /// </summary>
-            [FieldOffset(0)]
-            public bh_userfunc_aggregate aggregate;
-
-            /// <summary>
             /// Constructs a new union representing a plain userfunc
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public bh_userfunc_union(bh_userfunc_plain arg) : this() { plain = arg; }
-            /// <summary>
-            /// Constructs a new union representing a reduce userfunc
-            /// </summary>
-            /// <param name="arg">The user defined function</param>
-            public bh_userfunc_union(bh_userfunc_reduce arg) : this() { reduce = arg; }
             /// <summary>
             /// Constructs a new union representing a random userfunc
             /// </summary>
@@ -886,11 +861,6 @@ namespace NumCIL.Bohrium
             /// </summary>
             /// <param name="arg">The user defined function</param>
             public bh_userfunc_union(bh_userfunc_matmul arg) : this() { matmul = arg; }
-            /// <summary>
-            /// Constructs a new union representing an aggregate userfunc
-            /// </summary>
-            /// <param name="arg">The user defined function</param>
-            public bh_userfunc_union(bh_userfunc_aggregate arg) : this() { aggregate = arg; }
 
             /// <summary>
             /// Implicit operator for creating a union with a plain userfunc
@@ -898,12 +868,6 @@ namespace NumCIL.Bohrium
             /// <param name="arg">The userfunc</param>
             /// <returns>The union userfunc</returns>
             public static implicit operator bh_userfunc_union(bh_userfunc_plain arg) { return new bh_userfunc_union(arg); }
-            /// <summary>
-            /// Implicit operator for creating a union with a reduce userfunc
-            /// </summary>
-            /// <param name="arg">The userfunc</param>
-            /// <returns>The union userfunc</returns>
-            public static implicit operator bh_userfunc_union(bh_userfunc_reduce arg) { return new bh_userfunc_union(arg); }
             /// <summary>
             /// Implicit operator for creating a union with a random userfunc
             /// </summary>
@@ -916,72 +880,6 @@ namespace NumCIL.Bohrium
             /// <param name="arg">The userfunc</param>
             /// <returns>The union userfunc</returns>
             public static implicit operator bh_userfunc_union(bh_userfunc_matmul arg) { return new bh_userfunc_union(arg); }
-            /// <summary>
-            /// Implicit operator for creating a union with a aggregate userfunc
-            /// </summary>
-            /// <param name="arg">The userfunc</param>
-            /// <returns>The union userfunc</returns>
-            public static implicit operator bh_userfunc_union(bh_userfunc_aggregate arg) { return new bh_userfunc_union(arg); }
-        }
-
-        /// <summary>
-        /// The reduce userdefined function
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
-        public struct bh_userfunc_reduce
-        {
-            /// <summary>
-            /// The reduce function id
-            /// </summary>
-            public bh_intp id;
-            /// <summary>
-            /// The number of output elements
-            /// </summary>
-            public bh_intp nout;
-            /// <summary>
-            /// The number of input elements
-            /// </summary>
-            public bh_intp nin;
-            /// <summary>
-            /// The total size of this struct
-            /// </summary>
-            public bh_intp struct_size;
-            /// <summary>
-            /// The output operand
-            /// </summary>
-            public bh_array_ptr operand0;
-            /// <summary>
-            /// The input operand
-            /// </summary>
-            public bh_array_ptr operand1;
-            /// <summary>
-            /// The axis to reduce over
-            /// </summary>
-            public bh_index axis;
-            /// <summary>
-            /// The opcode for the binary function used to reduce
-            /// </summary>
-            public bh_opcode opcode;
-
-            /// <summary>
-            /// Constructs a new reduce userfunc
-            /// </summary>
-            /// <param name="func">The id for the reduce userfunc</param>
-            /// <param name="opcode">The opcode for the binary function used to reduce with</param>
-            /// <param name="axis">The axis to reduce</param>
-            /// <param name="op1">The output operand</param>
-            /// <param name="op2">The input operand</param>
-            public bh_userfunc_reduce(bh_intp func, bh_opcode opcode, bh_intp axis, bh_array_ptr op1, bh_array_ptr op2)
-            {
-                this.id = func;
-                this.nout = 1;
-                this.nin = 1;
-                this.struct_size = REDUCEFUNC_SIZE;
-                this.operand0 = op1;
-                this.operand1 = op2;
-                this.axis = axis;
-                this.opcode = opcode;
-            }
         }
 
         /// <summary>
@@ -1080,59 +978,6 @@ namespace NumCIL.Bohrium
             }
         }
 
-        /// <summary>
-        /// The aggregate userdefined function
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0)]
-        public struct bh_userfunc_aggregate
-        {
-            /// <summary>
-            /// The reduce function id
-            /// </summary>
-            public bh_intp id;
-            /// <summary>
-            /// The number of output elements
-            /// </summary>
-            public bh_intp nout;
-            /// <summary>
-            /// The number of input elements
-            /// </summary>
-            public bh_intp nin;
-            /// <summary>
-            /// The total size of this struct
-            /// </summary>
-            public bh_intp struct_size;
-            /// <summary>
-            /// The output operand
-            /// </summary>
-            public bh_array_ptr operand0;
-            /// <summary>
-            /// The input operand
-            /// </summary>
-            public bh_array_ptr operand1;
-            /// <summary>
-            /// The opcode for the binary function used to reduce
-            /// </summary>
-            public bh_opcode opcode;
-
-            /// <summary>
-            /// Constructs a new reduce userfunc
-            /// </summary>
-            /// <param name="func">The id for the reduce userfunc</param>
-            /// <param name="opcode">The opcode for the binary function used to reduce with</param>
-            /// <param name="op1">The output operand</param>
-            /// <param name="op2">The input operand</param>
-            public bh_userfunc_aggregate(bh_intp func, bh_opcode opcode, bh_array_ptr op1, bh_array_ptr op2)
-            {
-                this.id = func;
-                this.nout = 1;
-                this.nin = 1;
-                this.struct_size = AGGREGATEFUNC_SIZE;
-                this.operand0 = op1;
-                this.operand1 = op2;
-                this.opcode = opcode;
-            }
-        }
         /// <summary>
         /// A plain userfunc
         /// </summary>

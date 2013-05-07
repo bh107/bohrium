@@ -197,12 +197,8 @@ namespace NumCIL.Bohrium
 				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.BH_USERFUNC; }
 				catch {}
 			}
-            if (VEM.Instance.SupportsReduce)
-                res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
             if (VEM.Instance.SupportsMatmul)
                 res[typeof(NumCIL.UFunc.LazyMatmulOperation<T>)] = bh_opcode.BH_USERFUNC;
-            if (VEM.Instance.SupportsAggregate)
-                res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.BH_USERFUNC;
 
 
             if (typeof(T) == typeof(NumCIL.Complex64.DataType))
@@ -760,29 +756,9 @@ namespace NumCIL.Bohrium
                                 isSupported = true;
                             }
                         }
-                        else if (VEM.SupportsReduce && ops is NumCIL.UFunc.LazyReduceOperation<T>)
-                        {
-                            NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
-                            bh_opcode rop;
-                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
-                            {
-                                supported.Add(VEM.CreateReduceInstruction<T>(BH_TYPE, rop, lzop.Axis, operands[0], operands[1]));
-                                isSupported = true;
-                            }
-                        }
                         else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
                         {
                             supported.Add(VEM.CreateMatmulInstruction<T>(BH_TYPE, operands[0], operands[1], operands[2]));
-                        }
-                        else if (VEM.SupportsAggregate && ops is NumCIL.UFunc.LazyAggregateOperation<T>)
-                        {
-                            NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
-                            bh_opcode rop;
-                            if (OpcodeMap.TryGetValue(lzop.Operation.GetType(), out rop))
-                            {
-                                supported.Add(VEM.CreateAggregateInstruction<T>(BH_TYPE, rop, operands[0], operands[1]));
-                                isSupported = true;
-                            }
                         }
 
                         if (!isSupported)
