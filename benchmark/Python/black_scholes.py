@@ -10,6 +10,5 @@ S = bs.model(N,dtype=B.dtype,bohrium=B.bohrium)
 
 B.start()
 R = bs.price(S,I)
-print R
 B.stop()
 B.pprint()
