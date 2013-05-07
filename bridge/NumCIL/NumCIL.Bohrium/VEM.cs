@@ -583,12 +583,25 @@ namespace NumCIL.Bohrium
 
             return res;
         }
-
+		/// <summary>
+		/// Releases all resources held
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+		
         /// <summary>
         /// Releases all resources held
         /// </summary>
-        public void Dispose()
+        private void Dispose(bool disposing)
         {
+        	if (IsDisposed)
+        		return;
+        	
+        	if (disposing)
+        		GC.SuppressFinalize(this);
+        		
             //Ensure all views are collected
             GC.Collect();
 
@@ -649,7 +662,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         ~VEM()
         {
-            Dispose();
+            Dispose(false);
         }
 
         /// <summary>
