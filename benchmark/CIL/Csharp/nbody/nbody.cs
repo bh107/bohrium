@@ -107,6 +107,13 @@ namespace nbody
 				this.vy = Generate.Zeroes(size);
 				this.vz = Generate.Zeroes(size);			
 			}
+			
+			public void Sync()
+			{
+				this.x.Flush();
+				this.y.Flush();
+				this.z.Flush();
+			}
 		}
 
 		public static void Solve(Galaxy galaxy, long steps)
@@ -237,6 +244,13 @@ namespace nbody
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
 			}
+			
+			public void Sync()
+			{
+				this.x.Flush();
+				this.y.Flush();
+				this.z.Flush();
+			}
 		}
 
 		public static void Solve(Galaxy galaxy, long steps)
@@ -325,6 +339,13 @@ namespace nbody
 				this.vx = Generate.Zeroes(size);
 				this.vy = Generate.Zeroes(size);
 				this.vz = Generate.Zeroes(size);			
+			}
+			
+			public void Sync()
+			{
+				this.x.Flush();
+				this.y.Flush();
+				this.z.Flush();
 			}
 		}
 
@@ -455,6 +476,13 @@ namespace nbody
 				this.r0 = new NdArray(this.dx.Shape);
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
+			}
+			
+			public void Sync()
+			{
+				this.x.Flush();
+				this.y.Flush();
+				this.z.Flush();
 			}
 		}
 
