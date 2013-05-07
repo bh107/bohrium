@@ -1,8 +1,5 @@
-Linux
------
-
-Python
-------
+Python on Linux
+---------------
 
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
@@ -66,11 +63,64 @@ And you should see a result similar to this::
   Testing test_views.py/flatten/flatten
   ************************ Finish ************************
 
-Microsoft CIL
+Mono on Linux
 -------------
 
-...
+You need to install some packages used by the build process::
+  
+  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev
 
+The Mono libraries require some additional packages::
+
+  sudo apt-get install mono-devel 
+  #This minimal version should work too:
+  #sudo apt-get install mono-xbuild mono-dmcs libmono2.0-cil 
+
+Download and extract the source code::
+  
+  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
+  tar -xzf bohrium-v0.1.tgz
+
+Build and install::
+  
+  cd bohrium-v0.1
+  make
+  make install
+
+.. note:: The installation will prompt you for the installation path. 
+          The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
+
+The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
+
+   gacutil -i <install dir>/NumCIL.dll
+   gacutil -i <install dir>/NumCIL.Unsafe.dll
+   gacutil -i <install dir>/NumCIL.Bohrium.dll
+   #Example
+   gacutil -i /opt/bohrium/NumCIL.dll
+   gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
+   gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
+   
+To use the Bohrium extensions, you need to make sure the LD_LIBRARY_PATH is also set::
+
+  export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
+  #Example
+  export LD_LIBRARY_PATH=/opt/bohrium:$LD_LIBRARY_PATH
+
+You can now try an example and test the installation::
+
+  xbuild /property:Configuration=Release test/CIL/Unittest.sln
+  mono test/CIL/UnitTest/bin/Release/UnitTest.exe
+  
+And you should see a result similar to this::
+
+   Running basic tests
+   Basic tests: 0,098881
+   Running Lookup tests
+   Lookup tests: 0,00813
+   ...
+   Running benchmark tests - Bohrium
+   benchmark tests: 0,44233
+   
 C++
 ---
 
