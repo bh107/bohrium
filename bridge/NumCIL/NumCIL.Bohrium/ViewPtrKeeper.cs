@@ -35,7 +35,7 @@ namespace NumCIL.Bohrium
     public class ViewPtrKeeper : IDisposable
     {
         /// <summary>
-        /// Instance of the VEM that is used to dispose of the view
+        /// Instance of the VEM that is used to dispose the view
         /// </summary>
         protected static VEM VEM = NumCIL.Bohrium.VEM.Instance;
 
@@ -102,18 +102,24 @@ namespace NumCIL.Bohrium
             {
                 if (m_handle.IsAllocated)
                 {
-                    VEM.ExecuteRelease(m_ptr, m_handle);
+                	// Happens on Mono on shutdown :(
+                	if (!VEM.IsDisposed)
+                    	VEM.ExecuteRelease(m_ptr, m_handle);
                 }
                 else if (m_ptr.Data != IntPtr.Zero && m_ptr.BaseArray == PInvoke.bh_array_ptr.Null)
                 {
-                    VEM.ExecuteRelease(
-                        new PInvoke.bh_instruction(bh_opcode.BH_FREE, m_ptr),
-                        new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr)
-                    );
+					// Happens on Mono on shutdown :(
+					if (!VEM.IsDisposed)
+						VEM.ExecuteRelease(
+	                        new PInvoke.bh_instruction(bh_opcode.BH_FREE, m_ptr),
+	                        new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr)
+	                    );
                 }
                 else
                 {
-                    VEM.ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr));
+					// Happens on Mono on shutdown :(
+					if (!VEM.IsDisposed)
+						VEM.ExecuteRelease(new PInvoke.bh_instruction(bh_opcode.BH_DISCARD, m_ptr));
                 }
 
                 m_ptr = PInvoke.bh_array_ptr.Null;
