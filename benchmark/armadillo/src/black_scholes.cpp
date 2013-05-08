@@ -27,11 +27,10 @@ using namespace arma;
 using namespace argparse;
 
 template <typename T>
-vec cnd(vec& x)
+vec cnd(vec x)
 {
-    size_t samples = x.n_elem();
+    size_t samples = x.n_elem;
     vec l(samples), k(samples), w(samples);
-    vec mask(samples);
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
@@ -48,8 +47,8 @@ vec cnd(vec& x)
          a4*(pow(k,(T)4)) + \
          a5*(pow(k,(T)5)));
 
-    mask = x < 0.0;
-    return w * (!mask) + (1.0-w)* mask;
+    uvec mask = x < 0.0;
+    return w * (-mask) + (1.0-w)* mask;
 }
 
 template <typename T>
