@@ -64,6 +64,13 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs) {
 }
 
 template <typename T>
+multi_array<T>& slice<T>::operator=(T rhs) {
+    multi_array<T>* vv = &this->view();
+    *vv = rhs;
+    return *vv;
+}
+
+template <typename T>
 bh::multi_array<T>& slice<T>::view()
 {
     multi_array<T>* alias = &Runtime::instance()->view(*op);

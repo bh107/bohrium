@@ -1,10 +1,13 @@
+ROOT=../..
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
+BH_CPPB=$(ROOT)/bridge/cpp/
 
 #CXX=clang
 CXX=g++
 EXTRAS+=
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
+INCLUDE=
 
 all: benchmarks
 
@@ -18,5 +21,5 @@ clean:
 # Benchmarks
 #
 black_scholes: src/black_scholes.cpp
-	$(CXX) $< -o bin/$@ $(LCFLAGS) $(CXXFLAGS) -lstdc++ -I./
+	$(CXX) $< -o bin/$@ $(LCFLAGS) $(CXXFLAGS) -lstdc++ -I$(BH_CPPB)
 

@@ -76,6 +76,7 @@ public:
 
     slice& operator[](int rhs);
     slice& operator[](slice_range& rhs);
+    multi_array<T>& operator=(T rhs);
 
     // Create a actual view of the slice
     bh::multi_array<T>& view();
@@ -368,6 +369,5 @@ void pprint(multi_array<T>& op);
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.
 #include "sugar.hpp"        // DSEL Additional sugar... 
-#include "misc.hpp"         // Stuff that probably should not be here...
 
 #endif

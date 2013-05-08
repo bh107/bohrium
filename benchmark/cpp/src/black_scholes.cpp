@@ -19,9 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 #include "bh/bh.hpp"
+#include "util/timing.hpp"
+#include "util/argparse.hpp"
 
 using namespace std;
 using namespace bh;
+using namespace argparse;
 
 template <typename T>
 multi_array<T>& cnd(multi_array<T>& x)
@@ -55,7 +58,7 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
     T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
     T t     = d_t;                              // Initial delta
 
-    s = random<T>(samples)*4.0-2.0 +60.0;       // Model between 58-62
+    s = random<T>(samples)*4.0 +58.0;           // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));

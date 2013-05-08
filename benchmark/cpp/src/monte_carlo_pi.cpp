@@ -1,8 +1,11 @@
 #include <iostream>
 #include "bh/bh.hpp"
+#include "util/timing.hpp"
+#include "util/argparse.hpp"
 
 using namespace std;
 using namespace bh;
+using namespace argparse;
 
 double monte_carlo_pi(int samples, int iterations)
 {
@@ -46,11 +49,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    bh_intp start = _bh_timing();
+    size_t start = sample_time();
     double mcp = monte_carlo_pi(args.size[0], args.size[1]);
+    size_t end = sample_time();
     stop();
                                                     // Output timing
-    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          
+    cout << "{elapsed-time: "<< (end-start)/1000000.0 <<"";          
     if (args.verbose) {                             // and values.
         cout << ", \"output\": [";
         cout << mcp;
