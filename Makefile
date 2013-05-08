@@ -7,4 +7,8 @@ clean:
 	./build.py clean
 
 install:
+ifdef DESTDIR
+	./build.py install --prefix=$(DESTDIR) --interpreter=$(BH_PYTHON)
+else
 	./build.py install --interactive --interpreter=$(BH_PYTHON)
+endif
