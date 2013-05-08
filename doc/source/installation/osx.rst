@@ -7,6 +7,12 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/tech
   
  sudo port install python27
 
+If you also want to build the Mono libraries, you also need the Mono package::
+
+   sudo port install mono
+
+.. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
+
 Download and extract the source code::
   
   wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
@@ -21,7 +27,9 @@ When building and install Bohrium we need to specify the newly installed Python 
 .. note:: The installation will prompt you for the installation path. 
           The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
-Finally, you need to set the ``PYTHONPATH`` and the ``DYLD_LIBRARY_PATH`` environment variables.
+Python/NumPy installation
+~~~~~~~~~~~~~~~~~~~
+You need to set the ``PYTHONPATH`` and the ``DYLD_LIBRARY_PATH`` environment variables.
 The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
@@ -56,5 +64,36 @@ And you should see a result similar to this::
     Testing test_views.py/flatten/flatten
     ************************ Finish ************************
 
+Mono installation
+~~~~~~~~~~~~~~~~~~~
+The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
 
+   gacutil -i <install dir>/NumCIL.dll
+   gacutil -i <install dir>/NumCIL.Unsafe.dll
+   gacutil -i <install dir>/NumCIL.Bohrium.dll
+   #Example
+   gacutil -i /opt/bohrium/NumCIL.dll
+   gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
+   gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
+   
+To use the Bohrium extensions, you need to make sure the DYLD_LIBRARY_PATH is also set::
+
+  export DYLD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
+  #Example
+  export DYLD_LIBRARY_PATH=/opt/bohrium:$LD_LIBRARY_PATH
+
+You can now try an example and test the installation::
+
+  xbuild /property:Configuration=Release test/CIL/Unittest.sln
+  mono test/CIL/UnitTest/bin/Release/UnitTest.exe
+  
+And you should see a result similar to this::
+
+   Running basic tests
+   Basic tests: 0,098881
+   Running Lookup tests
+   Lookup tests: 0,00813
+   ...
+   Running benchmark tests - Bohrium
+   benchmark tests: 0,44233
 
