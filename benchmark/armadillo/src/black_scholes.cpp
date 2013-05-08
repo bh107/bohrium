@@ -27,10 +27,10 @@ using namespace arma;
 using namespace argparse;
 
 template <typename T>
-vec cnd(vec x)
+Col<T> cnd(Col<T> x)
 {
     size_t samples = x.n_elem;
-    vec l(samples), k(samples), w(samples);
+    Col<T> l(samples), k(samples), w(samples);
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
@@ -40,7 +40,8 @@ vec cnd(vec x)
 
     l = abs(x);
     k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / pp * exp(-1.0*l*l/2.0) * \
+
+    w = 1.0 - 1.0 / pp * exp(-1.0*l%l/2.0) % \
         (a1*k + \
          a2*(pow(k,(T)2)) + \
          a3*(pow(k,(T)3)) + \
@@ -48,7 +49,8 @@ vec cnd(vec x)
          a5*(pow(k,(T)5)));
 
     uvec mask = x < 0.0;
-    return w * (-mask) + (1.0-w)* mask;
+
+    return w % (-mask) + (1.0-w) % mask;
 }
 
 template <typename T>
@@ -57,15 +59,14 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
     T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
     T t     = d_t;                              // Initial delta
 
-    vec d1(samples), d2(samples), res(samples);
-    vec s = randu<vec>(samples)*4.0 +58.0;      // Model between 58-62
+    Col<T> d1(samples), d2(samples), res(samples);
+    Col<T> s = randu<Col<T> >(samples)*4.0 +58.0;      // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
         d2 = d1-v*sqrt(t);
-
         if (flag == 'c') {
-            res = s * cnd<T>(d1) -x * exp(-r*t) * cnd<T>(d2);
+            res = s % cnd<T>(d1) -x * exp(-r*t) * cnd<T>(d2);
         } else {
             res = x * exp(-r*t) * cnd<T>(-1.0*d2) - s*cnd<T>(-1.0*d1);
         }
