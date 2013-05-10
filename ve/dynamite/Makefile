@@ -24,7 +24,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ *.so
+		rm -rf *.o *~ *.so kernels/* objects/*
 
 install: all
 		cp $(LIB) $(INSTALLDIR)

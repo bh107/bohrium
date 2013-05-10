@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "bh_ve_dynamite.h"
 #include <bh_vcache.h>
+#include "backends.cpp"
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -56,6 +57,10 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
     bh_instruction* inst;
     bh_error res = BH_SUCCESS;
 
+    process gcc("gcc -O2 -march=core2 -fPIC -x c -shared - -o ");
+    char* sourcecode = NULL;
+    size_t source_len;
+
     for (count=0; count < instruction_count; count++) {
 
         inst = &instruction_list[count];
@@ -78,6 +83,27 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
                 break;
             case BH_FREE:                        // Store data-pointer in malloc-cache
                 res = bh_vcache_free( inst );
+                break;
+
+            case BH_ADD:
+
+                printf("Doing an add!\n");
+                source_len = read_file("snippets/traverser.c", &sourcecode);
+                if (!source_len) {
+                    std::cout << "Failed reading sourcecode!" << std::endl;
+                    res = BH_ERROR;
+                    break;
+                }
+
+                gcc.compile(sourcecode, source_len);
+                gcc.f(inst->operand[0]->start, inst->operand[0]->stride, (float*)inst->operand[0]->data,
+                        inst->operand[1]->start, inst->operand[1]->stride, (float*)inst->operand[1]->data,
+                        inst->operand[2]->start, inst->operand[2]->stride, (float*)inst->operand[2]->data,
+                        inst->operand[0]->shape,
+                        inst->operand[0]->ndim,
+                        bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape));
+
+                res = BH_SUCCESS;
                 break;
 
             case BH_USERFUNC:                    // External libraries
@@ -103,7 +129,7 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
                 break;
 
             default:                            // Built-in operations
-                res = bh_compute_apply_dynamite( inst );
+                res = bh_compute_apply_naive( inst );
 
         }
 

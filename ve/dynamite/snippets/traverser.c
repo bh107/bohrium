@@ -23,29 +23,29 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define DYNAMITE_MAXDIM 16
 
-void traverse_aaa(size_t a0_start, size_t* a0_stride, float* a0_data,
-              size_t a1_start, size_t* a1_stride, float* a1_data,
-              size_t a2_start, size_t* a2_stride, float* a2_data,
-              size_t* shape,
-              size_t ndim,
-              size_t nelements)
+void traverse_aaa(int64_t a0_start, int64_t* a0_stride, float* a0_data,
+              int64_t a1_start, int64_t* a1_stride, float* a1_data,
+              int64_t a2_start, int64_t* a2_stride, float* a2_data,
+              int64_t* shape,
+              int64_t ndim,
+              int64_t nelements)
 {
     assert(a0_data != NULL); // Ensure that data is allocated
     assert(a1_data != NULL);
     assert(a2_data != NULL);
 
-    size_t j,           // Traversal variables
+    int64_t j,           // Traversal variables
             last_dim    = ndim-1,
             last_e      = nelements-1;
 
-    size_t coord[DYNAMITE_MAXDIM];
-    size_t cur_e = 0;
+    int64_t coord[DYNAMITE_MAXDIM];
+    int64_t cur_e = 0;
 
-    size_t off0;        // Stride-offset
-    size_t off1;
-    size_t off2;
+    int64_t off0;        // Stride-offset
+    int64_t off1;
+    int64_t off2;
 
-    memset(coord, 0, DYNAMITE_MAXDIM * sizeof(size_t));
+    memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
         off0 = a0_start;                       // Reset offset
