@@ -5,7 +5,7 @@ WARNOPTS=-Wall
 #LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
 DEBUG+=
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(DEBUG)
-LDFLAGS=-L../../core -lbh -lrt -shared -Wl,-soname
+LDFLAGS=-L../../core -lbh -lrt -lctemplate -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)

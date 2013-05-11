@@ -20,7 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "bh_ve_dynamite.h"
 #include <bh_vcache.h>
+#include <ctemplate/template.h>  
 #include "backends.cpp"
+#include <string>
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -58,8 +60,9 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
     bh_error res = BH_SUCCESS;
 
     process gcc("gcc -O2 -march=core2 -fPIC -x c -shared - -o ");
-    char* sourcecode = NULL;
-    size_t source_len;
+    std::string sourcecode;
+
+    ctemplate::TemplateDictionary dict("example");
 
     for (count=0; count < instruction_count; count++) {
 
@@ -88,20 +91,23 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
             case BH_ADD:
 
                 printf("Doing an add!\n");
-                source_len = read_file("snippets/traverser.c", &sourcecode);
-                if (!source_len) {
-                    std::cout << "Failed reading sourcecode!" << std::endl;
-                    res = BH_ERROR;
-                    break;
-                }
 
-                gcc.compile(sourcecode, source_len);
-                gcc.f(inst->operand[0]->start, inst->operand[0]->stride, (float*)inst->operand[0]->data,
-                        inst->operand[1]->start, inst->operand[1]->stride, (float*)inst->operand[1]->data,
-                        inst->operand[2]->start, inst->operand[2]->stride, (float*)inst->operand[2]->data,
-                        inst->operand[0]->shape,
-                        inst->operand[0]->ndim,
-                        bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape));
+                dict.SetValue("TYPE", "float");
+                dict.SetValue("OPERATOR", "+");
+            
+                ctemplate::ExpandTemplate("snippets/traverse_aaa.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+
+                gcc.compile(sourcecode.c_str(), sourcecode.size());
+                gcc.f(0,
+                    inst->operand[0]->start, inst->operand[0]->stride,
+                    (float*)inst->operand[0]->data,
+                    inst->operand[1]->start, inst->operand[1]->stride,
+                    (float*)inst->operand[1]->data,
+                    inst->operand[2]->start, inst->operand[2]->stride,
+                    (float*)inst->operand[2]->data,
+                    inst->operand[0]->shape, inst->operand[0]->ndim,
+                    bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                );
 
                 res = BH_SUCCESS;
                 break;
@@ -109,21 +115,13 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
             case BH_USERFUNC:                    // External libraries
 
                 if(inst->userfunc->id == random_impl_id) {
-
                     res = random_impl(inst->userfunc, NULL);
-
                 } else if(inst->userfunc->id == matmul_impl_id) {
-
                     res = matmul_impl(inst->userfunc, NULL);
-
                 } else if(inst->userfunc->id == nselect_impl_id) {
-
                     res = nselect_impl(inst->userfunc, NULL);
-
                 } else {                            // Unsupported userfunc
-                
                     res = BH_USERFUNC_NOT_SUPPORTED;
-
                 }
 
                 break;

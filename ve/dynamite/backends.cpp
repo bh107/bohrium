@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdarg>
+#include <cstdlib>
 #include <cstdio>
 #include <dlfcn.h>
 
@@ -11,12 +12,17 @@
 
 // How should these varying signatures be handled???
 //typedef double (*func)(double x, double y);
+
+/*
 typedef void (*func)(int64_t a0_start, int64_t* a0_stride, float* a0_data,
               int64_t a1_start, int64_t* a1_stride, float* a1_data,
               int64_t a2_start, int64_t* a2_stride, float* a2_data,
               int64_t* shape,
               int64_t ndim,
               int64_t nelements);
+              */
+
+typedef void (*func)(int tool, ...);
 
 /**
  * The backend interface.

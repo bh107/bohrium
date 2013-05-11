@@ -18,30 +18,55 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "stdlib.h"
+#include "stdarg.h"
 #include "string.h"
 #include "assert.h"
 
 #define DYNAMITE_MAXDIM 16
 
-void traverse_aaa(int64_t a0_start, int64_t* a0_stride, float* a0_data,
-              int64_t a1_start, int64_t* a1_stride, float* a1_data,
-              int64_t a2_start, int64_t* a2_stride, float* a2_data,
+/*
+void traverse_aaa(int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
+              int64_t a1_start, int64_t* a1_stride, {{TYPE}}* a1_data,
+              int64_t a2_start, int64_t* a2_stride, {{TYPE}}* a2_data,
               int64_t* shape,
               int64_t ndim,
               int64_t nelements)
+*/
+void traverse_aaa(int tool, ...)
 {
-    assert(a0_data != NULL); // Ensure that data is allocated
+    va_list list;
+    va_start(list, tool);
+
+    int64_t a0_start    = va_arg(list, int64_t);
+    int64_t* a0_stride  = va_arg(list, int64_t*);
+    {{TYPE}}* a0_data   = va_arg(list, {{TYPE}}*);
+
+    int64_t a1_start    = va_arg(list, int64_t);
+    int64_t* a1_stride  = va_arg(list, int64_t*);
+    {{TYPE}}* a1_data   = va_arg(list, {{TYPE}}*);
+
+    int64_t a2_start    = va_arg(list, int64_t);
+    int64_t* a2_stride  = va_arg(list, int64_t*);
+    {{TYPE}}* a2_data   = va_arg(list, {{TYPE}}*);
+    
+    int64_t* shape      = va_arg(list, int64_t*);
+    int64_t ndim        = va_arg(list, int64_t);
+    int64_t nelements   = va_arg(list, int64_t);
+
+    va_end(list);
+
+    assert(a0_data != NULL);    // Ensure that data is allocated
     assert(a1_data != NULL);
     assert(a2_data != NULL);
 
-    int64_t j,           // Traversal variables
+    int64_t j,                  // Traversal variables
             last_dim    = ndim-1,
             last_e      = nelements-1;
 
     int64_t coord[DYNAMITE_MAXDIM];
     int64_t cur_e = 0;
 
-    int64_t off0;        // Stride-offset
+    int64_t off0;               // Stride-offset
     int64_t off1;
     int64_t off2;
 
@@ -59,8 +84,7 @@ void traverse_aaa(int64_t a0_start, int64_t* a0_stride, float* a0_data,
         }
                                                 // Iterate over "last" / "innermost" dimension
         for (; (coord[last_dim] < shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++) {
-            //(off0+d0) = (off1+d1) {{OPERATOR}} (off2+d2);
-            *(off0+a0_data) = *(off1+a1_data) + *(off2+a2_data);
+            *(off0+a0_data) = *(off1+a1_data) {{OPERATOR}} *(off2+a2_data);
 
             off0 += a0_stride[last_dim];
             off1 += a1_stride[last_dim];
