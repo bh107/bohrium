@@ -97,7 +97,7 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
             
                 ctemplate::ExpandTemplate("snippets/traverse_aaa.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
 
-                gcc.compile(sourcecode.c_str(), sourcecode.size());
+                gcc.compile("traverse_aaa", sourcecode.c_str(), sourcecode.size());
                 gcc.f(0,
                     inst->operand[0]->start, inst->operand[0]->stride,
                     (float*)inst->operand[0]->data,
