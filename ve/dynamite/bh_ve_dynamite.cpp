@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_dynamite.h"
 #include <bh_vcache.h>
 #include <ctemplate/template.h>  
-#include "backends.cpp"
+#include "targets.cpp"
 #include <string>
 
 static bh_component *myself = NULL;

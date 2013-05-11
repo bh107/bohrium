@@ -34,7 +34,7 @@ void traverse_aaa(int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
 */
 void traverse_aaa(int tool, ...)
 {
-    va_list list;
+    va_list list;               // Unpack arguments
     va_start(list, tool);
 
     int64_t a0_start    = va_arg(list, int64_t);

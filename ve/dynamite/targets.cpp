@@ -10,29 +10,16 @@
 
 #include "utils.h"
 
-// How should these varying signatures be handled???
-//typedef double (*func)(double x, double y);
-
-/*
-typedef void (*func)(int64_t a0_start, int64_t* a0_stride, float* a0_data,
-              int64_t a1_start, int64_t* a1_stride, float* a1_data,
-              int64_t a2_start, int64_t* a2_stride, float* a2_data,
-              int64_t* shape,
-              int64_t ndim,
-              int64_t nelements);
-              */
-
 typedef void (*func)(int tool, ...);
 
 /**
- * The backend interface.
+ * The target interface.
  *
  * Becomes what it compiles.
  */
-class backend {
+class target {
 public:
-    virtual int compile(const char* sourcecode, size_t source_len) = 0;
-    virtual double execute(double left, double right) = 0;
+    virtual int compile(const char* symbol, const char* sourcecode, size_t source_len) = 0;
 };
 
 /**
@@ -49,11 +36,13 @@ public:
  *  process clang("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
  *
  */
-class process: backend {
+class process: target {
 public:
+    func f; // This is what it is all about :)
+
     process(const char* process_str) : handle(NULL), process_str(process_str) {}
     
-    int compile(const char* sourcecode, size_t source_len)
+    int compile(const char* symbol, const char* sourcecode, size_t source_len)
     {
         if (handle) {
             dlclose(handle);
@@ -68,7 +57,7 @@ public:
 
         fd = mkstemp(lib_fn);                   // Filename of object-file
         if (-1==fd) {
-            std::cout << "Failed creating lib-tmp-file!" << std::endl;
+            std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
             return 0;
         }
         close(fd);                              // Close it immediatly.
@@ -77,7 +66,7 @@ public:
 
         p = popen(cmd, "w");                    // Execute it
         if (!p) {
-            std::cout << "Failed executing process!" << std::endl;
+            std::cout << "Err: Could not execute process!" << std::endl;
             return 0;
         }
         fwrite(sourcecode, 1, source_len, p);
@@ -86,13 +75,13 @@ public:
                                                 // Load the kernel
         handle = dlopen(lib_fn, RTLD_NOW);      // Load library
         if (!handle) {
-            std::cout << "Failed loading library!" << std::endl;
+            std::cout << "Err: dlopen() failed." << std::endl;
             return 0;
         }
 
         dlerror();                              // Clear any existing error
                                                 // Load function from lib
-        f = (func)dlsym(handle, "traverse_aaa");
+        f = (func)dlsym(handle, symbol);
         error = dlerror();
         if (error) {
             std::cout << "Failed loading function!" << error << std::endl;
@@ -109,49 +98,12 @@ public:
             handle = NULL;
         }
     }
-    
-    double execute(double left, double right)
-    {
-        return 0.0;
-    };
-
-    func f;
 
 protected:
     void* handle;
     const char* process_str;
 
 };
-
-/*
-int main()
-{
-    double res;
-
-    //tccl bck = tccl();
-    //process bck("tcc -O2 -march=core2 -fPIC -x c -shared - -o ");
-    //process bck("gcc -O2 -march=core2 -fPIC -x c -shared - -o ");
-    //opencl bck = opencl();
-    process bck("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
-    
-    char* sourcecode = NULL;
-    size_t source_len = read_file("templates/kernel.c", &sourcecode);   // Read sourcecode
-    if(!source_len) {
-        cout << "Failed reading sourcecode!" << endl;
-        return -1;
-    }
-
-    int k = 0;
-    bck.compile(sourcecode, source_len);
-    for(int i=0; i<100000; i++,k++) {
-        res = bck.execute(2.0, 3.0);
-    }
-
-    free(sourcecode);
-    std::cout << "RES=" << res << ". " << k <<std::endl;
-    return 0;
-}
-*/
 
 #endif
 
