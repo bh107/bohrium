@@ -25,12 +25,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DYNAMITE_MAXDIM 16
 
 /*
-void traverse_aaa(int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
-              int64_t a1_start, int64_t* a1_stride, {{TYPE}}* a1_data,
-              int64_t a2_start, int64_t* a2_stride, {{TYPE}}* a2_data,
-              int64_t* shape,
-              int64_t ndim,
-              int64_t nelements)
+void traverse_aaa(
+    int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
+    int64_t a1_start, int64_t* a1_stride, {{TYPE}}* a1_data,
+    int64_t a2_start, int64_t* a2_stride, {{TYPE}}* a2_data,
+    int64_t* shape,
+    int64_t ndim,
+    int64_t nelements)
 */
 void traverse_aaa(int tool, ...)
 {
@@ -66,16 +67,16 @@ void traverse_aaa(int tool, ...)
     int64_t coord[DYNAMITE_MAXDIM];
     int64_t cur_e = 0;
 
-    int64_t off0;               // Stride-offset
-    int64_t off1;
-    int64_t off2;
+    {{TYPE}}* off0;               // Stride-offset
+    {{TYPE}}* off1;
+    {{TYPE}}* off2;
 
     memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
-        off0 = a0_start;                       // Reset offset
-        off1 = a1_start;
-        off2 = a2_start;
+        off0 = a0_data + a0_start;              // Reset offsets
+        off1 = a1_data + a1_start;
+        off2 = a2_data + a2_start;
 
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
             off0 += coord[j] * a0_stride[j];
@@ -84,7 +85,7 @@ void traverse_aaa(int tool, ...)
         }
                                                 // Iterate over "last" / "innermost" dimension
         for (; (coord[last_dim] < shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++) {
-            *(off0+a0_data) = *(off1+a1_data) {{OPERATOR}} *(off2+a2_data);
+            *off0 = *off1 {{OPERATOR}} *off2;
 
             off0 += a0_stride[last_dim];
             off1 += a1_stride[last_dim];
