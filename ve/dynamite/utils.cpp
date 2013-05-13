@@ -1,5 +1,7 @@
 #include <fstream>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 /**
  * Read the entire file provided via filename into memory.
@@ -23,5 +25,17 @@ size_t read_file(const char* filename, char** contents)
     }
 
     return size;
+}
+
+void assign_string(char*& output, const char* input)
+{
+    size_t length = strlen(input);
+
+    output = (char*)malloc(sizeof(char) * length+1);
+    if (!output) {
+        std::cout << "Something went terribly wrong!" << std::endl;
+    }
+    strncpy(output, input, length);
+    output[length] = '\0';
 }
 
