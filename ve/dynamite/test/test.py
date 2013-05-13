@@ -7,3 +7,6 @@ b = np.ones((3,3,3),dtype=np.float32)
 print a+1
 print 1+b
 print a+b
+print a*2
+print 2*a
+print a*b

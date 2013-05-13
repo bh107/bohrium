@@ -79,3 +79,46 @@ const char* type_text(bh_type type)
     }
 }
 
+const char* opcode_to_opstr(bh_opcode opc) {
+    switch(opc) {
+        case BH_ADD:
+            return "+";
+        case BH_SUBTRACT:
+            return "-";
+        case BH_MULTIPLY:
+            return "*";
+        case BH_DIVIDE:
+            return "/";
+        case BH_MOD:
+            return "%";
+        case BH_BITWISE_AND:
+            return "&";
+        case BH_BITWISE_OR:
+            return "|";
+        case BH_BITWISE_XOR:
+            return "^";
+        case BH_LEFT_SHIFT:
+            return "<<";
+        case BH_RIGHT_SHIFT:
+            return ">>";
+        case BH_EQUAL:
+            return "==";
+        case BH_NOT_EQUAL:
+            return "!=";
+        case BH_GREATER:
+            return ">";
+        case BH_GREATER_EQUAL:
+            return ">=";
+        case BH_LESS:
+            return "<";
+        case BH_LESS_EQUAL:
+            return "<=";
+        case BH_LOGICAL_AND:
+            return "&&";
+        case BH_LOGICAL_OR:
+            return "||";
+        default:
+            return "{{UNKNOWN_OPCODE}}";
+    }
+}
+

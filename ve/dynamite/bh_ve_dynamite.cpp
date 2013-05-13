@@ -90,7 +90,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         ctemplate::TemplateDictionary dict("example");
         std::string sourcecode;
 
-        char symbol[200];
+        char symbol[200],
+             type_out[30],
+             type_in1[30],
+             type_in2[30],
+             operator_src[20];
         char *opcode_txt;
         bool cres;
 
@@ -114,40 +118,67 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 break;
 
             case BH_ADD:
+            case BH_SUBTRACT:
+            case BH_MULTIPLY:
+            case BH_DIVIDE:
+            case BH_MOD:
+            case BH_BITWISE_AND:
+            case BH_BITWISE_OR:
+            case BH_BITWISE_XOR:
+            case BH_LEFT_SHIFT:
+            case BH_RIGHT_SHIFT:
+            case BH_EQUAL:
+            case BH_NOT_EQUAL:
+            case BH_GREATER:
+            case BH_GREATER_EQUAL:
+            case BH_LESS:
+            case BH_LESS_EQUAL:
+            case BH_LOGICAL_AND:
+            case BH_LOGICAL_OR:
+
                 assign_string(opcode_txt, bh_opcode_text(inst->opcode));
                 sourcecode = "";
+                strcpy(operator_src, opcode_to_opstr(inst->opcode));
+
+                dict.SetValue("OPERATOR",       operator_src);
+                dict.SetValue("OPCODE_NAME",    opcode_txt);
 
                 if (bh_is_constant(inst->operand[2])) {
+                    strcpy(type_out, type_text(inst->operand[0]->type));
+                    strcpy(type_in1, type_text(inst->operand[1]->type));
+                    strcpy(type_in2, type_text(inst->constant.type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
-                            type_text(inst->operand[0]->type), 
-                            type_text(inst->operand[1]->type), 
-                            type_text(inst->constant.type)
+                            type_out, 
+                            type_in1, 
+                            type_in2
                     );
                     dict.SetValue("STRUCT_IN1", "D");
                     dict.SetValue("STRUCT_IN2", "C");
-                    dict.SetValue("TYPE_OUT", "float");
-                    dict.SetValue("TYPE_IN1", "float");
-                    dict.SetValue("TYPE_IN2", "float");
-                    dict.SetValue("OPERATOR", "+");
-                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.SetValue("TYPE_OUT", type_out);
+                    dict.SetValue("TYPE_IN1", type_in1);
+                    dict.SetValue("TYPE_IN2", type_in2);
                     dict.ShowSection("a1_dense");
                     dict.ShowSection("a2_scalar");
                 } else if (bh_is_constant(inst->operand[1])) {
+                    strcpy(type_out, type_text(inst->operand[0]->type));
+                    strcpy(type_in1, type_text(inst->constant.type));
+                    strcpy(type_in2, type_text(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
-                        type_text(inst->operand[0]->type),
-                        type_text(inst->constant.type),
-                        type_text(inst->operand[2]->type)
+                        type_out,
+                        type_in1,
+                        type_in2
                     );
                     dict.SetValue("STRUCT_IN1", "C");
                     dict.SetValue("STRUCT_IN2", "D");
-                    dict.SetValue("TYPE_OUT", "float");
-                    dict.SetValue("TYPE_IN1", "float");
-                    dict.SetValue("TYPE_IN2", "float");
-                    dict.SetValue("OPERATOR", "+");
-                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.SetValue("TYPE_OUT", type_out);
+                    dict.SetValue("TYPE_IN1", type_in1);
+                    dict.SetValue("TYPE_IN2", type_in2);
                     dict.ShowSection("a1_scalar");
                     dict.ShowSection("a2_dense");
                 } else {
+                    strcpy(type_out, type_text(inst->operand[0]->type));
+                    strcpy(type_in1, type_text(inst->operand[1]->type));
+                    strcpy(type_in2, type_text(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
                         type_text(inst->operand[0]->type),
                         type_text(inst->operand[1]->type),
@@ -155,11 +186,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     );
                     dict.SetValue("STRUCT_IN1", "D");
                     dict.SetValue("STRUCT_IN2", "D");
-                    dict.SetValue("TYPE_OUT", "float");
-                    dict.SetValue("TYPE_IN1", "float");
-                    dict.SetValue("TYPE_IN2", "float");
-                    dict.SetValue("OPERATOR", "+");
-                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.SetValue("TYPE_OUT", type_out);
+                    dict.SetValue("TYPE_IN1", type_in1);
+                    dict.SetValue("TYPE_IN2", type_in2);
                     dict.ShowSection("a1_dense");
                     dict.ShowSection("a2_dense");
                 }
