@@ -19,7 +19,7 @@ typedef void (*func)(int tool, ...);
  */
 class target {
 public:
-    virtual int compile(const char* symbol, const char* sourcecode, size_t source_len) = 0;
+    virtual bool compile(const char* symbol, const char* sourcecode, size_t source_len) = 0;
 };
 
 /**
@@ -42,53 +42,72 @@ public:
 
     process(const char* process_str) : handle(NULL), process_str(process_str) {}
     
-    int compile(const char* symbol, const char* sourcecode, size_t source_len)
+    bool compile(const char* symbol, const char* sourcecode, size_t source_len)
     {
         if (handle) {
             dlclose(handle);
             handle = NULL;
         }
 
-        int fd;                                 // Handle for tmp-object-file
-        FILE *p;                                // Handle for process
-        char lib_fn[]   = "objects/object_XXXXXX";
-        char cmd[200];                          // Buffer for command-string
-        char *error;
+        int lib_fd, kernel_fd;                          // Handle for tmp-object-file
+        FILE *lib_fp = NULL;
+        FILE *kernel_fp = NULL;                         // Handle for process
+        char lib_fn[]    = "objects/objects_XXXXXX";
+        char kernel_fn[] = "kernels/kernel_XXXXXX";
+        char cmd[200];
+        char *error = NULL;                             // Buffer for command-string
 
-        fd = mkstemp(lib_fn);                   // Filename of object-file
-        if (-1==fd) {
+        kernel_fd = mkstemp(kernel_fn);                 // Write to file (sourcecode)
+        if (!kernel_fd) {                               // For offline inspection
+            std::cout << "Err: Failed creating temp kernel-file." << std::endl;
+            return false;
+        }
+        kernel_fp = fdopen(kernel_fd, "w+");
+        if (!kernel_fp) {
+            std::cout << "Err: Failed opening kernel-file for writing. FP=[" << &kernel_fp << "]" << std::endl;
+            return false;
+        }
+        fwrite(sourcecode, 1, source_len, kernel_fp);
+        fflush(kernel_fp);
+        fclose(kernel_fp);
+        close(kernel_fd);
+
+        lib_fd = mkstemp(lib_fn);                       // Filename of .o (object-file)
+        if (-1==lib_fd) {
             std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
-            return 0;
+            return false;
         }
-        close(fd);                              // Close it immediatly.
+        close(lib_fd);                                  // Close it immediatly.
 
-        sprintf(cmd, "%s%s", process_str, lib_fn);  // Merge command-string
+        sprintf(cmd, "%s%s", process_str, lib_fn);      // Add .o file-name to command
 
-        p = popen(cmd, "w");                    // Execute it
-        if (!p) {
+        lib_fp = popen(cmd, "w");                       // Execute the command
+        if (!lib_fp) {
             std::cout << "Err: Could not execute process!" << std::endl;
-            return 0;
+            return false;
         }
-        fwrite(sourcecode, 1, source_len, p);
-        fflush(p);
-        pclose(p);
+        fwrite(sourcecode, 1, source_len, lib_fp);      // Write to stdin (sourcecode)
+        fflush(lib_fp);
+        pclose(lib_fp);
+
                                                 // Load the kernel
         handle = dlopen(lib_fn, RTLD_NOW);      // Load library
         if (!handle) {
             std::cout << "Err: dlopen() failed." << std::endl;
-            return 0;
+            return false;
         }
 
         dlerror();                              // Clear any existing error
                                                 // Load function from lib
         f = (func)dlsym(handle, symbol);
         error = dlerror();
-        if (error) {
+        if (error) {    // TODO: Fix this output... of error
             std::cout << "Failed loading function!" << error << std::endl;
-            return 0;
+            free(error);
+            return false;
         }
 
-        return 1;
+        return true;
     }
 
     ~process()
