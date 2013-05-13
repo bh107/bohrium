@@ -79,6 +79,45 @@ const char* type_text(bh_type type)
     }
 }
 
+const char* bhtype_to_shorthand(bh_type type) {
+    switch(type)
+    {
+    case BH_BOOL:
+        return "B";
+    case BH_INT8:
+        return "I8";
+    case BH_INT16:
+        return "I16";
+    case BH_INT32:
+        return "I32";
+    case BH_INT64:
+        return "I64";
+    case BH_UINT8:
+        return "U8";
+    case BH_UINT16:
+        return "U16";
+    case BH_UINT32:
+        return "U32";
+    case BH_UINT64:
+        return "U64";
+    case BH_FLOAT16:
+        return "U16";
+    case BH_FLOAT32:
+        return "F";
+    case BH_FLOAT64:
+        return "D";
+    case BH_COMPLEX64:
+        return "CF";
+    case BH_COMPLEX128:
+        return "CD";
+    case BH_UNKNOWN:
+        return "BH_UNKNOWN";
+    default:
+        return "Unknown type";
+    }
+
+}
+
 const char* opcode_to_opstr(bh_opcode opc) {
     switch(opc) {
         case BH_ADD:

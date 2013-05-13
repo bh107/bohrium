@@ -141,17 +141,19 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 strcpy(operator_src, opcode_to_opstr(inst->opcode));
 
                 dict.SetValue("OPERATOR",       operator_src);
-                dict.SetValue("OPCODE_NAME",    opcode_txt);
+                dict.ShowSection("binary");
 
                 if (bh_is_constant(inst->operand[2])) {
                     strcpy(type_out, type_text(inst->operand[0]->type));
                     strcpy(type_in1, type_text(inst->operand[1]->type));
                     strcpy(type_in2, type_text(inst->constant.type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
-                            type_out, 
-                            type_in1, 
-                            type_in2
+                            bhtype_to_shorthand(inst->operand[0]->type), 
+                            bhtype_to_shorthand(inst->operand[1]->type), 
+                            bhtype_to_shorthand(inst->constant.type)
                     );
+
+                    dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "D");
                     dict.SetValue("STRUCT_IN2", "C");
                     dict.SetValue("TYPE_OUT", type_out);
@@ -164,10 +166,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     strcpy(type_in1, type_text(inst->constant.type));
                     strcpy(type_in2, type_text(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
-                        type_out,
-                        type_in1,
-                        type_in2
+                        bhtype_to_shorthand(inst->operand[0]->type), 
+                        bhtype_to_shorthand(inst->constant.type), 
+                        bhtype_to_shorthand(inst->operand[2]->type)
                     );
+
+                    dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "C");
                     dict.SetValue("STRUCT_IN2", "D");
                     dict.SetValue("TYPE_OUT", type_out);
@@ -180,10 +184,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     strcpy(type_in1, type_text(inst->operand[1]->type));
                     strcpy(type_in2, type_text(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
-                        type_text(inst->operand[0]->type),
-                        type_text(inst->operand[1]->type),
-                        type_text(inst->operand[2]->type)
+                        bhtype_to_shorthand(inst->operand[0]->type), 
+                        bhtype_to_shorthand(inst->operand[1]->type), 
+                        bhtype_to_shorthand(inst->operand[2]->type)
                     );
+
+                    dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "D");
                     dict.SetValue("STRUCT_IN2", "D");
                     dict.SetValue("TYPE_OUT", type_out);

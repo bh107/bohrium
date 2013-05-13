@@ -25,20 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define DYNAMITE_MAXDIM 16
 
-/*
-C = constant
-D = dense
-S = sparse
-
-void traverse_ddd(
-    int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
-    int64_t a1_start, int64_t* a1_stride, {{TYPE}}* a1_data,
-    int64_t a2_start, int64_t* a2_stride, {{TYPE}}* a2_data,
-    int64_t* shape,
-    int64_t ndim,
-    int64_t nelements)
-*/
-void {{OPCODE_NAME}}_D{{STRUCT_IN1}}{{STRUCT_IN2}}_{{TYPE_OUT}}{{TYPE_IN1}}{{TYPE_IN2}}(int tool, ...)
+void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
