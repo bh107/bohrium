@@ -25,6 +25,8 @@ $(LIB): $(OBJ)
 
 clean:
 		rm -rf *.o *~ *.so kernels/* objects/*
+		touch kernels/empty
+		touch objects/empty
 
 install: all
 		cp $(LIB) $(INSTALLDIR)
