@@ -34,22 +34,48 @@ static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
 
+// Arguments
+char* target_cmd;
+char* kernel_path;
+char* object_path;
+char* snippet_path;
+
 bh_error bh_ve_dynamite_init(bh_component *self)
 {
     myself = self;
 
-    char *env = getenv("BH_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
-    if(env != NULL)
-    {
+    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
+    if (NULL != env) {
         vcache_size = atoi(env);
     }
-    if(vcache_size <= 0)                        // Verify it
-    {
+    if (0 >= vcache_size) {                          // Verify it
         fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
         return BH_ERROR;
     }
 
     bh_vcache_init( vcache_size );
+
+    target_cmd = getenv("BH_VE_DYNAMITE_TARGET");      // DYNAMITE Arguments
+    if (NULL==target_cmd) {
+        assign_string(target_cmd, "gcc -O2 -march=native -fPIC -x c -shared - -o ");
+    }
+    printf("%s", target_cmd);
+
+    object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");
+    if (NULL==object_path) {
+        assign_string(kernel_path, "objects/object_XXXXXX");
+    }
+
+    kernel_path = getenv("BH_VE_DYNAMITE_KERNEL_PATH");
+    if (NULL==kernel_path) {
+        assign_string(kernel_path, "kernels/kernel_XXXXXX");
+    }
+
+    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");
+    if (NULL==snippet_path) {
+        assign_string(kernel_path, "snippets/");
+    }
+
     return BH_SUCCESS;
 }
 
@@ -59,17 +85,13 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
     bh_instruction* inst;
     bh_error res = BH_SUCCESS;
 
-    process gcc("gcc -O2 -march=core2 -fPIC -x c -shared - -o ");
-    std::string sourcecode;
-
+    process target(target_cmd);
     ctemplate::TemplateDictionary dict("example");
+    std::string sourcecode;
 
     for (count=0; count < instruction_count; count++) {
 
         inst = &instruction_list[count];
-        #ifdef DEBUG
-        bh_pprint_instr(inst);
-        #endif
 
         res = bh_vcache_malloc( inst );          // Allocate memory for operands
         if ( res != BH_SUCCESS ) {
@@ -97,19 +119,23 @@ bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* inst
             
                 ctemplate::ExpandTemplate("snippets/traverse_aaa.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
 
-                gcc.compile("traverse_aaa", sourcecode.c_str(), sourcecode.size());
-                gcc.f(0,
-                    inst->operand[0]->start, inst->operand[0]->stride,
-                    (float*)inst->operand[0]->data,
-                    inst->operand[1]->start, inst->operand[1]->stride,
-                    (float*)inst->operand[1]->data,
-                    inst->operand[2]->start, inst->operand[2]->stride,
-                    (float*)inst->operand[2]->data,
-                    inst->operand[0]->shape, inst->operand[0]->ndim,
-                    bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
-                );
+                if (target.compile("traverse_aaa", sourcecode.c_str(), sourcecode.size())) {
+                    target.f(0,
+                        inst->operand[0]->start, inst->operand[0]->stride,
+                        (float*)inst->operand[0]->data,
+                        inst->operand[1]->start, inst->operand[1]->stride,
+                        (float*)inst->operand[1]->data,
+                        inst->operand[2]->start, inst->operand[2]->stride,
+                        (float*)inst->operand[2]->data,
+                        inst->operand[0]->shape, inst->operand[0]->ndim,
+                        bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                    );
 
-                res = BH_SUCCESS;
+                    res = BH_SUCCESS;
+                } else {
+                    res = BH_ERROR;
+                }
+
                 break;
 
             case BH_USERFUNC:                    // External libraries
