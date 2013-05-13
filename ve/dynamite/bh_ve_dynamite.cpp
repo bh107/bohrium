@@ -84,15 +84,20 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_error res = BH_SUCCESS;
 
     process target(target_cmd, object_path, kernel_path);
-    ctemplate::TemplateDictionary dict("example");
-    std::string sourcecode;
 
     for (count=0; count<instruction_count; count++) {
 
+        ctemplate::TemplateDictionary dict("example");
+        std::string sourcecode;
+
+        char symbol[200];
+        char *opcode_txt;
+        bool cres;
+
         inst = &instruction_list[count];
 
-        res = bh_vcache_malloc( inst );          // Allocate memory for operands
-        if ( res != BH_SUCCESS ) {
+        res = bh_vcache_malloc(inst);          // Allocate memory for operands
+        if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
@@ -109,37 +114,93 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 break;
 
             case BH_ADD:
-
-                printf("Doing an add!\n");
-
-                char * opcode_txt;
                 assign_string(opcode_txt, bh_opcode_text(inst->opcode));
+                sourcecode = "";
 
-                char symbol[200];
-                sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D", "float", "float", "float");
-
-                dict.SetValue("STRUCT_IN1", "D");
-                dict.SetValue("STRUCT_IN2", "D");
-                dict.SetValue("TYPE_OUT", "float");
-                dict.SetValue("TYPE_IN1", "float");
-                dict.SetValue("TYPE_IN2", "float");
-                dict.SetValue("OPERATOR", "+");
-                dict.SetValue("OPCODE_NAME", opcode_txt);
+                if (bh_is_constant(inst->operand[2])) {
+                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
+                            type_text(inst->operand[0]->type), 
+                            type_text(inst->operand[1]->type), 
+                            type_text(inst->constant.type)
+                    );
+                    dict.SetValue("STRUCT_IN1", "D");
+                    dict.SetValue("STRUCT_IN2", "C");
+                    dict.SetValue("TYPE_OUT", "float");
+                    dict.SetValue("TYPE_IN1", "float");
+                    dict.SetValue("TYPE_IN2", "float");
+                    dict.SetValue("OPERATOR", "+");
+                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.ShowSection("a1_dense");
+                    dict.ShowSection("a2_scalar");
+                } else if (bh_is_constant(inst->operand[1])) {
+                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
+                        type_text(inst->operand[0]->type),
+                        type_text(inst->constant.type),
+                        type_text(inst->operand[2]->type)
+                    );
+                    dict.SetValue("STRUCT_IN1", "C");
+                    dict.SetValue("STRUCT_IN2", "D");
+                    dict.SetValue("TYPE_OUT", "float");
+                    dict.SetValue("TYPE_IN1", "float");
+                    dict.SetValue("TYPE_IN2", "float");
+                    dict.SetValue("OPERATOR", "+");
+                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.ShowSection("a1_scalar");
+                    dict.ShowSection("a2_dense");
+                } else {
+                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
+                        type_text(inst->operand[0]->type),
+                        type_text(inst->operand[1]->type),
+                        type_text(inst->operand[2]->type)
+                    );
+                    dict.SetValue("STRUCT_IN1", "D");
+                    dict.SetValue("STRUCT_IN2", "D");
+                    dict.SetValue("TYPE_OUT", "float");
+                    dict.SetValue("TYPE_IN1", "float");
+                    dict.SetValue("TYPE_IN2", "float");
+                    dict.SetValue("OPERATOR", "+");
+                    dict.SetValue("OPCODE_NAME", opcode_txt);
+                    dict.ShowSection("a1_dense");
+                    dict.ShowSection("a2_dense");
+                }
             
                 ctemplate::ExpandTemplate("snippets/traverse_DDD.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
 
-                if (target.compile(symbol, sourcecode.c_str(), sourcecode.size())) {
-                    target.f(0,
-                        inst->operand[0]->start, inst->operand[0]->stride,
-                        (float*)inst->operand[0]->data,
-                        inst->operand[1]->start, inst->operand[1]->stride,
-                        (float*)inst->operand[1]->data,
-                        inst->operand[2]->start, inst->operand[2]->stride,
-                        (float*)inst->operand[2]->data,
-                        inst->operand[0]->shape, inst->operand[0]->ndim,
-                        bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
-                    );
-
+                if (cres) {
+                    if (bh_is_constant(inst->operand[2])) {         // DDC
+                        target.f(0,
+                            inst->operand[0]->start, inst->operand[0]->stride,
+                            inst->operand[0]->data,
+                            inst->operand[1]->start, inst->operand[1]->stride,
+                            inst->operand[1]->data,
+                            &(inst->constant.value),
+                            inst->operand[0]->shape, inst->operand[0]->ndim,
+                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                        );
+                    } else if (bh_is_constant(inst->operand[1])) {  // DCD
+                        target.f(0,
+                            inst->operand[0]->start, inst->operand[0]->stride,
+                            inst->operand[0]->data,
+                            &(inst->constant.value),
+                            inst->operand[2]->start, inst->operand[2]->stride,
+                            inst->operand[2]->data,
+                            inst->operand[0]->shape, inst->operand[0]->ndim,
+                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                        );
+                    } else {                                        // DDD
+                        target.f(0,
+                            inst->operand[0]->start, inst->operand[0]->stride,
+                            inst->operand[0]->data,
+                            inst->operand[1]->start, inst->operand[1]->stride,
+                            inst->operand[1]->data,
+                            inst->operand[2]->start, inst->operand[2]->stride,
+                            inst->operand[2]->data,
+                            inst->operand[0]->shape, inst->operand[0]->ndim,
+                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                        );
+                    }
+                    
                     res = BH_SUCCESS;
                 } else {
                     res = BH_ERROR;
