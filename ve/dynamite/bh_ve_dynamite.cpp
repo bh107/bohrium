@@ -59,11 +59,10 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     if (NULL==target_cmd) {
         assign_string(target_cmd, "gcc -O2 -march=native -fPIC -x c -shared - -o ");
     }
-    printf("%s", target_cmd);
 
     object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");
     if (NULL==object_path) {
-        assign_string(kernel_path, "objects/object_XXXXXX");
+        assign_string(object_path, "objects/object_XXXXXX");
     }
 
     kernel_path = getenv("BH_VE_DYNAMITE_KERNEL_PATH");
@@ -73,19 +72,19 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 
     snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");
     if (NULL==snippet_path) {
-        assign_string(kernel_path, "snippets/");
+        assign_string(snippet_path, "snippets/");
     }
 
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_dynamite_execute( bh_intp instruction_count, bh_instruction* instruction_list )
+bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instruction_list)
 {
     bh_intp count;
     bh_instruction* inst;
     bh_error res = BH_SUCCESS;
 
-    process target(target_cmd);
+    process target(target_cmd, object_path, kernel_path);
     ctemplate::TemplateDictionary dict("example");
     std::string sourcecode;
 

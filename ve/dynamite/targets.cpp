@@ -40,31 +40,42 @@ class process: target {
 public:
     func f; // This is what it is all about :)
 
-    process(const char* process_str) : handle(NULL), process_str(process_str) {}
+    process(
+        const char* process_str,
+        const char* object_path,
+        const char* kernel_path
+    ) :
+        handle(NULL), 
+        process_str(process_str), 
+        object_path(object_path),
+        kernel_path(kernel_path)
+    {}
     
     bool compile(const char* symbol, const char* sourcecode, size_t source_len)
     {
-        if (handle) {
+        if (handle) {           // Unload a previous compilation
             dlclose(handle);
             handle = NULL;
         }
 
-        int lib_fd, kernel_fd;                          // Handle for tmp-object-file
-        FILE *lib_fp = NULL;
-        FILE *kernel_fp = NULL;                         // Handle for process
-        char lib_fn[]    = "objects/objects_XXXXXX";
-        char kernel_fn[] = "kernels/kernel_XXXXXX";
+        int lib_fd;             // Library file-descriptor
+        int kernel_fd;          // Kernel file-descriptor
+        FILE *lib_fp    = NULL; // Handle for library-file
+        FILE *kernel_fp = NULL; // Handle for kernel-file
+        char *error     = NULL; // Buffer for dlopen errors
         char cmd[200];
-        char *error = NULL;                             // Buffer for command-string
 
+        char *kernel_fn = NULL; // Kernel filename (kernel/kernel_XXXXXX)
+        assign_string(kernel_fn, kernel_path);
         kernel_fd = mkstemp(kernel_fn);                 // Write to file (sourcecode)
         if (!kernel_fd) {                               // For offline inspection
             std::cout << "Err: Failed creating temp kernel-file." << std::endl;
+            free(kernel_fn);
             return false;
         }
         kernel_fp = fdopen(kernel_fd, "w+");
         if (!kernel_fp) {
-            std::cout << "Err: Failed opening kernel-file for writing. FP=[" << &kernel_fp << "]" << std::endl;
+            std::cout << "Err: Failed opening kernel-file for writing." << std::endl;
             return false;
         }
         fwrite(sourcecode, 1, source_len, kernel_fp);
@@ -72,14 +83,17 @@ public:
         fclose(kernel_fp);
         close(kernel_fd);
 
-        lib_fd = mkstemp(lib_fn);                       // Filename of .o (object-file)
+        char *lib_fn = NULL;                        // Library filename (objects/object_XXXXXX)
+        assign_string(lib_fn, object_path);
+        lib_fd = mkstemp(lib_fn);                   // Filename of .o (object-file)
         if (-1==lib_fd) {
             std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
+            free(lib_fn);
             return false;
         }
-        close(lib_fd);                                  // Close it immediatly.
+        close(lib_fd);                              // Close it immediatly.
 
-        sprintf(cmd, "%s%s", process_str, lib_fn);      // Add .o file-name to command
+        sprintf(cmd, "%s%s", process_str, lib_fn);  // Add .o file-name to command
 
         lib_fp = popen(cmd, "w");                       // Execute the command
         if (!lib_fp) {
@@ -89,7 +103,6 @@ public:
         fwrite(sourcecode, 1, source_len, lib_fp);      // Write to stdin (sourcecode)
         fflush(lib_fp);
         pclose(lib_fp);
-
                                                 // Load the kernel
         handle = dlopen(lib_fn, RTLD_NOW);      // Load library
         if (!handle) {
@@ -121,6 +134,10 @@ public:
 protected:
     void* handle;
     const char* process_str;
+
+private:
+    const char* object_path;
+    const char* kernel_path;
 
 };
 
