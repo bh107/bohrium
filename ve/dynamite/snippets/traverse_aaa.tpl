@@ -17,9 +17,10 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include "stdlib.h"
 #include "stdarg.h"
 #include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 #include "assert.h"
 
 #define DYNAMITE_MAXDIM 16
