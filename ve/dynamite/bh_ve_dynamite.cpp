@@ -34,8 +34,7 @@ static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
 
-// Arguments
-char* target_cmd;
+char* target_cmd;   // Dynamite Arguments
 char* kernel_path;
 char* object_path;
 char* snippet_path;
@@ -54,8 +53,8 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     }
 
     bh_vcache_init( vcache_size );
-
-    target_cmd = getenv("BH_VE_DYNAMITE_TARGET");      // DYNAMITE Arguments
+                                                            // DYNAMITE Arguments
+    target_cmd = getenv("BH_VE_DYNAMITE_TARGET");           // For the compiler
     if (NULL==target_cmd) {
         assign_string(target_cmd, "gcc -O2 -march=native -fPIC -x c -shared - -o ");
     }
@@ -70,7 +69,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
         assign_string(kernel_path, "kernels/kernel_XXXXXX");
     }
 
-    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");
+    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");   // For the sorucecode-generator
     if (NULL==snippet_path) {
         assign_string(snippet_path, "snippets/");
     }
@@ -88,7 +87,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     ctemplate::TemplateDictionary dict("example");
     std::string sourcecode;
 
-    for (count=0; count < instruction_count; count++) {
+    for (count=0; count<instruction_count; count++) {
 
         inst = &instruction_list[count];
 
@@ -113,12 +112,23 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 printf("Doing an add!\n");
 
-                dict.SetValue("TYPE", "float");
-                dict.SetValue("OPERATOR", "+");
-            
-                ctemplate::ExpandTemplate("snippets/traverse_aaa.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                char * opcode_txt;
+                assign_string(opcode_txt, bh_opcode_text(inst->opcode));
 
-                if (target.compile("traverse_aaa", sourcecode.c_str(), sourcecode.size())) {
+                char symbol[200];
+                sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D", "float", "float", "float");
+
+                dict.SetValue("STRUCT_IN1", "D");
+                dict.SetValue("STRUCT_IN2", "D");
+                dict.SetValue("TYPE_OUT", "float");
+                dict.SetValue("TYPE_IN1", "float");
+                dict.SetValue("TYPE_IN2", "float");
+                dict.SetValue("OPERATOR", "+");
+                dict.SetValue("OPCODE_NAME", opcode_txt);
+            
+                ctemplate::ExpandTemplate("snippets/traverse_DDD.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+
+                if (target.compile(symbol, sourcecode.c_str(), sourcecode.size())) {
                     target.f(0,
                         inst->operand[0]->start, inst->operand[0]->stride,
                         (float*)inst->operand[0]->data,
@@ -156,7 +166,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
         }
 
-        if (res != BH_SUCCESS) {    // Instruction failed
+        if (BH_SUCCESS != res) {    // Instruction failed
             break;
         }
 
@@ -165,10 +175,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 	return res;
 }
 
-bh_error bh_ve_dynamite_shutdown( void )
+bh_error bh_ve_dynamite_shutdown(void)
 {
-    // De-allocate the malloc-cache
-    bh_vcache_clear();
+    bh_vcache_clear();  // De-allocate the malloc-cache
     bh_vcache_delete();
 
     return BH_SUCCESS;

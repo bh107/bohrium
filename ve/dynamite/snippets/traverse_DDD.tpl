@@ -17,16 +17,21 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include "assert.h"
 #include "stdarg.h"
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "assert.h"
 
 #define DYNAMITE_MAXDIM 16
 
 /*
-void traverse_aaa(
+
+C = constant
+D = dense
+S = sparse
+
+void traverse_ddd(
     int64_t a0_start, int64_t* a0_stride, {{TYPE}}* a0_data,
     int64_t a1_start, int64_t* a1_stride, {{TYPE}}* a1_data,
     int64_t a2_start, int64_t* a2_stride, {{TYPE}}* a2_data,
@@ -34,22 +39,22 @@ void traverse_aaa(
     int64_t ndim,
     int64_t nelements)
 */
-void traverse_aaa(int tool, ...)
+void {{OPCODE_NAME}}_D{{STRUCT_IN1}}{{STRUCT_IN2}}_{{TYPE_OUT}}{{TYPE_IN1}}{{TYPE_IN2}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
     int64_t a0_start    = va_arg(list, int64_t);
     int64_t* a0_stride  = va_arg(list, int64_t*);
-    {{TYPE}}* a0_data   = va_arg(list, {{TYPE}}*);
+    {{TYPE_OUT}}* a0_data   = va_arg(list, {{TYPE_OUT}}*);
 
     int64_t a1_start    = va_arg(list, int64_t);
     int64_t* a1_stride  = va_arg(list, int64_t*);
-    {{TYPE}}* a1_data   = va_arg(list, {{TYPE}}*);
+    {{TYPE_IN1}}* a1_data   = va_arg(list, {{TYPE_IN1}}*);
 
     int64_t a2_start    = va_arg(list, int64_t);
     int64_t* a2_stride  = va_arg(list, int64_t*);
-    {{TYPE}}* a2_data   = va_arg(list, {{TYPE}}*);
+    {{TYPE_IN2}}* a2_data   = va_arg(list, {{TYPE_IN2}}*);
     
     int64_t* shape      = va_arg(list, int64_t*);
     int64_t ndim        = va_arg(list, int64_t);
@@ -68,9 +73,9 @@ void traverse_aaa(int tool, ...)
     int64_t coord[DYNAMITE_MAXDIM];
     int64_t cur_e = 0;
 
-    {{TYPE}}* off0;               // Stride-offset
-    {{TYPE}}* off1;
-    {{TYPE}}* off2;
+    {{TYPE_OUT}}* off0;               // Stride-offset
+    {{TYPE_IN1}}* off1;
+    {{TYPE_IN2}}* off2;
 
     memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
