@@ -69,7 +69,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
         assign_string(kernel_path, "kernels/kernel_XXXXXX");
     }
 
-    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");   // For the sorucecode-generator
+    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");   // For the sourcecode-generator
     if (NULL==snippet_path) {
         assign_string(snippet_path, "snippets/");
     }
@@ -108,12 +108,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                                                     
         switch (inst->opcode) {                     // Dispatch instruction
 
-            case BH_NONE:                        // NOOP.
+            case BH_NONE:                           // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
                 res = BH_SUCCESS;
                 break;
-            case BH_FREE:                        // Store data-pointer in malloc-cache
+            case BH_FREE:                           // Store data-pointer in malloc-cache
                 res = bh_vcache_free( inst );
                 break;
 
@@ -138,15 +138,15 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 assign_string(opcode_txt, bh_opcode_text(inst->opcode));
                 sourcecode = "";
-                strcpy(operator_src, opcode_to_opstr(inst->opcode));
+                strcpy(operator_src, bhopcode_to_csrc(inst->opcode));
 
-                dict.SetValue("OPERATOR",       operator_src);
+                dict.SetValue("OPERATOR", operator_src);
                 dict.ShowSection("binary");
 
                 if (bh_is_constant(inst->operand[2])) {
-                    strcpy(type_out, type_text(inst->operand[0]->type));
-                    strcpy(type_in1, type_text(inst->operand[1]->type));
-                    strcpy(type_in2, type_text(inst->constant.type));
+                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(inst->operand[1]->type));
+                    strcpy(type_in2, bhtype_to_ctype(inst->constant.type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
                             bhtype_to_shorthand(inst->operand[0]->type), 
                             bhtype_to_shorthand(inst->operand[1]->type), 
@@ -162,9 +162,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("a1_dense");
                     dict.ShowSection("a2_scalar");
                 } else if (bh_is_constant(inst->operand[1])) {
-                    strcpy(type_out, type_text(inst->operand[0]->type));
-                    strcpy(type_in1, type_text(inst->constant.type));
-                    strcpy(type_in2, type_text(inst->operand[2]->type));
+                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(inst->constant.type));
+                    strcpy(type_in2, bhtype_to_ctype(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
                         bhtype_to_shorthand(inst->operand[0]->type), 
                         bhtype_to_shorthand(inst->constant.type), 
@@ -180,9 +180,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("a1_scalar");
                     dict.ShowSection("a2_dense");
                 } else {
-                    strcpy(type_out, type_text(inst->operand[0]->type));
-                    strcpy(type_in1, type_text(inst->operand[1]->type));
-                    strcpy(type_in2, type_text(inst->operand[2]->type));
+                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(inst->operand[1]->type));
+                    strcpy(type_in2, bhtype_to_ctype(inst->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
                         bhtype_to_shorthand(inst->operand[0]->type), 
                         bhtype_to_shorthand(inst->operand[1]->type), 
@@ -199,7 +199,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("a2_dense");
                 }
             
-                ctemplate::ExpandTemplate("snippets/traverse_DDD.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                ctemplate::ExpandTemplate("snippets/traverse.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
                 cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                 if (cres) {
