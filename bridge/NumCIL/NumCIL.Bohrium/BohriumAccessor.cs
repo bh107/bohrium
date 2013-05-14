@@ -706,6 +706,11 @@ namespace NumCIL.Bohrium
 				ExecuteWithFailureDetection(continuationList);
 		}
 		
+		/// <summary>
+		/// Gets the opcode for the reduce operation, given the reduction operation
+		/// </summary>
+		/// <returns>The reduce opcode.</returns>
+		/// <param name="operation">The operation to examine</param>
 		private bh_opcode GetReduceOpCode(IBinaryOp<T> operation)
 		{
 			bh_opcode reduce_opcode;
@@ -725,10 +730,14 @@ namespace NumCIL.Bohrium
 						return bh_opcode.BH_BITWISE_AND_REDUCE;
 					case bh_opcode.BH_BITWISE_OR:
 						return bh_opcode.BH_BITWISE_OR_REDUCE;
+					case bh_opcode.BH_BITWISE_XOR:
+						return bh_opcode.BH_BITWISE_XOR_REDUCE;
 					case bh_opcode.BH_LOGICAL_AND:
 						return bh_opcode.BH_LOGICAL_AND_REDUCE;
 					case bh_opcode.BH_LOGICAL_OR:
 						return bh_opcode.BH_LOGICAL_OR_REDUCE;
+					case bh_opcode.BH_LOGICAL_XOR:
+						return bh_opcode.BH_LOGICAL_XOR_REDUCE;
 				}
 			}
 			
