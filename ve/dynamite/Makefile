@@ -26,7 +26,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ *.so kernels/* objects/*
+		rm -rf *.o *~ *.so kernels/* objects/* core
 		touch kernels/empty
 		touch objects/empty
 

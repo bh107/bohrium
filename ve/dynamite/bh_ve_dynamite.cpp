@@ -61,12 +61,12 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 
     object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");
     if (NULL==object_path) {
-        assign_string(object_path, "objects/object_XXXXXX");
+        assign_string(object_path, "objects/");
     }
 
     kernel_path = getenv("BH_VE_DYNAMITE_KERNEL_PATH");
     if (NULL==kernel_path) {
-        assign_string(kernel_path, "kernels/kernel_XXXXXX");
+        assign_string(kernel_path, "kernels/");
     }
 
     snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");   // For the sourcecode-generator
@@ -80,7 +80,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instruction_list)
 {
     bh_intp count;
-    bh_instruction* inst;
+    bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
     process target(target_cmd, object_path, kernel_path);
@@ -90,23 +90,23 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         ctemplate::TemplateDictionary dict("example");
         std::string sourcecode;
 
-        char symbol[200],
-             type_out[30],
-             type_in1[30],
-             type_in2[30],
-             operator_src[20];
+        char symbol[200],   /// TODO: THESE WILL COME BACK AND HAUNT YOU!
+             type_out[20],
+             type_in1[20],
+             type_in2[20],
+             operator_src[100];
         char *opcode_txt;
         bool cres;
 
-        inst = &instruction_list[count];
+        instr = &instruction_list[count];
 
-        res = bh_vcache_malloc(inst);          // Allocate memory for operands
+        res = bh_vcache_malloc(instr);          // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
                                                     
-        switch (inst->opcode) {                     // Dispatch instruction
+        switch (instr->opcode) {                     // Dispatch instruction
 
             case BH_NONE:                           // NOOP.
             case BH_DISCARD:
@@ -114,43 +114,76 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 res = BH_SUCCESS;
                 break;
             case BH_FREE:                           // Store data-pointer in malloc-cache
-                res = bh_vcache_free( inst );
+                res = bh_vcache_free( instr );
                 break;
 
+            // Extensions (ufuncs)
+            case BH_USERFUNC:                    // External libraries
+
+                if(instr->userfunc->id == random_impl_id) {
+                    res = random_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == matmul_impl_id) {
+                    res = matmul_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == nselect_impl_id) {
+                    res = nselect_impl(instr->userfunc, NULL);
+                } else {                            // Unsupported userfunc
+                    res = BH_USERFUNC_NOT_SUPPORTED;
+                }
+
+                break;
+
+            // Partial Reductions
+            case BH_ADD_REDUCE:
+            case BH_MULTIPLY_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
+            case BH_LOGICAL_AND_REDUCE:
+            case BH_BITWISE_AND_REDUCE:
+            case BH_LOGICAL_OR_REDUCE:
+            case BH_BITWISE_OR_REDUCE:
+                res = bh_compute_apply_naive(instr);
+                break;
+
+            // Binary elementwise: ADD, MULTIPLY...
             case BH_ADD:
             case BH_SUBTRACT:
             case BH_MULTIPLY:
             case BH_DIVIDE:
-            case BH_MOD:
+            case BH_POWER:
+            case BH_GREATER:
+            case BH_GREATER_EQUAL:
+            case BH_LESS:
+            case BH_LESS_EQUAL:
+            case BH_EQUAL:
+            case BH_NOT_EQUAL:
+            case BH_LOGICAL_AND:
+            case BH_LOGICAL_OR:
+            case BH_LOGICAL_XOR:
+            case BH_MAXIMUM:
+            case BH_MINIMUM:
             case BH_BITWISE_AND:
             case BH_BITWISE_OR:
             case BH_BITWISE_XOR:
             case BH_LEFT_SHIFT:
             case BH_RIGHT_SHIFT:
-            case BH_EQUAL:
-            case BH_NOT_EQUAL:
-            case BH_GREATER:
-            case BH_GREATER_EQUAL:
-            case BH_LESS:
-            case BH_LESS_EQUAL:
-            case BH_LOGICAL_AND:
-            case BH_LOGICAL_OR:
+            case BH_ARCTAN2:
+            case BH_MOD:
 
-                assign_string(opcode_txt, bh_opcode_text(inst->opcode));
                 sourcecode = "";
-                strcpy(operator_src, bhopcode_to_csrc(inst->opcode));
+                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
+                strcpy(operator_src, bhopcode_to_cexpr(instr->opcode));
 
                 dict.SetValue("OPERATOR", operator_src);
                 dict.ShowSection("binary");
 
-                if (bh_is_constant(inst->operand[2])) {
-                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(inst->operand[1]->type));
-                    strcpy(type_in2, bhtype_to_ctype(inst->constant.type));
+                if (bh_is_constant(instr->operand[2])) {
+                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
+                    strcpy(type_in2, bhtype_to_ctype(instr->constant.type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
-                            bhtype_to_shorthand(inst->operand[0]->type), 
-                            bhtype_to_shorthand(inst->operand[1]->type), 
-                            bhtype_to_shorthand(inst->constant.type)
+                            bhtype_to_shorthand(instr->operand[0]->type), 
+                            bhtype_to_shorthand(instr->operand[1]->type), 
+                            bhtype_to_shorthand(instr->constant.type)
                     );
 
                     dict.SetValue("SYMBOL", symbol);
@@ -161,14 +194,14 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.SetValue("TYPE_IN2", type_in2);
                     dict.ShowSection("a1_dense");
                     dict.ShowSection("a2_scalar");
-                } else if (bh_is_constant(inst->operand[1])) {
-                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(inst->constant.type));
-                    strcpy(type_in2, bhtype_to_ctype(inst->operand[2]->type));
+                } else if (bh_is_constant(instr->operand[1])) {
+                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
+                    strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
-                        bhtype_to_shorthand(inst->operand[0]->type), 
-                        bhtype_to_shorthand(inst->constant.type), 
-                        bhtype_to_shorthand(inst->operand[2]->type)
+                            bhtype_to_shorthand(instr->operand[0]->type), 
+                            bhtype_to_shorthand(instr->constant.type), 
+                            bhtype_to_shorthand(instr->operand[2]->type)
                     );
 
                     dict.SetValue("SYMBOL", symbol);
@@ -180,13 +213,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("a1_scalar");
                     dict.ShowSection("a2_dense");
                 } else {
-                    strcpy(type_out, bhtype_to_ctype(inst->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(inst->operand[1]->type));
-                    strcpy(type_in2, bhtype_to_ctype(inst->operand[2]->type));
+                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
+                    strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
                     sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
-                        bhtype_to_shorthand(inst->operand[0]->type), 
-                        bhtype_to_shorthand(inst->operand[1]->type), 
-                        bhtype_to_shorthand(inst->operand[2]->type)
+                            bhtype_to_shorthand(instr->operand[0]->type), 
+                            bhtype_to_shorthand(instr->operand[1]->type), 
+                            bhtype_to_shorthand(instr->operand[2]->type)
                     );
 
                     dict.SetValue("SYMBOL", symbol);
@@ -203,36 +236,36 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                 if (cres) {
-                    if (bh_is_constant(inst->operand[2])) {         // DDC
+                    if (bh_is_constant(instr->operand[2])) {         // DDC
                         target.f(0,
-                            inst->operand[0]->start, inst->operand[0]->stride,
-                            inst->operand[0]->data,
-                            inst->operand[1]->start, inst->operand[1]->stride,
-                            inst->operand[1]->data,
-                            &(inst->constant.value),
-                            inst->operand[0]->shape, inst->operand[0]->ndim,
-                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                            instr->operand[0]->start, instr->operand[0]->stride,
+                            instr->operand[0]->data,
+                            instr->operand[1]->start, instr->operand[1]->stride,
+                            instr->operand[1]->data,
+                            &(instr->constant.value),
+                            instr->operand[0]->shape, instr->operand[0]->ndim,
+                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
-                    } else if (bh_is_constant(inst->operand[1])) {  // DCD
+                    } else if (bh_is_constant(instr->operand[1])) {  // DCD
                         target.f(0,
-                            inst->operand[0]->start, inst->operand[0]->stride,
-                            inst->operand[0]->data,
-                            &(inst->constant.value),
-                            inst->operand[2]->start, inst->operand[2]->stride,
-                            inst->operand[2]->data,
-                            inst->operand[0]->shape, inst->operand[0]->ndim,
-                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                            instr->operand[0]->start, instr->operand[0]->stride,
+                            instr->operand[0]->data,
+                            &(instr->constant.value),
+                            instr->operand[2]->start, instr->operand[2]->stride,
+                            instr->operand[2]->data,
+                            instr->operand[0]->shape, instr->operand[0]->ndim,
+                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {                                        // DDD
                         target.f(0,
-                            inst->operand[0]->start, inst->operand[0]->stride,
-                            inst->operand[0]->data,
-                            inst->operand[1]->start, inst->operand[1]->stride,
-                            inst->operand[1]->data,
-                            inst->operand[2]->start, inst->operand[2]->stride,
-                            inst->operand[2]->data,
-                            inst->operand[0]->shape, inst->operand[0]->ndim,
-                            bh_nelements(inst->operand[0]->ndim, inst->operand[0]->shape)
+                            instr->operand[0]->start, instr->operand[0]->stride,
+                            instr->operand[0]->data,
+                            instr->operand[1]->start, instr->operand[1]->stride,
+                            instr->operand[1]->data,
+                            instr->operand[2]->start, instr->operand[2]->stride,
+                            instr->operand[2]->data,
+                            instr->operand[0]->shape, instr->operand[0]->ndim,
+                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     }
                     
@@ -243,29 +276,96 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 break;
 
-            case BH_USERFUNC:                    // External libraries
+            // Unary elementwise: SQRT, SIN...
+            case BH_ABSOLUTE:
+            case BH_LOGICAL_NOT:
+            case BH_INVERT:
+            case BH_COS:
+            case BH_SIN:
+            case BH_TAN:
+            case BH_COSH:
+            case BH_SINH:
+            case BH_TANH:
+            case BH_ARCSIN:
+            case BH_ARCCOS:
+            case BH_ARCTAN:
+            case BH_ARCSINH:
+            case BH_ARCCOSH:
+            case BH_ARCTANH:
+            case BH_EXP:
+            case BH_EXP2:
+            case BH_EXPM1:
+            case BH_LOG:
+            case BH_LOG2:
+            case BH_LOG10:
+            case BH_LOG1P:
+            case BH_SQRT:
+            case BH_CEIL:
+            case BH_TRUNC:
+            case BH_FLOOR:
+            case BH_RINT:
+            case BH_ISNAN:
+            case BH_ISINF:
+            case BH_IDENTITY:
 
-                if(inst->userfunc->id == random_impl_id) {
-                    res = random_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == matmul_impl_id) {
-                    res = matmul_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == nselect_impl_id) {
-                    res = nselect_impl(inst->userfunc, NULL);
-                } else {                            // Unsupported userfunc
-                    res = BH_USERFUNC_NOT_SUPPORTED;
+                sourcecode = "";
+                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
+                strcpy(operator_src, bhopcode_to_cexpr(instr->opcode));
+
+                dict.SetValue("OPERATOR", operator_src);
+                dict.ShowSection("unary");
+
+                if (bh_is_constant(instr->operand[1])) {
+                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
+                    sprintf(symbol, "%s_D%s_%s%s", opcode_txt, "C",
+                            bhtype_to_shorthand(instr->operand[0]->type), 
+                            bhtype_to_shorthand(instr->constant.type)
+                    );
+
+                    dict.SetValue("SYMBOL", symbol);
+                    dict.SetValue("STRUCT_IN1", "C");
+                    dict.SetValue("TYPE_OUT", type_out);
+                    dict.SetValue("TYPE_IN1", type_in1);
+                    dict.ShowSection("a1_scalar");
+                } else {
+                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
+                    sprintf(symbol, "%s_D%s_%s%s", opcode_txt, "D",
+                            bhtype_to_shorthand(instr->operand[0]->type), 
+                            bhtype_to_shorthand(instr->operand[1]->type)
+                    );
+
+                    dict.SetValue("SYMBOL", symbol);
+                    dict.SetValue("STRUCT_IN1", "D");
+                    dict.SetValue("TYPE_OUT", type_out);
+                    dict.SetValue("TYPE_IN1", type_in1);
+                    dict.ShowSection("a1_dense");
+                } 
+
+                ctemplate::ExpandTemplate("snippets/traverse.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+
+                if (!cres) {
+                    res = BH_ERROR;
+                } else {
+                    if (bh_is_constant(instr->operand[1])) {
+
+                    } else {
+                    
+                    }
+                    res = bh_compute_apply_naive(instr);
                 }
-
                 break;
 
-            default:                            // Built-in operations
-                res = bh_compute_apply_naive( inst );
+            default:                            // Shit hit the fan
+                res = bh_compute_apply_naive(instr);
 
         }
 
         if (BH_SUCCESS != res) {    // Instruction failed
             break;
         }
-
     }
 
 	return res;
@@ -281,53 +381,40 @@ bh_error bh_ve_dynamite_shutdown(void)
 
 bh_error bh_ve_dynamite_reg_func(char *fun, bh_intp *id) 
 {
-    if(strcmp("bh_random", fun) == 0)
-    {
-    	if (random_impl == NULL)
-    	{
+    if(strcmp("bh_random", fun) == 0) {
+    	if (random_impl == NULL) {
 			bh_component_get_func(myself, fun, &random_impl);
-			if (random_impl == NULL)
+			if (random_impl == NULL) {
 				return BH_USERFUNC_NOT_SUPPORTED;
-
+            }
 			random_impl_id = *id;
 			return BH_SUCCESS;			
-        }
-        else
-        {
+        } else {
         	*id = random_impl_id;
         	return BH_SUCCESS;
         }
-    }
-    else if(strcmp("bh_matmul", fun) == 0)
-    {
-    	if (matmul_impl == NULL)
-    	{
+    } else if (strcmp("bh_matmul", fun) == 0) {
+    	if (matmul_impl == NULL) {
             bh_component_get_func(myself, fun, &matmul_impl);
-            if (matmul_impl == NULL)
+            if (matmul_impl == NULL) {
                 return BH_USERFUNC_NOT_SUPPORTED;
+            }
             
             matmul_impl_id = *id;
             return BH_SUCCESS;			
-        }
-        else
-        {
+        } else {
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
         }
-    }
-    else if(strcmp("bh_nselect", fun) == 0)
-    {
-        if (nselect_impl == NULL)
-        {
+    } else if(strcmp("bh_nselect", fun) == 0) {
+        if (nselect_impl == NULL) {
             bh_component_get_func(myself, fun, &nselect_impl);
-            if (nselect_impl == NULL)
+            if (nselect_impl == NULL) {
                 return BH_USERFUNC_NOT_SUPPORTED;
-            
+            }
             nselect_impl_id = *id;
             return BH_SUCCESS;
-        }
-        else
-        {
+        } else {
             *id = nselect_impl_id;
             return BH_SUCCESS;
         }

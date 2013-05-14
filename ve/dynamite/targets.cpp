@@ -7,8 +7,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <dlfcn.h>
-
-#include "utils.h"
+#include "utils.cpp"
 
 typedef void (*func)(int tool, ...);
 
@@ -53,27 +52,32 @@ public:
     
     bool compile(const char* symbol, const char* sourcecode, size_t source_len)
     {
-        if (handle) {           // Unload a previous compilation
+        if (handle) {               // Unload a previous compilation
             dlclose(handle);
             handle = NULL;
         }
 
-        int lib_fd;             // Library file-descriptor
-        int kernel_fd;          // Kernel file-descriptor
-        FILE *lib_fp    = NULL; // Handle for library-file
-        FILE *kernel_fp = NULL; // Handle for kernel-file
-        char *error     = NULL; // Buffer for dlopen errors
-        char cmd[200];
+        int lib_fd;                 // Library file-descriptor
+        FILE *lib_fp    = NULL;     // Handle for library-file
 
-        char *kernel_fn = NULL; // Kernel filename (kernel/kernel_XXXXXX)
-        assign_string(kernel_fn, kernel_path);
+        int kernel_fd;              // Kernel file-descriptor
+        FILE *kernel_fp = NULL;     // Handle for kernel-file
+
+        char *error     = NULL;     // Buffer for dlopen errors
+
+        // WARN: These constants must be safeguarded... they will bite you at some point!
+        char cmd[200]      = "";    // Command-line for executing compiler
+        char lib_fn[50]    = "";    // Library filename (objects/<symbol>_XXXXXX)
+        char kernel_fn[50] = "";    // Kernel filename (kernel/<symbol>_XXXXXX)
+
+        // Kernel file-name along the lines of: kernel/BH_ADD_DDD_FFF_nmL78p
+        sprintf(kernel_fn, "%s%s_XXXXXX", kernel_path, symbol);
         kernel_fd = mkstemp(kernel_fn);                 // Write to file (sourcecode)
         if (!kernel_fd) {                               // For offline inspection
             std::cout << "Err: Failed creating temp kernel-file." << std::endl;
-            free(kernel_fn);
             return false;
         }
-        kernel_fp = fdopen(kernel_fd, "w+");
+        kernel_fp = fdopen(kernel_fd, "w");
         if (!kernel_fp) {
             std::cout << "Err: Failed opening kernel-file for writing." << std::endl;
             return false;
@@ -83,18 +87,17 @@ public:
         fclose(kernel_fp);
         close(kernel_fd);
 
-        char *lib_fn = NULL;                        // Library filename (objects/object_XXXXXX)
-        assign_string(lib_fn, object_path);
-        lib_fd = mkstemp(lib_fn);                   // Filename of .o (object-file)
+        // Library file-name along the lines of: object/BH_ADD_DDD_FFF_9Z61yH
+        sprintf(lib_fn, "%s%s_XXXXXX", object_path, symbol);
+        lib_fd = mkstemp(lib_fn);                       // Expand XXXXXX
         if (-1==lib_fd) {
             std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
-            free(lib_fn);
             return false;
         }
-        close(lib_fd);                              // Close it immediatly.
+        close(lib_fd);                                  // Close it immediatly.
 
-        sprintf(cmd, "%s%s", process_str, lib_fn);  // Add .o file-name to command
-
+        // Command-line
+        sprintf(cmd, "%s%s", process_str, lib_fn);      // Add .o file-name to command
         lib_fp = popen(cmd, "w");                       // Execute the command
         if (!lib_fp) {
             std::cout << "Err: Could not execute process!" << std::endl;
@@ -103,19 +106,19 @@ public:
         fwrite(sourcecode, 1, source_len, lib_fp);      // Write to stdin (sourcecode)
         fflush(lib_fp);
         pclose(lib_fp);
-                                                // Load the kernel
-        handle = dlopen(lib_fn, RTLD_NOW);      // Load library
+        
+        // Load the compiled kernel from the compiled library
+        handle = dlopen(lib_fn, RTLD_NOW);      // Open library
         if (!handle) {
             std::cout << "Err: dlopen() failed." << std::endl;
             return false;
         }
 
         dlerror();                              // Clear any existing error
-                                                // Load function from lib
-        f = (func)dlsym(handle, symbol);
+        f = (func)dlsym(handle, symbol);        // Load function from lib
         error = dlerror();
-        if (error) {    // TODO: Fix this output... of error
-            std::cout << "Failed loading function!" << error << std::endl;
+        if (error) {
+            std::cout << "Err: Failed loading'" << symbol << "', error=]" << std::endl;
             free(error);
             return false;
         }
