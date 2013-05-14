@@ -90,23 +90,23 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         ctemplate::TemplateDictionary dict("example");
         std::string sourcecode;
 
+        bool cres;
         char symbol[200],   /// TODO: THESE WILL COME BACK AND HAUNT YOU!
-             type_out[20],
-             type_in1[20],
-             type_in2[20],
+             type_out[50],
+             type_in1[50],
+             type_in2[50],
              operator_src[100];
         char *opcode_txt;
-        bool cres;
 
         instr = &instruction_list[count];
 
-        res = bh_vcache_malloc(instr);          // Allocate memory for operands
+        res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
                                                     
-        switch (instr->opcode) {                     // Dispatch instruction
+        switch (instr->opcode) {                    // Dispatch instruction
 
             case BH_NONE:                           // NOOP.
             case BH_DISCARD:
@@ -114,7 +114,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 res = BH_SUCCESS;
                 break;
             case BH_FREE:                           // Store data-pointer in malloc-cache
-                res = bh_vcache_free( instr );
+                res = bh_vcache_free(instr);
                 break;
 
             // Extensions (ufuncs)
@@ -239,9 +239,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     if (bh_is_constant(instr->operand[2])) {         // DDC
                         target.f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
-                            instr->operand[0]->data,
+                            bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
-                            instr->operand[1]->data,
+                            bh_base_array(instr->operand[1])->data,
                             &(instr->constant.value),
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
@@ -249,21 +249,21 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     } else if (bh_is_constant(instr->operand[1])) {  // DCD
                         target.f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
-                            instr->operand[0]->data,
+                            bh_base_array(instr->operand[0])->data,
                             &(instr->constant.value),
                             instr->operand[2]->start, instr->operand[2]->stride,
-                            instr->operand[2]->data,
+                            bh_base_array(instr->operand[2])->data,
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {                                        // DDD
                         target.f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
-                            instr->operand[0]->data,
+                            bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
-                            instr->operand[1]->data,
+                            bh_base_array(instr->operand[1])->data,
                             instr->operand[2]->start, instr->operand[2]->stride,
-                            instr->operand[2]->data,
+                            bh_base_array(instr->operand[2])->data,
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
@@ -350,9 +350,22 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     res = BH_ERROR;
                 } else {
                     if (bh_is_constant(instr->operand[1])) {
-
+                        target.f(0,
+                            instr->operand[0]->start, instr->operand[0]->stride,
+                            bh_base_array(instr->operand[0])->data,
+                            &(instr->constant.value),
+                            instr->operand[0]->shape, instr->operand[0]->ndim,
+                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                        );
                     } else {
-                    
+                        target.f(0,
+                            instr->operand[0]->start, instr->operand[0]->stride,
+                            bh_base_array(instr->operand[0])->data,
+                            instr->operand[1]->start, instr->operand[1]->stride,
+                            bh_base_array(instr->operand[1])->data,
+                            instr->operand[0]->shape, instr->operand[0]->ndim,
+                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                        );
                     }
                     res = bh_compute_apply_naive(instr);
                 }
