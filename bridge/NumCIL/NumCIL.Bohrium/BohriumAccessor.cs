@@ -794,14 +794,31 @@ namespace NumCIL.Bohrium
                         } 
                         else
                         {
+                        	IInstruction inst;
                             if (operands.Length == 1)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0]));
+								inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0]);
                             else if (operands.Length == 2)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1]));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1]);
                             else if (operands.Length == 3)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1], operands[2]));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1], operands[2]);
                             else
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands);
+                                
+                            if (VEM.IsValidInstruction(inst))
+                            	supported.Add(inst);
+                            else
+                            {
+								/*var conv = VEM.GetConversionSequence(inst);
+								if (conv != null)
+									supported.AddRange(conv);
+								else*/
+								{
+									if (supported.Count > 0)
+										ExecuteWithFailureDetection(supported);
+									
+									unsupported.Add(op);
+								}
+                            }
                         }
                     }
                 }
