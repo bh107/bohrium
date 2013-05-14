@@ -142,6 +142,12 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
         case BH_BITWISE_OR_REDUCE:
         	opcode = BH_BITWISE_OR;
         	break;
+        case BH_LOGICAL_XOR_REDUCE:
+        	opcode = BH_LOGICAL_XOR;
+        	break;
+        case BH_BITWISE_XOR_REDUCE:
+        	opcode = BH_BITWISE_XOR;
+        	break;
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
@@ -308,6 +314,26 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
             return bh_compute_reduce_any_naive<bh_uint64, bitwise_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_UINT8 << 8):
             return bh_compute_reduce_any_naive<bh_uint8, bitwise_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_XOR + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, logical_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_BOOL << 8):
+            return bh_compute_reduce_any_naive<bh_bool, bitwise_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT16 << 8):
+            return bh_compute_reduce_any_naive<bh_int16, bitwise_xor_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT32 << 8):
+            return bh_compute_reduce_any_naive<bh_int32, bitwise_xor_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT64 << 8):
+            return bh_compute_reduce_any_naive<bh_int64, bitwise_xor_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT8 << 8):
+            return bh_compute_reduce_any_naive<bh_int8, bitwise_xor_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any_naive<bh_uint16, bitwise_xor_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any_naive<bh_uint32, bitwise_xor_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any_naive<bh_uint64, bitwise_xor_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any_naive<bh_uint8, bitwise_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
             
@@ -477,6 +503,12 @@ bh_error bh_compute_reduce(bh_instruction *inst)
         case BH_BITWISE_OR_REDUCE:
         	opcode = BH_BITWISE_OR;
         	break;
+        case BH_LOGICAL_XOR_REDUCE:
+        	opcode = BH_LOGICAL_XOR;
+        	break;
+        case BH_BITWISE_XOR_REDUCE:
+        	opcode = BH_BITWISE_XOR;
+        	break;
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
@@ -643,6 +675,26 @@ bh_error bh_compute_reduce(bh_instruction *inst)
             return bh_compute_reduce_any<bh_uint64, bitwise_or_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
         case BH_BITWISE_OR + (BH_UINT8 << 8):
             return bh_compute_reduce_any<bh_uint8, bitwise_or_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
+        case BH_LOGICAL_XOR + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, logical_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_BOOL << 8):
+            return bh_compute_reduce_any<bh_bool, bitwise_xor_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT16 << 8):
+            return bh_compute_reduce_any<bh_int16, bitwise_xor_functor<bh_int16, bh_int16, bh_int16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT32 << 8):
+            return bh_compute_reduce_any<bh_int32, bitwise_xor_functor<bh_int32, bh_int32, bh_int32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT64 << 8):
+            return bh_compute_reduce_any<bh_int64, bitwise_xor_functor<bh_int64, bh_int64, bh_int64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_INT8 << 8):
+            return bh_compute_reduce_any<bh_int8, bitwise_xor_functor<bh_int8, bh_int8, bh_int8 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT16 << 8):
+            return bh_compute_reduce_any<bh_uint16, bitwise_xor_functor<bh_uint16, bh_uint16, bh_uint16 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT32 << 8):
+            return bh_compute_reduce_any<bh_uint32, bitwise_xor_functor<bh_uint32, bh_uint32, bh_uint32 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT64 << 8):
+            return bh_compute_reduce_any<bh_uint64, bitwise_xor_functor<bh_uint64, bh_uint64, bh_uint64 > >( op_out, op_in, axis, opcode );
+        case BH_BITWISE_XOR + (BH_UINT8 << 8):
+            return bh_compute_reduce_any<bh_uint8, bitwise_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
             

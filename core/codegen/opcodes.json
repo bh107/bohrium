@@ -2802,5 +2802,37 @@
             ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
             ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
         ]
+    },
+    {
+        "opcode": "BH_LOGICAL_XOR_REDUCE", 
+        "doc": "Logical XOR of all elements in the specified dimension.", 
+        "code": "any(a, axis)", 
+        "nop": 2,
+        "id": 67, 
+        "system_opcode": false, 
+        "elementwise": false, 
+        "types": [
+            ["BH_BOOL", "BH_BOOL",      "BH_BOOL"]
+        ]
+    },
+    {
+        "opcode": "BH_BITWISE_XOR_REDUCE", 
+        "doc": "Bitwise XOR of all elements in the specified dimension.", 
+        "code": "any(a, axis)", 
+        "nop": 2,
+        "id": 68, 
+        "system_opcode": false, 
+        "elementwise": false, 
+        "types": [
+            ["BH_INT8",     "BH_INT8",      "BH_INT8"], 
+            ["BH_UINT16",   "BH_UINT16",    "BH_UINT16"], 
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"], 
+            ["BH_INT16",    "BH_INT16",     "BH_INT16"], 
+            ["BH_BOOL",     "BH_BOOL",      "BH_BOOL"], 
+            ["BH_INT32",    "BH_INT32",     "BH_INT32"], 
+            ["BH_UINT8",    "BH_UINT8",     "BH_UINT8"], 
+            ["BH_INT64",    "BH_INT64",     "BH_INT64"], 
+            ["BH_UINT32",   "BH_UINT32",    "BH_UINT32"]
+        ]
     }
 ]

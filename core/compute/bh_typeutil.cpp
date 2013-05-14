@@ -592,6 +592,16 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
         case BH_BITWISE_OR_REDUCE | (BH_UINT8 << 8) | (BH_UINT8 << 12) | (1 << 17):
         case BH_BITWISE_OR_REDUCE | (BH_INT64 << 8) | (BH_INT64 << 12) | (1 << 17):
         case BH_BITWISE_OR_REDUCE | (BH_UINT32 << 8) | (BH_UINT32 << 12) | (1 << 17):
+        case BH_LOGICAL_XOR_REDUCE | (BH_BOOL << 8) | (BH_BOOL << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_INT8 << 8) | (BH_INT8 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_UINT16 << 8) | (BH_UINT16 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_UINT64 << 8) | (BH_UINT64 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_INT16 << 8) | (BH_INT16 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_BOOL << 8) | (BH_BOOL << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_INT32 << 8) | (BH_INT32 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_UINT8 << 8) | (BH_UINT8 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_INT64 << 8) | (BH_INT64 << 12) | (1 << 17):
+        case BH_BITWISE_XOR_REDUCE | (BH_UINT32 << 8) | (BH_UINT32 << 12) | (1 << 17):
             return true;
                     
         default:
@@ -1657,6 +1667,36 @@ bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtyp
                 desired_input_type1 = BH_INT64;
                 break;
             case BH_BITWISE_OR_REDUCE | (BH_UINT32 << 8):
+                desired_input_type1 = BH_UINT32;
+                break;
+            case BH_LOGICAL_XOR_REDUCE | (BH_BOOL << 8):
+                desired_input_type1 = BH_BOOL;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_INT8 << 8):
+                desired_input_type1 = BH_INT8;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_UINT16 << 8):
+                desired_input_type1 = BH_UINT16;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_UINT64 << 8):
+                desired_input_type1 = BH_UINT64;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_INT16 << 8):
+                desired_input_type1 = BH_INT16;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_BOOL << 8):
+                desired_input_type1 = BH_BOOL;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_INT32 << 8):
+                desired_input_type1 = BH_INT32;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_UINT8 << 8):
+                desired_input_type1 = BH_UINT8;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_INT64 << 8):
+                desired_input_type1 = BH_INT64;
+                break;
+            case BH_BITWISE_XOR_REDUCE | (BH_UINT32 << 8):
                 desired_input_type1 = BH_UINT32;
                 break;
     }
