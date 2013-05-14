@@ -310,6 +310,8 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
             case BH_BITWISE_AND_REDUCE:
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
+            case BH_LOGICAL_XOR_REDUCE:
+            case BH_BITWISE_XOR_REDUCE:
 				res = bh_compute_reduce_naive( inst );
             	break;
 
