@@ -59,3 +59,5 @@ benchmark/CIL/Csharp/shallow_water/obj
 *.userprefs
 benchmark/CIL/Csharp/nbody/bin
 benchmark/CIL/Csharp/nbody/obj
+test/CIL/UnitTest/Benchmarks/FSharp/bin
+test/CIL/UnitTest/Benchmarks/FSharp/obj

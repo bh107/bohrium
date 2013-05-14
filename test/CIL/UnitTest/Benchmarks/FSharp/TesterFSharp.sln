@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{4925A630-B079-445d-BCD4-3A9C94FE9307}") = "TesterFSharp", "TesterFSharp.fsproj", "{D4EBB113-C458-4244-ABC9-78DAF0422069}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL", "..\..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj", "{08C17283-4F2A-466C-AE28-1923837A2F58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "..\..\UnitTest.csproj", "{7D530680-CB09-40F5-8BCC-84B4709546C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08C17283-4F2A-466C-AE28-1923837A2F58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D530680-CB09-40F5-8BCC-84B4709546C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4EBB113-C458-4244-ABC9-78DAF0422069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3DA9742-5A09-4456-9531-548324D35CE3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = TesterFSharp.fsproj
+	EndGlobalSection
+EndGlobal
