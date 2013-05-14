@@ -44,8 +44,8 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
         if (inputtype1 == BH_UNKNOWN) {             // First operand is constant
             poly = opcode \
                 | (outtype << 8) \
-                | (constanttype) \
-                | (inputtype2);
+                | (constanttype << 12) \
+                | (inputtype2 << 16);
 
         } else if (inputtype2 == BH_UNKNOWN) {      // Second operand is constant
             poly = opcode
@@ -76,7 +76,7 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
     }
     
 
-    switch (opcode)
+    switch (poly)
     {
         %for $case in $data
         %if $case.nop == 2
@@ -123,7 +123,7 @@ bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtyp
     
     poly = opcode | (outtype << 8);
 
-    switch(opcode)
+    switch(poly)
     {
 		%set $lastoutputtype = ''
         %for $case in $data

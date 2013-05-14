@@ -39,8 +39,8 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
         if (inputtype1 == BH_UNKNOWN) {             // First operand is constant
             poly = opcode \
                 | (outtype << 8) \
-                | (constanttype) \
-                | (inputtype2);
+                | (constanttype << 12) \
+                | (inputtype2 << 16);
 
         } else if (inputtype2 == BH_UNKNOWN) {      // Second operand is constant
             poly = opcode
@@ -71,7 +71,7 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
     }
     
 
-    switch (opcode)
+    switch (poly)
     {
         case BH_ADD | (BH_INT8 << 8) | (BH_INT8 << 12) | (BH_INT8 << 16):
         case BH_ADD | (BH_FLOAT64 << 8) | (BH_FLOAT64 << 12) | (BH_FLOAT64 << 16):
@@ -630,7 +630,7 @@ bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtyp
     
     poly = opcode | (outtype << 8);
 
-    switch(opcode)
+    switch(poly)
     {
             case BH_ADD | (BH_INT8 << 8):
                 desired_input_type1 = BH_INT8;
