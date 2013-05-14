@@ -49,6 +49,10 @@ OpCodes_fix.tt
 Tester.userprefs
 OpCodes_fix.cs
 bh-release
-cphVB.zip
 bh_vem_cluster_slave
 *.user
+benchmark/CIL/Csharp/shallow_water/bin
+benchmark/CIL/Csharp/shallow_water/obj
+*.userprefs
+benchmark/CIL/Csharp/nbody/bin
+benchmark/CIL/Csharp/nbody/obj

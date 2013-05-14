@@ -30,23 +30,26 @@ namespace UnitTest
     class Program
     {
         static void Main(string[] args)
-        {
-            NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
+		{
+			NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
-            NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
-            RunSomeTests(null);
+			if (!args.Contains<string>("--bohrium-only", StringComparer.InvariantCultureIgnoreCase))
+			{
+				NumCIL.UnsafeAPI.DisableUnsafeAPI = true;
+				RunSomeTests(null);
 
-            if (NumCIL.UnsafeAPI.IsUnsafeSupported)
-            {
-                NumCIL.UnsafeAPI.DisableUnsafeAPI = false;
-                RunSomeTests("Unsafe");
-            }
-            else
-                Console.WriteLine("Unsafe code is not supported, skipping tests for unsafe code");
+				if (NumCIL.UnsafeAPI.IsUnsafeSupported)
+				{
+					NumCIL.UnsafeAPI.DisableUnsafeAPI = false;
+					RunSomeTests("Unsafe");
+				}
+				else
+					Console.WriteLine("Unsafe code is not supported, skipping tests for unsafe code");
 
-            NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
-            RunSomeTests("Lazy");
-
+				NumCIL.Generic.NdArray<float>.AccessorFactory = new NumCIL.Generic.LazyAccessorFactory<float>();
+				RunSomeTests("Lazy");
+			}
+			
             try { NumCIL.Bohrium.Utility.Activate(); }
             catch { } 
 

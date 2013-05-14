@@ -47,15 +47,12 @@ multi_array<T>& $op (multi_array<T>&lhs, const T& rhs)
 }
 
 template <typename T>
-T& $op (const T& lhs, const T& rhs)
+multi_array<T>& $op (multi_array<T>&lhs, const int& rhs)
 {
-    return lhs;
-}
+    multi_array<T>* result = &Runtime::instance()->temp(lhs);
 
-template <typename T>
-T& $op (const T& lhs, const int& rhs)
-{
-    return lhs;
+    Runtime::instance()->enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    return *result;
 }
 
 

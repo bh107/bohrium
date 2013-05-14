@@ -27,7 +27,7 @@ using System.Text;
 using NumCIL.Double;
 using NumCIL;
 
-namespace Tester
+namespace UnitTest.Benchmarks
 {
     using T = System.Double;
     using R = NumCIL.Range;

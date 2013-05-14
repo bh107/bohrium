@@ -1152,14 +1152,14 @@ multi_array<unsigned char> & operator== (const uint32_t& lhs, multi_array<uint32
 }
 
 
-multi_array<unsigned char>& operator== (multi_array<complex64_t>& lhs, multi_array<complex64_t>& rhs)
+multi_array<unsigned char>& operator== (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
-    multi_array<complex64_t>* left    = &lhs;
-    multi_array<complex64_t>* right   = &rhs;
+    multi_array<std::complex<float> >* left    = &lhs;
+    multi_array<std::complex<float> >* right   = &rhs;
     multi_array<unsigned char>* result  = new multi_array<unsigned char>(); 
 
     if (same_shape(lhs, rhs)) {
-        equiv<unsigned char, complex64_t>(*result, lhs);
+        equiv<unsigned char, std::complex<float> >(*result, lhs);
         result->setTemp(true);
     } else {
 
@@ -1169,7 +1169,7 @@ multi_array<unsigned char>& operator== (multi_array<complex64_t>& lhs, multi_arr
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex64_t>(*result, *left);
+            equiv<unsigned char, std::complex<float> >(*result, *left);
             result->setTemp(true);
 
         } else {                                // Right-handside has lowest rank
@@ -1179,7 +1179,7 @@ multi_array<unsigned char>& operator== (multi_array<complex64_t>& lhs, multi_arr
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex64_t>(*result, *right);
+            equiv<unsigned char, std::complex<float> >(*result, *right);
             result->setTemp(true);
         }
         
@@ -1188,22 +1188,22 @@ multi_array<unsigned char>& operator== (multi_array<complex64_t>& lhs, multi_arr
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<complex64_t>& lhs, const complex64_t& rhs)
+multi_array<unsigned char> & operator== (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex64_t>(*result, lhs);
+    equiv<unsigned char, std::complex<float> >(*result, lhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const complex64_t& lhs, multi_array<complex64_t>& rhs)
+multi_array<unsigned char> & operator== (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex64_t>(*result, rhs);
+    equiv<unsigned char, std::complex<float> >(*result, rhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
@@ -1211,14 +1211,14 @@ multi_array<unsigned char> & operator== (const complex64_t& lhs, multi_array<com
 }
 
 
-multi_array<unsigned char>& operator== (multi_array<complex128_t>& lhs, multi_array<complex128_t>& rhs)
+multi_array<unsigned char>& operator== (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
-    multi_array<complex128_t>* left    = &lhs;
-    multi_array<complex128_t>* right   = &rhs;
+    multi_array<std::complex<double> >* left    = &lhs;
+    multi_array<std::complex<double> >* right   = &rhs;
     multi_array<unsigned char>* result  = new multi_array<unsigned char>(); 
 
     if (same_shape(lhs, rhs)) {
-        equiv<unsigned char, complex128_t>(*result, lhs);
+        equiv<unsigned char, std::complex<double> >(*result, lhs);
         result->setTemp(true);
     } else {
 
@@ -1228,7 +1228,7 @@ multi_array<unsigned char>& operator== (multi_array<complex128_t>& lhs, multi_ar
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex128_t>(*result, *left);
+            equiv<unsigned char, std::complex<double> >(*result, *left);
             result->setTemp(true);
 
         } else {                                // Right-handside has lowest rank
@@ -1238,7 +1238,7 @@ multi_array<unsigned char>& operator== (multi_array<complex128_t>& lhs, multi_ar
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex128_t>(*result, *right);
+            equiv<unsigned char, std::complex<double> >(*result, *right);
             result->setTemp(true);
         }
         
@@ -1247,22 +1247,22 @@ multi_array<unsigned char>& operator== (multi_array<complex128_t>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<complex128_t>& lhs, const complex128_t& rhs)
+multi_array<unsigned char> & operator== (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex128_t>(*result, lhs);
+    equiv<unsigned char, std::complex<double> >(*result, lhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const complex128_t& lhs, multi_array<complex128_t>& rhs)
+multi_array<unsigned char> & operator== (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex128_t>(*result, rhs);
+    equiv<unsigned char, std::complex<double> >(*result, rhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
 
@@ -1856,14 +1856,14 @@ multi_array<unsigned char> & operator!= (const uint32_t& lhs, multi_array<uint32
 }
 
 
-multi_array<unsigned char>& operator!= (multi_array<complex64_t>& lhs, multi_array<complex64_t>& rhs)
+multi_array<unsigned char>& operator!= (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
-    multi_array<complex64_t>* left    = &lhs;
-    multi_array<complex64_t>* right   = &rhs;
+    multi_array<std::complex<float> >* left    = &lhs;
+    multi_array<std::complex<float> >* right   = &rhs;
     multi_array<unsigned char>* result  = new multi_array<unsigned char>(); 
 
     if (same_shape(lhs, rhs)) {
-        equiv<unsigned char, complex64_t>(*result, lhs);
+        equiv<unsigned char, std::complex<float> >(*result, lhs);
         result->setTemp(true);
     } else {
 
@@ -1873,7 +1873,7 @@ multi_array<unsigned char>& operator!= (multi_array<complex64_t>& lhs, multi_arr
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex64_t>(*result, *left);
+            equiv<unsigned char, std::complex<float> >(*result, *left);
             result->setTemp(true);
 
         } else {                                // Right-handside has lowest rank
@@ -1883,7 +1883,7 @@ multi_array<unsigned char>& operator!= (multi_array<complex64_t>& lhs, multi_arr
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex64_t>(*result, *right);
+            equiv<unsigned char, std::complex<float> >(*result, *right);
             result->setTemp(true);
         }
         
@@ -1892,22 +1892,22 @@ multi_array<unsigned char>& operator!= (multi_array<complex64_t>& lhs, multi_arr
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<complex64_t>& lhs, const complex64_t& rhs)
+multi_array<unsigned char> & operator!= (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex64_t>(*result, lhs);
+    equiv<unsigned char, std::complex<float> >(*result, lhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const complex64_t& lhs, multi_array<complex64_t>& rhs)
+multi_array<unsigned char> & operator!= (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex64_t>(*result, rhs);
+    equiv<unsigned char, std::complex<float> >(*result, rhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 
@@ -1915,14 +1915,14 @@ multi_array<unsigned char> & operator!= (const complex64_t& lhs, multi_array<com
 }
 
 
-multi_array<unsigned char>& operator!= (multi_array<complex128_t>& lhs, multi_array<complex128_t>& rhs)
+multi_array<unsigned char>& operator!= (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
-    multi_array<complex128_t>* left    = &lhs;
-    multi_array<complex128_t>* right   = &rhs;
+    multi_array<std::complex<double> >* left    = &lhs;
+    multi_array<std::complex<double> >* right   = &rhs;
     multi_array<unsigned char>* result  = new multi_array<unsigned char>(); 
 
     if (same_shape(lhs, rhs)) {
-        equiv<unsigned char, complex128_t>(*result, lhs);
+        equiv<unsigned char, std::complex<double> >(*result, lhs);
         result->setTemp(true);
     } else {
 
@@ -1932,7 +1932,7 @@ multi_array<unsigned char>& operator!= (multi_array<complex128_t>& lhs, multi_ar
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex128_t>(*result, *left);
+            equiv<unsigned char, std::complex<double> >(*result, *left);
             result->setTemp(true);
 
         } else {                                // Right-handside has lowest rank
@@ -1942,7 +1942,7 @@ multi_array<unsigned char>& operator!= (multi_array<complex128_t>& lhs, multi_ar
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<unsigned char, complex128_t>(*result, *right);
+            equiv<unsigned char, std::complex<double> >(*result, *right);
             result->setTemp(true);
         }
         
@@ -1951,22 +1951,22 @@ multi_array<unsigned char>& operator!= (multi_array<complex128_t>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<complex128_t>& lhs, const complex128_t& rhs)
+multi_array<unsigned char> & operator!= (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex128_t>(*result, lhs);
+    equiv<unsigned char, std::complex<double> >(*result, lhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const complex128_t& lhs, multi_array<complex128_t>& rhs)
+multi_array<unsigned char> & operator!= (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result = new multi_array<unsigned char>();
     result->setTemp(true);
-    equiv<unsigned char, complex128_t>(*result, rhs);
+    equiv<unsigned char, std::complex<double> >(*result, rhs);
 
     Runtime::instance()->enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
 

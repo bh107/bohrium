@@ -10,6 +10,8 @@ XML_MAIN=NumCIL/bin/Release/NumCIL.XML
 XML_UNSAFE=NumCIL.Unsafe/bin/Release/NumCIL.Unsafe.XML
 XML_BOHRIUM=NumCIL.Bohrium/bin/Release/NumCIL.Bohrium.XML
 
+MAKEDIR := $(dir $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
+
 all: $(DLL_MAIN) $(DLL_UNSAFE) $(DLL_BOHRIUM)
 
 TT_OPTS?=
@@ -20,7 +22,7 @@ AUTOGEN_FILES=$(T4_FILES:.tt=.cs)
 	$(TT) $< -o $@ $(TT_OPTS)
 
 NumCIL.Bohrium/OpCodes_fix.tt: NumCIL.Bohrium/OpCodes.tt
-	sed 's|$$(ProjectDir)..\\buildsupport\\|$(PWD)/bridge/NumCIL/buildsupport/|g' NumCIL.Bohrium/OpCodes.tt > NumCIL.Bohrium/OpCodes_fix.tt
+	sed 's|$$(ProjectDir)..\\buildsupport\\|$(MAKEDIR)/buildsupport/|g' NumCIL.Bohrium/OpCodes.tt > NumCIL.Bohrium/OpCodes_fix.tt
 
 NumCIL.Bohrium/OpCodes.cs: NumCIL.Bohrium/OpCodes_fix.tt
 	$(TT) NumCIL.Bohrium/OpCodes_fix.tt -o $@ $(TT_OPTS)

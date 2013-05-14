@@ -70,7 +70,7 @@ class Benchmark:
         if self.batch_mode:
             print "%s"%pickle.dumps(self.info)
         else:
-            print "%s - bohrium: %s, nthd: %d, nblocks: %d size: %s, total time: %f"%(self.info['file'],self.info['bohrium'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
+            print "%s - bohrium: %s, nthd: %d, nblocks: %d size: %s, elapsed-time: %f"%(self.info['file'],self.info['bohrium'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
 
 
 def do(nthd, nblocks, jobsize, filename, bohrium, savedir, uid):

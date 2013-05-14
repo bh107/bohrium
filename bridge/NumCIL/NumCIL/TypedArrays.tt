@@ -483,9 +483,9 @@ namespace NumCIL.<#=typename#>
         public OutArray Pow(T value, OutArray @out = null)
         {
             if (value == 2)
-                return UFunc.Apply<T, Mul>(this, this, null);
+                return UFunc.Apply<T, Mul>(this, this, @out);
             else
-                return UFunc.Apply<T, Pow>(this, (OutArray)value, null);
+                return UFunc.Apply<T, Pow>(this, (OutArray)value, @out);
         }
         /// <summary>
         /// Performs matrix multiplication on the two elements

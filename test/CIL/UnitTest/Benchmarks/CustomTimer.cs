@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Tester
+namespace UnitTest.Benchmarks
 {
     /// <summary>Implementation of a High Performance timer, that falls back to DateTime.Ticks if not present</summary>
     public class CustomTimer

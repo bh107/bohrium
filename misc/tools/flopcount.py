@@ -117,9 +117,9 @@ def main():
     )
     p.add_argument(
         '--exclude',
-        nargs='+',
+        nargs='?',
         default=[],
-        help="List of opcodes to exclude from parsing.\nExample: FREE DISCARD SYNC"
+        help="List of opcodes to exclude from parsing.\nExample: --exclude FREE,DISCARD,SYNC"
     )
     args = p.parse_args()                           # Grab arguments
                                                     

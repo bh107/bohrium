@@ -121,6 +121,12 @@ namespace NumCIL.Bohrium
         /// </summary>
         private Dictionary<PInvoke.bh_array_ptr, GCHandle> m_managedHandles = new Dictionary<PInvoke.bh_array_ptr, GCHandle>();
 
+		/// <summary>
+		/// Gets a value indicating whether this instance is disposed.
+		/// </summary>
+		/// <value><c>true</c> if this instance is disposed; otherwise, <c>false</c>.</value>
+		public bool IsDisposed { get; private set; }
+
         /// <summary>
         /// Constructs a new VEM
         /// </summary>
@@ -583,12 +589,25 @@ namespace NumCIL.Bohrium
 
             return res;
         }
-
+		/// <summary>
+		/// Releases all resources held
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+		
         /// <summary>
         /// Releases all resources held
         /// </summary>
-        public void Dispose()
+        private void Dispose(bool disposing)
         {
+        	if (IsDisposed)
+        		return;
+        	
+        	if (disposing)
+        		GC.SuppressFinalize(this);
+        		
             //Ensure all views are collected
             GC.Collect();
 
@@ -611,6 +630,9 @@ namespace NumCIL.Bohrium
 
             m_preventCleanup = false;
             ExecuteCleanups();
+            
+            //From here on, we no longer accept new discards
+            IsDisposed = true;
 
             lock (m_executelock)
             {
@@ -649,7 +671,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         ~VEM()
         {
-            Dispose();
+            Dispose(false);
         }
 
         /// <summary>
@@ -971,19 +993,6 @@ namespace NumCIL.Bohrium
         /// <returns>A new instruction</returns>
         public IInstruction CreateConversionInstruction<Ta, Tb>(List<IInstruction> supported, NumCIL.Bohrium.bh_opcode opcode, PInvoke.bh_type typea, NdArray<Ta> output, NdArray<Tb> in1, NdArray<Tb> in2)
         {
-            if (in1.DataAccessor is BohriumAccessor<Tb>)
-                ((BohriumAccessor<Tb>)in1.DataAccessor).ContinueExecution(supported);
-            else
-                in1.DataAccessor.Allocate();
-
-            if (in2 != null)
-            {
-                if (in2.DataAccessor is BohriumAccessor<Tb>)
-                    ((BohriumAccessor<Tb>)in2.DataAccessor).ContinueExecution(supported);
-                else
-                    in2.DataAccessor.Allocate();
-            }
-
             if (IsScalar(in1))
                 return new PInvoke.bh_instruction(opcode, CreateViewPtr<Ta>(typea, output).Pointer, new PInvoke.bh_constant(in1.DataAccessor[0]), in2 == null ? PInvoke.bh_array_ptr.Null : CreateViewPtr<Tb>(in2).Pointer);
             else if (in2 != null && IsScalar(in2))
@@ -1140,7 +1149,7 @@ namespace NumCIL.Bohrium
             if (ar.DataAccessor.Length == 1)
                 if (ar.DataAccessor.GetType() == typeof(DefaultAccessor<T>))
                     return true;
-                else if (ar.DataAccessor.GetType() == typeof(BohriumAccessor<T>) && ar.DataAccessor.IsAllocated && ((BohriumAccessor<T>)ar.DataAccessor).PendingOperations.Count == 0)
+                else if (ar.DataAccessor.GetType() == typeof(BohriumAccessor<T>) && ar.DataAccessor.IsAllocated)
                     return true;
 
             return false;
