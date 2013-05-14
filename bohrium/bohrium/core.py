@@ -134,7 +134,7 @@ def ones(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = 1
+    A[:] = A.dtype(1)
     return A
 
 def zeros(shape, dtype=float, bohrium=True):
@@ -180,7 +180,7 @@ def zeros(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = 0
+    A[:] = A.dtype(0)
     return A
 
 def empty_like(a, dtype=None, bohrium=None):
@@ -290,7 +290,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     """
 
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
-    b[:] = 0
+    b[:] = b.type(0)
     return b
 
 def ones_like(a, dtype=None, bohrium=None):
@@ -346,7 +346,7 @@ def ones_like(a, dtype=None, bohrium=None):
     """
 
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
-    b[:] = 1
+    b[:] = b.dtype(1)
     return b
 
 def flatten(A):
