@@ -10,6 +10,8 @@ HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
+OBJ=bh_ve_dynamite.o
+
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
