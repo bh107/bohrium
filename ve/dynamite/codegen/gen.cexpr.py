@@ -4,10 +4,17 @@ import os
 from pprint import pprint
 from Cheetah.Template import Template
 
+def expr(opcode):
+    opcode["code"] = opcode["code"].replace("op", "*off")
+    opcode["code"] = opcode["code"].replace("*off1", "*off0")
+    opcode["code"] = opcode["code"].replace("*off2", "*off1")
+    opcode["code"] = opcode["code"].replace("*off3", "*off2")
+    return opcode
+
 def main():
 
     data    = "../../../core/codegen/opcodes.json"
-    opcodes = json.load(open(data))
+    opcodes = [expr(opcode) for opcode in json.load(open(data))]
     
     data = {                    # Group the opcodes
         'system': [
