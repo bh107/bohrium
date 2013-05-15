@@ -34,41 +34,43 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
+#ifndef DYNAMITE_MISC
 #define DYNAMITE_MAXDIM 16
+#endif
 
 void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
-    int64_t a0_start    = va_arg(list, int64_t);
-    int64_t* a0_stride  = va_arg(list, int64_t*);
-    {{TYPE_OUT}}* a0_data   = va_arg(list, {{TYPE_OUT}}*);
-    {{TYPE_OUT}}* off0;               // Stride-offset
+    int64_t  a0_start   = va_arg(list, int64_t);
+    int64_t *a0_stride  = va_arg(list, int64_t*);
+    {{TYPE_OUT}} *a0_data   = va_arg(list, {{TYPE_OUT}}*);
+    {{TYPE_OUT}} *off0;               // Stride-offset
     
     {{#a1_dense}}
-    int64_t a1_start    = va_arg(list, int64_t);
-    int64_t* a1_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN1}}* a1_data   = va_arg(list, {{TYPE_IN1}}*);
-    {{TYPE_IN1}}* off1;
+    int64_t  a1_start   = va_arg(list, int64_t);
+    int64_t *a1_stride  = va_arg(list, int64_t*);
+    {{TYPE_IN1}} *a1_data   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *off1;
     {{/a1_dense}}
 
     {{#a1_scalar}}
-    {{TYPE_IN1}}* off1   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *off1   = va_arg(list, {{TYPE_IN1}}*);
     {{/a1_scalar}}
 
     {{#a2_dense}}
-    int64_t a2_start    = va_arg(list, int64_t);
-    int64_t* a2_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN2}}* a2_data   = va_arg(list, {{TYPE_IN2}}*);
-    {{TYPE_IN2}}* off2;
+    int64_t  a2_start   = va_arg(list, int64_t);
+    int64_t *a2_stride  = va_arg(list, int64_t*);
+    {{TYPE_IN2}} *a2_data   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *off2;
     {{/a2_dense}}
 
     {{#a2_scalar}}
-    {{TYPE_IN2}}* off2   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *off2   = va_arg(list, {{TYPE_IN2}}*);
     {{/a2_scalar}}
     
-    int64_t* shape      = va_arg(list, int64_t*);
+    int64_t *shape      = va_arg(list, int64_t*);
     int64_t ndim        = va_arg(list, int64_t);
     int64_t nelements   = va_arg(list, int64_t);
 

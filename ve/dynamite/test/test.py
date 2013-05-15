@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 import bohrium as np
 
-a = np.ones((3,3,3),dtype=np.float32)
-b = np.ones((3,3,3),dtype=np.float32)
+a = np.ones((9),dtype=np.float32)
+print np.add.reduce(a)
 
-print a+1
-print 1+b
-print a+b
-print a*2
-print 2*a
-print a*b

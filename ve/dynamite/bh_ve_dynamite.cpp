@@ -141,7 +141,47 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_BITWISE_AND_REDUCE:
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
-                res = bh_compute_apply_naive(instr);
+
+                sourcecode = "";
+                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
+
+                strcpy(operator_src,    bhopcode_to_cexpr(instr->opcode));
+                strcpy(type_out,        bhtype_to_ctype(instr->operand[0]->type));
+                strcpy(type_in1,        bhtype_to_ctype(instr->operand[1]->type));
+
+                sprintf(symbol, "%s_DD_%s%s",
+                        opcode_txt,
+                        bhtype_to_shorthand(instr->operand[0]->type), 
+                        bhtype_to_shorthand(instr->operand[1]->type)
+                );
+
+                dict.SetValue("OPERATOR", operator_src);
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", type_out);
+                dict.SetValue("TYPE_A1", type_in1);
+
+                ctemplate::ExpandTemplate("snippets/reduction.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+
+                if (!cres) {
+                    res = BH_ERROR;
+                } else {
+                    target.f(0,
+                        bh_base_array(instr->operand[0])->data,
+                        instr->operand[0]->start,
+                        instr->operand[0]->stride,
+
+                        bh_base_array(instr->operand[1])->data,
+                        instr->operand[1]->start,
+                        instr->operand[1]->stride,
+
+                        instr->operand[1]->shape,
+                        instr->operand[1]->ndim,
+                        instr->constant.value
+                    );
+                    res = BH_SUCCESS;
+                }
+
                 break;
 
             // Binary elementwise: ADD, MULTIPLY...
@@ -367,7 +407,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     }
-                    res = bh_compute_apply_naive(instr);
+                    res = BH_SUCCESS;
                 }
                 break;
 

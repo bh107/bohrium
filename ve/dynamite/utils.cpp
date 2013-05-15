@@ -154,6 +154,23 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "any(a, axis)";
         */
 
+        case BH_ADD_REDUCE:
+            return "*off0 = *off1 + *off2";
+        case BH_MULTIPLY_REDUCE:
+            return "*off0 = *off1 * *off2";
+        case BH_MINIMUM_REDUCE:
+            return "*off0 = *off1 < *off2 ? *off1 : *off2";
+        case BH_MAXIMUM_REDUCE:
+            return "*off0 = *off1 < *off2 ? *off2 : *off1";
+        case BH_LOGICAL_AND_REDUCE:
+            return "*off0 = *off1 && *off2";
+        case BH_BITWISE_AND_REDUCE:
+            return "*off0 = *off1 & *off2";
+        case BH_LOGICAL_OR_REDUCE:
+            return "*off0 = *off1 || *off2";
+        case BH_BITWISE_OR_REDUCE:
+            return "*off0 = *off1 | *off2";
+
         // Binary elementwise: ADD, MULTIPLY...
         case BH_ADD:
             return "*off0 = *off1 + *off2";
