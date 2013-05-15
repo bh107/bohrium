@@ -46,28 +46,28 @@ void {{SYMBOL}}(int tool, ...)
     int64_t  a0_start   = va_arg(list, int64_t);
     int64_t *a0_stride  = va_arg(list, int64_t*);
     {{TYPE_OUT}} *a0_data   = va_arg(list, {{TYPE_OUT}}*);
-    {{TYPE_OUT}} *off0;               // Stride-offset
+    {{TYPE_OUT}} *a0_offset;
     
     {{#a1_dense}}
     int64_t  a1_start   = va_arg(list, int64_t);
     int64_t *a1_stride  = va_arg(list, int64_t*);
     {{TYPE_IN1}} *a1_data   = va_arg(list, {{TYPE_IN1}}*);
-    {{TYPE_IN1}} *off1;
+    {{TYPE_IN1}} *a1_offset;
     {{/a1_dense}}
 
     {{#a1_scalar}}
-    {{TYPE_IN1}} *off1   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *a1_offset   = va_arg(list, {{TYPE_IN1}}*);
     {{/a1_scalar}}
 
     {{#a2_dense}}
     int64_t  a2_start   = va_arg(list, int64_t);
     int64_t *a2_stride  = va_arg(list, int64_t*);
     {{TYPE_IN2}} *a2_data   = va_arg(list, {{TYPE_IN2}}*);
-    {{TYPE_IN2}} *off2;
+    {{TYPE_IN2}} *a2_offset;
     {{/a2_dense}}
 
     {{#a2_scalar}}
-    {{TYPE_IN2}} *off2   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *a2_offset   = va_arg(list, {{TYPE_IN2}}*);
     {{/a2_scalar}}
     
     int64_t *shape      = va_arg(list, int64_t*);
@@ -90,23 +90,22 @@ void {{SYMBOL}}(int tool, ...)
     memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
-        off0 = a0_data + a0_start;              // Reset offsets
-        {{#a1_dense}}off1 = a1_data + a1_start;{{/a1_dense}}
-        {{#a2_dense}}off2 = a2_data + a2_start;{{/a2_dense}}
+        a0_offset = a0_data + a0_start;         // Reset offsets
+        {{#a1_dense}}a1_offset = a1_data + a1_start;{{/a1_dense}}
+        {{#a2_dense}}a2_offset = a2_data + a2_start;{{/a2_dense}}
 
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
-            off0 += coord[j] * a0_stride[j];
-            {{#a1_dense}}off1 += coord[j] * a1_stride[j];{{/a1_dense}}
-            {{#a2_dense}}off2 += coord[j] * a2_stride[j];{{/a2_dense}}
+            a0_offset += coord[j] * a0_stride[j];
+            {{#a1_dense}}a1_offset += coord[j] * a1_stride[j];{{/a1_dense}}
+            {{#a2_dense}}a2_offset += coord[j] * a2_stride[j];{{/a2_dense}}
         }
                                                 // Iterate over "last" / "innermost" dimension
         for (; (coord[last_dim] < shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++) {
-            //*off0 = *off1 {{OPERATOR}} *off2;
             {{OPERATOR}};
 
-            off0 += a0_stride[last_dim];
-            {{#a1_dense}}off1 += a1_stride[last_dim];{{/a1_dense}}
-            {{#a2_dense}}off2 += a2_stride[last_dim];{{/a2_dense}}
+            a0_offset += a0_stride[last_dim];
+            {{#a1_dense}}a1_offset += a1_stride[last_dim];{{/a1_dense}}
+            {{#a2_dense}}a2_offset += a2_stride[last_dim];{{/a2_dense}}
         }
 
         if (coord[last_dim] >= shape[last_dim]) {
