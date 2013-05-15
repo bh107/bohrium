@@ -79,8 +79,7 @@ int {{SYMBOL}}(int tool, ...)
             j < a1_shape[axis];
             a1_offset += a1_stride[axis], j++) {
             
-            // {{OPERATOR}}
-            *a0_offset = *a0_offset + *a1_offset; // TODO: Inline cexpr here
+            {{OPERATOR}};
         }
         return 1;
     } else {                                // ** ND General Case **
@@ -104,6 +103,10 @@ int {{SYMBOL}}(int tool, ...)
         // INSERT TRAVERSE CODE HERE FOR COPYING THE FIRST ELEMENT USING IDENTITY
         // traverse(out, tmp, IDENTITY)
         // BH_IDENTITY_DD(a0, tmp)
+
+        
+
+        // *** IDENTITY
 
         tmp_start += a1_stride[axis];
 
