@@ -15,7 +15,7 @@
 {"enum": "BH_FLOAT32","size": "4", "shorthand": "f",   "bhtype": "bh_float32", "union": "float32",   "ctype": "float"},
 {"enum": "BH_FLOAT64","size": "8", "shorthand": "d",   "bhtype": "bh_float64", "union": "float64",   "ctype": "double"},
 
-{"enum": "BH_COMPLEX64",    "size": "8",    "shorthand": "c",    "bhtype": "bh_complex64",   "union": "complex64",   "ctype": "std::complex<float> "},
-{"enum": "BH_COMPLEX128",   "size": "16",   "shorthand": "C",    "bhtype": "bh_complex128",  "union": "complex128",  "ctype": "std::complex<double> "}
+{"enum": "BH_COMPLEX64",    "size": "8",    "shorthand": "c",    "bhtype": "bh_complex64",   "union": "complex64",   "ctype": "complex float"},
+{"enum": "BH_COMPLEX128",   "size": "16",   "shorthand": "C",    "bhtype": "bh_complex128",  "union": "complex128",  "ctype": "complex double"}
 
 ]

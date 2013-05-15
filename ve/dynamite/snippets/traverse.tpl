@@ -23,19 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "stdlib.h"
 #include "stdint.h"
 #include "stdio.h"
+#include "complex.h"
 #include "math.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
-#endif
-
-#if _WIN32
-    #include <float.h>
-    #define bh_isnan(x) (_isnan(x))
-    #define bh_isinf(x) (!_isnan(x) || !_finite(x))
-#else
-    #define bh_isnan(x) (std::isnan(x))
-    #define bh_isinf(x) (std::isinf(x))
 #endif
 
 #define DEG_CIR 360.0

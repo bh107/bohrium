@@ -56,7 +56,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
                                                             // DYNAMITE Arguments
     target_cmd = getenv("BH_VE_DYNAMITE_TARGET");           // For the compiler
     if (NULL==target_cmd) {
-        assign_string(target_cmd, "gcc -O2 -march=native -fPIC -x c -shared - -o ");
+        assign_string(target_cmd, "gcc -O2 -march=native -fPIC -std=c99 -x c -shared - -o ");
     }
 
     object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");

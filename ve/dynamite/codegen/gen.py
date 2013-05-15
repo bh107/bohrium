@@ -7,9 +7,10 @@ from Cheetah.Template import Template
 def main():
 
     types = [(t['enum'], t['shorthand'], t['ctype']) for t in json.load(open("bohrium_types.json"))]
+    print types
     template = Template(
         file="%s%s%s" % ("templates", os.sep, "utils.tpl"),
-        searchList=[{'data': types}]
+        searchList=[{'types': types}]
     )
     print str(template)
 

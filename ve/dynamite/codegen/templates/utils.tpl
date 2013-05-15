@@ -7,7 +7,7 @@ inline
 const char* bhtype_to_ctype(bh_type type)
 {
     switch(type) {
-        %for $bhenum, $shorthand, $ctype  in $types
+        %for $bhenum, $shorthand, $ctype in $types
         case $bhenum:
             return "$ctype";
         %end for
@@ -22,7 +22,7 @@ inline
 const char* bhtype_to_shorthand(bh_type type)
 {
     switch(type) {
-        %for $bhenum, $shorthand, $ctype  in $types
+        %for $bhenum, $shorthand, $ctype in $types
         case $bhenum:
             return "$shorthand";
         %end for

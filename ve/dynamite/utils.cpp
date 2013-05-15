@@ -68,14 +68,13 @@ const char* bhtype_to_ctype(bh_type type)
         case BH_FLOAT64:
             return "double";
         case BH_COMPLEX64:
-            return "std::complex<float> ";
+            return "complex float";
         case BH_COMPLEX128:
-            return "std::complex<double> ";
+            return "complex double";
         case BH_UNKNOWN:
             return "BH_UNKNOWN";
         default:
             return "Unknown type";
-
     }
 }
 
@@ -259,9 +258,9 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
         case BH_RINT:
             return "*off0 = (*off1 > 0.0) ? floor(*off1 + 0.5) : ceil(*off1 - 0.5)";
         case BH_ISNAN:
-            return "*off0 = bh_isnan(*off1)";
+            return "*off0 = isnan(*off1)";
         case BH_ISINF:
-            return "*off0 = bh_isinf(*off1)";
+            return "*off0 = isinf(*off1)";
         case BH_IDENTITY:
             return "*off0 = *off1";
 
