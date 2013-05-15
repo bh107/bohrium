@@ -119,172 +119,136 @@ const char* bhtype_to_shorthand(bh_type type)
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
-        /* For now only element-wise wise
-
-        // System (memory and stuff)
-        case BH_DISCARD:
-            return "forget(*off0)";
-        case BH_FREE:
-            return "free(*off0)";
-        case BH_SYNC:
-            return "SYNC";
-        case BH_NONE:
-            return "No *offeration.";
-
-        // Extensions (ufuncs)
-        case BH_USERFUNC:
-            return "USER DEFINED BEHAVIOR";
-
-        // Partial Reductions
         case BH_ADD_REDUCE:
-            return "sum(a, axis)";
+            return "*a0_offset = *a0_offset + *a1_offset";
         case BH_MULTIPLY_REDUCE:
-            return "product(a, axis)";
+            return "*a0_offset = *a0_offset * *a1_offset";
         case BH_MINIMUM_REDUCE:
-            return "min(a, axis)";
+            return "*a0_offset = *a0_offset < *a1_offset ? *a0_offset : *a1_offset";
         case BH_MAXIMUM_REDUCE:
-            return "max(a, axis)";
+            return "*a0_offset = *a0_offset < *a1_offset ? *a1_offset : *a0_offset";
         case BH_LOGICAL_AND_REDUCE:
-            return "all(a, axis)";
+            return "*a0_offset = *a0_offset && *a1_offset";
         case BH_BITWISE_AND_REDUCE:
-            return "all(a, axis)";
+            return "*a0_offset = *a0_offset & *a1_offset";
         case BH_LOGICAL_OR_REDUCE:
-            return "any(a, axis)";
+            return "*a0_offset = *a0_offset || *a1_offset";
         case BH_BITWISE_OR_REDUCE:
-            return "any(a, axis)";
-        */
-
-        case BH_ADD_REDUCE:
-            return "*off0 = *off1 + *off2";
-        case BH_MULTIPLY_REDUCE:
-            return "*off0 = *off1 * *off2";
-        case BH_MINIMUM_REDUCE:
-            return "*off0 = *off1 < *off2 ? *off1 : *off2";
-        case BH_MAXIMUM_REDUCE:
-            return "*off0 = *off1 < *off2 ? *off2 : *off1";
-        case BH_LOGICAL_AND_REDUCE:
-            return "*off0 = *off1 && *off2";
-        case BH_BITWISE_AND_REDUCE:
-            return "*off0 = *off1 & *off2";
-        case BH_LOGICAL_OR_REDUCE:
-            return "*off0 = *off1 || *off2";
-        case BH_BITWISE_OR_REDUCE:
-            return "*off0 = *off1 | *off2";
+            return "*a0_offset = *a0_offset | *a1_offset";
 
         // Binary elementwise: ADD, MULTIPLY...
         case BH_ADD:
-            return "*off0 = *off1 + *off2";
+            return "*a0_offset = *a1_offset + *a2_offset";
         case BH_SUBTRACT:
-            return "*off0 = *off1 - *off2";
+            return "*a0_offset = *a1_offset - *a2_offset";
         case BH_MULTIPLY:
-            return "*off0 = *off1 * *off2";
+            return "*a0_offset = *a1_offset * *a2_offset";
         case BH_DIVIDE:
-            return "*off0 = *off1 / *off2";
+            return "*a0_offset = *a1_offset / *a2_offset";
         case BH_POWER:
-            return "*off0 = pow( *off1, *off2 )";
+            return "*a0_offset = pow( *a1_offset, *a2_offset )";
         case BH_GREATER:
-            return "*off0 = *off1 > *off2";
+            return "*a0_offset = *a1_offset > *a2_offset";
         case BH_GREATER_EQUAL:
-            return "*off0 = *off1 >= *off2";
+            return "*a0_offset = *a1_offset >= *a2_offset";
         case BH_LESS:
-            return "*off0 = *off1 < *off2";
+            return "*a0_offset = *a1_offset < *a2_offset";
         case BH_LESS_EQUAL:
-            return "*off0 = *off1 <= *off2";
+            return "*a0_offset = *a1_offset <= *a2_offset";
         case BH_EQUAL:
-            return "*off0 = *off1 == *off2";
+            return "*a0_offset = *a1_offset == *a2_offset";
         case BH_NOT_EQUAL:
-            return "*off0 = *off1 != *off2";
+            return "*a0_offset = *a1_offset != *a2_offset";
         case BH_LOGICAL_AND:
-            return "*off0 = *off1 && *off2";
+            return "*a0_offset = *a1_offset && *a2_offset";
         case BH_LOGICAL_OR:
-            return "*off0 = *off1 || *off2";
+            return "*a0_offset = *a1_offset || *a2_offset";
         case BH_LOGICAL_XOR:
-            return "*off0 = (!*off1 != !*off2)";
+            return "*a0_offset = (!*a1_offset != !*a2_offset)";
         case BH_MAXIMUM:
-            return "*off0 = *off1 < *off2 ? *off2 : *off1";
+            return "*a0_offset = *a1_offset < *a2_offset ? *a2_offset : *a1_offset";
         case BH_MINIMUM:
-            return "*off0 = *off1 < *off2 ? *off1 : *off2";
+            return "*a0_offset = *a1_offset < *a2_offset ? *a1_offset : *a2_offset";
         case BH_BITWISE_AND:
-            return "*off0 = *off1 & *off2";
+            return "*a0_offset = *a1_offset & *a2_offset";
         case BH_BITWISE_OR:
-            return "*off0 = *off1 | *off2";
+            return "*a0_offset = *a1_offset | *a2_offset";
         case BH_BITWISE_XOR:
-            return "*off0 = *off1 ^ *off2";
+            return "*a0_offset = *a1_offset ^ *a2_offset";
         case BH_LEFT_SHIFT:
-            return "*off0 = (*off1) << (*off2)";
+            return "*a0_offset = (*a1_offset) << (*a2_offset)";
         case BH_RIGHT_SHIFT:
-            return "*off0 = (*off1) >> (*off2)";
+            return "*a0_offset = (*a1_offset) >> (*a2_offset)";
         case BH_ARCTAN2:
-            return "*off0 = atan2( *off1, *off2 )";
+            return "*a0_offset = atan2( *a1_offset, *a2_offset )";
         case BH_MOD:
-            return "*off0 = *off1 - floor(*off1 / *off2) * *off2";
+            return "*a0_offset = *a1_offset - floor(*a1_offset / *a2_offset) * *a2_offset";
 
         // Unary elementwise: SQRT, SIN...
         case BH_ABSOLUTE:
-            return "*off0 = *off1 < 0.0 ? -*off1: *off1";
+            return "*a0_offset = *a1_offset < 0.0 ? -*a1_offset: *a1_offset";
         case BH_LOGICAL_NOT:
-            return "*off0 = !*off1";
+            return "*a0_offset = !*a1_offset";
         case BH_INVERT:
-            return "*off0 = ~*off1";
+            return "*a0_offset = ~*a1_offset";
         case BH_COS:
-            return "*off0 = cos( *off1 )";
+            return "*a0_offset = cos( *a1_offset )";
         case BH_SIN:
-            return "*off0 = sin( *off1 )";
+            return "*a0_offset = sin( *a1_offset )";
         case BH_TAN:
-            return "*off0 = tan( *off1 )";
+            return "*a0_offset = tan( *a1_offset )";
         case BH_COSH:
-            return "*off0 = cosh( *off1 )";
+            return "*a0_offset = cosh( *a1_offset )";
         case BH_SINH:
-            return "*off0 = sinh( *off1 )";
+            return "*a0_offset = sinh( *a1_offset )";
         case BH_TANH:
-            return "*off0 = tanh( *off1 )";
+            return "*a0_offset = tanh( *a1_offset )";
         case BH_ARCSIN:
-            return "*off0 = asin( *off1 )";
+            return "*a0_offset = asin( *a1_offset )";
         case BH_ARCCOS:
-            return "*off0 = acos( *off1 )";
+            return "*a0_offset = acos( *a1_offset )";
         case BH_ARCTAN:
-            return "*off0 = atan( *off1 )";
+            return "*a0_offset = atan( *a1_offset )";
         case BH_ARCSINH:
-            return "*off0 = asinh( *off1 )";
+            return "*a0_offset = asinh( *a1_offset )";
         case BH_ARCCOSH:
-            return "*off0 = acosh( *off1 )";
+            return "*a0_offset = acosh( *a1_offset )";
         case BH_ARCTANH:
-            return "*off0 = atanh( *off1 )";
+            return "*a0_offset = atanh( *a1_offset )";
         case BH_EXP:
-            return "*off0 = exp( *off1 )";
+            return "*a0_offset = exp( *a1_offset )";
         case BH_EXP2:
-            return "*off0 = pow( 2, *off1 )";
+            return "*a0_offset = pow( 2, *a1_offset )";
         case BH_EXPM1:
-            return "*off0 = expm1( *off1 )";
+            return "*a0_offset = expm1( *a1_offset )";
         case BH_LOG:
-            return "*off0 = log( *off1 )";
+            return "*a0_offset = log( *a1_offset )";
         case BH_LOG2:
-            return "*off0 = log2( *off1 )";
+            return "*a0_offset = log2( *a1_offset )";
         case BH_LOG10:
-            return "*off0 = log10( *off1 )";
+            return "*a0_offset = log10( *a1_offset )";
         case BH_LOG1P:
-            return "*off0 = log1p( *off1 )";
+            return "*a0_offset = log1p( *a1_offset )";
         case BH_SQRT:
-            return "*off0 = sqrt( *off1 )";
+            return "*a0_offset = sqrt( *a1_offset )";
         case BH_CEIL:
-            return "*off0 = ceil( *off1 )";
+            return "*a0_offset = ceil( *a1_offset )";
         case BH_TRUNC:
-            return "*off0 = trunc( *off1 )";
+            return "*a0_offset = trunc( *a1_offset )";
         case BH_FLOOR:
-            return "*off0 = floor( *off1 )";
+            return "*a0_offset = floor( *a1_offset )";
         case BH_RINT:
-            return "*off0 = (*off1 > 0.0) ? floor(*off1 + 0.5) : ceil(*off1 - 0.5)";
+            return "*a0_offset = (*a1_offset > 0.0) ? floor(*a1_offset + 0.5) : ceil(*a1_offset - 0.5)";
         case BH_ISNAN:
-            return "*off0 = isnan(*off1)";
+            return "*a0_offset = isnan(*a1_offset)";
         case BH_ISINF:
-            return "*off0 = isinf(*off1)";
+            return "*a0_offset = isinf(*a1_offset)";
         case BH_IDENTITY:
-            return "*off0 = *off1";
+            return "*a0_offset = *a1_offset";
 
         default:
             return "__UNKNOWN__";
-
     }
-
 }
+
 

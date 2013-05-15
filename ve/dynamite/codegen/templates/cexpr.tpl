@@ -40,10 +40,8 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "$opcode["code"]";
         %end for
 
-        case BH_UNKNOWN:
-            return "BH_UNKNOWN";
         default:
-            return "Unknown type";
+            return "<UNKNOWN OPCODE>";
 
     }
 
