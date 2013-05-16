@@ -170,13 +170,15 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         bh_base_array(instr->operand[0])->data,
                         instr->operand[0]->start,
                         instr->operand[0]->stride,
+                        instr->operand[0]->shape,
+                        instr->operand[0]->ndim,
 
                         bh_base_array(instr->operand[1])->data,
                         instr->operand[1]->start,
                         instr->operand[1]->stride,
-
                         instr->operand[1]->shape,
                         instr->operand[1]->ndim,
+
                         instr->constant.value
                     );
                     res = BH_SUCCESS;

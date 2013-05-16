@@ -41,10 +41,19 @@ If not, see <http://www.gnu.org/licenses/>.
 /*
 int reduction(
     int tool,
-    int64_t a0_start, int64_t *a0_stride, T *a0_data,
-    int64_t a1_start, int64_t *a0_stride, T *a1_data,
+
+    T       *a0_data,
+    int64_t  a0_start,
+    int64_t *a0_stride,
     int64_t *a1_shape,
-    int64_t a1_ndim,
+    int64_t  a1_ndim,
+
+    T       *a1_data,
+    int64_t  a1_start,
+    int64_t *a1_stride,
+    int64_t *a1_shape,
+    int64_t  a1_ndim,
+
     int64_t axis
 )
 */
@@ -53,68 +62,118 @@ int {{SYMBOL}}(int tool, ...)
     va_list list;                                   // **Unpack arguments**
     va_start(list, tool);
 
+    {{TYPE_A0}} *a0_offset;
     {{TYPE_A0}} *a0_data   = va_arg(list, {{TYPE_A0}}*);
     int64_t  a0_start   = va_arg(list, int64_t);    // Reduction result
     int64_t *a0_stride  = va_arg(list, int64_t*);
-    {{TYPE_A0}} *a0_offset;
+    int64_t *a0_shape   = va_arg(list, int64_t*);
+    int64_t  a0_ndim    = va_arg(list, int64_t);
 
+    {{TYPE_A1}} *a1_offset;
     {{TYPE_A1}} *a1_data    = va_arg(list, {{TYPE_A1}}*);
     int64_t  a1_start   = va_arg(list, int64_t);    // Input to reduce
     int64_t *a1_stride  = va_arg(list, int64_t*);
-    {{TYPE_A1}} *a1_offset;
-
-    int64_t *a1_shape  = va_arg(list, int64_t*);    // Shape of the input
-    int64_t a1_ndim    = va_arg(list, int64_t);     // Number of dimensions in input
+    int64_t *a1_shape   = va_arg(list, int64_t*);
+    int64_t  a1_ndim    = va_arg(list, int64_t);
 
     int64_t axis = va_arg(list, int64_t);           // Reduction axis
 
     va_end(list);                                   // **DONE**
 
-    int64_t i, j;   // Iterator variables...
+    int64_t a1_i, tmp_i;        // Iterator variables...
+
+    {{TYPE_A1}} *tmp_data;      // Intermediate array
+    int64_t tmp_start;
+    int64_t tmp_stride[DYNAMITE_MAXDIM];    
+    {{TYPE_A1}} *tmp_offset;
+
+    int64_t tmp_shape[DYNAMITE_MAXDIM];
+    int64_t tmp_ndim;
 
     if (1 == a1_ndim) {                         // ** 1D Special Case **
         a0_offset = a0_data + a0_start;         // Point to first element in output.
         *a0_offset = *(a1_data+a1_start);       // Use the first element as temp
-        for(a1_offset = a1_data+a1_start+a1_stride[axis], j=1;
-            j < a1_shape[axis];
-            a1_offset += a1_stride[axis], j++) {
+        for(a1_offset = a1_data+a1_start+a1_stride[axis], a1_i=1;
+            a1_i < a1_shape[axis];
+            a1_offset += a1_stride[axis], a1_i++) {
             
             {{OPERATOR}};
         }
         return 1;
-    } else {                                // ** ND General Case **
+    } else {                                    // ** ND General Case **
 
-        int64_t tmp_start = a1_start;       // Intermediate results
-        int64_t tmp_stride[DYNAMITE_MAXDIM];
-        {{TYPE_A1}} *tmp_data;
+        /*
+        int64_t j,                              // Traversal variables
+                last_dim,
+                last_e,
+                cur_e,
+                coord[DYNAMITE_MAXDIM];
 
-        int64_t tmp_shape[DYNAMITE_MAXDIM]; // 
-        int64_t tmp_ndim = a1_ndim-1;          // Reduce dimensionality
-
-        for (j=0, i=0; i<a1_ndim; ++i) {        // Copy every dimension except for the 'axis' dimension.
-            if (i != axis) {
-                tmp_shape[j]    = a1_shape[i];
-                tmp_stride[j]   = a1_stride[i];
-                ++j;
+        tmp_data    = a1_data;                  // C
+        tmp_start   = a1_start;                 // As a copy of a1
+        tmp_stride[DYNAMITE_MAXDIM];    
+        tmp_shape[DYNAMITE_MAXDIM];
+        for (tmp_i=0, a1_i=0; a1_i<a1_ndim; ++a1_i) {        // Excluding the 'axis' dimension.
+            if (a1_i != axis) {
+                tmp_shape[tmp_i]    = a1_shape[a1_i];
+                tmp_stride[tmp_i]   = a1_stride[a1_i];
+                ++tmp_i;
             }
         }
-        tmp_data = a1_data;                 // Set data / base pointer
+        tmp_ndim = a1_ndim-1;
 
-        // INSERT TRAVERSE CODE HERE FOR COPYING THE FIRST ELEMENT USING IDENTITY
-        // traverse(out, tmp, IDENTITY)
-        // BH_IDENTITY_DD(a0, tmp)
+        //
+        // ** BH_IDENTITY_DD(a0, tmp) **
+        //
+        last_dim    = ndim-1,
+        last_e      = nelements-1;
+        cur_e = 0;
 
-        
+        memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
-        // *** IDENTITY
+        while (cur_e <= last_e) {
+            a0_offset   = a0_data + a0_start;       // Reset offsets
+            tmp_offset  = tmp_data + tmp_start;
+
+            for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
+                a0_offset   += coord[j] * a0_stride[j];
+                tmp_offset  += coord[j] * tmp_stride[j];
+            }
+                                                    // Iterate over "last" / "innermost" dimension
+            for (; (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++) {
+
+                a0_offset   += a0_stride[last_dim];
+                tmp_offset  += tmp_stride[last_dim];
+
+                //{{OPERATOR}};
+                *a0_offset = *tmp_offset;
+            }
+
+            if (coord[last_dim] >= a0_shape[last_dim]) {
+                coord[last_dim] = 0;
+                for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
+                    coord[j]++;
+                    if (coord[j] < a0_shape[j]) {   // Still within this dimension
+                        break;
+                    } else {                        // Reached the end of this dimension
+                        coord[j] = 0;               // Reset coordinate
+                    }                               // Loop then continues to increment the next dimension
+                }
+            }
+        }
+
+        // ** DONE **
 
         tmp_start += a1_stride[axis];
 
-        for(i=1; i<a1_shape[axis]; ++i) {
+        for(a1_i=1; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
             // INSERT TRAVERSE CODE HERE FOR DOING THE ACTUAL REDUCTION (ADD/MUL/WHATEVER)
-            // BH_ADD_DDD(a0, a0, tmp);
-            tmp_start += a1_stride[axis];
+            // ** BH_ADD_DDD(a0, a0, tmp) **
+                        
+            
+            // ** DONE **
         }
+        */
 
         return 1;
     }
