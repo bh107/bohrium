@@ -120,19 +120,14 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
         case BH_ADD_REDUCE:
-            //return "*a0_offset = *a0_offset + *a1_offset";
             return "*a0_offset += *tmp_offset";
         case BH_MULTIPLY_REDUCE:
-            //return "*a0_offset = *a0_offset * *a1_offset";
             return "*a0_offset *= *a1_offset";
         case BH_MINIMUM_REDUCE:
-            //return "*a0_offset = *a0_offset < *a1_offset ? *a0_offset : *a1_offset";
             return "*a0_offset = *a0_offset < *tmp_offset ? *a0_offset : *tmp_offset";
         case BH_MAXIMUM_REDUCE:
-            //return "*a0_offset = *a0_offset < *a1_offset ? *a1_offset : *a0_offset";
             return "*a0_offset = *a0_offset < *tmp_offset ? *tmp_offset : *a0_offset";
         case BH_LOGICAL_AND_REDUCE:
-            //return "*a0_offset = *a0_offset && *a1_offset";
             return "*a0_offset = *a0_offset && *tmp_offset";
         case BH_BITWISE_AND_REDUCE:
             return "*a0_offset &= *tmp_offset";

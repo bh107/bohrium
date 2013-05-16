@@ -97,6 +97,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
              type_in2[50],
              operator_src[100];
         char *opcode_txt;
+        
+        bh_random_type *random_args;
 
         instr = &instruction_list[count];
 
@@ -120,8 +122,44 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             // Extensions (ufuncs)
             case BH_USERFUNC:                    // External libraries
 
-                if(instr->userfunc->id == random_impl_id) {
-                    res = random_impl(instr->userfunc, NULL);
+                if(instr->userfunc->id == random_impl_id) { // RANDOM!
+                    random_args = (bh_random_type*)instr->userfunc;
+                    if (BH_SUCCESS != bh_data_malloc(random_args->operand[0])) {
+                        std::cout << "SHIT HIT THE FAN" << std::endl;
+                    }
+
+                    sourcecode = "";
+                    strcpy(type_out, bhtype_to_ctype(random_args->operand[0]->type));
+
+                    sprintf(
+                        symbol, 
+                        "BH_RANDOM_D_%s",
+                        bhtype_to_shorthand(random_args->operand[0]->type)
+                    );
+
+                    dict.SetValue("SYMBOL",     symbol);
+                    dict.SetValue("TYPE_A0",    type_out);
+                    dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
+
+                    ctemplate::ExpandTemplate(
+                        "snippets/random.tpl",
+                        ctemplate::DO_NOT_STRIP, 
+                        &dict, 
+                        &sourcecode
+                    );
+                    cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+
+                    if (!cres) {
+                        res = BH_ERROR;
+                    } else {
+                        // De-assemble the RANDOM_UFUNC
+                        target.f(0,
+                            bh_base_array(random_args->operand[0])->data,
+                            bh_nelements(random_args->operand[0]->ndim, random_args->operand[0]->shape)
+                        );
+                        res = BH_SUCCESS;
+                    }
+
                 } else if(instr->userfunc->id == matmul_impl_id) {
                     res = matmul_impl(instr->userfunc, NULL);
                 } else if(instr->userfunc->id == nselect_impl_id) {
@@ -438,10 +476,6 @@ bh_error bh_ve_dynamite_reg_func(char *fun, bh_intp *id)
 {
     if(strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
-			bh_component_get_func(myself, fun, &random_impl);
-			if (random_impl == NULL) {
-				return BH_USERFUNC_NOT_SUPPORTED;
-            }
 			random_impl_id = *id;
 			return BH_SUCCESS;			
         } else {
@@ -476,11 +510,6 @@ bh_error bh_ve_dynamite_reg_func(char *fun, bh_intp *id)
     }
         
     return BH_USERFUNC_NOT_SUPPORTED;
-}
-
-bh_error bh_random( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_random( arg, ve_arg );
 }
 
 bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)

@@ -8,3 +8,5 @@ b += 2
 print np.add.reduce(a)
 print np.add.reduce(b)
 
+c = np.random.random(10, dtype=np.float32,bohrium=True)
+print c
