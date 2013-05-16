@@ -80,13 +80,12 @@ int {{SYMBOL}}(int tool, ...)
 
     va_end(list);                                   // **DONE**
 
-    int64_t a1_i, tmp_i;        // Iterator variables...
+    int64_t a1_i;        // Iterator variables...
 
-    {{TYPE_A1}} *tmp_data;      // Intermediate array
+    {{TYPE_A1}} *tmp_offset;    // Intermediate array
+    {{TYPE_A1}} *tmp_data;      
     int64_t tmp_start;
     int64_t tmp_stride[DYNAMITE_MAXDIM];    
-    {{TYPE_A1}} *tmp_offset;
-
     int64_t tmp_shape[DYNAMITE_MAXDIM];
     int64_t tmp_ndim;
 
@@ -102,78 +101,82 @@ int {{SYMBOL}}(int tool, ...)
         return 1;
     } else {                                    // ** ND General Case **
 
-        /*
-        int64_t j,                              // Traversal variables
+        int64_t k, j,                              // Traversal variables
                 last_dim,
                 last_e,
                 cur_e,
                 coord[DYNAMITE_MAXDIM];
 
-        tmp_data    = a1_data;                  // C
-        tmp_start   = a1_start;                 // As a copy of a1
+        tmp_data    = a1_data;                  // Use the temporary as a copy of input
+        tmp_start   = a1_start;                 // without the 'axis' dimension
         tmp_stride[DYNAMITE_MAXDIM];    
         tmp_shape[DYNAMITE_MAXDIM];
-        for (tmp_i=0, a1_i=0; a1_i<a1_ndim; ++a1_i) {        // Excluding the 'axis' dimension.
+
+        int64_t tmp_dim;
+        for (tmp_dim=0, a1_i=0; a1_i<a1_ndim; ++a1_i) { // Excluding the 'axis' dimension.
             if (a1_i != axis) {
-                tmp_shape[tmp_i]    = a1_shape[a1_i];
-                tmp_stride[tmp_i]   = a1_stride[a1_i];
-                ++tmp_i;
+                tmp_shape[tmp_dim]    = a1_shape[a1_i];
+                tmp_stride[tmp_dim]   = a1_stride[a1_i];
+                ++tmp_dim;
             }
         }
         tmp_ndim = a1_ndim-1;
 
-        //
-        // ** BH_IDENTITY_DD(a0, tmp) **
-        //
-        last_dim    = ndim-1,
-        last_e      = nelements-1;
-        cur_e = 0;
+        last_e = 1;
+        k;          // COUNT THE ELEMENTS
+        for (k = 0; k < a0_ndim; ++k) {
+            last_e *= a0_shape[j];
+        }
+        --last_e;
 
-        memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
+        last_dim = a0_ndim-1;
 
-        while (cur_e <= last_e) {
-            a0_offset   = a0_data + a0_start;       // Reset offsets
-            tmp_offset  = tmp_data + tmp_start;
+        int first = 0;
+        for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
 
-            for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
-                a0_offset   += coord[j] * a0_stride[j];
-                tmp_offset  += coord[j] * tmp_stride[j];
-            }
-                                                    // Iterate over "last" / "innermost" dimension
-            for (; (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e); coord[last_dim]++, cur_e++) {
+            cur_e = 0;                                  // Reset coordinate and element counter
+            memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
-                a0_offset   += a0_stride[last_dim];
-                tmp_offset  += tmp_stride[last_dim];
+            while (cur_e <= last_e) {
+                a0_offset   = a0_data + a0_start;       // Reset offsets
+                tmp_offset  = tmp_data + tmp_start;
 
-                //{{OPERATOR}};
-                *a0_offset = *tmp_offset;
-            }
+                for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
+                    a0_offset   += coord[j] * a0_stride[j];
+                    tmp_offset  += coord[j] * tmp_stride[j];
+                }
+                                                        // Iterate over "last" / "innermost" dimension
+                while((coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e)) {
 
-            if (coord[last_dim] >= a0_shape[last_dim]) {
-                coord[last_dim] = 0;
-                for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
-                    coord[j]++;
-                    if (coord[j] < a0_shape[j]) {   // Still within this dimension
-                        break;
-                    } else {                        // Reached the end of this dimension
-                        coord[j] = 0;               // Reset coordinate
-                    }                               // Loop then continues to increment the next dimension
+                    //{{OPERATOR}};
+                    // FIX THE OPERATOR AND BRANCHING HERE
+                    if (0 == first) {
+                        *a0_offset = *tmp_offset;
+                        first = 1;
+                    } else {
+                        *a0_offset += *tmp_offset;
+                    }
+
+                    coord[last_dim]++;
+                    cur_e++;
+                    a0_offset   += a0_stride[last_dim];
+                    tmp_offset  += tmp_stride[last_dim];
+                }
+
+                if (coord[last_dim] >= a0_shape[last_dim]) {
+                    coord[last_dim] = 0;
+                    for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
+                        coord[j]++;
+                        if (coord[j] < a0_shape[j]) {   // Still within this dimension
+                            break;
+                        } else {                        // Reached the end of this dimension
+                            coord[j] = 0;               // Reset coordinate
+                        }                               // Loop then continues to increment the next dimension
+                    }
                 }
             }
         }
-
         // ** DONE **
-
-        tmp_start += a1_stride[axis];
-
-        for(a1_i=1; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
-            // INSERT TRAVERSE CODE HERE FOR DOING THE ACTUAL REDUCTION (ADD/MUL/WHATEVER)
-            // ** BH_ADD_DDD(a0, a0, tmp) **
-                        
-            
-            // ** DONE **
-        }
-        */
 
         return 1;
     }
