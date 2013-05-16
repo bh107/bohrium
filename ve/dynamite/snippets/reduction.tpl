@@ -80,7 +80,7 @@ int {{SYMBOL}}(int tool, ...)
 
     va_end(list);                                   // **DONE**
 
-    int64_t a1_i;        // Iterator variables...
+    int64_t a1_i;               // Iterator variables...
 
     {{TYPE_A1}} *tmp_offset;    // Intermediate array
     {{TYPE_A1}} *tmp_data;      
@@ -92,16 +92,15 @@ int {{SYMBOL}}(int tool, ...)
     if (1 == a1_ndim) {                         // ** 1D Special Case **
         a0_offset = a0_data + a0_start;         // Point to first element in output.
         *a0_offset = *(a1_data+a1_start);       // Use the first element as temp
-        for(a1_offset = a1_data+a1_start+a1_stride[axis], a1_i=1;
+        for(tmp_offset = a1_data+a1_start+a1_stride[axis], a1_i=1;
             a1_i < a1_shape[axis];
-            a1_offset += a1_stride[axis], a1_i++) {
+            tmp_offset += a1_stride[axis], a1_i++) {
             
             {{OPERATOR}};
         }
         return 1;
     } else {                                    // ** ND General Case **
-
-        int64_t k, j,                              // Traversal variables
+        int64_t j,                              // Traversal variables
                 last_dim,
                 last_e,
                 cur_e,
@@ -123,15 +122,16 @@ int {{SYMBOL}}(int tool, ...)
         tmp_ndim = a1_ndim-1;
 
         last_e = 1;
-        k;          // COUNT THE ELEMENTS
-        for (k = 0; k < a0_ndim; ++k) {
+
+        int64_t k;
+        for (k = 0; k < a0_ndim; ++k) { // COUNT THE ELEMENTS
             last_e *= a0_shape[j];
         }
         --last_e;
 
         last_dim = a0_ndim-1;
 
-        int first = 0;
+        unsigned char first = 0;
         for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
 
             cur_e = 0;                                  // Reset coordinate and element counter
@@ -146,21 +146,29 @@ int {{SYMBOL}}(int tool, ...)
                     tmp_offset  += coord[j] * tmp_stride[j];
                 }
                                                         // Iterate over "last" / "innermost" dimension
-                while((coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e)) {
+                if (0==first) {                         // First off, copy the intermediate value
+                    first = 1;
+                    for(;
+                        (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
+                        a0_offset   += a0_stride[last_dim], // Increment element indexes
+                        tmp_offset  += tmp_stride[last_dim],
 
-                    //{{OPERATOR}};
-                    // FIX THE OPERATOR AND BRANCHING HERE
-                    if (0 == first) {
+                        coord[last_dim]++,                  // Increment coordinates
+                        cur_e++
+                    ) {
                         *a0_offset = *tmp_offset;
-                        first = 1;
-                    } else {
-                        *a0_offset += *tmp_offset;
                     }
+                } else {                                // Then do the actual reduction
+                    for(;
+                        (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
+                        a0_offset   += a0_stride[last_dim], // Increment element indexes
+                        tmp_offset  += tmp_stride[last_dim],
 
-                    coord[last_dim]++;
-                    cur_e++;
-                    a0_offset   += a0_stride[last_dim];
-                    tmp_offset  += tmp_stride[last_dim];
+                        coord[last_dim]++,                  // Increment coordinates
+                        cur_e++
+                    ) {
+                        {{OPERATOR}};
+                    }
                 }
 
                 if (coord[last_dim] >= a0_shape[last_dim]) {
@@ -176,10 +184,7 @@ int {{SYMBOL}}(int tool, ...)
                 }
             }
         }
-        // ** DONE **
-
         return 1;
     }
-
 }
 
