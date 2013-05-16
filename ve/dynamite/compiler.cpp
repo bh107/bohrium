@@ -12,11 +12,11 @@
 typedef void (*func)(int tool, ...);
 
 /**
- * The target interface.
+ * The compiler interface.
  *
  * Becomes what it compiles.
  */
-class target {
+class compiler {
 public:
     virtual bool compile(const char* symbol, const char* sourcecode, size_t source_len) = 0;
 };
@@ -35,7 +35,7 @@ public:
  *  process clang("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
  *
  */
-class process: target {
+class process: compiler {
 public:
     func f; // This is what it is all about :)
 
@@ -134,11 +134,12 @@ public:
         }
     }
 
-protected:
-    void* handle;
-    const char* process_str;
-
 private:
+    void *handle;
+    void *handles[50];
+
+    const char *process_str;
+
     const char* object_path;
     const char* kernel_path;
 

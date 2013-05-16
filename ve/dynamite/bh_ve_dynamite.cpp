@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_dynamite.h"
 #include <bh_vcache.h>
 #include <ctemplate/template.h>  
-#include "targets.cpp"
+#include "compiler.cpp"
 #include <string>
 
 static bh_component *myself = NULL;
@@ -34,10 +34,12 @@ static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
 
-char* target_cmd;   // Dynamite Arguments
+char* compiler_cmd;   // Dynamite Arguments
 char* kernel_path;
 char* object_path;
 char* snippet_path;
+
+process* target;
 
 bh_error bh_ve_dynamite_init(bh_component *self)
 {
@@ -54,9 +56,9 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 
     bh_vcache_init( vcache_size );
                                                             // DYNAMITE Arguments
-    target_cmd = getenv("BH_VE_DYNAMITE_TARGET");           // For the compiler
-    if (NULL==target_cmd) {
-        assign_string(target_cmd, "gcc -O2 -march=native -fPIC -std=c99 -x c -shared - -o ");
+    compiler_cmd = getenv("BH_VE_DYNAMITE_TARGET");           // For the compiler
+    if (NULL==compiler_cmd) {
+        assign_string(compiler_cmd, "gcc -O2 -march=native -fPIC -std=c99 -x c -shared - -o ");
     }
 
     object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");
@@ -74,6 +76,8 @@ bh_error bh_ve_dynamite_init(bh_component *self)
         assign_string(snippet_path, "snippets/");
     }
 
+    target = new process(compiler_cmd, object_path, kernel_path);
+
     return BH_SUCCESS;
 }
 
@@ -83,7 +87,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
-    process target(target_cmd, object_path, kernel_path);
 
     for (count=0; count<instruction_count; count++) {
 
@@ -147,13 +150,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &dict, 
                         &sourcecode
                     );
-                    cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                     if (!cres) {
                         res = BH_ERROR;
                     } else {
                         // De-assemble the RANDOM_UFUNC
-                        target.f(0,
+                        target->f(0,
                             bh_base_array(random_args->operand[0])->data,
                             bh_nelements(random_args->operand[0]->ndim, random_args->operand[0]->shape)
                         );
@@ -199,12 +202,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 dict.SetValue("TYPE_A1", type_in1);
 
                 ctemplate::ExpandTemplate("snippets/reduction.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
-                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                 if (!cres) {
                     res = BH_ERROR;
                 } else {
-                    target.f(0,
+                    target->f(0,
                         bh_base_array(instr->operand[0])->data,
                         instr->operand[0]->start,
                         instr->operand[0]->stride,
@@ -313,11 +316,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 }
             
                 ctemplate::ExpandTemplate("snippets/traverse.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
-                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                 if (cres) {
                     if (bh_is_constant(instr->operand[2])) {         // DDC
-                        target.f(0,
+                        target->f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
@@ -327,7 +330,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else if (bh_is_constant(instr->operand[1])) {  // DCD
-                        target.f(0,
+                        target->f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             &(instr->constant.value),
@@ -337,7 +340,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {                                        // DDD
-                        target.f(0,
+                        target->f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
@@ -424,13 +427,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 } 
 
                 ctemplate::ExpandTemplate("snippets/traverse.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
-                cres = target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
 
                 if (!cres) {
                     res = BH_ERROR;
                 } else {
                     if (bh_is_constant(instr->operand[1])) {
-                        target.f(0,
+                        target->f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             &(instr->constant.value),
@@ -438,7 +441,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {
-                        target.f(0,
+                        target->f(0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
@@ -468,6 +471,8 @@ bh_error bh_ve_dynamite_shutdown(void)
 {
     bh_vcache_clear();  // De-allocate the malloc-cache
     bh_vcache_delete();
+
+    delete target;
 
     return BH_SUCCESS;
 }
