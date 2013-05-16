@@ -21,6 +21,5 @@ B.start()
 nb.simulate(galaxy,I)
 r = np.add.reduce(galaxy['x'] + galaxy['y'] + galaxy['z'])
 B.stop()
-print r
 B.pprint()
 
