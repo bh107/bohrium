@@ -11,5 +11,6 @@ m = sw.model(H,W,dtype=B.dtype,bohrium=B.bohrium)
 
 B.start()
 m = sw.simulate(m,I)
+r = np.add.reduce(np.add.reduce(m))
 B.stop()
 B.pprint()
