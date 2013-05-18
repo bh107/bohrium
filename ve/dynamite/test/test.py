@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import bohrium as np
 
-a = np.ones((10),dtype=np.float32)
-a += 2
-b = np.ones((10, 10),dtype=np.float32)
-b += 2 
-print np.add.reduce(a)
-print np.add.reduce(b)
+a = np.ones((9,9,9),dtype=np.float32,bohrium=True)
+#a = np.ones((10,10,10),dtype=np.float32,bohrium=True)
+#a += 1 
 
-c = np.random.random(10, dtype=np.float32,bohrium=True)
-print c
+axis = 0
+print np.add.reduce(a, axis)
+
+
