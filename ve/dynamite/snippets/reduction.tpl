@@ -122,16 +122,14 @@ int {{SYMBOL}}(int tool, ...)
         tmp_ndim = a1_ndim-1;
 
         last_e = 1;
-
         int64_t k;
         for (k = 0; k < a0_ndim; ++k) { // COUNT THE ELEMENTS
-            last_e *= a0_shape[j];
+            last_e *= a0_shape[k];
         }
         --last_e;
 
         last_dim = a0_ndim-1;
 
-        unsigned char first = 0;
         for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
 
             cur_e = 0;                                  // Reset coordinate and element counter
@@ -146,8 +144,7 @@ int {{SYMBOL}}(int tool, ...)
                     tmp_offset  += coord[j] * tmp_stride[j];
                 }
                                                         // Iterate over "last" / "innermost" dimension
-                if (0==first) {                         // First off, copy the intermediate value
-                    first = 1;
+                if (0==a1_i) {                         // First off, copy the intermediate value
                     for(;
                         (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
                         a0_offset   += a0_stride[last_dim], // Increment element indexes
@@ -161,10 +158,10 @@ int {{SYMBOL}}(int tool, ...)
                 } else {                                // Then do the actual reduction
                     for(;
                         (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
-                        a0_offset   += a0_stride[last_dim], // Increment element indexes
-                        tmp_offset  += tmp_stride[last_dim],
 
-                        coord[last_dim]++,                  // Increment coordinates
+                        a0_offset   += a0_stride[last_dim], // Offsets
+                        tmp_offset  += tmp_stride[last_dim],
+                        coord[last_dim]++,                  // Coordinates
                         cur_e++
                     ) {
                         {{OPERATOR}};
