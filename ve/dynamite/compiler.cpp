@@ -6,10 +6,14 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <cstdio>
+#include <string>
+#include <map>
 #include <dlfcn.h>
 #include "utils.cpp"
 
 typedef void (*func)(int tool, ...);
+typedef std::map<std::string, func> func_storage;
+typedef std::map<std::string, void*> handle_storage;
 
 /**
  * The compiler interface.
@@ -18,7 +22,7 @@ typedef void (*func)(int tool, ...);
  */
 class compiler {
 public:
-    virtual bool compile(const char* symbol, const char* sourcecode, size_t source_len) = 0;
+    virtual bool compile(std::string symbol, const char* sourcecode, size_t source_len) = 0;
 };
 
 /**
@@ -37,24 +41,26 @@ public:
  */
 class process: compiler {
 public:
-    func f; // This is what it is all about :)
+    func_storage funcs;
 
     process(
         const char* process_str,
         const char* object_path,
         const char* kernel_path
     ) :
-        handle(NULL), 
         process_str(process_str), 
         object_path(object_path),
         kernel_path(kernel_path)
     {}
-    
-    bool compile(const char* symbol, const char* sourcecode, size_t source_len)
+
+    bool symbol_ready(std::string symbol) {
+        return funcs.count(symbol) > 0;
+    }
+
+    bool compile(std::string symbol, const char* sourcecode, size_t source_len)
     {
-        if (handle) {               // Unload a previous compilation
-            dlclose(handle);
-            handle = NULL;
+        if (funcs.count(symbol)>0) {
+            return true;
         }
 
         int lib_fd;                 // Library file-descriptor
@@ -71,7 +77,7 @@ public:
         char kernel_fn[50] = "";    // Kernel filename (kernel/<symbol>_XXXXXX)
 
         // Kernel file-name along the lines of: kernel/BH_ADD_DDD_FFF_nmL78p
-        sprintf(kernel_fn, "%s%s_XXXXXX", kernel_path, symbol);
+        sprintf(kernel_fn, "%s%s_XXXXXX", kernel_path, symbol.c_str());
         kernel_fd = mkstemp(kernel_fn);                 // Write to file (sourcecode)
         if (!kernel_fd) {                               // For offline inspection
             std::cout << "Err: Failed creating temp kernel-file." << std::endl;
@@ -88,7 +94,7 @@ public:
         close(kernel_fd);
 
         // Library file-name along the lines of: object/BH_ADD_DDD_FFF_9Z61yH
-        sprintf(lib_fn, "%s%s_XXXXXX", object_path, symbol);
+        sprintf(lib_fn, "%s%s_XXXXXX", object_path, symbol.c_str());
         lib_fd = mkstemp(lib_fn);                       // Expand XXXXXX
         if (-1==lib_fd) {
             std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
@@ -108,14 +114,14 @@ public:
         pclose(lib_fp);
         
         // Load the compiled kernel from the compiled library
-        handle = dlopen(lib_fn, RTLD_NOW);      // Open library
-        if (!handle) {
+        handles[symbol] = dlopen(lib_fn, RTLD_NOW);      // Open library
+        if (!handles[symbol]) {
             std::cout << "Err: dlopen() failed." << std::endl;
             return false;
         }
 
         dlerror();                              // Clear any existing error
-        f = (func)dlsym(handle, symbol);        // Load function from lib
+        funcs[symbol] = (func)dlsym(handles[symbol], symbol.c_str());        // Load function from lib
         error = dlerror();
         if (error) {
             std::cout << "Err: Failed loading'" << symbol << "', error=]" << std::endl;
@@ -127,16 +133,15 @@ public:
     }
 
     ~process()
-    {
+    {   /*
         if (handle) {
             dlclose(handle);
             handle = NULL;
-        }
+        }*/
     }
 
 private:
-    void *handle;
-    void *handles[50];
+    handle_storage handles;
 
     const char *process_str;
 

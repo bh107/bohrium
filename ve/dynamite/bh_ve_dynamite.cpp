@@ -94,12 +94,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         std::string sourcecode;
 
         bool cres;
-        char symbol[200],   /// TODO: THESE WILL COME BACK AND HAUNT YOU!
-             type_out[50],
+        char type_out[50], /// TODO: THESE WILL COME BACK AND HAUNT YOU!
              type_in1[50],
              type_in2[50],
              operator_src[100];
         char *opcode_txt;
+
+        std::string symbol = "";
         
         bh_random_type *random_args;
 
@@ -126,37 +127,38 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_USERFUNC:                    // External libraries
 
                 if(instr->userfunc->id == random_impl_id) { // RANDOM!
+
                     random_args = (bh_random_type*)instr->userfunc;
                     if (BH_SUCCESS != bh_data_malloc(random_args->operand[0])) {
                         std::cout << "SHIT HIT THE FAN" << std::endl;
                     }
 
-                    sourcecode = "";
-                    strcpy(type_out, bhtype_to_ctype(random_args->operand[0]->type));
+                    symbol = std::string("BH_RANDOM_D_")+ \
+                             std::string(bhtype_to_shorthand(random_args->operand[0]->type));
 
-                    sprintf(
-                        symbol, 
-                        "BH_RANDOM_D_%s",
-                        bhtype_to_shorthand(random_args->operand[0]->type)
-                    );
+                    cres = target->symbol_ready(symbol);
+                    if (!cres) {
+                        sourcecode = "";
+                        strcpy(type_out, bhtype_to_ctype(random_args->operand[0]->type));
 
-                    dict.SetValue("SYMBOL",     symbol);
-                    dict.SetValue("TYPE_A0",    type_out);
-                    dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
+                        dict.SetValue("SYMBOL",     symbol);
+                        dict.SetValue("TYPE_A0",    type_out);
+                        dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
 
-                    ctemplate::ExpandTemplate(
-                        "snippets/random.tpl",
-                        ctemplate::DO_NOT_STRIP, 
-                        &dict, 
-                        &sourcecode
-                    );
-                    cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                        ctemplate::ExpandTemplate(
+                            "snippets/random.tpl",
+                            ctemplate::DO_NOT_STRIP, 
+                            &dict, 
+                            &sourcecode
+                        );
+                        cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    }
 
                     if (!cres) {
                         res = BH_ERROR;
                     } else {
                         // De-assemble the RANDOM_UFUNC
-                        target->f(0,
+                        target->funcs[symbol](0,
                             bh_base_array(random_args->operand[0])->data,
                             bh_nelements(random_args->operand[0]->ndim, random_args->operand[0]->shape)
                         );
@@ -183,31 +185,32 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
 
-                sourcecode = "";
-                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
 
-                strcpy(operator_src,    bhopcode_to_cexpr(instr->opcode));
-                strcpy(type_out,        bhtype_to_ctype(instr->operand[0]->type));
-                strcpy(type_in1,        bhtype_to_ctype(instr->operand[1]->type));
+                symbol = std::string(bh_opcode_text(instr->opcode)) +\
+                         std::string("_DD_") +\
+                         std::string(bhtype_to_shorthand(instr->operand[0]->type)),
+                         std::string(bhtype_to_shorthand(instr->operand[1]->type));
 
-                sprintf(symbol, "%s_DD_%s%s",
-                        opcode_txt,
-                        bhtype_to_shorthand(instr->operand[0]->type), 
-                        bhtype_to_shorthand(instr->operand[1]->type)
-                );
+                cres = target->symbol_ready(symbol);
+                if (!cres) {
+                    sourcecode = "";
+                    strcpy(operator_src,    bhopcode_to_cexpr(instr->opcode));
+                    strcpy(type_out,        bhtype_to_ctype(instr->operand[0]->type));
+                    strcpy(type_in1,        bhtype_to_ctype(instr->operand[1]->type));
 
-                dict.SetValue("OPERATOR", operator_src);
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", type_out);
-                dict.SetValue("TYPE_A1", type_in1);
+                    dict.SetValue("OPERATOR", operator_src);
+                    dict.SetValue("SYMBOL", symbol);
+                    dict.SetValue("TYPE_A0", type_out);
+                    dict.SetValue("TYPE_A1", type_in1);
 
-                ctemplate::ExpandTemplate("snippets/reduction.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
-                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    ctemplate::ExpandTemplate("snippets/reduction.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourcecode);
+                    cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                }
 
                 if (!cres) {
                     res = BH_ERROR;
                 } else {
-                    target->f(0,
+                    target->funcs[symbol](0,
                         bh_base_array(instr->operand[0])->data,
                         instr->operand[0]->start,
                         instr->operand[0]->stride,
@@ -263,11 +266,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
                     strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
                     strcpy(type_in2, bhtype_to_ctype(instr->constant.type));
-                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "C", 
-                            bhtype_to_shorthand(instr->operand[0]->type), 
-                            bhtype_to_shorthand(instr->operand[1]->type), 
-                            bhtype_to_shorthand(instr->constant.type)
-                    );
+
+                    symbol = std::string(opcode_txt) +\
+                             std::string("_DDC_") +\
+                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->constant.type));
 
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "D");
@@ -281,11 +285,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
                     strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
                     strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "C", "D",
-                            bhtype_to_shorthand(instr->operand[0]->type), 
-                            bhtype_to_shorthand(instr->constant.type), 
-                            bhtype_to_shorthand(instr->operand[2]->type)
-                    );
+
+                    symbol = std::string(opcode_txt) +\
+                             std::string("_DCD_") +\
+                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->constant.type)) +\
+                             std::string(bhtype_to_shorthand(instr->operand[2]->type));
 
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "C");
@@ -299,11 +304,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
                     strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
                     strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-                    sprintf(symbol, "%s_D%s%s_%s%s%s", opcode_txt, "D", "D",
-                            bhtype_to_shorthand(instr->operand[0]->type), 
-                            bhtype_to_shorthand(instr->operand[1]->type), 
-                            bhtype_to_shorthand(instr->operand[2]->type)
-                    );
+
+                    symbol = std::string(opcode_txt) +\
+                             std::string("_DDD_") +\
+                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->operand[2]->type));
 
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "D");
@@ -320,7 +326,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 if (cres) {
                     if (bh_is_constant(instr->operand[2])) {         // DDC
-                        target->f(0,
+                        target->funcs[symbol](0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
@@ -330,7 +336,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else if (bh_is_constant(instr->operand[1])) {  // DCD
-                        target->f(0,
+                        target->funcs[symbol](0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             &(instr->constant.value),
@@ -340,7 +346,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {                                        // DDD
-                        target->f(0,
+                        target->funcs[symbol](0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
@@ -401,10 +407,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 if (bh_is_constant(instr->operand[1])) {
                     strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
                     strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
-                    sprintf(symbol, "%s_D%s_%s%s", opcode_txt, "C",
-                            bhtype_to_shorthand(instr->operand[0]->type), 
-                            bhtype_to_shorthand(instr->constant.type)
-                    );
+
+                    symbol = std::string(opcode_txt) +\
+                             std::string("_DC_") +\
+                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->constant.type));
 
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "C");
@@ -414,10 +421,12 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 } else {
                     strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
                     strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-                    sprintf(symbol, "%s_D%s_%s%s", opcode_txt, "D",
-                            bhtype_to_shorthand(instr->operand[0]->type), 
-                            bhtype_to_shorthand(instr->operand[1]->type)
-                    );
+
+                    symbol = std::string(opcode_txt) +\
+                             std::string("_DD_") +\
+                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
+                             std::string(bhtype_to_shorthand(instr->operand[1]->type));
+
 
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("STRUCT_IN1", "D");
@@ -433,7 +442,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     res = BH_ERROR;
                 } else {
                     if (bh_is_constant(instr->operand[1])) {
-                        target->f(0,
+                        target->funcs[symbol](0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             &(instr->constant.value),
@@ -441,7 +450,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {
-                        target->f(0,
+                        target->funcs[symbol](0,
                             instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
                             instr->operand[1]->start, instr->operand[1]->stride,
