@@ -1072,6 +1072,62 @@ namespace NumCIL.Bohrium
 
             return false;
         }
+        
+        /// <summary>
+        /// Determines whether the instruction has valid types
+        /// </summary>
+        /// <returns><c>true</c> if the instruction has valid types otherwise, <c>false</c>.</returns>
+        /// <param name="inst">The instruction to validate</param>
+        public bool IsValidInstruction(IInstruction inst)
+		{
+			var i = (PInvoke.bh_instruction)inst;
+			var out_type = i.operand0.Type;
+			var nops = PInvoke.bh_operands(inst.OpCode);
+			if (nops == 1)
+				return PInvoke.bh_validate_types(inst.OpCode, out_type, PInvoke.bh_type.BH_UNKNOWN, PInvoke.bh_type.BH_UNKNOWN, PInvoke.bh_type.BH_UNKNOWN);
+			
+			var input1 = i.operand1 == PInvoke.bh_array_ptr.Null ? PInvoke.bh_type.BH_UNKNOWN : i.operand1.Type;
+			var input2 = i.operand2 == PInvoke.bh_array_ptr.Null ? PInvoke.bh_type.BH_UNKNOWN : i.operand2.Type;
+			var scalar = i.constant.type;
+			
+			if (nops == 2 || nops == 3)
+				return PInvoke.bh_validate_types(inst.OpCode, out_type, input1, input2, scalar);
+
+			throw new Exception(string.Format("Unexpected number of operands for opcode {1}: {0}", inst.OpCode, nops));
+        }
+        
+        /*public IInstruction[] GetConversionSequence(IInstruction inst)
+		{
+			var i = (PInvoke.bh_instruction)inst;
+			var out_type = i.operand0.Type;
+			var nops = PInvoke.bh_operands(inst.OpCode);
+			if (nops == 1)
+				return null;
+			
+			var input1 = i.operand1 == PInvoke.bh_array_ptr.Null ? PInvoke.bh_type.BH_UNKNOWN : i.operand1.Type;
+			var input2 = i.operand2 == PInvoke.bh_array_ptr.Null ? PInvoke.bh_type.BH_UNKNOWN : i.operand2.Type;
+			var scalar = i.constant.type;
+			
+			if (nops == 2 || nops == 3)
+			{
+				var orig1 = input1;
+				var orig2 = input2;
+				var origs = scalar;
+				
+				if(!PInvoke.bh_get_type_conversion(inst.OpCode, out_type, ref input1, ref input2, ref scalar))
+					return null;
+					
+				var conversions = new List<IInstruction>();
+				if (input1 != orig1)
+					conversions.Add(CreateConversionInstruction);
+				if (input2 != orig2)
+					conversions.Add(CreateConversionInstruction);
+				if (origs != scalar)
+					throw new Exception("Scalar conversion requested to match types, this is an error in the library");
+			}
+			
+			throw new Exception(string.Format("Unexpected number of operands for opcode {1}: {0}", inst.OpCode, nops));
+		}*/
 
         /// <summary>
         /// Gets a value indicating if the Random operation is supported

@@ -709,6 +709,23 @@ namespace NumCIL.Bohrium
                     };
                 }
             }
+            
+            /// <summary>
+            /// Gets the type of the array
+            /// </summary>
+            public bh_type Type
+            {
+            	get
+            	{
+					if (m_ptr == IntPtr.Zero)
+						throw new ArgumentNullException();
+					
+					if (Is64Bit)
+						return (bh_type)Marshal.ReadInt64(m_ptr, IntPtr.Size);
+					else
+						return (bh_type)Marshal.ReadInt32(m_ptr, IntPtr.Size);
+            	}
+            }
 
             /// <summary>
             /// A value that represents a null pointer
@@ -1441,5 +1458,36 @@ namespace NumCIL.Bohrium
         [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_data_get([In] bh_array_ptr array, [Out] out IntPtr data);
 
-    }
+		/// <summary>
+		/// Validates the given types for the operation and returns true if the operation is supported with the given types, and returns false otherwise
+		/// </summary>
+		/// <param name="opcode">The operation to check</param>
+		/// <param name="outtype">The output type of the operation</param>
+		/// <param name="inputtype1">One inputtype</param>
+		/// <param name="inputtype2">The other inputtype</param>
+		/// <param name="constanttype">The constant type</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh_type inputtype2, bh_type constanttype);
+	
+		/// <summary>
+		/// Attempts to convert the inputtypes to support the operation.
+		/// Returns true if there is a valid conversion, and false otherwise.
+		/// If there is a possible conversion the types will be updated to the desired types,
+		/// and these types can be used with IDENTITY to perform the conversion
+		/// </summary>
+		/// <param name="opcode">The operation to check</param>
+		/// <param name="outtype">The output type of the operation</param>
+		/// <param name="inputtype1">One inputtype</param>
+		/// <param name="inputtype2">The other inputtype</param>
+		/// <param name="constanttype">The constant type</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, ref bh_type inputtype1, ref bh_type inputtype2, ref bh_type constanttype);
+		
+		/// <summary>
+		/// Gets the number of operands required for the opcode
+		/// </summary>
+		/// <param name="opcode">The Opcode to query</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static int bh_operands(bh_opcode opcode);
+	}
 }

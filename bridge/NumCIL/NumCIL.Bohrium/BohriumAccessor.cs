@@ -191,7 +191,9 @@ namespace NumCIL.Bohrium
 
             res[typeof(NumCIL.CopyOp<T>)] = bh_opcode.BH_IDENTITY;
             res[typeof(NumCIL.GenerateOp<T>)] = bh_opcode.BH_IDENTITY;
-            if (VEM.Instance.SupportsRandom)
+			res[typeof(NumCIL.UFunc.LazyReduceOperation<T>)] = bh_opcode.BH_USERFUNC;
+			res[typeof(NumCIL.UFunc.LazyAggregateOperation<T>)] = bh_opcode.BH_USERFUNC;
+			if (VEM.Instance.SupportsRandom)
 			{
                 res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = bh_opcode.BH_USERFUNC;
 				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.BH_USERFUNC; }
@@ -702,10 +704,46 @@ namespace NumCIL.Bohrium
 			
 			if (continuationList.Count > 0)
 				ExecuteWithFailureDetection(continuationList);
-				
-			
 		}
-
+		
+		/// <summary>
+		/// Gets the opcode for the reduce operation, given the reduction operation
+		/// </summary>
+		/// <returns>The reduce opcode.</returns>
+		/// <param name="operation">The operation to examine</param>
+		private bh_opcode GetReduceOpCode(IBinaryOp<T> operation)
+		{
+			bh_opcode reduce_opcode;
+			if (OpcodeMap.TryGetValue(operation.GetType(), out reduce_opcode))
+			{
+				switch(reduce_opcode)
+				{
+					case bh_opcode.BH_ADD:
+						return bh_opcode.BH_ADD_REDUCE;
+					case bh_opcode.BH_MULTIPLY:
+						return bh_opcode.BH_MULTIPLY_REDUCE;
+					case bh_opcode.BH_MINIMUM:
+						return bh_opcode.BH_MINIMUM_REDUCE;
+					case bh_opcode.BH_MAXIMUM:
+						return bh_opcode.BH_MAXIMUM_REDUCE;
+					case bh_opcode.BH_BITWISE_AND:
+						return bh_opcode.BH_BITWISE_AND_REDUCE;
+					case bh_opcode.BH_BITWISE_OR:
+						return bh_opcode.BH_BITWISE_OR_REDUCE;
+					case bh_opcode.BH_BITWISE_XOR:
+						return bh_opcode.BH_BITWISE_XOR_REDUCE;
+					case bh_opcode.BH_LOGICAL_AND:
+						return bh_opcode.BH_LOGICAL_AND_REDUCE;
+					case bh_opcode.BH_LOGICAL_OR:
+						return bh_opcode.BH_LOGICAL_OR_REDUCE;
+					case bh_opcode.BH_LOGICAL_XOR:
+						return bh_opcode.BH_LOGICAL_XOR_REDUCE;
+				}
+			}
+			
+			return bh_opcode.BH_NONE;
+		}
+		
 		/// <summary>
 		/// Executes all pending operations in the list
 		/// </summary>
@@ -747,7 +785,9 @@ namespace NumCIL.Bohrium
 
                     if (opcode == bh_opcode.BH_USERFUNC)
                     {
-                        if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
+						isSupported = false;
+						
+						if (VEM.SupportsRandom && ops is NumCIL.Generic.IRandomGeneratorOp<T>)
                         {
                             //Bohrium only supports random for plain arrays
                             if (operands[0].Shape.IsPlain && operands[0].Shape.Offset == 0 && operands[0].Shape.Elements == operands[0].DataAccessor.Length)
@@ -759,9 +799,47 @@ namespace NumCIL.Bohrium
                         else if (VEM.SupportsMatmul && ops is NumCIL.UFunc.LazyMatmulOperation<T>)
                         {
                             supported.Add(VEM.CreateMatmulInstruction<T>(BH_TYPE, operands[0], operands[1], operands[2]));
+                            isSupported = true;
                         }
-
-                        if (!isSupported)
+						else if (ops is NumCIL.UFunc.LazyReduceOperation<T>)
+						{
+							NumCIL.UFunc.LazyReduceOperation<T> lzop = (NumCIL.UFunc.LazyReduceOperation<T>)op.Operation;
+							bh_opcode rop = GetReduceOpCode(lzop.Operation);
+							if (rop != bh_opcode.BH_NONE)
+							{
+								supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop, operands[0], operands[1], new PInvoke.bh_constant(lzop.Axis)));
+								isSupported = true;
+							}
+						} 
+						else if (ops is NumCIL.UFunc.LazyAggregateOperation<T>)
+						{
+							NumCIL.UFunc.LazyAggregateOperation<T> lzop = (NumCIL.UFunc.LazyAggregateOperation<T>)op.Operation;
+							bh_opcode rop = GetReduceOpCode(lzop.Operation);
+							if (rop != bh_opcode.BH_NONE)
+							{
+								var sourceOp = operands[1];
+								NumCIL.Generic.NdArray<T> targetOp;
+								
+								if (sourceOp.Shape.Dimensions.LongLength > 1)
+								{
+									do
+									{
+										var targetShape = new Shape.ShapeDimension[sourceOp.Shape.Dimensions.LongLength - 1];
+										Array.Copy(sourceOp.Shape.Dimensions, targetShape, targetShape.LongLength);
+										targetOp = new NumCIL.Generic.NdArray<T>(new Shape(targetShape));
+										
+										supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop, targetOp, sourceOp, new PInvoke.bh_constant(targetOp.Shape.Dimensions.LongLength)));
+										sourceOp = targetOp;
+										
+									} while(targetOp.Shape.Dimensions.LongLength > 1);
+								}
+								
+								supported.Add(VEM.CreateInstruction<T>(BH_TYPE, rop, operands[0], sourceOp, new PInvoke.bh_constant(0L)));
+								isSupported = true;
+							}
+						}
+												
+						if (!isSupported)
                         {
                             if (supported.Count > 0)
                                 ExecuteWithFailureDetection(supported);
@@ -794,14 +872,31 @@ namespace NumCIL.Bohrium
                         } 
                         else
                         {
+                        	IInstruction inst;
                             if (operands.Length == 1)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0]));
+								inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0]);
                             else if (operands.Length == 2)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1]));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1]);
                             else if (operands.Length == 3)
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1], operands[2]));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands[0], operands[1], operands[2]);
                             else
-                                supported.Add(VEM.CreateInstruction<T>(BH_TYPE, opcode, operands));
+                                inst = VEM.CreateInstruction<T>(BH_TYPE, opcode, operands);
+                                
+                            if (VEM.IsValidInstruction(inst))
+                            	supported.Add(inst);
+                            else
+                            {
+								/*var conv = VEM.GetConversionSequence(inst);
+								if (conv != null)
+									supported.AddRange(conv);
+								else*/
+								{
+									if (supported.Count > 0)
+										ExecuteWithFailureDetection(supported);
+									
+									unsupported.Add(op);
+								}
+                            }
                         }
                     }
                 }
