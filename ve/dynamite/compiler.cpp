@@ -16,6 +16,11 @@ typedef std::map<std::string, func> func_storage;
 typedef std::map<std::string, void*> handle_storage;
 
 /**
+ *  TODO: Load existing objects at startup.
+ *          Then pre-compilation and warmup rounds will be possible.
+ */
+
+/**
  * The compiler interface.
  *
  * Becomes what it compiles.

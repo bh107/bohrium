@@ -87,7 +87,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
-
     for (count=0; count<instruction_count; count++) {
 
         ctemplate::TemplateDictionary dict("example");
