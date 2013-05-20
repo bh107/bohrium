@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-INSTALLDIR="~/.local" DEBUG="" make clean install
+#INSTALLDIR="~/.local" DEBUG="" make clean install
+INSTALLDIR="~/.local" DEBUG="" make install
 # tcc seem to be having problems with stdarg.h
 #BH_VE_DYNAMITE_TARGET="tcc -DTCC_TARGET_X86_64 -O2 -march=core2 -fPIC -x c -shared - -o " BH_VE_DYNAMITE_OBJECT_PATH="objects/tcc_XXXXXX" ./test/test.py
 #BH_VE_DYNAMITE_TARGET="gcc -std=c99 -O2 -march=native -fPIC -x c -shared - -o " BH_VE_DYNAMITE_OBJECT_PATH="objects/gcc_" ./test/test.py
@@ -14,6 +15,8 @@ INSTALLDIR="~/.local" DEBUG="" make clean install
 
 cp test/config.ini.dynamite ~/.bohrium/config.ini
 ./test/test.py
+
+python ../../test/numpy/numpytest.py
 
 #python ../../test/numpy/numpytest.py -f test_array_create.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py

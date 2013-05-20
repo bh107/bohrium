@@ -69,6 +69,7 @@ public:
         srand(getpid());
         for (int i = 0; i < 7; ++i) {
             uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+            uid[i] = 'a';
         }
         uid[6] = 0;
     }
@@ -77,12 +78,11 @@ public:
         return funcs.count(symbol) > 0;
     }
 
+    /**
+     *  Load symbol into func-storage.
+     */
     bool load(std::string symbol)
     {
-        if (funcs.count(symbol)>0) {
-            return true;
-        }
-
         char *error     = NULL;     // Buffer for dlopen errors
         char lib_fn[50] = "";       // Library filename (objects/<symbol>_XXXXXX)
         sprintf(
@@ -110,6 +110,11 @@ public:
         }
 
         return true;
+    }
+
+    void load_symbols()
+    {
+        
     }
 
     /**
@@ -143,8 +148,22 @@ public:
 
     bool compile(std::string symbol, const char* sourcecode, size_t source_len)
     {
-        if (funcs.count(symbol)>0) {
+        if (funcs.count(symbol)>0) {    // Check that it is not already loaded
             return true;
+        }
+
+        char lib_fn[50] = "";       // Library filename (objects/<symbol>_XXXXXX)
+        sprintf(
+            lib_fn,
+            "%s%s_%s.so",
+            object_path,
+            symbol.c_str(),
+            uid
+        );
+        
+        // Check if object exists then simply load it..
+        if (access(lib_fn, F_OK) == 0) {
+            return load(symbol);
         }
 
         // WARN: These constants must be safeguarded... they will bite you at some point!
@@ -152,10 +171,9 @@ public:
         char cmd[200]      = "";    // Command-line for executing compiler
         sprintf(
             cmd, 
-            "%s %s%s_%s.so",
-            process_str, object_path,
-            symbol.c_str(),
-            uid
+            "%s %s",
+            process_str,
+            lib_fn
         );      
         cmd_stdin = popen(cmd, "w");                    // Execute the command
         if (!cmd_stdin) {
@@ -175,11 +193,6 @@ public:
         }
 
         return true;
-    }
-
-    void load_symbols()
-    {
-
     }
 
     ~process()
