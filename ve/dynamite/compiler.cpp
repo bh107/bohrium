@@ -7,9 +7,12 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <map>
+#include "dirent.h"
 #include <dlfcn.h>
 #include "utils.cpp"
+#include <fcntl.h>
 
 typedef void (*func)(int tool, ...);
 typedef std::map<std::string, func> func_storage;
@@ -56,36 +59,73 @@ public:
         process_str(process_str), 
         object_path(object_path),
         kernel_path(kernel_path)
-    {}
+    {
+        // Create an identifier with low collision...
+        static const char alphanum[] = 
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+        srand(getpid());
+        for (int i = 0; i < 7; ++i) {
+            uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+        uid[6] = 0;
+    }
 
     bool symbol_ready(std::string symbol) {
         return funcs.count(symbol) > 0;
     }
 
-    bool compile(std::string symbol, const char* sourcecode, size_t source_len)
+    bool load(std::string symbol)
     {
         if (funcs.count(symbol)>0) {
             return true;
         }
 
-        int lib_fd;                 // Library file-descriptor
-        FILE *lib_fp    = NULL;     // Handle for library-file
+        char *error     = NULL;     // Buffer for dlopen errors
+        char lib_fn[50] = "";       // Library filename (objects/<symbol>_XXXXXX)
+        sprintf(
+            lib_fn, 
+            "%s%s_%s.so",
+            object_path,
+            symbol.c_str(),
+            uid
+        );     
 
+        handles[symbol] = dlopen(lib_fn, RTLD_NOW); // Open library
+        if (!handles[symbol]) {
+            std::cout << "Err: dlopen() failed." << std::endl;
+            return false;
+        }
+
+        dlerror();                              // Clear any existing error
+                                                // Load function from library
+        funcs[symbol] = (func)dlsym(handles[symbol], symbol.c_str());
+        error = dlerror();
+        if (error) {
+            std::cout << "Err: Failed loading '" << symbol << "', error=['" << error << "']" << std::endl;
+            free(error);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     *  Write source-code to file.
+     *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
+     */
+    bool src_to_file(std::string symbol, const char* sourcecode, size_t source_len)
+    {
         int kernel_fd;              // Kernel file-descriptor
         FILE *kernel_fp = NULL;     // Handle for kernel-file
+        char kernel_fn[50] = "";    // TODO: Make sure this is not overflown
 
-        char *error     = NULL;     // Buffer for dlopen errors
-
-        // WARN: These constants must be safeguarded... they will bite you at some point!
-        char cmd[200]      = "";    // Command-line for executing compiler
-        char lib_fn[50]    = "";    // Library filename (objects/<symbol>_XXXXXX)
-        char kernel_fn[50] = "";    // Kernel filename (kernel/<symbol>_XXXXXX)
-
-        // Kernel file-name along the lines of: kernel/BH_ADD_DDD_FFF_nmL78p
-        sprintf(kernel_fn, "%s%s_XXXXXX", kernel_path, symbol.c_str());
-        kernel_fd = mkstemp(kernel_fn);                 // Write to file (sourcecode)
-        if (!kernel_fd) {                               // For offline inspection
-            std::cout << "Err: Failed creating temp kernel-file." << std::endl;
+        sprintf(kernel_fn, "%s%s_%s.c", kernel_path, symbol.c_str(), uid);
+        kernel_fd = open(kernel_fn, O_WRONLY | O_CREAT | O_EXCL, 0644);
+        if (!kernel_fd) {                               
+            std::cout << "Err: Failed opening kernel-file << " << kernel_fn << "." << std::endl;
             return false;
         }
         kernel_fp = fdopen(kernel_fd, "w");
@@ -98,43 +138,48 @@ public:
         fclose(kernel_fp);
         close(kernel_fd);
 
-        // Library file-name along the lines of: object/BH_ADD_DDD_FFF_9Z61yH
-        sprintf(lib_fn, "%s%s_XXXXXX", object_path, symbol.c_str());
-        lib_fd = mkstemp(lib_fn);                       // Expand XXXXXX
-        if (-1==lib_fd) {
-            std::cout << "Err: Could not create lib-tmp-file!" << std::endl;
-            return false;
-        }
-        close(lib_fd);                                  // Close it immediatly.
+        return true;
+    }
 
-        // Command-line
-        sprintf(cmd, "%s%s", process_str, lib_fn);      // Add .o file-name to command
-        lib_fp = popen(cmd, "w");                       // Execute the command
-        if (!lib_fp) {
+    bool compile(std::string symbol, const char* sourcecode, size_t source_len)
+    {
+        if (funcs.count(symbol)>0) {
+            return true;
+        }
+
+        // WARN: These constants must be safeguarded... they will bite you at some point!
+        FILE *cmd_stdin    = NULL;  // Handle for library-file
+        char cmd[200]      = "";    // Command-line for executing compiler
+        sprintf(
+            cmd, 
+            "%s %s%s_%s.so",
+            process_str, object_path,
+            symbol.c_str(),
+            uid
+        );      
+        cmd_stdin = popen(cmd, "w");                    // Execute the command
+        if (!cmd_stdin) {
             std::cout << "Err: Could not execute process!" << std::endl;
             return false;
         }
-        fwrite(sourcecode, 1, source_len, lib_fp);      // Write to stdin (sourcecode)
-        fflush(lib_fp);
-        pclose(lib_fp);
-        
-        // Load the compiled kernel from the compiled library
-        handles[symbol] = dlopen(lib_fn, RTLD_NOW);      // Open library
-        if (!handles[symbol]) {
-            std::cout << "Err: dlopen() failed." << std::endl;
+        fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write to stdin (sourcecode)
+        fflush(cmd_stdin);
+        pclose(cmd_stdin);
+
+        if (!src_to_file(symbol, sourcecode, source_len)) {
             return false;
         }
 
-        dlerror();                              // Clear any existing error
-        funcs[symbol] = (func)dlsym(handles[symbol], symbol.c_str());        // Load function from lib
-        error = dlerror();
-        if (error) {
-            std::cout << "Err: Failed loading'" << symbol << "', error=]" << std::endl;
-            free(error);
+        if (!load(symbol)) {
             return false;
         }
 
         return true;
+    }
+
+    void load_symbols()
+    {
+
     }
 
     ~process()
@@ -147,9 +192,8 @@ public:
 
 private:
     handle_storage handles;
-
+    char uid[7];
     const char *process_str;
-
     const char* object_path;
     const char* kernel_path;
 

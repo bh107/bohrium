@@ -15,10 +15,10 @@ INSTALLDIR="~/.local" DEBUG="" make clean install
 cp test/config.ini.dynamite ~/.bohrium/config.ini
 ./test/test.py
 
-python ../../test/numpy/numpytest.py -f test_array_create.py
+#python ../../test/numpy/numpytest.py -f test_array_create.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
-python ../../test/numpy/numpytest.py -f test_matmul.py
-python ../../test/numpy/numpytest.py -f test_primitives.py
-python ../../test/numpy/numpytest.py -f test_specials.py
-python ../../test/numpy/numpytest.py -f test_types.py
-python ../../test/numpy/numpytest.py -f test_views.py
+#python ../../test/numpy/numpytest.py -f test_matmul.py
+#python ../../test/numpy/numpytest.py -f test_primitives.py
+#python ../../test/numpy/numpytest.py -f test_specials.py
+#python ../../test/numpy/numpytest.py -f test_types.py
+#python ../../test/numpy/numpytest.py -f test_views.py
