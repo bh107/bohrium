@@ -134,10 +134,7 @@ def ones(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    try:
-        A[:] = dtype(1)
-    except:
-        A[:] = dtype.type(1)
+    A[:] = A.dtype.type(1)
     return A
 
 def zeros(shape, dtype=float, bohrium=True):
@@ -183,10 +180,7 @@ def zeros(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    try:
-        A[:] = dtype(0)
-    except:
-        A[:] = dtype.type(0)
+    A[:] = A.dtype.type(0)
     return A
 
 def empty_like(a, dtype=None, bohrium=None):
