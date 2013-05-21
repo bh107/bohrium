@@ -12,7 +12,7 @@ CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
 LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce \
+		InstructionScheduler Kernel GenerateSourceCode Reduce UserFunctionRandom \
 		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)

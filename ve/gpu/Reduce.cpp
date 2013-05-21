@@ -23,54 +23,43 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
-#include "UserFunctionReduce.hpp"
+#include "Reduce.hpp"
 
-bh_error bh_reduce(bh_userfunc* arg, void* ve_arg)
+bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
-    bh_reduce_type* reduceDef = (bh_reduce_type*)arg;
-    UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
-    assert(reduceDef->nout = 1);
-    assert(reduceDef->nin = 1);
-    assert(reduceDef->operand[0]->ndim + 1 == reduceDef->operand[1]->ndim || bh_is_scalar(reduceDef->operand[0]));
     assert(userFuncArg->operands.size() == 2);
-    if (bh_is_scalar(reduceDef->operand[0]))
+    if (bh_is_scalar(inst->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        bh_error err = bh_compute_reduce(arg,NULL);
+        bh_error err = bh_compute_reduce(inst);
         if (err == BH_SUCCESS)
             static_cast<BaseArray*>(userFuncArg->operands[0])->update();
         return err;
     }
-    else
-    {
-        UserFunctionReduce::reduce(reduceDef, userFuncArg);
-        return BH_SUCCESS;
+    else {
+        bh_array* out = inst->operand[0];
+        std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
+        Kernel kernel = getKernel(inst, userFuncArg, shape);
+        Kernel::Parameters kernelParameters;
+        kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
+        kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
+        std::vector<size_t> globalShape;
+        for (int i = shape.size()-1; i>=0; --i)
+            globalShape.push_back(shape[i]);
+        kernel.call(kernelParameters, globalShape);
     }
+    return BH_SUCCESS;
 }
 
-void UserFunctionReduce::reduce(bh_reduce_type* reduceDef, UserFuncArg* userFuncArg)
-{
-    bh_array* out = reduceDef->operand[0];
-    std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
-    Kernel kernel = getKernel(reduceDef, userFuncArg, shape);
-    Kernel::Parameters kernelParameters;
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
-    std::vector<size_t> globalShape;
-    for (int i = shape.size()-1; i>=0; --i)
-        globalShape.push_back(shape[i]);
-    kernel.call(kernelParameters, globalShape);
-}
-
-Kernel UserFunctionReduce::getKernel(bh_reduce_type* reduceDef, 
-                                     UserFuncArg* userFuncArg,
-                                     std::vector<bh_index> shape)
+Kernel Reduce::getKernel(bh_instruction* inst, 
+                         UserFuncArg* userFuncArg,
+                         std::vector<bh_index> shape)
 {
 #ifdef STATS
     timeval start, end;
     gettimeofday(&start,NULL);
 #endif
-    std::string code = generateCode(reduceDef, userFuncArg->operands[0]->type(), 
+    std::string code = generateCode(inst, userFuncArg->operands[0]->type(), 
                                     userFuncArg->operands[1]->type(), shape);
 #ifdef STATS
     gettimeofday(&end,NULL);
@@ -94,7 +83,7 @@ Kernel UserFunctionReduce::getKernel(bh_reduce_type* reduceDef,
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, reduceDef->operand[0]->ndim, source.str(), kname.str());
+        Kernel kernel(userFuncArg->resourceManager, inst->operand[0]->ndim, source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -103,12 +92,48 @@ Kernel UserFunctionReduce::getKernel(bh_reduce_type* reduceDef,
 }
 
 
-std::string UserFunctionReduce::generateCode(bh_reduce_type* reduceDef, 
-                                             OCLtype outType, OCLtype inType,
-                                             std::vector<bh_index> shape)
+std::string Reduce::generateCode(bh_instruction* inst, 
+                                 OCLtype outType, OCLtype inType,
+                                 std::vector<bh_index> shape)
 {
-    bh_array* out = reduceDef->operand[0];
-    bh_array* in = reduceDef->operand[1];
+    bh_opcode opcode = 0;
+    switch (inst->opcode)
+    {
+    case BH_ADD_REDUCE:
+        opcode = BH_ADD;
+        break;
+    case BH_MULTIPLY_REDUCE:
+        opcode = BH_MULTIPLY;
+        break;
+    case BH_MINIMUM_REDUCE:
+        opcode = BH_MINIMUM;
+        break;
+    case BH_MAXIMUM_REDUCE:
+        opcode = BH_MAXIMUM;
+        break;
+    case BH_LOGICAL_AND_REDUCE:
+        opcode = BH_LOGICAL_AND;
+        break;
+    case BH_BITWISE_AND_REDUCE:
+        opcode = BH_BITWISE_AND;
+        break;
+    case BH_LOGICAL_OR_REDUCE:
+        opcode = BH_LOGICAL_OR;
+        break;
+    case BH_BITWISE_OR_REDUCE:
+        opcode = BH_BITWISE_OR;
+        break;
+    case BH_LOGICAL_XOR_REDUCE:
+        opcode = BH_LOGICAL_XOR;
+        break;
+    case BH_BITWISE_XOR_REDUCE:
+        opcode = BH_BITWISE_XOR;
+        break;
+    default:
+        assert(false);
+    }
+    bh_array* out = inst->operand[0];
+    bh_array* in = inst->operand[1];
     std::stringstream source;
     std::vector<std::string> operands(3);
     operands[0] = "accu";
@@ -119,12 +144,13 @@ std::string UserFunctionReduce::generateCode(bh_reduce_type* reduceDef,
     bh_array inn(*in);
     inn.ndim = in->ndim - 1;
     int i = 0;
-    int a = (reduceDef->axis)?0:1;
+    bh_int64 axis = inst->constant.value.int64;
+    bh_int64 a = (axis)?0:1;
     while (a < in->ndim)
     {
         inn.shape[i] = in->shape[a];
         inn.stride[i++] = in->stride[a++];
-        if (i == reduceDef->axis)
+        if (i == axis)
             ++a;
     }
     generateGIDSource(shape, source);
@@ -132,9 +158,9 @@ std::string UserFunctionReduce::generateCode(bh_reduce_type* reduceDef,
     generateOffsetSource(&inn, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
-    source << "\tfor (int i = 1; i < " << in->shape[reduceDef->axis] << "; ++i)\n\t{\n";
-    source << "\t\telement += " << in->stride[reduceDef->axis] << ";\n\t";
-    generateInstructionSource(reduceDef->opcode, outType, operands, source);
+    source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
+    source << "\t\telement += " << in->stride[axis] << ";\n\t";
+    generateInstructionSource(opcode, outType, operands, source);
     source << "\t}\n\tout[";
     generateOffsetSource(out, source);
     source << "] = accu;\n}\n";

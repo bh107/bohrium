@@ -42,6 +42,7 @@ private:
     void discard(bh_array* base);
     void executeBatch();
     bh_error ufunc(bh_instruction* inst);
+    bh_error reduce(bh_instruction* inst);
     bh_error userdeffunc(bh_userfunc* userfunc);
 public:
     InstructionScheduler(ResourceManager* resourceManager);

@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
+#include "Reduce.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_) 
@@ -65,6 +66,18 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
                 break;                
             case BH_USERFUNC:
                 res = userdeffunc(inst->userfunc);
+                break;
+            case BH_ADD_REDUCE:
+            case BH_MULTIPLY_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
+            case BH_LOGICAL_AND_REDUCE:
+            case BH_BITWISE_AND_REDUCE:
+            case BH_LOGICAL_OR_REDUCE:
+            case BH_BITWISE_OR_REDUCE:
+            case BH_LOGICAL_XOR_REDUCE:
+            case BH_BITWISE_XOR_REDUCE:
+                res = reduce(inst);
                 break;
             default:
                 res = ufunc(inst);
@@ -242,6 +255,43 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
         batch = new InstructionBatch(inst, operands);
     }
     return BH_SUCCESS;
+}
+
+bh_error InstructionScheduler::reduce(bh_instruction* inst)
+{
+    bh_intp nops = 2;
+    UserFuncArg userFuncArg;
+    userFuncArg.resourceManager = resourceManager;
+    std::vector<KernelParameter*> operands(nops);
+    for (int i = 0; i < nops; ++i)
+    {
+        bh_array* operand = inst->operand[i];
+        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
+        {
+            return BH_TYPE_NOT_SUPPORTED;
+        }
+        bh_array* base = bh_base_array(operand);
+        // Is it a new base array we haven't heard of before?
+        ArrayMap::iterator it = arrayMap.find(base);
+        if (it == arrayMap.end())
+        {
+            // Then create it
+            BaseArray* ba =  new BaseArray(base, resourceManager);
+            arrayMap[base] = ba;
+            userFuncArg.operands.push_back(ba);
+        }
+        else
+        {
+            userFuncArg.operands.push_back(it->second);
+        }
+    }
+    if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) || 
+                  batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
+    {
+        executeBatch();
+    }
+    return Reduce::reduce(inst, &userFuncArg);
 }
 
 void InstructionScheduler::registerFunction(bh_intp id, bh_userfunc_impl userfunc)

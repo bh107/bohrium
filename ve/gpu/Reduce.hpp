@@ -18,25 +18,25 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __USERFUNCTIONREDUCE_HPP
-#define __USERFUNCTIONREDUCE_HPP
+#ifndef __REDUCE_HPP
+#define __REDUCE_HPP
 
 #include <string>
 #include <map>
 #include <bh.h>
-#include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
+#include "UserFuncArg.hpp"
 
-namespace UserFunctionReduce
+namespace Reduce
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    void reduce(bh_reduce_type* reduceDef, UserFuncArg* userFuncArg);
-    Kernel getKernel(bh_reduce_type* reduceDef,
+    bh_error reduce(bh_instruction* inst, UserFuncArg* userFuncArg);
+    Kernel getKernel(bh_instruction* inst,
                      UserFuncArg* userFuncArg,
                      std::vector<bh_index> shape);
-    std::string generateCode(bh_reduce_type* reduceDef,
+    std::string generateCode(bh_instruction* inst,
                              OCLtype outType, OCLtype inType,
                              std::vector<bh_index> shape);
 }
