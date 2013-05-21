@@ -10,4 +10,5 @@ Here goes::
     simple  - Single-core vector engine with "fruit-loops" optimizations; compute_* etc.
     score   - Experiment with implementing cache-tiling based on compute_naive_* traversal.
     tile    - Single-core engine experimenting with implementing cache-tiling based on compute_* traversal.
+    dynamite- JIT compiled engine for CPU, the first of its kind ;)
 

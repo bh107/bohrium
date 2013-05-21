@@ -1,0 +1,21 @@
+[
+{"enum": "BH_BOOL", "size": "1", "shorthand": "z", "bhtype": "bh_bool", "union": "bool8", "ctype": "unsigned char"},
+
+{"enum": "BH_INT8",   "size": "1", "shorthand": "b",   "bhtype": "bh_int8",  "union": "int8",    "ctype": "int8_t"},
+{"enum": "BH_INT16",  "size": "2", "shorthand": "s",   "bhtype": "bh_int16", "union": "int16",   "ctype": "int16_t"},
+{"enum": "BH_INT32",  "size": "4", "shorthand": "i",   "bhtype": "bh_int32", "union": "int32",   "ctype": "int32_t"},
+{"enum": "BH_INT64",  "size": "8", "shorthand": "l",   "bhtype": "bh_int64", "union": "int64",   "ctype": "int64_t"},
+
+{"enum": "BH_UINT8",  "size": "1", "shorthand": "B",   "bhtype": "bh_uint8",  "union": "uint8",  "ctype": "uint8_t"},
+{"enum": "BH_UINT16", "size": "2", "shorthand": "S",   "bhtype": "bh_uint16", "union": "uint16", "ctype": "uint16_t"},
+{"enum": "BH_UINT32", "size": "4", "shorthand": "I",   "bhtype": "bh_uint32", "union": "uint32", "ctype": "uint32_t"},
+{"enum": "BH_UINT64", "size": "8", "shorthand": "L",   "bhtype": "bh_uint64", "union": "uint64", "ctype": "uint64_t"},
+
+{"enum": "BH_FLOAT16","size": "2", "shorthand": "h",   "bhtype": "bh_float16", "union": "uint16",    "ctype": "uint16_t"},
+{"enum": "BH_FLOAT32","size": "4", "shorthand": "f",   "bhtype": "bh_float32", "union": "float32",   "ctype": "float"},
+{"enum": "BH_FLOAT64","size": "8", "shorthand": "d",   "bhtype": "bh_float64", "union": "float64",   "ctype": "double"},
+
+{"enum": "BH_COMPLEX64",    "size": "8",    "shorthand": "c",    "bhtype": "bh_complex64",   "union": "complex64",   "ctype": "complex float"},
+{"enum": "BH_COMPLEX128",   "size": "16",   "shorthand": "C",    "bhtype": "bh_complex128",  "union": "complex128",  "ctype": "complex double"}
+
+]
