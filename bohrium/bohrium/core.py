@@ -16,28 +16,28 @@ def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohri
     Parameters
     ----------
     object : array_like
-        An array, any object exposing the array interface, an object 
+        An array, any object exposing the array interface, an object
         whose __array__ method returns an array, or any (nested) sequence.
     dtype : data-type, optional
-        The desired data-type for the array. If not given, then the type 
-        will be determined as the minimum type required to hold the objects 
-        in the sequence. This argument can only be used to 'upcast' the array. 
+        The desired data-type for the array. If not given, then the type
+        will be determined as the minimum type required to hold the objects
+        in the sequence. This argument can only be used to 'upcast' the array.
         For downcasting, use the .astype(t) method.
     copy : bool, optional
-        If true (default), then the object is copied. Otherwise, a copy will only 
-        be made if __array__ returns a copy, if obj is a nested sequence, or if a 
+        If true (default), then the object is copied. Otherwise, a copy will only
+        be made if __array__ returns a copy, if obj is a nested sequence, or if a
         copy is needed to satisfy any of the other requirements (dtype, order, etc.).
     order : {'C', 'F', 'A'}, optional
-        Specify the order of the array. If order is 'C' (default), then the array 
-        will be in C-contiguous order (last-index varies the fastest). If order is 'F', 
-        then the returned array will be in Fortran-contiguous order (first-index varies 
-        the fastest). If order is 'A', then the returned array may be in any order 
+        Specify the order of the array. If order is 'C' (default), then the array
+        will be in C-contiguous order (last-index varies the fastest). If order is 'F',
+        then the returned array will be in Fortran-contiguous order (first-index varies
+        the fastest). If order is 'A', then the returned array may be in any order
         (either C-, Fortran-contiguous, or even discontiguous).
     subok : bool, optional
-        If True, then sub-classes will be passed-through, otherwise the returned array 
+        If True, then sub-classes will be passed-through, otherwise the returned array
         will be forced to be a base-class array (default).
     ndmin : int, optional
-        Specifies the minimum number of dimensions that the resulting array should have. 
+        Specifies the minimum number of dimensions that the resulting array should have.
         Ones will be pre-pended to the shape as needed to meet this requirement.
     bohrium : boolean, optional
         Determines whether it is a Bohrium-enabled array or a regular NumPy array
@@ -70,7 +70,7 @@ def empty(shape, dtype=float, bohrium=True):
     Notes
     -----
     The order of the data in memory is always row-major (C-style).
-    
+
     `empty`, unlike `zeros`, does not set the matrix values to zero,
     and may therefore be marginally faster.  On the other hand, it requires
     the user to manually set all the values in the array, and should be
@@ -134,7 +134,10 @@ def ones(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = dtype(1)
+    try:
+        A[:] = dtype(1)
+    except:
+        A[:] = dtype.type(1)
     return A
 
 def zeros(shape, dtype=float, bohrium=True):
@@ -180,7 +183,10 @@ def zeros(shape, dtype=float, bohrium=True):
     """
 
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = dtype(0)
+    try:
+        A[:] = dtype(0)
+    except:
+        A[:] = dtype.type(0)
     return A
 
 def empty_like(a, dtype=None, bohrium=None):
@@ -381,7 +387,7 @@ def diagonal(A,offset=0):
     Return specified diagonals.
 
     If `a` is 2-D, returns the diagonal of `a` with the given offset,
-    i.e., the collection of elements of the form ``a[i, i+offset]``.  
+    i.e., the collection of elements of the form ``a[i, i+offset]``.
 
     Parameters
     ----------
@@ -485,11 +491,11 @@ def diagflat(d,k=0):
 
     """
     d = numpy.asarray(d)
-    d = flatten(d) 
+    d = flatten(d)
     size = d.size+abs(k)
     A = zeros((size,size), dtype=d.dtype, bohrium=d.bohrium)
     Ad = diagonal(A, offset=k)
-    Ad[:] = d 
+    Ad[:] = d
     return A
 
 def diag(v, k=0):
@@ -634,7 +640,7 @@ def matmul(a,b):
     Returns
     -------
     output : ndarray
-        Returns the matrix multiplication of `a` and `b`. 
+        Returns the matrix multiplication of `a` and `b`.
 
     Raises
     ------
@@ -664,7 +670,7 @@ def matmul(a,b):
         return c
     else:
     	return numpy.dot(a,b)
-    	
+
 def fft(A):
     """
     Compute the one-dimensional discrete Fourier Transform.
@@ -715,9 +721,9 @@ def fft(A):
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft(A,B)
         return B
-    
+
 	return numpy.fft.fft(A)
-	
+
 def fft2(A):
     """
     Compute the 2-dimensional discrete Fourier Transform
@@ -767,7 +773,7 @@ def fft2(A):
         B = empty(A.shape,dtype=A.dtype)
         bridge.fft2(A,B)
         return B
-    
+
 	return numpy.fft.fft2(A)
 
 def rad2deg(x, out=None):
@@ -806,7 +812,7 @@ def rad2deg(x, out=None):
     True
 
     """
-    
+
     if out == None:
         out = 180 * x / pi
     else:
@@ -848,7 +854,7 @@ def deg2rad(x, out=None):
     else:
         out[:] = x * pi / 180
     return out
-        
+
 def logaddexp(x1, x2, out=None):
     """
     Logarithm of the sum of exponentiations of the inputs.
@@ -889,7 +895,7 @@ def logaddexp(x1, x2, out=None):
     else:
         out[:] = log(exp(x1) + exp(x2))
     return out
-    
+
 def logaddexp2(x1, x2, out=None):
     """
     Logarithm of the sum of exponentiations of the inputs in base-2.
@@ -933,7 +939,7 @@ def logaddexp2(x1, x2, out=None):
     else:
         out[:] = log2(exp2(x1) + exp2(x2))
     return out
-    
+
 def modf(x, out1=None, out2=None):
     """
     Return the fractional and integral parts of an array, element-wise.
@@ -972,7 +978,7 @@ def modf(x, out1=None, out2=None):
         out1[:] = mod(x,1.0)
     if out2 == None:
         out2 = floor(x)
-    else: 
+    else:
         out2[:] = floor(x)
     return (out1, out2)
 
@@ -1000,7 +1006,7 @@ def sign(x, out=None):
     0
 
     """
-    return add(multiply(less(x,0),-1),multiply(greater(x,0),1),out) 
+    return add(multiply(less(x,0),-1),multiply(greater(x,0),1),out)
 
 def signbit(x, out=None):
     """
@@ -1080,7 +1086,7 @@ def minn(x, n=1, axis=0):
         out_shape = (n,)
     else:
         out_shape = x.shape[:axis] + (n,) + x.shape[axis+1:]
-   
+
     out_index = empty(out_shape,dtype=int64,bohrium=True)
     out_value = empty(out_shape,dtype=x.dtype,bohrium=True)
     return bridge.nselect(out_index, out_value, x, n, axis, numpy.minimum)
