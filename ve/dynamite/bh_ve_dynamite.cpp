@@ -23,6 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <ctemplate/template.h>  
 #include "compiler.cpp"
 #include <string>
+#include <stdexcept>
+#include <unistd.h>
+#include <errno.h>
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -41,6 +44,45 @@ char* snippet_path;
 
 process* target;
 
+void bh_string_option(char *option, const char *env_name, const char *conf_name)
+{
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(myself, conf_name);
+    }
+    char err_msg[100];
+
+    if (!option) {
+        sprintf(err_msg, "Err: String is not set; option (%s).\n", conf_name);
+        throw std::runtime_error(err_msg);
+    }
+}
+
+void bh_path_option(char *option, const char *env_name, const char *conf_name)
+{
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(myself, conf_name);
+    }
+    char err_msg[100];
+
+    if (!option) {
+        sprintf(err_msg, "Err: Path is not set; option (%s).\n", conf_name);
+        throw std::runtime_error(err_msg);
+    }
+    if (0 != access(option, F_OK)) {
+        if (ENOENT == errno) {
+            sprintf(err_msg, "Err: Path does not exist; path (%s).\n", option);
+        } else if (ENOTDIR == errno) {
+            sprintf(err_msg, "Err: Path is not a directory; path (%s).\n", option);
+        } else {
+            sprintf(err_msg, "Err: Path is broken somehow; path (%s).\n", option);
+        }
+        throw std::runtime_error(err_msg);
+
+    }
+}
+
 bh_error bh_ve_dynamite_init(bh_component *self)
 {
     myself = self;
@@ -55,26 +97,21 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     }
 
     bh_vcache_init( vcache_size );
-                                                            // DYNAMITE Arguments
-    compiler_cmd = getenv("BH_VE_DYNAMITE_TARGET");           // For the compiler
-    if (NULL==compiler_cmd) {
-        assign_string(compiler_cmd, "gcc -O2 -march=native -fPIC -std=c99 -x c -shared - -o ");
-    }
 
-    object_path = getenv("BH_VE_DYNAMITE_OBJECT_PATH");
-    if (NULL==object_path) {
-        assign_string(object_path, "objects/");
-    }
+    // DYNAMITE Arguments
+    bh_string_option(compiler_cmd,
+                     "BH_VE_DYNAMITE_TARGET",       "compiler_cmd");
+    bh_path_option(kernel_path,
+                     "BH_VE_DYNAMITE_KERNEL_PATH",  "kernel_path");
+    bh_path_option(object_path,
+                     "BH_VE_DYNAMITE_OBJECT_PATH",  "object_path");
+    bh_path_option(snippet_path,
+                     "BH_VE_DYNAMITE_SNIPPET_PATH", "snippet_path");
 
-    kernel_path = getenv("BH_VE_DYNAMITE_KERNEL_PATH");
-    if (NULL==kernel_path) {
-        assign_string(kernel_path, "kernels/");
-    }
-
-    snippet_path = getenv("BH_VE_DYNAMITE_SNIPPET_PATH");   // For the sourcecode-generator
-    if (NULL==snippet_path) {
-        assign_string(snippet_path, "snippets/");
-    }
+    std::cout << "Options{compiler_cmd=" << compiler_cmd \
+              << ",kernel_path=" << kernel_path \
+              << ",object_path=" << object_path \
+              << ",snippet_path=" << snippet_path << std::endl;
 
     target = new process(compiler_cmd, object_path, kernel_path);
 

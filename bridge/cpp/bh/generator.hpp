@@ -20,11 +20,45 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_GENERATOR
 #define __BOHRIUM_BRIDGE_CPP_GENERATOR
 
+#include <initializer_list>
+
 namespace bh {
 
-template <typename T>
-multi_array<T>& empty()
+int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
 {
+    shape[index] = arg;
+    return 0;
+}
+
+template <typename ...Args>
+int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
+{
+    shape[index] = arg;
+    unpack_shape(shape, ++index, args...);
+
+    return 1;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& generator(const Dimensions&... shape)
+{
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    size_t count = sizeof...(Dimensions);
+    int64_t shapes[16];
+
+    std::cout << "GOT= " << count << std::endl;
+    unpack_shape(shapes, 0, shape...);
+    for(size_t i=0; i<count; i++) {
+        std::cout << "GOT= " << shapes[i] << std::endl;
+    }
+
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& empty(const Dimensions&... shape)
+{
+    int64_t ndim = sizeof...(Dimensions);
     multi_array<T>* result = &Runtime::instance()->temp<T>();
 
     return *result;

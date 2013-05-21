@@ -26,6 +26,12 @@ using namespace bh;
 void compute()
 {
     cout << "Hello World." << endl;
+
+    empty<float>();
+
+    generator<float>(3, 3);
+    generator<float>(8, 0, 10);
+
     multi_array<float> x(3,3);
     x = (float)1.0;
     cout << x;
