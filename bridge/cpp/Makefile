@@ -7,7 +7,8 @@ EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 CXX=clang
 #CXX=g++
 EXTRAS+=
-CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
+#CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
+CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++0x -Wno-variadic-macros $(EXTRAS)
 
 all: gen examples
 

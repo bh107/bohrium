@@ -15,14 +15,14 @@ INSTALLDIR="~/.local" DEBUG="" make install
 
 echo "NAIVE!"
 
-cp test/config.ini.naive ~/.bohrium/config.ini
+#cp test/config.ini.naive ~/.bohrium/config.ini
 /usr/bin/time python ../../benchmark/Python/sor.py --size=2000*2000*10
 ./test/test.py
 python ../../test/numpy/numpytest.py
 
 echo "DYNAMITE!"
 
-cp test/config.ini.dynamite ~/.bohrium/config.ini
+#cp test/config.ini.dynamite ~/.bohrium/config.ini
 /usr/bin/time python ../../benchmark/Python/sor.py --size=2000*2000*10
 ./test/test.py
 python ../../test/numpy/numpytest.py

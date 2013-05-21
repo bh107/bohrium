@@ -310,22 +310,20 @@ private:
 };
 
 template <typename T>       // Generators / Initializers
-multi_array<T>& empty();
+multi_array<T>& empty(size_t n, ...);
 
 template <typename T>
-multi_array<T>& zeros();
+multi_array<T>& zeros(size_t n, ...);
 
 template <typename T>
-multi_array<T>& ones();
+multi_array<T>& ones(size_t n, ...);
+
+template <typename T>
+multi_array<T>& random(size_t n, ...);
 
 template <typename T>
 multi_array<T>& arange();
 
-template <typename T>
-multi_array<T>& random();
-
-template <typename T>
-multi_array<T>& random(int n);
 
                             // REDUCTIONS
 template <typename T>       // Partial
