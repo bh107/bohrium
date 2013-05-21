@@ -108,8 +108,6 @@ int {{SYMBOL}}(int tool, ...)
 
         tmp_data    = a1_data;                  // Use the temporary as a copy of input
         tmp_start   = a1_start;                 // without the 'axis' dimension
-        tmp_stride[DYNAMITE_MAXDIM];    
-        tmp_shape[DYNAMITE_MAXDIM];
 
         int64_t tmp_dim;
         for (tmp_dim=0, a1_i=0; a1_i<a1_ndim; ++a1_i) { // Excluding the 'axis' dimension.
