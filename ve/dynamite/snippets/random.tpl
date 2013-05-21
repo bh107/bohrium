@@ -180,12 +180,6 @@ int rk_initseed(rk_state *state)
     return 0;
 }
 
-/*
-void BH_RANDOM_D_F(
-    T* a0_data,
-    int64_t nelements
-)
-*/
 void {{SYMBOL}}(int tool, ...)
 {
     va_list list;
