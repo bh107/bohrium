@@ -26,7 +26,17 @@ using namespace bh;
 #define CONTAINER_SIZE 9
 const double res [] = { 3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5 };
 
-TEST(assignment,vector_eq_const)
+class BohriumTest : public ::testing::Test {
+protected:
+
+    virtual void TearDown()
+    {
+        stop();
+    }
+
+};
+
+TEST_F(BohriumTest,vector_eq_const)
 {
     multi_array<double> x(CONTAINER_SIZE);
 
@@ -34,7 +44,7 @@ TEST(assignment,vector_eq_const)
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-TEST(assignment,vector_eq_vector)
+TEST_F(BohriumTest,vector_eq_vector)
 {
     multi_array<double> x(9);
     multi_array<double> y(9);
@@ -44,10 +54,10 @@ TEST(assignment,vector_eq_vector)
     EXPECT_TRUE(CheckEqualCollections(x.begin(), x.end(), res));
 }
 
-TEST(assignment,matrix_eq_vector)
+TEST_F(BohriumTest,matrix_eq_vector)
 {
     multi_array<double> x(3,3);
-    multi_array<double> y(3);
+    multi_array<double> y(9);
     y = 3.5;
 
     x = y;      // The thing being tested...

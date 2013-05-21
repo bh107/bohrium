@@ -42,6 +42,21 @@ const float  PI   = 3.14159265358979f;
 template <typename T>   // Forward declaration
 class multi_array;
 
+int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
+{
+    shape[index] = arg;
+    return 0;
+}
+
+template <typename ...Args>
+int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
+{
+    shape[index] = arg;
+    unpack_shape(shape, ++index, args...);
+
+    return 1;
+}
+
 //
 // Extensions
 //
@@ -97,10 +112,15 @@ class multi_array {
 public:
     // Constructors:
     multi_array();
+    /*
     multi_array( unsigned int n );
     multi_array( unsigned int m, unsigned int n );
     multi_array( unsigned int d2, unsigned int d1, unsigned int d0 );
-    multi_array( multi_array<T> const& operand );
+    */
+    template <typename ...Dimensions>       // Variadic constructor
+    multi_array(Dimensions... shape);
+
+    multi_array(multi_array<T> const& operand);
 
     // Deconstructor:
     ~multi_array();
@@ -261,8 +281,8 @@ public:
     template <typename T>
     multi_array<T>& temp();
 
-    template <typename T>
-    multi_array<T>& temp(size_t n);
+    template <typename T, typename ...Dimensions>
+    multi_array<T>& temp(Dimensions... shape);
 
     template <typename T>
     multi_array<T>& temp(multi_array<T>& input);

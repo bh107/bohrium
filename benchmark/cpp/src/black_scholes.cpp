@@ -58,7 +58,7 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
     T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
     T t     = d_t;                              // Initial delta
 
-    s = random<T>(samples)*4.0 +58.0;           // Model between 58-62
+    s = random<T>((int64_t)samples)*4.0 +58.0;           // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));

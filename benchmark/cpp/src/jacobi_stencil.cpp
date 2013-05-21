@@ -56,6 +56,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    for(size_t i=0; i<3; i++) {
+        cout << args.size[i] << endl;
+    }
+
     size_t start = sample_time();
     double output = solve<double>(args.size[0], args.size[1], args.size[2]);
     size_t end = sample_time();

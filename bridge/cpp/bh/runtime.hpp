@@ -239,11 +239,11 @@ multi_array<T>& Runtime::temp()
     return *operand;
 }
 
-template <typename T>
+template <typename T, typename ...Dimensions>
 inline
-multi_array<T>& Runtime::temp(size_t n)
+multi_array<T>& Runtime::temp(Dimensions... shape)
 {
-    multi_array<T>* operand = new multi_array<T>(n);
+    multi_array<T>* operand = new multi_array<T>(shape...);
     operand->setTemp(true);
     return *operand;
 }
@@ -257,6 +257,7 @@ multi_array<T>& Runtime::temp(multi_array<T>& input)
 {
     multi_array<T>* operand = new multi_array<T>(input);
     operand->setTemp(true);
+
     return *operand;
 }
 
@@ -267,8 +268,9 @@ template <typename T>
 inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
-    multi_array<T>* operand = new multi_array<T>();
-    storage[operand->getKey()].base = bh_base_array(&storage[base.getKey()]);
+    multi_array<T>* operand = new multi_array<T>(base);
+    storage[operand->getKey()].base = &storage[base.getKey()];
+
     return *operand;
 }
 
@@ -279,9 +281,10 @@ template <typename T>
 inline
 multi_array<T>& Runtime::temp_view(multi_array<T>& base)
 {
-    multi_array<T>* operand = new multi_array<T>();
-    storage[operand->getKey()].base = bh_base_array(&storage[base.getKey()]);
+    multi_array<T>* operand = new multi_array<T>(base);
+    storage[operand->getKey()].base = &storage[base.getKey()];
     operand->setTemp(true);
+
     return *operand;
 }
 

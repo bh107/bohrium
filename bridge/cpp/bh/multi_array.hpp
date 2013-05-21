@@ -37,68 +37,47 @@ void multi_array<T>::init()     // Pseudo-default constructor
 template <typename T>           // Default constructor - rank 0
 multi_array<T>::multi_array() : key(0), temp(false) { }
 
+/**
+ * Inherit ndim / shape from another operand
+ * Does not copy data.
+ *
+ */
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand)
 {
     init();
 
+    storage[key].data        = NULL;
     storage[key].base        = NULL;
     storage[key].ndim        = storage[operand.getKey()].ndim;
     storage[key].start       = storage[operand.getKey()].start;
+
     for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
         storage[key].shape[i] = storage[operand.getKey()].shape[i];
     }
     for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
         storage[key].stride[i] = storage[operand.getKey()].stride[i];
     }
-    storage[key].data        = NULL;
 }
 
-template <typename T>       // "Vector-like" constructor - rank 1
-multi_array<T>::multi_array(unsigned int n)
+template <typename T>
+template <typename ...Dimensions>       // Variadic constructor
+multi_array<T>::multi_array(Dimensions... shape)
 {
     init();
 
-    storage[key].base        = NULL;
-    storage[key].ndim        = 1;
-    storage[key].start       = 0;
-    storage[key].shape[0]    = n;
-    storage[key].stride[0]   = 1;
     storage[key].data        = NULL;
-}
-
-template <typename T>       // "Matrix-like" constructor - rank 2
-multi_array<T>::multi_array(unsigned int m, unsigned int n)
-{
-    init();
-
     storage[key].base        = NULL;
-    storage[key].ndim        = 2;
+    storage[key].ndim        = sizeof...(Dimensions);
     storage[key].start       = 0;
-    storage[key].shape[0]    = m;
-    storage[key].stride[0]   = n*1;
-    storage[key].shape[1]    = n;
-    storage[key].stride[1]   = 1;
-    storage[key].data        = NULL;
-}
 
-template <typename T>       // "Tensor-like" constructor - rank 3
-multi_array<T>::multi_array(unsigned int d2, unsigned int d1, unsigned int d0)
-{
-    init();
+    unpack_shape(storage[key].shape, 0, shape...);
 
-    storage[key].base        = NULL;
-    storage[key].ndim        = 3;
-    storage[key].start       = 0;
-    storage[key].shape[0]    = d2;
-    storage[key].stride[0]   = d1*d0*1;
-
-    storage[key].shape[1]    = d1;
-    storage[key].stride[1]   = d0*1;
-
-    storage[key].shape[2]    = d0;
-    storage[key].stride[2]   = 1;
-    storage[key].data        = NULL;
+    int64_t stride = 1;     // Setup strides
+    for(int64_t i=storage[key].ndim-1; 0 <= i; --i) {
+        storage[key].stride[i] = stride;
+        stride *= storage[key].shape[i];
+    }
 }
 
 template <typename T>       // Deconstructor
@@ -246,6 +225,7 @@ multi_array<T>& multi_array<T>::operator()(const T& n) {
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
 {
+    std::cout << "operator=constant?" << std::endl;
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
     return *this;
 }
@@ -280,23 +260,28 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     //          will the ptr_map clean it up for us?
     //          Ref-count!
     //          You forgot broadcasting on assignment!
-    DEBUG_PRINT("Aliasing... dude! ");
+    DEBUG_PRINT("Aliasing... dude!\n");
+    DEBUG_PRINT("ENTRY: %u = %u\n", key, rhs.getKey());
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
+            DEBUG_PRINT("RELEASE CURRENT VIEW AND DATA.\n");
             Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
             Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
             unlink();
         }
 
         if (rhs.getTemp()) {        // Take over temporary reference
+            DEBUG_PRINT("TAKING OVER TEMP\n");
             link(rhs.unlink());
             temp = false;
             delete &rhs;
-        } else {                    // Create a view of rhs
+        } else {                    // Create an alias of rhs.
+            DEBUG_PRINT("CREATING A VIEW OF RHS, ndim=%ld.\n", storage[rhs.getKey()].ndim);
             init();
 
-            storage[key].base       = bh_base_array(&storage[rhs.getKey()]);
+            storage[key].data        = NULL;
+            storage[key].base       = &storage[rhs.getKey()];
             storage[key].ndim       = storage[rhs.getKey()].ndim;
             storage[key].start      = storage[rhs.getKey()].start;
             for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
@@ -305,10 +290,10 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
             for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
                 storage[key].stride[i] = storage[rhs.getKey()].stride[i];
             }
-            storage[key].data        = NULL;
         }
     }
 
+    DEBUG_PRINT("EXIT: %u = %u\n", key, rhs.getKey());
     return *this;
 }
 
@@ -328,6 +313,7 @@ multi_array<Ret>& multi_array<T>::as()
         storage[result->getKey()].shape[i] = storage[this->getKey()].shape[i];
     }
     for(bh_index i=0; i< storage[this->getKey()].ndim; i++) {
+
         storage[result->getKey()].stride[i] = storage[this->getKey()].stride[i];
     }
     storage[result->getKey()].data        = NULL;
