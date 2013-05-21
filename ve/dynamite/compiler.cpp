@@ -68,7 +68,7 @@ public:
 
         srand(getpid());
         for (int i = 0; i < 7; ++i) {
-            uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+            //uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
             uid[i] = 'a';
         }
         uid[6] = 0;
@@ -84,10 +84,10 @@ public:
     bool load(std::string symbol)
     {
         char *error     = NULL;     // Buffer for dlopen errors
-        char lib_fn[50] = "";       // Library filename (objects/<symbol>_XXXXXX)
+        char lib_fn[250] = "";       // Library filename (objects/<symbol>_XXXXXX)
         sprintf(
             lib_fn, 
-            "%s%s_%s.so",
+            "%s/%s_%s.so",
             object_path,
             symbol.c_str(),
             uid
@@ -125,9 +125,9 @@ public:
     {
         int kernel_fd;              // Kernel file-descriptor
         FILE *kernel_fp = NULL;     // Handle for kernel-file
-        char kernel_fn[50] = "";    // TODO: Make sure this is not overflown
+        char kernel_fn[250] = "";    // TODO: Make sure this is not overflown
 
-        sprintf(kernel_fn, "%s%s_%s.c", kernel_path, symbol.c_str(), uid);
+        sprintf(kernel_fn, "%s/%s_%s.c", kernel_path, symbol.c_str(), uid);
         kernel_fd = open(kernel_fn, O_WRONLY | O_CREAT | O_EXCL, 0644);
         if (!kernel_fd) {                               
             std::cout << "Err: Failed opening kernel-file << " << kernel_fn << "." << std::endl;
@@ -152,10 +152,10 @@ public:
             return true;
         }
 
-        char lib_fn[50] = "";       // Library filename (objects/<symbol>_XXXXXX)
+        char lib_fn[250] = "";       // Library filename (objects/<symbol>_XXXXXX)
         sprintf(
             lib_fn,
-            "%s%s_%s.so",
+            "%s/%s_%s.so",
             object_path,
             symbol.c_str(),
             uid
@@ -168,7 +168,7 @@ public:
 
         // WARN: These constants must be safeguarded... they will bite you at some point!
         FILE *cmd_stdin    = NULL;  // Handle for library-file
-        char cmd[200]      = "";    // Command-line for executing compiler
+        char cmd[1000]      = "";    // Command-line for executing compiler
         sprintf(
             cmd, 
             "%s %s",

@@ -44,7 +44,7 @@ char* snippet_path;
 
 process* target;
 
-void bh_string_option(char *option, const char *env_name, const char *conf_name)
+void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
     if (NULL==option) {
@@ -58,7 +58,7 @@ void bh_string_option(char *option, const char *env_name, const char *conf_name)
     }
 }
 
-void bh_path_option(char *option, const char *env_name, const char *conf_name)
+void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
     if (NULL==option) {
@@ -79,7 +79,6 @@ void bh_path_option(char *option, const char *env_name, const char *conf_name)
             sprintf(err_msg, "Err: Path is broken somehow; path (%s).\n", option);
         }
         throw std::runtime_error(err_msg);
-
     }
 }
 
@@ -99,19 +98,14 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     bh_vcache_init( vcache_size );
 
     // DYNAMITE Arguments
-    bh_string_option(compiler_cmd,
-                     "BH_VE_DYNAMITE_TARGET",       "compiler_cmd");
-    bh_path_option(kernel_path,
-                     "BH_VE_DYNAMITE_KERNEL_PATH",  "kernel_path");
-    bh_path_option(object_path,
-                     "BH_VE_DYNAMITE_OBJECT_PATH",  "object_path");
-    bh_path_option(snippet_path,
-                     "BH_VE_DYNAMITE_SNIPPET_PATH", "snippet_path");
-
-    std::cout << "Options{compiler_cmd=" << compiler_cmd \
-              << ",kernel_path=" << kernel_path \
-              << ",object_path=" << object_path \
-              << ",snippet_path=" << snippet_path << std::endl;
+    bh_path_option(
+        kernel_path,    "BH_VE_DYNAMITE_KERNEL_PATH",   "kernel_path");
+    bh_path_option(
+        object_path,    "BH_VE_DYNAMITE_OBJECT_PATH",   "object_path");
+    bh_path_option(
+        snippet_path,   "BH_VE_DYNAMITE_SNIPPET_PATH",  "snippet_path");
+    bh_string_option(
+        compiler_cmd,   "BH_VE_DYNAMITE_TARGET",        "compiler_cmd");
 
     target = new process(compiler_cmd, object_path, kernel_path);
 
