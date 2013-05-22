@@ -29,15 +29,28 @@ void compute()
 
     multi_array<float> x(3,3,3);
     x = (float)1.0;
+    std::cout << "Reducing axis0" << std::endl;
     cout << reduce(x, ADD, 0) << endl;
+    std::cout << "Reducing axis1" << std::endl;
     cout << reduce(x, ADD, 1) << endl;
+    std::cout << "Reducing axis2" << std::endl;
     cout << reduce(x, ADD, 2) << endl;
+
+    std::cout << "Full reduction." << std::endl;
+    cout << sum(x) << endl;
+
+    std::cout << "Full reduction, scalar." << std::endl;
+    cout << scalar(sum(x)) << endl;
+
+    std::cout << "Leaving compute!" << std::endl;
 }
 
 int main()
 {
     compute();
+    std::cout << "STOPPING!" << std::endl;
     stop();
+    std::cout << "STOPPED!" << std::endl;
     return 0;
 }
 
