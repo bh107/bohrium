@@ -198,17 +198,23 @@ bh_error bh_vem_node_execute(bh_intp count,
         if(inst->opcode == BH_DISCARD)
         {
             bh_array *ary = operands[0];
-            //Check that we are not discarding a base that still has views.
+            // Check that we are not discarding a base that still has views.
             if(ary->base == NULL)
             {
                 for(std::set<bh_array*>::iterator it=allocated_arys.begin(); 
                     it != allocated_arys.end(); ++it)
                 {
-                    assert((*it)->base != ary);
+                    if ((*it)->base == ary) {
+                        fprintf(stderr, 
+                                "[NODE-VEM] discarding base (%p) that "
+                                "still has view(%p).\n", ary, *it);
+                        return BH_ERROR;
+                    }
                 }
             }
-            if(allocated_arys.erase(ary) != 1)
+            if(allocated_arys.erase(ary) != 1) {
                 fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
+            }
         }               
     }
 
