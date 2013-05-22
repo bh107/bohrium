@@ -2,7 +2,6 @@ ROOT=../..
 LIB=libbh_ve_naive.so
 CXX?=g++
 WARNOPTS=-Wall
-#LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
 DEBUG+=
 LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(DEBUG)
 LDFLAGS=-L../../core -lbh -lrt -shared -Wl,-soname
