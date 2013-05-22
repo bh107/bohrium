@@ -35,37 +35,56 @@ public:
     typedef typename multi_array_iter<T>::iterator iterator;
 
     // Constructors
-    multi_array_iter() : data(NULL) {}
+    multi_array_iter() : data(NULL), offset(NULL) {}
 
     multi_array_iter(bh_array x) : operand(x)
     {
-        data        = (pointer)bh_base_array( &operand )->data;
-        last_dim    = operand.ndim-1;
-        last_e      = bh_nelements(operand.ndim, operand.shape )-1;
-        cur_e       = 0;
-        offset      = operand.start;
+        data        = (pointer)bh_base_array(&operand)->data;
+        offset      = data + operand.start;
 
+        last_dim    = operand.ndim-1;
+        last_e      = bh_nelements(operand.ndim, operand.shape)-1;
+        cur_e       = 0;
         memset(coord, 0, BH_MAXDIM * sizeof(int64_t));
     }
 
     // Operator overloads
     friend bool operator==(const multi_array_iter& i, const multi_array_iter& j)
     {
-        return i->data == j->data;
+        return i.offset == j.offset;
     }
 
     friend bool operator!=(const multi_array_iter& i, const multi_array_iter& j)
     {
-        return i.data != j.data;
+        return i.offset != j.offset;
     }
 
-    multi_array_iter& operator++()   // prefix
-    {
-        data++;
+    multi_array_iter& operator++()      // PREFIX
+    {                                   // NOTE: This is extremely inefficient
         cur_e++;
-        if (cur_e > last_e) {
-            data = NULL;
+        coord[last_dim]++;
+
+        if (coord[last_dim] >= operand.shape[last_dim]) {
+            coord[last_dim] = 0;        // Increment coordinates for the remaining dimensions
+            for(int64_t j = last_dim-1; j >= 0; --j) {  
+                coord[j]++;             // Still within this dimension
+                if (coord[j] < operand.shape[j]) {      
+                    break;
+                } else {                // Reached the end of this dimension
+                    coord[j] = 0;       // Reset coordinate
+                }                       // Loop then continues to increment the next dimension
+            }
         }
+
+        if (cur_e > last_e) {
+            offset = NULL;
+        } else {
+            offset = data + operand.start;
+            for (int64_t j=0; j<=last_dim; ++j) {
+                offset += coord[j] * operand.stride[j];
+            }
+        }
+
         return *this;
     }
 
@@ -79,20 +98,21 @@ public:
 
     reference operator*()
     {
-        return *data;
+        return *offset;
     }
 
     pointer operator->() {
-        return &*data;
+        return &*offset;
     }
 
 private:
 
-    pointer data;
     bh_array operand;
 
-    int64_t offset,
-            last_dim,
+    pointer data,
+            offset;
+
+    int64_t last_dim,
             last_e;
 
     int64_t cur_e; 
