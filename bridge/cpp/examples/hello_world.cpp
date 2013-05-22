@@ -27,14 +27,11 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    empty<float>();
-
-    generator<float>(3, 3);
-    generator<float>(8, 0, 10);
-
-    multi_array<float> x(3,3);
+    multi_array<float> x(3,3,3);
     x = (float)1.0;
-    cout << x;
+    cout << reduce(x, ADD, 0) << endl;
+    cout << reduce(x, ADD, 1) << endl;
+    cout << reduce(x, ADD, 2) << endl;
 }
 
 int main()

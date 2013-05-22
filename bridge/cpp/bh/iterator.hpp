@@ -45,7 +45,7 @@ public:
         cur_e       = 0;
         offset      = operand.start;
 
-        memset(coord, 0, BH_MAXDIM * sizeof(bh_index));
+        memset(coord, 0, BH_MAXDIM * sizeof(int64_t));
     }
 
     // Operator overloads
@@ -91,12 +91,12 @@ private:
     pointer data;
     bh_array operand;
 
-    bh_index    offset,
-                last_dim,
-                last_e;
+    int64_t offset,
+            last_dim,
+            last_e;
 
-    bh_index cur_e; 
-    bh_index coord[BH_MAXDIM];
+    int64_t cur_e; 
+    int64_t coord[BH_MAXDIM];
 
 };
 

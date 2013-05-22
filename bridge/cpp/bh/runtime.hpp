@@ -25,10 +25,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-typedef boost::ptr_map<unsigned int, bh_array> storage_type;
+typedef boost::ptr_map<size_t, bh_array> storage_type;
 storage_type storage;
 
-unsigned int keys = 1;
+size_t keys = 1;
 
 // Runtime : Definition
 
@@ -53,7 +53,7 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
     char err_msg[100];
 
     self_component = bh_component_setup(NULL);
-    bh_component_children( self_component, &children_count, &components );
+    bh_component_children(self_component, &children_count, &components);
 
     if(children_count != 1 || components[0]->type != BH_VEM) {
         fprintf(stderr, "Error in the configuration: the bridge must "
@@ -97,12 +97,19 @@ Runtime::~Runtime()
 {
     // Deconstructor is not called in a timely fashion.
     flush();
+
+    // De-allocate / reset storage
+    // erase all entries in storage
+    // send discards for whatever might be hanging around
+    keys = 0;
+
     vem_shutdown();
     bh_component_free(self_component);
     bh_component_free(vem_component);
+    pInstance = 0;
 }
 
-bh_intp Runtime::get_queue_size()
+size_t Runtime::get_queue_size()
 {
     return queue_size;
 }
@@ -114,7 +121,7 @@ bh_intp Runtime::get_queue_size()
  * @return The number of bh_arrays that got de-allocated.
  */
 inline
-size_t Runtime::deallocate_meta(bh_intp count)
+size_t Runtime::deallocate_meta(size_t count)
 {
     size_t deallocated = 0;
     if (count > BH_CPP_QUEUE_MAX) {
@@ -138,7 +145,7 @@ size_t Runtime::deallocate_ext()
     size_t deallocated = 0;
 
     if (ext_in_queue>0) {
-        for(bh_intp i=0; i<ext_in_queue; i++) {
+        for(size_t i=0; i<ext_in_queue; i++) {
             if (ext_queue[i]->id == random_id) {
                 free((bh_random_type*)ext_queue[i]);
                 deallocated++;
@@ -229,10 +236,12 @@ template <typename T>
 inline
 multi_array<T>& Runtime::temp()
 {
+    size_t key = keys++;
+
     multi_array<T>* operand = new multi_array<T>();
-    unsigned int key = keys++;
-    operand->link(key);
     operand->setTemp(true);
+    operand->link(key);
+
     storage.insert(key, new bh_array);
     assign_array_type<T>(&storage[key]);
 
@@ -508,10 +517,10 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
     ret_a->base        = NULL;
     ret_a->ndim        = in_a->ndim;
     ret_a->start       = in_a->start;
-    for(bh_index i=0; i< in_a->ndim; i++) {
+    for(int64_t i=0; i< in_a->ndim; i++) {
         ret_a->shape[i] = in_a->shape[i];
     }
-    for(bh_index i=0; i< in_a->ndim; i++) {
+    for(int64_t i=0; i< in_a->ndim; i++) {
         ret_a->stride[i] = in_a->stride[i];
     }
     ret_a->data        = NULL;
@@ -533,11 +542,11 @@ T& scalar(multi_array<T>& op)
         delete &op;
     }
 
-    return data[0];
+    return *data;
 }
 
 
-void Runtime::trash(unsigned int key)
+void Runtime::trash(size_t key)
 {
     garbage.push_back(key);
 }

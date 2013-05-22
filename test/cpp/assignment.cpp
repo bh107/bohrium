@@ -31,7 +31,7 @@ protected:
 
     virtual void TearDown()
     {
-        stop();
+        //stop();
     }
 
 };

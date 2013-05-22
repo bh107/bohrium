@@ -78,10 +78,10 @@ enum reducible {
 class slice_range {
 public:
     slice_range();
-    slice_range(int begin, int end, unsigned int stride);
+    slice_range(int begin, int end, size_t stride);
 
     int begin, end;
-    unsigned int stride;
+    size_t stride;
 };
 
 template <typename T>
@@ -110,26 +110,22 @@ private:
 template <typename T>
 class multi_array {
 public:
-    // Constructors:
-    multi_array();
-    /*
-    multi_array( unsigned int n );
-    multi_array( unsigned int m, unsigned int n );
-    multi_array( unsigned int d2, unsigned int d1, unsigned int d0 );
-    */
-    template <typename ...Dimensions>       // Variadic constructor
+    // ** Constructors **
+    multi_array();                              // Empty
+
+    template <typename ...Dimensions>           // Variadic constructor
     multi_array(Dimensions... shape);
 
-    multi_array(multi_array<T> const& operand);
+    multi_array(multi_array<T> const& operand); // Copy
 
-    // Deconstructor:
+    // ** Deconstructor **
     ~multi_array();
 
     // Types:
     typedef multi_array_iter<T> iterator;
 
     // Getter / Setter:
-    unsigned int getKey() const;
+    size_t getKey() const;
     unsigned long getRank() const;
     bool getTemp() const;
     void setTemp(bool temp);
@@ -209,11 +205,11 @@ public:
     template <typename Ret>                 // Typecast; implicit copy
     multi_array<Ret>& as();
 
-    void link(unsigned int);
-    unsigned int unlink();
+    void link(size_t);
+    size_t unlink();
 
 protected:
-    unsigned int key;
+    size_t key;
     bool temp;
 
 private:
@@ -273,7 +269,7 @@ public:
     void enqueue(bh_userfunc* rinstr);
 
     size_t flush();
-    bh_intp get_queue_size();
+    size_t get_queue_size();
 
     template <typename T>
     multi_array<T>& op();
@@ -293,24 +289,24 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    bh_intp random_id;                          // Extension IDs
+    int64_t random_id;                          // Extension IDs
 
-    void trash(unsigned int key);
+    void trash(size_t key);
 
 private:
 
-    size_t deallocate_meta(bh_intp count);      // De-allocate bh_arrays
+    size_t deallocate_meta(size_t count);       // De-allocate bh_arrays
     size_t deallocate_ext();                    // De-allocate user functions structs
 
-    size_t execute();                             // Send instructions to Bohrium
+    size_t execute();                           // Send instructions to Bohrium
     size_t guard();                             // Prevent overflow of instruction-queue
 
     static Runtime* pInstance;                  // Singleton instance pointer.
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
-    bh_intp         ext_in_queue;
-    bh_intp         queue_size;
+    size_t          ext_in_queue;
+    size_t          queue_size;
 
     bh_init         vem_init;                   // Bohrium interface
     bh_execute      vem_execute;
@@ -321,9 +317,9 @@ private:
                     *self_component,
                     *vem_component;
 
-    bh_intp children_count;
+    int64_t children_count;
 
-    std::list<unsigned int> garbage;
+    std::list<size_t> garbage;
 
     Runtime();                                  // Ensure no external instantiation.
 
@@ -344,10 +340,9 @@ multi_array<T>& random(size_t n, ...);
 template <typename T>
 multi_array<T>& arange();
 
-
                             // REDUCTIONS
 template <typename T>       // Partial
-multi_array<T>& reduce(multi_array<T>& op, reducible opc, unsigned int axis);
+multi_array<T>& reduce(multi_array<T>& op, reducible opc, size_t axis);
                             // FULL
 template <typename T>       // Numeric 
 multi_array<T>& sum(multi_array<T>& op);      

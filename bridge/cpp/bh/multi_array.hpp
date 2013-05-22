@@ -52,10 +52,10 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
     storage[key].ndim        = storage[operand.getKey()].ndim;
     storage[key].start       = storage[operand.getKey()].start;
 
-    for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
+    for(int64_t i=0; i< storage[operand.getKey()].ndim; i++) {
         storage[key].shape[i] = storage[operand.getKey()].shape[i];
     }
-    for(bh_index i=0; i< storage[operand.getKey()].ndim; i++) {
+    for(int64_t i=0; i< storage[operand.getKey()].ndim; i++) {
         storage[key].stride[i] = storage[operand.getKey()].stride[i];
     }
 }
@@ -92,7 +92,7 @@ multi_array<T>::~multi_array()
 
 template <typename T>
 inline
-unsigned int multi_array<T>::getKey() const
+size_t multi_array<T>::getKey() const
 {
     return key;
 }
@@ -225,14 +225,13 @@ multi_array<T>& multi_array<T>::operator()(const T& n) {
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
 {
-    std::cout << "operator=constant?" << std::endl;
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
     return *this;
 }
 
 // Linking
 template <typename T>
-void multi_array<T>::link(const unsigned int ext_key)
+void multi_array<T>::link(const size_t ext_key)
 {
     if (0!=key) {
         throw std::runtime_error("Dude you are ALREADY linked!");
@@ -241,13 +240,13 @@ void multi_array<T>::link(const unsigned int ext_key)
 }
 
 template <typename T>
-unsigned int multi_array<T>::unlink()
+size_t multi_array<T>::unlink()
 {
     if (0==key) {
         throw std::runtime_error("Dude! THis one aint linked at all!");
     }
 
-    unsigned int retKey = key;
+    size_t retKey = key;
     key = 0;
     return retKey;
 }
@@ -256,44 +255,34 @@ unsigned int multi_array<T>::unlink()
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    // TODO:    what about the old one???
-    //          will the ptr_map clean it up for us?
-    //          Ref-count!
-    //          You forgot broadcasting on assignment!
-    DEBUG_PRINT("Aliasing... dude!\n");
-    DEBUG_PRINT("ENTRY: %u = %u\n", key, rhs.getKey());
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            DEBUG_PRINT("RELEASE CURRENT VIEW AND DATA.\n");
             Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
             Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
             unlink();
         }
 
         if (rhs.getTemp()) {        // Take over temporary reference
-            DEBUG_PRINT("TAKING OVER TEMP\n");
             link(rhs.unlink());
             temp = false;
             delete &rhs;
         } else {                    // Create an alias of rhs.
-            DEBUG_PRINT("CREATING A VIEW OF RHS, ndim=%ld.\n", storage[rhs.getKey()].ndim);
             init();
 
-            storage[key].data        = NULL;
+            storage[key].data       = NULL;
             storage[key].base       = &storage[rhs.getKey()];
             storage[key].ndim       = storage[rhs.getKey()].ndim;
             storage[key].start      = storage[rhs.getKey()].start;
-            for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+            for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
                 storage[key].shape[i] = storage[rhs.getKey()].shape[i];
             }
-            for(bh_index i=0; i< storage[rhs.getKey()].ndim; i++) {
+            for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
                 storage[key].stride[i] = storage[rhs.getKey()].stride[i];
             }
         }
     }
 
-    DEBUG_PRINT("EXIT: %u = %u\n", key, rhs.getKey());
     return *this;
 }
 
@@ -309,10 +298,10 @@ multi_array<Ret>& multi_array<T>::as()
     storage[result->getKey()].base        = NULL;
     storage[result->getKey()].ndim        = storage[this->getKey()].ndim;
     storage[result->getKey()].start       = storage[this->getKey()].start;
-    for(bh_index i=0; i< storage[this->getKey()].ndim; i++) {
+    for(int64_t i=0; i< storage[this->getKey()].ndim; i++) {
         storage[result->getKey()].shape[i] = storage[this->getKey()].shape[i];
     }
-    for(bh_index i=0; i< storage[this->getKey()].ndim; i++) {
+    for(int64_t i=0; i< storage[this->getKey()].ndim; i++) {
 
         storage[result->getKey()].stride[i] = storage[this->getKey()].stride[i];
     }

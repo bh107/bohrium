@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 slice_range::slice_range() : begin(0), end(-1), stride(1) {}
-slice_range::slice_range(int begin, int end, unsigned int stride) : begin(begin), end(end), stride(stride) {}
+slice_range::slice_range(int begin, int end, size_t stride) : begin(begin), end(end), stride(stride) {}
 
-slice_range& _(int begin, int end, unsigned int stride)
+slice_range& _(int begin, int end, size_t stride)
 {
     return *(new slice_range(begin, end, stride));
 }

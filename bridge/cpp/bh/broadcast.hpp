@@ -23,10 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-void bh_pprint_shape(bh_index shape[], bh_intp len)
+void bh_pprint_shape(int64_t shape[], int64_t len)
 {
     std::cout << "Shape: ";
-    for(bh_intp k=0; k<len; k++) {
+    for(int64_t k=0; k<len; k++) {
         std::cout << shape[k];
         if (k<len-1) {
             std::cout << ", ";
@@ -46,7 +46,7 @@ bool same_shape(multi_array<T> & left, multi_array<T> & right)
     bh_array *right_a    = &storage[right.getKey()];
     bool compatible = left_a->ndim == right_a->ndim;
 
-    for(bh_index dim=right_a->ndim-1; compatible && (dim < right_a->ndim-1); dim++) {
+    for(int64_t dim=right_a->ndim-1; compatible && (dim < right_a->ndim-1); dim++) {
         compatible = (left_a->shape[dim] == right_a->shape[dim]);
     }
 
@@ -71,8 +71,8 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& vi
     bh_array *view_a    = &storage[view.getKey()];      // The new "broadcasted" shape
     bool broadcastable  = true;
     
-    bh_intp stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility
-    bh_intp operand_dim = higher_a->ndim-1;             // Create: shape and stride.
+    int64_t stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility
+    int64_t operand_dim = higher_a->ndim-1;             // Create: shape and stride.
 
     while((stretch_dim>=0) && broadcastable) {             
         broadcastable =   ((lower_a->shape[stretch_dim] == higher_a->shape[operand_dim]) || \
@@ -92,9 +92,9 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& vi
         operand_dim--;
     }
                                                         // Copy the remaining shapes.
-    memcpy(view_a->shape, higher_a->shape, (operand_dim+1) * sizeof(bh_index));
+    memcpy(view_a->shape, higher_a->shape, (operand_dim+1) * sizeof(int64_t));
                                                         // And set the remaining strides.
-    memset(view_a->stride, 0, (operand_dim+1) * sizeof(bh_index));
+    memset(view_a->stride, 0, (operand_dim+1) * sizeof(int64_t));
 
     view_a->ndim = higher_a->ndim;                   // Set ndim
 
