@@ -529,7 +529,7 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
 }
 
 template <typename T>
-T& scalar(multi_array<T>& op)
+T scalar(multi_array<T>& op)
 {
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, op);
     Runtime::instance()->flush();
@@ -538,13 +538,15 @@ T& scalar(multi_array<T>& op)
     T* data = (T*)(bh_base_array( op_a )->data);
     data += op_a->start;
 
-    if (op.getTemp()) {
-        delete &op;
+    T value = *data;
+
+    if (op.getTemp()) { // If it was a temp you will never see it again
+        delete &op;     // so you better clean it up!
+        Runtime::instance()->flush();
     }
 
-    return *data;
+    return value;
 }
-
 
 void Runtime::trash(size_t key)
 {

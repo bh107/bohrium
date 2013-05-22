@@ -366,7 +366,7 @@ template <typename T>       // Mixed...
 multi_array<size_t>& count(multi_array<T>& op);
 
 template <typename T>       // Turn the result of full reduction into a scalar
-T& scalar(multi_array<T>& op);
+T scalar(multi_array<T>& op);
 
 template <typename T>
 void pprint(multi_array<T>& op);

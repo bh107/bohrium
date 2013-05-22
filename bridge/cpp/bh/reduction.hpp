@@ -85,17 +85,23 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 
     Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
 
+    if (result->getTemp()) {
+        std::cout << "reduce-> result !!TEMP!!" << std::endl;
+    } else {
+        std::cout << "reduce-> result !NOT A TEMP!" << std::endl;
+    }
+
     return *result;
 }
 
 template <typename T>
 multi_array<T>& sum(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, ADD, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, ADD, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, ADD, 0);
+        result = &reduce(*result, ADD, 0);
     }
     return *result;
 }
@@ -103,11 +109,11 @@ multi_array<T>& sum(multi_array<T>& op)
 template <typename T>
 multi_array<T>& product(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, MULTIPLY, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, MULTIPLY, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, MULTIPLY, 0);
+        result = &reduce(*result, MULTIPLY, 0);
     }
 
     return *result;
@@ -116,11 +122,11 @@ multi_array<T>& product(multi_array<T>& op)
 template <typename T>
 multi_array<T>& min(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, MIN, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, MIN, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, MIN, 0);
+        result = &reduce(*result, MIN, 0);
     }
     return *result;
 }
@@ -128,11 +134,11 @@ multi_array<T>& min(multi_array<T>& op)
 template <typename T>
 multi_array<T>& max(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, MAX, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, MAX, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, MAX, 0);
+        result = &reduce(*result, MAX, 0);
     }
     return *result;
 }
@@ -140,11 +146,11 @@ multi_array<T>& max(multi_array<T>& op)
 template <typename T>
 multi_array<bool>& any(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, LOGICAL_OR, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, LOGICAL_OR, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, LOGICAL_OR, 0);
+        result = &reduce(*result, LOGICAL_OR, 0);
     }
     return *result;
 }
@@ -152,11 +158,11 @@ multi_array<bool>& any(multi_array<T>& op)
 template <typename T>
 multi_array<bool>& all(multi_array<T>& op)
 {
-    multi_array<T>* result = &reduce(op, LOGICAL_AND, 0);
-
     size_t dims = storage[op.getKey()].ndim;
+
+    multi_array<T>* result = &reduce(op, LOGICAL_AND, 0);
     for(size_t i=1; i<dims; i++) {
-        *result = reduce(*result, LOGICAL_AND, 0);
+        result = &reduce(*result, LOGICAL_AND, 0);
     }
     return *result;
 }
