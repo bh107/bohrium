@@ -73,12 +73,12 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
     } else {                                // Remove axis
         res_a->ndim  = op_a->ndim -1;
         int64_t stride = 1; 
-        for(int64_t i=0, j=0; i<op_a->ndim; i++) {
+        for(int64_t i=op_a->ndim-1, j=res_a->ndim-1; i>=0; --i) {
             if (i!=(int64_t)axis) {
                 res_a->shape[j]  = op_a->shape[i];
                 res_a->stride[j] = stride;
                 stride *= res_a->shape[j];
-                ++j;
+                --j;
             }
         }
     }
