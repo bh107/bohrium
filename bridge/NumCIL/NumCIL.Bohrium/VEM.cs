@@ -430,8 +430,6 @@ namespace NumCIL.Bohrium
                 if (destroys > 0)
                     foreach (var inst in instrBuffer.Where(x => x.opcode == bh_opcode.BH_DISCARD))
                         PInvoke.bh_destroy_array(inst.operand0);
-
-
             }
             finally
             {
@@ -556,21 +554,10 @@ namespace NumCIL.Bohrium
         {
             PInvoke.bh_error e;
             PInvoke.bh_array_ptr res;
+            
+            //TODO: We can just use an internal struct, and Pin it before calling
             lock (m_executelock)
-            {
                 e = PInvoke.bh_create_array(basearray, type, ndim, start, shape, stride, out res);
-            }
-
-            if (e == PInvoke.bh_error.BH_OUT_OF_MEMORY)
-            {
-                //If we get this, it can be because some of the unmanaged views are still kept in memory
-                Console.WriteLine("Ouch, forcing GC, allocated views: {0}", m_baseArrayRefs.Count + m_baseArrayRefs.Values.Select(x => x.Count).Sum());
-                GC.Collect();
-                ExecuteCleanups();
-
-                lock (m_executelock)
-                    e = PInvoke.bh_create_array(basearray, type, ndim, start, shape, stride, out res);
-            }
 
             if (e != PInvoke.bh_error.BH_SUCCESS)
                 throw new BohriumException(e);
