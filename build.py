@@ -58,6 +58,8 @@ def clean(components):
             p.terminate()
 
 def install(components,prefix,interpreter):
+    if not exists(join(prefix,"lib")):
+        os.mkdir(join(prefix,"lib"))
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         try:

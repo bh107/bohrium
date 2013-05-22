@@ -927,9 +927,10 @@ namespace NumCIL.Bohrium
         /// <param name="instructions">The list of instructions to execute</param>
         protected static void ExecuteWithFailureDetection(List<IInstruction> instructions)
         {
-            //Reclaim everything in gen 0
-            GC.Collect(0);
-
+            //Yield to the GC
+            GC.Collect();
+			GC.WaitForPendingFinalizers();
+			
 			VEM.Execute(instructions);
             instructions.Clear();
             return;

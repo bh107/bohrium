@@ -309,21 +309,56 @@ namespace NumCIL.Bohrium
                 else
                     throw new NotSupportedException();
             }
-        }
-
-        /// <summary>
-        /// Struct for typesafe assignment of a constant value
-        /// </summary>
-        [StructLayout(LayoutKind.Explicit)]
-        public struct bh_constant_value
-        {
+            
             /// <summary>
-            /// The boolean value
+            /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.
             /// </summary>
-            [FieldOffset(0)] 
-            public bh_bool     bool8;
-            /// <summary>
-            /// The int8 value
+            /// <returns>A <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.</returns>
+            public override string ToString()
+			{
+				if (this.type == bh_type.BH_BOOL)
+					return this.value.bool8.ToString();
+				if (this.type == bh_type.BH_INT16)
+					return this.value.int16.ToString();
+				if (this.type == bh_type.BH_INT32)
+					return this.value.int32.ToString();
+				if (this.type == bh_type.BH_INT64)
+					return this.value.int64.ToString();
+				if (this.type == bh_type.BH_UINT8)
+					return this.value.uint8.ToString();
+				if (this.type == bh_type.BH_UINT16)
+					return this.value.uint16.ToString();
+				if (this.type == bh_type.BH_UINT32)
+					return this.value.uint32.ToString();
+				if (this.type == bh_type.BH_UINT64)
+					return this.value.uint64.ToString();
+				if (this.type == bh_type.BH_FLOAT32)
+					return this.value.float32.ToString();
+				if (this.type == bh_type.BH_FLOAT64)
+					return this.value.float64.ToString();
+				if (this.type == bh_type.BH_COMPLEX64)
+					return this.value.complex64.ToString();
+				if (this.type == bh_type.BH_COMPLEX128)
+					return this.value.complex128.ToString();
+				else
+					throw new NotSupportedException();
+				
+			}
+		}
+		
+		/// <summary>
+		/// Struct for typesafe assignment of a constant value
+		/// </summary>
+		[StructLayout(LayoutKind.Explicit)]
+		public struct bh_constant_value
+		{
+			/// <summary>
+			/// The boolean value
+			/// </summary>
+			[FieldOffset(0)] 
+			public bh_bool     bool8;
+			/// <summary>
+			/// The int8 value
             /// </summary>
             [FieldOffset(0)] 
             public bh_int8     int8;
@@ -489,7 +524,7 @@ namespace NumCIL.Bohrium
                     return Set((bh_complex128)v);
 
                 throw new NotSupportedException(); 
-            }                
+            }        
         }
 
         /// <summary>
@@ -726,6 +761,13 @@ namespace NumCIL.Bohrium
 						return (bh_type)Marshal.ReadInt32(m_ptr, IntPtr.Size);
             	}
             }
+
+			/// <summary>
+			/// Gets the ptr value.
+			/// </summary>
+			public long PtrValue {
+				get { return m_ptr.ToInt64(); }
+			}
 
             /// <summary>
             /// A value that represents a null pointer
@@ -1242,9 +1284,61 @@ namespace NumCIL.Bohrium
                 return string.Format("{0}({1}, {2}, {3})", this.opcode, operand0, operand1, operand2);
             }
 
+			/// <summary>
+			/// Gets the opcode.
+			/// </summary>
             bh_opcode IInstruction.OpCode
             {
                 get { return opcode; }
+            }
+            
+            /// <summary>
+            /// Gets the userfunc id, number of output operands and number of input operands
+            /// </summary>
+            public Tuple<long, long, long> UserfuncIdNOutNIn
+            {
+            	get
+            	{
+            		if (this.userfunc == IntPtr.Zero)
+            			return null;
+            			
+            		if (Is64Bit)
+            		{
+            			return new Tuple<long, long, long>(
+            				Marshal.ReadInt64(this.userfunc, 0),
+							Marshal.ReadInt64(this.userfunc, 8),
+							Marshal.ReadInt64(this.userfunc, 16)
+						);
+            		}
+            		else
+            		{
+						return new Tuple<long, long, long>(
+							Marshal.ReadInt32(this.userfunc, 0),
+							Marshal.ReadInt32(this.userfunc, 4),
+							Marshal.ReadInt32(this.userfunc, 8)
+							);
+					}
+            	}
+            }
+            
+            /// <summary>
+            /// Gets the userfunc arrays.
+            /// </summary>
+            public bh_array_ptr[] UserfuncArrays
+            {
+            	get
+            	{
+            		var tp = this.UserfuncIdNOutNIn;
+            		if (tp == null)
+            			return null;
+            			
+            		var nops = tp.Item2 + tp.Item3;
+            		var arrays = new bh_array_ptr[nops];
+            		for(var i = 0; i < nops; i++)
+            			arrays[i].m_ptr = Marshal.ReadIntPtr(this.userfunc, (4 + i) * IntPtr.Size);
+            			
+            		return arrays;
+            	}
             }
         }
 
@@ -1489,5 +1583,12 @@ namespace NumCIL.Bohrium
 		/// <param name="opcode">The Opcode to query</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static int bh_operands(bh_opcode opcode);
+		
+		/// <summary>
+		/// Gets the number of operands required for the opcode
+		/// </summary>
+		/// <param name="inst">The instruction to examine</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static int bh_operands_in_instruction(bh_instruction inst);
 	}
 }
