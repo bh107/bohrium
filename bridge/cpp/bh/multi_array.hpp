@@ -73,18 +73,20 @@ multi_array<T>::multi_array(Dimensions... shape)
 
     unpack_shape(storage[key].shape, 0, shape...);
 
-    int64_t stride = 1;     // Setup strides
+    int64_t stride = 1;                 // Setup strides
     for(int64_t i=storage[key].ndim-1; 0 <= i; --i) {
         storage[key].stride[i] = stride;
         stride *= storage[key].shape[i];
     }
 }
 
-template <typename T>       // Deconstructor
+template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (key>0) {
-        Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        if (NULL == storage[key].base) {    // Only send free on base-array
+            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        }
         Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
         Runtime::instance()->trash(key);
     }
@@ -197,6 +199,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     stream << " ]" << std::endl;
 
     if (rhs.getTemp()) {    // Cleanup temporary
+        std::cout << "<< delete temp!" << std::endl;
         delete &rhs;
     }
 
