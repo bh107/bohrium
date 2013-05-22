@@ -598,6 +598,7 @@ namespace NumCIL.Bohrium
         		
             //Ensure all views are collected
             GC.Collect();
+            GC.WaitForPendingFinalizers();
 
             if (m_baseArrayRefs.Count > 0)
             {
