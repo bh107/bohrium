@@ -1,4 +1,6 @@
-﻿#region Copyright
+﻿//#define VIEW_BOOK_KEEPING
+
+#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -98,10 +100,12 @@ namespace NumCIL.Bohrium
         /// Flag that guards cleanup execution
         /// </summary>
         private bool m_preventCleanup = false;
+#if VIEW_BOOK_KEEPING
         /// <summary>
         /// A ref-counter for base arrays
         /// </summary>
         private Dictionary<PInvoke.bh_array_ptr, List<ViewPtrKeeper>> m_baseArrayRefs = new Dictionary<PInvoke.bh_array_ptr, List<ViewPtrKeeper>>();
+#endif
         /// <summary>
         /// Lookup table for all created userfunc structures
         /// </summary>
@@ -237,7 +241,8 @@ namespace NumCIL.Bohrium
             {
                 if (inst.opcode == bh_opcode.BH_DISCARD)
                 {
-                    var ar = inst.operand0;
+#if VIEW_BOOK_KEEPING
+					var ar = inst.operand0;
                     if (ar.BaseArray != PInvoke.bh_array_ptr.Null)
                     {
                         var lst = m_baseArrayRefs[ar.BaseArray];
@@ -254,7 +259,7 @@ namespace NumCIL.Bohrium
                         
                         m_baseArrayRefs.Remove(ar);
                     }
-
+#endif
                     //Discard the view
                     m_cleanups.Add(inst);
                 }
@@ -305,7 +310,7 @@ namespace NumCIL.Bohrium
                 lock (m_executelock)
                     ExecuteWithoutLocks(lst, out errorIndex);
             }
-            catch
+            catch (Exception ex)
             {
                 //This catch handler protects against leaks that happen during execution
                 if (cleanup_lst != null)
@@ -513,9 +518,10 @@ namespace NumCIL.Bohrium
                 new long[] { 1 }
             );
 
-            lock (m_releaselock)
+#if VIEW_BOOK_KEEPING
+			lock (m_releaselock)
                 m_baseArrayRefs.Add(ptr, new List<ViewPtrKeeper>());
-
+#endif
             return ptr;
         }
 
@@ -534,9 +540,10 @@ namespace NumCIL.Bohrium
             if (basearray == PInvoke.bh_array_ptr.Null)
                 throw new ArgumentException("Base array cannot be null for a view");
             var ptr = new ViewPtrKeeper(CreateArray(basearray, type, ndim, start, shape, stride));
-            lock (m_releaselock)
+#if VIEW_BOOK_KEEPING
+			lock (m_releaselock)
                 m_baseArrayRefs[basearray].Add(ptr);
-
+#endif
             return ptr;
         }
 
@@ -576,71 +583,70 @@ namespace NumCIL.Bohrium
         /// Releases all resources held
         /// </summary>
         private void Dispose(bool disposing)
-        {
-        	if (IsDisposed)
-        		return;
+		{
+			if (IsDisposed)
+				return;
         	
-        	if (disposing)
-        		GC.SuppressFinalize(this);
+			if (disposing)
+				GC.SuppressFinalize(this);
         		
-            //Ensure all views are collected
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+			//Ensure all views are collected
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+            
+#if VIEW_BOOK_KEEPING
+			if (m_baseArrayRefs.Count > 0)
+			{
+				Console.WriteLine("WARNING: Found allocated views on shutdown");
+				foreach (var k in m_baseArrayRefs.Values.ToArray())
+					foreach (var m in k.ToArray())
+						m.Dispose();
 
-            if (m_baseArrayRefs.Count > 0)
-            {
-                Console.WriteLine("WARNING: Found allocated views on shutdown");
-                foreach (var k in m_baseArrayRefs.Values.ToArray())
-                    foreach (var m in k.ToArray())
-                        m.Dispose();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
 
-                GC.Collect();
-            }
-
-            if (m_baseArrayRefs.Count > 0)
-#if DEBUG
-                Console.WriteLine("WARNING: Some base arrays were stil allocated during VEM shutdown");
-#else
-                throw new Exception("Some base arrays were stil allocated during VEM shutdown");
+			if (m_baseArrayRefs.Count > 0)
+				Console.WriteLine("WARNING: Some base arrays were stil allocated during VEM shutdown");
 #endif
 
-            m_preventCleanup = false;
-            ExecuteCleanups();
-            
-            //From here on, we no longer accept new discards
-            IsDisposed = true;
-
-            lock (m_executelock)
-            {
-                if (m_childs != null)
-                {
-                    for (int i = 0; i < m_childs.Length; i++)
-                        m_childs[i].shutdown();
-
-                    if (m_childsPtr != IntPtr.Zero)
-                    {
-                        for (int i = 0; i < m_childs.Length; i++)
-                        {
-                            IntPtr cur = Marshal.ReadIntPtr(m_childsPtr, Marshal.SizeOf(typeof(IntPtr)) * i);
-                            PInvoke.bh_component_free(cur);
-                            cur += Marshal.SizeOf(typeof(IntPtr));
-                        }
-
-                        m_childsPtr = IntPtr.Zero;
-                    }
-
-                    m_childs = null;
-                }
-
-                if (m_componentPtr != IntPtr.Zero)
-                {
-                    PInvoke.bh_component_free(m_componentPtr);
-                    m_component.config = IntPtr.Zero;
-                }
-
-                m_componentPtr = IntPtr.Zero;
-            }
-        }
+			m_preventCleanup = false;
+			ExecuteCleanups();
+			
+			//From here on, we no longer accept new discards
+			IsDisposed = true;
+			
+			lock (m_executelock)
+			{
+				if (m_childs != null)
+				{
+					for (int i = 0; i < m_childs.Length; i++)
+						m_childs[i].shutdown();
+					
+					if (m_childsPtr != IntPtr.Zero)
+					{
+						for (int i = 0; i < m_childs.Length; i++)
+						{
+							IntPtr cur = Marshal.ReadIntPtr(m_childsPtr, Marshal.SizeOf(typeof(IntPtr)) * i);
+							PInvoke.bh_component_free(cur);
+							cur += Marshal.SizeOf(typeof(IntPtr));
+						}
+						
+						m_childsPtr = IntPtr.Zero;
+					}
+					
+					m_childs = null;
+				}
+				
+				if (m_componentPtr != IntPtr.Zero)
+				{
+					PInvoke.bh_component_free(m_componentPtr);
+					m_component.config = IntPtr.Zero;
+				}
+				
+				m_componentPtr = IntPtr.Zero;
+			}
+		}
 
         /// <summary>
         /// Finalizes the VEM and shuts down the Bohrium components
