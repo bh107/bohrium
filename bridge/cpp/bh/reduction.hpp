@@ -85,12 +85,6 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 
     Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
 
-    if (result->getTemp()) {
-        std::cout << "reduce-> result !!TEMP!!" << std::endl;
-    } else {
-        std::cout << "reduce-> result !NOT A TEMP!" << std::endl;
-    }
-
     return *result;
 }
 

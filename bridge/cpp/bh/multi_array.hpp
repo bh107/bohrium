@@ -196,6 +196,10 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     } 
     stream << " ]" << std::endl;
 
+    if (rhs.getTemp()) {    // Cleanup temporary
+        delete &rhs;
+    }
+
     return stream;
 }
 
