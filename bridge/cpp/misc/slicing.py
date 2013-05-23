@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import bohrium as np
 
+"""
 print "Slicing Vector!"
 a = np.ones((20))
 np.bridge.flush()
@@ -25,6 +26,9 @@ print "\n\n>>>> vector-sub\n"
 a[3:20:2] = 1.0
 np.bridge.flush()
 
+"""
+
+"""
 print "Slicing Matrix!"
 a = np.ones((9,9))
 np.bridge.flush()
@@ -53,4 +57,58 @@ print "\n\n>>>> matrix-both-odd\n"
 a[3:9:2, 3:9:2] = 1.0
 np.bridge.flush()
 
-print a[1:9:2, 1:9:2]
+"""
+
+"""
+print "Assign to slice (MATRIX)"
+a = np.ones((9,9))
+np.bridge.flush()
+
+print "\n\n>>>> first row\n"
+a[0, 0:9:] = 1.0
+np.bridge.flush()
+
+print "\n\n>>>> last row\n"
+a[-1, 0:9:] = 1.0
+np.bridge.flush()
+
+print "\n\n>>>> inbetween row\n"
+a[4, 0:9:] = 1.0
+np.bridge.flush()
+
+"""
+
+"""
+print "Assign to slice2 (MATRIX)"
+a = np.ones((9,9))
+np.bridge.flush()
+
+print "\n\n>>>> first row\n"
+a[0:9:, 0] = 1.0
+np.bridge.flush()
+
+print "\n\n>>>> last row\n"
+a[0:9:,-1] = 1.0
+np.bridge.flush()
+
+print "\n\n>>>> inbetween row\n"
+a[0:9:, 4] = 1.0
+np.bridge.flush()
+"""
+print "Assign to slice2 single-element (MATRIX)"
+a = np.ones((9,9))
+np.bridge.flush()
+
+print "\n\n>>>> first row\n"
+a[0, 0] = 3.0
+np.bridge.flush()
+
+print "\n\n>>>> inbetween row\n"
+a[4, 4] = 3.0
+np.bridge.flush()
+
+print "\n\n>>>> last row\n"
+a[-1,-1] = 3.0
+np.bridge.flush()
+
+
