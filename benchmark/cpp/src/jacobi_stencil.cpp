@@ -18,11 +18,13 @@ T solve(int w, int h, int i)
     east    = grid[_(1,-1,1)][_(2, w,1)];
     west    = grid[_(1,-1,1)][_(0,-2,1)];
 
-    grid                = 0.0;              // Initialize grid
-    grid[_(0,h,1)][ 0]  = -273.15;          // .
-    grid[_(0,h,1)][-1]  = -273.15;          // .
-    grid[-1][_(0,w,1)]  = -273.15;          // .
-    grid[ 0][_(0,w,1)]  =    40.0;          // and border values.
+    grid                    = 0.0;          // Initialize grid
+    grid[_(1,h+2,1)][ 0]    = -273.15;      // .
+    grid[_(1,h+2,1)][-1]    = -273.15;      // .
+    grid[-1][_(0,w+2,1)]    = -273.15;      // .
+    grid[ 0][_(0,w+2,1)]    =    40.0;      // and border values.
+
+    grid[2][2] = 13.0;
 
     for(int k=0; k<i; k++) {                // Approximate
         center = (T)0.2*(center+north+east+west+south);
