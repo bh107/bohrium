@@ -84,7 +84,6 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (key>0) {
-        std::cout << "~multi_array() Addr: " << &storage[key] << std::endl;
         if (NULL == storage[key].base) {    // Only send free on base-array
             Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
         }
@@ -200,7 +199,6 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     stream << " ]" << std::endl;
 
     if (rhs.getTemp()) {    // Cleanup temporary
-        std::cout << "<< delete temp!" << std::endl;
         delete &rhs;
     }
 
