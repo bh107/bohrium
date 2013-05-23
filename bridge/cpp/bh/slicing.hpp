@@ -65,21 +65,6 @@ slice<T>& slice<T>::operator[](slice_range& rhs)
 }
 
 /**
- *  Construct a view based on a slice.
- *  Such as:
- *
- *  center = grid[_(1,-1,1)][_(1,-1,1)];
- */
-template <typename T>
-multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
-{
-    multi_array<T>* vv = &rhs.view();
-    storage[getKey()] = storage[vv->getKey()];
-
-    return *this;
-}
-
-/**
  * Assign directly to a slice.
  * Such as:
  *
@@ -92,6 +77,7 @@ template <typename T>
 multi_array<T>& slice<T>::operator=(T rhs)
 {
     multi_array<T>* vv = &this->view();
+
     *vv = rhs;
     vv->setTemp(true);
 

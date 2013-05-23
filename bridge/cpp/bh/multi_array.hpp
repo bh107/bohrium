@@ -265,7 +265,9 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+            if (NULL == storage[key].base) {
+                Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+            }
             Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
             unlink();
         }
@@ -292,6 +294,36 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 
     return *this;
 }
+
+/**
+ *  Aliasing via slicing
+ *
+ *  Construct a view based on a slice.
+ *  Such as:
+ *
+ *  center = grid[_(1,-1,1)][_(1,-1,1)];
+ *
+ *  TODO: this is probobaly not entirely correct...
+ */
+template <typename T>
+multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
+{
+    multi_array<T>* vv = &rhs.view();
+
+    if (key>0) {                // Release current linkage
+        if (NULL == storage[key].base) {
+            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        }
+        Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+        unlink();
+    }
+
+    link(vv->unlink());
+    delete vv;
+
+    return *this;
+}
+
 
 //
 // Typecasting
