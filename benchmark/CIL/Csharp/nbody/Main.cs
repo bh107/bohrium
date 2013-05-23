@@ -52,10 +52,10 @@ namespace nbody
 								data.Sync();
 							}
 						} else {
-							var data = new nBodySolverDoubleNoTempArrays.Galaxy (size);
+							var data = new nBodySolverFloatNoTempArrays.Galaxy (size);
 							using (new DispTimer(string.Format("nBodyNoTemp (Float) {0}*{1}", size, iterations)))
 							{
-								nBodySolverDoubleNoTempArrays.Solve(data, iterations);
+								nBodySolverFloatNoTempArrays.Solve(data, iterations);
 								data.Sync();
 							}
 						}
@@ -70,10 +70,10 @@ namespace nbody
 								data.Sync();
 							}
 						} else {
-							var data = new nBodySolverDouble.Galaxy (size);
+							var data = new nBodySolverFloat.Galaxy (size);
 							using (new DispTimer(string.Format("nBody (Float) {0}*{1}", size, iterations)))
 							{
-								nBodySolverDouble.Solve(data, iterations);
+								nBodySolverFloat.Solve(data, iterations);
 								data.Sync();
 							}
 						}
