@@ -270,7 +270,46 @@ namespace NumCIL.Bohrium
             }
         }
 
-        /// <summary>
+		/// <summary>
+		/// If the GC is responsible for collecting expired views and bases, 
+		/// it returns these in random order, which is not valid in Bohrium.
+		///
+		///	This method will pick up the invalid order and swap instructions to
+		/// ensure that the views are not discarded before the base array
+		/// </summary>
+		/// <returns>The input array</returns>
+		/// <param name="instructions">The instructions to fix.</param>
+		private static PInvoke.bh_instruction[] LowPassDiscardFixer(PInvoke.bh_instruction[] instructions)
+		{
+			var bases = new Dictionary<long, long>();
+			for(var i = 0; i < instructions.Length; i++)
+			{
+				if (instructions[i].opcode == bh_opcode.BH_DISCARD && instructions[i].operand0 != PInvoke.bh_array_ptr.Null)
+				{
+					var pid = instructions[i].operand0.BaseArray == PInvoke.bh_array_ptr.Null ? instructions[i].operand0.PtrValue : instructions[i].operand0.BaseArray.PtrValue;
+					if (instructions[i].operand0.BaseArray == PInvoke.bh_array_ptr.Null)
+					{
+						bases[pid] = i;
+					}
+					else
+					{
+						long ix;
+						if (bases.TryGetValue(pid, out ix))
+						{
+							var n = instructions[ix];
+							instructions[ix] = instructions[i];
+							instructions[i] = n;
+							bases[pid] = i;
+						}
+					}
+					
+				}
+			}
+			
+			return instructions;
+		}
+		
+		/// <summary>
         /// Executes a list of instructions
         /// </summary>
         /// <param name="inst_list">The list of instructions to execute</param>
@@ -299,7 +338,11 @@ namespace NumCIL.Bohrium
                         ix++;
                     }
 
-                    lst = lst.Concat(cleanup_lst);
+#if !VIEW_BOOK_KEEPING
+					lst = lst.Concat(LowPassDiscardFixer(cleanup_lst.Cast<PInvoke.bh_instruction>().ToArray()).Cast<IInstruction>());
+#else
+					lst = lst.Concat(cleanup_lst);
+#endif
                 }
             }
 
