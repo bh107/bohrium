@@ -10,7 +10,7 @@ using namespace argparse;
 template <typename T>
 T solve(int w, int h, int i)
 {
-    multi_array<T> grid(h+2,w+2), center, north, south, east, west;
+    multi_array<T> grid(h,w), center, north, south, east, west;
 
     center  = grid[_(1,-1,1)][_(1,-1,1)];   // Setup stencil
     north   = grid[_(0,-2,1)][_(1,-1,1)];
@@ -18,13 +18,11 @@ T solve(int w, int h, int i)
     east    = grid[_(1,-1,1)][_(2, w,1)];
     west    = grid[_(1,-1,1)][_(0,-2,1)];
 
-    grid                    = 0.0;          // Initialize grid
-    grid[_(1,h+2,1)][ 0]    = -273.15;      // .
-    grid[_(1,h+2,1)][-1]    = -273.15;      // .
-    grid[-1][_(0,w+2,1)]    = -273.15;      // .
-    grid[ 0][_(0,w+2,1)]    =    40.0;      // and border values.
-
-    grid[2][2] = 13.0;
+    grid                = 0.0;              // Initialize grid
+    grid[_(1,h,1)][ 0]  = -273.15;          // .
+    grid[_(1,h,1)][-1]  = -273.15;          // .
+    grid[-1][_(0,w,1)]  = -273.15;          // .
+    grid[ 0][_(0,w,1)]  =    40.0;          // and border values.
 
     for(int k=0; k<i; k++) {                // Approximate
         center = (T)0.2*(center+north+east+west+south);
@@ -65,7 +63,6 @@ int main(int argc, char* argv[])
     size_t start = sample_time();
     double output = solve<double>(args.size[0], args.size[1], args.size[2]);
     size_t end = sample_time();
-    stop();
                                                     // Output timing
     cout << "{elapsed-time: "<< (end-start)/1000000.0 <<"";          
     if (args.verbose) {                             // and values.
@@ -74,6 +71,8 @@ int main(int argc, char* argv[])
         cout << "]";
     }
     cout << "}" << endl;
+
+    stop();
 
     return 0;
 }
