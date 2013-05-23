@@ -84,6 +84,7 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (key>0) {
+        std::cout << "~multi_array() Addr: " << &storage[key] << std::endl;
         if (NULL == storage[key].base) {    // Only send free on base-array
             Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
         }
@@ -349,6 +350,21 @@ multi_array<Ret>& multi_array<T>::as()
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
 
     return *result;
+}
+
+/**
+ *  Update operand!
+ */
+template <typename T>
+multi_array<T>& multi_array<T>::update(multi_array& rhs)
+{
+    if (1>key) {    // We do not have anything to update!
+        throw std::runtime_error("Far out dude! you are trying to update "
+                                 "something that does not exist!");
+    }
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+
+    return *this;
 }
 
 }

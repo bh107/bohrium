@@ -200,6 +200,8 @@ public:
     multi_array<T>& copy();                 // Explicity create a copy of array
     multi_array<T>& flatten();              // Create a flat copy of the array
 
+    multi_array<T>& update(multi_array& rhs); // Fill the array with values from another.
+
     multi_array<T>& transpose();
     
     template <typename Ret>                 // Typecast; implicit copy
