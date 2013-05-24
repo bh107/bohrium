@@ -10,7 +10,7 @@ using namespace argparse;
 template <typename T>
 T solve(int w, int h, int i)
 {
-    multi_array<T> grid(h,w),
+    multi_array<T> grid(h,w), work,
                    center, north, south, east, west;
 
     center  = grid[_(1,-1,1)][_(1,-1,1)];   // Setup stencil
@@ -26,7 +26,8 @@ T solve(int w, int h, int i)
     grid[ 0][_(0,w,1)]  =    40.0;          // and border values.
 
     for(int k=0; k<i; k++) {                // Approximate
-        center.update((T)0.2*(center+north+east+west+south));
+        work = (T)0.2*(center+north+east+west+south);
+        center.update(work);
     }
 
     return scalar(sum(grid));

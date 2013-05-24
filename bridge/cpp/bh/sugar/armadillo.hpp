@@ -1,6 +1,5 @@
-// stuff for armadillo lovers...
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
+This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
