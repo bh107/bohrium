@@ -95,7 +95,7 @@ public:
 
         handles[symbol] = dlopen(lib_fn, RTLD_NOW); // Open library
         if (!handles[symbol]) {
-            std::cout << "Err: dlopen() failed." << std::endl;
+            std::cout << "Err: dlopen() failed. Symbol=["<< symbol <<"]" << std::endl;
             return false;
         }
 
@@ -104,7 +104,7 @@ public:
         funcs[symbol] = (func)dlsym(handles[symbol], symbol.c_str());
         error = dlerror();
         if (error) {
-            std::cout << "Err: Failed loading '" << symbol << "', error=['" << error << "']" << std::endl;
+            std::cout << "Err: Failed loading [" << symbol << "], error=[" << error << "]" << std::endl;
             free(error);
             return false;
         }
@@ -130,12 +130,12 @@ public:
         sprintf(kernel_fn, "%s/%s_%s.c", kernel_path, symbol.c_str(), uid);
         kernel_fd = open(kernel_fn, O_WRONLY | O_CREAT | O_EXCL, 0644);
         if (!kernel_fd) {                               
-            std::cout << "Err: Failed opening kernel-file << " << kernel_fn << "." << std::endl;
+            std::cout << "Err: Failed opening kernel-file [" << kernel_fn << "]." << std::endl;
             return false;
         }
         kernel_fp = fdopen(kernel_fd, "w");
         if (!kernel_fp) {
-            std::cout << "Err: Failed opening kernel-file for writing." << std::endl;
+            std::cout << "Err: Failed opening kernel-file [" << kernel_fn << "]." << std::endl;
             return false;
         }
         fwrite(sourcecode, 1, source_len, kernel_fp);
@@ -177,7 +177,7 @@ public:
         );      
         cmd_stdin = popen(cmd, "w");                    // Execute the command
         if (!cmd_stdin) {
-            std::cout << "Err: Could not execute process!" << std::endl;
+            std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
             return false;
         }
         fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write to stdin (sourcecode)
