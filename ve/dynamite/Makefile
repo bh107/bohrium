@@ -31,5 +31,9 @@ clean:
 		touch objects/empty
 
 install: all
-		cp $(LIB) $(INSTALLDIR)
+		cp $(LIB) $(INSTALLDIR)/
+		mkdir -p $(INSTALLDIR)/dynamite/kernels
+		mkdir -p $(INSTALLDIR)/dynamite/objects
+		mkdir -p $(INSTALLDIR)/dynamite/snippets
+		cp snippets/*.tpl $(INSTALLDIR)/dynamite/snippets/
 
