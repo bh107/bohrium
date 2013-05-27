@@ -132,6 +132,17 @@ size_t multi_array<T>::len()
 }
 
 template <typename T>
+inline
+int64_t multi_array<T>::shape(int64_t dim)
+{
+    if (dim>=storage[key].ndim) {
+        throw std::runtime_error("Dude you are like totally out of bounds!\n");
+    }
+
+    return storage[key].shape[dim];
+}
+
+template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);
@@ -368,6 +379,59 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, value);
 
     return *this;
+}
+
+// NON-MEMBER STUFF
+template <typename T>
+multi_array<T>& copy(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying create a copy "
+                                 "of something that does not exist!\n");
+    }
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& flatten(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying to flatten "
+                                 "something that does not exist!\n");
+    }
+
+    throw std::runtime_error("flatten: Not implemented.\n");
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& transpose(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying to transpose "
+                                 "something that does not exist!\n");
+    }
+
+    throw std::runtime_error("transpose: Not implemented.\n");
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
 }
 
 }
