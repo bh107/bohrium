@@ -23,10 +23,26 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T, typename ...Dimensions>
-multi_array<T>& ones(const Dimensions&... shape)
+multi_array<T>& value(T val, const Dimensions&... shape)
+{
+    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    *result = val;
+
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& empty(const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
 
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& ones(const Dimensions&... shape)
+{
+    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
     *result = (T)1;
 
     return *result;
@@ -36,7 +52,6 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& zeros(const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
-
     *result = (T)0;
 
     return *result;
