@@ -8,10 +8,15 @@ using namespace bh;
 using namespace argparse;
 
 template <typename T>
-T solve(int w, int h, int i)
+T solve(int w, int h, int iterations)
 {
-    multi_array<T> grid(h,w), work,
-                   center, north, south, east, west;
+    multi_array<T> grid, center, north, south, east, west;
+
+    grid                = zeros<T>(w, h);   // Initialize grid
+    grid[_(1,h,1)][ 0]  = -273.15;          // .
+    grid[_(1,h,1)][-1]  = -273.15;          // .
+    grid[-1][_(0,w,1)]  = -273.15;          // .
+    grid[ 0][_(0,w,1)]  =    40.0;          // and border values.
 
     center  = grid[_(1,-1,1)][_(1,-1,1)];   // Setup stencil
     north   = grid[_(0,-2,1)][_(1,-1,1)];
@@ -19,17 +24,9 @@ T solve(int w, int h, int i)
     east    = grid[_(1,-1,1)][_(2, w,1)];
     west    = grid[_(1,-1,1)][_(0,-2,1)];
 
-    grid                = 0.0;              // Initialize grid
-    grid[_(1,h,1)][ 0]  = -273.15;          // .
-    grid[_(1,h,1)][-1]  = -273.15;          // .
-    grid[-1][_(0,w,1)]  = -273.15;          // .
-    grid[ 0][_(0,w,1)]  =    40.0;          // and border values.
-
-    for(int k=0; k<i; k++) {                // Approximate
-        work = (T)0.2*(center+north+east+west+south);
-        center.update(work);
+    for(int i=0; i<iterations; i++) {       // Approximate
+        center((T)0.2*(center+north+east+west+south));
     }
-
     return scalar(sum(grid));
 }
 
