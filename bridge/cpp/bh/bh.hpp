@@ -1,5 +1,5 @@
 /*
-This file is part of cphVB and copyright (c) 2012 the cphVB team:
+This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
@@ -149,15 +149,14 @@ public:
     slice<T>& operator[](int rhs);                  // Select a single element / dimension
     slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
-    multi_array& operator()(const T& n);              // Shaping / reshaping
-    multi_array& operator()(const T& m, const T& n);              // Shaping / reshaping
-    multi_array& operator()(const T& d2, const T& d1, const T& d0);              // Shaping / reshaping
+    multi_array& operator()(const T& n);            // Update
+    multi_array& operator()(multi_array<T>& rhs);
    
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
 
     template <typename In>
-    multi_array<T>& operator=(multi_array<In>& rhs);    // Initialization / assignment.
+    multi_array<T>& operator=(multi_array<In>& rhs);// Initialization / assignment.
 
     multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
 
@@ -197,10 +196,7 @@ public:
     multi_array& operator--(int);
 
     size_t len();
-    multi_array<T>& copy();                 // Explicity create a copy of array
-    multi_array<T>& flatten();              // Create a flat copy of the array
-
-    multi_array<T>& transpose();
+    int64_t shape(int64_t dim);             // Probe for the shape of a dimension
     
     template <typename Ret>                 // Typecast; implicit copy
     multi_array<Ret>& as();
@@ -326,6 +322,9 @@ private:
 };
 
 template <typename T>       // Generators / Initializers
+multi_array<T>& value(T val, size_t n, ...);
+
+template <typename T>       
 multi_array<T>& empty(size_t n, ...);
 
 template <typename T>
@@ -367,6 +366,18 @@ multi_array<size_t>& count(multi_array<T>& op);
 
 template <typename T>       // Turn the result of full reduction into a scalar
 T scalar(multi_array<T>& op);
+
+                            //
+                            // What are these called? Transformers??? :)
+                            //
+template <typename T>
+multi_array<T>& copy(multi_array<T>& rhs);     // Explicity create a copy of array
+
+template <typename T>
+multi_array<T>& flatten(multi_array<T>& rhs);  // Create a flat copy of the array
+
+template <typename T>
+multi_array<T>& transpose(multi_array<T>& rhs);
 
 template <typename T>
 void pprint(multi_array<T>& op);

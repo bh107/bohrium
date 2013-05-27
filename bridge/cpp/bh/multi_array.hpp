@@ -132,6 +132,17 @@ size_t multi_array<T>::len()
 }
 
 template <typename T>
+inline
+int64_t multi_array<T>::shape(int64_t dim)
+{
+    if (dim>=storage[key].ndim) {
+        throw std::runtime_error("Dude you are like totally out of bounds!\n");
+    }
+
+    return storage[key].shape[dim];
+}
+
+template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
     Runtime::instance()->enqueue((bh_opcode)BH_SYNC, *this);
@@ -199,7 +210,6 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     stream << " ]" << std::endl;
 
     if (rhs.getTemp()) {    // Cleanup temporary
-        std::cout << "<< delete temp!" << std::endl;
         delete &rhs;
     }
 
@@ -219,14 +229,7 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
     return (*(new slice<T>(*this)))[rhs];
 }
 
-//
-// Reshaping
-//
-template <typename T>
-multi_array<T>& multi_array<T>::operator()(const T& n) {
-    std::cout << "Reshape to: " << n << std::endl;
-    return *this;
-}
+
 
 // Initialization
 template <typename T>
@@ -265,7 +268,9 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+            if (NULL == storage[key].base) {
+                Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+            }
             Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
             unlink();
         }
@@ -293,6 +298,36 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     return *this;
 }
 
+/**
+ *  Aliasing via slicing
+ *
+ *  Construct a view based on a slice.
+ *  Such as:
+ *
+ *  center = grid[_(1,-1,1)][_(1,-1,1)];
+ *
+ *  TODO: this is probobaly not entirely correct...
+ */
+template <typename T>
+multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
+{
+    multi_array<T>* vv = &rhs.view();
+
+    if (key>0) {                // Release current linkage
+        if (NULL == storage[key].base) {
+            Runtime::instance()->enqueue((bh_opcode)BH_FREE, *this);
+        }
+        Runtime::instance()->enqueue((bh_opcode)BH_DISCARD, *this);
+        unlink();
+    }
+
+    link(vv->unlink());
+    delete vv;
+
+    return *this;
+}
+
+
 //
 // Typecasting
 //
@@ -315,6 +350,86 @@ multi_array<Ret>& multi_array<T>::as()
     storage[result->getKey()].data        = NULL;
 
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
+
+    return *result;
+}
+
+//
+// Update
+//
+template <typename T>
+multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
+{
+    if (1>key) {    // We do not have anything to update!
+        throw std::runtime_error("Far out dude! you are trying to update "
+                                 "something that does not exist!");
+    }
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+
+    return *this;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator()(const T& value) {
+
+    if (1>key) {    // We do not have anything to update!
+        throw std::runtime_error("Far out dude! you are trying to update "
+                                 "something that does not exist!");
+    }
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, value);
+
+    return *this;
+}
+
+// NON-MEMBER STUFF
+template <typename T>
+multi_array<T>& copy(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying create a copy "
+                                 "of something that does not exist!\n");
+    }
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& flatten(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying to flatten "
+                                 "something that does not exist!\n");
+    }
+
+    throw std::runtime_error("flatten: Not implemented.\n");
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& transpose(multi_array<T>& rhs)
+{
+    if (1>rhs.getKey()) {   // We do not have anything to copy!
+        throw std::runtime_error("Far out dude! you are trying to transpose "
+                                 "something that does not exist!\n");
+    }
+
+    throw std::runtime_error("transpose: Not implemented.\n");
+
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
     return *result;
 }

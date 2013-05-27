@@ -28,6 +28,18 @@ type = ve
 impl = /opt/bohrium/libbh_ve_naive.so
 type = ve
 
+[dynamite]
+impl = /opt/bohrium/libbh_ve_dynamite.so
+type = ve
+#
+compiler_cmd="clang -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="gcc -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="gcc -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="/opt/a64/bin/opencc -O2 -fPIC -std=c99 -x c -shared - -o "
+object_path=/opt/bohrium/dynamite/objects
+kernel_path=/opt/bohrium/dynamite/kernels
+snippet_path=/opt/bohrium/dynamite/snippets
+
 [score]
 impl = /opt/bohrium/libbh_ve_score.so
 type = ve

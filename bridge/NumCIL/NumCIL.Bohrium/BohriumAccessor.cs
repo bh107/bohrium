@@ -196,7 +196,7 @@ namespace NumCIL.Bohrium
 			if (VEM.Instance.SupportsRandom)
 			{
                 res[typeof(NumCIL.Generic.IRandomGeneratorOp<T>)] = bh_opcode.BH_USERFUNC;
-				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + typeof(T).Name)] = bh_opcode.BH_USERFUNC; }
+				try { res[basic.Assembly.GetType("NumCIL.Generic.RandomGeneratorOp" + (typeof(T) == typeof(float) ? "Float" : typeof(T).Name))] = bh_opcode.BH_USERFUNC; }
 				catch {}
 			}
             if (VEM.Instance.SupportsMatmul)

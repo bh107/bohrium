@@ -201,3 +201,20 @@ TEST(slicing,matrix_AA2_AA2_both_odd)
     int stride[]    = {18,2};
     EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 30));
 }
+
+/*
+TEST(slicing,assign_to_view_MATRIX2D)
+{
+    multi_array<double> b(9,9);
+
+    bh_array* view = &storage[v.getKey()];
+
+    b = 1.0;
+    b[0][_(0,9,2)] = 3.5;
+    b[-1][_(0,9,2)] = 3.5;
+
+    int shape[]     = {3,3};
+    int stride[]    = {18,2};
+    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 30));
+}
+*/

@@ -61,3 +61,7 @@ benchmark/CIL/Csharp/nbody/bin
 benchmark/CIL/Csharp/nbody/obj
 test/CIL/UnitTest/Benchmarks/FSharp/bin
 test/CIL/UnitTest/Benchmarks/FSharp/obj
+benchmark/CIL/Csharp/blackscholes/bin
+benchmark/CIL/Csharp/blackscholes/obj
+benchmark/CIL/Csharp/jacobi/bin
+benchmark/CIL/Csharp/jacobi/obj

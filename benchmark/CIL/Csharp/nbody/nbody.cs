@@ -155,7 +155,6 @@ namespace nbody
 			b.r0.Pow((DATA)0.5, b.r0);
 			FillDiagonal(b.r0, (Double)1.0);
 			
-
 			// prevent collition
             var mask = ((Double)1.0) * (NdArray)(b.r0 < (Double) 1.0);
 			var imask = (NdArray)(b.r0 >= (Double) 1.0);
@@ -170,40 +169,27 @@ namespace nbody
 			b.dx.Mul(m,b.dx);
 			b.dy.Mul(m,b.dy);
 			b.dz.Mul(m,b.dz);			
-			b.dx.Div(m,b.dz);		
+			b.dx.Div(m,b.dz);
+			b.r0.Pow(3, b.r0);
 			b.dx.Div(b.r0, b.dx);
 			b.dy.Div(b.r0, b.dy);
 			b.dz.Div(b.r0, b.dz);
-
-			//Combined pow for r
-			b.r0.Pow(2, b.r0);
-			
-			//Combined multiply
-			b.pmass.Mul(G, b.r1);
-			
-			//Combined div
-			b.r1.Div(b.r0, b.r1);
-			
-			//Update outputs, use dx,dy,dz for storing
-			b.dx.Mul(b.r1, b.dx);
-			b.dy.Mul(b.r1, b.dy);
-			b.dz.Mul(b.r1, b.dz);
-			
-			//The diagonal nan numbers must be removed so that the force from a body
-			//upon itself is zero
+		
+			// Set the force (acceleration) a body exerts on it self to zero
 			FillDiagonal(b.dx, 0);
 			FillDiagonal(b.dy, 0);
 			FillDiagonal(b.dz, 0);
-
-			b.dx.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
+			
+			Double dt = (Double) (60*60*24*365.25); // Years in seconds
+			b.dx.Reduce<Add>(0, b.t0);
+			b.dx.Mul(dt, b.t0);
 			b.vx.Add(b.t0, b.vx);
 			b.dy.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
-			b.vy.Add(b.t0, b.vx);
+			b.dy.Mul(dt, b.t0);
+			b.vy.Add(b.t0, b.vy);
 			b.dz.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
-			b.vz.Add(b.t0, b.vx);
+			b.dz.Mul(dt, b.t0);
+			b.vz.Add(b.t0, b.vz);						
 		}
 
 		private static void Move(Galaxy galaxy)
@@ -395,7 +381,6 @@ namespace nbody
 			b.r0.Pow((DATA)0.5, b.r0);
 			FillDiagonal(b.r0, (Single)1.0);
 			
-
 			// prevent collition
             var mask = ((Single)1.0) * (NdArray)(b.r0 < (Single) 1.0);
 			var imask = (NdArray)(b.r0 >= (Single) 1.0);
@@ -410,40 +395,27 @@ namespace nbody
 			b.dx.Mul(m,b.dx);
 			b.dy.Mul(m,b.dy);
 			b.dz.Mul(m,b.dz);			
-			b.dx.Div(m,b.dz);		
+			b.dx.Div(m,b.dz);
+			b.r0.Pow(3, b.r0);
 			b.dx.Div(b.r0, b.dx);
 			b.dy.Div(b.r0, b.dy);
 			b.dz.Div(b.r0, b.dz);
-
-			//Combined pow for r
-			b.r0.Pow(2, b.r0);
-			
-			//Combined multiply
-			b.pmass.Mul(G, b.r1);
-			
-			//Combined div
-			b.r1.Div(b.r0, b.r1);
-			
-			//Update outputs, use dx,dy,dz for storing
-			b.dx.Mul(b.r1, b.dx);
-			b.dy.Mul(b.r1, b.dy);
-			b.dz.Mul(b.r1, b.dz);
-			
-			//The diagonal nan numbers must be removed so that the force from a body
-			//upon itself is zero
+		
+			// Set the force (acceleration) a body exerts on it self to zero
 			FillDiagonal(b.dx, 0);
 			FillDiagonal(b.dy, 0);
 			FillDiagonal(b.dz, 0);
-
-			b.dx.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
+			
+			Single dt = (Single) (60*60*24*365.25); // Years in seconds
+			b.dx.Reduce<Add>(0, b.t0);
+			b.dx.Mul(dt, b.t0);
 			b.vx.Add(b.t0, b.vx);
 			b.dy.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
-			b.vy.Add(b.t0, b.vx);
+			b.dy.Mul(dt, b.t0);
+			b.vy.Add(b.t0, b.vy);
 			b.dz.Reduce<Add>(1, b.t0);
-			b.t0.Div(b.mass, b.t0);
-			b.vz.Add(b.t0, b.vx);
+			b.dz.Mul(dt, b.t0);
+			b.vz.Add(b.t0, b.vz);						
 		}
 
 		private static void Move(Galaxy galaxy)
