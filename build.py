@@ -165,7 +165,7 @@ if __name__ == "__main__":
                   ("VE-GPU", "ve/gpu", False),\
                   ("VE-SIMPLE", "ve/simple", True),\
                   ("VE-NAIVE", "ve/naive", True),\
-                  ("VE-DYNAMITE", "ve/dynamite", True),\
+                  ("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VE-TILE", "ve/tile", False),\
                   ("VE-SCORE", "ve/score", False),\
                   ("VE-MCORE", "ve/mcore", False),\
