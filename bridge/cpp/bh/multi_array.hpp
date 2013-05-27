@@ -218,14 +218,7 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
     return (*(new slice<T>(*this)))[rhs];
 }
 
-//
-// Reshaping
-//
-template <typename T>
-multi_array<T>& multi_array<T>::operator()(const T& n) {
-    std::cout << "Reshape to: " << n << std::endl;
-    return *this;
-}
+
 
 // Initialization
 template <typename T>
@@ -350,17 +343,29 @@ multi_array<Ret>& multi_array<T>::as()
     return *result;
 }
 
-/**
- *  Update operand!
- */
+//
+// Update
+//
 template <typename T>
-multi_array<T>& multi_array<T>::update(multi_array& rhs)
+multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
 {
     if (1>key) {    // We do not have anything to update!
         throw std::runtime_error("Far out dude! you are trying to update "
                                  "something that does not exist!");
     }
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+
+    return *this;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator()(const T& value) {
+
+    if (1>key) {    // We do not have anything to update!
+        throw std::runtime_error("Far out dude! you are trying to update "
+                                 "something that does not exist!");
+    }
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, value);
 
     return *this;
 }
