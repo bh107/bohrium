@@ -191,10 +191,10 @@ namespace nbody
 			b.vx.Add(b.t0, b.vx);
 			b.dy.Reduce<Add>(1, b.t0);
 			b.t0.Div(b.mass, b.t0);
-			b.vy.Add(b.t0, b.vx);
+			b.vy.Add(b.t0, b.vy);
 			b.dz.Reduce<Add>(1, b.t0);
 			b.t0.Div(b.mass, b.t0);
-			b.vz.Add(b.t0, b.vx);
+			b.vz.Add(b.t0, b.vz);
 		}
 
 		private static void Move(Galaxy galaxy)
