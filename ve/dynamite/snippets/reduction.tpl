@@ -69,7 +69,7 @@ int {{SYMBOL}}(int tool, ...)
     int64_t *a0_shape   = va_arg(list, int64_t*);
     int64_t  a0_ndim    = va_arg(list, int64_t);
 
-    {{TYPE_A1}} *a1_offset;
+    //{{TYPE_A1}} *a1_offset;
     {{TYPE_A1}} *a1_data    = va_arg(list, {{TYPE_A1}}*);
     int64_t  a1_start   = va_arg(list, int64_t);    // Input to reduce
     int64_t *a1_stride  = va_arg(list, int64_t*);
