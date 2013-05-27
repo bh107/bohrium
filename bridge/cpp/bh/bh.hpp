@@ -149,15 +149,14 @@ public:
     slice<T>& operator[](int rhs);                  // Select a single element / dimension
     slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
 
-    multi_array& operator()(const T& n);              // Shaping / reshaping
-    multi_array& operator()(const T& m, const T& n);              // Shaping / reshaping
-    multi_array& operator()(const T& d2, const T& d1, const T& d0);              // Shaping / reshaping
+    multi_array& operator()(const T& n);            // Update
+    multi_array& operator()(multi_array<T>& rhs);
    
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
 
     template <typename In>
-    multi_array<T>& operator=(multi_array<In>& rhs);    // Initialization / assignment.
+    multi_array<T>& operator=(multi_array<In>& rhs);// Initialization / assignment.
 
     multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
 
@@ -199,8 +198,6 @@ public:
     size_t len();
     multi_array<T>& copy();                 // Explicity create a copy of array
     multi_array<T>& flatten();              // Create a flat copy of the array
-
-    multi_array<T>& update(multi_array& rhs); // Fill the array with values from another.
 
     multi_array<T>& transpose();
     
