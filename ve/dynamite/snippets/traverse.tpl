@@ -85,7 +85,10 @@ void {{SYMBOL}}(int tool, ...)
             last_e      = nelements-1;
 
     int64_t coord[DYNAMITE_MAXDIM];
-    int64_t coord_ld;
+
+    int64_t a0_stride_ld = a0_stride[last_dim];
+    {{#a1_dense}}int64_t a1_stride_ld = a1_stride[last_dim];{{/a1_dense}}
+    {{#a2_dense}}int64_t a2_stride_ld = a2_stride[last_dim];{{/a2_dense}}
 
     int64_t cur_e = 0;
     int64_t shape_ld = shape[last_dim];
@@ -93,36 +96,34 @@ void {{SYMBOL}}(int tool, ...)
     memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
+
         a0_offset = a0_data + a0_start;         // Reset offsets
         {{#a1_dense}}a1_offset = a1_data + a1_start;{{/a1_dense}}
         {{#a2_dense}}a2_offset = a2_data + a2_start;{{/a2_dense}}
-
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
             a0_offset += coord[j] * a0_stride[j];
             {{#a1_dense}}a1_offset += coord[j] * a1_stride[j];{{/a1_dense}}
             {{#a2_dense}}a2_offset += coord[j] * a2_stride[j];{{/a2_dense}}
         }
-                                                // Iterate over "last" / "innermost" dimension
-        for (coord_ld = coord[last_dim]; coord_ld < shape_ld; coord_ld++) {
+                                                
+        for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
             {{OPERATOR}};
 
-            a0_offset += a0_stride[last_dim];
-            {{#a1_dense}}a1_offset += a1_stride[last_dim];{{/a1_dense}}
-            {{#a2_dense}}a2_offset += a2_stride[last_dim];{{/a2_dense}}
+            a0_offset += a0_stride_ld;
+            {{#a1_dense}}a1_offset += a1_stride_ld;{{/a1_dense}}
+            {{#a2_dense}}a2_offset += a2_stride_ld;{{/a2_dense}}
         }
         cur_e += shape_ld;
-        coord[last_dim] = coord_ld;
 
-        if (coord[last_dim] >= shape[last_dim]) {
-            coord[last_dim] = 0;
-            for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
-                coord[j]++;
-                if (coord[j] < shape[j]) {      // Still within this dimension
-                    break;
-                } else {                        // Reached the end of this dimension
-                    coord[j] = 0;               // Reset coordinate
-                }                               // Loop then continues to increment the next dimension
-            }
+        // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
+
+        for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
+            coord[j]++;
+            if (coord[j] < shape[j]) {      // Still within this dimension
+                break;
+            } else {                        // Reached the end of this dimension
+                coord[j] = 0;               // Reset coordinate
+            }                               // Loop then continues to increment the next dimension
         }
     }
 }
