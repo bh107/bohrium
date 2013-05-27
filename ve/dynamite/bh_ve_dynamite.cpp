@@ -216,7 +216,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
 
-
                 symbol = std::string(bh_opcode_text(instr->opcode)) +\
                          std::string("_DD_") +\
                          std::string(bhtype_to_shorthand(instr->operand[0]->type)),
@@ -300,73 +299,78 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 dict.ShowSection("binary");
 
                 if (bh_is_constant(instr->operand[2])) {
-                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-                    strcpy(type_in2, bhtype_to_ctype(instr->constant.type));
-
                     symbol = std::string(opcode_txt) +\
                              std::string("_DDC_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
                              std::string(bhtype_to_shorthand(instr->constant.type));
-
-                    dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("STRUCT_IN1", "D");
-                    dict.SetValue("STRUCT_IN2", "C");
-                    dict.SetValue("TYPE_OUT", type_out);
-                    dict.SetValue("TYPE_IN1", type_in1);
-                    dict.SetValue("TYPE_IN2", type_in2);
-                    dict.ShowSection("a1_dense");
-                    dict.ShowSection("a2_scalar");
-                } else if (bh_is_constant(instr->operand[1])) {
-                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
-                    strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-
-                    symbol = std::string(opcode_txt) +\
+                } else if(bh_is_constant(instr->operand[1])) {
+                     symbol = std::string(opcode_txt) +\
                              std::string("_DCD_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->constant.type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[2]->type));
-
-                    dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("STRUCT_IN1", "C");
-                    dict.SetValue("STRUCT_IN2", "D");
-                    dict.SetValue("TYPE_OUT", type_out);
-                    dict.SetValue("TYPE_IN1", type_in1);
-                    dict.SetValue("TYPE_IN2", type_in2);
-                    dict.ShowSection("a1_scalar");
-                    dict.ShowSection("a2_dense");
+                             std::string(bhtype_to_shorthand(instr->operand[2]->type));                       
                 } else {
-                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-                    strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-
                     symbol = std::string(opcode_txt) +\
                              std::string("_DDD_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
                              std::string(bhtype_to_shorthand(instr->operand[2]->type));
-
-                    dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("STRUCT_IN1", "D");
-                    dict.SetValue("STRUCT_IN2", "D");
-                    dict.SetValue("TYPE_OUT", type_out);
-                    dict.SetValue("TYPE_IN1", type_in1);
-                    dict.SetValue("TYPE_IN2", type_in2);
-                    dict.ShowSection("a1_dense");
-                    dict.ShowSection("a2_dense");
                 }
-            
-                sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
-                ctemplate::ExpandTemplate(
-                    snippet_fn,
-                    ctemplate::STRIP_BLANK_LINES,
-                    &dict,
-                    &sourcecode
-                );
-                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                
+                cres = target->symbol_ready(symbol);
+                if (!cres) {
+                    if (bh_is_constant(instr->operand[2])) {
+                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
+                        strcpy(type_in2, bhtype_to_ctype(instr->constant.type));
 
+                        dict.SetValue("SYMBOL", symbol);
+                        dict.SetValue("STRUCT_IN1", "D");
+                        dict.SetValue("STRUCT_IN2", "C");
+                        dict.SetValue("TYPE_OUT", type_out);
+                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.ShowSection("a1_dense");
+                        dict.ShowSection("a2_scalar");
+                    } else if (bh_is_constant(instr->operand[1])) {
+                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                        strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
+                        strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
+
+                        dict.SetValue("SYMBOL", symbol);
+                        dict.SetValue("STRUCT_IN1", "C");
+                        dict.SetValue("STRUCT_IN2", "D");
+                        dict.SetValue("TYPE_OUT", type_out);
+                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.ShowSection("a1_scalar");
+                        dict.ShowSection("a2_dense");
+                    } else {
+                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
+                        strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
+
+                        dict.SetValue("SYMBOL", symbol);
+                        dict.SetValue("STRUCT_IN1", "D");
+                        dict.SetValue("STRUCT_IN2", "D");
+                        dict.SetValue("TYPE_OUT", type_out);
+                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.ShowSection("a1_dense");
+                        dict.ShowSection("a2_dense");
+                    }
+                
+                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    ctemplate::ExpandTemplate(
+                        snippet_fn,
+                        ctemplate::STRIP_BLANK_LINES,
+                        &dict,
+                        &sourcecode
+                    );
+                }
+
+                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
                 if (cres) {
                     if (bh_is_constant(instr->operand[2])) {         // DDC
                         target->funcs[symbol](0,
@@ -447,46 +451,54 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 dict.SetValue("OPERATOR", operator_src);
                 dict.ShowSection("unary");
 
-                if (bh_is_constant(instr->operand[1])) {
-                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
 
+                if (bh_is_constant(instr->operand[1])) {
                     symbol = std::string(opcode_txt) +\
                              std::string("_DC_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->constant.type));
-
-                    dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("STRUCT_IN1", "C");
-                    dict.SetValue("TYPE_OUT", type_out);
-                    dict.SetValue("TYPE_IN1", type_in1);
-                    dict.ShowSection("a1_scalar");
                 } else {
-                    strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-
                     symbol = std::string(opcode_txt) +\
                              std::string("_DD_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->operand[1]->type));
+                }
+
+                cres = target->symbol_ready(symbol);
+                if (!cres) {
+                    if (bh_is_constant(instr->operand[1])) {
+                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                        strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
 
 
-                    dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("STRUCT_IN1", "D");
-                    dict.SetValue("TYPE_OUT", type_out);
-                    dict.SetValue("TYPE_IN1", type_in1);
-                    dict.ShowSection("a1_dense");
-                } 
+                        dict.SetValue("SYMBOL", symbol);
+                        dict.SetValue("STRUCT_IN1", "C");
+                        dict.SetValue("TYPE_OUT", type_out);
+                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.ShowSection("a1_scalar");
+                    } else {
+                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
+                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
 
-                sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
-                ctemplate::ExpandTemplate(
-                    snippet_fn,
-                    ctemplate::STRIP_BLANK_LINES,
-                    &dict,
-                    &sourcecode
-                );
+
+
+                        dict.SetValue("SYMBOL", symbol);
+                        dict.SetValue("STRUCT_IN1", "D");
+                        dict.SetValue("TYPE_OUT", type_out);
+                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.ShowSection("a1_dense");
+                    } 
+
+                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    ctemplate::ExpandTemplate(
+                        snippet_fn,
+                        ctemplate::STRIP_BLANK_LINES,
+                        &dict,
+                        &sourcecode
+                    );
+                }
+
                 cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-
                 if (!cres) {
                     res = BH_ERROR;
                 } else {
