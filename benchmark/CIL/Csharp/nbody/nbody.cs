@@ -5,8 +5,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium:
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -32,7 +32,7 @@ namespace nbody
 {
 	using NumCIL.Double;
 	using DATA = System.Double;
-	
+
 	public static class nBodySolverDouble
 	{
 		//Gravity
@@ -82,13 +82,13 @@ namespace nbody
 			galaxy.y += galaxy.vy;
 			galaxy.z += galaxy.vz;
 		}
-		
+
 		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
 			private const DATA ZMAX = 500;
-			
+
 			public NdArray mass;
 			public NdArray x;
 			public NdArray y;
@@ -96,7 +96,7 @@ namespace nbody
 			public NdArray vx;
 			public NdArray vy;
 			public NdArray vz;
-			
+
 			public Galaxy(long size)
 			{
 				this.mass = Generate.Random(size) * (DATA)Math.Pow(10, 6) / (DATA)(4 * Math.PI * Math.PI);
@@ -105,9 +105,9 @@ namespace nbody
 				this.z = Generate.Random(size) * 2 * ZMAX - ZMAX;
 				this.vx = Generate.Zeroes(size);
 				this.vy = Generate.Zeroes(size);
-				this.vz = Generate.Zeroes(size);			
+				this.vz = Generate.Zeroes(size);
 			}
-			
+
 			public DATA Sync()
 			{
 				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
@@ -126,7 +126,7 @@ namespace nbody
 {
 	using NumCIL.Double;
 	using DATA = System.Double;
-	
+
 	public static class nBodySolverDoubleNoTempArrays
 	{
 		//Gravity
@@ -141,10 +141,9 @@ namespace nbody
 		private static void CalcForce(Galaxy b)
 		{
 			// Calculate all dictances component wise (with sign)
-			b.x.Transposed.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
-			b.y.Transposed.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
-			b.z.Transposed.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
-			//b.mass.Transposed.Sub(b.mass[R.NewAxis, R.All].Transposed, b.pmass);
+			b.x.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
+			b.y.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
+			b.z.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
 
 			// Euclidian distances (all bodys)
 			b.dx.Pow(2, b.r0);
@@ -154,13 +153,13 @@ namespace nbody
 			b.r0.Add(b.r1, b.r0);
 			b.r0.Pow((DATA)0.5, b.r0);
 			FillDiagonal(b.r0, (Double)1.0);
-			
+
 			// prevent collition
             var mask = ((Double)1.0) * (NdArray)(b.r0 < (Double) 1.0);
 			var imask = (NdArray)(b.r0 >= (Double) 1.0);
 			b.r0.Mul(imask,b.r0);
 			b.r0.Mul(mask,b.r0);
-			
+
 			//Calculate the acceleration component wise
 			var m = b.mass[R.NewAxis, R.All].Transposed;
 			b.dx.Mul(G,b.dx);
@@ -168,45 +167,44 @@ namespace nbody
 			b.dz.Mul(G,b.dz);
 			b.dx.Mul(m,b.dx);
 			b.dy.Mul(m,b.dy);
-			b.dz.Mul(m,b.dz);			
-			b.dx.Div(m,b.dz);
+			b.dz.Mul(m,b.dz);
 			b.r0.Pow(3, b.r0);
 			b.dx.Div(b.r0, b.dx);
 			b.dy.Div(b.r0, b.dy);
 			b.dz.Div(b.r0, b.dz);
-		
+
 			// Set the force (acceleration) a body exerts on it self to zero
 			FillDiagonal(b.dx, 0);
 			FillDiagonal(b.dy, 0);
 			FillDiagonal(b.dz, 0);
-			
+
 			Double dt = (Double) (60*60*24*365.25); // Years in seconds
 			b.dx.Reduce<Add>(0, b.t0);
-			b.dx.Mul(dt, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vx.Add(b.t0, b.vx);
-			b.dy.Reduce<Add>(1, b.t0);
-			b.dy.Mul(dt, b.t0);
+			b.dy.Reduce<Add>(0, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vy.Add(b.t0, b.vy);
-			b.dz.Reduce<Add>(1, b.t0);
-			b.dz.Mul(dt, b.t0);
-			b.vz.Add(b.t0, b.vz);						
+			b.dz.Reduce<Add>(0, b.t0);
+			b.t0.Mul(dt, b.t0);
+			b.vz.Add(b.t0, b.vz);
 		}
 
 		private static void Move(Galaxy galaxy)
 		{
 			CalcForce(galaxy);
-			
+
 			galaxy.x.Add(galaxy.vx, galaxy.x);
 			galaxy.y.Add(galaxy.vy, galaxy.y);
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
-		
+
 		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
 			private const DATA ZMAX = 500;
-			
+
 			public NdArray mass;
 			public NdArray x;
 			public NdArray y;
@@ -221,7 +219,7 @@ namespace nbody
 			public NdArray r0;
 			public NdArray r1;
 			public NdArray t0;
-			
+
 			public Galaxy(long size)
 			{
 				this.mass = Generate.Random(size) * (DATA)Math.Pow(10, 6) / (DATA)(4 * Math.PI * Math.PI);
@@ -239,7 +237,7 @@ namespace nbody
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
 			}
-			
+
 			public DATA Sync()
 			{
 				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
@@ -258,7 +256,7 @@ namespace nbody
 {
 	using NumCIL.Float;
 	using DATA = System.Single;
-	
+
 	public static class nBodySolverFloat
 	{
 		//Gravity
@@ -308,13 +306,13 @@ namespace nbody
 			galaxy.y += galaxy.vy;
 			galaxy.z += galaxy.vz;
 		}
-		
+
 		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
 			private const DATA ZMAX = 500;
-			
+
 			public NdArray mass;
 			public NdArray x;
 			public NdArray y;
@@ -322,7 +320,7 @@ namespace nbody
 			public NdArray vx;
 			public NdArray vy;
 			public NdArray vz;
-			
+
 			public Galaxy(long size)
 			{
 				this.mass = Generate.Random(size) * (DATA)Math.Pow(10, 6) / (DATA)(4 * Math.PI * Math.PI);
@@ -331,9 +329,9 @@ namespace nbody
 				this.z = Generate.Random(size) * 2 * ZMAX - ZMAX;
 				this.vx = Generate.Zeroes(size);
 				this.vy = Generate.Zeroes(size);
-				this.vz = Generate.Zeroes(size);			
+				this.vz = Generate.Zeroes(size);
 			}
-			
+
 			public DATA Sync()
 			{
 				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];
@@ -352,7 +350,7 @@ namespace nbody
 {
 	using NumCIL.Float;
 	using DATA = System.Single;
-	
+
 	public static class nBodySolverFloatNoTempArrays
 	{
 		//Gravity
@@ -367,10 +365,9 @@ namespace nbody
 		private static void CalcForce(Galaxy b)
 		{
 			// Calculate all dictances component wise (with sign)
-			b.x.Transposed.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
-			b.y.Transposed.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
-			b.z.Transposed.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
-			//b.mass.Transposed.Sub(b.mass[R.NewAxis, R.All].Transposed, b.pmass);
+			b.x.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
+			b.y.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
+			b.z.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
 
 			// Euclidian distances (all bodys)
 			b.dx.Pow(2, b.r0);
@@ -380,13 +377,13 @@ namespace nbody
 			b.r0.Add(b.r1, b.r0);
 			b.r0.Pow((DATA)0.5, b.r0);
 			FillDiagonal(b.r0, (Single)1.0);
-			
+
 			// prevent collition
             var mask = ((Single)1.0) * (NdArray)(b.r0 < (Single) 1.0);
 			var imask = (NdArray)(b.r0 >= (Single) 1.0);
 			b.r0.Mul(imask,b.r0);
 			b.r0.Mul(mask,b.r0);
-			
+
 			//Calculate the acceleration component wise
 			var m = b.mass[R.NewAxis, R.All].Transposed;
 			b.dx.Mul(G,b.dx);
@@ -394,45 +391,44 @@ namespace nbody
 			b.dz.Mul(G,b.dz);
 			b.dx.Mul(m,b.dx);
 			b.dy.Mul(m,b.dy);
-			b.dz.Mul(m,b.dz);			
-			b.dx.Div(m,b.dz);
+			b.dz.Mul(m,b.dz);
 			b.r0.Pow(3, b.r0);
 			b.dx.Div(b.r0, b.dx);
 			b.dy.Div(b.r0, b.dy);
 			b.dz.Div(b.r0, b.dz);
-		
+
 			// Set the force (acceleration) a body exerts on it self to zero
 			FillDiagonal(b.dx, 0);
 			FillDiagonal(b.dy, 0);
 			FillDiagonal(b.dz, 0);
-			
+
 			Single dt = (Single) (60*60*24*365.25); // Years in seconds
 			b.dx.Reduce<Add>(0, b.t0);
-			b.dx.Mul(dt, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vx.Add(b.t0, b.vx);
-			b.dy.Reduce<Add>(1, b.t0);
-			b.dy.Mul(dt, b.t0);
+			b.dy.Reduce<Add>(0, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vy.Add(b.t0, b.vy);
-			b.dz.Reduce<Add>(1, b.t0);
-			b.dz.Mul(dt, b.t0);
-			b.vz.Add(b.t0, b.vz);						
+			b.dz.Reduce<Add>(0, b.t0);
+			b.t0.Mul(dt, b.t0);
+			b.vz.Add(b.t0, b.vz);
 		}
 
 		private static void Move(Galaxy galaxy)
 		{
 			CalcForce(galaxy);
-			
+
 			galaxy.x.Add(galaxy.vx, galaxy.x);
 			galaxy.y.Add(galaxy.vy, galaxy.y);
 			galaxy.z.Add(galaxy.vz, galaxy.z);
 		}
-		
+
 		public class Galaxy
 		{
 			private const DATA XMAX = 500;
 			private const DATA YMAX = 500;
 			private const DATA ZMAX = 500;
-			
+
 			public NdArray mass;
 			public NdArray x;
 			public NdArray y;
@@ -447,7 +443,7 @@ namespace nbody
 			public NdArray r0;
 			public NdArray r1;
 			public NdArray t0;
-			
+
 			public Galaxy(long size)
 			{
 				this.mass = Generate.Random(size) * (DATA)Math.Pow(10, 6) / (DATA)(4 * Math.PI * Math.PI);
@@ -465,7 +461,7 @@ namespace nbody
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
 			}
-			
+
 			public DATA Sync()
 			{
 				return this.z.Value[0] + this.y.Value[0] + this.x.Value[0];

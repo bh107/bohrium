@@ -143,10 +143,9 @@ namespace nbody
 		private static void CalcForce(Galaxy b)
 		{
 			// Calculate all dictances component wise (with sign)
-			b.x.Transposed.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
-			b.y.Transposed.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
-			b.z.Transposed.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
-			//b.mass.Transposed.Sub(b.mass[R.NewAxis, R.All].Transposed, b.pmass);
+			b.x.Sub(b.x[R.NewAxis, R.All].Transposed, b.dx);
+			b.y.Sub(b.y[R.NewAxis, R.All].Transposed, b.dy);
+			b.z.Sub(b.z[R.NewAxis, R.All].Transposed, b.dz);
 
 			// Euclidian distances (all bodys)
 			b.dx.Pow(2, b.r0);
@@ -171,7 +170,6 @@ namespace nbody
 			b.dx.Mul(m,b.dx);
 			b.dy.Mul(m,b.dy);
 			b.dz.Mul(m,b.dz);
-			b.dx.Div(m,b.dz);
 			b.r0.Pow(3, b.r0);
 			b.dx.Div(b.r0, b.dx);
 			b.dy.Div(b.r0, b.dy);
@@ -184,13 +182,13 @@ namespace nbody
 
 			<#=typename.Sys#> dt = (<#=typename.Sys#>) (60*60*24*365.25); // Years in seconds
 			b.dx.Reduce<Add>(0, b.t0);
-			b.dx.Mul(dt, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vx.Add(b.t0, b.vx);
 			b.dy.Reduce<Add>(0, b.t0);
-			b.dy.Mul(dt, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vy.Add(b.t0, b.vy);
 			b.dz.Reduce<Add>(0, b.t0);
-			b.dz.Mul(dt, b.t0);
+			b.t0.Mul(dt, b.t0);
 			b.vz.Add(b.t0, b.vz);
 		}
 
