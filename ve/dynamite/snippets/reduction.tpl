@@ -86,8 +86,6 @@ int {{SYMBOL}}(int tool, ...)
     {{TYPE_A1}} *tmp_data;      
     int64_t tmp_start;
     int64_t tmp_stride[DYNAMITE_MAXDIM];    
-    int64_t tmp_shape[DYNAMITE_MAXDIM];
-    int64_t tmp_ndim;
 
     if (1 == a1_ndim) {                         // ** 1D Special Case **
         a0_offset = a0_data + a0_start;         // Point to first element in output.
@@ -112,12 +110,10 @@ int {{SYMBOL}}(int tool, ...)
         int64_t tmp_dim;
         for (tmp_dim=0, a1_i=0; a1_i<a1_ndim; ++a1_i) { // Excluding the 'axis' dimension.
             if (a1_i != axis) {
-                tmp_shape[tmp_dim]    = a1_shape[a1_i];
                 tmp_stride[tmp_dim]   = a1_stride[a1_i];
                 ++tmp_dim;
             }
         }
-        tmp_ndim = a1_ndim-1;
 
         last_e = 1;
         int64_t k;
