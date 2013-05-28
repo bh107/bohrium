@@ -6,6 +6,7 @@ BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
 BENCHMARKS = black_scholes monte_carlo_pi jacobi_stencil
 #BENCHMARKS = jacobi_stencil
+#BENCHMARKS = black_scholes
 
 CXX=clang
 #CXX=g++

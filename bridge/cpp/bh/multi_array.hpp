@@ -328,31 +328,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 }
 
 
-//
-// Typecasting
-//
-template <typename T> template <typename Ret>
-multi_array<Ret>& multi_array<T>::as()
-{
-    multi_array<Ret>* result = &Runtime::instance()->temp<Ret>();
-    result->setTemp(true);
 
-    storage[result->getKey()].base        = NULL;
-    storage[result->getKey()].ndim        = storage[this->getKey()].ndim;
-    storage[result->getKey()].start       = storage[this->getKey()].start;
-    for(int64_t i=0; i< storage[this->getKey()].ndim; i++) {
-        storage[result->getKey()].shape[i] = storage[this->getKey()].shape[i];
-    }
-    for(int64_t i=0; i< storage[this->getKey()].ndim; i++) {
-
-        storage[result->getKey()].stride[i] = storage[this->getKey()].stride[i];
-    }
-    storage[result->getKey()].data        = NULL;
-
-    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, *this);
-
-    return *result;
-}
 
 //
 // Update
@@ -379,6 +355,70 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
     Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *this, value);
 
     return *this;
+}
+
+//
+// Typecasting
+//
+template <typename T, typename FromT>
+multi_array<T>& as(multi_array<FromT>& rhs)
+{
+    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    result->setTemp(true);
+
+    storage[result->getKey()].base        = NULL;
+    storage[result->getKey()].ndim        = storage[rhs.getKey()].ndim;
+    storage[result->getKey()].start       = storage[rhs.getKey()].start;
+    for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
+        storage[result->getKey()].shape[i] = storage[rhs.getKey()].shape[i];
+    }
+    for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
+
+        storage[result->getKey()].stride[i] = storage[rhs.getKey()].stride[i];
+    }
+    storage[result->getKey()].data        = NULL;
+
+    Runtime::instance()->enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+
+    return *result;
+}
+
+// Create a view of an operand which has a different shape
+template <typename T, typename ...Dimensions>
+multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
+{
+    int64_t dims    = sizeof...(Dimensions),
+            stride  = 1;
+
+    size_t rhs_key,
+           res_key;
+
+    rhs_key = rhs.getKey();
+    if (1>rhs_key) {            // We do not have anything to view!
+        throw std::runtime_error("Far out dude! you are trying create a view "
+                                 "of something that does not exist!\n");
+    }
+
+    if (NULL!=storage[rhs_key].base) {   // Not supported!
+        throw std::runtime_error("Far out dude! you are trying create a view "
+                                 "of something that is not a base. "
+                                 "Such behavior is currently unsupported.\n");
+    }
+
+    multi_array<T>* result = &Runtime::instance()->temp_view(rhs);
+    res_key = result->getKey();
+    unpack_shape(storage[res_key].shape, 0, shape...);
+    storage[res_key].ndim = dims;
+
+    for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
+        storage[res_key].stride[i] = stride;
+        stride *= storage[res_key].shape[i];
+    }
+
+    // TODO: Verify that the number of elements match
+
+    return *result;
+
 }
 
 // NON-MEMBER STUFF

@@ -27,20 +27,15 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<float> x(3,3,3);
-    x = (float)1.0;
-    std::cout << "Reducing axis0" << std::endl;
-    cout << reduce(x, ADD, 0) << endl;
-    std::cout << "Reducing axis1" << std::endl;
-    cout << reduce(x, ADD, 1) << endl;
-    std::cout << "Reducing axis2" << std::endl;
-    cout << reduce(x, ADD, 2) << endl;
+    multi_array<float> x, y;
+    x = random<float>(27);
+    
+    y = view_as(x, 3,3,3);
 
-    std::cout << "Full reduction." << std::endl;
-    cout << sum(x) << endl;
+    bh_pprint_array(&storage[y.getKey()]);
 
-    std::cout << "Full reduction, scalar." << std::endl;
-    cout << scalar(sum(x)) << endl;
+    cout << x << endl;
+    cout << y << endl;
 
     std::cout << "Leaving compute!" << std::endl;
 }

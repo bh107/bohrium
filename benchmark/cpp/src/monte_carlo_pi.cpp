@@ -14,7 +14,7 @@ double monte_carlo_pi(int samples, int iterations)
     for(int i=0; i<iterations; ++i) {
         x = random<double>(samples);                // Sample random numbers
         y = random<double>(samples);
-        m = (sqrt(x*x + y*y)<=1.0).as<double>();    // Model
+        m = as<double>(sqrt(x*x + y*y)<=1.0);    // Model
         c = reduce(m, ADD, 0);                      // Count
 
         accu += (c*4.0) / (double)samples;          // Approximate

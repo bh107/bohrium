@@ -197,9 +197,7 @@ public:
 
     size_t len();
     int64_t shape(int64_t dim);             // Probe for the shape of a dimension
-    
-    template <typename Ret>                 // Typecast; implicit copy
-    multi_array<Ret>& as();
+
 
     void link(size_t);
     size_t unlink();
@@ -366,6 +364,12 @@ multi_array<size_t>& count(multi_array<T>& op);
 
 template <typename T>       // Turn the result of full reduction into a scalar
 T scalar(multi_array<T>& op);
+
+template <typename T, typename FromT>     // Typecast; implicit copy
+multi_array<T>& as(multi_array<FromT>& rhs);
+
+template <typename T, typename ...Dimensions>   // 
+multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
 
                             //
                             // What are these called? Transformers??? :)

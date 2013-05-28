@@ -48,7 +48,7 @@ multi_array<T>& cnd(multi_array<T>& x)
          a5*(pow(k,(T)5)));
 
     mask = x < 0.0;
-    return w * (!mask).template as<T>() + (1.0-w)* (mask.template as<T>());
+    return w * as<T>(!mask) + (1.0-w)* as<T>(mask);
 }
 
 template <typename T>
