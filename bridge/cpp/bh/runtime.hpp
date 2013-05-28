@@ -31,7 +31,7 @@ storage_type storage;
 size_t keys = 1;
 
 // Runtime : Definition
-
+/*
 Runtime* Runtime::pInstance = 0;
 
 Runtime* Runtime::instance()
@@ -41,10 +41,16 @@ Runtime* Runtime::instance()
     }
     return pInstance;
 }
+*/
+Runtime& Runtime::instance()
+{
+    static Runtime instance;
+    return instance;
+}
 
 void stop()
 {
-    delete Runtime::instance();
+    //delete Runtime::instance();
 }
 
 Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
@@ -95,6 +101,7 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 
 Runtime::~Runtime()
 {
+    std::cout << "TEARING DOWN!" << std::endl;
     // Deconstructor is not called in a timely fashion.
     flush();
 
@@ -106,7 +113,7 @@ Runtime::~Runtime()
     vem_shutdown();
     bh_component_free(self_component);
     bh_component_free(vem_component);
-    pInstance = 0;
+    //pInstance = 0;
 }
 
 size_t Runtime::get_queue_size()
@@ -531,8 +538,8 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
 template <typename T>
 T scalar(multi_array<T>& op)
 {
-    Runtime::instance()->enqueue((bh_opcode)BH_SYNC, op);
-    Runtime::instance()->flush();
+    Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
+    Runtime::instance().flush();
 
     bh_array* op_a = &storage[op.getKey()];
     T* data = (T*)(bh_base_array( op_a )->data);
@@ -542,7 +549,7 @@ T scalar(multi_array<T>& op)
 
     if (op.getTemp()) { // If it was a temp you will never see it again
         delete &op;     // so you better clean it up!
-        Runtime::instance()->flush();
+        Runtime::instance().flush();
     }
 
     return value;

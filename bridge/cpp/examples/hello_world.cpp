@@ -43,9 +43,6 @@ void compute()
 int main()
 {
     compute();
-    std::cout << "STOPPING!" << std::endl;
-    stop();
-    std::cout << "STOPPED!" << std::endl;
     return 0;
 }
 

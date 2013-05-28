@@ -57,7 +57,7 @@ bh_opcode reducible_to_opcode(reducible opcode)
 template <typename T>
 multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    multi_array<T>* result = &Runtime::instance().temp<T>();
 
     bh_array* res_a = &storage[result->getKey()];
     bh_array* op_a  = &storage[op.getKey()];
@@ -83,7 +83,7 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
         }
     }
 
-    Runtime::instance()->enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
+    Runtime::instance().enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
 
     return *result;
 }
@@ -164,7 +164,7 @@ multi_array<bool>& all(multi_array<T>& op)
 template <typename T>
 multi_array<size_t>& count(multi_array<T>& op)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>();
+    multi_array<T>* result = &Runtime::instance().temp<T>();
     result->setTemp(true);
 
     result = &sum(op.template as<size_t>());

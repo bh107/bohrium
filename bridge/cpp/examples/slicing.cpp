@@ -30,19 +30,19 @@ void compute()
 
     multi_array<float> x(9,9);
     x = (float)1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n first row" << std::endl;
     x[0][_(0,9,1)] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n last row" << std::endl;
     x[-1][_(0,9,1)] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n inbetween row" << std::endl;
     x[4][_(0,9,1)] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     */
 
     /*
@@ -50,19 +50,19 @@ void compute()
 
     multi_array<float> x(9,9);
     x = (float)1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n first row" << std::endl;
     x[_(0,9,1)][0] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n last row" << std::endl;
     x[_(0,9,1)][-1] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     std::cout << "\n\n inbetween row" << std::endl;
     x[_(0,9,1)][4] = 1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
 
     */
 
@@ -71,44 +71,44 @@ void compute()
 
     multi_array<float> x(9,9);
     x = (float)1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n first & first" << std::endl;
     x[0][0] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n in-between" << std::endl;
     x[4][4] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n last & last" << std::endl;
     x[-1][-1] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
     */
 
     cout << "Assign to slice of tensor" << endl;
     multi_array<float> x(9,9,9);
     x = (float)1.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n (0,0,0)" << std::endl;
     x[0][0][0] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n (4,4,4)" << std::endl;
     x[4][4][4] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
     std::cout << "\n\n (8,8,8)" << std::endl;
     x[-1][-1][-1] = 3.0;
-    Runtime::instance()->flush();
+    Runtime::instance().flush();
     cout << x << endl;
 
 }

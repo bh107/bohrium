@@ -218,13 +218,14 @@ private:
 
 /**
  *  Encapsulation of communication with Bohrium runtime.
- *  Implemented as a singleton.
+ *  Implemented as a Singleton.
  *
- *  Note: not thread-safe.
+ *  Note: Not thread-safe.
  */
 class Runtime {
 public:
-    static Runtime* instance();
+    //static Runtime* instance();
+    static Runtime& instance();
 
     ~Runtime();
                             // Input and output are of the same type
@@ -300,7 +301,7 @@ private:
     size_t execute();                           // Send instructions to Bohrium
     size_t guard();                             // Prevent overflow of instruction-queue
 
-    static Runtime* pInstance;                  // Singleton instance pointer.
+    //static Runtime* pInstance;                  // Singleton instance pointer.
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
@@ -321,6 +322,8 @@ private:
     std::list<size_t> garbage;
 
     Runtime();                                  // Ensure no external instantiation.
+    Runtime(Runtime const&);
+    void operator=(Runtime const&);
 
 };
 

@@ -25,7 +25,7 @@ namespace bh {
 template <typename T, typename ...Dimensions>
 multi_array<T>& value(T val, const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
     *result = val;
 
     return *result;
@@ -34,7 +34,7 @@ multi_array<T>& value(T val, const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& empty(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
 
     return *result;
 }
@@ -42,7 +42,7 @@ multi_array<T>& empty(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& ones(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
     *result = (T)1;
 
     return *result;
@@ -51,7 +51,7 @@ multi_array<T>& ones(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& zeros(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
     *result = (T)0;
 
     return *result;
@@ -67,15 +67,15 @@ multi_array<T>& random(const Dimensions&... shape)
         throw std::runtime_error(err_msg);
     }
 
-    multi_array<T>* result = &Runtime::instance()->temp<T>(shape...);
+    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
 
-    rinstr->id          = Runtime::instance()->random_id;        //Set the instruction
+    rinstr->id          = Runtime::instance().random_id;        //Set the instruction
     rinstr->nout        = 1;
     rinstr->nin         = 0;
     rinstr->struct_size = sizeof(bh_random_type);
     rinstr->operand[0]  = &storage[result->getKey()];
 
-    Runtime::instance()->enqueue<T>((bh_userfunc*)rinstr);
+    Runtime::instance().enqueue<T>((bh_userfunc*)rinstr);
 
     return *result;
 }
@@ -83,7 +83,7 @@ multi_array<T>& random(const Dimensions&... shape)
 template <typename T>
 multi_array<T>& range(size_t start, size_t end, size_t skip)
 {
-    multi_array<T>* result = &Runtime::instance()->temp<T>(end-start);
+    multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
     std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
 
     return *result;
