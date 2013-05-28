@@ -117,8 +117,6 @@ int main()
 {
     std::cout << "COMPUTE!" << std::endl;
     compute();
-    std::cout << "STOPPING!" << std::endl;
-    stop();
     std::cout << "STOPPED!" << std::endl;
     return 0;
 }

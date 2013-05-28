@@ -21,14 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_RUNTIME
 #include <iostream>
 #include <sstream>
-#include <boost/ptr_container/ptr_map.hpp>
 
 namespace bh {
-
-typedef boost::ptr_map<size_t, bh_array> storage_type;
-storage_type storage;
-
-size_t keys = 1;
 
 // Runtime : Definition
 /*
@@ -53,7 +47,7 @@ void stop()
     //delete Runtime::instance();
 }
 
-Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
+Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
@@ -180,10 +174,6 @@ size_t Runtime::execute()
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
         err_msg << "Runtime::execute() -> vem_execute() failed: " << bh_error_text(status) << std::endl;
-        /*
-        for(int i=0; i<cur_size; i++) {
-            bh_pprint_instr( &queue[i] );
-        }*/
 
         throw std::runtime_error(err_msg.str());
     }
@@ -518,8 +508,8 @@ void equiv(multi_array<Ret>& ret, multi_array<In>& in)
 {
     bh_array *ret_a, *in_a;
 
-    ret_a   = &storage[ret.getKey()];
-    in_a    = &storage[in.getKey()];
+    ret_a   = &Runtime::instance().storage[ret.getKey()];
+    in_a    = &Runtime::instance().storage[in.getKey()];
 
     ret_a->base        = NULL;
     ret_a->ndim        = in_a->ndim;
@@ -541,7 +531,7 @@ T scalar(multi_array<T>& op)
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
     Runtime::instance().flush();
 
-    bh_array* op_a = &storage[op.getKey()];
+    bh_array* op_a = &Runtime::instance().storage[op.getKey()];
     T* data = (T*)(bh_base_array( op_a )->data);
     data += op_a->start;
 

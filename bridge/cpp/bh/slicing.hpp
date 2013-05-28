@@ -96,8 +96,8 @@ bh::multi_array<T>& slice<T>::view()
 {
     multi_array<T>* alias = &Runtime::instance().view(*op);
 
-    bh_array* rhs = &storage[op->getKey()];     // The operand getting sliced
-    bh_array* lhs = &storage[alias->getKey()];  // The view as a result of slicing
+    bh_array* rhs = &Runtime::instance().storage[op->getKey()];     // The operand getting sliced
+    bh_array* lhs = &Runtime::instance().storage[alias->getKey()];  // The view as a result of slicing
 
     lhs->ndim   = rhs->ndim;                    // Rank is maintained
     lhs->start  = rhs->start;                   // Start is initialy the same

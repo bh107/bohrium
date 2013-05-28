@@ -28,10 +28,10 @@ namespace bh {
 template <typename T>
 void multi_array<T>::init()     // Pseudo-default constructor
 {
-    key     = keys++;
+    key     = Runtime::instance().keys++;
     temp    = false;
-    storage.insert(key, new bh_array);
-    assign_array_type<T>(&storage[key]);
+    Runtime::instance().storage.insert(key, new bh_array);
+    assign_array_type<T>(&Runtime::instance().storage[key]);
 }
 
 template <typename T>           // Default constructor - rank 0
@@ -47,16 +47,16 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
 {
     init();
 
-    storage[key].data        = NULL;
-    storage[key].base        = NULL;
-    storage[key].ndim        = storage[operand.getKey()].ndim;
-    storage[key].start       = storage[operand.getKey()].start;
+    Runtime::instance().storage[key].data        = NULL;
+    Runtime::instance().storage[key].base        = NULL;
+    Runtime::instance().storage[key].ndim        = Runtime::instance().storage[operand.getKey()].ndim;
+    Runtime::instance().storage[key].start       = Runtime::instance().storage[operand.getKey()].start;
 
-    for(int64_t i=0; i< storage[operand.getKey()].ndim; i++) {
-        storage[key].shape[i] = storage[operand.getKey()].shape[i];
+    for(int64_t i=0; i< Runtime::instance().storage[operand.getKey()].ndim; i++) {
+        Runtime::instance().storage[key].shape[i] = Runtime::instance().storage[operand.getKey()].shape[i];
     }
-    for(int64_t i=0; i< storage[operand.getKey()].ndim; i++) {
-        storage[key].stride[i] = storage[operand.getKey()].stride[i];
+    for(int64_t i=0; i< Runtime::instance().storage[operand.getKey()].ndim; i++) {
+        Runtime::instance().storage[key].stride[i] = Runtime::instance().storage[operand.getKey()].stride[i];
     }
 }
 
@@ -66,17 +66,17 @@ multi_array<T>::multi_array(Dimensions... shape)
 {
     init();
 
-    storage[key].data        = NULL;
-    storage[key].base        = NULL;
-    storage[key].ndim        = sizeof...(Dimensions);
-    storage[key].start       = 0;
+    Runtime::instance().storage[key].data        = NULL;
+    Runtime::instance().storage[key].base        = NULL;
+    Runtime::instance().storage[key].ndim        = sizeof...(Dimensions);
+    Runtime::instance().storage[key].start       = 0;
 
-    unpack_shape(storage[key].shape, 0, shape...);
+    unpack_shape(Runtime::instance().storage[key].shape, 0, shape...);
 
     int64_t stride = 1;                 // Setup strides
-    for(int64_t i=storage[key].ndim-1; 0 <= i; --i) {
-        storage[key].stride[i] = stride;
-        stride *= storage[key].shape[i];
+    for(int64_t i=Runtime::instance().storage[key].ndim-1; 0 <= i; --i) {
+        Runtime::instance().storage[key].stride[i] = stride;
+        stride *= Runtime::instance().storage[key].shape[i];
     }
 }
 
@@ -84,7 +84,7 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (key>0) {
-        if (NULL == storage[key].base) {    // Only send free on base-array
+        if (NULL == Runtime::instance().storage[key].base) {    // Only send free on base-array
             Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         }
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
@@ -103,7 +103,7 @@ template <typename T>
 inline
 unsigned long multi_array<T>::getRank() const
 {
-    return (unsigned long)*(&storage[key].ndim);
+    return (unsigned long)*(&Runtime::instance().storage[key].ndim);
 }
 
 template <typename T>
@@ -125,8 +125,8 @@ inline
 size_t multi_array<T>::len()
 {
     size_t nelements = 1;
-    for (int i = 0; i < storage[key].ndim; ++i) {
-        nelements *= storage[key].shape[i];
+    for (int i = 0; i < Runtime::instance().storage[key].ndim; ++i) {
+        nelements *= Runtime::instance().storage[key].shape[i];
     }
     return nelements;
 }
@@ -135,11 +135,11 @@ template <typename T>
 inline
 int64_t multi_array<T>::shape(int64_t dim)
 {
-    if (dim>=storage[key].ndim) {
+    if (dim>=Runtime::instance().storage[key].ndim) {
         throw std::runtime_error("Dude you are like totally out of bounds!\n");
     }
 
-    return storage[key].shape[dim];
+    return Runtime::instance().storage[key].shape[dim];
 }
 
 template <typename T>
@@ -148,7 +148,7 @@ typename multi_array<T>::iterator multi_array<T>::begin()
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance().flush();
 
-    return multi_array<T>::iterator(storage[this->key]);
+    return multi_array<T>::iterator(Runtime::instance().storage[this->key]);
 }
 
 template <typename T>
@@ -268,7 +268,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            if (NULL == storage[key].base) {
+            if (NULL == Runtime::instance().storage[key].base) {
                 Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
             }
             Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
@@ -282,15 +282,15 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         } else {                    // Create an alias of rhs.
             init();
 
-            storage[key].data       = NULL;
-            storage[key].base       = &storage[rhs.getKey()];
-            storage[key].ndim       = storage[rhs.getKey()].ndim;
-            storage[key].start      = storage[rhs.getKey()].start;
-            for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
-                storage[key].shape[i] = storage[rhs.getKey()].shape[i];
+            Runtime::instance().storage[key].data       = NULL;
+            Runtime::instance().storage[key].base       = &Runtime::instance().storage[rhs.getKey()];
+            Runtime::instance().storage[key].ndim       = Runtime::instance().storage[rhs.getKey()].ndim;
+            Runtime::instance().storage[key].start      = Runtime::instance().storage[rhs.getKey()].start;
+            for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
+                Runtime::instance().storage[key].shape[i] = Runtime::instance().storage[rhs.getKey()].shape[i];
             }
-            for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
-                storage[key].stride[i] = storage[rhs.getKey()].stride[i];
+            for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
+                Runtime::instance().storage[key].stride[i] = Runtime::instance().storage[rhs.getKey()].stride[i];
             }
         }
     }
@@ -314,7 +314,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     multi_array<T>* vv = &rhs.view();
 
     if (key>0) {                // Release current linkage
-        if (NULL == storage[key].base) {
+        if (NULL == Runtime::instance().storage[key].base) {
             Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         }
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
@@ -366,17 +366,17 @@ multi_array<T>& as(multi_array<FromT>& rhs)
     multi_array<T>* result = &Runtime::instance().temp<T>();
     result->setTemp(true);
 
-    storage[result->getKey()].base        = NULL;
-    storage[result->getKey()].ndim        = storage[rhs.getKey()].ndim;
-    storage[result->getKey()].start       = storage[rhs.getKey()].start;
-    for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
-        storage[result->getKey()].shape[i] = storage[rhs.getKey()].shape[i];
+    Runtime::instance().storage[result->getKey()].base        = NULL;
+    Runtime::instance().storage[result->getKey()].ndim        = Runtime::instance().storage[rhs.getKey()].ndim;
+    Runtime::instance().storage[result->getKey()].start       = Runtime::instance().storage[rhs.getKey()].start;
+    for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
+        Runtime::instance().storage[result->getKey()].shape[i] = Runtime::instance().storage[rhs.getKey()].shape[i];
     }
-    for(int64_t i=0; i< storage[rhs.getKey()].ndim; i++) {
+    for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
 
-        storage[result->getKey()].stride[i] = storage[rhs.getKey()].stride[i];
+        Runtime::instance().storage[result->getKey()].stride[i] = Runtime::instance().storage[rhs.getKey()].stride[i];
     }
-    storage[result->getKey()].data        = NULL;
+    Runtime::instance().storage[result->getKey()].data        = NULL;
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
@@ -399,7 +399,7 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
                                  "of something that does not exist!\n");
     }
 
-    if (NULL!=storage[rhs_key].base) {   // Not supported!
+    if (NULL!=Runtime::instance().storage[rhs_key].base) {   // Not supported!
         throw std::runtime_error("Far out dude! you are trying create a view "
                                  "of something that is not a base. "
                                  "Such behavior is currently unsupported.\n");
@@ -407,12 +407,12 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
 
     multi_array<T>* result = &Runtime::instance().temp_view(rhs);
     res_key = result->getKey();
-    unpack_shape(storage[res_key].shape, 0, shape...);
-    storage[res_key].ndim = dims;
+    unpack_shape(Runtime::instance().storage[res_key].shape, 0, shape...);
+    Runtime::instance().storage[res_key].ndim = dims;
 
     for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
-        storage[res_key].stride[i] = stride;
-        stride *= storage[res_key].shape[i];
+        Runtime::instance().storage[res_key].stride[i] = stride;
+        stride *= Runtime::instance().storage[res_key].shape[i];
     }
 
     // TODO: Verify that the number of elements match

@@ -108,7 +108,6 @@ int main(int argc, char* argv[])
         'c', 65.0, 1.0 / 365.0,
         0.08, 0.3
     );
-    stop();
                                         // Output timing
     cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          
     if (args.verbose) {                 // and values.

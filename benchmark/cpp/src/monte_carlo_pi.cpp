@@ -52,7 +52,6 @@ int main(int argc, char* argv[])
     size_t start = sample_time();
     double mcp = monte_carlo_pi(args.size[0], args.size[1]);
     size_t end = sample_time();
-    stop();
                                                     // Output timing
     cout << "{elapsed-time: "<< (end-start)/1000000.0 <<"";          
     if (args.verbose) {                             // and values.

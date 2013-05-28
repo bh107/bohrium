@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh.h"
 #include <complex>
 #include <list>
+#include <boost/ptr_container/ptr_map.hpp>
 
 #define BH_CPP_QUEUE_MAX 1000
 #include "iterator.hpp"
@@ -34,6 +35,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 namespace bh {
+
+typedef boost::ptr_map<size_t, bh_array> storage_type;
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
@@ -203,7 +206,6 @@ public:
     size_t len();
     int64_t shape(int64_t dim);             // Probe for the shape of a dimension
 
-
     void link(size_t);
     size_t unlink();
 
@@ -224,10 +226,13 @@ private:
  */
 class Runtime {
 public:
-    //static Runtime* instance();
-    static Runtime& instance();
 
-    ~Runtime();
+    storage_type storage;   // TODO: make it private
+    size_t keys;            // TODO: make it private
+
+    static Runtime& instance(); // Singleton method
+    ~Runtime();                 // Deconstructor
+
                             // Input and output are of the same type
                             
     template <typename T>   // SYS: FREE, SYNC, DISCARD;
@@ -294,15 +299,6 @@ public:
     void trash(size_t key);
 
 private:
-
-    size_t deallocate_meta(size_t count);       // De-allocate bh_arrays
-    size_t deallocate_ext();                    // De-allocate user functions structs
-
-    size_t execute();                           // Send instructions to Bohrium
-    size_t guard();                             // Prevent overflow of instruction-queue
-
-    //static Runtime* pInstance;                  // Singleton instance pointer.
-
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
     size_t          ext_in_queue;
@@ -318,12 +314,20 @@ private:
                     *vem_component;
 
     int64_t children_count;
-
-    std::list<size_t> garbage;
+                                                
+    std::list<size_t> garbage;                  // DSEL stuff
+                                                // Collection of bh_arrays which will
+                                                // be deleted when the current batch is flushed.
 
     Runtime();                                  // Ensure no external instantiation.
     Runtime(Runtime const&);
     void operator=(Runtime const&);
+
+    size_t deallocate_meta(size_t count);       // De-allocate bh_arrays
+    size_t deallocate_ext();                    // De-allocate userdefined functions structs
+
+    size_t execute();                           // Send instructions to Bohrium
+    size_t guard();                             // Prevent overflow of instruction-queue
 
 };
 

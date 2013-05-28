@@ -73,7 +73,7 @@ multi_array<T>& random(const Dimensions&... shape)
     rinstr->nout        = 1;
     rinstr->nin         = 0;
     rinstr->struct_size = sizeof(bh_random_type);
-    rinstr->operand[0]  = &storage[result->getKey()];
+    rinstr->operand[0]  = &Runtime::instance().storage[result->getKey()];
 
     Runtime::instance().enqueue<T>((bh_userfunc*)rinstr);
 

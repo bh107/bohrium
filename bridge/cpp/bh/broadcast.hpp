@@ -42,8 +42,8 @@ template <typename T>
 inline
 bool same_shape(multi_array<T> & left, multi_array<T> & right)
 {
-    bh_array *left_a     = &storage[left.getKey()];
-    bh_array *right_a    = &storage[right.getKey()];
+    bh_array *left_a     = &Runtime::instance().storage[left.getKey()];
+    bh_array *right_a    = &Runtime::instance().storage[right.getKey()];
     bool compatible = left_a->ndim == right_a->ndim;
 
     for(int64_t dim=right_a->ndim-1; compatible && (dim < right_a->ndim-1); dim++) {
@@ -66,9 +66,9 @@ template <typename T>
 inline
 bool broadcast(multi_array<T>& lower, multi_array<T>& higher, multi_array<T>& view)
 {
-    bh_array *lower_a   = &storage[lower.getKey()];     // The operand which will be "stretched"
-    bh_array *higher_a  = &storage[higher.getKey()];    // The possibly "larger" shape
-    bh_array *view_a    = &storage[view.getKey()];      // The new "broadcasted" shape
+    bh_array *lower_a   = &Runtime::instance().storage[lower.getKey()];     // The operand which will be "stretched"
+    bh_array *higher_a  = &Runtime::instance().storage[higher.getKey()];    // The possibly "larger" shape
+    bh_array *view_a    = &Runtime::instance().storage[view.getKey()];      // The new "broadcasted" shape
     bool broadcastable  = true;
     
     int64_t stretch_dim = lower_a->ndim-1;              // Checks: shape compatibility

@@ -71,8 +71,6 @@ int main(int argc, char* argv[])
     }
     cout << "}" << endl;
 
-    stop();
-
     return 0;
 }
 

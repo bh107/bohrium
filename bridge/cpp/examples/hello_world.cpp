@@ -32,7 +32,7 @@ void compute()
     
     y = view_as(x, 3,3,3);
 
-    bh_pprint_array(&storage[y.getKey()]);
+    bh_pprint_array(&Runtime::instance().storage[y.getKey()]);
 
     cout << x << endl;
     cout << y << endl;
