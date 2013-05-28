@@ -55,7 +55,7 @@ template <typename T>
 T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 {
     multi_array<T> d1, d2, res, s;
-    T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
+    T* p    = (T*)malloc(sizeof(T)*iterations);    // Intermediate results
     T t     = d_t;                              // Initial delta
 
     s = random<T>((int64_t)samples)*4.0 +58.0;           // Model between 58-62
