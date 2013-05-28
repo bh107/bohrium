@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
     }
 
     bh_intp start = _bh_timing();
-    double* prices = pricing(           // Do the computations...
+    double* prices = pricing<double>(   // Do the computations...
         args.size[0], args.size[1],
         'c', 65.0, 1.0 / 365.0,
         0.08, 0.3
