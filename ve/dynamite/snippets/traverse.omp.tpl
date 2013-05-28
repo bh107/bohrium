@@ -106,16 +106,30 @@ void {{SYMBOL}}(int tool, ...)
             {{#a2_dense}}a2_offset += coord[j] * a2_stride[j];{{/a2_dense}}
         }
 
-        for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
-            {{OPERATOR}};
+        {{TYPE_OUT}} *a0_offset_old;
+        {{#a1_dense}}{{TYPE_IN1}} *a1_offset_old;{{/a1_dense}}
+        {{#a2_dense}}{{TYPE_IN2}} *a2_offset_old;{{/a2_dense}}
 
-            a0_offset += a0_stride_ld;
-            {{#a1_dense}}a1_offset += a1_stride_ld;{{/a1_dense}}
-            {{#a2_dense}}a2_offset += a2_stride_ld;{{/a2_dense}}
+        a0_offset_old = a0_offset;
+        {{#a1_dense}}a1_offset_old = a1_offset;{{/a1_dense}}
+        {{#a2_dense}}a2_offset_old = a2_offset;{{/a2_dense}}
+
+        #pragma omp parallel for private(j, a0_offset {{#a1_dense}},a1_offset{{/a1_dense}} {{#a2_dense}},a2_offset{{/a2_dense}})
+        for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
+            a0_offset = a0_offset_old + a0_stride_ld *j;
+            {{#a1_dense}}a1_offset = a1_offset_old + a1_stride_ld *j;{{/a1_dense}}
+            {{#a2_dense}}a2_offset = a2_offset_old + a2_stride_ld *j;{{/a2_dense}}
+
+            {{OPERATOR}};
         }
         cur_e += shape_ld;
 
+        a0_offset = a0_offset_old+a0_stride_ld*(shape_ld-1);
+        {{#a1_dense}}a1_offset = a1_offset_old+a1_stride_ld*(shape_ld-1);{{/a1_dense}}
+        {{#a2_dense}}a2_offset = a2_offset_old+a2_stride_ld*(shape_ld-1);{{/a2_dense}}
+
         // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
+
         for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
             coord[j]++;
             if (coord[j] < shape[j]) {      // Still within this dimension
