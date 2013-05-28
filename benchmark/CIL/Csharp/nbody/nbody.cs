@@ -130,7 +130,8 @@ namespace nbody
 	public static class nBodySolverDoubleNoTempArrays
 	{
 		//Gravity
-		private static DATA G = (DATA)1.0;
+		private const DATA G = (DATA)1.0;
+		private const DATA MIN_DIST = (DATA)1.0;
 
 		private static void FillDiagonal(NdArray a, DATA val)
 		{
@@ -155,10 +156,14 @@ namespace nbody
 			FillDiagonal(b.r0, (Double)1.0);
 
 			// prevent collition
-            var mask = ((Double)1.0) * (NdArray)(b.r0 < (Double) 1.0);
-			var imask = (NdArray)(b.r0 >= (Double) 1.0);
-			b.r0.Mul(imask,b.r0);
-			b.r0.Mul(mask,b.r0);
+			NumCIL.Double.GreaterThanOrEqual.Apply(b.r0, MIN_DIST, b.mask);
+			b.mask.ToDouble (b.r1);
+			b.r1.Mul (b.r0, b.r0);
+
+			NumCIL.Boolean.Not.Apply (b.mask, b.mask);
+			b.mask.ToDouble (b.r1);
+			b.r1.Mul (MIN_DIST, b.r1);
+			b.r1.Add (b.r0, b.r0);
 
 			//Calculate the acceleration component wise
 			var m = b.mass[R.NewAxis, R.All].Transposed;
@@ -219,6 +224,7 @@ namespace nbody
 			public NdArray r0;
 			public NdArray r1;
 			public NdArray t0;
+			public NumCIL.Boolean.NdArray mask;
 
 			public Galaxy(long size)
 			{
@@ -236,6 +242,7 @@ namespace nbody
 				this.r0 = new NdArray(this.dx.Shape);
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
+				this.mask = new NumCIL.Boolean.NdArray(this.dx.Shape);
 			}
 
 			public DATA Sync()
@@ -354,7 +361,8 @@ namespace nbody
 	public static class nBodySolverFloatNoTempArrays
 	{
 		//Gravity
-		private static DATA G = (DATA)1.0;
+		private const DATA G = (DATA)1.0;
+		private const DATA MIN_DIST = (DATA)1.0;
 
 		private static void FillDiagonal(NdArray a, DATA val)
 		{
@@ -379,10 +387,14 @@ namespace nbody
 			FillDiagonal(b.r0, (Single)1.0);
 
 			// prevent collition
-            var mask = ((Single)1.0) * (NdArray)(b.r0 < (Single) 1.0);
-			var imask = (NdArray)(b.r0 >= (Single) 1.0);
-			b.r0.Mul(imask,b.r0);
-			b.r0.Mul(mask,b.r0);
+			NumCIL.Float.GreaterThanOrEqual.Apply(b.r0, MIN_DIST, b.mask);
+			b.mask.ToFloat (b.r1);
+			b.r1.Mul (b.r0, b.r0);
+
+			NumCIL.Boolean.Not.Apply (b.mask, b.mask);
+			b.mask.ToFloat (b.r1);
+			b.r1.Mul (MIN_DIST, b.r1);
+			b.r1.Add (b.r0, b.r0);
 
 			//Calculate the acceleration component wise
 			var m = b.mass[R.NewAxis, R.All].Transposed;
@@ -443,6 +455,7 @@ namespace nbody
 			public NdArray r0;
 			public NdArray r1;
 			public NdArray t0;
+			public NumCIL.Boolean.NdArray mask;
 
 			public Galaxy(long size)
 			{
@@ -460,6 +473,7 @@ namespace nbody
 				this.r0 = new NdArray(this.dx.Shape);
 				this.r1 = new NdArray(this.dx.Shape);
 				this.t0 = new NdArray(this.x.Shape);
+				this.mask = new NumCIL.Boolean.NdArray(this.dx.Shape);
 			}
 
 			public DATA Sync()
