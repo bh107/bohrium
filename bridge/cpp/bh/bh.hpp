@@ -61,6 +61,10 @@ int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
 // Extensions
 //
 
+#ifndef END
+#define END 0
+#endif
+
 enum reducible {
     ADD         = BH_ADD,
     MULTIPLY    = BH_MULTIPLY,
@@ -82,6 +86,7 @@ public:
 
     int begin, end;
     size_t stride;
+    bool inclusive_end;
 };
 
 template <typename T>

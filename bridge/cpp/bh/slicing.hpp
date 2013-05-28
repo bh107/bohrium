@@ -23,13 +23,15 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 slice_range::slice_range() : begin(0), end(-1), stride(1) {}
-slice_range::slice_range(int begin, int end, size_t stride) : begin(begin), end(end), stride(stride) {}
+slice_range::slice_range(int begin, int end, size_t stride) : begin(begin), end(end), stride(stride), inclusive_end(false) {}
 
 slice_range& _(int begin, int end, size_t stride)
 {
-    return *(new slice_range(begin, end, stride));
-}
+    slice_range* le_range = (new slice_range(begin, end, stride));
+    le_range->inclusive_end = (0==end);
 
+    return *le_range;
+}
 
 template <typename T>
 slice<T>::slice(multi_array<T>& op) : op(&op), dims(0)
@@ -106,6 +108,13 @@ bh::multi_array<T>& slice<T>::view()
         b = ranges[i].begin < 0 ? rhs->shape[i] + ranges[i].begin : ranges[i].begin;
         e = ranges[i].end   < 0 ? rhs->shape[i] + ranges[i].end   : ranges[i].end;
 
+        // NOTICE: e = 0 is special-case to make the last-element inclusive
+        //         it is also used for single-element indexing but in that case
+        //         inclusive_end should be false...
+        if (ranges[i].inclusive_end && (ranges[i].end == 0)) {
+            e = rhs->shape[i];
+        }
+
         if (b<e) {                              // Range
             lhs->shape[lhs_dim]   = 1 + (((e-b) - 1) / ranges[i].stride); // ceil
             lhs->stride[lhs_dim]  = ranges[i].stride * rhs->stride[i];
@@ -118,7 +127,7 @@ bh::multi_array<T>& slice<T>::view()
         lhs->start  += b * rhs->stride[i];
     }
 
-    if (lhs->ndim == 0) {   // Fix up the pseudo-scalar
+    if (lhs->ndim == 0) {                       // Fix up the pseudo-scalar
         lhs->ndim = 1;
         lhs->shape[0]   = 1;
         lhs->stride[0]  = 1;
