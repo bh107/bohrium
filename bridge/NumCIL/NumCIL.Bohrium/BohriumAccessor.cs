@@ -777,6 +777,10 @@ namespace NumCIL.Bohrium
                 {
                     if (unsupported.Count > 0)
                     {
+						Console.WriteLine("[Warning] Executing {0} unsupported operation(s)", unsupported.Count);
+						foreach(var un in unsupported)
+							Console.WriteLine(un.Operation);
+
                         base.DoExecute(unsupported);
                         unsupported.Clear();
                     }
@@ -913,7 +917,12 @@ namespace NumCIL.Bohrium
                 throw new InvalidOperationException("Unexpected result, both supported and non-supported operations");
 
             if (unsupported.Count > 0)
+			{
+				Console.WriteLine("[Warning] Executing {0} unsupported operation(s)", unsupported.Count);
+				foreach(var un in unsupported)
+					Console.WriteLine(un.Operation);
                 base.DoExecute(unsupported);
+			}
 
             if (supported.Count > 0 && !isContinuation)
             {
