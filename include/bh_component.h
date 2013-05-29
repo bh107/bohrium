@@ -31,6 +31,7 @@ extern "C" {
 #include <bh_error.h>
 #include <iniparser.h>
 #include <bh_win.h>
+#include <bh_graph.h>
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.
@@ -62,8 +63,7 @@ typedef bh_error (*bh_shutdown)(void);
  * @instruction A list of instructions to execute
  * @return Error codes (BH_SUCCESS, BH_PARTIAL_SUCCESS)
  */
-typedef bh_error (*bh_execute)(bh_intp count,
-                                     bh_instruction inst_list[]);
+typedef bh_error (*bh_execute)(bh_ir* bhir);
 
 /* Register a new user-defined function.
  *
