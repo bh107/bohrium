@@ -17,52 +17,56 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_VE_GRAPH_H
-#define __BH_VE_GRAPH_H
+#ifndef __BH_GRAPH_H
+#define __BH_GRAPH_H
 
 #include <bh.h>
+#include <bh_dynamic_list.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct __bh_graph_node bh_graph_node;
+typedef bh_intp bh_node_index;
+typedef bh_intp bh_instruction_index;
+#define INVALID_NODE (-1)
+#define INVALID_INSTRUCTION (-1)
 
 //Basic entry in a parsed graph
-struct __bh_graph_node {
+struct bh_graph_node {
     // The node type
 	bh_intp type;
 	
 	// The index into the instruction list
-	bh_instruction* instruction;
+	bh_intp instruction;
 	
-	//The left parent node for this element, or NULL if this is a root node
-	bh_graph_node* left_parent;
+	//The left parent node for this element, or INVALID_NODE if this is a root node
+	bh_node_index left_parent;
 
-	//The parent node for this element or NULL
-	bh_graph_node* right_parent;
+	//The parent node for this element or INVALID_NODE
+	bh_node_index right_parent;
 	
-	//A pointer to the left node, or NULL if this is a leaf node
-	bh_graph_node* left_child;
+	//A pointer to the left node, or INVALID_NODE if this is a leaf node
+	bh_node_index left_child;
 
-	//A pointer to the right node, or NULL if there is only a single child node
-	bh_graph_node* right_child;
+	//A pointer to the right node, or INVALID_NODE if there is only a single child node
+	bh_node_index right_child;
 };
+
+// "Secret" implementation, it uses C++ STL so we hide it from the C API
+typedef struct bh_graph_iterator bh_graph_iterator;
 
 // A parsed graph, representing an execution batch
 typedef struct {
     // The graph root node
-    bh_graph_node* node;
+    bh_intp root;
+        
+    // The allocated instruction storage
+    bh_dynamic_list* instructions;
+
+    // The allocated node storage
+    bh_dynamic_list* nodes;
     
-    // The number of instructions in the batch
-    bh_intp instruction_count;
-    
-    // The instruction batch
-    bh_instruction* instructions;
-    
-#ifdef DEBUG
-    char[1000] tag;
-#endif
 } bh_ir;
 
 
@@ -73,63 +77,85 @@ enum /* bh_node_types */
     BH_COLLECTION,     // The node is a collection node
 };
 
-/* Creates a new graph node.
+/* Creates a new graph storage element
  *
- * @type The node type
- * @instruction The instruction attached to the node, or NULL
- * @return Error codes (BH_SUCCESS)
+ * @bhir A pointer to the result
+ * @instructions The initial instruction list (can be NULL if @instruction_count is 0)
+ * @instruction_count The number of instructions in the initial list
+ * @return BH_ERROR on allocation failure, otherwise BH_SUCCESS
  */
-bh_graph_node* bh_graph_new_node(bh_intp type, bh_instruction* instruction);
-
-/* Destroys a new graph node.
- *
- * @node The node to free
- */
-void bh_graph_free_node(bh_graph_node* node);
-
-/* Parses a list of instructions into a graph representation.
- *
- * @bhir Contains the input instructions, 
- * and will be updated with the root node extracted 
- * from the parsing
- * @return Error codes (BH_SUCCESS)
- */
-DLLEXPORT bh_error bh_graph_from_list(bh_ir* bhir);
+DLLEXPORT bh_error bh_graph_create(bh_ir** bhir, bh_instruction* instructions, bh_intp instruction_count);
 
 /* Cleans up all memory used by the graph
  *
- * @bhir The entry to remove
+ * @bhir The graph to destroy
  * @return Error codes (BH_SUCCESS) 
  */
 DLLEXPORT bh_error bh_graph_destroy(bh_ir* bhir);
 
+/* Appends a new instruction to the current graph
+ *
+ * @bhir The graph to update
+ * @instructions The instructions to append
+ * @instruction_count The number of instructions in the list
+ * @return Error codes (BH_SUCCESS) 
+ */
+DLLEXPORT bh_error bh_graph_append(bh_ir* bhir, bh_instruction* instruction, bh_intp instruction_count);
+
+/* Parses the instruction list and creates a new graph
+ *
+ * @bhir The graph to update
+ * @return Error codes (BH_SUCCESS) 
+ */
+DLLEXPORT bh_error bh_graph_parse(bh_ir* bhir);
+
+/* Creates a new graph node.
+ *
+ * @bhir The bh_ir structure
+ * @type The node type 
+ * @instruction The instruction attached to the node, or NULL
+ * @return Error codes (BH_SUCCESS)
+ */
+DLLEXPORT bh_node_index bh_graph_new_node(bh_ir* bhir, bh_intp type, bh_instruction_index instruction);
+
+/* Destroys a new graph node.
+ *
+ * @bhir The bh_ir structure
+ * @node The node to free
+ */
+DLLEXPORT void bh_graph_free_node(bh_ir* bhir, bh_node_index node);
+
 /* Inserts a node into the graph
  *
+ * @bhir The graph to update
  * @self The node to insert before
  * @other The node to insert 
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_grap_node_insert_before(bh_graph_node* self, bh_graph_node* other);
+DLLEXPORT bh_error bh_grap_node_insert_before(bh_ir* bhir, bh_node_index self, bh_node_index other);
 
 /* Appends a node onto another node in the graph
  *
+ * @bhir The graph to update
  * @self The node to append to
  * @newchild The node to append 
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_grap_node_add_child(bh_graph_node* self, bh_graph_node* newchild);
+DLLEXPORT bh_error bh_grap_node_add_child(bh_ir* bhir, bh_node_index self, bh_node_index newchild);
 
 /* Inserts a node into the graph
  *
+ * @bhir The graph to update
  * @self The node to update
  * @newparent The node to append 
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_grap_node_add_parent(bh_graph_node* self, bh_graph_node* newparent);
+DLLEXPORT bh_error bh_grap_node_add_parent(bh_ir* bhir, bh_node_index self, bh_node_index newparent);
 
 
 /* Uses the instruction list to calculate dependencies and print a graph in DOT format.
  *
+ * @bhir The graph to print from
  * @bhir The input instructions
  * @return Error codes (BH_SUCCESS)
  */
@@ -137,19 +163,58 @@ DLLEXPORT bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* fil
 
 /* Prints a graph representation of the node in DOT format.
  *
- * @root The root node to draw
+ * @bhir The graph to print
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_graph_print_graph(bh_graph_node* root, const char* filename);
+DLLEXPORT bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename);
 
 /* Creates a list of instructions from a graph representation.
  *
- * @root The root node
- * instructions Storage for retrieving the instructions
- * instruction_count Input the size of the list, outputs the number of instructions
+ * @bhir The graph to serialize
+ * @instructions Storage for retrieving the instructions
+ * @instruction_count Input the size of the list, outputs the number of instructions
  * @return BH_SUCCESS if all nodes are added to the list, BH_ERROR if the storage was insufficient
  */
-DLLEXPORT bh_error bh_graph_serialize(bh_graph_node* root, bh_instruction* instructions, bh_intp* instruction_count);
+DLLEXPORT bh_error bh_graph_serialize(bh_ir* bhir, bh_instruction* instructions, bh_intp* instruction_count);
+
+/* Creates a new iterator for visiting nodes in the graph
+ *
+ * @bhir The graph to iterate
+ * @iterator The new iterator
+ * @return BH_SUCCESS if the iterator is create, BH_ERROR otherwise
+ */
+DLLEXPORT bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator);
+
+/* Resets a graph iterator 
+ *
+ * @iterator The iterator to reset
+ * @return BH_SUCCESS if the iterator is reset, BH_ERROR otherwise
+ */
+DLLEXPORT bh_error bh_graph_iterator_reset(bh_graph_iterator* iterator);
+
+/* Moves a graph iterator to next instruction
+ *
+ * @iterator The iterator to move
+ * @instruction The next instruction
+ * @return BH_SUCCESS if the iterator moved, BH_ERROR otherwise
+ */
+DLLEXPORT bh_error bh_graph_iterator_next_instruction(bh_graph_iterator* iterator, bh_instruction** instruction);
+
+/* Moves a graph iterator to next node
+ *
+ * @iterator The iterator to move
+ * @node The next node index
+ * @return BH_SUCCESS if the iterator moved, BH_ERROR otherwise
+ */
+DLLEXPORT bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index* node);
+
+/* Destroys a graph iterator 
+ *
+ * @iterator The iterator to destroy
+ * @return BH_SUCCESS if the iterator is destroyed, BH_ERROR otherwise
+ */
+DLLEXPORT bh_error bh_graph_iterator_destroy(bh_graph_iterator* iterator);
+
 
 #ifdef __cplusplus
 }
