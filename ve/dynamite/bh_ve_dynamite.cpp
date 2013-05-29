@@ -178,7 +178,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.SetValue("SYMBOL",     symbol);
                         dict.SetValue("TYPE_A0",    type_out);
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
-                        sprintf(snippet_fn, "%s/random.tpl", snippet_path);
+                        //sprintf(snippet_fn, "%s/random.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/random.omp.tpl", snippet_path);
                         ctemplate::ExpandTemplate(
                             snippet_fn,
                             ctemplate::STRIP_BLANK_LINES, 
@@ -236,7 +237,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     dict.SetValue("TYPE_A0", type_out);
                     dict.SetValue("TYPE_A1", type_in1);
 
-                    sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                    //sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                    sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -364,7 +366,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.ShowSection("a2_dense");
                     }
                 
-                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    //sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -492,7 +495,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.ShowSection("a1_dense");
                     } 
 
-                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    //sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
