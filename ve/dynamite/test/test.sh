@@ -14,9 +14,8 @@
 
 rm -r ~/.local/dynamite
 INSTALLDIR="~/.local" DEBUG="" make clean install
-
-python ../../test/numpy/numpytest.py
-
+python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#python ../../test/numpy/numpytest.py
 #python ../../test/numpy/numpytest.py -f test_array_create.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
 #python ../../test/numpy/numpytest.py -f test_matmul.py
