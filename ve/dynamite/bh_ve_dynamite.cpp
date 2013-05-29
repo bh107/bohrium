@@ -234,7 +234,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.SetValue("TYPE_A0", type_out);
                     dict.SetValue("TYPE_A1", type_in1);
 
-                    sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                    //sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                    sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
