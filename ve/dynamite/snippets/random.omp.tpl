@@ -173,11 +173,11 @@ unsigned long rk_hash(unsigned long key)
     return key;
 }
 
-int rk_initseed(rk_state *state)
+int rk_initseed(rk_state *state, int thread_id)
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    rk_seed(rk_hash(getpid()) ^ rk_hash(tv.tv_sec) ^ rk_hash(tv.tv_usec), state);
+    rk_seed(rk_hash(thread_id) ^ rk_hash(getpid()) ^ rk_hash(tv.tv_sec) ^ rk_hash(tv.tv_usec), state);
     return 0;
 }
 
@@ -195,12 +195,12 @@ void {{SYMBOL}}(int tool, ...)
         int64_t thread_id   = omp_get_thread_num();
         int64_t my_elements = nelements / nthreads;
         int64_t my_offset   = thread_id * my_elements;
-        if ((thread_id == nthreads-1) && (thread_id!=0)) {
+        if ((thread_id == nthreads-1) && (thread_id != 0)) {
             my_elements += nelements % thread_id;
         }
 
         rk_state state;
-        rk_initseed(&state);
+        rk_initseed(&state, thread_id);
 
         int64_t i;
         for(i=my_offset; i<my_elements+my_offset; ++i) {
