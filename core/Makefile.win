@@ -11,7 +11,7 @@ LINKFLAGS=/nologo /DLL /out:$(DLLNAME)
 WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
-SRC=bh.c bh_opcode.c bh_type.c bh_error.c bh_component.c bh_pprint.c bh_memory.c dlfcn-win32.c bh_vcache.c bh_array.c bh_timing.c 
+SRC=bh.c bh_opcode.c bh_type.c bh_error.c bh_component.c bh_pprint.c bh_memory.c dlfcn-win32.c bh_vcache.c bh_array.c bh_timing.c bh_dynamic_list.c
 OBJ=$(SRC:.c=.obj) $(ROOT)/core/compute/bh_compute.obj $(ROOT)/core/compute/bh_compute_helpers.obj $(ROOT)\core\compute\bh_compute_random.obj $(ROOT)\core\compute\bh_compute_reduce.obj $(ROOT)\core\bundler\bh_bundler.obj $(ROOT)\core\compute\bh_compute_matmul.obj $(ROOT)\core\compute\bh_compute_nselect.obj $(ROOT)\core\compute\bh_typeutil.obj $(ROOT)\core\graph\bh_graph.obj
 
 INSTALLDIR=/opt/bh/
