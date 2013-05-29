@@ -22,18 +22,29 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <queue>
 #include <iostream>
 #include <fstream>
-#include <tr1/unordered_map>
 
 #include "bh_graph.hpp"
 
 #ifdef __GNUC__
 #include <ext/hash_map>
 namespace std { using namespace __gnu_cxx; }
+#define hashmap std::hash_map
 #else
 #include <hash_map>
+#define hashmap std::hash_map
 #endif
 
-#define BASIC_HASHER(T) template<> struct hash<T> { size_t operator()(T __x) const { return (size_t)__x; } };
+struct hash_bh_graph_node_p{
+  size_t operator()(const bh_graph_node* x) const{
+    return (size_t)x;
+  }
+};
+struct hash_bh_array_p{
+  size_t operator()(const bh_array* x) const{
+    return (size_t)x;
+  }
+};
+
 
 static bh_intp print_graph_filename = 0;
 
@@ -68,8 +79,8 @@ void bh_graph_free_node(bh_graph_node* node)
  */
 bh_error bh_graph_from_list(bh_ir* bhir)
 {
-	std::tr1::unordered_map<bh_array*, bh_graph_node*> map;
-	std::tr1::unordered_map<bh_array*, bh_graph_node*>::iterator it;
+	hashmap<bh_array*, bh_graph_node*, hash_bh_array_p> map;
+	hashmap<bh_array*, bh_graph_node*, hash_bh_array_p>::iterator it;
 	std::queue<bh_graph_node*> exploration;
 	
     print_graph_filename++;
@@ -249,7 +260,7 @@ bh_error bh_graph_from_list(bh_ir* bhir)
 bh_error bh_graph_serialize(bh_graph_node* root, bh_instruction* instructions, bh_intp* instruction_count)
 {
     // Keep track of already scheduled nodes
-    std::tr1::unordered_map<bh_graph_node*, bh_graph_node*> scheduled;
+    hashmap<bh_graph_node*, bh_graph_node*, hash_bh_graph_node_p> scheduled;
     // Keep track of items that have unsatisfied dependencies
     std::queue<bh_graph_node*> blocked;
 
@@ -462,8 +473,8 @@ bh_error bh_grap_node_add_parent(bh_graph_node* self, bh_graph_node* newparent)
  */
 bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
 {
-    std::tr1::unordered_map<bh_array*, bh_intp> nameDict;
-    std::tr1::unordered_map<bh_array*, bh_intp>::iterator it;
+    hashmap<bh_array*, bh_intp, hash_bh_array_p> nameDict;
+    hashmap<bh_array*, bh_intp, hash_bh_array_p>::iterator it;
 
     bh_intp lastName = 0;
     bh_intp constName = 0;
@@ -577,10 +588,10 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
  */
 bh_error bh_graph_print_graph(bh_graph_node* root, const char* filename)
 {
-    std::tr1::unordered_map<bh_graph_node*, bh_graph_node*> visited;
+    hashmap<bh_graph_node*, bh_graph_node*, hash_bh_graph_node_p> visited;
     std::queue<bh_graph_node*> queue;
-    std::tr1::unordered_map<bh_graph_node*, bh_intp> nameTable;
-    std::tr1::unordered_map<bh_graph_node*, bh_intp>::iterator it;
+    hashmap<bh_graph_node*, bh_intp, hash_bh_graph_node_p> nameTable;
+    hashmap<bh_graph_node*, bh_intp, hash_bh_graph_node_p>::iterator it;
     
     std::ofstream fs(filename);
   
