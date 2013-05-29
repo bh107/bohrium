@@ -50,16 +50,18 @@ bh_error bh_ve_simple_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instruction_list )
+bh_error bh_ve_simple_execute(bh_ir* bhir)
 {
-    bh_intp count;
-    bh_instruction* inst;
     bh_error res = BH_SUCCESS;
 
-    for (count=0; count < instruction_count; count++) {
+    bh_graph_iterator* it;
+    bh_instruction* inst;
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
 
-        inst = &instruction_list[count];
-        
+    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
+    {
         res = bh_vcache_malloc( inst );          // Allocate memory for operands
         if ( res != BH_SUCCESS ) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_simple_execute()\n");
@@ -111,6 +113,7 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
 
     }
 
+    bh_graph_iterator_destroy(it);
 	return res;
 }
 

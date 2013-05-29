@@ -112,13 +112,18 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instruction_list)
+bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
     bh_intp count;
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
+    bh_graph_iterator* it;
+    
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
 
-    for (count=0; count<instruction_count; count++) {
+    while(bh_graph_iterator_next_instruction(it, &instr)) {
 
         ctemplate::TemplateDictionary dict("example");
         std::string sourcecode;
@@ -134,8 +139,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         std::string symbol = "";
         
         bh_random_type *random_args;
-
-        instr = &instruction_list[count];
 
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
@@ -534,6 +537,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         }
     }
 
+    bh_graph_iterator_destroy(it);
 	return res;
 }
 

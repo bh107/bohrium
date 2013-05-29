@@ -273,17 +273,21 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
 
 }
 
-bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruction_list )
+bh_error bh_ve_mcore_execute(bh_ir* bhir)
 {
     bh_intp count;
     bh_instruction* inst;
     bh_index  nelements;
     bh_error res = BH_SUCCESS;
 
-    for(count=0; count < instruction_count; count++)
-    {
-        inst = &instruction_list[count];
+    bh_graph_iterator* it;
+    bh_instruction* inst;
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
 
+    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
+    {
         res = bh_vcache_malloc( inst );      // Allocate memory for operands
         if ( res != BH_SUCCESS ) {
             return res;
@@ -363,6 +367,7 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
 
     }
     
+    bh_graph_iterator_destroy(it);
     return res;
 }
 

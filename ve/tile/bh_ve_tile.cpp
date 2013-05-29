@@ -184,7 +184,7 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
     return ret_errcode;
 }
 
-bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruction_list )
+bh_error bh_ve_tile_execute( bh_ir* bhir )
 {
     bh_intp cur_index,  j;
     bh_instruction *inst, *binst;
@@ -192,6 +192,15 @@ bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruct
     bh_intp bin_start, bin_end, bin_size;
     bh_intp bundle_start, bundle_end, bundle_size;
     bh_error res = BH_SUCCESS;
+
+    bh_intp instruction_count = bhir->instructions->count;
+    bh_instruction* instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction));
+    res = bh_graph_serialize(bhir, instruction_list, &instruction_count);
+    if (res != BH_SUCCESS)
+    {
+        free(instruction_list);
+        return res;
+    }
 
     for(cur_index=0; cur_index < instruction_count; cur_index++)
     {
@@ -331,6 +340,7 @@ bh_error bh_ve_tile_execute( bh_intp instruction_count, bh_instruction* instruct
 
     }
 
+    free(instruction_list);
 	return res;
 }
 

@@ -47,8 +47,7 @@ private:
 public:
     InstructionScheduler(ResourceManager* resourceManager);
     void registerFunction(bh_intp id, bh_userfunc_impl userfunc);
-    bh_error schedule(bh_intp instructionCount,
-                         bh_instruction* instructionList);
+    bh_error schedule(bh_ir* bhir);
 };
 
 #endif

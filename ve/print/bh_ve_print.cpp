@@ -33,14 +33,22 @@ bh_error bh_ve_print_init(bh_component* _component)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_print_execute(bh_intp instruction_count,
-                                   bh_instruction instruction_list[])
+bh_error bh_ve_print_execute(bh_ir* bhir)
 {
     std::cout << "# ----------------------------- Recieved batch with " << 
-        instruction_count << 
+        bhir->instructions->count << 
         " instructions --------------------------------------- #" << std::endl;
-    for (bh_intp i = 0; i < instruction_count; ++i)
-        bh_pprint_instr(instruction_list+i);
+
+    bh_graph_iterator* it;
+    bh_instruction* inst;
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
+
+    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
+        bh_pprint_instr(inst);
+
+    bh_graph_iterator_destroy(it);    
     return BH_SUCCESS;
 }
 

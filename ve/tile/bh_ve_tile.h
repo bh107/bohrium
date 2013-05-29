@@ -29,7 +29,7 @@ extern "C" {
 
 DLLEXPORT bh_error bh_ve_tile_init(bh_component *self);
 
-DLLEXPORT bh_error bh_ve_tile_execute(bh_intp instruction_count, bh_instruction* instruction_list);
+DLLEXPORT bh_error bh_ve_tile_execute(bh_ir* bhir);
 
 DLLEXPORT bh_error bh_ve_tile_shutdown(void);
 
