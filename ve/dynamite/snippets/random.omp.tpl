@@ -53,7 +53,6 @@ unsigned long rk_random(rk_state *state)
 {
     unsigned long y;
 
-
     if (state->pos == RK_STATE_LEN) {
         int i;
 
@@ -187,16 +186,22 @@ void {{SYMBOL}}(int tool, ...)
     va_list list;
     va_start(list,tool);
     {{TYPE_A0}} *a0_data = va_arg(list, {{TYPE_A0}}*);
-    int64_t nelements = va_arg(list, int64_t);
+    int64_t cur_e, nelements = va_arg(list, int64_t);
     va_end(list);
 
-    rk_state state;
-    rk_initseed(&state);
 
-    int64_t i;
-    #pragma omp parallel for private(i)
-    for(i=0; i<nelements; ++i) {
-        a0_data[i] = rk_{{TYPE_A0_SHORTHAND}}(&state);
+    int thread_id,
+        nthreads = omp_get_max_threads();
+
+    rk_state state[nthreads];
+    for(thread_id=0; thread_id<nthreads; ++thread_id) {
+        rk_initseed(&state[thread_id]);
+    }
+
+    #pragma omp parallel for private(cur_e, thread_id)
+    for(cur_e=0; cur_e<nelements; ++cur_e) {
+        thread_id = omp_get_thread_num();
+        a0_data[cur_e] = rk_{{TYPE_A0_SHORTHAND}}(&(state[thread_id]));
     }
 }
 
