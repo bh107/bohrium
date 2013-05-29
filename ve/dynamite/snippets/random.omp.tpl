@@ -193,8 +193,9 @@ void {{SYMBOL}}(int tool, ...)
     rk_state state;
     rk_initseed(&state);
 
+    int64_t i;
     #pragma omp parallel for private(i)
-    for(int64_t i=0; i<nelements; ++i) {
+    for(i=0; i<nelements; ++i) {
         a0_data[i] = rk_{{TYPE_A0_SHORTHAND}}(&state);
     }
 }
