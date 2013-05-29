@@ -90,11 +90,23 @@ bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
 }
 
 
-bh_error bh_vem_cluster_execute(bh_intp count,
-                                      bh_instruction inst_list[])
+bh_error bh_vem_cluster_execute(bh_ir* bhir)
 {
+    bh_intp count = bhir->instructions->count;
+    bh_instruction* inst_list = (bh_instruction*)malloc(sizeof(bh_instruction));
+    bh_error res = bh_graph_serialize(bhir, inst_list, &count);
+    if (res != BH_SUCCESS)
+    {
+        free(instlist);
+        return res;
+    }
+
     //Send the instruction list and operands to the slaves
     dispatch_inst_list(count, inst_list);
     
-    return exec_execute(count,inst_list);
+    res = exec_execute(count,inst_list);
+    
+    free(inst_list);
+    
+    return res;
 }

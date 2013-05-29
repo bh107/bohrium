@@ -46,8 +46,7 @@ DLLEXPORT bh_error bh_vem_cluster_shutdown(void);
  * @instruction A list of instructions to execute
  * @return Error codes (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_vem_cluster_execute(bh_intp count,
-                                   bh_instruction inst_list[]);
+DLLEXPORT bh_error bh_vem_cluster_execute(bh_ir* bhir);
 
 /* Registre a new user-defined function.
  *
