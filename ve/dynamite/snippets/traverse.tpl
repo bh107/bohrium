@@ -77,9 +77,14 @@ void {{SYMBOL}}(int tool, ...)
     
     int64_t *shape      = va_arg(list, int64_t*);
     int64_t ndim        = va_arg(list, int64_t);
-    int64_t nelements   = va_arg(list, int64_t);
 
     va_end(list);
+
+    int64_t nelements = 1;      // Compute number of elements
+    int k;
+    for (k = 0; k<ndim; ++k){
+        nelements *= shape[k];
+    }
 
     int64_t j,                  // Traversal variables
             last_dim    = ndim-1,

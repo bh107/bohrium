@@ -354,8 +354,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_dense");
                     }
-                
-                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    if (1 == dims) {
+                        sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                    } else {
+                        sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    }
                     //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
@@ -378,8 +381,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             instr->operand[1]->stride,
 
                             &(instr->constant.value),
-                            instr->operand[0]->shape, instr->operand[0]->ndim,
-                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+
+                            instr->operand[0]->shape,
+                            instr->operand[0]->ndim
                         );
                     } else if (bh_is_constant(instr->operand[1])) {  // DCD
                         target->funcs[symbol](0,
@@ -393,8 +397,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             instr->operand[2]->start,
                             instr->operand[2]->stride,
 
-                            instr->operand[0]->shape, instr->operand[0]->ndim,
-                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                            instr->operand[0]->shape,
+                            instr->operand[0]->ndim
                         );
                     } else {                                        // DDD
                         target->funcs[symbol](0,
@@ -410,8 +414,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             instr->operand[2]->start,
                             instr->operand[2]->stride,
 
-                            instr->operand[0]->shape, instr->operand[0]->ndim,
-                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                            instr->operand[0]->shape,
+                            instr->operand[0]->ndim
                         );
                     }
                     
@@ -472,7 +476,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 symbol = std::string(symbol_c);
 
                 cres = target->symbol_ready(symbol);
-                if (!cres) {
+                if (!cres) {    // SNIPPET
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.ShowSection("unary");
@@ -489,8 +493,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
                         dict.ShowSection("a1_dense");
                     } 
-
-                    sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    if (1 == dims) {
+                        sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                    } else {
+                        sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                    }
                     //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
@@ -512,8 +519,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                             &(instr->constant.value),
 
-                            instr->operand[0]->shape, instr->operand[0]->ndim,
-                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                            instr->operand[0]->shape,
+                            instr->operand[0]->ndim
                         );
                     } else {
                         target->funcs[symbol](0,
@@ -525,8 +532,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             instr->operand[1]->start,
                             instr->operand[1]->stride,
 
-                            instr->operand[0]->shape, instr->operand[0]->ndim,
-                            bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
+                            instr->operand[0]->shape,
+                            instr->operand[0]->ndim
                         );
                     }
                     res = BH_SUCCESS;
