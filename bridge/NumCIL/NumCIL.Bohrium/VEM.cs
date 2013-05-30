@@ -443,13 +443,9 @@ namespace NumCIL.Bohrium
                         m_allocatedUserfuncs.Remove(inst.userfunc);
                     }
                 }
-
-                PInvoke.bh_error e = m_childs[0].execute(instrBuffer.LongLength, instrBuffer);
-
-                if (e != PInvoke.bh_error.BH_SUCCESS)
-                {
-                    throw new BohriumException(e);
-                }
+                
+				using(IR batch = new IR(instrBuffer))
+					batch.Execute(m_childs[0]);
 
                 if (destroys > 0)
                     foreach (var inst in instrBuffer.Where(x => x.opcode == bh_opcode.BH_DISCARD))
