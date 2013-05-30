@@ -1,8 +1,8 @@
 INSTALLDIR?=/opt/bohrium/
-XBUILD?=xbuild
+XBUILD=msbuild
 XBUILD_CONF=/property:Configuration=Release /property:Platform=AnyCPU
 
-SUBDIRS=nbody shallow_water
+SUBDIRS=nbody shallow_water jacobi blackscholes
  
 all:
 	for dir in $(SUBDIRS); do \
