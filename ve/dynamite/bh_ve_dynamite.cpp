@@ -357,7 +357,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
                     //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
@@ -496,7 +496,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
                     //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
