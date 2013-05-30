@@ -47,29 +47,29 @@ void {{SYMBOL}}(int tool, ...)
 
     int64_t  a0_start   = va_arg(list, int64_t);
     int64_t *a0_stride  = va_arg(list, int64_t*);
-    {{TYPE_OUT}} *a0_data   = va_arg(list, {{TYPE_OUT}}*);
-    {{TYPE_OUT}} *a0_offset;
+    {{TYPE_OUT}} *a0_first   = va_arg(list, {{TYPE_OUT}}*);
+    {{TYPE_OUT}} *a0_current;
     
     {{#a1_dense}}
     int64_t  a1_start   = va_arg(list, int64_t);
     int64_t *a1_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN1}} *a1_data   = va_arg(list, {{TYPE_IN1}}*);
-    {{TYPE_IN1}} *a1_offset;
+    {{TYPE_IN1}} *a1_first   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *a1_current;
     {{/a1_dense}}
 
     {{#a1_scalar}}
-    {{TYPE_IN1}} *a1_offset   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
     {{/a1_scalar}}
 
     {{#a2_dense}}
     int64_t  a2_start   = va_arg(list, int64_t);
     int64_t *a2_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN2}} *a2_data   = va_arg(list, {{TYPE_IN2}}*);
-    {{TYPE_IN2}} *a2_offset;
+    {{TYPE_IN2}} *a2_first   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *a2_current;
     {{/a2_dense}}
 
     {{#a2_scalar}}
-    {{TYPE_IN2}} *a2_offset   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *a2_current   = va_arg(list, {{TYPE_IN2}}*);
     {{/a2_scalar}}
     
     int64_t *shape      = va_arg(list, int64_t*);
@@ -78,9 +78,9 @@ void {{SYMBOL}}(int tool, ...)
 
     va_end(list);
 
-    assert(a0_data != NULL);    // Ensure that data is allocated
-    {{#a1_dense}}assert(a1_data != NULL);{{/a1_dense}}
-    {{#a2_dense}}assert(a2_data != NULL);{{/a2_dense}}
+    assert(a0_first != NULL);    // Ensure that data is allocated
+    {{#a1_dense}}assert(a1_first != NULL);{{/a1_dense}}
+    {{#a2_dense}}assert(a2_first != NULL);{{/a2_dense}}
 
     int64_t j,                  // Traversal variables
             last_dim    = ndim-1,
@@ -97,21 +97,21 @@ void {{SYMBOL}}(int tool, ...)
 
     while (cur_e <= last_e) {
         
-        a0_offset = a0_data + a0_start;         // Reset offsets
-        {{#a1_dense}}a1_offset = a1_data + a1_start;{{/a1_dense}}
-        {{#a2_dense}}a2_offset = a2_data + a2_start;{{/a2_dense}}
+        a0_current = a0_first + a0_start;         // Reset offsets
+        {{#a1_dense}}a1_current = a1_first + a1_start;{{/a1_dense}}
+        {{#a2_dense}}a2_current = a2_first + a2_start;{{/a2_dense}}
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
-            a0_offset += coord[j] * a0_stride[j];
-            {{#a1_dense}}a1_offset += coord[j] * a1_stride[j];{{/a1_dense}}
-            {{#a2_dense}}a2_offset += coord[j] * a2_stride[j];{{/a2_dense}}
+            a0_current += coord[j] * a0_stride[j];
+            {{#a1_dense}}a1_current += coord[j] * a1_stride[j];{{/a1_dense}}
+            {{#a2_dense}}a2_current += coord[j] * a2_stride[j];{{/a2_dense}}
         }
 
         for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
             {{OPERATOR}};
 
-            a0_offset += a0_stride_ld;
-            {{#a1_dense}}a1_offset += a1_stride_ld;{{/a1_dense}}
-            {{#a2_dense}}a2_offset += a2_stride_ld;{{/a2_dense}}
+            a0_current += a0_stride_ld;
+            {{#a1_dense}}a1_current += a1_stride_ld;{{/a1_dense}}
+            {{#a2_dense}}a2_current += a2_stride_ld;{{/a2_dense}}
         }
         cur_e += shape_ld;
 
