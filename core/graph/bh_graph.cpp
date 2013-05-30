@@ -57,6 +57,20 @@ struct hash_bh_array_p{
 // Static counter, used to generate sequential filenames when printing multiple batches
 static bh_intp print_graph_filename = 0;
 
+/* Returns a pointer to the base array
+ * or NULL if the view is NULL
+ *
+ * @view The view to get the base for
+ * @return The base array pointer or NULL
+ */
+bh_array* bh_get_basearray(bh_array* view)
+{
+    if (view != NULL && view->base != NULL)
+        return view->base;
+    else
+        return view;
+}
+
 /* Creates a new graph storage element
  *
  * @bhir A pointer to the result
@@ -230,9 +244,18 @@ bh_error bh_graph_parse(bh_ir* bhir)
 	    // We can keep a reference pointer as we do not need to update the list
 	    // while traversing it
 	    bh_instruction* instr = &(((bh_instruction*)bhir->instructions->data)[i]);
-        bh_array* selfId = bh_base_array(instr->operand[0]);
-        bh_array* leftId = bh_base_array(instr->operand[1]);
-        bh_array* rightId = bh_base_array(instr->operand[2]);
+        bh_intp nops = bh_operands(instr->opcode);
+
+        bh_array* selfId = bh_get_basearray(instr->operand[0]);
+        bh_array* leftId = NULL;
+        bh_array* rightId = NULL;
+                
+        if (nops >= 2)
+        {
+            bh_get_basearray(instr->operand[1]);
+            if (nops >= 3)
+                bh_get_basearray(instr->operand[2]);
+        }
         
         if (selfId == NULL)
         {
@@ -244,11 +267,11 @@ bh_error bh_graph_parse(bh_ir* bhir)
             }
             bh_array** operands = (bh_array**)uf->operand;
         
-            selfId = bh_base_array(operands[0]);
+            selfId = bh_get_basearray(operands[0]);
             if (uf->nin >= 1)
-                leftId = bh_base_array(operands[1]);
+                leftId = bh_get_basearray(operands[1]);
             if (uf->nin >= 2)
-                rightId = bh_base_array(operands[2]);
+                rightId = bh_get_basearray(operands[2]);
         }
         
         bh_node_index selfNode = bh_graph_new_node(bhir, BH_INSTRUCTION, i);
@@ -765,9 +788,9 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
         
         if (n->opcode != BH_USERFUNC)
         {
-            bh_array* baseID = bh_base_array(n->operand[0]);
-            bh_array* leftID = bh_base_array(n->operand[1]);
-            bh_array* rightID = bh_base_array(n->operand[2]);
+            bh_array* baseID = bh_get_basearray(n->operand[0]);
+            bh_array* leftID = bh_get_basearray(n->operand[1]);
+            bh_array* rightID = bh_get_basearray(n->operand[2]);
                                 
             bh_intp parentName;
             bh_intp leftName;
@@ -812,7 +835,7 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
                 }
                 else
                 {
-                    fs << "B_" << leftName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << leftName << " - " << bh_base_array(n->operand[1]) << "\"];" << std::endl;
+                    fs << "B_" << leftName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << leftName << " - " << bh_get_basearray(n->operand[1]) << "\"];" << std::endl;
                     fs << "B_" << leftName << " -> " << "I_" << i << ";" << std::endl;
                 }
                 
@@ -824,7 +847,7 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
                 }
                 else
                 {
-                    fs << "B_" << rightName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << rightName << " - " << bh_base_array(n->operand[2]) << "\"];" << std::endl;
+                    fs << "B_" << rightName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << rightName << " - " << bh_get_basearray(n->operand[2]) << "\"];" << std::endl;
                     fs << "B_" << rightName << " -> " << "I_" << i << ";" << std::endl;
                 }
             
@@ -839,13 +862,13 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
                 }
                 else
                 {
-                    fs << "B_" << leftName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << leftName << " - " << bh_base_array(n->operand[1]) << "\"];" << std::endl;
+                    fs << "B_" << leftName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"B_" << leftName << " - " << bh_get_basearray(n->operand[1]) << "\"];" << std::endl;
                     fs << "B_" << leftName << " -> " << "I_" << i << ";" << std::endl;
                 }
             }
         
             fs << "I_" << i << "[shape=box, style=filled, fillcolor=\"#CBD5E8\", label=\"I_" << i << " - " << bh_opcode_text(n->opcode) << "\"];" << std::endl;
-            fs << "B_" << parentName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"" << "B_" << parentName << " - " << bh_base_array(n->operand[0]) << "\"];" << std::endl;
+            fs << "B_" << parentName << "[shape=ellipse, style=filled, fillcolor=\"#0000ff\", label=\"" << "B_" << parentName << " - " << bh_get_basearray(n->operand[0]) << "\"];" << std::endl;
         
             fs << "I_" << i << " -> " << "B_" << parentName << ";" << std::endl;
         }
