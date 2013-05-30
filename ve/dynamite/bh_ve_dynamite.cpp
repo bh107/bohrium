@@ -440,16 +440,21 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_IDENTITY:
 
                 if (bh_is_constant(instr->operand[1])) {
-                    symbol = std::string(bh_opcode_text(instr->opcode)) +\
-                             std::string("_DC_") +\
-                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->constant.type));
+                    sprintf(symbol_c, "%s_%ldD_DC_%s%s",
+                            bh_opcode_text(instr->opcode),
+                            dims,
+                            bhtype_to_shorthand(instr->operand[0]->type),
+                            bhtype_to_shorthand(instr->constant.type)
+                    );
                 } else {
-                    symbol = std::string(bh_opcode_text(instr->opcode)) +\
-                             std::string("_DD_") +\
-                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[1]->type));
+                    sprintf(symbol_c, "%s_%ldD_DD_%s%s",
+                            bh_opcode_text(instr->opcode),
+                            dims,
+                            bhtype_to_shorthand(instr->operand[0]->type),
+                            bhtype_to_shorthand(instr->operand[1]->type)
+                    );
                 }
+                symbol = std::string(symbol_c);
 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
@@ -578,3 +583,4 @@ bh_error bh_nselect( bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_nselect( arg, ve_arg );
 }
+
