@@ -926,7 +926,7 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
         }
         else if (NODE_LOOKUP(node).type == BH_COLLECTION)
         {
-            fs << T << "_" << nodeName << " [shape=box, style=filled, fillcolor=""#ffffE8"", label=\"" << T << nodeName << " - COLLECTION\"];" << std::endl;
+            fs << T << "_" << nodeName << " [shape=box, style=filled, fillcolor=\"#ffffE8\", label=\"" << T << nodeName << " - COLLECTION\"];" << std::endl;
         }
     
         if (NODE_LOOKUP(node).left_child != INVALID_NODE)
