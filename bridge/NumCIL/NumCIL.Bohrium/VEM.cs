@@ -418,30 +418,6 @@ namespace NumCIL.Bohrium
         }
 
         /// <summary>
-        /// Reshuffles instructions to honor Bohrium rules
-        /// </summary>
-        /// <param name="list">The list of instructions to reshuffle</param>
-        private void ReshuffleInstructions(PInvoke.bh_instruction[] list)
-        {
-            if (list.LongLength <= 1)
-                return;
-
-            long lastIx = list.LongLength;
-            for(long i = 0; i < lastIx; i++)
-            {
-                var inst = list[i];
-                if (inst.opcode == bh_opcode.BH_DISCARD && inst.operand0.BaseArray == PInvoke.bh_array_ptr.Null)
-                {
-                    Console.WriteLine("Shuffling list, i: {0}, inst: {1}, lastIx: {2}", i, inst, lastIx);
-                    lastIx--;
-                    var tmp = list[lastIx];
-                    list[lastIx] = inst;
-                    list[i] = tmp;
-                }
-            }
-        }
-
-        /// <summary>
         /// Internal execution handler, runs without locking of any kind
         /// </summary>
         /// <param name="instList">The list of instructions to execute</param>
