@@ -2,7 +2,7 @@ INSTALLDIR?=/opt/bohrium/
 XBUILD?=xbuild
 XBUILD_CONF=/property:Configuration=Release
 
-SUBDIRS=nbody shallow_water
+SUBDIRS=nbody shallow_water jacobi blackscholes
  
 all:
 	for dir in $(SUBDIRS); do \
