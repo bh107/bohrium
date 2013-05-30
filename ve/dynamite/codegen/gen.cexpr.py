@@ -5,9 +5,9 @@ from pprint import pprint
 from Cheetah.Template import Template
 
 def expr(opcode):
-    opcode["code"] = opcode["code"].replace("op1", "*a0_offset")
-    opcode["code"] = opcode["code"].replace("op2", "*a1_offset")
-    opcode["code"] = opcode["code"].replace("op3", "*a2_offset")
+    opcode["code"] = opcode["code"].replace("op1", "*a0_current")
+    opcode["code"] = opcode["code"].replace("op2", "*a1_current")
+    opcode["code"] = opcode["code"].replace("op3", "*a2_current")
     return opcode
 
 def main():

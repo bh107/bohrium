@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <unistd.h>
 #include <errno.h>
+#include <inttypes.h>
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -120,20 +121,17 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
     for (count=0; count<instruction_count; count++) {
 
-        ctemplate::TemplateDictionary dict("example");
-        std::string sourcecode;
-
-        bool cres;
-        char type_out[50], /// TODO: THESE WILL COME BACK AND HAUNT YOU!
-             type_in1[50],
-             type_in2[50],
-             operator_src[100],
-             snippet_fn[250];
-        char *opcode_txt;
-
-        std::string symbol = "";
-        
+        ctemplate::TemplateDictionary dict("codegen");
         bh_random_type *random_args;
+
+        bool cres = false;
+
+        std::string sourcecode = "";
+        std::string symbol = "";
+        int64_t dims = 0;
+
+        char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
+        char symbol_c[500];
 
         instr = &instruction_list[count];
 
@@ -163,17 +161,19 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     if (BH_SUCCESS != bh_data_malloc(random_args->operand[0])) {
                         std::cout << "SHIT HIT THE FAN" << std::endl;
                     }
-
-                    symbol = std::string("BH_RANDOM_D_")+ \
-                             std::string(bhtype_to_shorthand(random_args->operand[0]->type));
+                    sprintf(
+                        symbol_c,
+                        "BH_RANDOM_D_%s",
+                        bhtype_to_shorthand(random_args->operand[0]->type)
+                    );
+                    symbol = std::string(symbol_c);
 
                     cres = target->symbol_ready(symbol);
                     if (!cres) {
                         sourcecode = "";
-                        strcpy(type_out, bhtype_to_ctype(random_args->operand[0]->type));
 
                         dict.SetValue("SYMBOL",     symbol);
-                        dict.SetValue("TYPE_A0",    type_out);
+                        dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0]->type));
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
                         sprintf(snippet_fn, "%s/random.tpl", snippet_path);
                         //sprintf(snippet_fn, "%s/random.omp.tpl", snippet_path);
@@ -217,22 +217,21 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
 
-                symbol = std::string(bh_opcode_text(instr->opcode)) +\
-                         std::string("_DD_") +\
-                         std::string(bhtype_to_shorthand(instr->operand[0]->type)),
-                         std::string(bhtype_to_shorthand(instr->operand[1]->type));
+                sprintf(symbol_c, "%s_DD_%s%s",
+                    bh_opcode_text(instr->opcode),
+                    bhtype_to_shorthand(instr->operand[0]->type),
+                    bhtype_to_shorthand(instr->operand[1]->type)
+                );
+                symbol = std::string(symbol_c);
 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
                     sourcecode = "";
-                    strcpy(operator_src,    bhopcode_to_cexpr(instr->opcode));
-                    strcpy(type_out,        bhtype_to_ctype(instr->operand[0]->type));
-                    strcpy(type_in1,        bhtype_to_ctype(instr->operand[1]->type));
 
-                    dict.SetValue("OPERATOR", operator_src);
+                    dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("TYPE_A0", type_out);
-                    dict.SetValue("TYPE_A1", type_in1);
+                    dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                    dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
 
                     sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
                     //sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
@@ -293,72 +292,65 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_ARCTAN2:
             case BH_MOD:
 
-                sourcecode = "";
-                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
-                strcpy(operator_src, bhopcode_to_cexpr(instr->opcode));
-
-                dict.SetValue("OPERATOR", operator_src);
-                dict.ShowSection("binary");
+                dims = instr->operand[0]->ndim;
 
                 if (bh_is_constant(instr->operand[2])) {
-                    symbol = std::string(opcode_txt) +\
-                             std::string("_DDC_") +\
-                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->constant.type));
+                    sprintf(symbol_c, "%s_%ldD_DDC_%s%s%s",
+                        bh_opcode_text(instr->opcode),
+                        dims,
+                        bhtype_to_shorthand(instr->operand[0]->type),
+                        bhtype_to_shorthand(instr->operand[1]->type),
+                        bhtype_to_shorthand(instr->constant.type)
+                    );
                 } else if(bh_is_constant(instr->operand[1])) {
-                     symbol = std::string(opcode_txt) +\
-                             std::string("_DCD_") +\
-                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->constant.type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[2]->type));                       
+                    sprintf(symbol_c, "%s_%ldD_DCD_%s%s%s",
+                        bh_opcode_text(instr->opcode),
+                        dims,
+                        bhtype_to_shorthand(instr->operand[0]->type),
+                        bhtype_to_shorthand(instr->constant.type),
+                        bhtype_to_shorthand(instr->operand[2]->type)
+                    );
                 } else {
-                    symbol = std::string(opcode_txt) +\
-                             std::string("_DDD_") +\
-                             std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[1]->type)) +\
-                             std::string(bhtype_to_shorthand(instr->operand[2]->type));
+                    sprintf(symbol_c, "%s_%ldD_DDD_%s%s%s",
+                        bh_opcode_text(instr->opcode),
+                        dims,
+                        bhtype_to_shorthand(instr->operand[0]->type),
+                        bhtype_to_shorthand(instr->operand[1]->type),
+                        bhtype_to_shorthand(instr->operand[2]->type)
+                    );
                 }
+                symbol = std::string(symbol_c);
                 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
+                    sourcecode = "";
+                    dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+                    dict.ShowSection("binary");
                     if (bh_is_constant(instr->operand[2])) {
-                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-                        strcpy(type_in2, bhtype_to_ctype(instr->constant.type));
-
                         dict.SetValue("SYMBOL", symbol);
                         dict.SetValue("STRUCT_IN1", "D");
                         dict.SetValue("STRUCT_IN2", "C");
-                        dict.SetValue("TYPE_OUT", type_out);
-                        dict.SetValue("TYPE_IN1", type_in1);
-                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_scalar");
                     } else if (bh_is_constant(instr->operand[1])) {
-                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                        strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
-                        strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-
                         dict.SetValue("SYMBOL", symbol);
                         dict.SetValue("STRUCT_IN1", "C");
                         dict.SetValue("STRUCT_IN2", "D");
-                        dict.SetValue("TYPE_OUT", type_out);
-                        dict.SetValue("TYPE_IN1", type_in1);
-                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->constant.type));
+                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->operand[2]->type));
                         dict.ShowSection("a1_scalar");
                         dict.ShowSection("a2_dense");
                     } else {
-                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-                        strcpy(type_in2, bhtype_to_ctype(instr->operand[2]->type));
-
                         dict.SetValue("SYMBOL", symbol);
                         dict.SetValue("STRUCT_IN1", "D");
                         dict.SetValue("STRUCT_IN2", "D");
-                        dict.SetValue("TYPE_OUT", type_out);
-                        dict.SetValue("TYPE_IN1", type_in1);
-                        dict.SetValue("TYPE_IN2", type_in2);
+                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->operand[2]->type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_dense");
                     }
@@ -447,21 +439,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_ISINF:
             case BH_IDENTITY:
 
-                sourcecode = "";
-                assign_string(opcode_txt, bh_opcode_text(instr->opcode));
-                strcpy(operator_src, bhopcode_to_cexpr(instr->opcode));
-
-                dict.SetValue("OPERATOR", operator_src);
-                dict.ShowSection("unary");
-
-
                 if (bh_is_constant(instr->operand[1])) {
-                    symbol = std::string(opcode_txt) +\
+                    symbol = std::string(bh_opcode_text(instr->opcode)) +\
                              std::string("_DC_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->constant.type));
                 } else {
-                    symbol = std::string(opcode_txt) +\
+                    symbol = std::string(bh_opcode_text(instr->opcode)) +\
                              std::string("_DD_") +\
                              std::string(bhtype_to_shorthand(instr->operand[0]->type)) +\
                              std::string(bhtype_to_shorthand(instr->operand[1]->type));
@@ -469,26 +453,20 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
+                    sourcecode = "";
+                    dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+                    dict.ShowSection("unary");
                     if (bh_is_constant(instr->operand[1])) {
-                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                        strcpy(type_in1, bhtype_to_ctype(instr->constant.type));
-
-
                         dict.SetValue("SYMBOL", symbol);
                         dict.SetValue("STRUCT_IN1", "C");
-                        dict.SetValue("TYPE_OUT", type_out);
-                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_scalar");
                     } else {
-                        strcpy(type_out, bhtype_to_ctype(instr->operand[0]->type));
-                        strcpy(type_in1, bhtype_to_ctype(instr->operand[1]->type));
-
-
-
                         dict.SetValue("SYMBOL", symbol);
                         dict.SetValue("STRUCT_IN1", "D");
-                        dict.SetValue("TYPE_OUT", type_out);
-                        dict.SetValue("TYPE_IN1", type_in1);
+                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
                         dict.ShowSection("a1_dense");
                     } 
 
@@ -553,10 +531,10 @@ bh_error bh_ve_dynamite_shutdown(void)
 
 bh_error bh_ve_dynamite_reg_func(char *fun, bh_intp *id) 
 {
-    if(strcmp("bh_random", fun) == 0) {
+    if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
-			random_impl_id = *id;
-			return BH_SUCCESS;			
+            random_impl_id = *id;
+            return BH_SUCCESS;			
         } else {
         	*id = random_impl_id;
         	return BH_SUCCESS;
