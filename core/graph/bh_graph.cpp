@@ -175,6 +175,10 @@ bh_node_index bh_graph_new_node(bh_ir* bhir, bh_intp type, bh_instruction_index 
 
     NODE_LOOKUP(ix).type = type;
     NODE_LOOKUP(ix).instruction = instruction;
+    NODE_LOOKUP(ix).left_child = INVALID_NODE;
+    NODE_LOOKUP(ix).right_child = INVALID_NODE;
+    NODE_LOOKUP(ix).left_parent = INVALID_NODE;
+    NODE_LOOKUP(ix).right_parent = INVALID_NODE;
     
     return ix;
 }
