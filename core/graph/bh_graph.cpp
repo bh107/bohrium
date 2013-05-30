@@ -98,7 +98,7 @@ bh_error bh_graph_getIds(bh_instruction* instr, bh_intp* nops, bh_array** selfId
     }
 
     *selfId = bh_get_basearray(operands[0]);
-    if (*nops >= 2 >= 2)
+    if (*nops >= 2)
         *leftId = bh_get_basearray(operands[1]);
     if (*nops >= 3)
         *rightId = bh_get_basearray(operands[2]);
