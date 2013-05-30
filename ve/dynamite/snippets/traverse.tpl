@@ -49,6 +49,7 @@ void {{SYMBOL}}(int tool, ...)
     {{TYPE_OUT}} *a0_first = a0_current;
     int64_t  a0_start   = va_arg(list, int64_t);
     int64_t *a0_stride  = va_arg(list, int64_t*);
+    assert(a0_current != NULL);
 
     {{#a1_scalar}}
     {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
@@ -59,6 +60,7 @@ void {{SYMBOL}}(int tool, ...)
     {{TYPE_IN1}} *a1_first     = a1_current;
     int64_t  a1_start   = va_arg(list, int64_t);
     int64_t *a1_stride  = va_arg(list, int64_t*);
+    assert(a1_current != NULL);
     {{/a1_dense}}
 
     {{#a2_scalar}}
@@ -70,6 +72,7 @@ void {{SYMBOL}}(int tool, ...)
     {{TYPE_IN2}} *a2_first     = a2_current;
     int64_t  a2_start   = va_arg(list, int64_t);
     int64_t *a2_stride  = va_arg(list, int64_t*);
+    assert(a2_current != NULL);
     {{/a2_dense}}
     
     int64_t *shape      = va_arg(list, int64_t*);
@@ -77,10 +80,6 @@ void {{SYMBOL}}(int tool, ...)
     int64_t nelements   = va_arg(list, int64_t);
 
     va_end(list);
-
-    assert(a0_first != NULL);    // Ensure that data is allocated
-    {{#a1_dense}}assert(a1_first != NULL);{{/a1_dense}}
-    {{#a2_dense}}assert(a2_first != NULL);{{/a2_dense}}
 
     int64_t j,                  // Traversal variables
             last_dim    = ndim-1,
