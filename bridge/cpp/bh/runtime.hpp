@@ -168,8 +168,20 @@ inline
 size_t Runtime::execute()
 {
     size_t cur_size = queue_size;
-    bh_error status = vem_execute(queue_size, queue);   // Send instructions to Bohrium
-    queue_size = 0;                                     // Reset size of the queue
+    
+    bh_ir* bhir;
+    bh_error status = bh_graph_create(&bhir, queue, queue_size);
+    if (status == BH_SUCCESS)
+        status = bh_graph_parse(bhir);
+    
+    if (status == BH_SUCCESS)
+    {
+        status = vem_execute(bhir);   // Send instructions to Bohrium
+        queue_size = 0;                                     // Reset size of the queue
+    }
+    
+    bh_graph_destroy(bhir);
+    bhir = NULL;
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
