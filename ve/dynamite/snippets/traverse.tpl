@@ -45,32 +45,32 @@ void {{SYMBOL}}(int tool, ...)
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
+    {{TYPE_OUT}} *a0_current = va_arg(list, {{TYPE_OUT}}*);
+    {{TYPE_OUT}} *a0_first = a0_current;
     int64_t  a0_start   = va_arg(list, int64_t);
     int64_t *a0_stride  = va_arg(list, int64_t*);
-    {{TYPE_OUT}} *a0_first   = va_arg(list, {{TYPE_OUT}}*);
-    {{TYPE_OUT}} *a0_current;
-    
-    {{#a1_dense}}
-    int64_t  a1_start   = va_arg(list, int64_t);
-    int64_t *a1_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN1}} *a1_first   = va_arg(list, {{TYPE_IN1}}*);
-    {{TYPE_IN1}} *a1_current;
-    {{/a1_dense}}
 
     {{#a1_scalar}}
     {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
-    {{/a1_scalar}}
-
-    {{#a2_dense}}
-    int64_t  a2_start   = va_arg(list, int64_t);
-    int64_t *a2_stride  = va_arg(list, int64_t*);
-    {{TYPE_IN2}} *a2_first   = va_arg(list, {{TYPE_IN2}}*);
-    {{TYPE_IN2}} *a2_current;
-    {{/a2_dense}}
+    {{/a1_scalar}}  
+ 
+    {{#a1_dense}}
+    {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_IN1}} *a1_first     = a1_current;
+    int64_t  a1_start   = va_arg(list, int64_t);
+    int64_t *a1_stride  = va_arg(list, int64_t*);
+    {{/a1_dense}}
 
     {{#a2_scalar}}
     {{TYPE_IN2}} *a2_current   = va_arg(list, {{TYPE_IN2}}*);
     {{/a2_scalar}}
+
+    {{#a2_dense}}
+    {{TYPE_IN2}} *a2_current   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_IN2}} *a2_first     = a2_current;
+    int64_t  a2_start   = va_arg(list, int64_t);
+    int64_t *a2_stride  = va_arg(list, int64_t*);
+    {{/a2_dense}}
     
     int64_t *shape      = va_arg(list, int64_t*);
     int64_t ndim        = va_arg(list, int64_t);

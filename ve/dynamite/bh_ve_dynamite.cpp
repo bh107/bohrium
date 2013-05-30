@@ -189,7 +189,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     if (!cres) {
                         res = BH_ERROR;
                     } else {
-                        // De-assemble the RANDOM_UFUNC
+                        // De-assemble the RANDOM_UFUNC     // CALL
                         target->funcs[symbol](0,
                             bh_base_array(random_args->operand[0])->data,
                             bh_nelements(random_args->operand[0]->ndim, random_args->operand[0]->shape)
@@ -246,7 +246,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 if (!cres) {
                     res = BH_ERROR;
-                } else {
+                } else {    // CALL
                     target->funcs[symbol](0,
                         bh_base_array(instr->operand[0])->data,
                         instr->operand[0]->start,
@@ -366,35 +366,50 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 }
 
                 cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                if (cres) {
+                if (cres) { // CALL
                     if (bh_is_constant(instr->operand[2])) {         // DDC
                         target->funcs[symbol](0,
-                            instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
-                            instr->operand[1]->start, instr->operand[1]->stride,
+                            instr->operand[0]->start,
+                            instr->operand[0]->stride,
+
                             bh_base_array(instr->operand[1])->data,
+                            instr->operand[1]->start,
+                            instr->operand[1]->stride,
+
                             &(instr->constant.value),
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else if (bh_is_constant(instr->operand[1])) {  // DCD
                         target->funcs[symbol](0,
-                            instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
+                            instr->operand[0]->start,
+                            instr->operand[0]->stride,
+
                             &(instr->constant.value),
-                            instr->operand[2]->start, instr->operand[2]->stride,
+
                             bh_base_array(instr->operand[2])->data,
+                            instr->operand[2]->start,
+                            instr->operand[2]->stride,
+
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {                                        // DDD
                         target->funcs[symbol](0,
-                            instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
-                            instr->operand[1]->start, instr->operand[1]->stride,
+                            instr->operand[0]->start,
+                            instr->operand[0]->stride,
+
                             bh_base_array(instr->operand[1])->data,
-                            instr->operand[2]->start, instr->operand[2]->stride,
+                            instr->operand[1]->start,
+                            instr->operand[1]->stride,
+
                             bh_base_array(instr->operand[2])->data,
+                            instr->operand[2]->start,
+                            instr->operand[2]->stride,
+
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
@@ -488,21 +503,28 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
                 if (!cres) {
                     res = BH_ERROR;
-                } else {
+                } else {    // CALL
                     if (bh_is_constant(instr->operand[1])) {
                         target->funcs[symbol](0,
-                            instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
+                            instr->operand[0]->start,
+                            instr->operand[0]->stride,
+
                             &(instr->constant.value),
+
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
                     } else {
                         target->funcs[symbol](0,
-                            instr->operand[0]->start, instr->operand[0]->stride,
                             bh_base_array(instr->operand[0])->data,
-                            instr->operand[1]->start, instr->operand[1]->stride,
+                            instr->operand[0]->start,
+                            instr->operand[0]->stride,
+
                             bh_base_array(instr->operand[1])->data,
+                            instr->operand[1]->start,
+                            instr->operand[1]->stride,
+
                             instr->operand[0]->shape, instr->operand[0]->ndim,
                             bh_nelements(instr->operand[0]->ndim, instr->operand[0]->shape)
                         );
