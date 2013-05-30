@@ -356,6 +356,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     }
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                    } else if (2 == dims) {
+                        sprintf(snippet_fn, "%s/traverse.2d.tpl", snippet_path);
                     } else {
                         sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
@@ -495,6 +497,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     } 
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                    } else if (2 == dims) {
+                        sprintf(snippet_fn, "%s/traverse.2d.tpl", snippet_path);
                     } else {
                         sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
