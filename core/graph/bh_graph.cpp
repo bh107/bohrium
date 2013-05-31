@@ -249,9 +249,9 @@ void bh_graph_free_node(bh_ir* bhir, bh_node_index node)
  */
 bh_error bh_graph_parse(bh_ir* bhir)
 {
-	hashmap<bh_array*, bh_intp, hash_bh_array_p> map;
+	hashmap<bh_array*, bh_intp, hash_bh_array_p> writemap;
+	hashmap<bh_array*, bh_intp, hash_bh_array_p> readmap;
 	hashmap<bh_array*, bh_intp, hash_bh_array_p>::iterator it;
-	std::queue<bh_intp> exploration;
 	
 	// If already parsed, just return
 	if (bhir->root >= 0)
@@ -298,84 +298,27 @@ bh_error bh_graph_parse(bh_ir* bhir)
             return BH_ERROR;
         }
             
-#ifdef DEBUG
-        snprintf(selfNode.tag, 1000, "I%d - %s", instrCountr++, bh_opcode_text(instr->opcode));
-#endif
-    
-        if (instr->opcode == BH_DISCARD || instr->opcode == BH_SYNC)
+        if (instr->opcode == BH_DISCARD || instr->opcode == BH_SYNC || instr->opcode == BH_FREE)
         {
-             while (!exploration.empty())
-                 exploration.pop();
-                 
-            bh_node_index cur = INVALID_NODE;
-            it = map.find(selfId);
-            if (it != map.end())
-                cur = it->second;
-            map[selfId] = selfNode;
+            bh_node_index parent = root;
+            it = readmap.find(selfId);
+            if (it != readmap.end())
+                parent = it->second;
 
-            if (cur == INVALID_NODE)
+            if (bh_grap_node_add_child(bhir, parent, selfNode) != BH_SUCCESS)
             {
-                if (bh_grap_node_add_child(bhir, root, selfNode) != BH_SUCCESS)
-                {
-                    bh_graph_delete_all_nodes(bhir);
-                    return BH_ERROR;
-                }
+                bh_graph_delete_all_nodes(bhir);
+                return BH_ERROR;
             }
-            else
-            {
-                if (NODE_LOOKUP(cur).left_child != INVALID_NODE)
-                {
-                    cur = NODE_LOOKUP(cur).left_child;
-                    if (NODE_LOOKUP(cur).right_child != INVALID_NODE)
-                        exploration.push(NODE_LOOKUP(cur).right_child);
-                }
-                else if (NODE_LOOKUP(cur).right_child != INVALID_NODE)
-                    cur = NODE_LOOKUP(cur).right_child;
             
-                while (cur != INVALID_NODE)
-                {
-                    if (NODE_LOOKUP(cur).type == BH_INSTRUCTION)
-                    {
-                        if (bh_grap_node_add_child(bhir, cur, selfNode) != BH_SUCCESS)
-                        {
-                            bh_graph_delete_all_nodes(bhir);
-                            return BH_ERROR;
-                        }
-                            
-                        if (exploration.empty())
-                            cur = INVALID_NODE;
-                        else
-                        {
-                            cur = exploration.front();
-                            exploration.pop();
-                        }
-                    }
-                    else
-                    {
-                        if (NODE_LOOKUP(cur).left_child != INVALID_NODE)
-                        {
-                            cur = NODE_LOOKUP(cur).left_child;
-                            if (NODE_LOOKUP(cur).right_child != INVALID_NODE)
-                                exploration.push(NODE_LOOKUP(cur).right_child);
-                        }
-                        else if (NODE_LOOKUP(cur).right_child != INVALID_NODE)
-                            cur = NODE_LOOKUP(cur).right_child;
-                        else if (exploration.empty())
-                            cur = INVALID_NODE;
-                        else
-                        {
-                            cur = exploration.front();
-                            exploration.pop();
-                        }
-                    }
-                }
-            }
+            readmap[selfId] = selfNode;
+            writemap[selfId] = selfNode;
         }
         else
         {				
             bh_node_index oldTarget = INVALID_NODE;
-            it = map.find(selfId);
-            if (it != map.end())
+            it = writemap.find(selfId);
+            if (it != writemap.end())
             {
                 oldTarget = it->second;
                 if (bh_grap_node_add_child(bhir, oldTarget, selfNode) != BH_SUCCESS)
@@ -385,15 +328,22 @@ bh_error bh_graph_parse(bh_ir* bhir)
                 }
             }
         
-            map[selfId] = selfNode;
-        
+            writemap[selfId] = selfNode;
+            readmap[selfId] = selfNode;
+
+            if (leftId != NULL)            
+                readmap[leftId] = selfNode;
+            if (rightId != NULL)            
+                readmap[rightId] = selfNode;
+
+
             bh_node_index leftDep = INVALID_NODE;
             bh_node_index rightDep = INVALID_NODE;
-            it = map.find(leftId);
-            if (it != map.end())
+            it = writemap.find(leftId);
+            if (it != writemap.end())
                 leftDep = it->second;
-            it = map.find(rightId);
-            if (it != map.end())
+            it = writemap.find(rightId);
+            if (it != writemap.end())
                 rightDep = it->second;
 
             if (leftDep != INVALID_NODE)
