@@ -938,10 +938,6 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
 {
     hashmap<bh_node_index, bh_intp, hash_bh_intp> nameTable;
     hashmap<bh_node_index, bh_intp, hash_bh_intp>::iterator it;
-    bh_graph_iterator* graph_it;
-
-    if (bh_graph_iterator_create(bhir, &graph_it) != BH_SUCCESS)
-        return BH_ERROR;        
     
     std::ofstream fs(filename);
   
@@ -950,22 +946,12 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
     bh_intp lastName = 0L;
 
     bh_node_index node;
-    while(bh_graph_iterator_next_node(graph_it, &node) == BH_SUCCESS)
+    for(bh_node_index node = 0; node < bhir->nodes->count; node++)
     {
         if (node == INVALID_NODE)
             continue;
             
         const char T = NODE_LOOKUP(node).type == BH_INSTRUCTION ? 'I' : 'C';
-        bh_intp nodeName;
-    
-        it = nameTable.find(node);
-        if (it == nameTable.end())
-        {
-            nodeName = lastName++;
-            nameTable[node] = nodeName;
-        } 
-        else
-            nodeName = it->second;
     
         if (NODE_LOOKUP(node).type == BH_INSTRUCTION)
         {
@@ -983,11 +969,11 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
             else
                 opcodename = bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode);
                 
-            fs << T << "_" << nodeName << " [shape=box style=" << style << " fillcolor=\"" << color << "\" label=\"" << T << "_" << nodeName << " - " << opcodename << "\"];" << std::endl;
+            fs << T << "_" << node << " [shape=box style=" << style << " fillcolor=\"" << color << "\" label=\"" << T << "_" << node << " - " << opcodename << "\"];" << std::endl;
         }
         else if (NODE_LOOKUP(node).type == BH_COLLECTION)
         {
-            fs << T << "_" << nodeName << " [shape=box, style=filled, fillcolor=\"#ffffE8\", label=\"" << T << nodeName << " - COLLECTION\"];" << std::endl;
+            fs << T << "_" << node << " [shape=box, style=filled, fillcolor=\"#ffffE8\", label=\"" << T << node << " - COLLECTION\"];" << std::endl;
         }
     
         if (NODE_LOOKUP(node).left_child != INVALID_NODE)
@@ -1003,7 +989,7 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
             else
                 childName = it->second;
  
-            fs << T << "_" << nodeName << " -> " << T2 << "_" << childName << ";" << std::endl;
+            fs << T << "_" << node << " -> " << T2 << "_" << childName << ";" << std::endl;
         }
         if (NODE_LOOKUP(node).right_child != INVALID_NODE)
         {
@@ -1018,14 +1004,12 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
             else
                 childName = it->second;
  
-            fs << T << "_" << nodeName << " -> " << T2 << "_" << childName << ";" << std::endl;
+            fs << T << "_" << node << " -> " << T2 << "_" << childName << ";" << std::endl;
         }
     }
 
     fs << "}" << std::endl;
     fs.close();
-    
-    bh_graph_iterator_destroy(graph_it);
-    
+        
     return BH_SUCCESS;
 }
