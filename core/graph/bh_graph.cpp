@@ -398,6 +398,8 @@ struct bh_graph_iterator {
     bh_ir* bhir;
     // The currently visited node
     bh_node_index current;
+    // The last unprocessed node
+    bh_node_index last_blocked;
 };
 
 /* Creates a new iterator for visiting nodes in the graph
@@ -427,6 +429,7 @@ bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
     t->scheduled = new hashmap<bh_node_index, bh_node_index, hash_bh_intp>();
     t->blocked = new std::queue<bh_node_index>();
     t->bhir = bhir;
+    t->last_blocked = INVALID_NODE;
     t->current = t->bhir->root;
     if (t->current != INVALID_NODE)
         t->blocked->push(t->current);
@@ -513,7 +516,8 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
         {
             // Check if dependencies are met
             if ((NODE_LOOKUP(n).left_parent == INVALID_NODE || iterator->scheduled->find(NODE_LOOKUP(n).left_parent) != iterator->scheduled->end()) && (NODE_LOOKUP(n).right_parent == INVALID_NODE || iterator->scheduled->find(NODE_LOOKUP(n).right_parent) != iterator->scheduled->end()))
-            {                
+            {
+                iterator->last_blocked = INVALID_NODE;
                 (*(iterator->scheduled))[n] = n;
                 
                 //Examine child nodes
@@ -529,6 +533,27 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
             {
                 // Re-insert at bottom of work queue
                 iterator->blocked->push(n);
+                if (iterator->last_blocked == n)
+                {
+                    printf("Invalid graph detected, contains circular dependencies, listing offending node\n");
+                    
+                    while (!iterator->blocked->empty())
+                    {
+                        n = iterator->blocked->front();
+                        iterator->blocked->pop();
+
+                        printf("%s: self: %lld, left_parent: %lld, right_parent: %lld, left_child: %lld, right_child: %lld\n", NODE_LOOKUP(n).type == BH_INSTRUCTION ? bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode) : "BH_COLLECTION", (bh_int64)n, (bh_int64)NODE_LOOKUP(n).left_parent, (bh_int64)NODE_LOOKUP(n).right_parent, (bh_int64)NODE_LOOKUP(n).left_child, (bh_int64)NODE_LOOKUP(n).right_child);
+                        
+                        if (NODE_LOOKUP(n).type == BH_INSTRUCTION)
+                            printf("INSTRUCTION %lld: %s -> %lld\n", (bh_int64)NODE_LOOKUP(n).instruction, bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode), (bh_int64)INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).operand[0]);
+                            
+                    }
+                
+                    return BH_ERROR;
+                }
+                
+                if (iterator->last_blocked == INVALID_NODE)
+                    iterator->last_blocked = n;
             }
         }
     }
