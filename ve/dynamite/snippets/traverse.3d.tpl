@@ -76,47 +76,68 @@ void {{SYMBOL}}(int tool, ...)
     int64_t ndim        = va_arg(list, int64_t);
     va_end(list);
 
-    int64_t i, j,                  // Traversal variables
+    int64_t i, j, k,        // Traversal variables
             ld  = ndim-1,
-            sld = ndim-2;
+            sld = ndim-2,
+            tld = ndim-3;
 
     int64_t a0_stride_ld    = a0_stride[ld];
     int64_t a0_stride_sld   = a0_stride[sld];
+    int64_t a0_stride_tld   = a0_stride[tld];
+
+    int64_t a0_rewind_ld    = shape[ld]*a0_stride[ld];
+    int64_t a0_rewind_sld   = shape[sld]*a0_stride[sld];
     a0_current += a0_start;
 
-    int64_t a0_rewind_ld = shape[ld]*a0_stride[ld];
-
     {{#a1_dense}}
-    int64_t a1_rewind_ld    = shape[ld]*a1_stride[ld];
     int64_t a1_stride_ld    = a1_stride[ld];
     int64_t a1_stride_sld   = a1_stride[sld];
+    int64_t a1_stride_tld   = a1_stride[tld];
+
+    int64_t a1_rewind_ld    = shape[ld]*a1_stride[ld];
+    int64_t a1_rewind_sld   = shape[sld]*a1_stride[sld];
     a1_current += a1_start;
     {{/a1_dense}}
 
     {{#a2_dense}}
-    int64_t a2_rewind_ld    = shape[ld]*a2_stride[ld];
     int64_t a2_stride_ld    = a2_stride[ld];
     int64_t a2_stride_sld   = a2_stride[sld];
+    int64_t a2_stride_tld   = a2_stride[tld];
+
+    int64_t a2_rewind_ld    = shape[ld]*a2_stride[ld];
+    int64_t a2_rewind_sld   = shape[sld]*a2_stride[sld];
     a2_current += a2_start;
     {{/a2_dense}}
 
-    for (j = 0; j < shape[sld]; ++j) {
-        for (i = 0; i < shape[ld]; ++i) {
-            {{OPERATOR}};
+    for (k=0; k<shape[tld]; ++k) {
+        for (j = 0; j < shape[sld]; ++j) {
+            for (i = 0; i < shape[ld]; ++i) {
+                {{OPERATOR}};
 
-            a0_current += a0_stride_ld;
-            {{#a1_dense}}a1_current += a1_stride_ld;{{/a1_dense}}
-            {{#a2_dense}}a2_current += a2_stride_ld;{{/a2_dense}}
+                a0_current += a0_stride_ld;
+                {{#a1_dense}}a1_current += a1_stride_ld;{{/a1_dense}}
+                {{#a2_dense}}a2_current += a2_stride_ld;{{/a2_dense}}
+            }
+            a0_current -= a0_rewind_ld;
+            a0_current += a0_stride_sld;
+            {{#a1_dense}}
+            a1_current -= a1_rewind_ld;
+            a1_current += a1_stride_sld;
+            {{/a1_dense}}
+            {{#a2_dense}}
+            a2_current -= a2_rewind_ld;
+            a2_current += a2_stride_sld;
+            {{/a2_dense}}
         }
-        a0_current -= a0_rewind_ld;
-        a0_current += a0_stride_sld;
+        a0_current -= a0_rewind_sld;
+        a0_current += a0_stride_tld;
         {{#a1_dense}}
-        a1_current -= a1_rewind_ld;
-        a1_current += a1_stride_sld;
+        a1_current -= a1_rewind_sld;
+        a1_current += a1_stride_tld;
         {{/a1_dense}}
         {{#a2_dense}}
-        a2_current -= a2_rewind_ld;
-        a2_current += a2_stride_sld;
+        a2_current -= a2_rewind_sld;
+        a2_current += a2_stride_tld;
         {{/a2_dense}}
     }
 
