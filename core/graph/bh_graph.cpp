@@ -884,9 +884,21 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
     
         if (NODE_LOOKUP(node).type == BH_INSTRUCTION)
         {
+            bh_intp opcode = INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode;
             const char* color = "#CBD5E8"; // = roots.Contains(node) ? "#CBffff" : "#CBD5E8";
-            const char* style = INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode == BH_DISCARD ? "dashed,rounded" : "filled,rounded";
-            fs << T << "_" << nodeName << " [shape=box style=" << style << " fillcolor=\"" << color << "\" label=\"" << T << "_" << nodeName << " - " << bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode) << "\"];" << std::endl;
+            const char* style = (opcode == BH_DISCARD || opcode == BH_FREE) ? "dashed,rounded" : "filled,rounded";
+            const char* opcodename;
+            if (opcode == BH_DISCARD)
+            {
+                if (INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).operand[0]->base == NULL)
+                    opcodename = "BH_BASE_DISCARD";
+                else
+                    opcodename = "BH_VIEW_DISCARD";
+            }
+            else
+                opcodename = bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode);
+                
+            fs << T << "_" << nodeName << " [shape=box style=" << style << " fillcolor=\"" << color << "\" label=\"" << T << "_" << nodeName << " - " << opcodename << "\"];" << std::endl;
         }
         else if (NODE_LOOKUP(node).type == BH_COLLECTION)
         {
