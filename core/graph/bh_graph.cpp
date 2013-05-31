@@ -249,9 +249,10 @@ void bh_graph_free_node(bh_ir* bhir, bh_node_index node)
  */
 bh_error bh_graph_parse(bh_ir* bhir)
 {
-	hashmap<bh_array*, bh_intp, hash_bh_array_p> writemap;
-	hashmap<bh_array*, bh_intp, hash_bh_array_p> readmap;
-	hashmap<bh_array*, bh_intp, hash_bh_array_p>::iterator it;
+	hashmap<bh_array*, bh_node_index, hash_bh_array_p> writemap;
+	hashmap<bh_array*, std::queue<bh_node_index>*, hash_bh_array_p> readmap;
+	hashmap<bh_array*, bh_node_index, hash_bh_array_p>::iterator write_it;
+	hashmap<bh_array*, std::queue<bh_node_index>*, hash_bh_array_p>::iterator read_it;
 	
 	// If already parsed, just return
 	if (bhir->root >= 0)
@@ -301,9 +302,29 @@ bh_error bh_graph_parse(bh_ir* bhir)
         if (instr->opcode == BH_DISCARD || instr->opcode == BH_SYNC || instr->opcode == BH_FREE)
         {
             bh_node_index parent = root;
-            it = readmap.find(selfId);
-            if (it != readmap.end())
-                parent = it->second;
+            read_it = readmap.find(selfId);
+            if (read_it != readmap.end())
+            {
+                std::queue<bh_node_index>* parents = read_it->second;
+                while(!parents->empty())
+                {
+                    if (bh_grap_node_add_child(bhir, parents->front(), selfNode) != BH_SUCCESS)
+                    {
+                        bh_graph_delete_all_nodes(bhir);
+                        return BH_ERROR;
+                    }
+                    parents->pop();
+                }
+                
+                readmap.erase(read_it);
+                delete parents;
+            }
+            else
+            {
+                write_it = writemap.find(selfId);
+                if (write_it != writemap.end())
+                    parent = write_it->second;
+            }
 
             if (bh_grap_node_add_child(bhir, parent, selfNode) != BH_SUCCESS)
             {
@@ -311,16 +332,15 @@ bh_error bh_graph_parse(bh_ir* bhir)
                 return BH_ERROR;
             }
             
-            readmap[selfId] = selfNode;
             writemap[selfId] = selfNode;
         }
         else
         {				
             bh_node_index oldTarget = INVALID_NODE;
-            it = writemap.find(selfId);
-            if (it != writemap.end())
+            write_it = writemap.find(selfId);
+            if (write_it != writemap.end())
             {
-                oldTarget = it->second;
+                oldTarget = write_it->second;
                 if (bh_grap_node_add_child(bhir, oldTarget, selfNode) != BH_SUCCESS)
                 {
                     bh_graph_delete_all_nodes(bhir);
@@ -329,22 +349,54 @@ bh_error bh_graph_parse(bh_ir* bhir)
             }
         
             writemap[selfId] = selfNode;
-            readmap[selfId] = selfNode;
+            read_it = readmap.find(selfId);
+            if (read_it != readmap.end())
+            {
+                readmap.erase(read_it);
+                delete read_it->second;
+            }
 
-            if (leftId != NULL)            
-                readmap[leftId] = selfNode;
-            if (rightId != NULL)            
-                readmap[rightId] = selfNode;
+            if (leftId != NULL)  
+            {   
+                std::queue<bh_node_index>* nodes;
+                
+                read_it = readmap.find(leftId);
+                if (read_it == readmap.end())
+                {
+                    nodes = new std::queue<bh_node_index>();
+                    readmap[leftId] = nodes;
+                }
+                else
+                    nodes = read_it->second;
+                
+                nodes->push(selfNode);
+            }
+            
+            if (rightId != NULL && rightId != leftId)            
+            {
+                std::queue<bh_node_index>* nodes;
+                
+                read_it = readmap.find(rightId);
+                if (read_it == readmap.end())
+                {
+                    nodes = new std::queue<bh_node_index>();
+                    readmap[rightId] = nodes;
+                }
+                else
+                    nodes = read_it->second;
+                
+                nodes->push(selfNode);
+            }
 
 
             bh_node_index leftDep = INVALID_NODE;
             bh_node_index rightDep = INVALID_NODE;
-            it = writemap.find(leftId);
-            if (it != writemap.end())
-                leftDep = it->second;
-            it = writemap.find(rightId);
-            if (it != writemap.end())
-                rightDep = it->second;
+            write_it = writemap.find(leftId);
+            if (write_it != writemap.end())
+                leftDep = write_it->second;
+            write_it = writemap.find(rightId);
+            if (write_it != writemap.end())
+                rightDep = write_it->second;
 
             if (leftDep != INVALID_NODE)
             {
@@ -372,9 +424,17 @@ bh_error bh_graph_parse(bh_ir* bhir)
                     return BH_ERROR;
                 }
             }
-        }
+        }        
 	}
 	
+	// Clean up dynamically allocated memory
+    read_it = readmap.begin();
+    while(read_it != readmap.end())
+    {
+        delete read_it->second;
+        ++read_it;
+    } 
+    
 	bhir->root = root;
 
 	if (getenv("BH_PRINT_NODE_INPUT_GRAPH") != NULL)
