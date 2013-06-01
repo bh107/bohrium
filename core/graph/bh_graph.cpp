@@ -945,7 +945,6 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
 
     bh_intp lastName = 0L;
 
-    bh_node_index node;
     for(bh_node_index node = 0; node < bhir->nodes->count; node++)
     {
         if (node == INVALID_NODE)
