@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <list>
 #include <queue>
+#include <set>
 #include <iostream>
 #include <fstream>
 
@@ -250,9 +251,9 @@ void bh_graph_free_node(bh_ir* bhir, bh_node_index node)
 bh_error bh_graph_parse(bh_ir* bhir)
 {
 	hashmap<bh_array*, bh_node_index, hash_bh_array_p> writemap;
-	hashmap<bh_array*, std::queue<bh_node_index>*, hash_bh_array_p> readmap;
+	hashmap<bh_array*, std::set<bh_node_index>*, hash_bh_array_p> readmap;
 	hashmap<bh_array*, bh_node_index, hash_bh_array_p>::iterator write_it;
-	hashmap<bh_array*, std::queue<bh_node_index>*, hash_bh_array_p>::iterator read_it;
+	hashmap<bh_array*, std::set<bh_node_index>*, hash_bh_array_p>::iterator read_it;
 	
 	// If already parsed, just return
 	if (bhir->root >= 0)
@@ -305,15 +306,14 @@ bh_error bh_graph_parse(bh_ir* bhir)
             read_it = readmap.find(selfId);
             if (read_it != readmap.end())
             {
-                std::queue<bh_node_index>* parents = read_it->second;
-                while(!parents->empty())
+                std::set<bh_node_index>* parents = read_it->second;
+                for(std::set<bh_node_index>::iterator it = parents->begin(); it != parents->end(); ++it)
                 {
-                    if (bh_grap_node_add_child(bhir, parents->front(), selfNode) != BH_SUCCESS)
+                    if (bh_grap_node_add_child(bhir, *it, selfNode) != BH_SUCCESS)
                     {
                         bh_graph_delete_all_nodes(bhir);
                         return BH_ERROR;
                     }
-                    parents->pop();
                 }
                 
                 readmap.erase(read_it);
@@ -358,34 +358,34 @@ bh_error bh_graph_parse(bh_ir* bhir)
 
             if (leftId != NULL)  
             {   
-                std::queue<bh_node_index>* nodes;
+                std::set<bh_node_index>* nodes;
                 
                 read_it = readmap.find(leftId);
                 if (read_it == readmap.end())
                 {
-                    nodes = new std::queue<bh_node_index>();
+                    nodes = new std::set<bh_node_index>();
                     readmap[leftId] = nodes;
                 }
                 else
                     nodes = read_it->second;
                 
-                nodes->push(selfNode);
+                nodes->insert(selfNode);
             }
             
             if (rightId != NULL && rightId != leftId)            
             {
-                std::queue<bh_node_index>* nodes;
+                std::set<bh_node_index>* nodes;
                 
                 read_it = readmap.find(rightId);
                 if (read_it == readmap.end())
                 {
-                    nodes = new std::queue<bh_node_index>();
+                    nodes = new std::set<bh_node_index>();
                     readmap[rightId] = nodes;
                 }
                 else
                     nodes = read_it->second;
                 
-                nodes->push(selfNode);
+                nodes->insert(selfNode);
             }
 
 
