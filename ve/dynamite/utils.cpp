@@ -40,6 +40,76 @@ void assign_string(char*& output, const char* input)
     output[length] = '\0';
 }
 
+const char* bhtypestr_to_shorthand(const char* type_str)
+{
+    if (strcmp("BH_BOOL", type_str)==0) {
+        return "z";
+    } else if (strcmp("BH_INT8", type_str)==0) {
+        return "b";
+    } else if (strcmp("BH_INT16", type_str)==0) {
+        return "s";
+    } else if (strcmp(type_str, "BH_INT32")==0) {
+        return "i";
+    } else if (strcmp(type_str, "BH_INT64")==0) {
+        return "l";
+    } else if (strcmp(type_str, "BH_UINT8")==0) {
+        return "B";
+    } else if (strcmp(type_str, "BH_UINT16")==0) {
+        return "S";
+    } else if (strcmp(type_str, "BH_UINT32")==0) {
+        return "I";
+    } else if (strcmp(type_str, "BH_UINT64")==0) {
+        return "L";
+    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
+        return "h";
+    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
+        return "f";
+    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
+        return "d";
+    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
+        return "c";
+    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
+        return "C";
+    } else {
+        return "UNKNOWN";
+    }
+}
+
+const char* typestr_to_ctype(const char* type_str)
+{
+    if (strcmp("BH_BOOL", type_str)==0) {
+        return "unsigned char";
+    } else if (strcmp("BH_INT8", type_str)==0) {
+        return "int8_t";
+    } else if (strcmp("BH_INT16", type_str)==0) {
+        return "int16_t";
+    } else if (strcmp(type_str, "BH_INT32")==0) {
+        return "int32_t";
+    } else if (strcmp(type_str, "BH_INT64")==0) {
+        return "int64_t";
+    } else if (strcmp(type_str, "BH_UINT8")==0) {
+        return "uint8_t";
+    } else if (strcmp(type_str, "BH_UINT16")==0) {
+        return "uint16_t";
+    } else if (strcmp(type_str, "BH_UINT32")==0) {
+        return "uint32_t";
+    } else if (strcmp(type_str, "BH_UINT64")==0) {
+        return "uint64_t";
+    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
+        return "uint16_t";
+    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
+        return "float";
+    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
+        return "double";
+    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
+        return "complex float";
+    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
+        return "complex double";
+    } else {
+        return "UNKNOWN";
+    }
+}
+
 const char* bhtype_to_ctype(bh_type type)
 {
     switch(type) {
@@ -122,7 +192,7 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
         case BH_ADD_REDUCE:
             return "*a0_current += *tmp_current";
         case BH_MULTIPLY_REDUCE:
-            return "*a0_current *= *a1_current";
+            return "*a0_current *= *tmp_current";
         case BH_MINIMUM_REDUCE:
             return "*a0_current = *a0_current < *tmp_current ? *a0_current : *tmp_current";
         case BH_MAXIMUM_REDUCE:
@@ -135,6 +205,11 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "*a0_current = *a0_current || *tmp_current";
         case BH_BITWISE_OR_REDUCE:
             return "*a0_current |= *tmp_current";
+
+        case BH_LOGICAL_XOR_REDUCE:
+            return "*a0_current = !*a0_current != !*tmp_current";
+        case BH_BITWISE_XOR_REDUCE:
+            return "*a0_current = *a0_current ^ *tmp_current";
 
         // Binary elementwise: ADD, MULTIPLY...
         case BH_ADD:

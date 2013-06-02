@@ -122,6 +122,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     for (count=0; count<instruction_count; count++) {
 
         ctemplate::TemplateDictionary dict("codegen");
+        dict.ShowSection("license");
+        dict.ShowSection("include");
         bh_random_type *random_args;
 
         bool cres = false;
@@ -328,29 +330,23 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("binary");
                     if (bh_is_constant(instr->operand[2])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("STRUCT_IN1", "D");
-                        dict.SetValue("STRUCT_IN2", "C");
-                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
-                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->constant.type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_scalar");
                     } else if (bh_is_constant(instr->operand[1])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("STRUCT_IN1", "C");
-                        dict.SetValue("STRUCT_IN2", "D");
-                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->constant.type));
-                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->operand[2]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
+                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2]->type));
                         dict.ShowSection("a1_scalar");
                         dict.ShowSection("a2_dense");
                     } else {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("STRUCT_IN1", "D");
-                        dict.SetValue("STRUCT_IN2", "D");
-                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
-                        dict.SetValue("TYPE_IN2", bhtype_to_ctype(instr->operand[2]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2]->type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_dense");
                     }
@@ -486,15 +482,13 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     dict.ShowSection("unary");
                     if (bh_is_constant(instr->operand[1])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("STRUCT_IN1", "C");
-                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->constant.type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_scalar");
                     } else {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("STRUCT_IN1", "D");
-                        dict.SetValue("TYPE_OUT", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_IN1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
                         dict.ShowSection("a1_dense");
                     } 
                     if (1 == dims) {
@@ -506,7 +500,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     } else {
                         sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
-                    //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,

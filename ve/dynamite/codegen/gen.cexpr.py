@@ -44,7 +44,7 @@ def main():
 
     template = Template(
         file="%s%s%s" % ("templates", os.sep, "cexpr.tpl"),
-        searchList=[data]
+        searchList=[data, {'opcodes': opcodes}]
     )
     print str(template)
 

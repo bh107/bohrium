@@ -1,3 +1,4 @@
+{{#license}}
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -17,6 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+{{/license}}
+{{#include}}
 #include "assert.h"
 #include "stdarg.h"
 #include "string.h"
@@ -39,37 +42,38 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef DYNAMITE_MISC
 #define DYNAMITE_MAXDIM 16
 #endif
+{{/include}}
 
 void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
-    {{TYPE_OUT}} *a0_current = va_arg(list, {{TYPE_OUT}}*);
-    {{TYPE_OUT}} *a0_first = a0_current;
+    {{TYPE_A0}} *a0_current = va_arg(list, {{TYPE_A0}}*);
+    {{TYPE_A0}} *a0_first = a0_current;
     int64_t  a0_start   = va_arg(list, int64_t);
     int64_t *a0_stride  = va_arg(list, int64_t*);
     assert(a0_current != NULL);
 
     {{#a1_scalar}}
-    {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
+    {{TYPE_A1}} *a1_current   = va_arg(list, {{TYPE_A1}}*);
     {{/a1_scalar}}  
  
     {{#a1_dense}}
-    {{TYPE_IN1}} *a1_current   = va_arg(list, {{TYPE_IN1}}*);
-    {{TYPE_IN1}} *a1_first     = a1_current;
+    {{TYPE_A1}} *a1_current   = va_arg(list, {{TYPE_A1}}*);
+    {{TYPE_A1}} *a1_first     = a1_current;
     int64_t  a1_start   = va_arg(list, int64_t);
     int64_t *a1_stride  = va_arg(list, int64_t*);
     assert(a1_current != NULL);
     {{/a1_dense}}
 
     {{#a2_scalar}}
-    {{TYPE_IN2}} *a2_current   = va_arg(list, {{TYPE_IN2}}*);
+    {{TYPE_A2}} *a2_current   = va_arg(list, {{TYPE_A2}}*);
     {{/a2_scalar}}
 
     {{#a2_dense}}
-    {{TYPE_IN2}} *a2_current   = va_arg(list, {{TYPE_IN2}}*);
-    {{TYPE_IN2}} *a2_first     = a2_current;
+    {{TYPE_A2}} *a2_current   = va_arg(list, {{TYPE_A2}}*);
+    {{TYPE_A2}} *a2_first     = a2_current;
     int64_t  a2_start   = va_arg(list, int64_t);
     int64_t *a2_stride  = va_arg(list, int64_t*);
     assert(a2_current != NULL);

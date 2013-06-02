@@ -47,3 +47,16 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
 
 }
 
+inline
+int64_t str_to_bhopcode(const char *opcode_str)
+{
+    if (false) {
+        return "IMPOSSIBRU!";
+    // System (memory and stuff)
+    %for $opcode in $opcodes
+    } else if (strcmp("${opcode["opcode"]}", opcode_str)) {
+        return $opcode['id'];
+    %end for
+    }
+}
+

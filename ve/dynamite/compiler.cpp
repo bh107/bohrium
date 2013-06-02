@@ -68,7 +68,7 @@ public:
 
         srand(getpid());
         for (int i = 0; i < 7; ++i) {
-            //uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+            uid[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
             uid[i] = 'a';
         }
         uid[6] = 0;
