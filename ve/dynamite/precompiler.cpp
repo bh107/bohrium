@@ -128,7 +128,6 @@ void precompile(
                 type_in2 = "";
             }
             if ((elementwise) && (!system_opcode)) {            // TRAVERSE
-                continue;
                 for(size_t d=0; d<4; ++d) {             
                     for(size_t s=0; s<nop;++s) {
                         symbol = opcode;
@@ -191,7 +190,8 @@ void precompile(
     }
 
     if (!scattered) {
-        std::ofstream symbols(target.lib_path("symbol", "ind"));
+        std::string library_fn("symbols");
+        std::ofstream symbols(target.lib_path(library_fn.c_str(), "ind"));
         for(
             std::vector<std::string>::iterator it = symbol_table.begin();
             it != symbol_table.end();
@@ -201,8 +201,8 @@ void precompile(
         }
         symbols.close();
 
-        target.compile("symbols", sourcecode.c_str(), sourcecode.size());
-        target.src_to_file("symbols", sourcecode.c_str(), sourcecode.size()); 
+        target.compile(library_fn, sourcecode.c_str(), sourcecode.size());
+        target.src_to_file(library_fn, sourcecode.c_str(), sourcecode.size()); 
     }
 
 }
