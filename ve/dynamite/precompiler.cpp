@@ -88,7 +88,7 @@ void precompile(
     }
 
     for (size_t i=0; i < json_array_size(root); ++i) {  // Run through them all
-        json_t *opcode_j, *types_j, *signature_j;
+        json_t *opcode_j, *signatures_j, *signature_j;
         
         opcode_j = json_array_get(root, i);
         if(!json_is_object(opcode_j)) {
@@ -105,10 +105,9 @@ void precompile(
                     *type_in2 = "",
                     *structure= "";
 
-        types_j = json_object_get(opcode_j, "types");
-        for(size_t t=0; t<json_array_size(types_j); ++t) {
-
-            signature_j = json_array_get(types_j, t);
+        signatures_j = json_object_get(opcode_j, "types");
+        for(size_t t=0; t<json_array_size(signatures_j); ++t) {
+            signature_j = json_array_get(signatures_j, t);
             std::string signature = "";
             for(size_t s=0; s<json_array_size(signature_j); ++s) {
                 if (s==0) {
@@ -128,11 +127,11 @@ void precompile(
             if (json_array_size(signature_j) < 3) {
                 type_in2 = "";
             }
-            if ((elementwise) && (!system_opcode)) {    // Generate sourcecode for traverse
+            if ((elementwise) && (!system_opcode)) {            // TRAVERSE
                 continue;
                 for(size_t d=0; d<4; ++d) {             
                     for(size_t s=0; s<nop;++s) {
-                        symbol = opcode;                // Create the symbol
+                        symbol = opcode;
                         symbol += "_"+ string(dimensions[d]) + "_";
                         if (nop==3) {
                             structure = binary_structs[s];
@@ -165,8 +164,8 @@ void precompile(
                     license = false;
                     include = false;
                 }
-            } else if ((!elementwise) && (!system_opcode)) { // Reductions
-                symbol = opcode;                // Create the symbol
+            } else if ((!elementwise) && (!system_opcode)) {        // REDUCTION
+                symbol = opcode;
                 symbol += "_DD_" + string(signature);
                 if (!target.symbol_ready(symbol)) {
                     snippet_fn = string(snippet_path) + "/reduction.tpl";
@@ -187,15 +186,12 @@ void precompile(
                     license = false;
                     include = false;
                 }
-
             }
         }
     }
 
     if (!scattered) {
-        char symbols_fn[200];
-        sprintf(symbols_fn, "%s/symbols.ind", object_path);
-        std::ofstream symbols (symbols_fn);
+        std::ofstream symbols(target.lib_path("symbol", "ind"));
         for(
             std::vector<std::string>::iterator it = symbol_table.begin();
             it != symbol_table.end();

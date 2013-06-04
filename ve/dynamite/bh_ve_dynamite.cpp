@@ -246,7 +246,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             &sourcecode
                         );
                         cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                        cres = cres ? target->load(symbol) : cres;
+                        cres = cres ? target->load(symbol, symbol) : cres;
                     }
 
                     if (!cres) {
@@ -308,7 +308,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &sourcecode
                     );
                     cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                    cres = cres ? target->load(symbol) : cres;
+                    cres = cres ? target->load(symbol, symbol) : cres;
                 }
 
                 if (!cres) {
@@ -433,7 +433,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &sourcecode
                     );
                     cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                    cres = cres ? target->load(symbol) : cres;
+                    cres = cres ? target->load(symbol, symbol) : cres;
                 }
 
                 if (cres) { // CALL
@@ -576,7 +576,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &sourcecode
                     );
                     cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                    cres = cres ? target->load(symbol) : cres;
+                    cres = cres ? target->load(symbol, symbol) : cres;
                 }
 
                 if (!cres) {

@@ -70,9 +70,9 @@ public:
     func_storage funcs;
 
     process(
-        const char* process_str,
-        const char* object_path,
-        const char* kernel_path,
+        std::string process_str,
+        std::string object_path,
+        std::string kernel_path,
         bool do_preload
     ) :
         process_str(process_str), 
@@ -106,41 +106,30 @@ public:
         DIR *dir;
         struct dirent *ent;
         size_t nloaded = 0;
-        if ((dir = opendir (object_path)) != NULL) {
+        if ((dir = opendir (object_path.c_str())) != NULL) {
             while ((ent = readdir (dir)) != NULL) {
-                char object_name[200];
                 size_t name_len = strlen(ent->d_name);
+
                 if (10>name_len) {              // Not what we want
                     continue;
                 }
 
-                strncpy(object_name, ent->d_name, name_len);
-                object_name[name_len]=0;
-                if ((object_name[0] == 'B' && \
-                     object_name[1] == 'H' && \
-                     object_name[2] == '_')) {  // Load single symbol
-                     
-                    object_name[name_len-10] = 0;   // Strip off "_UID.so"
-                    if (load(std::string(object_name))) {
+                std::string object_name;
+                object_name.assign(ent->d_name, name_len-10);
+
+                if (0==object_name.compare(0,2, "BH_")) {       // Single
+                    if (load(object_name, object_name)) {
                         ++nloaded;
                     };
-
-                } else if ( (object_name[name_len-1] == 'd') && \
-                            (object_name[name_len-2] == 'n') && \
-                            (object_name[name_len-3] == 'i') && \
-                            (object_name[name_len-4] == '.')) {
-
+                } else if (0==object_name.compare(name_len-4,   // Multiple
+                                                  std::string::npos,
+                                                  ".ind")) {
                     std::vector<std::string> symbols;
-                    char basename[256],
-                         library[256],
-                         index[256];
+                    std::string basename, library;
+                    basename    = std::string(object_name).substr(0, name_len-4);
+                    library     = std::string(object_name).substr(0, name_len-11);
 
-                    strncpy(basename, object_name, name_len-4);
-                    basename[name_len-4] = 0;
-                    sprintf(library, "%s/%s.so", object_path, basename);
-                    sprintf(index,   "%s/%s.ind", object_path, basename);
-
-                    std::ifstream symbol_file(index);
+                    std::ifstream symbol_file(lib_path(basename.c_str(), "ind"));
                     for(std::string symbol; getline(symbol_file, symbol);) {
                         symbols.push_back(symbol);
                     }
@@ -148,8 +137,10 @@ public:
 
                     nloaded += load(symbols, library);
 
-                } else {                        // Load multiple symbols
-                    std::cout << "Ignorning non-loadable file: [" << object_name << "] found in object-path." << std::endl;
+                } else {                                        // Ignore
+                    std::cout << "Ignorning non-loadable file: ";
+                    std::cout << "[" << object_name << "] ";
+                    std::cout << "found in object-path." << std::endl;
                 }
             }
             closedir (dir);
@@ -160,63 +151,69 @@ public:
     }
 
     /**
-     *  Load symbol into func-storage.
+     *  Load a single symbol from library symbol into func-storage.
      */
-    bool load(std::string symbol)
+    bool load(std::string symbol, std::string library)
     {
-        char *error     = NULL;     // Buffer for dlopen errors
-        char lib_fn[250] = "";       // Library filename (objects/<symbol>_XXXXXX)
-        sprintf(
-            lib_fn, 
-            "%s/%s_%s.so",
-            object_path,
-            symbol.c_str(),
-            uid
-        );     
+        char *error_msg = NULL;             // Buffer for dlopen errors
+        int errnum = 0;
 
-        handles[symbol] = dlopen(lib_fn, RTLD_NOW); // Open library
-        if (!handles[symbol]) {
-            std::cout << "Err: dlopen() failed. Lib=["<< lib_fn <<"], Symbol=["<< symbol <<"]" << std::endl;
+        std::string library_fn = lib_path(  // "./objects/<symbol>_XXXXXX"
+                library.c_str(),
+                "so"
+        );
+
+        if (0==handles.count(library)) {    // Open library
+            handles[library] = dlopen(          
+                library_fn.c_str(),
+                RTLD_NOW
+            );
+            errnum = errno;
+        }
+        if (!handles[library]) {            // Check that it opened
+            error(
+                errnum,
+                "Failed openening library; dlopen(filename= %s, RTLF_NOW) failed.",
+                library_fn.c_str()
+            );
             return false;
         }
 
-        dlerror();                                  // Clear any existing error
-                                                    // Load function from library
-        funcs[symbol] = (func)dlsym(handles[symbol], symbol.c_str());
-        error = dlerror();
-        if (error) {
-            std::cout << "Err: Failed loading [" << symbol << "], error=[" << error << "]" << std::endl;
-            free(error);
+        dlerror();                          // Clear any existing error then,
+        funcs[symbol] = (func)dlsym(        // Load symbol/function
+            handles[symbol],
+            symbol.c_str()
+        );
+        error_msg   = dlerror();
+        errnum      = errno;
+        if (error_msg) {
+            error(
+                errnum,
+                "dlsym( handle=%s, symbol= %s ) errmsg=[%s]",
+                library_fn.c_str(),
+                symbol.c_str(),
+                error_msg
+            );
+            free(error_msg);
             return false;
         }
+
         return true;
     }
 
     /**
-     *  Load symbol into func-storage.
+     *  Load multiple symbols from library into func-storage.
      */
     bool load(std::vector<std::string> symbols, std::string library)
     {
-        char *error     = NULL;     // Buffer for dlopen errors
-
-        handles[library] = dlopen(library.c_str(), RTLD_NOW); // Open library
-        if (!handles[library]) {
-            std::cout << "Err: dlopen() failed. Lib=["<< library <<"], multiple symbols." << std::endl;
-            return false;
+        bool res = true;
+        for(std::vector<std::string>::iterator symbol=symbols.begin();
+            (symbol != symbols.end()) && res;
+            ++symbol
+        ) {
+            res *= load(*symbol, library);
         }
-
-        for(std::vector<std::string>::iterator symbol=symbols.begin(); symbol != symbols.end(); ++symbol) {
-            dlerror();                                  // Clear any existing error
-                                                        // Load function from library
-            funcs[*symbol] = (func)dlsym(handles[library], (*symbol).c_str());
-            error = dlerror();
-            if (error) {
-                std::cout << "Err: Failed loading [" << *symbol << "], error=[" << error << "]" << std::endl;
-                free(error);
-                return false;
-            }
-        }
-        return true;
+        return res;
     }
 
     /**
@@ -228,15 +225,13 @@ public:
     {
         int kernel_fd;              // Kernel file-descriptor
         FILE *kernel_fp = NULL;     // Handle for kernel-file
-        char kernel_fn[250] = "";   // TODO: Make sure this is not overflown
         const char *mode = "w";
         int err;
-
-        sprintf(kernel_fn, "%s/%s_%s.c", kernel_path, symbol.c_str(), uid);
-        kernel_fd = open(kernel_fn, O_WRONLY | O_CREAT | O_EXCL, 0644);
+        std::string kernel_fn = krn_path(symbol.c_str(), ".c");
+        kernel_fd = open(kernel_fn.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
         if ((!kernel_fd) || (kernel_fd<1)) {
             err = errno;
-            error(err, "Failed opening kernel-file [%s].\n", kernel_fn);
+            error(err, "Failed opening kernel-file [%s].\n", kernel_fn.c_str());
             return false;
         }
         kernel_fp = fdopen(kernel_fd, mode);
@@ -255,35 +250,14 @@ public:
 
     bool compile(std::string library, const char* sourcecode, size_t source_len)
     {
-        char lib_fn[250] = "";          // Library filename (objects/<symbol>_XXXXXX)
-        sprintf(
-            lib_fn,
-            "%s/%s_%s.so",
-            object_path,
-            library.c_str(),
-            uid
-        );
-
-        /*
-        if (access(lib_fn, F_OK) == 0) {    // Load object if it exists
-            return load(library);
-        }*/
-
-        // WARN: These constants must be safeguarded... they will bite you at some point!
-        FILE *cmd_stdin     = NULL;  // Handle for library-file
-        char cmd[1000]      = "";    // Command-line for executing compiler
-        sprintf(
-            cmd, 
-            "%s %s",
-            process_str,
-            lib_fn
-        );      
-        cmd_stdin = popen(cmd, "w");                    // Execute the command
+        std::string cmd = command(library.c_str(), "so");
+        FILE *cmd_stdin     = NULL;                     // Handle for library-file
+        cmd_stdin = popen(cmd.c_str(), "w");            // Execute the command
         if (!cmd_stdin) {
             std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
             return false;
         }
-        fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write to stdin (sourcecode)
+        fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
         fflush(cmd_stdin);
         pclose(cmd_stdin);
 
@@ -298,12 +272,42 @@ public:
         }*/
     }
 
+    const char* get_uid(void)
+    {
+        return uid;
+    }
+
+    std::string lib_path(const char *lib_name, const char *ext)
+    {
+        return  object_path + "/" +\
+                std::string(lib_name)    + "_" +\
+                std::string(get_uid())   + "." +\
+                std::string(ext);
+    }
+
+    std::string krn_path(const char *krn_name, const char *ext)
+    {
+        return  kernel_path + "/" +\
+                std::string(krn_name)    + "_" +\
+                std::string(get_uid())   + "." +\
+                std::string(ext);
+    }
+
+    std::string command(const char *lib_name, const char *ext)
+    {
+        return  process_str + " "+\
+                object_path + "/" +\
+                std::string(lib_name)    + "_" +\
+                std::string(get_uid())   + "." +\
+                std::string(ext);
+    }
+
 private:
     handle_storage handles;
     char uid[7];
-    const char *process_str;
-    const char* object_path;
-    const char* kernel_path;
+    std::string process_str;
+    std::string object_path;
+    std::string kernel_path;
 
 };
 
