@@ -21,10 +21,22 @@ int error(int errnum, const char *fmt, ...) {
     va_list va;
     int ret;
 
-    char err_msg[200];
-    sprintf(err_msg, "Errno=[%d, %s]: %s", errnum, strerror(errnum), fmt);
+    char err_msg[500];
+    sprintf(err_msg, "Error[%d, %s] from: %s", errnum, strerror(errnum), fmt);
     va_start(va, fmt);
     ret = vfprintf(stderr, err_msg, va);
+    va_end(va);
+    return ret;
+}
+
+int error(const char *err_msg, const char *fmt, ...) {
+    va_list va;
+    int ret;
+
+    char err_txt[500];
+    sprintf(err_txt, "Error[%s] from: %s", err_msg, fmt);
+    va_start(va, fmt);
+    ret = vfprintf(stderr, err_txt, va);
     va_end(va);
     return ret;
 }
@@ -108,38 +120,36 @@ public:
         size_t nloaded = 0;
         if ((dir = opendir (object_path.c_str())) != NULL) {
             while ((ent = readdir (dir)) != NULL) {
-                size_t name_len = strlen(ent->d_name);
+                size_t fn_len = strlen(ent->d_name);
 
-                if (10>name_len) {              // Not what we want
+                if (14>fn_len) {              // Not what we want
                     continue;
                 }
 
-                std::string object_name;
-                object_name.assign(ent->d_name, name_len-10);
+                std::string fn(ent->d_name),
+                            lib_fn;
 
-                if (0==object_name.compare(0,2, "BH_")) {       // Single
-                    if (load(object_name, object_name)) {
+                if (0==fn.compare(0,3, "BH_")) {        // Single
+                    lib_fn.assign(fn, 0, fn_len-10);    // Remove "_xxxxxx.so"
+                    if (load(lib_fn, lib_fn)) {
                         ++nloaded;
-                    };
-                } else if (0==object_name.compare(name_len-4,   // Multiple
-                                                  std::string::npos,
-                                                  ".ind")) {
-                    std::vector<std::string> symbols;
-                    std::string basename, library;
-                    basename    = std::string(object_name).substr(0, name_len-4);
-                    library     = std::string(object_name).substr(0, name_len-11);
+                    };                                  // Multiple
+                } else if (0==fn.compare(fn_len-4, 4, ".ind")) {
+                    lib_fn.assign(fn, 0, fn_len-11);    // Remove "_xxxxxx.ind"
+                    std::string index_fn = lib_path(lib_fn.c_str(), "ind");
 
-                    std::ifstream symbol_file(lib_path(basename.c_str(), "ind"));
+                    std::vector<std::string> symbols;
+                    std::ifstream symbol_file(index_fn);
                     for(std::string symbol; getline(symbol_file, symbol);) {
                         symbols.push_back(symbol);
                     }
                     symbol_file.close();
 
-                    nloaded += load(symbols, library);
+                    nloaded += load(symbols, lib_fn);
 
                 } else {                                        // Ignore
                     std::cout << "Ignorning non-loadable file: ";
-                    std::cout << "[" << object_name << "] ";
+                    std::cout << "[" << fn << "] ";
                     std::cout << "found in object-path." << std::endl;
                 }
             }
@@ -173,7 +183,7 @@ public:
         if (!handles[library]) {            // Check that it opened
             error(
                 errnum,
-                "Failed openening library; dlopen(filename= %s, RTLF_NOW) failed.",
+                "Failed openening library; dlopen(filename='%s', RTLF_NOW) failed.",
                 library_fn.c_str()
             );
             return false;
@@ -181,23 +191,20 @@ public:
 
         dlerror();                          // Clear any existing error then,
         funcs[symbol] = (func)dlsym(        // Load symbol/function
-            handles[symbol],
+            handles[library],
             symbol.c_str()
         );
-        error_msg   = dlerror();
-        errnum      = errno;
+        error_msg = dlerror();
         if (error_msg) {
             error(
-                errnum,
-                "dlsym( handle=%s, symbol= %s ) errmsg=[%s]",
+                error_msg,
+                "dlsym( handle='%s', symbol='%s' )\n",
                 library_fn.c_str(),
-                symbol.c_str(),
-                error_msg
+                symbol.c_str()
             );
             free(error_msg);
             return false;
         }
-
         return true;
     }
 

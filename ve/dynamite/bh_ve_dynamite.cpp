@@ -389,7 +389,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
-                    std::cout << "Symbol: [" << symbol << "] is not ready!" << std::endl;
 
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));

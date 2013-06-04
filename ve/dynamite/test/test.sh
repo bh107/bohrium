@@ -13,7 +13,8 @@
 #./test/test.py
 
 rm -r ~/.local/dynamite
-INSTALLDIR="~/.local" DEBUG="" make clean install
+#INSTALLDIR="~/.local" DEBUG="" make clean install
+INSTALLDIR="~/.local" DEBUG="" make install
 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=False
 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True

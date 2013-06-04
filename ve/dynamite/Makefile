@@ -40,5 +40,5 @@ install: all
 		mkdir -p $(INSTALLDIR)/dynamite/objects
 		mkdir -p $(INSTALLDIR)/dynamite/snippets
 		cp snippets/*.tpl $(INSTALLDIR)/dynamite/snippets/
-		cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/symbols.so
-		cp objects/symbols.ind $(INSTALLDIR)/dynamite/objects/
+		cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/
+		cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/dynamite/objects/
