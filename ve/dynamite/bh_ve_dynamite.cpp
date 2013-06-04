@@ -194,6 +194,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         std::string sourcecode = "";
         std::string symbol = "";
         int64_t dims;
+        char dims_str[10];
 
         char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
@@ -360,26 +361,31 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_MOD:
 
                 dims = instr->operand[0]->ndim;
+                if (dims < 4) {
+                    sprintf(dims_str, "%ldd", dims);
+                } else {
+                    sprintf(dims_str, "naive");
+                }
                 if (bh_is_constant(instr->operand[2])) {
-                    sprintf(symbol_c, "%s_%ldd_DDC_%s%s%s",
+                    sprintf(symbol_c, "%s_%s_DDC_%s%s%s",
                         bh_opcode_text(instr->opcode),
-                        dims,
+                        dims_str,
                         bhtype_to_shorthand(instr->operand[0]->type),
                         bhtype_to_shorthand(instr->operand[1]->type),
                         bhtype_to_shorthand(instr->constant.type)
                     );
                 } else if(bh_is_constant(instr->operand[1])) {
-                    sprintf(symbol_c, "%s_%ldd_DCD_%s%s%s",
+                    sprintf(symbol_c, "%s_%s_DCD_%s%s%s",
                         bh_opcode_text(instr->opcode),
-                        dims,
+                        dims_str,
                         bhtype_to_shorthand(instr->operand[0]->type),
                         bhtype_to_shorthand(instr->constant.type),
                         bhtype_to_shorthand(instr->operand[2]->type)
                     );
                 } else {
-                    sprintf(symbol_c, "%s_%ldd_DDD_%s%s%s",
+                    sprintf(symbol_c, "%s_%s_DDD_%s%s%s",
                         bh_opcode_text(instr->opcode),
-                        dims,
+                        dims_str,
                         bhtype_to_shorthand(instr->operand[0]->type),
                         bhtype_to_shorthand(instr->operand[1]->type),
                         bhtype_to_shorthand(instr->operand[2]->type)
@@ -525,17 +531,22 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_IDENTITY:
 
                 dims = instr->operand[0]->ndim;
+                if (dims < 4) {
+                    sprintf(dims_str, "%ldd", dims);
+                } else {
+                    sprintf(dims_str, "naive");
+                }
                 if (bh_is_constant(instr->operand[1])) {
-                    sprintf(symbol_c, "%s_%ldd_DC_%s%s",
+                    sprintf(symbol_c, "%s_%s_DC_%s%s",
                             bh_opcode_text(instr->opcode),
-                            dims,
+                            dims_str,
                             bhtype_to_shorthand(instr->operand[0]->type),
                             bhtype_to_shorthand(instr->constant.type)
                     );
                 } else {
-                    sprintf(symbol_c, "%s_%ldd_DD_%s%s",
+                    sprintf(symbol_c, "%s_%s_DD_%s%s",
                             bh_opcode_text(instr->opcode),
-                            dims,
+                            dims_str,
                             bhtype_to_shorthand(instr->operand[0]->type),
                             bhtype_to_shorthand(instr->operand[1]->type)
                     );
