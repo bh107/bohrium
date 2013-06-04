@@ -45,6 +45,66 @@ char* snippet_path;
 
 process* target;
 
+int hash(bh_instruction *instr)
+{
+    uint64_t poly;
+    int dims, nop,
+        a0_type, a1_type, a2_type,
+        a0_dense, a1_dense, a2_dense;
+
+    dims     = instr->operand[0]->ndim;
+    nop      = bh_operands(instr->opcode);
+    a0_type  = instr->operand[0]->type;
+    a0_dense = 1;
+    if (3 == nop) {
+        if (bh_is_constant(instr->operand[1])) {            // DDC
+            a1_type  = instr->constant.type;
+            a1_dense = 0;
+            a2_type  = instr->operand[2]->type;
+            a2_dense = 1;
+        } else if (bh_is_constant(instr->operand[2])) {     // DCD
+            a1_type  = instr->operand[1]->type;
+            a1_dense = 1;
+            a2_type  = instr->constant.type;
+            a2_dense = 0;   
+        } else {                                            // DDD
+            a1_type  = instr->operand[1]->type;
+            a1_dense = 1;
+            a2_type  = instr->operand[2]->type;
+            a2_dense = 1;
+        }
+    } else if (2 == nop) {
+        if (bh_is_constant(instr->operand[1])) {            // DDC
+            a1_type  = instr->constant.type;
+            a1_dense = 0;
+        } else {                                            // DDD
+            a1_type  = instr->operand[1]->type;
+            a1_dense = 1;
+        }
+        a2_type = 0;
+        a2_dense = 0;
+    } else {
+        a1_type  = 0;
+        a2_type  = 0;
+        a1_dense = 0;
+        a2_dense = 0;
+    }
+
+    poly  = (a0_type << 8) + (a1_type << 4) + (a2_type);
+    poly += (a0_dense << 14) + (a1_dense << 13) + (a2_dense << 12);
+    poly += (dims << 15);
+    poly += (instr->opcode << 20);
+
+    /*
+    std::cout << "Opcode {" << instr->opcode << "}" << std::endl;
+    std::cout << "Dims {" << dims << "}" << std::endl;
+    std::cout << "Type {" << a0_type << ", " << a1_type << ", " << a2_type << "}" << std::endl;
+    std::cout << "Struct {" << a0_dense << ", " << a1_dense << ", " << a2_dense << "}" << std::endl;
+    std::cout << poly << std::endl;
+    */
+    return poly;
+}
+
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
@@ -108,7 +168,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     bh_string_option(
         compiler_cmd,   "BH_VE_DYNAMITE_TARGET",        "compiler_cmd");
 
-    target = new process(compiler_cmd, object_path, kernel_path);
+    target = new process(compiler_cmd, object_path, kernel_path, true);
 
     return BH_SUCCESS;
 }
@@ -120,6 +180,9 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_error res = BH_SUCCESS;
 
     for (count=0; count<instruction_count; count++) {
+        instr = &instruction_list[count];
+        //bh_pprint_instr(instr);
+        //hash(instr);
 
         ctemplate::TemplateDictionary dict("codegen");
         dict.ShowSection("license");
@@ -130,12 +193,10 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
         std::string sourcecode = "";
         std::string symbol = "";
-        int64_t dims = 0;
+        int64_t dims;
 
         char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
-
-        instr = &instruction_list[count];
 
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
@@ -178,7 +239,6 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0]->type));
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
                         sprintf(snippet_fn, "%s/random.tpl", snippet_path);
-                        //sprintf(snippet_fn, "%s/random.omp.tpl", snippet_path);
                         ctemplate::ExpandTemplate(
                             snippet_fn,
                             ctemplate::STRIP_BLANK_LINES, 
@@ -186,6 +246,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             &sourcecode
                         );
                         cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                        cres = cres ? target->load(symbol) : cres;
                     }
 
                     if (!cres) {
@@ -217,11 +278,14 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_LOGICAL_AND_REDUCE:
             case BH_BITWISE_AND_REDUCE:
             case BH_LOGICAL_OR_REDUCE:
+            case BH_LOGICAL_XOR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
+            case BH_BITWISE_XOR_REDUCE:
 
-                sprintf(symbol_c, "%s_DD_%s%s",
+                sprintf(symbol_c, "%s_DD_%s%s%s",
                     bh_opcode_text(instr->opcode),
                     bhtype_to_shorthand(instr->operand[0]->type),
+                    bhtype_to_shorthand(instr->operand[1]->type),
                     bhtype_to_shorthand(instr->operand[1]->type)
                 );
                 symbol = std::string(symbol_c);
@@ -244,6 +308,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &sourcecode
                     );
                     cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    cres = cres ? target->load(symbol) : cres;
                 }
 
                 if (!cres) {
@@ -295,9 +360,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_MOD:
 
                 dims = instr->operand[0]->ndim;
-
                 if (bh_is_constant(instr->operand[2])) {
-                    sprintf(symbol_c, "%s_%ldD_DDC_%s%s%s",
+                    sprintf(symbol_c, "%s_%ldd_DDC_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims,
                         bhtype_to_shorthand(instr->operand[0]->type),
@@ -305,7 +369,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         bhtype_to_shorthand(instr->constant.type)
                     );
                 } else if(bh_is_constant(instr->operand[1])) {
-                    sprintf(symbol_c, "%s_%ldD_DCD_%s%s%s",
+                    sprintf(symbol_c, "%s_%ldd_DCD_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims,
                         bhtype_to_shorthand(instr->operand[0]->type),
@@ -313,7 +377,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         bhtype_to_shorthand(instr->operand[2]->type)
                     );
                 } else {
-                    sprintf(symbol_c, "%s_%ldD_DDD_%s%s%s",
+                    sprintf(symbol_c, "%s_%ldd_DDD_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims,
                         bhtype_to_shorthand(instr->operand[0]->type),
@@ -325,6 +389,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {
+                    std::cout << "Symbol: [" << symbol << "] is not ready!" << std::endl;
+
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.ShowSection("binary");
@@ -366,9 +432,10 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &dict,
                         &sourcecode
                     );
+                    cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    cres = cres ? target->load(symbol) : cres;
                 }
 
-                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
                 if (cres) { // CALL
                     if (bh_is_constant(instr->operand[2])) {         // DDC
                         target->funcs[symbol](0,
@@ -458,15 +525,16 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             case BH_ISINF:
             case BH_IDENTITY:
 
+                dims = instr->operand[0]->ndim;
                 if (bh_is_constant(instr->operand[1])) {
-                    sprintf(symbol_c, "%s_%ldD_DC_%s%s",
+                    sprintf(symbol_c, "%s_%ldd_DC_%s%s",
                             bh_opcode_text(instr->opcode),
                             dims,
                             bhtype_to_shorthand(instr->operand[0]->type),
                             bhtype_to_shorthand(instr->constant.type)
                     );
                 } else {
-                    sprintf(symbol_c, "%s_%ldD_DD_%s%s",
+                    sprintf(symbol_c, "%s_%ldd_DD_%s%s",
                             bh_opcode_text(instr->opcode),
                             dims,
                             bhtype_to_shorthand(instr->operand[0]->type),
@@ -477,6 +545,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
                 cres = target->symbol_ready(symbol);
                 if (!cres) {    // SNIPPET
+
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.ShowSection("unary");
@@ -506,9 +575,10 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                         &dict,
                         &sourcecode
                     );
+                    cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    cres = cres ? target->load(symbol) : cres;
                 }
 
-                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
                 if (!cres) {
                     res = BH_ERROR;
                 } else {    // CALL

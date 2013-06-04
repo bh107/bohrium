@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 #include <stdexcept>
 #include <ctemplate/template.h>  
 #include "compiler.cpp"
@@ -52,10 +53,12 @@ string generate_source(
 }
 
 void precompile(
-    const char *cmd, 
-    const char *object_path, const char *kernel_path, const char *snippet_path)
+    const char *cmd,  const char *jsonfile,
+    const char *object_path, const char *kernel_path, const char *snippet_path,
+    bool scattered)
 {
-    process target(cmd, object_path, kernel_path);
+    //process target(cmd, object_path, kernel_path, false);
+    process target(cmd, object_path, kernel_path, scattered);
     string op,
             symbol,
             type_out,
@@ -73,14 +76,17 @@ void precompile(
     const char *binary_structs[]    = {"DDD",   "DDC", "DCD"};
     const char *unary_structs[]     = {"DD",    "DC"};
 
-    root = json_load_file(
-        "/home/safl/Desktop/bohrium/core/codegen/opcodes.json",
+    std::vector<std::string> symbol_table;    // List of symbols compiled.
+
+    root = json_load_file(                              // Basis for pre-compilation
+        jsonfile,
         0,
         &error
     );
-    if (!json_is_array(root)) {                      // Load the opcodes
+    if (!json_is_array(root)) {                         // Load the opcodes
         fprintf(stderr, "error: root is not an array\n");
     }
+
     for (size_t i=0; i < json_array_size(root); ++i) {  // Run through them all
         json_t *opcode_j, *types_j, *signature_j;
         
@@ -123,6 +129,7 @@ void precompile(
                 type_in2 = "";
             }
             if ((elementwise) && (!system_opcode)) {    // Generate sourcecode for traverse
+                continue;
                 for(size_t d=0; d<4; ++d) {             
                     for(size_t s=0; s<nop;++s) {
                         symbol = opcode;                // Create the symbol
@@ -135,41 +142,94 @@ void precompile(
                         symbol += string(structure);
                         symbol += "_";
                         symbol += string(signature);
-                        snippet_fn = string(snippet_path) + "/traverse."+dimensions[d]+".tpl";
 
-                        sourcecode += generate_source(
-                            snippet_fn, symbol, bhopcode_to_cexpr(id),
-                            type_out, type_in1, type_in2,
-                            string(structure), license, include
-                        );
+                        if (!target.symbol_ready(symbol)) {
+                            snippet_fn = string(snippet_path) + "/traverse."+dimensions[d]+".tpl";
+                            
+                            if (scattered) {
+                                sourcecode = "";
+                            }
+                            sourcecode += generate_source(
+                                snippet_fn, symbol, bhopcode_to_cexpr(id),
+                                type_out, type_in1, type_in2,
+                                string(structure), license, include
+                            );
+                            if (scattered) {
+                                target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                            }
+                        }
+                        symbol_table.push_back(symbol);
                     }
+                }
+                if (!scattered) {
+                    license = false;
+                    include = false;
                 }
             } else if ((!elementwise) && (!system_opcode)) { // Reductions
                 symbol = opcode;                // Create the symbol
-                symbol += "_" + string(signature);
-                snippet_fn = string(snippet_path) + "/reduction.tpl";
+                symbol += "_DD_" + string(signature);
+                if (!target.symbol_ready(symbol)) {
+                    snippet_fn = string(snippet_path) + "/reduction.tpl";
+                    if (scattered) {
+                        sourcecode = "";
+                    }
+                    sourcecode += generate_source(
+                        snippet_fn, symbol, bhopcode_to_cexpr(id),
+                        type_out, type_in1, type_in2,
+                        string(structure), license, include
+                    );
+                    if (scattered) {
+                        target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+                    }
+                }
+                symbol_table.push_back(symbol);
+                if (!scattered) {
+                    license = false;
+                    include = false;
+                }
 
-                sourcecode += generate_source(
-                    snippet_fn, symbol, bhopcode_to_cexpr(id),
-                    type_out, type_in1, type_in2,
-                    string(structure), license, include
-                );
             }
         }
-        license = false;
-        include = false;
     }
-    cout << sourcecode << endl;
-    //target.compile(symbol, sourcecode.c_str(), sourcecode.size());
+
+    if (!scattered) {
+        char symbols_fn[200];
+        sprintf(symbols_fn, "%s/symbols.ind", object_path);
+        std::ofstream symbols (symbols_fn);
+        for(
+            std::vector<std::string>::iterator it = symbol_table.begin();
+            it != symbol_table.end();
+            ++it)
+        {
+            symbols << *it << std::endl;
+        }
+        symbols.close();
+
+        target.compile("symbols", sourcecode.c_str(), sourcecode.size());
+        target.src_to_file("symbols", sourcecode.c_str(), sourcecode.size()); 
+    }
+
 }
 
 int main(int argc, char **argv)
 {
+    /*
     precompile(
-        "gcc -shared -Wall -O2 -march=native -fopenmp -fPIC -std=c99 -x c static.c -lm -o static.so",
-        "./objects/",
-        "./kernels/",
-        "./snippets"
+        "gcc -shared -Wall -O2 -march=native -fopenmp -fPIC -std=c99 -x c - -lm -o ",
+        "/home/safl/Desktop/bohrium/core/codegen/opcodes.json",
+        "./objects",
+        "./kernels",
+        "./snippets",
+        true
+    );*/
+
+    precompile(
+        "gcc -shared -Wall -O2 -march=native -fopenmp -fPIC -std=c99 -x c - -lm -o ",
+        "/home/safl/Desktop/bohrium/core/codegen/opcodes.json",
+        "./objects",
+        "./kernels",
+        "./snippets",
+        false
     );
 
     return 0;

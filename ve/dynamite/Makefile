@@ -26,7 +26,8 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 precompiler: precompiler.cpp
-	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core  -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS) 
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lexplain -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS) 
+	/usr/bin/time ./precompiler
 
 clean:
 		rm -rf *.o *~ *.so kernels/* objects/* core precompiler
@@ -39,5 +40,5 @@ install: all
 		mkdir -p $(INSTALLDIR)/dynamite/objects
 		mkdir -p $(INSTALLDIR)/dynamite/snippets
 		cp snippets/*.tpl $(INSTALLDIR)/dynamite/snippets/
-		cp static.so $(INSTALLDIR)/dynamite/objects/
-
+		cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/symbols.so
+		cp objects/symbols.ind $(INSTALLDIR)/dynamite/objects/
