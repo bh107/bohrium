@@ -27,7 +27,7 @@ $(LIB): $(OBJ)
 
 precompiler: precompiler.cpp
 	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lexplain -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS) 
-	/usr/bin/time ./precompiler
+#	/usr/bin/time ./precompiler
 
 clean:
 		rm -rf *.o *~ *.so kernels/* objects/* core precompiler
