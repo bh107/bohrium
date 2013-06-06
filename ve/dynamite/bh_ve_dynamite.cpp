@@ -293,7 +293,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     //
     // DEBUG PRINTING
     //
-    
+    /* 
     std::cout << "## Failed potential=" << potentials.size() << std::endl;
     for(auto it=potentials.begin(); it!=potentials.end(); ++it) {
         std::cout << (*it) << ",";
@@ -331,6 +331,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
             }
         }
     }
+    */
 
     return kernels;
 }
@@ -338,7 +339,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
 std::string name_input(kernel_inputs& inputs, bh_array* input)
 {
     char varchar[20];
-    sprintf(varchar, "a%d_current", (int)(inputs.size()+1));
+    sprintf(varchar, "*a%d_current", (int)(inputs.size()+1));
     std::string varname(varchar);
 
     inputs.push_back(std::make_pair(varname, input));
@@ -434,23 +435,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
+    // See if we can find a some kernels...
     kernel_storage kernels = streaming(instruction_count, instruction_list);
+    instr_range kernel = std::make_pair(0,0);
     kernel_inputs kernel_input;
-
-    std::cout << "###" << kernels.size() << std::endl;
-    for(auto it=kernels.begin(); it!=kernels.end(); ++it) {
-        kernel_input.clear();
-        std::cout << "expr=";
-        std::cout << fused_expr(
-            instruction_list,
-            (*it).second-1,
-            (*it).first,
-            instruction_list[(*it).second].operand[1],
-            kernel_input
-        );
-        std::cout << std::endl;
-    }
-
+    
     for (count=0; count<instruction_count; count++) {
         instr = &instruction_list[count];
 
@@ -469,12 +458,72 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
 
+        if ((kernels.size()>0) && (kernel.first == kernel.second)) {    // Grab a new kernel
+            kernel = kernels.front();
+            kernels.erase(kernels.begin());
+        }
+                                        
+        // Check if we wanna go into fusion-mode
+        if ((count==kernel.first) && (kernel.first != kernel.second)) {
+            count = kernel.second+1;
+
+            /* DEBUG_PRINTING
+            std::cout << "###" << kernels.size() << std::endl;
+            for(auto it=kernels.begin(); it!=kernels.end(); ++it) {
+                std::cout << "FROM="<< (*it).first << " TO="<< (*it).second << std::endl;
+                std::cout << "expr=";
+                std::cout << 
+                std::cout << std::endl;
+            }*/
+
+            kernel_input.clear();
+            std::string cmd_str = fused_expr(
+                instruction_list,
+                kernel.second-1,
+                kernel.first,
+                instruction_list[kernel.second].operand[1],
+                kernel_input
+            );
+            cmd_str = "*a0_current += "+ cmd_str;
+            symbol = "BH_PFSTREAM_OPS";
+            sourcecode = "";
+            dict.SetValue("OPERATOR",   cmd_str);
+            int ccc = 1;
+            for(auto it=kernel_input.begin(); it!=kernel_input.end(); ++it, ++ccc) {
+                std::ostringstream buff;
+                buff << "a" << ccc << "_dense";
+                dict.ShowSection(buff.str());
+                buff.str("");
+                buff << "TYPE_A" << ccc;
+                dict.SetValue(buff.str(), bhtype_to_ctype(((*it).second)->type));
+                buff.str("");
+                buff << "TYPE_A" << ccc << "SHORTHAND";
+                dict.SetValue(buff.str(), bhtype_to_ctype(((*it).second)->type));
+            }
+            /*
+            dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0]->type));
+            dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
+            */
+            sprintf(snippet_fn, "%s/partial.streaming.tpl", snippet_path);
+            ctemplate::ExpandTemplate(
+                snippet_fn,
+                ctemplate::STRIP_BLANK_LINES, 
+                &dict, 
+                &sourcecode
+            );
+            target->src_to_file(symbol, sourcecode.c_str(), sourcecode.size()); 
+            // Generate the code and execute it!
+            
+        }
+
+        // NAIVE MODE
+
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
-                                                    
+        
         switch (instr->opcode) {                    // Dispatch instruction
 
             case BH_NONE:                           // NOOP.

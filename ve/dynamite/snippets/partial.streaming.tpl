@@ -50,10 +50,6 @@ void {{SYMBOL}}(int tool, ...)
     va_start(list, tool);
 
     *a0_current = va_arg(list, {{TYPE_A0}}*);
-
-    {{#a1_scalar}}
-    {{TYPE_A1}} *a1_current   = va_arg(list, {{TYPE_A1}}*);
-    {{/a1_scalar}}  
  
     {{#a1_dense}}
     {{TYPE_A1}} *a1_current   = va_arg(list, {{TYPE_A1}}*);
@@ -63,10 +59,6 @@ void {{SYMBOL}}(int tool, ...)
     assert(a1_current != NULL);
     {{/a1_dense}}
 
-    {{#a2_scalar}}
-    {{TYPE_A2}} *a2_current   = va_arg(list, {{TYPE_A2}}*);
-    {{/a2_scalar}}
-
     {{#a2_dense}}
     {{TYPE_A2}} *a2_current   = va_arg(list, {{TYPE_A2}}*);
     {{TYPE_A2}} *a2_first     = a2_current;
@@ -74,10 +66,6 @@ void {{SYMBOL}}(int tool, ...)
     int64_t *a2_stride  = va_arg(list, int64_t*);
     assert(a2_current != NULL);
     {{/a2_dense}}
-
-    {{#a3_scalar}}
-    {{TYPE_A3}} *a3_current   = va_arg(list, {{TYPE_A3}}*);
-    {{/a3_scalar}}
 
     {{#a3_dense}}
     {{TYPE_A3}} *a3_current   = va_arg(list, {{TYPE_A3}}*);
@@ -87,10 +75,6 @@ void {{SYMBOL}}(int tool, ...)
     assert(a3_current != NULL);
     {{/a3_dense}}
 
-    {{#a4_scalar}}
-    {{TYPE_A4}} *a4_current   = va_arg(list, {{TYPE_A4}}*);
-    {{/a4_scalar}}
-
     {{#a4_dense}}
     {{TYPE_A4}} *a4_current   = va_arg(list, {{TYPE_A4}}*);
     {{TYPE_A4}} *a4_first     = a4_current;
@@ -98,10 +82,6 @@ void {{SYMBOL}}(int tool, ...)
     int64_t *a4_stride  = va_arg(list, int64_t*);
     assert(a4_current != NULL);
     {{/a4_dense}}
-
-    {{#a5_scalar}}
-    {{TYPE_A5}} *a5_current   = va_arg(list, {{TYPE_A5}}*);
-    {{/a5_scalar}}
 
     {{#a5_dense}}
     {{TYPE_A5}} *a5_current   = va_arg(list, {{TYPE_A5}}*);
@@ -111,10 +91,6 @@ void {{SYMBOL}}(int tool, ...)
     assert(a5_current != NULL);
     {{/a5_dense}}
 
-    {{#a6_scalar}}
-    {{TYPE_A6}} *a6_current   = va_arg(list, {{TYPE_A6}}*);
-    {{/a6_scalar}}
-
     {{#a6_dense}}
     {{TYPE_A6}} *a6_current   = va_arg(list, {{TYPE_A6}}*);
     {{TYPE_A6}} *a6_first     = a6_current;
@@ -122,6 +98,14 @@ void {{SYMBOL}}(int tool, ...)
     int64_t *a6_stride  = va_arg(list, int64_t*);
     assert(a6_current != NULL);
     {{/a6_dense}}
+
+    {{#a7_dense}}
+    {{TYPE_A7}} *a7_current   = va_arg(list, {{TYPE_A7}}*);
+    {{TYPE_A7}} *a7_first     = a7_current;
+    int64_t  a7_start   = va_arg(list, int64_t);
+    int64_t *a7_stride  = va_arg(list, int64_t*);
+    assert(a7_current != NULL);
+    {{/a7_dense}}
     
     int64_t *shape      = va_arg(list, int64_t*);
     int64_t ndim        = va_arg(list, int64_t);
@@ -142,6 +126,7 @@ void {{SYMBOL}}(int tool, ...)
     {{#a4_dense}}int64_t a4_stride_ld = a4_stride[last_dim];{{/a4_dense}}
     {{#a5_dense}}int64_t a5_stride_ld = a5_stride[last_dim];{{/a5_dense}}
     {{#a6_dense}}int64_t a6_stride_ld = a6_stride[last_dim];{{/a6_dense}}
+    {{#a7_dense}}int64_t a7_stride_ld = a7_stride[last_dim];{{/a7_dense}}
 
     int64_t coord[DYNAMITE_MAXDIM];
     memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
@@ -159,6 +144,7 @@ void {{SYMBOL}}(int tool, ...)
         {{#a4_dense}}a4_current = a4_first + a4_start;{{/a4_dense}}
         {{#a5_dense}}a5_current = a5_first + a5_start;{{/a5_dense}}
         {{#a6_dense}}a6_current = a6_first + a6_start;{{/a6_dense}}
+        {{#a7_dense}}a7_current = a7_first + a7_start;{{/a7_dense}}
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
             //a0_current += coord[j] * a0_stride[j];
             //a0_current remains untouched
@@ -168,6 +154,7 @@ void {{SYMBOL}}(int tool, ...)
             {{#a4_dense}}a4_current += coord[j] * a4_stride[j];{{/a4_dense}}
             {{#a5_dense}}a5_current += coord[j] * a5_stride[j];{{/a5_dense}}
             {{#a6_dense}}a6_current += coord[j] * a6_stride[j];{{/a6_dense}}
+            {{#a7_dense}}a7_current += coord[j] * a7_stride[j];{{/a7_dense}}
         }
 
         for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
@@ -183,6 +170,7 @@ void {{SYMBOL}}(int tool, ...)
             {{#a4_dense}}a4_current += a4_stride_ld;{{/a4_dense}}
             {{#a5_dense}}a5_current += a5_stride_ld;{{/a5_dense}}
             {{#a6_dense}}a6_current += a6_stride_ld;{{/a6_dense}}
+            {{#a7_dense}}a7_current += a7_stride_ld;{{/a7_dense}}
         }
         cur_e += shape_ld;
 
