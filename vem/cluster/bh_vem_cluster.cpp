@@ -93,7 +93,7 @@ bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
 bh_error bh_vem_cluster_execute(bh_ir* bhir)
 {
     bh_intp count = bhir->instructions->count;
-    bh_instruction* inst_list = (bh_instruction*)malloc(sizeof(bh_instruction));
+    bh_instruction* inst_list = (bh_instruction*)malloc(sizeof(bh_instruction) * count);
     bh_error res = bh_graph_serialize(bhir, inst_list, &count);
     if (res != BH_SUCCESS)
     {
