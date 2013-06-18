@@ -13,8 +13,18 @@
 #./test/test.py
 
 rm -r ~/.local/dynamite
+#INSTALLDIR="~/.local" DEBUG="" make clean install
 INSTALLDIR="~/.local" DEBUG="" make clean install
-python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*3
+#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=False
+#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#python ../../test/numpy/numpytest.py
+
+#OMP_NUM_THREADS=1 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#OMP_NUM_THREADS=1 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#OMP_NUM_THREADS=2 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+#OMP_NUM_THREADS=4 python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
 #python ../../test/numpy/numpytest.py
 #python ../../test/numpy/numpytest.py -f test_array_create.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
