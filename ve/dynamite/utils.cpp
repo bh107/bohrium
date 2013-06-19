@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include "bh.h"
 
 /**
@@ -38,6 +39,76 @@ void assign_string(char*& output, const char* input)
     }
     strncpy(output, input, length);
     output[length] = '\0';
+}
+
+const char* bhtypestr_to_shorthand(const char* type_str)
+{
+    if (strcmp("BH_BOOL", type_str)==0) {
+        return "z";
+    } else if (strcmp("BH_INT8", type_str)==0) {
+        return "b";
+    } else if (strcmp("BH_INT16", type_str)==0) {
+        return "s";
+    } else if (strcmp(type_str, "BH_INT32")==0) {
+        return "i";
+    } else if (strcmp(type_str, "BH_INT64")==0) {
+        return "l";
+    } else if (strcmp(type_str, "BH_UINT8")==0) {
+        return "B";
+    } else if (strcmp(type_str, "BH_UINT16")==0) {
+        return "S";
+    } else if (strcmp(type_str, "BH_UINT32")==0) {
+        return "I";
+    } else if (strcmp(type_str, "BH_UINT64")==0) {
+        return "L";
+    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
+        return "h";
+    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
+        return "f";
+    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
+        return "d";
+    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
+        return "c";
+    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
+        return "C";
+    } else {
+        return "UNKNOWN";
+    }
+}
+
+const char* typestr_to_ctype(const char* type_str)
+{
+    if (strcmp("BH_BOOL", type_str)==0) {
+        return "unsigned char";
+    } else if (strcmp("BH_INT8", type_str)==0) {
+        return "int8_t";
+    } else if (strcmp("BH_INT16", type_str)==0) {
+        return "int16_t";
+    } else if (strcmp(type_str, "BH_INT32")==0) {
+        return "int32_t";
+    } else if (strcmp(type_str, "BH_INT64")==0) {
+        return "int64_t";
+    } else if (strcmp(type_str, "BH_UINT8")==0) {
+        return "uint8_t";
+    } else if (strcmp(type_str, "BH_UINT16")==0) {
+        return "uint16_t";
+    } else if (strcmp(type_str, "BH_UINT32")==0) {
+        return "uint32_t";
+    } else if (strcmp(type_str, "BH_UINT64")==0) {
+        return "uint64_t";
+    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
+        return "uint16_t";
+    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
+        return "float";
+    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
+        return "double";
+    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
+        return "complex float";
+    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
+        return "complex double";
+    } else {
+        return "UNKNOWN";
+    }
 }
 
 const char* bhtype_to_ctype(bh_type type)
@@ -116,13 +187,45 @@ const char* bhtype_to_shorthand(bh_type type)
     }
 }
 
+const char* cexpr(bh_opcode opcode)
+{
+     switch(opcode) {
+        case BH_ADD_REDUCE:
+            return "%s += %s";
+
+        // Binary elementwise: ADD, MULTIPLY...
+        case BH_ADD:
+            return "%s + %s";
+        case BH_SUBTRACT:
+            return "%s - %s";
+        case BH_MULTIPLY:
+            return "%s * %s";
+        case BH_DIVIDE:
+            return "%s / %s";
+        case BH_POWER:
+            return "pow(%s, %s)";
+        case BH_LESS_EQUAL:
+            return "%s <= %s";
+        case BH_EQUAL:
+            return "%s == %s";
+
+        case BH_SQRT:
+            return "sqrt(%s)";
+        case BH_IDENTITY:
+            return "%s";
+
+        default:
+            return "__UNKNOWN__";
+    }   
+}
+
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
         case BH_ADD_REDUCE:
             return "*a0_current += *tmp_current";
         case BH_MULTIPLY_REDUCE:
-            return "*a0_current *= *a1_current";
+            return "*a0_current *= *tmp_current";
         case BH_MINIMUM_REDUCE:
             return "*a0_current = *a0_current < *tmp_current ? *a0_current : *tmp_current";
         case BH_MAXIMUM_REDUCE:
@@ -135,6 +238,11 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "*a0_current = *a0_current || *tmp_current";
         case BH_BITWISE_OR_REDUCE:
             return "*a0_current |= *tmp_current";
+
+        case BH_LOGICAL_XOR_REDUCE:
+            return "*a0_current = !*a0_current != !*tmp_current";
+        case BH_BITWISE_XOR_REDUCE:
+            return "*a0_current = *a0_current ^ *tmp_current";
 
         // Binary elementwise: ADD, MULTIPLY...
         case BH_ADD:
@@ -249,6 +357,62 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
         default:
             return "__UNKNOWN__";
     }
+}
+
+
+std::string const_as_string(bh_constant constant)
+{
+    std::ostringstream buff;
+    switch(constant.type) {
+        case BH_BOOL:
+            buff << constant.value.bool8;
+            break;
+        case BH_INT8:
+            buff << constant.value.int8;
+            break;
+        case BH_INT16:
+            buff << constant.value.int16;
+            break;
+        case BH_INT32:
+            buff << constant.value.int32;
+            break;
+        case BH_INT64:
+            buff << constant.value.int64;
+            break;
+        case BH_UINT8:
+            buff << constant.value.uint8;
+            break;
+        case BH_UINT16:
+            buff << constant.value.uint16;
+            break;
+        case BH_UINT32:
+            buff << constant.value.uint32;
+            break;
+        case BH_UINT64:
+            buff << constant.value.uint64;
+            break;
+        case BH_FLOAT16:
+            buff << constant.value.float16;
+            break;
+        case BH_FLOAT32:
+            buff << constant.value.float32;
+            break;
+        case BH_FLOAT64:
+            buff << constant.value.float64;
+            break;
+        case BH_COMPLEX64:
+            buff << constant.value.complex64.real << constant.value.complex64.imag;
+            break;
+        case BH_COMPLEX128:
+            buff << constant.value.complex128.real << constant.value.complex128.imag;
+            break;
+
+        case BH_UNKNOWN:
+        default:
+            buff << "__ERROR__";
+    }
+
+    return buff.str();
 }
 
 

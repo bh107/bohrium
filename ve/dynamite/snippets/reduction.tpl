@@ -1,3 +1,4 @@
+{{#license}}
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -17,6 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+{{/license}}
+{{#include}}
 #include "assert.h"
 #include "stdarg.h"
 #include "string.h"
@@ -37,6 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef DYNAMITE_MISC
 #define DYNAMITE_MAXDIM 16
 #endif
+{{/include}}
 
 /*
 int reduction(
