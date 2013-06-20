@@ -398,7 +398,7 @@ bh_error bh_graph_parse(bh_ir* bhir)
             if (write_it != writemap.end())
                 rightDep = write_it->second;
 
-            if (leftDep != INVALID_NODE)
+            if (leftDep != INVALID_NODE && leftDep != selfNode)
             {
                 if (bh_grap_node_add_child(bhir, leftDep, selfNode) != BH_SUCCESS)
                 {
@@ -407,7 +407,7 @@ bh_error bh_graph_parse(bh_ir* bhir)
                 }
             }
             
-            if (rightDep != INVALID_NODE && rightDep != leftDep)
+            if (rightDep != INVALID_NODE && rightDep != leftDep && rightDep != selfNode)
             {
                 if (bh_grap_node_add_child(bhir, rightDep, selfNode) != BH_SUCCESS)
                 {
@@ -737,6 +737,12 @@ bh_error bh_grap_node_insert_before(bh_ir* bhir, bh_node_index self, bh_node_ind
  */
 bh_error bh_grap_node_add_child(bh_ir* bhir, bh_node_index self, bh_node_index newchild)
 {
+    if (self == newchild)
+    {
+        printf("Self appending");
+        return BH_ERROR;
+    }
+    
     if (NODE_LOOKUP(self).left_child == INVALID_NODE)
     {
         NODE_LOOKUP(self).left_child = newchild;
