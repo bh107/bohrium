@@ -159,6 +159,7 @@ void ResourceManager::calcLocalShape()
     localShape1D.push_back(lsx);
     lsx = STD_MIN(32UL,maxWorkItemSizes[0]);
     size_t lsy = STD_MIN(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
+    lsy /= 2;
 #ifdef DEBUG
     std::cout << "ResourceManager.localShape2D[" << lsx << ", " << lsy << "]" << std::endl;
 #endif
@@ -170,6 +171,7 @@ void ResourceManager::calcLocalShape()
         lsy <<= 1;
     lsy = STD_MIN(lsy,maxWorkItemSizes[1]);
     size_t lsz = STD_MIN(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
+    lsz /= 2;
 #ifdef DEBUG
     std::cout << "ResourceManager.localShape3D[" << lsx << ", " << lsy << ", " << lsz << "]" << std::endl;
 #endif
