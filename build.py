@@ -167,9 +167,6 @@ if __name__ == "__main__":
                   ("VE-SIMPLE", "ve/simple", True),\
                   ("VE-NAIVE", "ve/naive", True),\
                   ("VE-DYNAMITE", "ve/dynamite", False),\
-                  ("VE-TILE", "ve/tile", False),\
-                  ("VE-SCORE", "ve/score", False),\
-                  ("VE-MCORE", "ve/mcore", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
                   ("NumCIL", "bridge/NumCIL", False),\
