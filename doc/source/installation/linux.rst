@@ -1,11 +1,15 @@
-Python on Linux
----------------
+Linux
+-----
 
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
+
+Python / NumPy
+~~~~~~~~~~~~~~
+
 You need to install all packages required to build NumPy::
-  
-  sudo apt-get build-dep python-numpy  
+
+  sudo apt-get build-dep python-numpy
 
 And some additional packages::
 
@@ -13,17 +17,17 @@ And some additional packages::
   sudo pip install breathe numpydoc
 
 Download and extract the source code::
-  
+
   wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
   tar -xzf bohrium-v0.1.tgz
 
 Build and install::
-  
+
   cd bohrium-v0.1
   make
   make install
 
-.. note:: The installation will prompt you for the installation path. 
+.. note:: The installation will prompt you for the installation path.
           The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
@@ -40,7 +44,7 @@ The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
   export LD_LIBRARY_PATH="<install dir>:$LD_LIBRARY_PATH"
   #Example
   export LD_LIBRARY_PATH="$HOME/.local:$LD_LIBRARY_PATH"
-  
+
 Now the basic installation should work. Try running the NumPy test suite::
 
   python test/numpy/numpytest.py
@@ -63,32 +67,31 @@ And you should see a result similar to this::
   Testing test_views.py/flatten/flatten
   ************************ Finish ************************
 
-Mono on Linux
--------------
+Mono / .NET
+~~~~~~~~~~~
 
 You need to install some packages used by the build process::
-  
+
   sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev
 
 The Mono libraries require some additional packages::
 
-  sudo apt-get install mono-devel 
+  sudo apt-get install mono-devel
   #This minimal version should work too:
-  #sudo apt-get install mono-xbuild mono-dmcs libmono2.0-cil 
+  #sudo apt-get install mono-xbuild mono-dmcs libmono2.0-cil
 
 Download and extract the source code::
-  
+
   wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
   tar -xzf bohrium-v0.1.tgz
 
 Build and install::
-  
+
   cd bohrium-v0.1
   make
   make install
 
-.. note:: The installation will prompt you for the installation path. 
-          The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
+.. note:: The installation will prompt you for the installation path.
 
 The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
 
@@ -99,7 +102,7 @@ The NumCIL libraries are installed in your install dir, together with the docume
    gacutil -i /opt/bohrium/NumCIL.dll
    gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
    gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
-   
+
 To use the Bohrium extensions, you need to make sure the LD_LIBRARY_PATH is also set::
 
   export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
@@ -110,7 +113,7 @@ You can now try an example and test the installation::
 
   xbuild /property:Configuration=Release test/CIL/Unittest.sln
   mono test/CIL/UnitTest/bin/Release/UnitTest.exe
-  
+
 And you should see a result similar to this::
 
    Running basic tests
@@ -120,9 +123,9 @@ And you should see a result similar to this::
    ...
    Running benchmark tests - Bohrium
    benchmark tests: 0,44233
-   
+
 C++
----
+~~~
 
 ...
 
@@ -159,3 +162,22 @@ Once downloaded, install the SDK with the following commands::
   sudo ldconfig
 
 You should now have everything you need to utilize the GPU engine.
+
+
+MPI / Cluster Engine
+~~~~~~~~~~~~~~~~~~~~
+
+In order to utilize a computer clusters, you need to install mpich2::
+
+  sudo apt-get install mpich2
+
+And execute using mpi::
+
+  mpiexec -np 1 <user application> : -np 3 <install dir>/bh_vem_cluster_slave
+
+Where one process executes the user application and multiple processes executes the slave binary from the installation directory.
+
+For example, the following utilize eight cluster nodes::
+
+  mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
+
