@@ -14,7 +14,7 @@ OBJ=bh_ve_dynamite.o
 
 INSTALLDIR?=/opt/bohrium/
 
-all: $(LIB) precompiler
+all: $(LIB) precompiler kernel
 
 %.o: %.c $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
@@ -24,6 +24,9 @@ all: $(LIB) precompiler
 
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
+
+kernel: kernel.cpp
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh -lrt -ldl $(LCFLAGS) $(CFLAGS) 
 
 precompiler: precompiler.cpp
 	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lexplain -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS) 
