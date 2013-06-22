@@ -16,22 +16,17 @@ type = vem
 impl = /opt/bohrium/libbh_ve_print.so
 type = ve
 
-[simple]
-impl = /opt/bohrium/libbh_ve_simple.so
-type = ve
-
-[tile]
-impl = /opt/bohrium/libbh_ve_tile.so
-type = ve
-
 [naive]
 impl = /opt/bohrium/libbh_ve_naive.so
+type = ve
+
+[simple]
+impl = /opt/bohrium/libbh_ve_simple.so
 type = ve
 
 [dynamite]
 impl = /opt/bohrium/libbh_ve_dynamite.so
 type = ve
-#
 compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="gcc -lm -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
@@ -39,14 +34,6 @@ compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 object_path=/opt/bohrium/dynamite/objects
 kernel_path=/opt/bohrium/dynamite/kernels
 snippet_path=/opt/bohrium/dynamite/snippets
-
-[score]
-impl = /opt/bohrium/libbh_ve_score.so
-type = ve
-
-[mcore]
-impl = /opt/bohrium/libbh_ve_mcore.so
-type = ve
 
 [gpu]
 impl = /opt/bohrium/libbh_ve_gpu.so

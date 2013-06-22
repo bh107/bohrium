@@ -4,7 +4,7 @@ Mac OSX
 The following explains how to get going on Mac OSX. Bohrium and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install Bohrium.
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/technologies/tools/>`_ from Apple and the following packages from MacPorts::
-  
+
  sudo port install python27
 
 If you also want to build the Mono libraries, you also need the Mono package::
@@ -14,21 +14,21 @@ If you also want to build the Mono libraries, you also need the Mono package::
 .. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
 
 Download and extract the source code::
-  
+
   wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
   tar -xzf bohrium-v0.1.tgz
 
 When building and install Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
-  
+
   cd bohrium-v0.1
   make BH_PYTHON=python2.7
   make install BH_PYTHON=python2.7
 
-.. note:: The installation will prompt you for the installation path. 
+.. note:: The installation will prompt you for the installation path.
           The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
-Python/NumPy installation
-~~~~~~~~~~~~~~~~~~~
+Python / NumPy
+~~~~~~~~~~~~~~
 You need to set the ``PYTHONPATH`` and the ``DYLD_LIBRARY_PATH`` environment variables.
 The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
 
@@ -41,7 +41,7 @@ The ``DYLD_LIBRARY_PATH`` should include the path to the installation directory:
   export DYLD_LIBRARY_PATH=<install dir>:$DYLD_LIBRARY_PATH
   #Example
   export DYLD_LIBRARY_PATH=/opt/bohrium:$DYLD_LIBRARY_PATH
-  
+
 Now the basic installation should work. Try running the NumPy test suite::
 
   python2.7 test/numpy/numpytest.py
@@ -64,8 +64,8 @@ And you should see a result similar to this::
     Testing test_views.py/flatten/flatten
     ************************ Finish ************************
 
-Mono installation
-~~~~~~~~~~~~~~~~~~~
+Mono / .NET
+~~~~~~~~~~~
 The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
 
    gacutil -i <install dir>/NumCIL.dll
@@ -75,7 +75,7 @@ The NumCIL libraries are installed in your install dir, together with the docume
    gacutil -i /opt/bohrium/NumCIL.dll
    gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
    gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
-   
+
 To use the Bohrium extensions, you need to make sure the DYLD_LIBRARY_PATH is also set::
 
   export DYLD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
@@ -86,7 +86,7 @@ You can now try an example and test the installation::
 
   xbuild /property:Configuration=Release test/CIL/Unittest.sln
   mono test/CIL/UnitTest/bin/Release/UnitTest.exe
-  
+
 And you should see a result similar to this::
 
    Running basic tests
