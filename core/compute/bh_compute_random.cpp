@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_compute.h>
+#include <bh_vcache.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <time.h>
@@ -190,10 +191,12 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
     bh_array *ary = a->operand[0];
     bh_intp size = bh_nelements(ary->ndim, ary->shape);
     bh_array *base = bh_base_array(ary);
+    bh_error res = BH_SUCCESS;
 
-    //Make sure that the array memory is allocated.
-    if(bh_data_malloc(ary) != BH_SUCCESS)
-        return BH_OUT_OF_MEMORY;	
+    res = bh_vcache_malloc_op(ary); // Make sure that the output array is allocated.
+    if (res != BH_SUCCESS) {
+        return res;
+    }
 
     rk_state state;
     rk_initseed(&state);
