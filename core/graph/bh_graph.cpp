@@ -974,7 +974,7 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
             else
                 opcodename = bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(node).instruction).opcode);
                 
-            fs << T << "_" << node << " [shape=box style=" << style << " fillcolor=\"" << color << "\" label=\"" << T << "_" << node << " - " << opcodename << "\"];" << std::endl;
+            fs << T << "_" << node << " [shape=box style=\"" << style << "\" fillcolor=\"" << color << "\" label=\"" << T << "_" << node << " - " << opcodename << "\"];" << std::endl;
         }
         else if (NODE_LOOKUP(node).type == BH_COLLECTION)
         {
