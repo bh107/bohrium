@@ -942,14 +942,9 @@ bh_error bh_graph_print_from_instructions(bh_ir* bhir, const char* filename)
  */
 bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
 {
-    hashmap<bh_node_index, bh_intp, hash_bh_intp> nameTable;
-    hashmap<bh_node_index, bh_intp, hash_bh_intp>::iterator it;
-    
     std::ofstream fs(filename);
   
     fs << "digraph {" << std::endl;
-
-    bh_intp lastName = 0L;
 
     for(bh_node_index node = 0; node < bhir->nodes->count; node++)
     {
@@ -983,33 +978,13 @@ bh_error bh_graph_print_graph(bh_ir* bhir, const char* filename)
     
         if (NODE_LOOKUP(node).left_child != INVALID_NODE)
         {
-            const char T2 = NODE_LOOKUP(NODE_LOOKUP(node).left_child).type == BH_INSTRUCTION ? 'I' : 'C';
-            bh_intp childName;
-            it = nameTable.find(NODE_LOOKUP(node).left_child);
-            if (it == nameTable.end())
-            {
-                childName = lastName++;
-                nameTable[NODE_LOOKUP(node).left_child] = childName;
-            } 
-            else
-                childName = it->second;
- 
-            fs << T << "_" << node << " -> " << T2 << "_" << childName << ";" << std::endl;
+            const char T2 = NODE_LOOKUP(NODE_LOOKUP(node).left_child).type == BH_INSTRUCTION ? 'I' : 'C'; 
+            fs << T << "_" << node << " -> " << T2 << "_" << NODE_LOOKUP(node).left_child << ";" << std::endl;
         }
         if (NODE_LOOKUP(node).right_child != INVALID_NODE)
         {
             const char T2 = NODE_LOOKUP(NODE_LOOKUP(node).right_child).type == BH_INSTRUCTION ? 'I' : 'C';
-            bh_intp childName;
-            it = nameTable.find(NODE_LOOKUP(node).right_child);
-            if (it == nameTable.end())
-            {
-                childName = lastName++;
-                nameTable[NODE_LOOKUP(node).right_child] = childName;
-            } 
-            else
-                childName = it->second;
- 
-            fs << T << "_" << node << " -> " << T2 << "_" << childName << ";" << std::endl;
+            fs << T << "_" << node << " -> " << T2 << "_" << NODE_LOOKUP(node).right_child << ";" << std::endl;
         }
     }
 
