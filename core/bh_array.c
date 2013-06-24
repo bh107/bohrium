@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -51,13 +51,6 @@ bh_error bh_create_array(bh_array*   base,
     memcpy(ary->shape, shape, ndim * sizeof(bh_index));
     memcpy(ary->stride, stride, ndim * sizeof(bh_index));
 
-#ifdef BH_TRACE
-    fprintf(stderr, "Created array %lld", ary);
-    if (ary->base != NULL)
-        fprintf(stderr, " -> %lld", ary->base);
-    fprintf(stderr, "\n");
-#endif
-    
     *new_array = ary;
     return BH_SUCCESS;
 }

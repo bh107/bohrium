@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -63,15 +63,15 @@ bh_error bh_vem_node_init(bh_component *self)
     vem_node_myself = self;
 
     err = bh_component_children(self, &children_count, &vem_node_components);
-    if (children_count != 1) 
+    if (children_count != 1)
     {
 		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
 		return BH_ERROR;
     }
-    
+
     if (err != BH_SUCCESS)
 	    return err;
-    
+
     ve_init = vem_node_components[0]->init;
     ve_execute = vem_node_components[0]->execute;
     ve_shutdown = vem_node_components[0]->shutdown;
@@ -114,7 +114,7 @@ bh_error bh_vem_node_shutdown(void)
             fprintf(stderr, "[NODE-VEM] Warning %ld arrays were not discarded "
                             "on exit (only showing the array IDs because the "
                             "array list may be corrupted due to reuse of array structs):\n", s);
-            for(std::set<bh_array*>::iterator it=allocated_arys.begin(); 
+            for(std::set<bh_array*>::iterator it=allocated_arys.begin();
                 it != allocated_arys.end(); ++it)
             {
                 fprintf(stderr, "array id: %p\n", *it);
@@ -122,11 +122,11 @@ bh_error bh_vem_node_shutdown(void)
         }
     }
     bh_timing_dump_all();
-    
+
     #ifdef BH_TIMING
         printf("Number of elements executed: %ld\n", total_execution_size);
     #endif
-    
+
     return err;
 }
 
@@ -143,7 +143,7 @@ bh_error bh_vem_node_shutdown(void)
 bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
 {
 	bh_error e;
-    
+
     if(*id == 0)//Only if parent didn't set the ID.
         *id = ++userfunc_count;
 
@@ -169,17 +169,14 @@ bh_error bh_vem_node_execute(bh_intp count,
         return BH_SUCCESS;
 
     bh_uint64 start = bh_timing();
-    
+
     for(bh_intp i=0; i<count; ++i)
     {
         bh_instruction* inst = &inst_list[i];
-        #ifdef BH_TRACE
-            bh_component_trace_inst(vem_node_myself, inst);
-        #endif
         int nop = bh_operands_in_instruction(inst);
         bh_array **operands = bh_inst_operands(inst);
 
-        //Save all new arrays 
+        //Save all new arrays
         for(bh_intp o=0; o<nop; ++o)
         {
             if(operands[o] != NULL)
@@ -201,11 +198,11 @@ bh_error bh_vem_node_execute(bh_intp count,
             // Check that we are not discarding a base that still has views.
             if(ary->base == NULL)
             {
-                for(std::set<bh_array*>::iterator it=allocated_arys.begin(); 
+                for(std::set<bh_array*>::iterator it=allocated_arys.begin();
                     it != allocated_arys.end(); ++it)
                 {
                     if ((*it)->base == ary) {
-                        fprintf(stderr, 
+                        fprintf(stderr,
                                 "[NODE-VEM] discarding base (%p) that "
                                 "still has view(%p).\n", ary, *it);
                         return BH_ERROR;
@@ -215,7 +212,7 @@ bh_error bh_vem_node_execute(bh_intp count,
             if(allocated_arys.erase(ary) != 1) {
                 fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
             }
-        }               
+        }
     }
 
 //    bh_pprint_instr_list(inst_list, count, "NODE");

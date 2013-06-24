@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -81,7 +81,7 @@ typedef bh_error (*bh_reg_func)(const char *fun,
 /* User-defined function implementation.
  *
  * @arg Argument for the user-defined function implementation
- * @ve_arg Additional argument that can be added by the VE to accomidate 
+ * @ve_arg Additional argument that can be added by the VE to accomidate
  *         the specific implementation
  * @return Error codes (BH_SUCCESS)
  */
@@ -114,7 +114,7 @@ struct bh_component_struct
 
 /* Setup the root component, which normally is the bridge.
  *
- * @name The name of the root component. If NULL "bridge" 
+ * @name The name of the root component. If NULL "bridge"
          will be used.
  * @return The root component in the configuration.
  */
@@ -165,15 +165,7 @@ DLLEXPORT bh_error bh_component_get_func(bh_component *self, char *func,
  */
 DLLEXPORT bh_error bh_component_trace_array(bh_component *self, bh_array *ary);
 
-/* Trace an instruction.
- *
- * @self The component.
- * @inst  The instruction to trace.
- * @return Error code (BH_SUCCESS).
- */
-DLLEXPORT bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst);
-
-/* Look up a key in the config file 
+/* Look up a key in the config file
  *
  * @component The component.
  * @key       The key to lookup in the config file
