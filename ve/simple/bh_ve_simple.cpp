@@ -34,19 +34,18 @@ static bh_intp vcache_size   = 10;
 bh_error bh_ve_simple_init(bh_component *self)
 {
     myself = self;
-
-    char *env = getenv("BH_CORE_VCACHE_SIZE");     // Override block_size from environment-variable.
-    if(env != NULL)
-    {
+    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Get environment var
+    if (env != NULL) {
         vcache_size = atoi(env);
     }
-    if(vcache_size <= 0)                        // Verify it
-    {
-        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
+    if (vcache_size < 0) {                          // Verify it
+        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) is invalid; "
+                        "Use n>0 to set its size and n=0 to disable.\n",
+                        (long int)vcache_size);
         return BH_ERROR;
     }
 
-    bh_vcache_init( vcache_size );
+    bh_vcache_init(vcache_size);
     return BH_SUCCESS;
 }
 
@@ -57,52 +56,40 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
     bh_error res = BH_SUCCESS;
 
     for (count=0; count < instruction_count; count++) {
-
         inst = &instruction_list[count];
-        
-        res = bh_vcache_malloc( inst );          // Allocate memory for operands
-        if ( res != BH_SUCCESS ) {
-            printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_simple_execute()\n");
-            return res;
-        }
-                                                    
         switch (inst->opcode) {                     // Dispatch instruction
 
-            case BH_NONE:                        // NOOP.
+            case BH_NONE:                           // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
             	res = BH_SUCCESS;
                 break;
                 
-            case BH_FREE:                        // Store data-pointer in malloc-cache
-                res = bh_vcache_free( inst );
+            case BH_FREE:                           // Free memory
+                res = bh_vcache_free(inst);
                 break;
             
-            case BH_USERFUNC:                    // External libraries
-
+            case BH_USERFUNC:                       // External libraries
                 if(inst->userfunc->id == random_impl_id) {
-
                     res = random_impl(inst->userfunc, NULL);
-
                 } else if(inst->userfunc->id == matmul_impl_id) {
-
                     res = matmul_impl(inst->userfunc, NULL);
-
                 } else if(inst->userfunc->id == nselect_impl_id) {
-
                     res = nselect_impl(inst->userfunc, NULL);
-
                 } else {                            // Unsupported userfunc
-                
                     res = BH_USERFUNC_NOT_SUPPORTED;
-
                 }
-
                 break;
 
             default:                            // Built-in operations
-                res = bh_compute_apply( inst );
-
+                if (bh_base_array(inst->operand[0])->data == NULL) { // Allocate memory
+                    res = bh_vcache_malloc(inst);
+                }
+                if (res != BH_SUCCESS) {
+                    printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_naive_execute()\n");
+                    break;
+                }
+                res = bh_compute_apply(inst);   // Compute!
         }
 
         if (res != BH_SUCCESS) {    // Instruction failed
@@ -114,11 +101,12 @@ bh_error bh_ve_simple_execute( bh_intp instruction_count, bh_instruction* instru
 	return res;
 }
 
-bh_error bh_ve_simple_shutdown( void )
+bh_error bh_ve_simple_shutdown(void)
 {
-    // De-allocate the malloc-cache
-    bh_vcache_clear();
-    bh_vcache_delete();
+    if (vcache_size>0) {
+        bh_vcache_clear();  // De-allocate vcache
+        bh_vcache_delete();
+    }
 
     return BH_SUCCESS;
 }
@@ -180,17 +168,17 @@ bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id)
     return BH_USERFUNC_NOT_SUPPORTED;
 }
 
-bh_error bh_random( bh_userfunc *arg, void* ve_arg)
+bh_error bh_random(bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_random( arg, ve_arg );
 }
 
-bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
+bh_error bh_matmul(bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_matmul( arg, ve_arg );
 }
 
-bh_error bh_nselect( bh_userfunc *arg, void* ve_arg)
+bh_error bh_nselect(bh_userfunc *arg, void* ve_arg)
 {
-    return bh_compute_nselect( arg, ve_arg );
+    return bh_compute_nselect(arg, ve_arg);
 }

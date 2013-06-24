@@ -34,7 +34,7 @@ static bh_intp vcache_size   = 10;
 bh_error bh_ve_naive_init(bh_component *self)
 {
     myself = self;
-    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
+    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Get environment var
     if (env != NULL) {
         vcache_size = atoi(env);
     }
@@ -57,7 +57,6 @@ bh_error bh_ve_naive_execute(bh_intp instruction_count,
     bh_error res = BH_SUCCESS;
 
     for (count=0; count < instruction_count; count++) {
-
         inst = &instruction_list[count];
         #ifdef DEBUG
         bh_pprint_instr(inst);
@@ -93,7 +92,7 @@ bh_error bh_ve_naive_execute(bh_intp instruction_count,
                     printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_naive_execute()\n");
                     break;
                 }
-                res = bh_compute_apply_naive( inst );               // Compute!
+                res = bh_compute_apply_naive(inst);               // Compute!
         }
 
         if (res != BH_SUCCESS) {    // Instruction failed
