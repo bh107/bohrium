@@ -323,7 +323,9 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
 
                 nelements = bh_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
                 if (nelements < 1024*1024) {        // Do not bother threading...
-                    res = bh_compute_apply_naive( inst );
+                    res = bh_compute_apply_naive(inst);
+                } else if (inst->operand[0]->shape[inst->operand[0]->ndim-1] < 100) {
+                    res = bh_compute_apply_naive(inst);
                 } else {                            // DO bother!
                     res = dispatch(inst, nelements);
                 }
