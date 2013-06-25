@@ -20,6 +20,14 @@ type = ve
 impl = /opt/bohrium/libbh_ve_cpu.so
 type = ve
 
+[tiling]
+impl = /opt/bohrium/libbh_ve_tiling.so
+type = ve
+
+[mcore]
+impl = /opt/bohrium/libbh_ve_mcore.so
+type = ve
+
 [dynamite]
 impl = /opt/bohrium/libbh_ve_dynamite.so
 type = ve
