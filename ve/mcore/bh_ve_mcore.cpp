@@ -45,10 +45,7 @@ static bh_intp fft2_impl_id = 0;
 //Forward definition of the function
 bh_error bh_reduce_impl( bh_userfunc *arg, void* ve_arg );
 
-//static bh_intp bh_ve_mcore_buffersizes = 0;
-//static computeloop* bh_ve_mcore_compute_loops = NULL;
-//static bh_tstate_naive* bh_ve_mcore_tstates = NULL;
-
+static bh_intp vcache_size = 10;
 static bh_intp block_size = 1000;
                                                         //
                                                         // MULTICORE datastructures and variables
@@ -77,23 +74,16 @@ static void* job(void *worker_arg)
     worker_data_t *my_job = (worker_data_t*)worker_arg;     // Grab the thread argument
 
     DEBUG_PRINT("Worker %d - Started.\n", my_job->id);
-
-    while( true ) {
-
+    while(true) {
         sync_res = pthread_barrier_wait( &work_start );     // Wait for work
         if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
             DEBUG_PRINT("Worker %d - Error waiting for work! [ERRNO: %d]\n", my_job->id, sync_res);
         }
-
     
-        if ( my_job->instr != NULL ) {                      // Got a job
-
-            if ( my_job->instr->opcode == BH_USERFUNC ) {      // userfunc
-
-                bh_compute_apply_naive( my_job->instr );
-
+        if (my_job->instr != NULL) {                        // Got a job
+            if (my_job->instr->opcode == BH_USERFUNC) {     // userfunc <--- wtf?
+                bh_compute_apply_naive(my_job->instr);
             } else {                                        // built-in
-
                 DEBUG_PRINT("Worker %d - Got a job...\n", my_job->id);
                 (*my_job->loop)(my_job->instr, my_job->state, my_job->nelements);
                 DEBUG_PRINT("Worker %d - Is done!\n", my_job->id);
@@ -101,16 +91,12 @@ static void* job(void *worker_arg)
                 if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
                     DEBUG_PRINT("Worker %d - Error synchronizing...\n", my_job->id);
                 }
-
             }
-
         } else {                                            // EXIT!
             DEBUG_PRINT("Worker %d - An exit job...\n", my_job->id);
             break;
         }
-    
     }
-
     DEBUG_PRINT("Worker %d - Exiting.\n", my_job->id);
 
     return NULL;
@@ -123,6 +109,18 @@ bh_error bh_ve_mcore_init(bh_component *self)
     int i;
     bh_error res = BH_SUCCESS;
     myself = self;                              // Assign config container.
+
+    env = getenv("BH_CORE_VCACHE_SIZE");    // VCACHE size
+    if (NULL != env) {
+        vcache_size = atoi(env);
+    }
+    if (vcache_size < 0) {
+        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) is invalid; "
+                        "Use n>0 to set its size and n=0 to disable.\n",
+                        (long int)vcache_size);
+        return BH_ERROR;
+    }
+    bh_vcache_init(vcache_size);
 
     env = getenv("BH_VE_MCORE_BLOCKSIZE");         // Override block_size from ENVVAR
     if (env != NULL) {
@@ -145,9 +143,6 @@ bh_error bh_ve_mcore_init(bh_component *self)
         fprintf(stderr,"BH_VE_MCORE_NTHREADS capped to default %i.\n", MCORE_WORKERS);
         worker_count = MCORE_WORKERS;
     }
-
-    bh_vcache_init( 10 );                            // Malloc-cache initialization
-
                                                         //
                                                         // Multicore initialization
                                                         //
@@ -164,14 +159,13 @@ bh_error bh_ve_mcore_init(bh_component *self)
 
     for(i=0; i<worker_count; i++) {                 // Worker-threads for job computation
 #ifdef _WIN32
-	worker_data[i].id = i;
-	worker_data[i].loop = NULL;
-	worker_data[i].instr = NULL;
-	worker_data[i].state = NULL;
-	worker_data[i].nelements = 0;
-	
+        worker_data[i].id = i;
+        worker_data[i].loop = NULL;
+        worker_data[i].instr = NULL;
+        worker_data[i].state = NULL;
+        worker_data[i].nelements = 0;
 #else
-        worker_data[i] = (worker_data_t){ i, NULL, NULL, NULL, 0 };
+        worker_data[i] = (worker_data_t){i, NULL, NULL, NULL, 0};
 #endif
         if (pthread_create( &worker[i], NULL, job, &worker_data[i] ) != 0) {
             res = BH_ERROR;
@@ -207,13 +201,14 @@ bh_error bh_ve_mcore_shutdown( void )
     }
     DEBUG_PRINT("Workers joined.\n");
                                                     // Cleanup syncronization primitives
-    pthread_barrier_destroy( &work_start );
-    pthread_barrier_destroy( &work_sync );
+    pthread_barrier_destroy(&work_start);
+    pthread_barrier_destroy(&work_sync);
 
     // De-allocate the malloc-cache
-    bh_vcache_clear();
-    bh_vcache_delete();
-
+    if (vcache_size>0) {
+        bh_vcache_clear();
+        bh_vcache_delete();
+    }
 
     return BH_SUCCESS;
 }
@@ -229,12 +224,12 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
     last_dim = instr->operand[0]->ndim-1;
     size     = nelements / worker_count;
 
-    for (i=0; i<worker_count;i++)       // tstate = (0, 0, 0, ..., 0)
-        bh_tstate_reset_naive( &tstates[i] );  
+    for (i=0; i<worker_count;i++) {       // tstate = (0, 0, 0, ..., 0)
+        bh_tstate_reset_naive(&tstates[i]);
+    }
     while(tstates[worker_count-1].cur_e < nelements) {
 
-        for(i=0;i<worker_count;i++) {   // Setup workers
-
+        for(i=0;i<worker_count;i++) {               // WORDER SETUP
             start   = size * i;                     // Partition input
             end     = start + size;
             if (i == worker_count-1) {              // Last worker gets the remainder
@@ -248,7 +243,6 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
             worker_data[i].instr        = instr;
             worker_data[i].state        = &tstates[i];
             worker_data[i].nelements    = end;
-
         }
                                             
         DEBUG_PRINT("Signaling work.\n");           // Then get to work!
@@ -266,11 +260,8 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
         for(i=0; i<worker_count-1;i++) {
             tstates[i] = tstates[worker_count-1];
         }
-
     }
-
     return BH_SUCCESS;
-
 }
 
 bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruction_list )
@@ -280,17 +271,15 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
     bh_index  nelements;
     bh_error res = BH_SUCCESS;
 
-    for(count=0; count < instruction_count; count++)
-    {
+    for(count=0; count < instruction_count; count++) {
         inst = &instruction_list[count];
 
-        res = bh_vcache_malloc( inst );      // Allocate memory for operands
-        if ( res != BH_SUCCESS ) {
+        res = bh_vcache_malloc(inst);     // Allocate memory for operands
+        if (res != BH_SUCCESS) {
             return res;
         }
 
-        switch(inst->opcode)                    // Dispatch instruction
-        {
+        switch(inst->opcode) {              // Dispatch instruction
             case BH_NONE:                    // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
@@ -298,71 +287,52 @@ bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruc
                 break;
 
             case BH_FREE:
-
-                res = bh_vcache_free( inst );
+                res = bh_vcache_free(inst);
                 break;
 
             case BH_ADD_REDUCE:
             case BH_MULTIPLY_REDUCE:
-            case BH_MIN_REDUCE:
-            case BH_MAX_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
             case BH_LOGICAL_AND_REDUCE:
             case BH_BITWISE_AND_REDUCE:
             case BH_LOGICAL_OR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
             case BH_LOGICAL_XOR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
-				res = bh_compute_reduce_naive( inst );
+				res = bh_compute_reduce_naive(inst);
             	break;
 
             case BH_USERFUNC:                // External libraries
-
-                if(inst->userfunc->id == random_impl_id)
-                {
+                if(inst->userfunc->id == random_impl_id) {
                     res = random_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == matmul_impl_id)
-                {
+                } else if(inst->userfunc->id == matmul_impl_id) {
                     res = matmul_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == lu_impl_id)
-                {
+                } else if(inst->userfunc->id == lu_impl_id) {
                     res = lu_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == fft_impl_id)
-                {
+                } else if(inst->userfunc->id == fft_impl_id) {
                     res = fft_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == fft2_impl_id)
-                {
+                } else if(inst->userfunc->id == fft2_impl_id) {
                     res = fft2_impl(inst->userfunc, NULL);
+                } else {
+                    res = BH_USERFUNC_NOT_SUPPORTED;// Unsupported userfunc
                 }
-                else                            // Unsupported userfunc
-                {
-                    res = BH_USERFUNC_NOT_SUPPORTED;
-                }
-
                 break;
 
             default:                            // Built-in operations
 
-                nelements   = bh_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
-
+                nelements = bh_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
                 if (nelements < 1024*1024) {        // Do not bother threading...
                     res = bh_compute_apply_naive( inst );
                 } else {                            // DO bother!
-                    res = dispatch( inst, nelements );
+                    res = dispatch(inst, nelements);
                 }
-                
         }
 
-        if (res != BH_SUCCESS)    // Instruction failed
-        {
+        if (res != BH_SUCCESS) {    // Instruction failed
             break;
         }
-
     }
-    
     return res;
 }
 
@@ -374,95 +344,6 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
 bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
 {
     return bh_compute_matmul( arg, ve_arg );    
-}
-
-
-/**
- * bh_compute_reduce
- *
- * Implementation of the user-defined funtion "reduce".
- * Note that we follow the function signature defined by bh_userfunc_impl.
- *
- * This function is functionaly equivalent to bh_compute_reduce,
- * the difference is in the implementation... it should be able to run
- * faster when utilizing multiple threads of execution.
- *
- */
-bh_error bh_reduce_impl( bh_userfunc *arg, void* ve_arg )
-{
-    bh_reduce_type *a = (bh_reduce_type *) arg;
-    bh_instruction inst;
-    bh_error err;
-    bh_intp i, j, step, axis_size;
-    bh_array *out, *in, tmp;
-    //bh_index nelements;
-
-    if (bh_operands(a->opcode) != 3) {
-        fprintf(stderr, "ERR: Reduce only support binary operations.\n");
-        return BH_ERROR;
-    }
-
-	if (bh_base_array(a->operand[1])->data == NULL) {
-        fprintf(stderr, "ERR: Reduce called with input set to null.\n");
-        return BH_ERROR;
-	}
-                                                // Make sure that the array memory is allocated.
-    if (bh_data_malloc(a->operand[0]) != BH_SUCCESS) {
-        return BH_OUT_OF_MEMORY;
-    }
-    
-    out = a->operand[0];
-    in  = a->operand[1];
-    
-    tmp         = *in;                          // Copy the input-array meta-data
-    tmp.base    = bh_base_array(in);
-    tmp.start   = in->start;
-
-    step = in->stride[a->axis];
-    j=0;
-    for(i=0; i<in->ndim; ++i) {                 // Remove the 'axis' dimension from in
-        if(i != a->axis) {
-            tmp.shape[j]    = in->shape[i];
-            tmp.stride[j]   = in->stride[i];
-            ++j;
-        }
-    }
-    if (tmp.ndim > 1) {                         // NOTE:    It just seems strange that it should
-        tmp.ndim--;                             //          be able to have 0 dimensions...
-    }
-    
-    inst.opcode = BH_IDENTITY;				 // We copy the first element to the output.
-    inst.operand[0] = out;
-    inst.operand[1] = &tmp;
-    inst.operand[2] = NULL;
-
-    //nelements   = bh_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
-    //err         = dispatch( &inst, nelements );
-    err = bh_compute_apply_naive( &inst );
-    if (err != BH_SUCCESS) {
-        return err;
-    }
-    tmp.start += step;
-
-    inst.opcode = a->opcode;                // Reduce over the 'axis' dimension.   
-    inst.operand[0] = out;					// NB: the first element is already handled.
-    inst.operand[1] = out;
-    inst.operand[2] = &tmp;
-    
-    axis_size = in->shape[a->axis];
-
-    for(i=1; i<axis_size; ++i) {                // Execute!
-        err = bh_compute_apply_naive( &inst );
-        //nelements   = bh_nelements( inst.operand[0]->ndim, inst.operand[0]->shape );
-        //err         = dispatch( &inst, nelements );
-        //err         = dispatch( &inst, nelements );
-        if (err != BH_SUCCESS) {
-            return err;
-        }
-        tmp.start += step;
-    }
-
-    return BH_SUCCESS;
 }
 
 bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
@@ -555,222 +436,5 @@ bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id) {
     
     return BH_USERFUNC_NOT_SUPPORTED;
 }
-
-
-/*
-inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end) {
-
-    bh_intp i, k, w;
-    int             sync_res;
-
-    bh_index last_dim = instr[start].operand[0]->ndim-1;
-
-    //Make sure we have enough space
-    if ((end - start + 1) > bh_ve_mcore_buffersizes) 
-    {
-    	bh_intp mcount = (end - start + 1);
-
-    	//We only work in multiples of 1000
-    	if (mcount % 1000 != 0)
-    		mcount = (mcount + 1000) - (mcount % 1000);
-
-    	//Make sure we re-allocate on error
-    	bh_ve_mcore_buffersizes = 0;
-    	
-    	if (bh_ve_mcore_compute_loops != NULL) {
-    		free(bh_ve_mcore_compute_loops);
-    		free(bh_ve_mcore_tstates);
-    		bh_ve_mcore_compute_loops = NULL;
-    		bh_ve_mcore_tstates = NULL;
-    	}
-    	
-    	bh_ve_mcore_compute_loops = (computeloop*)malloc(sizeof(computeloop) * mcount);
-        bh_ve_mcore_tstates = (bh_tstate*)malloc(sizeof(bh_tstate)*mcount);
-    	
-    	if (bh_ve_mcore_compute_loops == NULL)
-    		return BH_OUT_OF_MEMORY;
-    	if (bh_ve_mcore_tstates == NULL)
-    		return BH_OUT_OF_MEMORY;
-    	
-    	bh_ve_mcore_buffersizes = mcount;
-    }
-    
-    computeloop* compute_loops = bh_ve_mcore_compute_loops;
-    bh_tstate* states = bh_ve_mcore_tstates;
-    bh_index  nelements, trav_start=0, trav_end=0;
-    
-    for(i=0; i<=end-start;i++)                      // Reset traversal coordinates
-        bh_tstate_reset( &states[i] );
-
-    for(i=start, k=0; i <= end; i++,k++)            // Get the compute-loops
-    {
-        compute_loops[k] = bh_compute_get( &instr[i] );
-    }
-                                                    // Block-size split
-    nelements = bh_nelements( instr[start].operand[0]->ndim, instr[start].operand[0]->shape );
-
-    if (nelements < (1024)) {
-        for(i=start, k=0; i <= end; i++, k++) {
-            compute_loops[k]( &instr[i], &states[k], 0 );
-        }
-    } else {
-
-        for(i=start, k=0; i <= end; i++, k++)
-        {
-            while(nelements>trav_end)
-            {
-                trav_start  = trav_end;
-                trav_end    += block_size;
-                if (trav_end > nelements)
-                    trav_end = nelements;
-
-                for(w=0; w<worker_count; w++) {     // Setup data structures for workers
-                    states[k].coord[last_dim] = trav_start;
-
-                    worker_data[w].loop         = compute_loops[k];
-                    worker_data[w].instr        = &instr[i];
-                    worker_data[w].state        = &states[k];
-                    worker_data[w].nelements    = trav_end;
-                }
-                                                    // Signal work
-                DEBUG_PRINT("Signaling work.\n");
-                sync_res = pthread_barrier_wait( &work_start );
-                if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
-                    DEBUG_PRINT("Error when opening work-start barrier [ERRNO: %d\n", sync_res);
-                }
-                                                    // Wait for them to finish
-                DEBUG_PRINT("Waiting for workers.\n");
-                sync_res = pthread_barrier_wait( &work_sync );
-                if (!(sync_res == 0 || sync_res == PTHREAD_BARRIER_SERIAL_THREAD)) {
-                    DEBUG_PRINT("Error when opening the work-sync barrier [ERRNO: %d\n", sync_res);
-                }
-
-            }
-        }
-    }
-
-    for(i=start; i <= end; i++)                     // Set instruction status
-    {
-        instr[i].status = BH_SUCCESS;
-    }
-    
-    return BH_SUCCESS;
-
-}
-
-bh_error bh_ve_mcore_execute( bh_intp instruction_count, bh_instruction* instruction_list )
-{
-    bh_intp cur_index, nops, i, j;
-    bh_instruction *inst, *binst;
-
-    bh_intp bin_start, bin_end, bin_size;
-    bh_intp bundle_start, bundle_end, bundle_size;
-
-    for(cur_index=0; cur_index < instruction_count; cur_index++)
-    {
-        inst = &instruction_list[cur_index];
-
-        if(inst->status == BH_SUCCESS)       // SKIP instruction
-        {
-            continue;
-        }
-
-        nops = bh_operands(inst->opcode);    // Allocate memory for operands
-        for(i=0; i<nops; i++)
-        {
-            if (!bh_is_constant(inst->operand[i]))
-            {
-                if (bh_data_malloc(inst->operand[i]) != BH_SUCCESS)
-                {
-                    return BH_OUT_OF_MEMORY; // EXIT
-                }
-            }
-
-        }
-
-        switch(inst->opcode)                    // Dispatch instruction
-        {
-            case BH_NONE:                    // NOOP.
-            case BH_DISCARD:
-            case BH_SYNC:
-                inst->status = BH_SUCCESS;
-                break;
-
-            case BH_USERFUNC:                // External libraries
-
-                if(inst->userfunc->id == reduce_impl_id)
-                {
-                    inst->status = reduce_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == random_impl_id)
-                {
-                    inst->status = random_impl(inst->userfunc, NULL);
-                }
-                else if(inst->userfunc->id == matmul_impl_id)
-                {
-                    inst->status = matmul_impl(inst->userfunc, NULL);
-                }
-                else                            // Unsupported userfunc
-                {
-                    inst->status = BH_USERFUNC_NOT_SUPPORTED;
-                }
-
-                break;
-
-            default:                                            // Built-in operations
-                                                                // -={[ BINNING ]}=-
-                bin_start   = cur_index;                        // Count built-ins and their start/end indexes and allocate memory for them.
-                bin_end     = cur_index;
-                for(j=bin_start+1; j<instruction_count; j++)    
-                {
-                    binst = &instruction_list[j];               // EXIT: Stop if instruction is NOT built-in
-                    if ((binst->opcode == BH_NONE) || (binst->opcode == BH_DISCARD) || (binst->opcode == BH_SYNC) ||(binst->opcode == BH_USERFUNC) ) {
-                        break;
-                    }
-
-                    bin_end++;                                  // The "end" index
-
-                    nops = bh_operands(binst->opcode);       // The memory part...
-                    for(i=0; i<nops; i++)
-                    {
-                        if (!bh_is_constant(binst->operand[i]))
-                        {
-                            if (bh_data_malloc(binst->operand[i]) != BH_SUCCESS)
-                            {
-                                return BH_OUT_OF_MEMORY;     // EXIT
-                            }
-                        }
-
-                    }
-
-                }
-                bin_size = bin_end - bin_start +1;              // The counting part
-
-                                                                // -={[ BUNDLING ]}=-
-                bundle_size     = (bin_size > 1) ? bh_inst_bundle( instruction_list, bin_start, bin_end ) : 1;
-                bundle_start    = bin_start;
-                bundle_end      = bundle_start + bundle_size-1;
-
-                block_execute( instruction_list, bundle_start, bundle_end );
-                cur_index += bundle_size-1;
-        }
-
-        if (inst->status != BH_SUCCESS)    // Instruction failed
-        {
-            break;
-        }
-
-    }
-
-    if (cur_index == instruction_count) {
-        return BH_SUCCESS;
-    } else {
-        return BH_PARTIAL_SUCCESS;
-    }
-
-}
-
-
-*/
 
 #endif /*_POSIX_BARRIERS <= 0*/
