@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -28,11 +28,11 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-/** Print a bh_array.
+/* Pretty print an array.
  *
- * @param array The array to print.
+ * @view  The array view in question
  */
-DLLEXPORT void bh_pprint_array( bh_array *array );
+DLLEXPORT void bh_pprint_array( bh_view *view );
 
 /** Print a single bh_instruction.
  *
@@ -41,7 +41,7 @@ DLLEXPORT void bh_pprint_array( bh_array *array );
 DLLEXPORT void bh_pprint_instr( bh_instruction *instr );
 
 /** Print a list of bh_instructions, prefixes with text.
- * 
+ *
  * @param instruction_list List of instructions to print.
  * @param instruction_count Number of bh_instruction in list.
  * @param txt String to prefix the printed output.
@@ -49,7 +49,7 @@ DLLEXPORT void bh_pprint_instr( bh_instruction *instr );
 DLLEXPORT void bh_pprint_instr_list( bh_instruction* instruction_list, bh_intp instruction_count, const char* txt );
 
 /** Print a bundle of bh_instructions.
- * 
+ *
  * @param instruction_count Number of instruction in list.
  * @param instruction_list Array of instructions.
  */

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -46,6 +46,14 @@ extern "C" {
 #include <stddef.h>
 #include <stdbool.h>
 #endif
+
+/* Find the base array for a given view
+ *
+ * @view   The view in question
+ * @return The Base array
+ */
+#define bh_base_array(view) (view->base)
+
 
 /* Reduce nDarray info to a base shape
  *
@@ -88,13 +96,12 @@ DLLEXPORT bool bh_is_continuous(bh_intp ndim,
 DLLEXPORT bh_index bh_nelements(bh_intp ndim,
                             const bh_index shape[]);
 
-
-/* Size of the array data
+/* Size of the view data
  *
- * @array    The array in question
- * @return   The size of the array data in bytes
+ * @view    The view in question
+ * @return  The size of the view data in bytes
  */
-DLLEXPORT bh_index bh_array_size(const bh_array *array);
+DLLEXPORT bh_index bh_view_size(const bh_view *view);
 
 
 /* Calculate the offset into an array based on element index
@@ -122,12 +129,12 @@ DLLEXPORT void bh_dimbound(bh_intp ndim,
                     bh_index dimbound[BH_MAXDIM]);
 
 
-/* Set the array stride to contiguous row-major
+/* Set the view stride to contiguous row-major
  *
- * @array    The array in question
- * @return   The total number of elements in array
+ * @view    The view in question
+ * @return  The total number of elements in view
  */
-bh_intp bh_set_contiguous_stride(bh_array *array);
+DLLEXPORT bh_intp bh_set_contiguous_stride(bh_view *view);
 
 
 /* Number of operands for operation
@@ -176,7 +183,7 @@ DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
  */
 DLLEXPORT bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh_type inputtype2, bh_type constanttype);
 
-/* Determines if the types are acceptable for the operation, 
+/* Determines if the types are acceptable for the operation,
  * and provides a suggestion for converting them
  *
  * @opcode Opcode for operation
@@ -212,55 +219,45 @@ DLLEXPORT const char* bh_type_text(bh_type type);
  */
 DLLEXPORT const char* bh_error_text(bh_error error);
 
-
-/* Find the base array for a given array/view
- *
- * @view   Array/view in question
- * @return The Base array
- */
-DLLEXPORT bh_array* bh_base_array(const bh_array* view);
-
-/* Set the data pointer for the array.
+/* Set the data pointer for the view.
  * Can only set to non-NULL if the data ptr is already NULL
  *
- * @array The array in question
- * @data The new data pointer
+ * @view   The view in question
+ * @data   The new data pointer
  * @return Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_set(bh_array* array, bh_data_ptr data);
+DLLEXPORT bh_error bh_data_set(bh_view* view, bh_data_ptr data);
 
-/* Get the data pointer for the array.
+/* Get the data pointer for the view.
  *
- * @array The array in question
- * @result Output area
- * @return Error code (BH_SUCCESS, BH_ERROR)
+ * @view    The view in question
+ * @result  Output data pointer
+ * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_get(bh_array* array, bh_data_ptr* result);
+DLLEXPORT bh_error bh_data_get(bh_view* view, bh_data_ptr* result);
 
-/* Allocate data memory for the given array if not already allocated.
- * If @array is a view, the data memory for the base array is allocated.
- * NB: It does NOT initiate the memory.
- * For convenience array is allowed to be NULL.
+/* Allocate data memory for the given view if not already allocated.
+ * For convenience, the view is allowed to be NULL.
  *
- * @array  The array in question
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @view    The view in question
+ * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_data_malloc(bh_array* array);
+DLLEXPORT bh_error bh_data_malloc(bh_view* view);
 
-/* Frees data memory for the given array.
- * For convenience array is allowed to be NULL.
+/* Frees data memory for the given view.
+ * For convenience, the view is allowed to be NULL.
  *
- * @array  The array in question
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @view    The view in question
+ * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_free(bh_array* array);
+DLLEXPORT bh_error bh_data_free(bh_view* view);
 
 /* Retrive the operands of a instruction.
  *
  * @instruction  The instruction in question
  * @return The operand list
  */
-DLLEXPORT bh_array **bh_inst_operands(const bh_instruction *instruction);
+DLLEXPORT bh_view **bh_inst_operands(const bh_instruction *instruction);
 
 /* Retrive the operand type of a instruction.
  *
@@ -271,47 +268,45 @@ DLLEXPORT bh_array **bh_inst_operands(const bh_instruction *instruction);
 DLLEXPORT bh_type bh_type_operand(const bh_instruction *instruction,
                                         bh_intp operand_no);
 
-/* Determines whether two arrays overlap.
- * NB: This functions may return True on non-overlapping arrays. 
- *     But will always return False on overlapping arrays.
- * 
- * @a The first array
- * @b The second array
- * @return The boolean answer
- */
-bool bh_array_overlap(const bh_array *a, const bh_array *b);
-
-
-/* Determines whether the array is a scalar or a broadcast view of a scalar.
+/* Determines whether two views overlap.
+ * NB: This functions may return True on non-overlapping views.
+ *     But will always return False on overlapping views.
  *
- * @a The array
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_scalar(const bh_array *array);
+DLLEXPORT bool bh_view_overlap(const bh_view *a, const bh_view *b);
+
+/* Determines whether the view is a scalar or a broadcast view of a scalar.
+ *
+ * @view The view
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_is_scalar(const bh_view* view);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_constant(const bh_array* o);
+DLLEXPORT bool bh_is_constant(const bh_view* o);
 
 /* Determines whether the two views are the same
  *
- * @a The first array
- * @b The second array
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_same_view(const bh_array* a, const bh_array* b);
+DLLEXPORT bool bh_same_view(const bh_view* a, const bh_view* b);
 
-/* Determines whether two array(views)s access some of the same data points
+/* Determines whether two views access some of the same data points
  *
- * @a The first array
- * @b The second array
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_disjoint_views(const bh_array *a, const bh_array *b);
-
+DLLEXPORT bool bh_disjoint_views(const bh_view *a, const bh_view *b);
 
 #ifdef __cplusplus
 }

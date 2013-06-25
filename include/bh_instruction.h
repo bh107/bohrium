@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -47,14 +47,14 @@ extern "C" {
 
     Array of operands (outputs before inputs)
     The macro argument 'nop' specifies the total number of operands
-    bh_array*   operand[nop];
+    bh_view*   operand[nop];
 */
 #define BH_USER_FUNC_HEADER(nop) \
     bh_intp     id;              \
     bh_intp     nout;            \
     bh_intp     nin;             \
     bh_intp     struct_size;     \
-    bh_array*   operand[nop];    \
+    bh_view*    operand[nop];    \
 
 //The base type for user-defined functions.
 typedef struct
@@ -68,7 +68,7 @@ typedef struct
     //Opcode: Identifies the operation
     bh_opcode  opcode;
     //Id of each operand
-    bh_array*  operand[BH_MAX_NO_OPERANDS];
+    bh_view*  operand[BH_MAX_NO_OPERANDS];
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
     //Points to the user-defined function when the opcode is BH_USERFUNC.

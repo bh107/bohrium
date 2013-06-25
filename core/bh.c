@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -99,16 +99,15 @@ bh_index bh_nelements(bh_intp ndim,
     return res;
 }
 
-/* Size of the array data
+/* Size of the view data
  *
- * @array    The array in question
- * @return   The size of the array data in bytes
+ * @view    The view in question
+ * @return  The size of the view data in bytes
  */
-bh_index bh_array_size(const bh_array *array)
+bh_index bh_view_size(const bh_view *view)
 {
-    const bh_array *b = bh_base_array(array);
-    return bh_nelements(b->ndim, b->shape) * 
-           bh_type_size(b->type);
+    return bh_nelements(view->ndim, view->shape) *
+           bh_type_size(view->type);
 }
 
 /* Calculate the dimention boundries for shape
@@ -128,18 +127,18 @@ void bh_dimbound(bh_intp ndim,
     }
 }
 
-/* Set the array stride to contiguous row-major
+/* Set the view stride to contiguous row-major
  *
- * @array    The array in question
- * @return   The total number of elements in array
+ * @view    The view in question
+ * @return  The total number of elements in view
  */
-bh_intp bh_set_contiguous_stride(bh_array *array)
+bh_intp bh_set_contiguous_stride(bh_view *view)
 {
     bh_intp s = 1;
-    for(bh_intp i=array->ndim-1; i >= 0; --i)
-    {    
-        array->stride[i] = s;
-        s *= array->shape[i];
+    for(bh_intp i=view->ndim-1; i >= 0; --i)
+    {
+        view->stride[i] = s;
+        s *= view->shape[i];
     }
     return s;
 }
@@ -170,42 +169,24 @@ bh_index bh_calc_offset(bh_intp ndim,
     return offset;
 }
 
-/* Find the base array for a given array/view
- *
- * @view   Array/view in question
- * @return The Base array
- */
-bh_array* bh_base_array(const bh_array* view)
-{
-    if(view->base == NULL)
-    {
-        return (bh_array*)view;
-    }
-    else
-    {
-        assert(view->base->base == NULL);
-        return view->base;
-    }
-}
-
-/* Set the data pointer for the array.
+/* Set the data pointer for the view.
  * Can only set to non-NULL if the data ptr is already NULL
  *
- * @array The array in question
- * @data The new data pointer
+ * @view   The view in question
+ * @data   The new data pointer
  * @return Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_set(bh_array* array, bh_data_ptr data)
+bh_error bh_data_set(bh_view* view, bh_data_ptr data)
 {
-    bh_array* base;
+    bh_base* base;
 
-    if(array == NULL)
+    if(view == NULL)
     {
-        fprintf(stderr, "Attempt to set data pointer for a null array\n");
+        fprintf(stderr, "Attempt to set data pointer for a null view\n");
         return BH_ERROR;
     }
 
-    base = bh_base_array(array);
+    base = bh_base_array(view);
 
     if(base->data != NULL && data != NULL)
     {
@@ -218,53 +199,54 @@ bh_error bh_data_set(bh_array* array, bh_data_ptr data)
     return BH_SUCCESS;
 }
 
-/* Get the data pointer for the array.
+/* Get the data pointer for the view.
  *
- * @array The array in question
- * @result Output area
- * @return Error code (BH_SUCCESS, BH_ERROR)
+ * @view    The view in question
+ * @result  Output data pointer
+ * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_get(bh_array* array, bh_data_ptr* result)
+bh_error bh_data_get(bh_view* view, bh_data_ptr* result)
 {
-    bh_array* base;
+    bh_view* base;
 
-    if(array == NULL)
+    if(view == NULL)
     {
-        fprintf(stderr, "Attempt to get data pointer for a null array\n");
+        fprintf(stderr, "Attempt to get data pointer for a null view\n");
         return BH_ERROR;
     }
 
-    base = bh_base_array(array);
+    base = bh_base_array(view);
 
     *result = base->data;
 
     return BH_SUCCESS;
 }
 
-/* Allocate data memory for the given array if not already allocated.
- * If @array is a view, the data memory for the base array is allocated.
- * NB: It does NOT initiate the memory.
- * For convenience array is allowed to be NULL.
+/* Allocate data memory for the given view if not already allocated.
+ * For convenience, the view is allowed to be NULL.
  *
- * @array  The array in question
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @view    The view in question
+ * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-bh_error bh_data_malloc(bh_array* array)
+bh_error bh_data_malloc(bh_view* view)
 {
     bh_intp bytes;
-    bh_array* base;
+    bh_view* base;
 
-    if(array == NULL)
+    if(view == NULL)
         return BH_SUCCESS;
 
-    base = bh_base_array(array);
+    base = bh_base_array(view);
 
     if(base->data != NULL)
         return BH_SUCCESS;
 
-    bytes = bh_array_size(base);
-    if(bytes <= 0)
+    bytes = bh_base_size(view);
+    if(bytes == 0)//We allow zero sized arrays.
         return BH_SUCCESS;
+
+    if(bytes < 0)
+        return BH_ERROR;
 
     base->data = bh_memory_malloc(bytes);
     if(base->data == NULL)
@@ -278,26 +260,26 @@ bh_error bh_data_malloc(bh_array* array)
     return BH_SUCCESS;
 }
 
-/* Frees data memory for the given array.
- * For convenience array is allowed to be NULL.
+/* Frees data memory for the given view.
+ * For convenience, the view is allowed to be NULL.
  *
- * @array  The array in question
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @view    The view in question
+ * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_free(bh_array* array)
+bh_error bh_data_free(bh_view* view)
 {
     bh_intp bytes;
-    bh_array* base;
+    bh_base* base;
 
-    if(array == NULL)
+    if(view == NULL)
         return BH_SUCCESS;
 
-    base = bh_base_array(array);
+    base = bh_base_array(view);
 
     if(base->data == NULL)
         return BH_SUCCESS;
 
-    bytes = bh_array_size(base);
+    bytes = bh_base_size(view);
 
     if(bh_memory_free(base->data, bytes) != 0)
     {
@@ -316,12 +298,12 @@ bh_error bh_data_free(bh_array* array)
  * @instruction  The instruction in question
  * @return The operand list
  */
-bh_array **bh_inst_operands(const bh_instruction *instruction)
+bh_view **bh_inst_operands(const bh_instruction *instruction)
 {
     if (instruction->opcode == BH_USERFUNC)
-        return (bh_array **) instruction->userfunc->operand;
+        return (bh_view **) instruction->userfunc->operand;
     else
-        return (bh_array **) instruction->operand;
+        return (bh_view **) instruction->operand;
 }
 
 
@@ -334,8 +316,8 @@ bh_array **bh_inst_operands(const bh_instruction *instruction)
 bh_type bh_type_operand(const bh_instruction *instruction,
                               bh_intp operand_no)
 {
-    bh_array **operands = bh_inst_operands(instruction);
-    bh_array *operand = operands[operand_no];
+    bh_view **operands = bh_inst_operands(instruction);
+    bh_view *operand = operands[operand_no];
 
     if (bh_is_constant(operand))
         return instruction->constant.type;
@@ -343,15 +325,15 @@ bh_type bh_type_operand(const bh_instruction *instruction,
         return operand->type;
 }
 
-/* Determines whether two arrays overlap.
- * NB: This functions may return True on non-overlapping arrays. 
- *     But will always return False on overlapping arrays.
- * 
- * @a The first array
- * @b The second array
+/* Determines whether two views overlap.
+ * NB: This functions may return True on non-overlapping views.
+ *     But will always return False on overlapping views.
+ *
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-bool bh_array_overlap(const bh_array *a, const bh_array *b)
+bool bh_view_overlap(const bh_view *a, const bh_view *b)
 {
     if(a == NULL || b == NULL)
         return false;
@@ -376,19 +358,19 @@ bool bh_array_overlap(const bh_array *a, const bh_array *b)
         return true;
     if(b->start <= a_end && a_end < b_end)
         return true;
-    
+
     return false;
 }
 
-/* Determines whether the array is a scalar or a broadcast view of a scalar.
+/* Determines whether the view is a scalar or a broadcast view of a scalar.
  *
- * @array The array
+ * @view The view
  * @return The boolean answer
  */
-bool bh_is_scalar(const bh_array* array)
+bool bh_is_scalar(const bh_view* view)
 {
-    return (bh_base_array(array)->ndim == 0) ||
-        (bh_base_array(array)->ndim == 1 && bh_base_array(array)->shape[0] == 1);
+    return (bh_base_array(view)->ndim == 0) ||
+        (bh_base_array(view)->ndim == 1 && bh_base_array(view)->shape[0] == 1);
 }
 
 /* Determines whether the operand is a constant
@@ -396,26 +378,26 @@ bool bh_is_scalar(const bh_array* array)
  * @o The operand
  * @return The boolean answer
  */
-bool bh_is_constant(const bh_array* o)
+bool bh_is_constant(const bh_view* o)
 {
     return (o == NULL);
 }
 
 /* Determines whether the two views are the same
  *
- * @a The first array
- * @b The second array
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-bool bh_same_view(const bh_array* a, const bh_array* b)
+bool bh_same_view(const bh_view* a, const bh_view* b)
 {
     if (a == b)
         return true;
     if (bh_base_array(a) != bh_base_array(b))
         return false;
-    if (memcmp(((char*)a)+sizeof(bh_array*),
-               ((char*)b)+sizeof(bh_array*),
-               sizeof(bh_array)-sizeof(bh_array*)-sizeof(bh_data_ptr)))
+    if (memcmp(((char*)a)+sizeof(bh_view*),
+               ((char*)b)+sizeof(bh_view*),
+               sizeof(bh_view)-sizeof(bh_view*)-sizeof(bh_data_ptr)))
         return false;
     return true;
 }
@@ -432,15 +414,15 @@ inline int gcd(int a, int b)
     }
     return b;
 }
-/* Determines whether two array(views)s access some of the same data points
+/* Determines whether two views access some of the same data points
  *
- * @a The first array
- * @b The second array
+ * @a The first view
+ * @b The second view
  * @return The boolean answer
  */
-bool bh_disjoint_views(const bh_array *a, const bh_array *b)
+bool bh_disjoint_views(const bh_view *a, const bh_view *b)
 {
-    if (a == NULL || b == NULL) // One is a constant 
+    if (a == NULL || b == NULL) // One is a constant
         return true;
     if(bh_base_array(a) != bh_base_array(b)) //different base
         return true;
