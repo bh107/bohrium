@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -31,7 +31,7 @@ typedef char BYTE;
 // These are legacy
 
 template <typename T, typename Instr>
-bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_index axis, bh_opcode opcode )
+bh_error bh_compute_reduce_any_naive( bh_view* op_out, bh_view* op_in, bh_index axis, bh_opcode opcode )
 {
     Instr opcode_func;                          // Functor-pointer
                                                 // Data pointers
@@ -56,12 +56,11 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
 
     } else {                                    // ND general case
 
-        bh_array tmp;                        // Copy the input-array meta-data
-        bh_instruction instr; 
+        bh_view tmp;                        // Copy the input-array meta-data
+        bh_instruction instr;
         bh_error err;
 
         tmp.base    = bh_base_array(op_in);
-        tmp.type    = op_in->type;
         tmp.ndim    = op_in->ndim-1;
         tmp.start   = op_in->start;
 
@@ -72,8 +71,7 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
                 ++j;
             }
         }
-        tmp.data = op_in->data;
-       
+
         instr.opcode = BH_IDENTITY;       // Copy the first element to the output.
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
@@ -92,7 +90,7 @@ bh_error bh_compute_reduce_any_naive( bh_array* op_out, bh_array* op_in, bh_inde
         instr.operand[0] = op_out;               // NB: the first element is already handled.
         instr.operand[1] = op_out;
         instr.operand[2] = &tmp;
-        
+
         for(i=1; i<nelements; ++i) {
             // TODO: use traverse directly
             //err = traverse_aaa<T, T, T, Instr>( instr );
@@ -115,11 +113,11 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
 
     bh_index axis = inst->constant.value.int64;
     bh_opcode opcode;
-    bh_array *op_out = inst->operand[0];
-    bh_array *op_in  = inst->operand[1];
+    bh_view *op_out = inst->operand[0];
+    bh_view *op_in  = inst->operand[1];
 
     assert(op_out != NULL);
-    
+
     switch (inst->opcode)
     {
         case BH_ADD_REDUCE:
@@ -155,7 +153,7 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
-    
+
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
@@ -167,16 +165,16 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
         return BH_ERROR;
 	}
 
-    if (op_in->type != op_out->type) {
+    if (op_in->base->type != op_out->base->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
         return BH_ERROR;
     }
 
-    long int poly = opcode + (op_in->type << 8);
+    long int poly = opcode + (op_in->base->type << 8);
 
     switch(poly) {
-    
+
         case BH_ADD + (BH_BOOL << 8):
             return bh_compute_reduce_any_naive<bh_bool, add_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_ADD + (BH_COMPLEX128 << 8):
@@ -335,7 +333,7 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
             return bh_compute_reduce_any_naive<bh_uint8, bitwise_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
-            
+
             return BH_ERROR;
 
     }
@@ -345,7 +343,7 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
 // These are the future
 
 template <typename T, typename Instr>
-bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis, bh_opcode opcode )
+bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, bh_opcode opcode )
 {
     Instr opcode_func;                          // Functor-pointer
                                                 // Data pointers
@@ -354,7 +352,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 
     bh_index nelements   = op_in->shape[axis];
     bh_index i, j;
-    
+
     bh_index el_size = sizeof(T);
 
     if (op_in->ndim == 1) {                     // 1D special case
@@ -370,7 +368,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 		bh_index fulls = (nelements - 1) / 4;
 		bh_index remainder = (nelements - 1) % 4;
 
-		for (i = 0; i < fulls; i++) { 
+		for (i = 0; i < fulls; i++) {
 			opcode_func( data_out, data_out, ((T*)src) );
 			src += stride;
 			opcode_func( data_out, data_out, ((T*)src) );
@@ -379,7 +377,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 			src += stride;
 			opcode_func( data_out, data_out, ((T*)src) );
 			src += stride;
-		} 
+		}
 
 		switch (remainder) {
 			case 3:
@@ -392,22 +390,21 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 				opcode_func( data_out, data_out, ((T*)src) );
 				src += stride;
 		}
-        
-	/* 
+
+	/*
 	} else if (op_in->ndim == 2) {			// 2D General case
 
 		Experiments show that the general case is almost as fast as
 		 an optimized 2D version
 	*/
-    
+
     } else {                                    // ND general case
 
-        bh_array tmp;                        // Copy the input-array meta-data
-        bh_instruction instr; 
+        bh_view tmp;                        // Copy the input-array meta-data
+        bh_instruction instr;
         bh_error err;
 
         tmp.base    = bh_base_array(op_in);
-        tmp.type    = op_in->type;
         tmp.ndim    = op_in->ndim-1;
         tmp.start   = op_in->start;
 
@@ -418,8 +415,7 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
                 ++j;
             }
         }
-        tmp.data = op_in->data;
-       
+
         instr.opcode = BH_IDENTITY;					// Copy the first element to the output.
         instr.operand[0] = op_out;
         instr.operand[1] = &tmp;
@@ -445,9 +441,9 @@ bh_error bh_compute_reduce_any( bh_array* op_out, bh_array* op_in, bh_index axis
 
 		void* out_start = state.start[0];
 		void* tmp_start = state.start[2];
-        
+
         for(i=1; i<nelements; ++i) {
-						
+
             err = traverse_aaa<T, T, T, Instr>(&instr, &state);
             if (err != BH_SUCCESS) {
                 return err;
@@ -473,11 +469,11 @@ bh_error bh_compute_reduce(bh_instruction *inst)
 
     bh_index axis = inst->constant.value.int64;
     bh_opcode opcode;
-    bh_array *op_out = inst->operand[0];
-    bh_array *op_in  = inst->operand[1];
+    bh_view *op_out = inst->operand[0];
+    bh_view *op_in  = inst->operand[1];
 
     assert(op_out != NULL);
-    
+
     switch (inst->opcode)
     {
         case BH_ADD_REDUCE:
@@ -513,7 +509,7 @@ bh_error bh_compute_reduce(bh_instruction *inst)
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
-    
+
                                                         //  Sanity checks.
     if (bh_operands(opcode) != 3) {
         fprintf(stderr, "ERR: opcode: %lld is not a binary ufunc, hence it is not suitable for reduction.\n", (long long int)opcode);
@@ -525,16 +521,16 @@ bh_error bh_compute_reduce(bh_instruction *inst)
         return BH_ERROR;
 	}
 
-    if (op_in->type != op_out->type) {
+    if (op_in->base->type != op_out->base->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
         return BH_ERROR;
     }
 
-    long int poly = opcode + (op_in->type << 8);
+    long int poly = opcode + (op_in->base->type << 8);
 
     switch(poly) {
-    
+
         case BH_ADD + (BH_BOOL << 8):
             return bh_compute_reduce_any<bh_bool, add_functor<bh_bool, bh_bool, bh_bool > >( op_out, op_in, axis, opcode );
         case BH_ADD + (BH_COMPLEX128 << 8):
@@ -693,7 +689,7 @@ bh_error bh_compute_reduce(bh_instruction *inst)
             return bh_compute_reduce_any<bh_uint8, bitwise_xor_functor<bh_uint8, bh_uint8, bh_uint8 > >( op_out, op_in, axis, opcode );
 
         default:
-            
+
             return BH_ERROR;
 
     }

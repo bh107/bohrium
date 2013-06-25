@@ -116,7 +116,9 @@ static void bh_sprint_array( bh_view *op, char buf[] ) {
 
             }
         }
-                                            // Text of base-operand
+
+        /*
+        // Text of base-operand
         if (op->base != NULL) {
             bh_sprint_array( op->base, tmp );
             sprintf( base, "%p -->\n      %s\n", op->base, tmp  );
@@ -128,6 +130,8 @@ static void bh_sprint_array( bh_view *op, char buf[] ) {
                 op, (int)op->ndim, (int)op->start, shape, stride,
                 bh_type_text(op->type), op->data, base
         );
+
+        */
 
     }
 

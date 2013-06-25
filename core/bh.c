@@ -99,15 +99,14 @@ bh_index bh_nelements(bh_intp ndim,
     return res;
 }
 
-/* Size of the view data
+/* Size of the base array in bytes
  *
- * @view    The view in question
- * @return  The size of the view data in bytes
+ * @base    The base in question
+ * @return  The size of the base array in bytes
  */
-bh_index bh_view_size(const bh_view *view)
+bh_index bh_base_size(const bh_base *base)
 {
-    return bh_nelements(view->ndim, view->shape) *
-           bh_type_size(view->type);
+    return base->nelem * bh_type_size(base->type);
 }
 
 /* Calculate the dimention boundries for shape
@@ -207,7 +206,7 @@ bh_error bh_data_set(bh_view* view, bh_data_ptr data)
  */
 bh_error bh_data_get(bh_view* view, bh_data_ptr* result)
 {
-    bh_view* base;
+    bh_base* base;
 
     if(view == NULL)
     {
@@ -231,7 +230,7 @@ bh_error bh_data_get(bh_view* view, bh_data_ptr* result)
 bh_error bh_data_malloc(bh_view* view)
 {
     bh_intp bytes;
-    bh_view* base;
+    bh_base* base;
 
     if(view == NULL)
         return BH_SUCCESS;
@@ -241,7 +240,7 @@ bh_error bh_data_malloc(bh_view* view)
     if(base->data != NULL)
         return BH_SUCCESS;
 
-    bytes = bh_base_size(view);
+    bytes = bh_base_size(base);
     if(bytes == 0)//We allow zero sized arrays.
         return BH_SUCCESS;
 
@@ -279,7 +278,7 @@ bh_error bh_data_free(bh_view* view)
     if(base->data == NULL)
         return BH_SUCCESS;
 
-    bytes = bh_base_size(view);
+    bytes = bh_base_size(base);
 
     if(bh_memory_free(base->data, bytes) != 0)
     {
@@ -322,7 +321,7 @@ bh_type bh_type_operand(const bh_instruction *instruction,
     if (bh_is_constant(operand))
         return instruction->constant.type;
     else
-        return operand->type;
+        return bh_base_array(operand)->type;
 }
 
 /* Determines whether two views overlap.
@@ -362,15 +361,14 @@ bool bh_view_overlap(const bh_view *a, const bh_view *b)
     return false;
 }
 
-/* Determines whether the view is a scalar or a broadcast view of a scalar.
+/* Determines whether the base array is a scalar.
  *
  * @view The view
  * @return The boolean answer
  */
 bool bh_is_scalar(const bh_view* view)
 {
-    return (bh_base_array(view)->ndim == 0) ||
-        (bh_base_array(view)->ndim == 1 && bh_base_array(view)->shape[0] == 1);
+    return bh_base_array(view)->nelem == 1;
 }
 
 /* Determines whether the operand is a constant

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,7 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <set>
 
-typedef bh_array* bh_array_ptr;
+typedef bh_view* bh_view_ptr;
+typedef bh_base* bh_base_ptr;
 
 /**
  * Determines whether two operands are aligned.
@@ -39,18 +40,18 @@ typedef bh_array* bh_array_ptr;
  * @return True when aligned, false when they are not.
  *
  */
-inline bool ops_aligned( bh_array_ptr op_l, bh_array_ptr op_r) {
+inline bool ops_aligned( bh_view_ptr op_l, bh_view_ptr op_r) {
 
     if ((op_l->ndim != op_r->ndim) || (op_l->start != op_r->start)) // Check dim and start
     {
         return false;                                               // Incompatible dim or start
 
     } else {
-                                                                    
+
         for(bh_intp i=0; i < op_l->ndim; i++)                    // Check shape and stride
         {
             if ((op_l->stride[i] != op_r->stride[i]) || (op_l->shape[i] != op_r->shape[i]))
-            {                                                       
+            {
                 return false;                                       // Incompatible shape or stride
             }
         }
@@ -77,26 +78,27 @@ inline bool ops_aligned( bh_array_ptr op_l, bh_array_ptr op_r) {
 bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_intp base_max)
 {
 
-    std::multimap<bh_array_ptr, bh_array_ptr> ops;            // Operands in kernel
-    std::multimap<bh_array_ptr, bh_array_ptr> ops_out;        // Output-operands in kernel
-    std::multimap<bh_array_ptr, bh_array_ptr>::iterator it;   // it / ret = Iterators
-    std::pair< 
-        std::multimap<bh_array_ptr, bh_array_ptr>::iterator, 
-        std::multimap<bh_array_ptr, bh_array_ptr>::iterator
+    std::multimap<bh_base_ptr, bh_view_ptr> ops;            // Operands in kernel
+    std::multimap<bh_base_ptr, bh_view_ptr> ops_out;        // Output-operands in kernel
+    std::multimap<bh_base_ptr, bh_view_ptr>::iterator it;   // it / ret = Iterators
+    std::pair<
+        std::multimap<bh_base_ptr, bh_view_ptr>::iterator,
+        std::multimap<bh_base_ptr, bh_view_ptr>::iterator
     > ret;
 
-    std::pair<std::set<bh_array_ptr>::iterator, bool> base_ret;
-    std::set<bh_array_ptr> bases; // List of distinct bases seen so far.
-    int base_count = 0;             // How many distinct bases seen to far
-    //int base_max = 5;               // Max amount of bases in bundle
-                                    // This will be made parameterizable
-    
-    bool do_fuse = true;                                            // Loop invariant
-    bh_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
-                                                                    // incremented on each iteration
+    std::pair<std::set<bh_base_ptr>::iterator, bool> base_ret;
+    std::set<bh_base_ptr> bases; // List of distinct bases seen so far.
+    int base_count = 0;          // How many distinct bases seen to far
+    //int base_max = 5;          // Max amount of bases in bundle
+                                 // This will be made parameterizable
 
-    int opcount = 0;                                                // Per-instruction variables
-    bh_array_ptr op, base;                                       // re-assigned on each iteration.
+    bool do_fuse = true;                                         // Loop invariant
+    bh_intp bundle_len = 0;                                      // Number of cons. bundl. instr.
+                                                                 // incremented on each iteration
+
+    int opcount = 0;                                             // Per-instruction variables
+    bh_view_ptr op;                                              // re-assigned on each iteration.
+    bh_base_ptr base;
     bh_index nelements = 0;                                      // Get the number of elements
     for(bh_intp i=start; i<= end; i++) {
          switch(insts[i].opcode) {
@@ -107,7 +109,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
                 continue;
         }
         nelements = bh_nelements( insts[i].operand[0]->ndim, insts[i].operand[0]->shape );
-    }    
+    }
 
     for(bh_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
     {
@@ -138,7 +140,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
                 break;
             }
         }
-                                                                    
+
         for(int j=1; ((do_fuse) && (j<opcount)); j++)               // Look at the input-operands
         {
             op = insts[i].operand[j];
@@ -166,8 +168,8 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
             op      = insts[i].operand[0];                          // Add operand(s) to "kernel"
             base    = bh_base_array( op );                       //
                                                                     // - output operand
-            ops.insert(     std::pair<bh_array_ptr, bh_array_ptr>( base, op ) );
-            ops_out.insert( std::pair<bh_array_ptr, bh_array_ptr>( base, op ) );
+            ops.insert(     std::pair<bh_base_ptr, bh_view_ptr>( base, op ) );
+            ops_out.insert( std::pair<bh_base_ptr, bh_view_ptr>( base, op ) );
 
             base_ret = bases.insert( base );                        // Update base count
             if (base_ret.second) {
@@ -182,7 +184,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
                     break;
                 }
                 base    = bh_base_array( op );
-                ops.insert( std::pair<bh_array_ptr, bh_array_ptr>( base, op ) );
+                ops.insert( std::pair<bh_base_ptr, bh_view_ptr>( base, op ) );
 
                 base_ret = bases.insert( base );                    // Update base count
                 if (base_ret.second) {
@@ -190,8 +192,8 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
                 }
 
             }
-            
-            do_fuse = base_count <= base_max;                       // Check whether we break base-threshold 
+
+            do_fuse = base_count <= base_max;                       // Check whether we break base-threshold
 
         }
 

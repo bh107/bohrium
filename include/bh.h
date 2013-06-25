@@ -86,7 +86,6 @@ DLLEXPORT bool bh_is_continuous(bh_intp ndim,
                          const bh_index shape[],
                          const bh_index stride[]);
 
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
@@ -96,13 +95,12 @@ DLLEXPORT bool bh_is_continuous(bh_intp ndim,
 DLLEXPORT bh_index bh_nelements(bh_intp ndim,
                             const bh_index shape[]);
 
-/* Size of the view data
+/* Size of the base array in bytes
  *
- * @view    The view in question
- * @return  The size of the view data in bytes
+ * @base    The base in question
+ * @return  The size of the base array in bytes
  */
-DLLEXPORT bh_index bh_view_size(const bh_view *view);
-
+bh_index bh_base_size(const bh_base *base);
 
 /* Calculate the offset into an array based on element index
  *
@@ -278,7 +276,7 @@ DLLEXPORT bh_type bh_type_operand(const bh_instruction *instruction,
  */
 DLLEXPORT bool bh_view_overlap(const bh_view *a, const bh_view *b);
 
-/* Determines whether the view is a scalar or a broadcast view of a scalar.
+/* Determines whether the base array is a scalar.
  *
  * @view The view
  * @return The boolean answer

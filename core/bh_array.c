@@ -40,7 +40,7 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
     base->data = NULL;
     *new_base = base;
 
-    return BH_SUCCESS:
+    return BH_SUCCESS;
 }
 
 
@@ -71,7 +71,7 @@ bh_error bh_create_view(bh_base*   base,
     memcpy(view->shape, shape, ndim * sizeof(bh_index));
     memcpy(view->stride, stride, ndim * sizeof(bh_index));
 
-    *new_array = ary;
+    *new_view = view;
     return BH_SUCCESS;
 }
 
