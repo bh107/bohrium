@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-#include "bh_ve_naive.h"
 #include <bh_vcache.h>
+#include "bh_ve_cpu.h"
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -29,73 +29,100 @@ static bh_intp matmul_impl_id = 0;
 static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
 
-static bh_intp vcache_size   = 10;
+static bh_intp vcache_size = 10;
+static bh_cpu_traverser traverse_method = FRUIT_LOOPS;
 
-bh_error bh_ve_naive_init(bh_component *self)
+bh_error bh_ve_cpu_init(bh_component *self)
 {
+    char *env;
     myself = self;
-    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Get environment var
-    if (env != NULL) {
+
+    env = getenv("BH_CORE_VCACHE_SIZE");    // VCACHE size
+    if (NULL != env) {
         vcache_size = atoi(env);
     }
-    if (vcache_size < 0) {                          // Verify it
+    if (vcache_size < 0) {
         fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) is invalid; "
                         "Use n>0 to set its size and n=0 to disable.\n",
                         (long int)vcache_size);
         return BH_ERROR;
     }
 
+    env = getenv("BH_VE_CPU_TRAVERSAL");    // Traversal method
+    if (NULL != env) {
+        if (strcmp("fruit_loops", env) == 0) {
+            traverse_method = FRUIT_LOOPS; 
+        } else if (strcmp("naive", env) == 0) {
+            traverse_method = NAIVE;
+        } else {
+            fprintf(stderr, "BH_VE_CPU_TRAVERSAL (%s) is invalid; "
+                            "Reverting to default.\n", env);
+        }
+    }
+
     bh_vcache_init(vcache_size);
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_naive_execute(bh_intp instruction_count,
-                             bh_instruction* instruction_list)
+bh_error bh_ve_cpu_execute(bh_intp instruction_count,
+                           bh_instruction* instruction_list)
 {
     bh_intp count;
-    bh_instruction* inst;
+    bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
-    for (count=0; count < instruction_count; count++) {
-        inst = &instruction_list[count];
+    for (count=0; count<instruction_count; count++) {
+        instr = &instruction_list[count];
         #ifdef DEBUG
-        bh_pprint_instr(inst);
+        bh_pprint_instr(instr);
         #endif
                                                     
-        switch (inst->opcode) {                 // Dispatch instruction
+        switch (instr->opcode) {                // Dispatch instruction
             case BH_NONE:                       // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
                 res = BH_SUCCESS;
                 break;
             case BH_FREE:                       // Store data-pointer in vcache
-                res = bh_vcache_free(inst);
+                res = bh_vcache_free(instr);
                 break;
 
             case BH_USERFUNC:                   // External libraries
-                if (inst->userfunc->id == random_impl_id) {
-                    res = random_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == matmul_impl_id) {
-                    res = matmul_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == nselect_impl_id) {
-                    res = nselect_impl(inst->userfunc, NULL);
+                if (instr->userfunc->id == random_impl_id) {
+                    res = random_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == matmul_impl_id) {
+                    res = matmul_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == nselect_impl_id) {
+                    res = nselect_impl(instr->userfunc, NULL);
                 } else {                        // Unsupported userfunc
                     res = BH_USERFUNC_NOT_SUPPORTED;
                 }
                 break;
 
             default:                            // Built-in operations
-                if (bh_base_array(inst->operand[0])->data == NULL) { // Allocate memory
-                    res = bh_vcache_malloc(inst);
+                                                // Allocate memory
+                if (bh_base_array(instr->operand[0])->data == NULL) { 
+                    res = bh_vcache_malloc(instr);
                 }
                 if (res != BH_SUCCESS) {
-                    printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_naive_execute()\n");
+                    fprintf(stderr, "bh_vcache_malloc(): unhandled error "
+                                    "bh_error=%ld;"
+                                    " called from bh_ve_cpu_execute()\n",
+                                    res);
                     break;
                 }
-                res = bh_compute_apply_naive(inst);               // Compute!
+
+                switch(traverse_method) {       // Compute!
+                    case FRUIT_LOOPS:
+                        res = bh_compute_apply(instr);
+                        break;
+                    case NAIVE:
+                        res = bh_compute_apply_naive(instr);
+                        break;
+                }
         }
 
-        if (res != BH_SUCCESS) {    // Instruction failed
+        if (res != BH_SUCCESS) {                // Instruction failed
             break;
         }
     }
@@ -103,7 +130,7 @@ bh_error bh_ve_naive_execute(bh_intp instruction_count,
 	return res;
 }
 
-bh_error bh_ve_naive_shutdown( void )
+bh_error bh_ve_cpu_shutdown( void )
 {
     if (vcache_size>0) {
         bh_vcache_clear();  // De-allocate vcache
@@ -113,7 +140,7 @@ bh_error bh_ve_naive_shutdown( void )
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_naive_reg_func(char *fun, bh_intp *id) 
+bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id) 
 {
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
