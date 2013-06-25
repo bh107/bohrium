@@ -1497,15 +1497,6 @@ namespace NumCIL.Bohrium
                                [Out] IntPtr ret_func);
 
         /// <summary>
-        /// Trace an array creation
-        /// </summary>
-        /// <param name="self">The component</param>
-        /// <param name="ary">The array to trace</param>
-        /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_error bh_component_trace_array([In] ref bh_component self, [In] ref bh_array ary);
-
-        /// <summary>
         /// Set the data pointer for the array.
         /// Can only set to non-NULL if the data ptr is already NULL
         /// </summary>

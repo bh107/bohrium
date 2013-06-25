@@ -157,14 +157,6 @@ DLLEXPORT bh_error bh_component_free_ptr(void* data);
 DLLEXPORT bh_error bh_component_get_func(bh_component *self, char *func,
                                                bh_userfunc_impl *ret_func);
 
-/* Trace an array creation.
- *
- * @self The component.
- * @ary  The array to trace.
- * @return Error code (BH_SUCCESS).
- */
-DLLEXPORT bh_error bh_component_trace_array(bh_component *self, bh_array *ary);
-
 /* Look up a key in the config file
  *
  * @component The component.

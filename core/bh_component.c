@@ -462,35 +462,6 @@ bh_error bh_component_free_ptr(void* data)
     return BH_SUCCESS;
 }
 
-/* Trace an array creation.
- *
- * @self The component.
- * @ary  The array to trace.
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_trace_array(bh_component *self, bh_array *ary)
-{
-    int i;
-#ifndef WIN32
-    FILE *f = fopen("/tmp/bh_trace.ary", "a");
-#else
-	FILE *f = stderr;
-#endif
-
-    fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, (long)ary->ndim);
-    for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", (long)ary->shape[i]);
-    fprintf(f,";\t stride:");
-    for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", (long)ary->stride[i]);
-    fprintf(f,";\t start: %ld;\t base: %p;\n",(long)ary->start,ary->base);
-
-#ifndef WIN32
-    fclose(f);
-#endif
-    return BH_SUCCESS;
-}
-
 /* Look up a key in the config file
  *
  * @component The component.
