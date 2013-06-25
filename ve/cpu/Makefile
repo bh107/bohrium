@@ -1,5 +1,5 @@
 ROOT=../..
-LIB=libbh_ve_naive.so
+LIB=libbh_ve_cpu.so
 CXX?=g++
 WARNOPTS=-Wall
 DEBUG+=

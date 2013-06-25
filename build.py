@@ -163,8 +163,7 @@ if __name__ == "__main__":
                   ("CORE", "core", True),\
                   ("VE-PRINT", "ve/print", False),\
                   ("VE-GPU", "ve/gpu", False),\
-                  ("VE-SIMPLE", "ve/simple", True),\
-                  ("VE-NAIVE", "ve/naive", True),\
+                  ("VE-CPU", "ve/cpu", True),\
                   ("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
