@@ -97,7 +97,7 @@ bh_error bh_vem_cluster_execute(bh_ir* bhir)
     bh_error res = bh_graph_serialize(bhir, inst_list, &count);
     if (res != BH_SUCCESS)
     {
-        free(instlist);
+        free(inst_list);
         return res;
     }
 

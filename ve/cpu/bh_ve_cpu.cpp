@@ -64,15 +64,18 @@ bh_error bh_ve_cpu_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_execute(bh_intp instruction_count,
-                           bh_instruction* instruction_list)
+bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    bh_intp count;
     bh_instruction* instr;
+    bh_graph_iterator* it;
     bh_error res = BH_SUCCESS;
 
-    for (count=0; count<instruction_count; count++) {
-        instr = &instruction_list[count];
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
+
+    while (bh_graph_iterator_next_instruction(it, &instr) == BH_SUCCESS)
+    {
         #ifdef DEBUG
         bh_pprint_instr(instr);
         #endif
@@ -106,9 +109,9 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
                 }
                 if (res != BH_SUCCESS) {
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
-                                    "bh_error=%ld;"
+                                    "bh_error=%lld;"
                                     " called from bh_ve_cpu_execute()\n",
-                                    res);
+                                    (bh_int64)res);
                     break;
                 }
 
