@@ -1,5 +1,5 @@
 ROOT=../..
-LIB=libbh_ve_naive.dylib
+LIB=libbh_ve_tiling.dylib
 CXX?=g++
 WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64

@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_VE_SIMPLE_H
-#define __BH_VE_SIMPLE_H
+#ifndef __BH_VE_CPU_H
+#define __BH_VE_CPU_H
 
 #include <bh.h>
 
@@ -26,13 +26,18 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-DLLEXPORT bh_error bh_ve_simple_init(bh_component *self);
+enum bh_cpu_traverser {
+    FRUIT_LOOPS,
+    NAIVE
+};
 
-DLLEXPORT bh_error bh_ve_simple_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_ve_cpu_init(bh_component *self);
 
-DLLEXPORT bh_error bh_ve_simple_shutdown(void);
+DLLEXPORT bh_error bh_ve_cpu_execute(bh_intp instruction_count, bh_instruction* instruction_list);
 
-DLLEXPORT bh_error bh_ve_simple_reg_func(char *fun, bh_intp *id);
+DLLEXPORT bh_error bh_ve_cpu_shutdown(void);
+
+DLLEXPORT bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id);
 
 #ifdef __cplusplus
 }

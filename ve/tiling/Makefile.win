@@ -1,6 +1,6 @@
 ROOT=..\..
-LIBNAME=libbh_ve_simple.lib
-DLLNAME=libbh_ve_simple.dll
+LIBNAME=libbh_ve_tiling.lib
+DLLNAME=libbh_ve_tiling.dll
 CC=cl
 CXX=cl
 LIBTOOL=lib.exe
@@ -14,13 +14,13 @@ CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparse
 LDFLAGS=/LD /MD /nologo
 
 HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
-SRC=bh_ve_simple.cpp
+SRC=bh_ve_tiling.cpp
 OBJ=$(SRC:.cpp=.obj)
 
 all: $(DLLNAME)
 
-bh_ve_simple.obj: bh_ve_simple.cpp $(HEADER)
-		$(CXX) $(CFLAGS) bh_ve_simple.cpp /Fo$@
+bh_ve_tiling.obj: bh_ve_tiling.cpp $(HEADER)
+		$(CXX) $(CFLAGS) bh_ve_tiling.cpp /Fo$@
 
 
 $(LIBNAME): $(OBJ)

@@ -64,9 +64,10 @@ DLLEXPORT bh_data_ptr bh_vcache_find( bh_intp bytes );
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-DLLEXPORT void bh_vcache_insert( bh_data_ptr data, bh_intp size );
-DLLEXPORT bh_error bh_vcache_free( bh_instruction* inst );
-DLLEXPORT bh_error bh_vcache_malloc( bh_instruction* inst );
+DLLEXPORT void bh_vcache_insert(bh_data_ptr data, bh_intp size);
+DLLEXPORT bh_error bh_vcache_free(bh_instruction* inst);
+DLLEXPORT bh_error bh_vcache_malloc(bh_instruction* inst);
+DLLEXPORT bh_error bh_vcache_malloc_op(bh_array* array);
 
 #ifdef __cplusplus
 }

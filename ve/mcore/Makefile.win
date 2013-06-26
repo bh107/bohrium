@@ -1,6 +1,6 @@
 ROOT=..\..
-LIBNAME=libbh_ve_naive.lib
-DLLNAME=libbh_ve_naive.dll
+LIBNAME=libbh_ve_mcore.lib
+DLLNAME=libbh_ve_mcore.dll
 CC=cl
 CXX=cl
 LIBTOOL=lib.exe
@@ -13,15 +13,14 @@ WARNOPTS=#-Wall
 CFLAGS=$(WARNOPTS) /c /EHsc /TP /nologo /O2 /I$(ROOT)\include /I$(ROOT)\iniparser\src /I$(ROOT)\include\win32
 LDFLAGS=/LD /MD /nologo
 
-HEADER=.\*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
-SRC=bh_ve_naive.cpp
-OBJ=$(SRC:.cpp=.obj)
+HEADER=*.h $(ROOT)\include\* $(ROOT)\include\win32\*.h
+SRC=bh_ve_mcore.cpp
+OBJ=bh_ve_mcore.obj
 
 all: $(DLLNAME)
 
-bh_ve_naive.obj: bh_ve_naive.cpp $(HEADER)
-		$(CXX) $(CFLAGS) bh_ve_naive.cpp /Fo$@
-
+bh_ve_mcore.obj: bh_ve_mcore.cpp $(HEADER)
+		$(CXX) $(CFLAGS) bh_ve_mcore.cpp /Fo$@
 
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libbh.lib

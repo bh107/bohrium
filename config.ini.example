@@ -9,19 +9,23 @@ type = vem
 
 [node]
 impl = /opt/bohrium/libbh_vem_node.so
-children = simple
+children = cpu
 type = vem
 
 [print]
 impl = /opt/bohrium/libbh_ve_print.so
 type = ve
 
-[naive]
-impl = /opt/bohrium/libbh_ve_naive.so
+[cpu]
+impl = /opt/bohrium/libbh_ve_cpu.so
 type = ve
 
-[simple]
-impl = /opt/bohrium/libbh_ve_simple.so
+[tiling]
+impl = /opt/bohrium/libbh_ve_tiling.so
+type = ve
+
+[mcore]
+impl = /opt/bohrium/libbh_ve_mcore.so
 type = ve
 
 [dynamite]

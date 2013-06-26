@@ -19,8 +19,10 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_compute.h>
+#include <bh_vcache.h>
 #include "functors.hpp"
 #include <complex>
+#include <assert.h>
 #include "functors.hpp"
 #include "traverser.hpp"
 
@@ -115,6 +117,8 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
     bh_opcode opcode;
     bh_array *op_out = inst->operand[0];
     bh_array *op_in  = inst->operand[1];
+
+    assert(op_out != NULL);
     
     switch (inst->opcode)
     {
@@ -167,11 +171,6 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
         return BH_ERROR;
-    }
-    
-    if (bh_data_malloc(op_out) != BH_SUCCESS) {
-        fprintf(stderr, "ERR: bh_compute_reduce; No memory for reduction-result.\n");
-        return BH_OUT_OF_MEMORY;
     }
 
     long int poly = opcode + (op_in->type << 8);
@@ -476,6 +475,8 @@ bh_error bh_compute_reduce(bh_instruction *inst)
     bh_opcode opcode;
     bh_array *op_out = inst->operand[0];
     bh_array *op_in  = inst->operand[1];
+
+    assert(op_out != NULL);
     
     switch (inst->opcode)
     {
@@ -528,11 +529,6 @@ bh_error bh_compute_reduce(bh_instruction *inst)
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
                         "Probable causes include reducing over 'LESS', just dont...\n");
         return BH_ERROR;
-    }
-    
-    if (bh_data_malloc(op_out) != BH_SUCCESS) {
-        fprintf(stderr, "ERR: bh_compute_reduce; No memory for reduction-result.\n");
-        return BH_OUT_OF_MEMORY;
     }
 
     long int poly = opcode + (op_in->type << 8);

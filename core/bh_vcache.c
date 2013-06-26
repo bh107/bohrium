@@ -17,15 +17,16 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <errno.h>
 #include <bh_vcache.h>
 //
 // C-Friendly version of the vcache.
 // 
 static bh_data_ptr   *bh_vcache;
 static bh_intp       *bh_vcache_bytes;
-static bh_intp   bh_vcache_bytes_total;
-static int          bh_vcache_size;
-static int          bh_vcache_cur;
+static bh_intp  bh_vcache_bytes_total;
+static int      bh_vcache_size;
+static int      bh_vcache_cur;
 
 static int bh_vcache_hits = 0;
 static int bh_vcache_miss = 0;
@@ -51,18 +52,22 @@ void bh_vcache_reset_counters() {
  *  Expiration / cache invalidation is based on round-robin;
  *  Whenever an element is added to vcache the round-robin
  *  counter is incremented.
- *
  */
-void bh_vcache_init( int size )
+void bh_vcache_init(int size)
 {
     bh_vcache_size           = size;
     bh_vcache_bytes_total    = 0;
-
     bh_vcache_cur    = 0;
-    bh_vcache        = (bh_data_ptr*)malloc(sizeof(bh_data_ptr)*size);
-    memset(bh_vcache,0,sizeof(bh_data_ptr)*size);
-    bh_vcache_bytes  = (bh_intp*)malloc(sizeof(bh_intp)*size);
-    memset(bh_vcache_bytes,0,sizeof(bh_intp)*size);
+
+    if (0 < size) { // Enabled
+        bh_vcache        = (bh_data_ptr*)malloc(sizeof(bh_data_ptr)*size);
+        memset(bh_vcache,0,sizeof(bh_data_ptr)*size);
+        bh_vcache_bytes  = (bh_intp*)malloc(sizeof(bh_intp)*size);
+        memset(bh_vcache_bytes,0,sizeof(bh_intp)*size);
+    } else {        // Disabled
+        bh_vcache = NULL;
+        bh_vcache_bytes = NULL;
+    }
 
     bh_vcache_reset_counters();
 }
@@ -72,8 +77,10 @@ void bh_vcache_init( int size )
  */
 void bh_vcache_delete()
 {
-    free( bh_vcache );
-    free( bh_vcache_bytes );
+    if (0 < bh_vcache_size) {
+        free(bh_vcache);
+        free(bh_vcache_bytes);
+    }
 }
 
 /**
@@ -84,19 +91,19 @@ void bh_vcache_clear()
     int i;
     for (i=0; i<bh_vcache_size; i++) {
         if (bh_vcache_bytes[i] > 0) {
-            bh_memory_free( bh_vcache[i], bh_vcache_bytes[i] );
+            bh_memory_free(bh_vcache[i], bh_vcache_bytes[i]);
         }
     }
 }
 
 /**
  * Return and remove a pointer of size 'size' from vcache.
- *
- * This removes it from the vcache!
+ * NOTE: This is a helper function; it should not be used by a vector engine.
+ * NOTE: This removes it from the vcache!
  *
  * @return null If none exists.
  */
-bh_data_ptr bh_vcache_find( bh_intp bytes )
+bh_data_ptr bh_vcache_find(bh_intp bytes)
 {
     int i;
     for (i=0; i<bh_vcache_size; i++) {
@@ -105,6 +112,7 @@ bh_data_ptr bh_vcache_find( bh_intp bytes )
             bh_vcache_hits++;
             bh_vcache_bytes[i] = 0;
             bh_vcache_bytes_total -= bytes;
+
             return bh_vcache[i];
         }
     }
@@ -114,11 +122,12 @@ bh_data_ptr bh_vcache_find( bh_intp bytes )
 
 /**
  * Add an element to vcache.
+ * NOTE: This is a helper function; it should not be used by a vector engine.
  * 
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-void bh_vcache_insert( bh_data_ptr data, bh_intp size )
+void bh_vcache_insert(bh_data_ptr data, bh_intp size)
 {
     if (bh_vcache_bytes[bh_vcache_cur] > 0) {
 		DEBUG_PRINT("Free=%p\n", bh_vcache[bh_vcache_cur]);
@@ -135,22 +144,26 @@ void bh_vcache_insert( bh_data_ptr data, bh_intp size )
 }
 
 /**
- * De-allocate memory for an instructions output operand.
- *
+ * De-allocate memory for the output operand of an instruction.
  */
-bh_error bh_vcache_free( bh_instruction* inst )
+bh_error bh_vcache_free(bh_instruction* inst)
 {
     bh_array* base;
     bh_intp nelements, bytes;
 
-    base = bh_base_array( inst->operand[0] ); 
-    if (base->data != NULL) {
+    base = bh_base_array(inst->operand[0]);
+    
+    if (NULL != base->data) {
         nelements   = bh_nelements(base->ndim, base->shape);
         bytes       = nelements * bh_type_size(base->type);
         
-		DEBUG_PRINT("Deallocate=%p\n", base->data);
-        bh_vcache_insert( base->data, bytes );
-        bh_vcache_store++;
+		DEBUG_PRINT("Deallocate=%p\n", base_data);
+        if (bh_vcache_size>0) {
+            bh_vcache_insert(base->data, bytes);
+            bh_vcache_store++;
+        } else {
+            bh_memory_free(base->data, bytes);
+        }
 		base->data = NULL;
     }
     inst->operand[0] = NULL;
@@ -159,65 +172,61 @@ bh_error bh_vcache_free( bh_instruction* inst )
 }
 
 /**
- * Allocate memory for the output operand of the given instruction.
- * A previous (now unused) memory allocation will be assigned if available.
- *
+ *  Allocate memory for the given array.
  */
-bh_error bh_vcache_malloc( bh_instruction* inst )
+bh_error bh_vcache_malloc_op(bh_array* array)
 {
+    bh_intp bytes;
     bh_array* base;
-    bh_intp nops, i, nelements, bytes;
 
+    if (array == NULL) {
+        return BH_SUCCESS;          // For convenience BH_SUCCESS is returned
+    }                               // since this often occurs when the operand
+                                    // is a constant...
+    base = bh_base_array(array);
+    if (base->data != NULL) {       // For convenience BH_SUCCESS is returned
+        return BH_SUCCESS;          // when data is already allocated.
+    }
+
+    bytes = bh_array_size(base);
+    if (bytes <= 0) {
+        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %ld bytes!\n", bytes);
+        return BH_ERROR;
+    }
+
+    if (bh_vcache_size > 0) {
+        base->data = bh_vcache_find(bytes);
+    }
+    if (base->data == NULL) {
+        base->data = bh_memory_malloc(bytes);
+        if (base->data == NULL) {
+            int errsv = errno;
+            printf("bh_data_malloc() could not allocate a data region. "
+                   "Returned error code: %s.\n", strerror(errsv));
+            return BH_OUT_OF_MEMORY;
+        }
+    }
+
+    return BH_SUCCESS;
+}
+
+/**
+ * Allocate memory for the output operand of the given instruction using vcache.
+ * A previous (now unused) memory allocation will be assigned if available.
+ */
+bh_error bh_vcache_malloc(bh_instruction* inst)
+{
     switch (inst->opcode) {                     // Allocate memory for built-in
-
-        case BH_NONE:                        // No memory operations for these
+        case BH_NONE:                           // No memory operations for these
         case BH_DISCARD:
         case BH_SYNC:
         case BH_USERFUNC:
         case BH_FREE:
             break;
-
         default:                                    
-
-            nops = bh_operands(inst->opcode);    // Allocate memory for operands        
-            for(i=0; i<nops; i++)
-            {
-                if (!bh_is_constant(inst->operand[i]))
-                {
-                    //We allow allocation of the output operand only
-                    if (i == 0)
-                    {
-                        base = bh_base_array( inst->operand[0] );    // Reuse or allocate
-                        if (base->data == NULL) {
-
-                            nelements   = bh_nelements(base->ndim, base->shape);
-                            bytes       = nelements * bh_type_size(base->type);
-
-                            DEBUG_PRINT("Reuse or allocate...\n");
-                            base->data = bh_vcache_find( bytes );
-                            if (base->data == NULL) {
-                                if (bh_data_malloc(inst->operand[0]) != BH_SUCCESS) {
-                                    return BH_OUT_OF_MEMORY;         // EXIT
-                                }                                   
-                                DEBUG_PRINT("Allocated=%p\n", base->data);
-                                bh_vcache_miss++;
-                            } else {
-                                DEBUG_PRINT("Reusing=%p.\n", base->data);
-                                bh_vcache_hits++;
-                            }
-                        }
-                    }
-                    else if(bh_base_array(inst->operand[i])->data == NULL) 
-                    {
-                        return BH_ERROR; // EXIT
-                    }
-                }
-
-            }
+            return bh_vcache_malloc_op(inst->operand[0]);
             break;
-
     }
-
     return BH_SUCCESS;
-
 }
+

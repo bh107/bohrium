@@ -4,8 +4,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -281,7 +281,7 @@ namespace NumCIL.Bohrium
             public bh_constant(object v)
             {
                 this.value = new bh_constant_value().Set(v);
-                
+
                 if (v is bh_bool)
                     this.type = bh_type.BH_BOOL;
                 else if (v is bh_int16)
@@ -309,7 +309,7 @@ namespace NumCIL.Bohrium
                 else
                     throw new NotSupportedException();
             }
-            
+
             /// <summary>
             /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.
             /// </summary>
@@ -342,10 +342,10 @@ namespace NumCIL.Bohrium
 					return this.value.complex128.ToString();
 				else
 					throw new NotSupportedException();
-				
+
 			}
 		}
-		
+
 		/// <summary>
 		/// Struct for typesafe assignment of a constant value
 		/// </summary>
@@ -355,67 +355,67 @@ namespace NumCIL.Bohrium
 			/// <summary>
 			/// The boolean value
 			/// </summary>
-			[FieldOffset(0)] 
+			[FieldOffset(0)]
 			public bh_bool     bool8;
 			/// <summary>
 			/// The int8 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_int8     int8;
             /// <summary>
             /// The int16 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_int16    int16;
             /// <summary>
             /// The int32 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_int32    int32;
             /// <summary>
             /// The int64 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_int64    int64;
             /// <summary>
             /// The uint8 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_uint8    uint8;
             /// <summary>
             /// The uin16 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_uint16   uint16;
             /// <summary>
             /// The uint32 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_uint32   uint32;
             /// <summary>
             /// The uint64 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_uint64   uint64;
             /// <summary>
             /// The float32 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_float32  float32;
             /// <summary>
             /// The float64 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_float64  float64;
             /// <summary>
             /// The complex64 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_complex64  complex64;
             /// <summary>
             /// The complex128 value
             /// </summary>
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public bh_complex128  complex128;
 
             /// <summary>
@@ -496,7 +496,7 @@ namespace NumCIL.Bohrium
             /// </summary>
             /// <param name="v">The value to set</param>
             /// <returns>A constant struct representing the value</returns>
-            public bh_constant_value Set(object v) 
+            public bh_constant_value Set(object v)
             {
                 if (v is bh_bool)
                     return Set((bh_bool)v);
@@ -523,8 +523,8 @@ namespace NumCIL.Bohrium
                 else if (v is bh_complex128)
                     return Set((bh_complex128)v);
 
-                throw new NotSupportedException(); 
-            }        
+                throw new NotSupportedException();
+            }
         }
 
         /// <summary>
@@ -535,7 +535,7 @@ namespace NumCIL.Bohrium
         {
 //Fix compiler reporting these as unused as they are weirdly mapped,
 //and only processed from unmanaged code
-#pragma warning disable 0414 
+#pragma warning disable 0414
 #pragma warning disable 0169
             [FieldOffset(0)] private bh_bool[]     bool8;
             [FieldOffset(0)] private bh_int8[]     int8;
@@ -766,9 +766,9 @@ namespace NumCIL.Bohrium
             /// <summary>
             /// Accessor methods to read/write the data pointer
             /// </summary>
-            public IntPtr Data 
+            public IntPtr Data
             {
-                get 
+                get
                 {
                     if (m_ptr == IntPtr.Zero)
                         throw new ArgumentNullException();
@@ -801,13 +801,13 @@ namespace NumCIL.Bohrium
                 {
                     if (m_ptr == IntPtr.Zero)
                         throw new ArgumentNullException();
-                    
-                    return new bh_array_ptr() { 
+
+                    return new bh_array_ptr() {
                         m_ptr = Marshal.ReadIntPtr(m_ptr, 0)
                     };
                 }
             }
-            
+
             /// <summary>
             /// Gets the type of the array
             /// </summary>
@@ -817,7 +817,7 @@ namespace NumCIL.Bohrium
             	{
 					if (m_ptr == IntPtr.Zero)
 						throw new ArgumentNullException();
-					
+
 					if (Is64Bit)
 						return (bh_type)Marshal.ReadInt64(m_ptr, IntPtr.Size);
 					else
@@ -1212,7 +1212,7 @@ namespace NumCIL.Bohrium
             /// <summary>
             /// A constant value assigned to the instruction
             /// </summary>
-            public bh_constant constant;     
+            public bh_constant constant;
             /// <summary>
             /// Points to the user-defined function when the opcode is BH_USERFUNC
             /// </summary>
@@ -1354,7 +1354,7 @@ namespace NumCIL.Bohrium
             {
                 get { return opcode; }
             }
-            
+
             /// <summary>
             /// Gets the userfunc id, number of output operands and number of input operands
             /// </summary>
@@ -1364,7 +1364,7 @@ namespace NumCIL.Bohrium
             	{
             		if (this.userfunc == IntPtr.Zero)
             			return null;
-            			
+
             		if (Is64Bit)
             		{
             			return new Tuple<long, long, long>(
@@ -1383,7 +1383,7 @@ namespace NumCIL.Bohrium
 					}
             	}
             }
-            
+
             /// <summary>
             /// Gets the userfunc arrays.
             /// </summary>
@@ -1394,12 +1394,12 @@ namespace NumCIL.Bohrium
             		var tp = this.UserfuncIdNOutNIn;
             		if (tp == null)
             			return null;
-            			
+
             		var nops = tp.Item2 + tp.Item3;
             		var arrays = new bh_array_ptr[nops];
             		for(var i = 0; i < nops; i++)
             			arrays[i].m_ptr = Marshal.ReadIntPtr(this.userfunc, (4 + i) * IntPtr.Size);
-            			
+
             		return arrays;
             	}
             }
@@ -1434,7 +1434,7 @@ namespace NumCIL.Bohrium
         /// <returns>A status code</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate bh_error bh_reg_func(string fun, ref bh_intp id);
-        
+
         /// <summary>
         /// Creates a new base array or view in Bohrium
         /// </summary>
@@ -1547,7 +1547,7 @@ namespace NumCIL.Bohrium
         /// <returns>Error code (BH_SUCCESS)</returns>
         [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_free_ptr([In] IntPtr component);
-        
+
         /// <summary>
         /// Retrieves an user-defined function
         /// </summary>
@@ -1558,25 +1558,6 @@ namespace NumCIL.Bohrium
         [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static bh_error bh_component_get_func([In] ref bh_component self, [In] string func,
                                [Out] IntPtr ret_func);
-
-        /// <summary>
-        /// Trace an array creation
-        /// </summary>
-        /// <param name="self">The component</param>
-        /// <param name="ary">The array to trace</param>
-        /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_error bh_component_trace_array([In] ref bh_component self, [In] ref bh_array ary);
-
-
-        /// <summary>
-        /// Trace an instruction
-        /// </summary>
-        /// <param name="self">The component</param>
-        /// <param name="inst">The instruction to trace</param>
-        /// <returns>Error code (BH_SUCCESS)</returns>
-        [DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_error bh_component_trace_inst([In] ref bh_component self, [In] ref bh_instruction inst);
 
         /// <summary>
         /// Set the data pointer for the array.
@@ -1625,7 +1606,7 @@ namespace NumCIL.Bohrium
 		/// <param name="constanttype">The constant type</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh_type inputtype2, bh_type constanttype);
-	
+
 		/// <summary>
 		/// Attempts to convert the inputtypes to support the operation.
 		/// Returns true if there is a valid conversion, and false otherwise.
@@ -1639,14 +1620,14 @@ namespace NumCIL.Bohrium
 		/// <param name="constanttype">The constant type</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, ref bh_type inputtype1, ref bh_type inputtype2, ref bh_type constanttype);
-		
+
 		/// <summary>
 		/// Gets the number of operands required for the opcode
 		/// </summary>
 		/// <param name="opcode">The Opcode to query</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static int bh_operands(bh_opcode opcode);
-		
+
 		/// <summary>
 		/// Gets the number of operands required for the opcode
 		/// </summary>

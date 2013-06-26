@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <errno.h>
 #include <inttypes.h>
+#include "kernel.h"
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -45,71 +46,6 @@ char* object_path;
 char* snippet_path;
 
 process* target;
-
-typedef std::unordered_map<bh_array*, size_t> ref_storage;
-typedef std::pair<bh_intp, bh_intp> instr_range;
-typedef std::vector<instr_range > kernel_storage;
-typedef std::vector<std::pair<std::string, bh_array*> > kernel_inputs;
-
-int hash(bh_instruction *instr)
-{
-    uint64_t poly;
-    int dims, nop,
-        a0_type, a1_type, a2_type,
-        a0_dense, a1_dense, a2_dense;
-
-    dims     = instr->operand[0]->ndim;
-    nop      = bh_operands(instr->opcode);
-    a0_type  = instr->operand[0]->type;
-    a0_dense = 1;
-    if (3 == nop) {
-        if (bh_is_constant(instr->operand[1])) {            // DDC
-            a1_type  = instr->constant.type;
-            a1_dense = 0;
-            a2_type  = instr->operand[2]->type;
-            a2_dense = 1;
-        } else if (bh_is_constant(instr->operand[2])) {     // DCD
-            a1_type  = instr->operand[1]->type;
-            a1_dense = 1;
-            a2_type  = instr->constant.type;
-            a2_dense = 0;   
-        } else {                                            // DDD
-            a1_type  = instr->operand[1]->type;
-            a1_dense = 1;
-            a2_type  = instr->operand[2]->type;
-            a2_dense = 1;
-        }
-    } else if (2 == nop) {
-        if (bh_is_constant(instr->operand[1])) {            // DDC
-            a1_type  = instr->constant.type;
-            a1_dense = 0;
-        } else {                                            // DDD
-            a1_type  = instr->operand[1]->type;
-            a1_dense = 1;
-        }
-        a2_type = 0;
-        a2_dense = 0;
-    } else {
-        a1_type  = 0;
-        a2_type  = 0;
-        a1_dense = 0;
-        a2_dense = 0;
-    }
-
-    poly  = (a0_type << 8) + (a1_type << 4) + (a2_type);
-    poly += (a0_dense << 14) + (a1_dense << 13) + (a2_dense << 12);
-    poly += (dims << 15);
-    poly += (instr->opcode << 20);
-
-    /*
-    std::cout << "Opcode {" << instr->opcode << "}" << std::endl;
-    std::cout << "Dims {" << dims << "}" << std::endl;
-    std::cout << "Type {" << a0_type << ", " << a1_type << ", " << a2_type << "}" << std::endl;
-    std::cout << "Struct {" << a0_dense << ", " << a1_dense << ", " << a2_dense << "}" << std::endl;
-    std::cout << poly << std::endl;
-    */
-    return poly;
-}
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -449,8 +385,11 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
     // See if we can find a some kernels...
     kernel_storage kernels = streaming(instruction_count, instruction_list);
-    instr_range kernel = std::make_pair(0,0);
-    kernel_inputs kernel_input;
+    kernel_t kernel;
+    kernel.begin = 0;
+    kernel.end   = 0;
+    int64_t shape[16];
+    int64_t ndim = 0;
     
     for (count=0; count<instruction_count; count++) {
         instr = &instruction_list[count];
@@ -470,14 +409,14 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
 
-        if ((kernels.size()>0) && (kernel.first == kernel.second)) {    // Grab a new kernel
+        if ((kernels.size()>0) && (kernel.begin == kernel.end)) {    // Grab a new kernel
             kernel = kernels.front();
             kernels.erase(kernels.begin());
         }
                                         
         // Check if we wanna go into fusion-mode
-        if ((count==kernel.first) && (kernel.first != kernel.second)) {
-            count = kernel.second+1;
+        if ((count==kernel.begin) && (kernel.begin != kernel.end)) {
+            count = kernel.end+1;
 
             /* DEBUG_PRINTING
             std::cout << "###" << kernels.size() << std::endl;
@@ -488,34 +427,33 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 std::cout << std::endl;
             }*/
 
-            kernel_input.clear();
+            //kernel_input.clear();
+            kernel.size = 0;
             std::string cmd_str = fused_expr(
                 instruction_list,
-                kernel.second-1,
-                kernel.first,
-                instruction_list[kernel.second].operand[1],
-                kernel_input
+                kernel.end-1,
+                kernel.begin,
+                instruction_list[kernel.end].operand[1],
+                kernel
             );
             cmd_str = "*a0_current += "+ cmd_str;
             symbol = "BH_PFSTREAM_OPS";
             sourcecode = "";
             dict.SetValue("OPERATOR",   cmd_str);
             int ccc = 1;
-            for(auto it=kernel_input.begin(); it!=kernel_input.end(); ++it, ++ccc) {
+            for(size_t it=0; it<kernel.size; ++it) {
+                bh_array *krn_operand = kernel.inputs[it];
                 std::ostringstream buff;
                 buff << "a" << ccc << "_dense";
                 dict.ShowSection(buff.str());
                 buff.str("");
                 buff << "TYPE_A" << ccc;
-                dict.SetValue(buff.str(), bhtype_to_ctype(((*it).second)->type));
+                dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand[it].type));
                 buff.str("");
                 buff << "TYPE_A" << ccc << "SHORTHAND";
-                dict.SetValue(buff.str(), bhtype_to_ctype(((*it).second)->type));
+                dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand[it].type));
             }
-            /*
-            dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0]->type));
-            dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
-            */
+
             sprintf(snippet_fn, "%s/partial.streaming.tpl", snippet_path);
             ctemplate::ExpandTemplate(
                 snippet_fn,
@@ -524,8 +462,20 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 &sourcecode
             );
             target->src_to_file(symbol, sourcecode.c_str(), sourcecode.size()); 
-            // Generate the code and execute it!
-            
+            cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
+            cres = cres ? target->load(symbol, symbol) : cres;
+
+            if (!cres) {
+                res = BH_ERROR;
+            } else {
+                target->funcs[symbol](kernel.size,
+                    kernel.inputs,
+                    shape,
+                    ndim,
+                    bh_nelements(ndim, shape)
+                );
+                res = BH_SUCCESS;
+            }
         }
 
         // NAIVE MODE

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -110,7 +110,7 @@ static void *get_dlsym(void *handle, const char *name,
 
 /* Setup the root component, which normally is the bridge.
  *
- * @name The name of the root component. If NULL "bridge" 
+ * @name The name of the root component. If NULL "bridge"
          will be used.
  * @return The root component in the configuration.
  */
@@ -118,7 +118,7 @@ bh_component *bh_component_setup(const char* component_name)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
-    const char *name; 
+    const char *name;
     if(component_name == NULL)
         name = "bridge";
     else
@@ -227,8 +227,8 @@ bh_component *bh_component_setup(const char* component_name)
     }
 
     com->type = get_type(com->config, com->name);
-   
-    if(strcmp("bridge", name) != 0)//This is not the bridge 
+
+    if(strcmp("bridge", name) != 0)//This is not the bridge
     {
         char tmp[BH_COMPONENT_NAME_SIZE];
         snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl",name);
@@ -284,7 +284,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
 
 	//Assume all goes well
 	result = BH_SUCCESS;
-	
+
     //Handle one child at a time.
     child = strtok(tchildren,",");
     while(child != NULL && *count < BH_COMPONENT_MAX_CHILDS)
@@ -332,7 +332,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         com->init = (bh_init)get_dlsym(com->lib_handle, child, com->type, "init");
         if(com->init == NULL)
         {
-			fprintf(stderr, "Failed to load init function from child %s\n", child);        
+			fprintf(stderr, "Failed to load init function from child %s\n", child);
 	        result = BH_ERROR;
 	        break;
         }
@@ -341,7 +341,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
                                   "shutdown");
         if(com->shutdown == NULL)
         {
-			fprintf(stderr, "Failed to load shutdown function from child %s\n", child);        
+			fprintf(stderr, "Failed to load shutdown function from child %s\n", child);
 	        result = BH_ERROR;
 	        break;
         }
@@ -350,7 +350,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
                                  "execute");
         if(com->execute == NULL)
         {
-			fprintf(stderr, "Failed to load execute function from child %s\n", child);        
+			fprintf(stderr, "Failed to load execute function from child %s\n", child);
 	        result = BH_ERROR;
 	        break;
         }
@@ -359,7 +359,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
                                   "reg_func");
         if(com->reg_func == NULL)
         {
-			fprintf(stderr, "Failed to load reg_func function from child %s\n", child);        
+			fprintf(stderr, "Failed to load reg_func function from child %s\n", child);
 	        result = BH_ERROR;
 	        break;
         }
@@ -384,7 +384,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
         free(*children);
         *children = NULL;
     }
-    
+
     return result;
 }
 
@@ -400,7 +400,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
                                      bh_userfunc_impl *ret_func)
 {
     //First we search the libs in the config file to find the user-defined function.
-    //Secondly we search the component's library. 
+    //Secondly we search the component's library.
     char *lib_paths = bh_component_config_lookup(self,"libs");
     if(lib_paths != NULL)
     {
@@ -408,7 +408,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         lib_paths = strdup(lib_paths);
         if(lib_paths == NULL)
             return BH_OUT_OF_MEMORY;
-    
+
         //Handle one library path at a time.
         char *path = strtok(lib_paths,",");
         while(path != NULL)
@@ -462,88 +462,7 @@ bh_error bh_component_free_ptr(void* data)
     return BH_SUCCESS;
 }
 
-/* Trace an array creation.
- *
- * @self The component.
- * @ary  The array to trace.
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_trace_array(bh_component *self, bh_array *ary)
-{
-    int i;
-#ifndef WIN32
-    FILE *f = fopen("/tmp/bh_trace.ary", "a");
-#else
-	FILE *f = stderr;
-#endif
-
-    fprintf(f,"array: %p;\t ndim: %ld;\t shape:", ary, (long)ary->ndim);
-    for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", (long)ary->shape[i]);
-    fprintf(f,";\t stride:");
-    for(i=0; i<ary->ndim; ++i)
-        fprintf(f," %ld", (long)ary->stride[i]);
-    fprintf(f,";\t start: %ld;\t base: %p;\n",(long)ary->start,ary->base);
-
-#ifndef WIN32
-    fclose(f);
-#endif
-    return BH_SUCCESS;
-}
-
-/* Trace an instruction.
- *
- * @self The component.
- * @inst  The instruction to trace.
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_trace_inst(bh_component *self, bh_instruction *inst)
-{
-    int i;
-    bh_intp nop;
-    bh_array *ops[BH_MAX_NO_OPERANDS];
-
-#ifndef WIN32
-    FILE *f = fopen("/tmp/bh_trace.inst", "a");
-#else
-    FILE *f = stderr;
-#endif
-
-    fprintf(f,"%s\t", bh_opcode_text(inst->opcode));
-
-    if(inst->opcode == BH_USERFUNC)
-    {
-        nop = inst->userfunc->nout + inst->userfunc->nin;
-        for(i=0; i<nop; ++i)
-            ops[i] = inst->userfunc->operand[i];
-    }
-    else
-    {
-        nop = bh_operands(inst->opcode);
-        for(i=0; i<nop; ++i)
-            ops[i] = inst->operand[i];
-    }
-    for(i=0; i<nop; ++i)
-    {
-#ifndef WIN32
-        fprintf(f," \t%p", ops[i]);
-#else
-        fprintf(f," %lld", (bh_int64)ops[i]);
-        if (ops[i] != NULL && ops[i]->base != NULL)
-	        fprintf(f," -> %lld", (bh_int64)ops[i]->base);
-        fprintf(f,"\t");
-#endif
-    }
-
-    fprintf(f,"\n");
-
-#ifndef WIN32
-    fclose(f);
-#endif
-    return BH_SUCCESS;
-}
-
-/* Look up a key in the config file 
+/* Look up a key in the config file
  *
  * @component The component.
  * @key       The key to lookup in the config file
@@ -553,5 +472,5 @@ char* bh_component_config_lookup(bh_component *component, const char* key)
 {
     char dictkey[BH_COMPONENT_NAME_SIZE];
     snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
-    return iniparser_getstring(component->config, dictkey, NULL);    
+    return iniparser_getstring(component->config, dictkey, NULL);
 }

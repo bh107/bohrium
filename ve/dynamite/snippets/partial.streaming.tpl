@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "math.h"
 
 #include "omp.h"
+#include "kernel.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -44,74 +45,66 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 {{/include}}
 
-void {{SYMBOL}}(int tool, ...)
+void {{SYMBOL}}(size_t noperands, dense_operand *operands,
+                int64_t *shape, int64_t ndim, int64_t nelements)
 {
-    va_list list;               // Unpack arguments
-    va_start(list, tool);
-
-    *a0_current = va_arg(list, {{TYPE_A0}}*);
+    *a0_current = ({{TYPE_A0}}*)operands[0]->data;
  
     {{#a1_dense}}
-    {{TYPE_A1}} *a1_current   = va_arg(list, {{TYPE_A1}}*);
+    {{TYPE_A1}} *a1_current   = ({{TYPE_A1}}*)operands[1]->data;
     {{TYPE_A1}} *a1_first     = a1_current;
-    int64_t  a1_start   = va_arg(list, int64_t);
-    int64_t *a1_stride  = va_arg(list, int64_t*);
+    int64_t  a1_start   = operands[1]->start;
+    int64_t *a1_stride  = operands[1]->stride;
     assert(a1_current != NULL);
     {{/a1_dense}}
 
     {{#a2_dense}}
-    {{TYPE_A2}} *a2_current   = va_arg(list, {{TYPE_A2}}*);
+    {{TYPE_A2}} *a2_current   = ({{TYPE_A2}}*)operands[1]->data;
     {{TYPE_A2}} *a2_first     = a2_current;
-    int64_t  a2_start   = va_arg(list, int64_t);
-    int64_t *a2_stride  = va_arg(list, int64_t*);
+    int64_t  a2_start   = operands[1]->start;
+    int64_t *a2_stride  = operands[1]->stride;
     assert(a2_current != NULL);
     {{/a2_dense}}
 
     {{#a3_dense}}
-    {{TYPE_A3}} *a3_current   = va_arg(list, {{TYPE_A3}}*);
+    {{TYPE_A3}} *a3_current   = ({{TYPE_A3}}*)operands[1]->data;
     {{TYPE_A3}} *a3_first     = a3_current;
-    int64_t  a3_start   = va_arg(list, int64_t);
-    int64_t *a3_stride  = va_arg(list, int64_t*);
+    int64_t  a3_start   = operands[1]->start;
+    int64_t *a3_stride  = operands[1]->stride;
     assert(a3_current != NULL);
     {{/a3_dense}}
 
     {{#a4_dense}}
-    {{TYPE_A4}} *a4_current   = va_arg(list, {{TYPE_A4}}*);
+    {{TYPE_A4}} *a4_current   = ({{TYPE_A4}}*)operands[1]->data;
     {{TYPE_A4}} *a4_first     = a4_current;
-    int64_t  a4_start   = va_arg(list, int64_t);
-    int64_t *a4_stride  = va_arg(list, int64_t*);
+    int64_t  a4_start   = operands[1]->start;
+    int64_t *a4_stride  = operands[1]->stride;
     assert(a4_current != NULL);
     {{/a4_dense}}
 
     {{#a5_dense}}
-    {{TYPE_A5}} *a5_current   = va_arg(list, {{TYPE_A5}}*);
+    {{TYPE_A5}} *a5_current   = ({{TYPE_A5}}*)operands[1]->data;
     {{TYPE_A5}} *a5_first     = a5_current;
-    int64_t  a5_start   = va_arg(list, int64_t);
-    int64_t *a5_stride  = va_arg(list, int64_t*);
+    int64_t  a5_start   = operands[1]->start;
+    int64_t *a5_stride  = operands[1]->stride;
     assert(a5_current != NULL);
     {{/a5_dense}}
 
     {{#a6_dense}}
-    {{TYPE_A6}} *a6_current   = va_arg(list, {{TYPE_A6}}*);
+    {{TYPE_A6}} *a6_current   = ({{TYPE_A6}}*)operands[1]->data;
     {{TYPE_A6}} *a6_first     = a6_current;
-    int64_t  a6_start   = va_arg(list, int64_t);
-    int64_t *a6_stride  = va_arg(list, int64_t*);
+    int64_t  a6_start   = operands[1]->start;
+    int64_t *a6_stride  = operands[1]->stride;
     assert(a6_current != NULL);
     {{/a6_dense}}
 
     {{#a7_dense}}
-    {{TYPE_A7}} *a7_current   = va_arg(list, {{TYPE_A7}}*);
+    {{TYPE_A7}} *a7_current   = ({{TYPE_A7}}*)operands[1]->data;
     {{TYPE_A7}} *a7_first     = a7_current;
-    int64_t  a7_start   = va_arg(list, int64_t);
-    int64_t *a7_stride  = va_arg(list, int64_t*);
+    int64_t  a7_start   = operands[1]->start;
+    int64_t *a7_stride  = operands[1]->stride;
     assert(a7_current != NULL);
     {{/a7_dense}}
-    
-    int64_t *shape      = va_arg(list, int64_t*);
-    int64_t ndim        = va_arg(list, int64_t);
-    int64_t nelements   = va_arg(list, int64_t);
-
-    va_end(list);
 
     int64_t j,                  // Traversal variables
             last_dim    = ndim-1,

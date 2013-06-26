@@ -1,9 +1,9 @@
 ROOT=../..
-LIB=libbh_ve_simple.so
+LIB=libbh_ve_tiling.so
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
-#LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse -DDEBUG
+#LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include  -I$(ROOT)/core -I$(ROOT)/traverse -DDEBUG
+LCFLAGS= $(WARNOPTS) -g -O3 -fPIC -I$(ROOT)/include  -I$(ROOT)/core -I$(ROOT)/traverse
 LDFLAGS=-L../../core -lbh -lrt -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
