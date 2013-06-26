@@ -10,6 +10,8 @@ XML_MAIN=NumCIL/bin/Release/NumCIL.XML
 XML_UNSAFE=NumCIL.Unsafe/bin/Release/NumCIL.Unsafe.XML
 XML_BOHRIUM=NumCIL.Bohrium/bin/Release/NumCIL.Bohrium.XML
 
+XBUILD_OPTS=/property:Configuration=Release /property:Platform=AnyCPU /verbosity:minimal /nologo
+
 MAKEDIR := $(dir $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
 
 all: $(DLL_MAIN) $(DLL_UNSAFE) $(DLL_BOHRIUM)
@@ -28,19 +30,19 @@ NumCIL.Bohrium/OpCodes.cs: NumCIL.Bohrium/OpCodes_fix.tt
 	$(TT) NumCIL.Bohrium/OpCodes_fix.tt -o $@ $(TT_OPTS)
 	
 $(DLL_MAIN): NumCIL/* NumCIL/UFunc/* $(AUTOGEN_FILES)
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU NumCIL/NumCIL.csproj
+	$(XBUILD) $(XBUILD_OPTS) NumCIL/NumCIL.csproj
 
 $(DLL_UNSAFE): $(DLL_MAIN) NumCIL.Unsafe/* $(AUTOGEN_FILES)
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU NumCIL.Unsafe/NumCIL.Unsafe.csproj
+	$(XBUILD) $(XBUILD_OPTS) NumCIL.Unsafe/NumCIL.Unsafe.csproj
 
 $(DLL_BOHRIUM): $(DLL_UNSAFE) NumCIL.Bohrium/* $(AUTOGEN_FILES) NumCIL.Bohrium/OpCodes.cs
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU NumCIL.Bohrium/NumCIL.Bohrium.csproj
+	$(XBUILD) $(XBUILD_OPTS) NumCIL.Bohrium/NumCIL.Bohrium.csproj
 
 clean:
 	rm -rf NumCIL/bin NumCIL/obj NumCIL.Unsafe/bin NumCIL.Unsafe/obj NumCIL.Bohrium/obj NumCIL.Bohrium/bin $(AUTOGEN_FILES) NumCIL.Bohrium/OpCodes.cs NumCIL.Bohrium/OpCodes_fix.tt
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL/NumCIL.csproj
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.Unsafe/NumCIL.Unsafe.csproj
-	$(XBUILD) /property:Configuration=Release /property:Platform=AnyCPU /t:clean NumCIL.Bohrium/NumCIL.Bohrium.csproj
+	$(XBUILD) $(XBUILD_OPTS) /t:clean NumCIL/NumCIL.csproj
+	$(XBUILD) $(XBUILD_OPTS) /t:clean NumCIL.Unsafe/NumCIL.Unsafe.csproj
+	$(XBUILD) $(XBUILD_OPTS) /t:clean NumCIL.Bohrium/NumCIL.Bohrium.csproj
 
 install: all
 		cp $(DLL_MAIN) $(INSTALLDIR)
