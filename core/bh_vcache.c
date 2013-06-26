@@ -190,7 +190,7 @@ bh_error bh_vcache_malloc_op(bh_view* array)
 
     bytes = bh_base_size(base);
     if (bytes <= 0) {
-        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %ld bytes!\n", bytes);
+        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (bh_int64)bytes);
         return BH_ERROR;
     }
 

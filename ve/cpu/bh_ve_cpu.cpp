@@ -106,9 +106,9 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
                 }
                 if (res != BH_SUCCESS) {
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
-                                    "bh_error=%ld;"
+                                    "bh_error=%lld;"
                                     " called from bh_ve_cpu_execute()\n",
-                                    res);
+                                    (bh_int64)res);
                     break;
                 }
 

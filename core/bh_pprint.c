@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as
-published by the Free Software Foundation, either version 3
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the
-GNU Lesser General Public License along with Bohrium.
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -30,59 +30,59 @@ If not, see <http://www.gnu.org/licenses/>.
 static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
 
     switch( instr->constant.type) {
-        case BH_BOOL:
-            sprintf(buf, "[ CONST(%s)=%uc ]", bh_type_text(instr->constant.type),
+        case BH_BOOL: 
+            sprintf(buf, "[ CONST(%s)=%uc ]", bh_type_text(instr->constant.type), 
                                               instr->constant.value.bool8);
             break;
-        case BH_INT8:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
+        case BH_INT8:  
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.int8);
             break;
-        case BH_INT16:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
+        case BH_INT16:  
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.int16);
             break;
-        case BH_INT32:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
+        case BH_INT32:  
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.int32);
             break;
-        case BH_INT64:
-            sprintf(buf, "[ CONST(%s)=%ld ]", bh_type_text(instr->constant.type),
+        case BH_INT64:  
+            sprintf(buf, "[ CONST(%s)=%lld ]", bh_type_text(instr->constant.type), 
                                               instr->constant.value.int64);
             break;
-        case BH_UINT8:
-            sprintf(buf, "[ CONST(%s)=%o ]", bh_type_text(instr->constant.type),
+        case BH_UINT8:  
+            sprintf(buf, "[ CONST(%s)=%o ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.uint8);
             break;
-        case BH_UINT16:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
+        case BH_UINT16:  
+            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.uint16);
             break;
-        case BH_UINT32:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
+        case BH_UINT32:  
+            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.uint32);
             break;
-        case BH_UINT64:
-            sprintf(buf, "[ CONST(%s)=%lu ]", bh_type_text(instr->constant.type),
+        case BH_UINT64:  
+            sprintf(buf, "[ CONST(%s)=%llu ]", bh_type_text(instr->constant.type), 
                                               instr->constant.value.uint64);
             break;
-        case BH_FLOAT16:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
+        case BH_FLOAT16:  
+            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.float16);
             break;
-        case BH_FLOAT32:
-            sprintf(buf, "[ CONST(%s)=%f ]", bh_type_text(instr->constant.type),
+        case BH_FLOAT32:  
+            sprintf(buf, "[ CONST(%s)=%f ]", bh_type_text(instr->constant.type), 
                                              instr->constant.value.float32);
             break;
-        case BH_FLOAT64:
-            sprintf(buf, "[ CONST(%s)=%lf ]", bh_type_text(instr->constant.type),
+        case BH_FLOAT64:  
+            sprintf(buf, "[ CONST(%s)=%lf ]", bh_type_text(instr->constant.type), 
                                               instr->constant.value.float64);
             break;
-        case BH_COMPLEX64:
-        case BH_COMPLEX128:
+        case BH_COMPLEX64: 
+        case BH_COMPLEX128: 
         case BH_UNKNOWN:
 
-        default:
+        default: 
             sprintf(buf, "[ CONST=? ]");
     }
 
@@ -116,9 +116,8 @@ static void bh_sprint_array( bh_view *op, char buf[] ) {
 
             }
         }
-
         /*
-        // Text of base-operand
+                                            // Text of base-operand
         if (op->base != NULL) {
             bh_sprint_array( op->base, tmp );
             sprintf( base, "%p -->\n      %s\n", op->base, tmp  );
@@ -127,12 +126,10 @@ static void bh_sprint_array( bh_view *op, char buf[] ) {
         }
 
         sprintf(buf, "[ Addr: %p Dims: %d Start: %d Shape: %s Stride: %s Type: %s Data: %p, Base: %s  ]",
-                op, (int)op->ndim, (int)op->start, shape, stride,
+                op, (int)op->ndim, (int)op->start, shape, stride, 
                 bh_type_text(op->type), op->data, base
         );
-
         */
-
     }
 
 }
@@ -148,7 +145,7 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
 
         if (!bh_is_constant(instr->operand[i]))
             bh_sprint_array( instr->operand[i], op_str );
-        else
+        else 
             //sprintf(op_str, "CONSTANT");
             bh_sprint_const( instr, op_str );
 
@@ -218,7 +215,7 @@ void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
 
     for(j=0; j<dims; j++)
     {
-        sprintf(tmp, "%ld", (long)coord[j]);
+        sprintf(tmp, "%lld", (bh_int64)coord[j]);
         strcat(buf, tmp);
         if (j<dims-1) {
             strcat(buf, ", ");

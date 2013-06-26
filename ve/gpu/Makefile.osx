@@ -13,7 +13,7 @@ CXXFLAGS = $(LCFLAGS) -D__CL_ENABLE_EXCEPTIONS
 LDFLAGS = $(ARCHOPTS) -L../../core -L/System/Library/Frameworks/OpenCL.framework -framework OpenCL -lbh -shared -Wl,-dylib_install_name,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom UserFunctionReduce StringHasher
+		InstructionScheduler Kernel GenerateSourceCode UserFunctionRandom Reduce StringHasher
  
 OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
 INSTALLDIR?=/opt/bohrium/
