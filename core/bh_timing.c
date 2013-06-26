@@ -150,7 +150,7 @@ void _bh_timing_dump_all(void)
     char hname[1024];
     gethostname(hname, 1024);
     char fname[1024];
-    sprintf(fname, "bh_stat.%s.%ld",hname,pid);
+    sprintf(fname, "bh_stat.%s.%lld",hname,(bh_int64)pid);
         
     s << "Timings from the execution (count):\n";
     for(std::map<bh_intp, timing>::iterator it=id2timing.begin(); 
