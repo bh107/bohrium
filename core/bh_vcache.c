@@ -180,19 +180,17 @@ bh_error bh_vcache_malloc_op(bh_view* array)
     bh_base* base;
 
     if (array == NULL) {
-        printf("bh_vcache_malloc(): Cannot allocate memory for a null-pointer!\n");
-        return BH_ERROR;
-    }
-
+        return BH_SUCCESS;          // For convenience BH_SUCCESS is returned
+    }                               // since this often occurs when the operand
+                                    // is a constant...
     base = bh_base_array(array);
-    if (base->data != NULL) {
-        printf("bh_vcache_malloc(): Already allocated!\n");
-        return BH_ERROR;
+    if (base->data != NULL) {       // For convenience BH_SUCCESS is returned
+        return BH_SUCCESS;          // when data is already allocated.
     }
 
     bytes = bh_base_size(base);
     if (bytes <= 0) {
-        printf("bh_vcache_malloc() Cannot allocate %ld bytes!\n", bytes);
+        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %ld bytes!\n", bytes);
         return BH_ERROR;
     }
 
