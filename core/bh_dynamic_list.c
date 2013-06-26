@@ -55,7 +55,7 @@ bh_dynamic_list* bh_dynamic_list_create(bh_intp elsize, bh_intp initial_size)
 bh_intp bh_dynamic_list_append(bh_dynamic_list* list)
 {
     if (list->elsize <= 0)
-        return NULL;
+        return -1;
         
     if (list->count >= list->allocated)
     {
