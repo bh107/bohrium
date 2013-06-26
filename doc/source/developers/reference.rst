@@ -8,13 +8,16 @@ Bla bla bla
 Core
 ----
 
-.. doxygenstruct:: bh_array
+.. doxygenstruct:: bh_base
    :project: Bohrium
 
-.. doxygenfunction:: bh_create_array
+.. doxygenstruct:: bh_view
    :project: Bohrium
 
-.. doxygenfunction:: bh_destroy_array
+.. doxygenfunction:: bh_create_view
+   :project: Bohrium
+
+.. doxygenfunction:: bh_destroy_view
    :project: Bohrium
 
 

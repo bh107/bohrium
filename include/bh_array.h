@@ -92,9 +92,9 @@ bh_error bh_create_view(bh_base*   base,
 /** Destroy array view.
  *
  * @param view The view to destroy
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @return Error code (BH_SUCCESS)
  */
-DLLEXPORT bh_error bh_destroy_array(bh_view* view);
+DLLEXPORT bh_error bh_destroy_view(bh_view* view);
 
 
 #ifdef __cplusplus
