@@ -21,7 +21,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <iostream>
 
-#if __cplusplus >= 199711L
+#ifdef _WIN64
+#define HAS_CPP_HASH 0
+#elif _WIN32
+#define HAS_CPP_HASH 0
+#elif __APPLE__
+#define HAS_CPP_HASH 0
+#elif __cplusplus >= 199711L
+#define HAS_CPP_HASH 1
+#else
+#define HAS_CPP_HASH 0
+#endif
+
+#if HAS_CPP_HASH > 0
 #include <functional>
 std::hash<std::string> string_hasher;
 #else
@@ -40,3 +52,5 @@ size_t string_hasher(std::string str)
     return (size_t)hval;
 }
 #endif
+
+#undef HAS_CPP_HASH
