@@ -73,9 +73,8 @@ bh_error bh_compute_reduce_any_naive( bh_view* op_out, bh_view* op_in, bh_index 
         }
 
         instr.opcode = BH_IDENTITY;       // Copy the first element to the output.
-        instr.operand[0] = op_out;
-        instr.operand[1] = &tmp;
-        instr.operand[2] = NULL;
+        instr.operand[0] = *op_out;
+        instr.operand[1] = tmp;
 
         // TODO: use traverse directly
         //err = traverse_aa<T, T, Instr>( instr );// execute the pseudo-instruction
@@ -87,9 +86,8 @@ bh_error bh_compute_reduce_any_naive( bh_view* op_out, bh_view* op_in, bh_index 
         tmp.start += stride;
 
         instr.opcode = opcode;                   // Reduce over the 'axis' dimension.
-        instr.operand[0] = op_out;               // NB: the first element is already handled.
-        instr.operand[1] = op_out;
-        instr.operand[2] = &tmp;
+        instr.operand[0] = *op_out;               // NB: the first element is already handled.
+        instr.operand[1] = *op_out;
 
         for(i=1; i<nelements; ++i) {
             // TODO: use traverse directly
@@ -113,43 +111,43 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
 
     bh_index axis = inst->constant.value.int64;
     bh_opcode opcode;
-    bh_view *op_out = inst->operand[0];
-    bh_view *op_in  = inst->operand[1];
+    bh_view *op_out = &inst->operand[0];
+    bh_view *op_in  = &inst->operand[1];
 
     assert(op_out != NULL);
 
     switch (inst->opcode)
     {
         case BH_ADD_REDUCE:
-        	opcode = BH_ADD;
-        	break;
+            opcode = BH_ADD;
+            break;
         case BH_MULTIPLY_REDUCE:
-        	opcode = BH_MULTIPLY;
-        	break;
+            opcode = BH_MULTIPLY;
+            break;
         case BH_MINIMUM_REDUCE:
-        	opcode = BH_MINIMUM;
-        	break;
+            opcode = BH_MINIMUM;
+            break;
         case BH_MAXIMUM_REDUCE:
-        	opcode = BH_MAXIMUM;
-        	break;
+            opcode = BH_MAXIMUM;
+            break;
         case BH_LOGICAL_AND_REDUCE:
-        	opcode = BH_LOGICAL_AND;
-        	break;
+            opcode = BH_LOGICAL_AND;
+            break;
         case BH_BITWISE_AND_REDUCE:
-        	opcode = BH_BITWISE_AND;
-        	break;
+            opcode = BH_BITWISE_AND;
+            break;
         case BH_LOGICAL_OR_REDUCE:
-        	opcode = BH_LOGICAL_OR;
-        	break;
+            opcode = BH_LOGICAL_OR;
+            break;
         case BH_BITWISE_OR_REDUCE:
-        	opcode = BH_BITWISE_OR;
-        	break;
+            opcode = BH_BITWISE_OR;
+            break;
         case BH_LOGICAL_XOR_REDUCE:
-        	opcode = BH_LOGICAL_XOR;
-        	break;
+            opcode = BH_LOGICAL_XOR;
+            break;
         case BH_BITWISE_XOR_REDUCE:
-        	opcode = BH_BITWISE_XOR;
-        	break;
+            opcode = BH_BITWISE_XOR;
+            break;
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
@@ -160,10 +158,10 @@ bh_error bh_compute_reduce_naive(bh_instruction *inst)
         return BH_ERROR;
     }
 
-	if (bh_base_array(op_in)->data == NULL) {
+    if (bh_base_array(op_in)->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
-	}
+    }
 
     if (op_in->base->type != op_out->base->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."
@@ -364,39 +362,39 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
         bh_index stride = op_in->stride[axis] * el_size;
         BYTE* src = ((BYTE*)(data_in + op_in->start)) + stride;
 
-		// 4x Loop unrolling
-		bh_index fulls = (nelements - 1) / 4;
-		bh_index remainder = (nelements - 1) % 4;
+        // 4x Loop unrolling
+        bh_index fulls = (nelements - 1) / 4;
+        bh_index remainder = (nelements - 1) % 4;
 
-		for (i = 0; i < fulls; i++) {
-			opcode_func( data_out, data_out, ((T*)src) );
-			src += stride;
-			opcode_func( data_out, data_out, ((T*)src) );
-			src += stride;
-			opcode_func( data_out, data_out, ((T*)src) );
-			src += stride;
-			opcode_func( data_out, data_out, ((T*)src) );
-			src += stride;
-		}
+        for (i = 0; i < fulls; i++) {
+            opcode_func( data_out, data_out, ((T*)src) );
+            src += stride;
+            opcode_func( data_out, data_out, ((T*)src) );
+            src += stride;
+            opcode_func( data_out, data_out, ((T*)src) );
+            src += stride;
+            opcode_func( data_out, data_out, ((T*)src) );
+            src += stride;
+        }
 
-		switch (remainder) {
-			case 3:
-				opcode_func( data_out, data_out, ((T*)src) );
-				src += stride;
-			case 2:
-				opcode_func( data_out, data_out, ((T*)src) );
-				src += stride;
-			case 1:
-				opcode_func( data_out, data_out, ((T*)src) );
-				src += stride;
-		}
+        switch (remainder) {
+            case 3:
+                opcode_func( data_out, data_out, ((T*)src) );
+                src += stride;
+            case 2:
+                opcode_func( data_out, data_out, ((T*)src) );
+                src += stride;
+            case 1:
+                opcode_func( data_out, data_out, ((T*)src) );
+                src += stride;
+        }
 
-	/*
-	} else if (op_in->ndim == 2) {			// 2D General case
+    /*
+    } else if (op_in->ndim == 2) {          // 2D General case
 
-		Experiments show that the general case is almost as fast as
-		 an optimized 2D version
-	*/
+        Experiments show that the general case is almost as fast as
+         an optimized 2D version
+    */
 
     } else {                                    // ND general case
 
@@ -416,31 +414,30 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
             }
         }
 
-        instr.opcode = BH_IDENTITY;					// Copy the first element to the output.
-        instr.operand[0] = op_out;
-        instr.operand[1] = &tmp;
-        instr.operand[2] = NULL;
+        instr.opcode = BH_IDENTITY;                 // Copy the first element to the output.
+        instr.operand[0] = *op_out;
+        instr.operand[1] = tmp;
 
-		bh_tstate state;
-		bh_tstate_reset( &state, &instr );
-		err = traverse_aa<T, T, identity_functor<T, T> >(&instr, &state);
+        bh_tstate state;
+        bh_tstate_reset( &state, &instr );
+        err = traverse_aa<T, T, identity_functor<T, T> >(&instr, &state);
         if (err != BH_SUCCESS) {
             return err;
         }
 
-		bh_index stride = op_in->stride[axis];
-		bh_index stride_bytes = stride * sizeof(T);
+        bh_index stride = op_in->stride[axis];
+        bh_index stride_bytes = stride * sizeof(T);
 
         instr.opcode = opcode;                // Reduce over the 'axis' dimension.
-        instr.operand[0] = op_out;			  // NB: the first element is already handled.
-        instr.operand[1] = op_out;
-        instr.operand[2] = &tmp;
+        instr.operand[0] = *op_out;            // NB: the first element is already handled.
+        instr.operand[1] = *op_out;
+        instr.operand[2] = tmp;
 
         tmp.start += stride;
-		bh_tstate_reset( &state, &instr );
+        bh_tstate_reset( &state, &instr );
 
-		void* out_start = state.start[0];
-		void* tmp_start = state.start[2];
+        void* out_start = state.start[0];
+        void* tmp_start = state.start[2];
 
         for(i=1; i<nelements; ++i) {
 
@@ -451,15 +448,15 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
 
             tmp.start += stride;
 
-			// Faster replacement of bh_tstate_reset
-			tmp_start = (void*)(((char*)tmp_start) + stride_bytes);
+            // Faster replacement of bh_tstate_reset
+            tmp_start = (void*)(((char*)tmp_start) + stride_bytes);
             state.start[0] = out_start;
             state.start[1] = out_start;
             state.start[2] = tmp_start;
         }
     }
 
-	return BH_SUCCESS;
+    return BH_SUCCESS;
 }
 
 bh_error bh_compute_reduce(bh_instruction *inst)
@@ -469,43 +466,43 @@ bh_error bh_compute_reduce(bh_instruction *inst)
 
     bh_index axis = inst->constant.value.int64;
     bh_opcode opcode;
-    bh_view *op_out = inst->operand[0];
-    bh_view *op_in  = inst->operand[1];
+    bh_view *op_out = &inst->operand[0];
+    bh_view *op_in  = &inst->operand[1];
 
     assert(op_out != NULL);
 
     switch (inst->opcode)
     {
         case BH_ADD_REDUCE:
-        	opcode = BH_ADD;
-        	break;
+            opcode = BH_ADD;
+            break;
         case BH_MULTIPLY_REDUCE:
-        	opcode = BH_MULTIPLY;
-        	break;
+            opcode = BH_MULTIPLY;
+            break;
         case BH_MINIMUM_REDUCE:
-        	opcode = BH_MINIMUM;
-        	break;
+            opcode = BH_MINIMUM;
+            break;
         case BH_MAXIMUM_REDUCE:
-        	opcode = BH_MAXIMUM;
-        	break;
+            opcode = BH_MAXIMUM;
+            break;
         case BH_LOGICAL_AND_REDUCE:
-        	opcode = BH_LOGICAL_AND;
-        	break;
+            opcode = BH_LOGICAL_AND;
+            break;
         case BH_BITWISE_AND_REDUCE:
-        	opcode = BH_BITWISE_AND;
-        	break;
+            opcode = BH_BITWISE_AND;
+            break;
         case BH_LOGICAL_OR_REDUCE:
-        	opcode = BH_LOGICAL_OR;
-        	break;
+            opcode = BH_LOGICAL_OR;
+            break;
         case BH_BITWISE_OR_REDUCE:
-        	opcode = BH_BITWISE_OR;
-        	break;
+            opcode = BH_BITWISE_OR;
+            break;
         case BH_LOGICAL_XOR_REDUCE:
-        	opcode = BH_LOGICAL_XOR;
-        	break;
+            opcode = BH_LOGICAL_XOR;
+            break;
         case BH_BITWISE_XOR_REDUCE:
-        	opcode = BH_BITWISE_XOR;
-        	break;
+            opcode = BH_BITWISE_XOR;
+            break;
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
@@ -516,10 +513,10 @@ bh_error bh_compute_reduce(bh_instruction *inst)
         return BH_ERROR;
     }
 
-	if (bh_base_array(op_in)->data == NULL) {
+    if (bh_base_array(op_in)->data == NULL) {
         fprintf(stderr, "ERR: bh_compute_reduce; input-operand ( op_in ) is null.\n");
         return BH_ERROR;
-	}
+    }
 
     if (op_in->base->type != op_out->base->type) {
         fprintf(stderr, "ERR: bh_compute_reduce; input and output types are mixed."

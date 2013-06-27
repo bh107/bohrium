@@ -31,38 +31,38 @@ bh_computeloop_naive bh_compute_get_naive( bh_instruction *instr ) {
 
     if (bh_operands(instr->opcode) == 3) {   // Three operands
 
-        if (bh_is_constant(instr->operand[1])) {             // First operand is constant
+        if (bh_is_constant(&instr->operand[1])) {             // First operand is constant
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
+                +(instr->operand[0].base->type << 8) \
                 +(instr->constant.type << 12) \
-                +(instr->operand[2]->base->type << 16) \
+                +(instr->operand[2].base->type << 16) \
                 +(1 << 17);
 
-        } else if (bh_is_constant(instr->operand[2])) {      // Second operand is constant
+        } else if (bh_is_constant(&instr->operand[2])) {      // Second operand is constant
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12) \
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12) \
                 +(instr->constant.type << 16) \
                 +(1 << 18);
 
         } else {                                                // No constant operand
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12) \
-                +(instr->operand[2]->base->type << 16);
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12) \
+                +(instr->operand[2].base->type << 16);
         }
 
     } else {                                    // Two operands
 
-        if (bh_is_constant(instr->operand[1])) {
+        if (bh_is_constant(&instr->operand[1])) {
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
+                +(instr->operand[0].base->type << 8) \
                 +(instr->constant.type << 12) \
                 +(1 << 17);
         } else {
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12);
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12);
         }
     }
 
@@ -2310,38 +2310,38 @@ bh_computeloop bh_compute_get( bh_instruction *instr ) {
 
     if (bh_operands(instr->opcode) == 3) {   // Three operands
 
-        if (bh_is_constant(instr->operand[1])) {             // First operand is constant
+        if (bh_is_constant(&instr->operand[1])) {             // First operand is constant
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
+                +(instr->operand[0].base->type << 8) \
                 +(instr->constant.type << 12) \
-                +(instr->operand[2]->base->type << 16) \
+                +(instr->operand[2].base->type << 16) \
                 +(1 << 17);
 
-        } else if (bh_is_constant(instr->operand[2])) {      // Second operand is constant
+        } else if (bh_is_constant(&instr->operand[2])) {      // Second operand is constant
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12) \
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12) \
                 +(instr->constant.type << 16) \
                 +(1 << 18);
 
         } else {                                                // No constant operand
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12) \
-                +(instr->operand[2]->base->type << 16);
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12) \
+                +(instr->operand[2].base->type << 16);
         }
 
     } else {                                    // Two operands
 
-        if (bh_is_constant(instr->operand[1])) {
+        if (bh_is_constant(&instr->operand[1])) {
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
+                +(instr->operand[0].base->type << 8) \
                 +(instr->constant.type << 12) \
                 +(1 << 17);
         } else {
             poly = instr->opcode \
-                +(instr->operand[0]->base->type << 8) \
-                +(instr->operand[1]->base->type << 12);
+                +(instr->operand[0].base->type << 8) \
+                +(instr->operand[1].base->type << 12);
         }
     }
 

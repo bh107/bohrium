@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
 
-    if(bh_data_malloc(C) != BH_SUCCESS)
+    if(bh_data_malloc(C->base) != BH_SUCCESS)
         return BH_OUT_OF_MEMORY;
 
     Type* A_data;
@@ -64,16 +64,16 @@ template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
 bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg)
 {
     bh_matmul_type *m_arg = (bh_matmul_type *) arg;
-    bh_view *C = m_arg->operand[0];
-    bh_view *A = m_arg->operand[1];
-    bh_view *B = m_arg->operand[2];
+    bh_view *C = &m_arg->operand[0];
+    bh_view *A = &m_arg->operand[1];
+    bh_view *B = &m_arg->operand[2];
 
     //Make sure that the arrays memory are allocated.
-    if(bh_data_malloc(A) != BH_SUCCESS)
+    if(bh_data_malloc(A->base) != BH_SUCCESS)
         return BH_OUT_OF_MEMORY;
-    if(bh_data_malloc(B) != BH_SUCCESS)
+    if(bh_data_malloc(B->base) != BH_SUCCESS)
         return BH_OUT_OF_MEMORY;
-    if(bh_data_malloc(C) != BH_SUCCESS)
+    if(bh_data_malloc(C->base) != BH_SUCCESS)
         return BH_OUT_OF_MEMORY;
 
     switch (bh_base_array(C)->type)

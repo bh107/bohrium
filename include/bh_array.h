@@ -72,31 +72,6 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
                                   bh_index   nelements,
                                   bh_base**  new_base);
 
-/* Create a new array view.
- *
- * @base Pointer to the base array
- * @ndim Number of dimensions
- * @start Index of the start element
- * @shape[BH_MAXDIM] Number of elements in each dimention
- * @stride[BH_MAXDIM] The stride for each dimention
- * @new_view The handler for the newly created view
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
- */
-bh_error bh_create_view(bh_base*   base,
-                        bh_intp    ndim,
-                        bh_index   start,
-                        bh_index   shape[BH_MAXDIM],
-                        bh_index   stride[BH_MAXDIM],
-                        bh_view**  new_view);
-
-/** Destroy array view.
- *
- * @param view The view to destroy
- * @return Error code (BH_SUCCESS)
- */
-DLLEXPORT bh_error bh_destroy_view(bh_view* view);
-
-
 #ifdef __cplusplus
 }
 #endif

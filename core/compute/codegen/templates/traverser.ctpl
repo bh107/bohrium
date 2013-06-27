@@ -488,17 +488,17 @@ bh_error traverse_naive_${traverse.sig}( bh_instruction *instr, bh_tstate_naive*
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
     %for $op in $traverse.ops[1:]
     %if $op[1] == 'a'
-    bh_view *a$op[0] = instr->operand[$op[0]];
+    bh_view *a$op[0] = &instr->operand[$op[0]];
     %end if
     %end for
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
     %for $op in $traverse.ops[1:]
     %if $op[1] == 'a'
-    T$op[0]* d$op[0] = (T$op[0]*) bh_base_array(instr->operand[$op[0]])->data;
+    T$op[0]* d$op[0] = (T$op[0]*) instr->operand[$op[0]].base->data;
     %else
     T$op[0]* d$op[0] = (T$op[0]*) &(instr->constant.value);
     %end if

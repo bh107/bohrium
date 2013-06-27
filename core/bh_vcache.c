@@ -151,7 +151,7 @@ bh_error bh_vcache_free(bh_instruction* inst)
     bh_base* base;
     bh_intp nelements, bytes;
 
-    base = bh_base_array(inst->operand[0]);
+    base = inst->operand[0].base;
 
     if (NULL != base->data) {
         nelements   = base->nelem;
@@ -166,7 +166,6 @@ bh_error bh_vcache_free(bh_instruction* inst)
         }
 		base->data = NULL;
     }
-    inst->operand[0] = NULL;
 
     return BH_SUCCESS;
 }
@@ -183,7 +182,7 @@ bh_error bh_vcache_malloc_op(bh_view* array)
         return BH_SUCCESS;          // For convenience BH_SUCCESS is returned
     }                               // since this often occurs when the operand
                                     // is a constant...
-    base = bh_base_array(array);
+    base = array->base;
     if (base->data != NULL) {       // For convenience BH_SUCCESS is returned
         return BH_SUCCESS;          // when data is already allocated.
     }
@@ -224,7 +223,7 @@ bh_error bh_vcache_malloc(bh_instruction* inst)
         case BH_FREE:
             break;
         default:
-            return bh_vcache_malloc_op(inst->operand[0]);
+            return bh_vcache_malloc_op(&inst->operand[0]);
             break;
     }
     return BH_SUCCESS;

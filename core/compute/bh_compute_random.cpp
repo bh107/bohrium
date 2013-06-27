@@ -188,7 +188,7 @@ rk_initseed(rk_state *state)
 bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 {
     bh_random_type *a = (bh_random_type *) arg;
-    bh_view *ary = a->operand[0];
+    bh_view *ary = &a->operand[0];
     bh_intp size = bh_nelements(ary->ndim, ary->shape);
     bh_base *base = bh_base_array(ary);
     bh_error res = BH_SUCCESS;

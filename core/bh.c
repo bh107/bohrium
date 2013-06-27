@@ -142,6 +142,21 @@ bh_intp bh_set_contiguous_stride(bh_view *view)
     return s;
 }
 
+/* Updates the view with the complete base
+ *
+ * @view    The view to update (in-/out-put)
+ * @base    The base assign to the view
+ * @return  The total number of elements in view
+ */
+void bh_assign_complete_base(bh_view *view, bh_base *base)
+{
+    view->base = base;
+    view->ndim = 1;
+    view->start = 0;
+    view->shape[0] = view->base->nelem;
+    view->stride[0] = 1;
+}
+
 /* Calculate the offset into an array based on element index
  *
  * @ndim     Number of dimentions
@@ -221,21 +236,18 @@ bh_error bh_data_get(bh_view* view, bh_data_ptr* result)
     return BH_SUCCESS;
 }
 
-/* Allocate data memory for the given view if not already allocated.
- * For convenience, the view is allowed to be NULL.
+/* Allocate data memory for the given base if not already allocated.
+ * For convenience, the base is allowed to be NULL.
  *
- * @view    The view in question
+ * @base    The base in question
  * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-bh_error bh_data_malloc(bh_view* view)
+bh_error bh_data_malloc(bh_base* base)
 {
     bh_intp bytes;
-    bh_base* base;
 
-    if(view == NULL)
+    if(base == NULL)
         return BH_SUCCESS;
-
-    base = bh_base_array(view);
 
     if(base->data != NULL)
         return BH_SUCCESS;
@@ -297,31 +309,106 @@ bh_error bh_data_free(bh_view* view)
  * @instruction  The instruction in question
  * @return The operand list
  */
-bh_view **bh_inst_operands(const bh_instruction *instruction)
+bh_view *bh_inst_operands(bh_instruction *instruction)
 {
     if (instruction->opcode == BH_USERFUNC)
-        return (bh_view **) instruction->userfunc->operand;
+        return (bh_view *) instruction->userfunc->operand;
     else
-        return (bh_view **) instruction->operand;
+        return (bh_view *) &instruction->operand;
 }
 
-
-/* Retrive the operand type of a instruction.
+/* Determines whether the base array is a scalar.
  *
- * @instruction  The instruction in question
- * @operand_no Number of the operand in question
- * @return The operand type
+ * @view The view
+ * @return The boolean answer
  */
-bh_type bh_type_operand(const bh_instruction *instruction,
-                              bh_intp operand_no)
+bool bh_is_scalar(const bh_view* view)
 {
-    bh_view **operands = bh_inst_operands(instruction);
-    bh_view *operand = operands[operand_no];
+    return bh_base_array(view)->nelem == 1;
+}
 
-    if (bh_is_constant(operand))
-        return instruction->constant.type;
-    else
-        return bh_base_array(operand)->type;
+/* Determines whether the operand is a constant
+ *
+ * @o The operand
+ * @return The boolean answer
+ */
+bool bh_is_constant(const bh_view* o)
+{
+    return (o->base == NULL);
+}
+
+/* Flag operand as a constant
+ *
+ * @o      The operand
+ */
+void bh_flag_constant(bh_view* o)
+{
+    o->base = NULL;
+}
+
+/* Determines whether the two views are the same
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_same_view(const bh_view* a, const bh_view* b)
+{
+    if (a == b)
+        return true;
+    if (bh_base_array(a) != bh_base_array(b))
+        return false;
+    if (memcmp(((char*)a)+sizeof(bh_view*),
+               ((char*)b)+sizeof(bh_view*),
+               sizeof(bh_view)-sizeof(bh_view*)-sizeof(bh_data_ptr)))
+        return false;
+    return true;
+}
+
+inline int gcd(int a, int b)
+{
+    int c = a % b;
+    while(c != 0)
+    {
+        a = b;
+        b = c;
+        c = a % b;
+    }
+    return b;
+}
+/* Determines whether two views access some of the same data points
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_disjoint_views(const bh_view *a, const bh_view *b)
+{
+    if (bh_is_constant(a) || bh_is_constant(b)) // One is a constant
+        return true;
+    if(bh_base_array(a) != bh_base_array(b)) //different base
+        return true;
+    if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
+        return false;
+
+    int astart = a->start;
+    int bstart = b->start;
+    int stride = 1;
+    for (int i = 0; i < a->ndim; ++i)
+    {
+        stride = gcd(a->stride[i], b->stride[i]);
+        int as = astart / stride;
+        int bs = bstart / stride;
+        int ae = as + a->shape[i] * (a->stride[i]/stride);
+        int be = bs + b->shape[i] * (b->stride[i]/stride);
+        if (ae <= bs || be <= as)
+            return true;
+        astart %= stride;
+        bstart %= stride;
+    }
+    if (stride > 1 && a->start % stride != b->start % stride)
+        return true;
+    return false;
 }
 
 /* Determines whether two views overlap.
@@ -334,7 +421,7 @@ bh_type bh_type_operand(const bh_instruction *instruction,
  */
 bool bh_view_overlap(const bh_view *a, const bh_view *b)
 {
-    if(a == NULL || b == NULL)
+    if(bh_is_constant(a) || bh_is_constant(b))
         return false;
 
     if(bh_base_array(a) != bh_base_array(b))
@@ -361,88 +448,28 @@ bool bh_view_overlap(const bh_view *a, const bh_view *b)
     return false;
 }
 
-/* Determines whether the base array is a scalar.
- *
- * @view The view
- * @return The boolean answer
- */
-bool bh_is_scalar(const bh_view* view)
-{
-    return bh_base_array(view)->nelem == 1;
-}
-
-/* Determines whether the operand is a constant
- *
- * @o The operand
- * @return The boolean answer
- */
-bool bh_is_constant(const bh_view* o)
-{
-    return (o == NULL);
-}
-
-/* Determines whether the two views are the same
+/* Determines whether two views are identical and points
+ * to the same base array.
  *
  * @a The first view
  * @b The second view
  * @return The boolean answer
  */
-bool bh_same_view(const bh_view* a, const bh_view* b)
+bool bh_view_identical(const bh_view *a, const bh_view *b)
 {
-    if (a == b)
-        return true;
-    if (bh_base_array(a) != bh_base_array(b))
+    int i;
+    if(bh_is_constant(a) || bh_is_constant(b))
         return false;
-    if (memcmp(((char*)a)+sizeof(bh_view*),
-               ((char*)b)+sizeof(bh_view*),
-               sizeof(bh_view)-sizeof(bh_view*)-sizeof(bh_data_ptr)))
+    if(a->base != b->base)
         return false;
+    if(a->ndim != b->ndim)
+        return false;
+    for(i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return false;
+        if(a->stride[i] != b->stride[i])
+            return false;
+    }
     return true;
-}
-
-
-inline int gcd(int a, int b)
-{
-    int c = a % b;
-    while(c != 0)
-    {
-        a = b;
-        b = c;
-        c = a % b;
-    }
-    return b;
-}
-/* Determines whether two views access some of the same data points
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_disjoint_views(const bh_view *a, const bh_view *b)
-{
-    if (a == NULL || b == NULL) // One is a constant
-        return true;
-    if(bh_base_array(a) != bh_base_array(b)) //different base
-        return true;
-    if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
-        return false;
-
-    int astart = a->start;
-    int bstart = b->start;
-    int stride = 1;
-    for (int i = 0; i < a->ndim; ++i)
-    {
-        stride = gcd(a->stride[i], b->stride[i]);
-        int as = astart / stride;
-        int bs = bstart / stride;
-        int ae = as + a->shape[i] * (a->stride[i]/stride);
-        int be = bs + b->shape[i] * (b->stride[i]/stride);
-        if (ae <= bs || be <= as)
-            return true;
-        astart %= stride;
-        bstart %= stride;
-    }
-    if (stride > 1 && a->start % stride != b->start % stride)
-        return true;
-    return false;
 }

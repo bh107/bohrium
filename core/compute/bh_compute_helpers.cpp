@@ -46,43 +46,43 @@ void bh_compact_dimensions(bh_tstate* state)
 
 void bh_tstate_reset( bh_tstate *state, bh_instruction *instr ) {
 
-	bh_index i, j, blocksize, elsize;
-	void* basep;
+    bh_index i, j, blocksize, elsize;
+    void* basep;
 
-	state->ndim         = instr->operand[0]->ndim;
-	state->noperands    = bh_operands(instr->opcode);
-	blocksize 			= state->ndim * sizeof(bh_index);
+    state->ndim         = instr->operand[0].ndim;
+    state->noperands    = bh_operands(instr->opcode);
+    blocksize 			= state->ndim * sizeof(bh_index);
 
-	// As all arrays have the same dimensions, we keep a single shared shape
-	memcpy(state->shape, instr->operand[0]->shape, blocksize);
+    // As all arrays have the same dimensions, we keep a single shared shape
+    memcpy(state->shape, instr->operand[0].shape, blocksize);
 
-	//Prepare strides for compacting
-	for(i = 0; i < state->noperands; i++)
-        if (!bh_is_constant(instr->operand[i]))
-			memcpy(state->stride[i], instr->operand[i]->stride, blocksize);
+    //Prepare strides for compacting
+    for(i = 0; i < state->noperands; i++)
+    if (!bh_is_constant(&instr->operand[i]))
+        memcpy(state->stride[i], instr->operand[i].stride, blocksize);
 
-	bh_compact_dimensions(state);
+    bh_compact_dimensions(state);
 
-	// Revisit the strides and pre-calculate them for traversal
-	for(i = 0; i < state->noperands; i++)
-	{
-        if (!bh_is_constant(instr->operand[i]))
+    // Revisit the strides and pre-calculate them for traversal
+    for(i = 0; i < state->noperands; i++)
+    {
+        if (!bh_is_constant(&instr->operand[i]))
         {
-        	elsize = bh_type_size(bh_base_array(instr->operand[i])->type);
+            elsize = bh_type_size(instr->operand[i].base->type);
 
-        	// Precalculate the pointer
-        	basep = bh_base_array(instr->operand[i])->data;
-        	assert(basep != NULL);
-			state->start[i] = (void*)(((char*)basep) + (instr->operand[i]->start * elsize));
+            // Precalculate the pointer
+            basep = instr->operand[i].base->data;
+            assert(basep != NULL);
+            state->start[i] = (void*)(((char*)basep) + (instr->operand[i].start * elsize));
 
-			// Precalculate the strides in bytes,
-			// relative to the size of the underlying dimension
-			for(j = 0; j < state->ndim - 1; j++) {
-				state->stride[i][j] = (state->stride[i][j] - (state->stride[i][j+1] * state->shape[j+1])) * elsize;
-			}
-			state->stride[i][state->ndim - 1] = state->stride[i][state->ndim - 1] * elsize;
-		}
-	}
+            // Precalculate the strides in bytes,
+            // relative to the size of the underlying dimension
+            for(j = 0; j < state->ndim - 1; j++) {
+                state->stride[i][j] = (state->stride[i][j] - (state->stride[i][j+1] * state->shape[j+1])) * elsize;
+            }
+            state->stride[i][state->ndim - 1] = state->stride[i][state->ndim - 1] * elsize;
+        }
+    }
 }
 
 /**

@@ -895,13 +895,13 @@ bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
-    bh_view *a1 = instr->operand[1];
-    bh_view *a2 = instr->operand[2];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
+    bh_view *a2 = &instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
-    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
+    T2* d2 = (T2*) instr->operand[2].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
@@ -970,11 +970,11 @@ bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
-    bh_view *a1 = instr->operand[1];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
     T2* d2 = (T2*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated
@@ -1039,12 +1039,12 @@ bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
-    bh_view *a2 = instr->operand[2];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a2 = &instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
     T1* d1 = (T1*) &(instr->constant.value);
-    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
+    T2* d2 = (T2*) instr->operand[2].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d2 != NULL);
@@ -1108,11 +1108,11 @@ bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
-    bh_view *a1 = instr->operand[1];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
@@ -1176,9 +1176,9 @@ bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_view *a0 = instr->operand[0];        // Operand pointers
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
     T1* d1 = (T1*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated

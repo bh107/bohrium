@@ -108,7 +108,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
             case BH_NONE:
                 continue;
         }
-        nelements = bh_nelements( insts[i].operand[0]->ndim, insts[i].operand[0]->shape );
+        nelements = bh_nelements( insts[i].operand[0].ndim, insts[i].operand[0].shape );
     }
 
     for(bh_intp i=start; ((do_fuse) && (i<=end)); i++)           // Go through the instructions...
@@ -123,7 +123,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
         }
         opcount = bh_operands(insts[i].opcode);
                                                                     // Check for collisions
-        op      = insts[i].operand[0];                              // Look at the output-operand
+        op      = &insts[i].operand[0];                             // Look at the output-operand
         base    = bh_base_array( op );
 
         if (bh_nelements(op->ndim, op->shape) != nelements) {
@@ -143,8 +143,8 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
 
         for(int j=1; ((do_fuse) && (j<opcount)); j++)               // Look at the input-operands
         {
-            op = insts[i].operand[j];
-            if (bh_is_constant( op )) {                          // Ignore constants
+            op = &insts[i].operand[j];
+            if (bh_is_constant( op )) {                             // Ignore constants
                 break;
             }
             base = bh_base_array( op );
@@ -165,7 +165,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
         {
             bundle_len++;                                           // Increment bundle
                                                                     //
-            op      = insts[i].operand[0];                          // Add operand(s) to "kernel"
+            op      = &insts[i].operand[0];                          // Add operand(s) to "kernel"
             base    = bh_base_array( op );                       //
                                                                     // - output operand
             ops.insert(     std::pair<bh_base_ptr, bh_view_ptr>( base, op ) );
@@ -179,7 +179,7 @@ bh_intp bh_inst_bundle(bh_instruction *insts, bh_intp start, bh_intp end, bh_int
             for(int j=1; j < opcount; j++)                          // - input operand(s)
             {
 
-                op      = insts[i].operand[j];
+                op      = &insts[i].operand[j];
                 if (bh_is_constant(op)) {                        // Ignore constants
                     break;
                 }

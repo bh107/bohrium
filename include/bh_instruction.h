@@ -54,7 +54,7 @@ extern "C" {
     bh_intp     nout;            \
     bh_intp     nin;             \
     bh_intp     struct_size;     \
-    bh_view*    operand[nop];    \
+    bh_view     operand[nop];    \
 
 //The base type for user-defined functions.
 typedef struct
@@ -68,7 +68,7 @@ typedef struct
     //Opcode: Identifies the operation
     bh_opcode  opcode;
     //Id of each operand
-    bh_view*  operand[BH_MAX_NO_OPERANDS];
+    bh_view  operand[BH_MAX_NO_OPERANDS];
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
     //Points to the user-defined function when the opcode is BH_USERFUNC.
