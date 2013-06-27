@@ -41,8 +41,8 @@ static bh_component *vem_node_myself;
 //Number of user-defined functions registered.
 static bh_intp userfunc_count = 0;
 
-//Allocated arrays
-static std::set<bh_view*> allocated_views;
+//Allocated base arrays
+static std::set<bh_base*> allocated_bases;
 
 //The timing ID for executions
 static bh_intp exec_timing;
@@ -103,21 +103,21 @@ bh_error bh_vem_node_shutdown(void)
     bh_component_free_ptr(vem_node_components);
     vem_node_components = NULL;
 
-    if(allocated_views.size() > 0)
+    if(allocated_bases.size() > 0)
     {
-        long s = (long) allocated_views.size();
+        long s = (long) allocated_bases.size();
         if(s > 20)
-            fprintf(stderr, "[NODE-VEM] Warning %ld views were not discarded "
+            fprintf(stderr, "[NODE-VEM] Warning %ld base arrays were not discarded "
                             "on exit (too many to show here).\n", s);
         else
         {
-            fprintf(stderr, "[NODE-VEM] Warning %ld views were not discarded "
+            fprintf(stderr, "[NODE-VEM] Warning %ld base arrays were not discarded "
                             "on exit (only showing the array IDs because the "
-                            "view list may be corrupted due to reuse of view structs):\n", s);
-            for(std::set<bh_view*>::iterator it=allocated_views.begin();
-                it != allocated_views.end(); ++it)
+                            "view list may be corrupted due to reuse of base structs):\n", s);
+            for(std::set<bh_base*>::iterator it=allocated_bases.begin();
+                it != allocated_bases.end(); ++it)
             {
-                fprintf(stderr, "view id: %p\n", *it);
+                fprintf(stderr, "base id: %p\n", *it);
             }
         }
     }
@@ -154,7 +154,7 @@ bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
     }
     return e;
 }
-
+/*
 // Retrun true if the base is referenced by a view in 'allocated_views'
 static bool referenced(const bh_base *base)
 {
@@ -166,7 +166,7 @@ static bool referenced(const bh_base *base)
     }
     return false;
 }
-
+*/
 
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
@@ -186,13 +186,13 @@ bh_error bh_vem_node_execute(bh_intp count,
     {
         bh_instruction* inst = &inst_list[i];
         int nop = bh_operands_in_instruction(inst);
-        bh_view **operands = bh_inst_operands(inst);
+        bh_view *operands = bh_inst_operands(inst);
 
-        //Save all new arrays
+        //Save all new base arrays
         for(bh_intp o=0; o<nop; ++o)
         {
-            if(operands[o] != NULL)
-                allocated_views.insert(operands[o]);
+            if(bh_is_constant(&operands[o]))
+                allocated_bases.insert(operands[o].base);
         }
 
         #ifdef BH_TIMING
