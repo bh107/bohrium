@@ -102,13 +102,6 @@ DLLEXPORT bh_error bh_graph_destroy(bh_ir* bhir);
  */
 DLLEXPORT bh_error bh_graph_append(bh_ir* bhir, bh_instruction* instruction, bh_intp instruction_count);
 
-/* Parses the instruction list and creates a new graph
- *
- * @bhir The graph to update
- * @return Error codes (BH_SUCCESS) 
- */
-DLLEXPORT bh_error bh_graph_parse(bh_ir* bhir);
-
 /* Creates a new graph node.
  *
  * @bhir The bh_ir structure

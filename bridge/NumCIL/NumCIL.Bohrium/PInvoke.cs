@@ -1659,13 +1659,5 @@ namespace NumCIL.Bohrium
 		/// <param name="instruction_count">The number of instructions in the list</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static bh_error bh_graph_append(bh_ir_ptr bhir, bh_instruction[] instructions, bh_intp instruction_count);
-
-		/// <summary>
-		/// Parses the current batch into a graph state
-		/// </summary>
-		/// <param name="bhir">The bh_ir instance to update</param>
-		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-		public extern static bh_error bh_graph_parse(bh_ir_ptr bhir);
-		
 	}
 }

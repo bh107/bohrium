@@ -172,9 +172,6 @@ size_t Runtime::execute()
     bh_ir* bhir;
     bh_error status = bh_graph_create(&bhir, queue, queue_size);
     if (status == BH_SUCCESS)
-        status = bh_graph_parse(bhir);
-    
-    if (status == BH_SUCCESS)
     {
         status = vem_execute(bhir);   // Send instructions to Bohrium
         queue_size = 0;                                     // Reset size of the queue

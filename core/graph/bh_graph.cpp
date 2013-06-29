@@ -136,8 +136,9 @@ bh_error bh_graph_create(bh_ir** bhir, bh_instruction* instructions, bh_intp ins
         free(ir);
         return BH_ERROR;
     }
-    
+        
     if (instruction_count > 0)
+    {
         if (bh_graph_append(ir, instructions, instruction_count) != BH_SUCCESS)
         {
             bh_dynamic_list_destroy(ir->nodes);
@@ -145,6 +146,9 @@ bh_error bh_graph_create(bh_ir** bhir, bh_instruction* instructions, bh_intp ins
             free(ir);
             return BH_ERROR;            
         }
+    }
+    
+    
     
     *bhir = ir;
     return BH_SUCCESS;
@@ -195,7 +199,8 @@ bh_error bh_graph_append(bh_ir* bhir, bh_instruction* instructions, bh_intp inst
     if (bhir->root >= 0)
     {
         // Updating is not supported,
-        // we need to maintain the map for that to work
+        // we need to maintain the read/write maps for that to work
+        // but we do not want to copy those structures around
         return BH_ERROR;
     }
 
@@ -461,6 +466,17 @@ bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
     {
         *iterator = NULL;
         return BH_ERROR;
+    }
+
+    // Make sure we have the graph parsed
+	if (bhir->root < 0)
+	{
+        if (bh_graph_parse(bhir) != BH_SUCCESS)
+        {
+            free(t);
+            *iterator = NULL;
+            return BH_ERROR;        
+        }
     }
     
     t->scheduled = new hashmap<bh_node_index, bh_node_index, hash_bh_intp>();

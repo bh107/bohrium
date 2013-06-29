@@ -47,10 +47,7 @@ namespace NumCIL.Bohrium
 		/// </summary>
 		public void Execute(PInvoke.bh_component component)
 		{
-			var res = PInvoke.bh_graph_parse(m_ptr);
-			if (res != PInvoke.bh_error.BH_SUCCESS)
-				throw new BohriumException(res);
-			res = component.execute(m_ptr);
+			var res = component.execute(m_ptr);
 			if (res != PInvoke.bh_error.BH_SUCCESS)
 				throw new BohriumException(res);
 		}
