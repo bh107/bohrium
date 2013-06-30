@@ -32,6 +32,10 @@ static bh_intp nselect_impl_id = 0;
 static bh_intp vcache_size = 10;
 static bh_cpu_traverser traverse_method = FRUIT_LOOPS;
 
+#ifdef TIMING
+static bh_uint64 times[BH_NO_OPCODES];
+#endif
+
 bh_error bh_ve_cpu_init(bh_component *self)
 {
     char *env;
@@ -61,6 +65,11 @@ bh_error bh_ve_cpu_init(bh_component *self)
     }
 
     bh_vcache_init(vcache_size);
+
+    #ifdef TIMING
+    memset(&times, 0, sizeof(bh_uint64)*BH_NO_OPCODES);
+    #endif
+
     return BH_SUCCESS;
 }
 
@@ -70,13 +79,19 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
     bh_intp count;
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
+    
+    #ifdef TIMING
+    bh_uint64 begin=0, end=0;
+    #endif
 
     for (count=0; count<instruction_count; count++) {
         instr = &instruction_list[count];
         #ifdef DEBUG
         bh_pprint_instr(instr);
         #endif
-                                                    
+        #ifdef TIMING
+        begin = _bh_timing();
+        #endif
         switch (instr->opcode) {                // Dispatch instruction
             case BH_NONE:                       // NOOP.
             case BH_DISCARD:
@@ -106,7 +121,7 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
                 }
                 if (res != BH_SUCCESS) {
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
-                                    "bh_error=%lld;"
+                                    "bh_error=%ld;"
                                     " called from bh_ve_cpu_execute()\n",
                                     (bh_int64)res);
                     break;
@@ -125,6 +140,11 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
         if (res != BH_SUCCESS) {                // Instruction failed
             break;
         }
+
+        #ifdef TIMING
+        end = _bh_timing();
+        times[instr->opcode] += end - begin;
+        #endif
     }
 
 	return res;
@@ -136,6 +156,17 @@ bh_error bh_ve_cpu_shutdown( void )
         bh_vcache_clear();  // De-allocate vcache
         bh_vcache_delete();
     }
+
+    #ifdef TIMING
+    bh_uint64 sum = 0;
+    for(size_t i=0; i<BH_NO_OPCODES; ++i) {
+        if (times[i]>0) {
+            sum += times[i];
+            printf("%s, %f\n", bh_opcode_text(i), (times[i]/1000000.0));
+        }
+    }
+    printf("TOTAL, %f\n", sum/1000000.0);
+    #endif
 
     return BH_SUCCESS;
 }
