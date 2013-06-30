@@ -469,7 +469,7 @@ bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
     }
 
     // Make sure we have the graph parsed
-	if (bhir->root < 0)
+	if (bhir->root < 0 && getenv("BH_DISABLE_BHIR_GRAPH") == NULL)
 	{
         if (bh_graph_parse(bhir) != BH_SUCCESS)
         {
