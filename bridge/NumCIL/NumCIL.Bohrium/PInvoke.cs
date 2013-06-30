@@ -311,9 +311,9 @@ namespace NumCIL.Bohrium
             }
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.
+            /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke.bh_constant"/>.
             /// </summary>
-            /// <returns>A <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.</returns>
+            /// <returns>A <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke.bh_constant"/>.</returns>
             public override string ToString()
 			{
 				if (this.type == bh_type.BH_BOOL)

@@ -668,6 +668,10 @@ namespace NumCIL.Bohrium
             get { return m_size < int.MaxValue; }
         }
 
+		/// <summary>
+		/// Basic execution function, splits the operations into bohrium and local execution
+		/// </summary>
+		/// <param name="work">The list of operations to perform</param>
 		public override void DoExecute(IList<IPendingOperation> work)
 		{
 			var tmp = new List<IPendingOperation>();
@@ -748,7 +752,6 @@ namespace NumCIL.Bohrium
 		/// Executes all pending operations in the list
 		/// </summary>
 		/// <param name="work">The list of operations to execute</param>
-		/// <param name="supported">A list of supported instructions that is produced from another context</param>
 		public override void DoExecute(IEnumerable<PendingOperation<T>> work)
 		{
 			DoExecute(work, null);

@@ -79,10 +79,6 @@ namespace NumCIL.Bohrium
 		/// <summary>
 		/// Releases all resource used by the <see cref="NumCIL.Bohrium.IR"/> object.
 		/// </summary>
-		/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="NumCIL.Bohrium.IR"/>. The
-		/// <see cref="Dispose"/> method leaves the <see cref="NumCIL.Bohrium.IR"/> in an unusable state. After calling
-		/// <see cref="Dispose"/>, you must release all references to the <see cref="NumCIL.Bohrium.IR"/> so the garbage
-		/// collector can reclaim the memory that the <see cref="NumCIL.Bohrium.IR"/> was occupying.</remarks>
 		public void Dispose()
 		{
 			Dispose(true);

@@ -353,7 +353,7 @@ namespace NumCIL.Bohrium
                 lock (m_executelock)
                     ExecuteWithoutLocks(lst, out errorIndex);
             }
-            catch (Exception ex)
+            catch
             {
                 //This catch handler protects against leaks that happen during execution
                 if (cleanup_lst != null)
