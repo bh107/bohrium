@@ -30,8 +30,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_dynamite.h"
 #include "compiler.cpp"
 
-//#include "kernel.h"
-#define BH_DYNAMITE_KRN_MAX_INPUTS 20
+#define BH_DYNAMITE_KRN_MAX_OPERANDS 20
+
+// Execution Profile
+
+#ifdef PROFILE
+static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
+static bh_uint64 calls[BH_NO_OPCODES+2];
+#endif
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -51,19 +57,16 @@ char* snippet_path;
 process* target;
 
 typedef struct {
-    bh_array* inputs[BH_DYNAMITE_KRN_MAX_INPUTS];
-    size_t size;
+    bh_array* operands[BH_DYNAMITE_KRN_MAX_OPERANDS];
+    size_t noperands; // Number of operands the kernel uses
+
     int64_t begin;  // Kernel starts with this instruction
     int64_t end;    // and ends with this one.
+    size_t size;    // begin-end; the number of instructions in kernel
 } kernel_t;
 
 typedef std::vector<kernel_t> kernel_storage;
 typedef std::unordered_map<bh_array*, size_t> ref_storage;
-
-bool is_temp(bh_array* op, ref_storage& reads, ref_storage& writes)
-{
-    return ((reads[op] == 1) && (writes[op] == 1));
-}
 
 void bh_pprint_list(bh_instruction* list, bh_intp start, bh_intp end)
 {
@@ -80,6 +83,22 @@ void bh_pprint_list(bh_instruction* list, bh_intp start, bh_intp end)
     }
 }
 
+void bh_pprint_kernel(kernel_t *kernel, bh_instruction *list)
+{
+    printf("kernel %p {\n  begin=%ld, end=%ld, noperands=%ld, operands: [\n",
+            kernel, kernel->begin, kernel->end, kernel->noperands);
+    for(size_t it=0; it<kernel->noperands; it++) {
+        printf("    i=%ld, %p\n", it, kernel->operands[it]);
+    }
+    printf("  ],\n  instructions: [\n\n");
+    bh_pprint_list(list, kernel->begin, kernel->end);
+    printf("  ]\n\n}\n");
+}
+
+bool is_temp(bh_array* op, ref_storage& reads, ref_storage& writes)
+{
+    return ((reads[op] == 1) && (writes[op] == 1));
+}
 
 int hash(bh_instruction *instr)
 {
@@ -147,21 +166,15 @@ int hash(bh_instruction *instr)
  */
 kernel_storage streaming(bh_intp count, bh_instruction* list)
 {
-    ref_storage reads;
-    ref_storage writes;
     std::vector<bh_intp> potentials;
     kernel_storage kernels;
-
-    kernel_t kernel;
-
-    bh_instruction *instr;
-    bh_opcode opcode;
-    int noperands;
+    ref_storage reads;
+    ref_storage writes;
 
     for(bh_intp i=0; i<count; ++i) {
-        instr       = &list[i];
-        opcode      = instr->opcode;
-        noperands   = bh_operands(opcode);
+        bh_instruction *instr = &list[i];
+        bh_opcode opcode = instr->opcode;
+        int noperands = bh_operands(opcode);
 
         switch(opcode) {
             case BH_NONE:                                       // Ignore these
@@ -201,38 +214,47 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
         }
     }
 
+    /*
+    /// DEBUG PRINTING
+    std::cout << "** Potentials #" << potentials.size() << ":" << std::endl;
+    for(auto it=potentials.begin(); it!=potentials.end(); ++it) {
+        if (it!= potentials.begin()) {
+            std::cout << ", ";
+        }
+        std::cout << (*it);
+    }
+    std::cout << "." << std::endl;
+    */
+
     //
     // Now we have a list of potential endpoints for streaming kernels.
     // As well as a ref-count on all operands within current scope.
     //
     // Now; it is time to determine whether the potentials can become kernels.
-    bh_array *operand = NULL;
-    bh_intp border = 0;
-    bh_intp potential = -1;
-    for(bh_intp i=count-1; (i>=0) && (!potentials.empty()); --i) {
-        instr       = &list[i];
-        opcode      = instr->opcode;
-        noperands   = bh_operands(opcode);
-        operand     = instr->operand[0];
+    //
+    while(!potentials.empty()) {
+        bh_intp potential = potentials.back();
+        potentials.pop_back();
 
-        if (-1==potential) {
-            potential = potentials.back();
-            potentials.pop_back();
-        }
+        for(bh_intp i=potential-1; i>=0; --i) {
+            bh_instruction *instr = &list[i];
+            bh_array *operand = instr->operand[0];  // Get the output operand
 
-        if (i < potential) {
-            if (!is_temp(operand, reads, writes)) {
-                border = i+1;
-                kernel.size  = potential-border+1;
-                kernel.begin = border;
-                kernel.end   = potential;
-                kernels.insert(kernels.begin(), kernel);
-                potential = -1;
-                if (potentials.size() == 0) {   // No more potential...
-                    break;                      // stop searching...
+            if (!is_temp(operand, reads, writes)) { // Hit a non-temp.
+                if ((potential-i+1)>0) {            // More than one instr.
+                    kernel_t kernel;
+                    kernel.begin = i+1;
+                    kernel.end   = potential;
+                    kernel.size = kernel.end - kernel.begin;
+                    kernel.noperands = 0;
+                    kernel.operands[kernel.noperands] = &*list[potential].operand[0];
+                    ++(kernel.noperands);
+                    kernels.insert(kernels.begin(), kernel);
+                    //fprintf(stderr, "i=%ld, potential=%ld, output=%p\n", i, potential, list[potential].operand[0]);
                 }
+                break;
             }
-        } 
+        }
     }
 
     //
@@ -240,24 +262,24 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     // to create kernels with...
     //
 
+    /*
     //
     // DEBUG PRINTING
     //
-    /* 
     std::cout << "## Failed potential=" << potentials.size() << std::endl;
     for(auto it=potentials.begin(); it!=potentials.end(); ++it) {
         std::cout << (*it) << ",";
     }
     std::cout << "." << std::endl;
 
-    if (kernels.size()>0) {
+    if (!kernels.empty()) {
         std::cout << "## Kernels=" << kernels.size() << std::endl;
         for(auto it=kernels.begin();
             it!=kernels.end();
             ++it) {
-            std::cout << "** kernel start " << (*it).first << " **" << std::endl;
-            bh_pprint_list(list, (*it).first, (*it).second);
-            std::cout << "** kernel end " << (*it).second << " **" << std::endl;
+            std::cout << "** kernel start " << (*it).begin << " **" << std::endl;
+            bh_pprint_list(list, (*it).begin, (*it).end);
+            std::cout << "** kernel end " << (*it).end << " **" << std::endl;
         }
     }
 
@@ -267,31 +289,29 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
             for(auto it=reads.begin();
                 it != reads.end();
                 ++it) {
-                std::cout << (*it).first << ", read=";
-                std::cout << (*it).second << "." << std::endl;
+                std::cout << (*it).first    << ", read=";
+                std::cout << (*it).second   << "." << std::endl;
             }
         }
         if (writes.size()>0) {
-            std::cout << "** writes **" << std::endl;            // WRITES
+            std::cout << "** writes **" << std::endl;       // WRITES
             for(auto it=writes.begin();
                 it != writes.end();
                 ++it) {
-                std::cout << (*it).first << ", written=";
-                std::cout << (*it).second << "." << std::endl;
+                std::cout << (*it).first    << ", written=";
+                std::cout << (*it).second   << "." << std::endl;
             }
         }
     }
     */
-
     return kernels;
 }
 
-std::string name_input(kernel_t& kernel, bh_array* input)
+std::string name_operand(kernel_t& kernel, bh_array* operand)
 {
     char varchar[20];
-    sprintf(varchar, "*a%d_current", (int)(kernel.size));
-    kernel.size++;
-    kernel.inputs[kernel.size] = input;
+    kernel.operands[kernel.noperands] = operand;
+    sprintf(varchar, "*a%d_current", (int)(kernel.noperands++));
     std::string varname(varchar);
     return varname;
 }
@@ -315,7 +335,9 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
             if ((opcode == BH_USERFUNC) && (instr->userfunc->id==random_impl_id)) {
                 random_args = (bh_random_type*)instr->userfunc;
                 output      = random_args->operand[0];
-                break;
+                if (input==output) {
+                    break;
+                }
             }
 
         case BH_FREE:                   // Ignore these opcodes.
@@ -334,23 +356,29 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
     }
                                         // Yeehaa we found it!
     if (cur <= max-1) {                 // Outside the kernel
-        return name_input(kernel, output);
+        return name_operand(kernel, output);
     } else {                            // Within the kernel
 
-        if (!bh_is_constant(instr->operand[1])) {   // Assign operands
-            a1 = instr->operand[1];
-            lh_str = fused_expr(list, cur-1, max, a1, kernel);  // Lefthandside
-        } else {
+        a1 = instr->operand[1];     // Lefthandside
+        a2 = instr->operand[2];     // Righthandside
+
+        if (bh_is_constant(a1)) {  // Inline the constant value
             lh_str = "("+std::string(bhtype_to_ctype(instr->constant.type))+")("+\
-                      const_as_string(instr->constant)+")";    // Inline the constant value
+                      const_as_string(instr->constant)+")";
+        } else {                        
+            //printf("Searching left %p\n", a1);
+            lh_str = fused_expr(list, cur-1, max, a1, kernel);  
         }
 
-        if ((3==noperands) && (!bh_is_constant(instr->operand[2]))) {
-            a2 = instr->operand[2];
-            rh_str = fused_expr(list, cur-1, max, a2, kernel);  // Righthandside
-        } else {
-            rh_str = "("+std::string(bhtype_to_ctype(instr->constant.type))+")("+\
-                      const_as_string(instr->constant)+")";    // Inline the constant value
+        //printf("rh=%p\n", a2);
+        if (3==noperands) {
+            if (bh_is_constant(a2)) {
+                rh_str = "("+std::string(bhtype_to_ctype(instr->constant.type))+")("+\
+                          const_as_string(instr->constant)+")";
+            } else {                // Inline the constant value
+                //printf("Searching right %p\n", a2);
+                rh_str = fused_expr(list, cur-1, max, a2, kernel);
+            }
         }
 
         switch(opcode) {
@@ -378,8 +406,6 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
         }
     }
 }
-
-
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -446,6 +472,11 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 
     target = new process(compiler_cmd, object_path, kernel_path, true);
 
+    #ifdef PROFILE
+    memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
+    memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
+    #endif
+
     return BH_SUCCESS;
 }
 
@@ -455,15 +486,17 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
 
-    
     kernel_storage kernels;
     kernel_t kernel;
     kernel.begin = 0;
     kernel.end   = 0;
-    int64_t shape[16];
-    int64_t ndim = 0;
+
+    #ifdef PROFILE
+    bh_uint64 t_begin=0, t_end=0;
+    #endif
 
     if (instruction_count>2) {  // Find kernels in the instruction_list
+        //fprintf(stderr, "Looking for kernels...\n");
         kernels = streaming(instruction_count, instruction_list);
     }
     
@@ -488,45 +521,43 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         if ((!kernels.empty()) && (kernel.begin == kernel.end)) {    // Grab a new kernel
             kernel = kernels.front();
             kernels.erase(kernels.begin());
+        }
 
-            // Check if we wanna go into fusion-mode
-            if ((count==kernel.begin) && (kernel.begin != kernel.end)) {
-                count = kernel.end+1;
+        // Check if we wanna go into fusion-mode
+        if ((count==kernel.begin) && (kernel.begin != kernel.end)) {
+            count = kernel.end;   // Skip ahead
 
-                /* DEBUG_PRINTING
-                std::cout << "###" << kernels.size() << std::endl;
-                for(auto it=kernels.begin(); it!=kernels.end(); ++it) {
-                    std::cout << "FROM="<< (*it).first << " TO="<< (*it).second << std::endl;
-                    std::cout << "expr=";
-                    std::cout << 
-                    std::cout << std::endl;
-                }*/
+            #ifdef PROFILE
+            begin = _bh_timing();
+            #endif
 
-                //kernel_input.clear();
-                kernel.size = 0;
-                std::string cmd_str = fused_expr(
-                    instruction_list,
-                    kernel.end-1,
-                    kernel.begin,
-                    instruction_list[kernel.end].operand[1],
-                    kernel
-                );
-                cmd_str = "*a0_current += "+ cmd_str;
-                symbol = "BH_PFSTREAM_OPS";
-                sourcecode = "";
-                dict.SetValue("OPERATOR",   cmd_str);
-                int ccc = 1;
-                for(size_t it=0; it<kernel.size; ++it) {
-                    bh_array *krn_operand = kernel.inputs[it];
+            sprintf(symbol_c, "BH_PFSTREAM");
+            symbol = std::string(symbol_c);
+            cres = target->symbol_ready(symbol);
+            std::string cmd_str = fused_expr(   // Create expression
+                instruction_list,
+                kernel.end-1,
+                kernel.begin,
+                instruction_list[kernel.end].operand[1],
+                kernel
+            );
+            cmd_str = "*a0_current += "+ cmd_str;
+
+            if (!cres) {
+                sourcecode = "";                // Generate code
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("OPERATOR", cmd_str);
+                for(size_t it=0; it<kernel.noperands; ++it) {
+                    bh_array *krn_operand = kernel.operands[it];
                     std::ostringstream buff;
-                    buff << "a" << ccc << "_dense";
+                    buff << "a" << it << "_dense";
                     dict.ShowSection(buff.str());
                     buff.str("");
-                    buff << "TYPE_A" << ccc;
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand[it].type));
+                    buff << "TYPE_A" << it;
+                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand->type));
                     buff.str("");
-                    buff << "TYPE_A" << ccc << "SHORTHAND";
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand[it].type));
+                    buff << "TYPE_A" << it << "_SHORTHAND";
+                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand->type));
                 }
 
                 sprintf(snippet_fn, "%s/partial.streaming.tpl", snippet_path);
@@ -536,32 +567,51 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                     &dict, 
                     &sourcecode
                 );
-                target->src_to_file(symbol, sourcecode.c_str(), sourcecode.size()); 
+                //target->src_to_file(symbol, sourcecode.c_str(), sourcecode.size()); 
+                // Compile it
                 cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-                cres = cres ? target->load(symbol, symbol) : cres;
-
-                if (!cres) {
-                    res = BH_ERROR;
-                } else {
-                    target->funcs[symbol](kernel.size,
-                        kernel.inputs,
-                        shape,
-                        ndim,
-                        bh_nelements(ndim, shape)
-                    );
-                    res = BH_SUCCESS;
-                }
             }
+            cres = cres ? target->load(symbol, symbol) : cres;
+
+            if (!cres) {
+                res = BH_ERROR;
+            } else {
+                res = bh_vcache_malloc_op(kernel.operands[0]);  // malloc output
+                if (BH_SUCCESS != res) {
+                    fprintf(stderr,
+                            "Unhandled error returned by bh_vcache_malloc() "
+                            "called from bh_ve_dynamite_execute()\n");
+                    return res;
+                }
+
+                target->funcs[symbol](  // Execute the kernel
+                    kernel.noperands,
+                    &(kernel.operands)
+                );
+                res = BH_SUCCESS;
+            }
+
+            kernel.begin = 0;
+            kernel.end   = 0;
+
+            #ifdef PROFILE
+            t_end = _bh_timing();
+            times[BH_NO_OPCODES+2] += end - begin;
+            ++calls[BH_NO_OPCODES+2];
+            #endif
+
+            continue;
         }
 
         // NAIVE MODE
+        //bh_pprint_instr(instr);
 
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
-        
+        //bh_pprint_instr(instr);
         switch (instr->opcode) {                    // Dispatch instruction
 
             case BH_NONE:                           // NOOP.
@@ -999,6 +1049,32 @@ bh_error bh_ve_dynamite_shutdown(void)
     }
 
     delete target;
+
+    #ifdef PROFILE
+    bh_uint64 sum = 0;
+    for(size_t i=0; i<BH_NO_OPCODES; ++i) {
+        if (times[i]>0) {
+            sum += times[i];
+            printf(
+                "%s %ld, %f\n",
+                bh_opcode_text(i), calls[i], (times[i]/1000000.0)
+            );
+        }
+    }
+    if (calls[BH_NO_OPCODES+1]>0) {
+        printf(
+            "%s %ld, %f\n",
+            bh_opcode_text(i), calls[i], (times[i]/1000000.0)
+        );
+    }
+    if (calls[BH_NO_OPCODES+2]>0) {
+        printf(
+            "%s %ld, %f\n",
+            bh_opcode_text(i), calls[i], (times[i]/1000000.0)
+        );
+    }
+    printf("TOTAL, %f\n", sum/1000000.0);
+    #endif
 
     return BH_SUCCESS;
 }
