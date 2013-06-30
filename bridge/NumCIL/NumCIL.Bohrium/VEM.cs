@@ -1,4 +1,4 @@
-﻿//#define VIEW_BOOK_KEEPING
+﻿#define VIEW_BOOK_KEEPING
 
 #region Copyright
 /*
