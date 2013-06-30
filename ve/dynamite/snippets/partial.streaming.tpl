@@ -30,7 +30,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "math.h"
 
 #include "omp.h"
-#include "kernel.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -45,73 +44,110 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 {{/include}}
 
-void {{SYMBOL}}(size_t noperands, dense_operand *operands,
-                int64_t *shape, int64_t ndim, int64_t nelements)
+// TODO: Deal with this differently!
+#define BH_MAXDIM (16)
+
+typedef struct bh_array bh_array;
+struct bh_array
 {
-    *a0_current = ({{TYPE_A0}}*)operands[0]->data;
+    /// Pointer to the base array. If NULL this is a base array
+    bh_array*     base;
+
+    /// The type of data in the array
+    int64_t type;
+
+    /// Number of dimentions
+    int64_t ndim;
+
+    /// Index of the start element (always 0 for base-array)
+    int64_t start;
+
+    /// Number of elements in each dimention
+    int64_t shape[BH_MAXDIM];
+
+    /// The stride for each dimention
+    int64_t stride[BH_MAXDIM];
+
+    /// Pointer to the actual data. Ignored for views
+    void *data;
+};
+// TODO: Deal with this differently!
+
+void {{SYMBOL}}(size_t noperands, bh_array **operands)
+{
+    {{TYPE_A0}} *a0_current = ({{TYPE_A0}}*)operands[0]->data;
+    {{TYPE_A0}} *a0_first   = a0_current;
+    int64_t  a0_start   = operands[1]->start;
+    int64_t *a0_stride  = operands[1]->stride;
+    assert(a0_current != NULL);
  
     {{#a1_dense}}
-    {{TYPE_A1}} *a1_current   = ({{TYPE_A1}}*)operands[1]->data;
-    {{TYPE_A1}} *a1_first     = a1_current;
+    {{TYPE_A1}} *a1_current = ({{TYPE_A1}}*)operands[1]->data;
+    {{TYPE_A1}} *a1_first   = a1_current;
     int64_t  a1_start   = operands[1]->start;
     int64_t *a1_stride  = operands[1]->stride;
     assert(a1_current != NULL);
     {{/a1_dense}}
 
     {{#a2_dense}}
-    {{TYPE_A2}} *a2_current   = ({{TYPE_A2}}*)operands[1]->data;
+    {{TYPE_A2}} *a2_current   = ({{TYPE_A2}}*)operands[2]->data;
     {{TYPE_A2}} *a2_first     = a2_current;
-    int64_t  a2_start   = operands[1]->start;
-    int64_t *a2_stride  = operands[1]->stride;
+    int64_t  a2_start   = operands[2]->start;
+    int64_t *a2_stride  = operands[2]->stride;
     assert(a2_current != NULL);
     {{/a2_dense}}
 
     {{#a3_dense}}
-    {{TYPE_A3}} *a3_current   = ({{TYPE_A3}}*)operands[1]->data;
+    {{TYPE_A3}} *a3_current   = ({{TYPE_A3}}*)operands[3]->data;
     {{TYPE_A3}} *a3_first     = a3_current;
-    int64_t  a3_start   = operands[1]->start;
-    int64_t *a3_stride  = operands[1]->stride;
+    int64_t  a3_start   = operands[3]->start;
+    int64_t *a3_stride  = operands[3]->stride;
     assert(a3_current != NULL);
     {{/a3_dense}}
 
     {{#a4_dense}}
-    {{TYPE_A4}} *a4_current   = ({{TYPE_A4}}*)operands[1]->data;
+    {{TYPE_A4}} *a4_current   = ({{TYPE_A4}}*)operands[4]->data;
     {{TYPE_A4}} *a4_first     = a4_current;
-    int64_t  a4_start   = operands[1]->start;
-    int64_t *a4_stride  = operands[1]->stride;
+    int64_t  a4_start   = operands[4]->start;
+    int64_t *a4_stride  = operands[4]->stride;
     assert(a4_current != NULL);
     {{/a4_dense}}
 
     {{#a5_dense}}
-    {{TYPE_A5}} *a5_current   = ({{TYPE_A5}}*)operands[1]->data;
+    {{TYPE_A5}} *a5_current   = ({{TYPE_A5}}*)operands[5]->data;
     {{TYPE_A5}} *a5_first     = a5_current;
-    int64_t  a5_start   = operands[1]->start;
-    int64_t *a5_stride  = operands[1]->stride;
+    int64_t  a5_start   = operands[5]->start;
+    int64_t *a5_stride  = operands[5]->stride;
     assert(a5_current != NULL);
     {{/a5_dense}}
 
     {{#a6_dense}}
-    {{TYPE_A6}} *a6_current   = ({{TYPE_A6}}*)operands[1]->data;
+    {{TYPE_A6}} *a6_current   = ({{TYPE_A6}}*)operands[6]->data;
     {{TYPE_A6}} *a6_first     = a6_current;
-    int64_t  a6_start   = operands[1]->start;
-    int64_t *a6_stride  = operands[1]->stride;
+    int64_t  a6_start   = operands[6]->start;
+    int64_t *a6_stride  = operands[6]->stride;
     assert(a6_current != NULL);
     {{/a6_dense}}
 
     {{#a7_dense}}
-    {{TYPE_A7}} *a7_current   = ({{TYPE_A7}}*)operands[1]->data;
+    {{TYPE_A7}} *a7_current   = ({{TYPE_A7}}*)operands[7]->data;
     {{TYPE_A7}} *a7_first     = a7_current;
-    int64_t  a7_start   = operands[1]->start;
-    int64_t *a7_stride  = operands[1]->stride;
+    int64_t  a7_start   = operands[7]->start;
+    int64_t *a7_stride  = operands[7]->stride;
     assert(a7_current != NULL);
     {{/a7_dense}}
 
+    int64_t nelements = 1;
+    for (int64_t i = 0; i < operands[1]->ndim; ++i) {
+        nelements *= operands[1]->shape[i];
+    }
+
     int64_t j,                  // Traversal variables
-            last_dim    = ndim-1,
+            last_dim    = operands[1]->ndim-1,
             last_e      = nelements-1;
 
     int64_t cur_e = 0;
-    int64_t shape_ld = shape[last_dim];
+    int64_t shape_ld = operands[1]->shape[last_dim];
 
     {{#a1_dense}}int64_t a1_stride_ld = a1_stride[last_dim];{{/a1_dense}}
     {{#a2_dense}}int64_t a2_stride_ld = a2_stride[last_dim];{{/a2_dense}}
@@ -170,7 +206,7 @@ void {{SYMBOL}}(size_t noperands, dense_operand *operands,
         // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
         for(j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
             coord[j]++;
-            if (coord[j] < shape[j]) {      // Still within this dimension
+            if (coord[j] < operands[1]->shape[j]) {      // Still within this dimension
                 break;
             } else {                        // Reached the end of this dimension
                 coord[j] = 0;               // Reset coordinate
