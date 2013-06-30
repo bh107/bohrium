@@ -238,7 +238,7 @@ public:
         kernel_fd = open(kernel_fn.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
         if ((!kernel_fd) || (kernel_fd<1)) {
             err = errno;
-            error(err, "Failed opening kernel-file [%s].\n", kernel_fn.c_str());
+            error(err, "Failed opening kernel-file [%s] in src_to_file(...).\n", kernel_fn.c_str());
             return false;
         }
         kernel_fp = fdopen(kernel_fd, mode);
