@@ -65,3 +65,4 @@ DLLEXPORT void bh_dynamic_list_destroy(bh_dynamic_list* list);
 #endif
 
 #endif
+
