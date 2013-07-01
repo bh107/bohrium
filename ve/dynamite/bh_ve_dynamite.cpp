@@ -492,25 +492,23 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-
-
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
     bh_intp count;
     bh_intp instruction_count;
     bh_instruction* instr;
-    bh_instruction* instructions;
+    bh_instruction* instruction_list;
     bh_error res = BH_SUCCESS;
 
     bh_graph_iterator* it;
 
     instruction_count = bhir->instructions->count;
-    instructions = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
+    instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
     
-    res = bh_graph_serialize(bhir, instructions, &instruction_count);
+    res = bh_graph_serialize(bhir, instruction_list, &instruction_count);
     if (res != BH_SUCCESS)
     {
-        free(instructions);
+        free(instruction_list);
         return res;
     }
 
@@ -621,6 +619,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     fprintf(stderr,
                             "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_dynamite_execute()\n");
+                    free(instruction_list);
                     return res;
                 }
                 #ifdef PROFILE
@@ -658,6 +657,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
+            free(instruction_list);
             return res;
         }
         #ifdef PROFILE
@@ -1106,6 +1106,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         #endif
     }
 
+    free(instruction_list);
 	return res;
 }
 
