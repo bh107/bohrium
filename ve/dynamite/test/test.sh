@@ -11,12 +11,17 @@
 #
 #cp test/config.ini.simple ~/.bohrium/config.ini
 #./test/test.py
-
+WHERE=`pwd`
 rm -r ~/.local/dynamite
 #EXTRAS="-DPROFILE" INSTALLDIR="~/.local" DEBUG="" make clean install
 INSTALLDIR="~/.local" DEBUG="" make clean install
-BH_CORE_VCACHE_SIZE=0 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
-BH_CORE_VCACHE_SIZE=1 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
+#BH_CORE_VCACHE_SIZE=1 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
+#BH_CORE_VCACHE_SIZE=1 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
+cd ~/Desktop/benchpress/
+./press.py --suite dynamite --output /tmp/ --runs 2 ../bohrium/
+cd $WHERE
+
+
 
 #python ~/Desktop/bohrium/benchmark/Python/mc.py    --size=1000000*100 --bohrium=False
 #python ~/Desktop/bohrium/benchmark/Python/mc.py --size=1000000*100 --bohrium=True

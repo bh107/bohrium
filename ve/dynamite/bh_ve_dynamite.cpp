@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string>
+#include <sstream>
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
@@ -48,7 +49,7 @@ static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
-static bh_intp do_fuse = 0;
+static bh_intp do_fuse = 1;
 
 char* compiler_cmd;   // Dynamite Arguments
 char* kernel_path;
@@ -513,6 +514,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     
     for (count=0; count<instruction_count; count++) {
         instr = &instruction_list[count];
+        std::stringstream symbol_buf;
 
         #ifdef PROFILE
         t_begin=0, t_end=0, m_begin=0, m_end=0;
@@ -546,8 +548,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             t_begin = _bh_timing();
             #endif
 
-            sprintf(symbol_c, "BH_PFSTREAM");
-            symbol = std::string(symbol_c);
+            symbol_buf << "BH_PFSTREAM";
+            for(bh_int64 i=kernel.begin; i<kernel.end; ++i) {
+                symbol_buf << "_" << instruction_list[i].opcode;
+            }
+            symbol = symbol_buf.str();
             cres = target->symbol_ready(symbol);
             std::string cmd_str = fused_expr(   // Create expression
                 instruction_list,
