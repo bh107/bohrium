@@ -643,22 +643,18 @@ bh_error bh_graph_iterator_destroy(bh_graph_iterator* iterator)
 bh_error bh_graph_serialize(bh_ir* bhir, bh_instruction* instructions, bh_intp* instruction_count)
 {
     bh_graph_iterator* it;        
-    bh_instruction dummy;
-    bh_instruction* cur;
+    bh_instruction* dummy;
     bh_intp count = 0;
 
     if (bh_graph_iterator_create(bhir, &it) != BH_SUCCESS)
         return BH_ERROR;        
 
-    cur = *instruction_count == 0 ? &dummy : instructions;
-    
-    while(bh_graph_iterator_next_instruction(it, &cur))
+    while(bh_graph_iterator_next_instruction(it, &dummy) == BH_SUCCESS)
     {
+        if (count < *instruction_count)
+            instructions[count] = *dummy; //Copy
+
         count++;
-        if (count > *instruction_count)
-            cur = &dummy;
-        else
-            cur = &instructions[count];
     }
     
     if (count > *instruction_count)
