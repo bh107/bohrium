@@ -311,9 +311,9 @@ namespace NumCIL.Bohrium
             }
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.
+            /// Returns a <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke.bh_constant"/>.
             /// </summary>
-            /// <returns>A <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke+bh_constant"/>.</returns>
+            /// <returns>A <see cref="System.String"/> that represents the current <see cref="NumCIL.Bohrium.PInvoke.bh_constant"/>.</returns>
             public override string ToString()
 			{
 				if (this.type == bh_type.BH_BOOL)
@@ -687,6 +687,69 @@ namespace NumCIL.Bohrium
             public string Name { get { return System.Text.Encoding.ASCII.GetString(this.name.TakeWhile(b => !b.Equals(0)).ToArray()); } }
 #endif
         }
+        
+		/// <summary>
+		/// Fake wrapper struct to keep a pointer to bh_ir typesafe
+		/// </summary>
+		[StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi, Pack = 0)]
+		public struct bh_ir_ptr
+		{
+			/// <summary>
+			/// The actual IntPtr value
+			/// </summary>
+			[FieldOffset(0)]
+			internal IntPtr m_ptr;
+			
+			/// <summary>
+			/// A value that represents a null pointer
+			/// </summary>
+			public static readonly bh_ir_ptr Null = new bh_ir_ptr() { m_ptr = IntPtr.Zero };
+			
+			/// <summary>
+			/// Custom equals functionality
+			/// </summary>
+			/// <param name="obj">The object to compare to</param>
+			/// <returns>True if the objects are equal, false otherwise</returns>
+			public override bool Equals(object obj)
+			{
+				if (obj is bh_ir_ptr)
+					return ((bh_ir_ptr)obj).m_ptr == this.m_ptr;
+				else
+					return base.Equals(obj);
+			}
+			
+			/// <summary>
+			/// Custom hashcode functionality
+			/// </summary>
+			/// <returns>The hash code for this instance</returns>
+			public override bh_int32 GetHashCode()
+			{
+				return m_ptr.GetHashCode();
+			}
+			
+			/// <summary>
+			/// Simple compare operator for pointer type
+			/// </summary>
+			/// <param name="a">One argument</param>
+			/// <param name="b">Another argument</param>
+			/// <returns>True if the arguments are the same, false otherwise</returns>
+			public static bool operator ==(bh_ir_ptr a, bh_ir_ptr b)
+			{
+				return a.m_ptr == b.m_ptr;
+			}
+			
+			/// <summary>
+			/// Simple compare operator for pointer type
+			/// </summary>
+			/// <param name="a">One argument</param>
+			/// <param name="b">Another argument</param>
+			/// <returns>False if the arguments are the same, true otherwise</returns>
+			public static bool operator !=(bh_ir_ptr a, bh_ir_ptr b)
+			{
+				return a.m_ptr != b.m_ptr;
+			}
+		}
+			
 
         /// <summary>
         /// Fake wrapper struct to keep a pointer to bh_array typesafe
@@ -839,7 +902,7 @@ namespace NumCIL.Bohrium
                 return string.Format("(self: {0}, data: {1}, base: {2})", m_ptr, m_ptr == IntPtr.Zero ? "null" : this.Data.ToString(), m_ptr == IntPtr.Zero ? "null" : (this.BaseArray == bh_array_ptr.Null ? "null" : this.BaseArray.ToString()));
             }
         }
-
+        
         /// <summary>
         /// Representation of a Bohrium array
         /// </summary>
@@ -1362,7 +1425,7 @@ namespace NumCIL.Bohrium
         /// <param name="inst_list">The list of instructions to execute</param>
         /// <returns>A status code</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate bh_error bh_execute(bh_intp count, [In, Out]bh_instruction[] inst_list);
+        public delegate bh_error bh_execute(bh_ir_ptr ir);
         /// <summary>
         /// Register a userfunc
         /// </summary>
@@ -1571,5 +1634,30 @@ namespace NumCIL.Bohrium
 		/// <param name="inst">The instruction to examine</param>
 		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
 		public extern static int bh_operands_in_instruction(bh_instruction inst);
+
+		/// <summary>
+		/// Creates a new graph storage element
+ 		/// </summary>
+		/// <param name="bhir">A pointer to the result</param>
+		/// <param name="instructions">The initial instruction list, can be null if instruction_count is 0</param>
+ 		/// <param name="instruction_count">The number of instructions in the list</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static bh_error bh_graph_create(ref bh_ir_ptr bhir, bh_instruction[] instructions, bh_intp instruction_count);
+		
+		/// <summary>
+		/// Destroys the instance and releases all resources
+		/// </summary>
+		/// <param name="bhir">The bh_ir instance to destroy</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static bh_error bh_graph_destroy(bh_ir_ptr bhir);
+		
+		/// <summary>
+		/// Appends new instructions to the current batch
+		/// </summary>
+		/// <param name="bhir">The bh_ir instance to update</param>
+		/// <param name="instructions">The instruction list, can be null if instruction_count is 0</param>
+		/// <param name="instruction_count">The number of instructions in the list</param>
+		[DllImport("libbh", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+		public extern static bh_error bh_graph_append(bh_ir_ptr bhir, bh_instruction[] instructions, bh_intp instruction_count);
 	}
 }

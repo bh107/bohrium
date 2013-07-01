@@ -492,11 +492,27 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instruction_list)
+
+
+bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
     bh_intp count;
+    bh_intp instruction_count;
     bh_instruction* instr;
+    bh_instruction* instructions;
     bh_error res = BH_SUCCESS;
+
+    bh_graph_iterator* it;
+
+    instruction_count = bhir->instructions->count;
+    instructions = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
+    
+    res = bh_graph_serialize(bhir, instructions, &instruction_count);
+    if (res != BH_SUCCESS)
+    {
+        free(instructions);
+        return res;
+    }
 
     kernel_storage kernels;
     kernel_t kernel;

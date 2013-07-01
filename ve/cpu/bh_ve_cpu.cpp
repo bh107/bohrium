@@ -73,19 +73,22 @@ bh_error bh_ve_cpu_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_execute(bh_intp instruction_count,
-                           bh_instruction* instruction_list)
+bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    bh_intp count;
     bh_instruction* instr;
+    bh_graph_iterator* it;
     bh_error res = BH_SUCCESS;
     
     #ifdef TIMING
     bh_uint64 begin=0, end=0;
     #endif
 
-    for (count=0; count<instruction_count; count++) {
-        instr = &instruction_list[count];
+    res = bh_graph_iterator_create(bhir, &it);
+    if (res != BH_SUCCESS)
+        return res;
+
+    while (bh_graph_iterator_next_instruction(it, &instr) == BH_SUCCESS)
+    {
         #ifdef DEBUG
         bh_pprint_instr(instr);
         #endif

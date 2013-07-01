@@ -27,10 +27,11 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+
 #define MCORE_MAX_WORKERS 32
 #define MCORE_WORKERS 4
 DLLEXPORT bh_error bh_ve_mcore_init(bh_component *self);
-DLLEXPORT bh_error bh_ve_mcore_execute(bh_intp instruction_count, bh_instruction* instruction_list);
+DLLEXPORT bh_error bh_ve_mcore_execute(bh_ir* bhir);
 DLLEXPORT bh_error bh_ve_mcore_shutdown(void);
 DLLEXPORT bh_error bh_ve_mcore_reg_func(char *fun, bh_intp *id);
 

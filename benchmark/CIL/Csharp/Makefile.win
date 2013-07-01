@@ -1,6 +1,6 @@
 INSTALLDIR?=/opt/bohrium/
 XBUILD=msbuild
-XBUILD_CONF=/property:Configuration=Release /property:Platform=AnyCPU
+XBUILD_CONF=/property:Configuration=Release /property:Platform=AnyCPU /verbosity:minimal /nologo
 
 SUBDIRS=nbody shallow_water jacobi blackscholes
  
