@@ -3,8 +3,8 @@ LIB=libbh_ve_dynamite.so
 CXX?=g++
 WARNOPTS=-Wall
 #LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
-DEBUG+=
-LCFLAGS= $(WARNOPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(DEBUG)
+EXTRAS+=
+LCFLAGS= $(WARNOPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
 LDFLAGS=-L../../core -lbh -lrt -lctemplate -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
@@ -42,5 +42,5 @@ install: all
 		mkdir -p $(INSTALLDIR)/dynamite/objects
 		mkdir -p $(INSTALLDIR)/dynamite/snippets
 		cp snippets/*.tpl $(INSTALLDIR)/dynamite/snippets/
-		cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/
-		cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/dynamite/objects/
+		#cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/
+		#cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/dynamite/objects/

@@ -48,6 +48,7 @@ static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
+static bh_intp do_fuse = 0;
 
 char* compiler_cmd;   // Dynamite Arguments
 char* kernel_path;
@@ -448,14 +449,24 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 bh_error bh_ve_dynamite_init(bh_component *self)
 {
     myself = self;
+    char *env;
 
-    char *env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
+    env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
     if (NULL != env) {
         vcache_size = atoi(env);
     }
     if (0 > vcache_size) {                          // Verify it
         fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
         return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_DYNAMITE_DOFUSE");
+    if (NULL != env) {
+        do_fuse = atoi(env);
+    }
+    if (!((0==do_fuse) || (1==do_fuse))) {
+         fprintf(stderr, "BH_VE_DYNAMITE_DOFUSE (%ld) should 0 or 1.\n", (long int)vcache_size);
+        return BH_ERROR;   
     }
 
     bh_vcache_init(vcache_size);
@@ -492,16 +503,20 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
     kernel.end   = 0;
 
     #ifdef PROFILE
-    bh_uint64 t_begin=0, t_end=0;
+    bh_uint64 t_begin, t_end, m_begin, m_end;
     #endif
 
-    if (instruction_count>2) {  // Find kernels in the instruction_list
+    if (do_fuse && ((instruction_count>2))) {  // Find kernels in the instruction_list
         //fprintf(stderr, "Looking for kernels...\n");
         kernels = streaming(instruction_count, instruction_list);
     }
     
     for (count=0; count<instruction_count; count++) {
         instr = &instruction_list[count];
+
+        #ifdef PROFILE
+        t_begin=0, t_end=0, m_begin=0, m_end=0;
+        #endif
 
         ctemplate::TemplateDictionary dict("codegen");
         dict.ShowSection("license");
@@ -528,7 +543,7 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             count = kernel.end;   // Skip ahead
 
             #ifdef PROFILE
-            begin = _bh_timing();
+            t_begin = _bh_timing();
             #endif
 
             sprintf(symbol_c, "BH_PFSTREAM");
@@ -576,6 +591,10 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
             if (!cres) {
                 res = BH_ERROR;
             } else {
+
+                #ifdef PROFILE
+                m_begin = _bh_timing();
+                #endif
                 res = bh_vcache_malloc_op(kernel.operands[0]);  // malloc output
                 if (BH_SUCCESS != res) {
                     fprintf(stderr,
@@ -583,6 +602,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                             "called from bh_ve_dynamite_execute()\n");
                     return res;
                 }
+                #ifdef PROFILE
+                m_end = _bh_timing();
+                times[BH_NO_OPCODES] += m_end-m_begin;
+                ++calls[BH_NO_OPCODES];
+                #endif
 
                 target->funcs[symbol](  // Execute the kernel
                     kernel.noperands,
@@ -596,8 +620,8 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
 
             #ifdef PROFILE
             t_end = _bh_timing();
-            times[BH_NO_OPCODES+2] += end - begin;
-            ++calls[BH_NO_OPCODES+2];
+            times[BH_NO_OPCODES+1] += (t_end-t_begin)+ (m_end-m_begin);
+            ++calls[BH_NO_OPCODES+1];
             #endif
 
             continue;
@@ -606,11 +630,21 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         // NAIVE MODE
         //bh_pprint_instr(instr);
 
+        #ifdef PROFILE
+        t_begin = _bh_timing();
+        m_begin = _bh_timing();
+        #endif
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
             printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
             return res;
         }
+        #ifdef PROFILE
+        m_end = _bh_timing();
+        times[BH_NO_OPCODES] += m_end-m_begin;
+        ++calls[BH_NO_OPCODES];
+        #endif
+
         //bh_pprint_instr(instr);
         switch (instr->opcode) {                    // Dispatch instruction
 
@@ -629,9 +663,17 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
                 if(instr->userfunc->id == random_impl_id) { // RANDOM!
 
                     random_args = (bh_random_type*)instr->userfunc;
+                    #ifdef PROFILE
+                    m_begin = _bh_timing();
+                    #endif
                     if (BH_SUCCESS != bh_vcache_malloc_op(random_args->operand[0])) {
                         std::cout << "SHIT HIT THE FAN" << std::endl;
                     }
+                    #ifdef PROFILE
+                    m_end = _bh_timing();
+                    times[BH_NO_OPCODES] += m_end-m_begin;
+                    ++calls[BH_NO_OPCODES];
+                    #endif
                     sprintf(
                         symbol_c,
                         "BH_RANDOM_D_%s",
@@ -1036,6 +1078,11 @@ bh_error bh_ve_dynamite_execute(bh_intp instruction_count, bh_instruction* instr
         if (BH_SUCCESS != res) {    // Instruction failed
             break;
         }
+        #ifdef PROFILE
+        t_end = _bh_timing();
+        times[instr->opcode] += (t_end-t_begin)+ (m_end-m_begin);
+        ++calls[instr->opcode];
+        #endif
     }
 
 	return res;
@@ -1056,21 +1103,23 @@ bh_error bh_ve_dynamite_shutdown(void)
         if (times[i]>0) {
             sum += times[i];
             printf(
-                "%s %ld, %f\n",
+                "%s, %ld, %f\n",
                 bh_opcode_text(i), calls[i], (times[i]/1000000.0)
             );
         }
     }
-    if (calls[BH_NO_OPCODES+1]>0) {
+    if (calls[BH_NO_OPCODES]>0) {
+        sum += times[BH_NO_OPCODES];
         printf(
-            "%s %ld, %f\n",
-            bh_opcode_text(i), calls[i], (times[i]/1000000.0)
+            "%s, %ld, %f\n",
+            "Memory", calls[BH_NO_OPCODES], (times[BH_NO_OPCODES]/1000000.0)
         );
     }
-    if (calls[BH_NO_OPCODES+2]>0) {
+    if (calls[BH_NO_OPCODES+1]>0) {
+        sum += times[BH_NO_OPCODES+1];
         printf(
-            "%s %ld, %f\n",
-            bh_opcode_text(i), calls[i], (times[i]/1000000.0)
+            "%s, %ld, %f\n",
+            "Kernels", calls[BH_NO_OPCODES+1], (times[BH_NO_OPCODES+1]/1000000.0)
         );
     }
     printf("TOTAL, %f\n", sum/1000000.0);

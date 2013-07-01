@@ -13,11 +13,14 @@
 #./test/test.py
 
 rm -r ~/.local/dynamite
-#INSTALLDIR="~/.local" DEBUG="" make clean install
+#EXTRAS="-DPROFILE" INSTALLDIR="~/.local" DEBUG="" make clean install
 INSTALLDIR="~/.local" DEBUG="" make clean install
-~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*3
-#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=False
-#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
+BH_CORE_VCACHE_SIZE=0 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
+BH_CORE_VCACHE_SIZE=1 BH_VE_DYNAMITE_DOFUSE="1" ~/Desktop/bohrium/benchmark/cpp/bin/monte_carlo_pi --size=10000000*20 --verbose
+
+#python ~/Desktop/bohrium/benchmark/Python/mc.py    --size=1000000*100 --bohrium=False
+#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=1000000*100 --bohrium=True
+#python ~/Desktop/bohrium/benchmark/Python/mc.py --size=1000000*100 --bohrium=True
 #python ~/Desktop/bohrium/benchmark/Python/mc.py --size=10000000*10 --bohrium=True
 #python ../../test/numpy/numpytest.py
 
