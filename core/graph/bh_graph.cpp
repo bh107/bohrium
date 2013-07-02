@@ -435,7 +435,7 @@ struct bh_graph_iterator {
     // Keep track of already scheduled nodes
     hashmap<bh_node_index, bh_node_index, hash_bh_intp>* scheduled;
     // Keep track of items that have unsatisfied dependencies
-    std::queue<bh_node_index>* blocked;
+    std::list<bh_node_index>* blocked;
     // The graph we are iterating
     bh_ir* bhir;
     // The currently visited node
@@ -480,12 +480,12 @@ bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
     }
     
     t->scheduled = new hashmap<bh_node_index, bh_node_index, hash_bh_intp>();
-    t->blocked = new std::queue<bh_node_index>();
+    t->blocked = new std::list<bh_node_index>();
     t->bhir = bhir;
     t->last_blocked = INVALID_NODE;
     t->current = t->bhir->root;
     if (t->current != INVALID_NODE)
-        t->blocked->push(t->current);
+        t->blocked->push_back(t->current);
     
     *iterator = t;
     return BH_SUCCESS;
@@ -502,10 +502,10 @@ bh_error bh_graph_iterator_reset(bh_graph_iterator* iterator)
     delete iterator->blocked;
     
     iterator->scheduled = new hashmap<bh_node_index, bh_node_index, hash_bh_intp>();
-    iterator->blocked = new std::queue<bh_node_index>();
+    iterator->blocked = new std::list<bh_node_index>();
     iterator->current = iterator->bhir->root;
     if (iterator->current != INVALID_NODE)
-        iterator->blocked->push(iterator->current);
+        iterator->blocked->push_back(iterator->current);
 
     return BH_SUCCESS;
 }
@@ -564,7 +564,7 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
     while (!iterator->blocked->empty())
     {
         bh_node_index n = iterator->blocked->front();
-        iterator->blocked->pop();
+        iterator->blocked->pop_front();
         if (n != INVALID_NODE && iterator->scheduled->find(n) == iterator->scheduled->end())
         {
             // Check if dependencies are met
@@ -575,9 +575,9 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
                 
                 //Examine child nodes
                 if (NODE_LOOKUP(n).left_child != INVALID_NODE)
-                    iterator->blocked->push(NODE_LOOKUP(n).left_child);
+                    iterator->blocked->push_front(NODE_LOOKUP(n).left_child);
                 if (NODE_LOOKUP(n).right_child != INVALID_NODE && NODE_LOOKUP(n).right_child != NODE_LOOKUP(n).left_child)
-                    iterator->blocked->push(NODE_LOOKUP(n).right_child);
+                    iterator->blocked->push_back(NODE_LOOKUP(n).right_child);
                     
                 *node = n;
                 return BH_SUCCESS;
@@ -585,7 +585,7 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
             else
             {
                 // Re-insert at bottom of work queue
-                iterator->blocked->push(n);
+                iterator->blocked->push_back(n);
                 if (iterator->last_blocked == n)
                 {
                     printf("Invalid graph detected, contains circular dependencies, listing offending node\n");
@@ -593,7 +593,7 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
                     while (!iterator->blocked->empty())
                     {
                         n = iterator->blocked->front();
-                        iterator->blocked->pop();
+                        iterator->blocked->pop_front();
 
                         printf("%s: self: %lld, left_parent: %lld, right_parent: %lld, left_child: %lld, right_child: %lld\n", NODE_LOOKUP(n).type == BH_INSTRUCTION ? bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode) : "BH_COLLECTION", (bh_int64)n, (bh_int64)NODE_LOOKUP(n).left_parent, (bh_int64)NODE_LOOKUP(n).right_parent, (bh_int64)NODE_LOOKUP(n).left_child, (bh_int64)NODE_LOOKUP(n).right_child);
                         
