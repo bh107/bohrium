@@ -320,7 +320,7 @@ std::string name_operand(kernel_t& kernel, bh_array* operand)
 
 std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array *input, kernel_t& kernel)
 {
-    if (cur == 0) { // Over the top! Find the non-fused input
+    if (cur < 0) { // Over the top! Could not find input
         return "SHIT";
     } 
     bh_instruction *instr   = &list[cur];
@@ -500,8 +500,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     bh_instruction* instruction_list;
     bh_error res = BH_SUCCESS;
 
-    bh_graph_iterator* it;
-
     instruction_count = bhir->instructions->count;
     instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
     
@@ -561,6 +559,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             #ifdef PROFILE
             t_begin = _bh_timing();
             #endif
+
+            printf("KERNEL\n");
+            //bh_pprint_list(instruction_list, kernel.begin, kernel.end);
 
             symbol_buf << "BH_PFSTREAM";
             for(bh_int64 i=kernel.begin; i<kernel.end; ++i) {
@@ -666,7 +667,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         ++calls[BH_NO_OPCODES];
         #endif
 
-        //bh_pprint_instr(instr);
         switch (instr->opcode) {                    // Dispatch instruction
 
             case BH_NONE:                           // NOOP.
