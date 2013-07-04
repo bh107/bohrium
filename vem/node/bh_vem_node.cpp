@@ -154,19 +154,7 @@ bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
     }
     return e;
 }
-/*
-// Retrun true if the base is referenced by a view in 'allocated_views'
-static bool referenced(const bh_base *base)
-{
-    for(std::set<bh_view*>::iterator it=allocated_views.begin();
-        it != allocated_views.end(); ++it)
-    {
-        if((*it)->base == base)
-            return true;
-    }
-    return false;
-}
-*/
+
 
 /* Execute a list of instructions (blocking, for the time being).
  * It is required that the VEM supports all instructions in the list.
@@ -191,7 +179,7 @@ bh_error bh_vem_node_execute(bh_intp count,
         //Save all new base arrays
         for(bh_intp o=0; o<nop; ++o)
         {
-            if(bh_is_constant(&operands[o]))
+            if(!bh_is_constant(&operands[o]))
                 allocated_bases.insert(operands[o].base);
         }
 
@@ -202,41 +190,16 @@ bh_error bh_vem_node_execute(bh_intp count,
                 total_execution_size += bh_nelements(a->ndim, a->shape);
             }
         #endif
-        /*
-        //And remove discared arrays
+
         if(inst->opcode == BH_DISCARD)
         {
-            bh_view *view = operands[0];
-            if(allocated_views.erase(view) != 1)
+                bh_base *base = operands[0].base;
+            if(allocated_bases.erase(base) != 1)
             {
-                fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
-                return BH_ERROR;
-            }
-            // Check that we are not discarding the only view pointing to the base.
-            if(!referenced(view->base))
-            {
-                fprintf(stderr, "[NODE-VEM] discarding the last view(%p) "
-                                "pointing to base(%p).\n", view, view->base);
+                fprintf(stderr, "[NODE-VEM] discarding unknown base array (%p)\n", base);
                 return BH_ERROR;
             }
         }
-        else if(inst->opcode == BH_FREE)
-        {
-            bh_view *view = operands[0];
-            if(allocated_views.erase(view) != 1)
-            {
-                fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
-                return BH_ERROR;
-            }
-            // Check that this is the last view pointing to the base.
-            if(referenced(view->base))
-            {
-                fprintf(stderr, "[NODE-VEM] freeing a view(%p) that is not the last view "
-                                "pointing to base(%p).\n", view, view->base);
-                return BH_ERROR;
-            }
-        }
-        */
     }
 
 //    bh_pprint_instr_list(inst_list, count, "NODE");
