@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_vcache.h>
 //
 // C-Friendly version of the vcache.
-// 
+//
 static bh_data_ptr   *bh_vcache;
 static bh_intp       *bh_vcache_bytes;
 static bh_intp  bh_vcache_bytes_total;
@@ -123,7 +123,7 @@ bh_data_ptr bh_vcache_find(bh_intp bytes)
 /**
  * Add an element to vcache.
  * NOTE: This is a helper function; it should not be used by a vector engine.
- * 
+ *
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
@@ -152,11 +152,11 @@ bh_error bh_vcache_free(bh_instruction* inst)
     bh_intp nelements, bytes;
 
     base = bh_base_array(inst->operand[0]);
-    
+
     if (NULL != base->data) {
         nelements   = bh_nelements(base->ndim, base->shape);
         bytes       = nelements * bh_type_size(base->type);
-        
+
 		DEBUG_PRINT("Deallocate=%p\n", base_data);
         if (bh_vcache_size>0) {
             bh_vcache_insert(base->data, bytes);
@@ -190,7 +190,7 @@ bh_error bh_vcache_malloc_op(bh_array* array)
 
     bytes = bh_array_size(base);
     if (bytes <= 0) {
-        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (bh_int64)bytes);
+        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (long long)bytes);
         return BH_ERROR;
     }
 
@@ -223,7 +223,7 @@ bh_error bh_vcache_malloc(bh_instruction* inst)
         case BH_USERFUNC:
         case BH_FREE:
             break;
-        default:                                    
+        default:
             return bh_vcache_malloc_op(inst->operand[0]);
             break;
     }
