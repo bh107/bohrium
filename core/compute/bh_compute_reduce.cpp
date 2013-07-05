@@ -1,3 +1,6 @@
+
+
+
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -56,52 +59,44 @@ bh_error bh_compute_reduce_any_naive( bh_view* op_out, bh_view* op_in, bh_index 
 
     } else {                                    // ND general case
 
-        bh_view tmp;                        // Copy the input-array meta-data
         bh_instruction instr;
         bh_error err;
 
-        tmp.base    = bh_base_array(op_in);
-        tmp.ndim    = op_in->ndim-1;
-        tmp.start   = op_in->start;
+        bh_view *tmp = &instr.operand[1];  // Copy the input-array meta-data
+        tmp->base    = bh_base_array(op_in);
+        tmp->ndim    = op_in->ndim-1;
+        tmp->start   = op_in->start;
 
         for(j=0, i=0; i < op_in->ndim; ++i) {        // Copy every dimension except for the 'axis' dimension.
             if(i != axis) {
-                tmp.shape[j]    = op_in->shape[i];
-                tmp.stride[j]   = op_in->stride[i];
+                tmp->shape[j]    = op_in->shape[i];
+                tmp->stride[j]   = op_in->stride[i];
                 ++j;
             }
         }
 
         instr.opcode = BH_IDENTITY;       // Copy the first element to the output.
         instr.operand[0] = *op_out;
-        instr.operand[1] = tmp;
 
-        // TODO: use traverse directly
-        //err = traverse_aa<T, T, Instr>( instr );// execute the pseudo-instruction
-        //err = bh_compute_apply( &instr );
         err = bh_compute_apply_naive( &instr );
         if (err != BH_SUCCESS) {
             return err;
         }
-        tmp.start += stride;
+        tmp->start += stride;
 
         instr.opcode = opcode;                   // Reduce over the 'axis' dimension.
-        instr.operand[0] = *op_out;               // NB: the first element is already handled.
-        instr.operand[1] = *op_out;
+        instr.operand[0] = *op_out;              // NB: the first element is already handled.
+        instr.operand[2] = *op_out;              // Note that operand[1] is still the tmp view
 
         for(i=1; i<nelements; ++i) {
-            // TODO: use traverse directly
-            //err = traverse_aaa<T, T, T, Instr>( instr );
             err = bh_compute_apply_naive( &instr );
             if (err != BH_SUCCESS) {
                 return err;
             }
-            tmp.start += stride;
+            tmp->start += stride;
         }
-
         return BH_SUCCESS;
     }
-
 }
 
 bh_error bh_compute_reduce_naive(bh_instruction *inst)
@@ -398,26 +393,23 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
 
     } else {                                    // ND general case
 
-        bh_view tmp;                        // Copy the input-array meta-data
         bh_instruction instr;
         bh_error err;
 
-        tmp.base    = bh_base_array(op_in);
-        tmp.ndim    = op_in->ndim-1;
-        tmp.start   = op_in->start;
-
+        bh_view *tmp = &instr.operand[1];           // Copy the input-array meta-data
+        tmp->base    = bh_base_array(op_in);
+        tmp->ndim    = op_in->ndim-1;
+        tmp->start   = op_in->start;
         for(j=0, i=0; i < op_in->ndim; ++i) {        // Copy every dimension except for the 'axis' dimension.
             if(i != axis) {
-                tmp.shape[j]    = op_in->shape[i];
-                tmp.stride[j]   = op_in->stride[i];
+                tmp->shape[j]    = op_in->shape[i];
+                tmp->stride[j]   = op_in->stride[i];
                 ++j;
             }
         }
 
         instr.opcode = BH_IDENTITY;                 // Copy the first element to the output.
         instr.operand[0] = *op_out;
-        instr.operand[1] = tmp;
-
         bh_tstate state;
         bh_tstate_reset( &state, &instr );
         err = traverse_aa<T, T, identity_functor<T, T> >(&instr, &state);
@@ -429,15 +421,14 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
         bh_index stride_bytes = stride * sizeof(T);
 
         instr.opcode = opcode;                // Reduce over the 'axis' dimension.
-        instr.operand[0] = *op_out;            // NB: the first element is already handled.
-        instr.operand[1] = *op_out;
-        instr.operand[2] = tmp;
+        instr.operand[0] = *op_out;           // NB: the first element is already handled.
+        instr.operand[2] = *op_out;           // Note that operand[1] is still the tmp view
 
-        tmp.start += stride;
+        tmp->start += stride;
         bh_tstate_reset( &state, &instr );
 
         void* out_start = state.start[0];
-        void* tmp_start = state.start[2];
+        void* tmp_start = state.start[1];
 
         for(i=1; i<nelements; ++i) {
 
@@ -446,16 +437,15 @@ bh_error bh_compute_reduce_any( bh_view* op_out, bh_view* op_in, bh_index axis, 
                 return err;
             }
 
-            tmp.start += stride;
+            tmp->start += stride;
 
             // Faster replacement of bh_tstate_reset
             tmp_start = (void*)(((char*)tmp_start) + stride_bytes);
             state.start[0] = out_start;
-            state.start[1] = out_start;
-            state.start[2] = tmp_start;
+            state.start[1] = tmp_start;
+            state.start[2] = out_start;
         }
     }
-
     return BH_SUCCESS;
 }
 
