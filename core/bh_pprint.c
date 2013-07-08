@@ -48,7 +48,7 @@ static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
             break;
         case BH_INT64:
             sprintf(buf, "[ CONST(%s)=%lld ]", bh_type_text(instr->constant.type),
-                                              instr->constant.value.int64);
+                                 (long long) instr->constant.value.int64);
             break;
         case BH_UINT8:
             sprintf(buf, "[ CONST(%s)=%o ]", bh_type_text(instr->constant.type),
@@ -64,7 +64,7 @@ static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
             break;
         case BH_UINT64:
             sprintf(buf, "[ CONST(%s)=%llu ]", bh_type_text(instr->constant.type),
-                                              instr->constant.value.uint64);
+                        (unsigned long long) instr->constant.value.uint64);
             break;
         case BH_FLOAT16:
             sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
@@ -209,7 +209,7 @@ void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
 
     for(j=0; j<dims; j++)
     {
-        sprintf(tmp, "%lld", (bh_int64)coord[j]);
+        sprintf(tmp, "%lld", (long long)coord[j]);
         strcat(buf, tmp);
         if (j<dims-1) {
             strcat(buf, ", ");

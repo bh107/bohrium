@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -73,7 +73,7 @@ bh_intp _bh_timing_new(const char *name)
     t.intervals = new std::list<interval>();
     t.count = 0;
     t.sum = 0;
-    id2timing.insert(std::pair<bh_intp,timing>(++timer_count, t)); 
+    id2timing.insert(std::pair<bh_intp,timing>(++timer_count, t));
     return timer_count;
 }
 
@@ -95,7 +95,7 @@ void _bh_timing_save(bh_intp id, bh_uint64 start, bh_uint64 end)
 }
 
 
-/* Save the sum of a timing. 
+/* Save the sum of a timing.
  *
  * @id     The ID of the timing.
  * @start  The start time in micro sec.
@@ -125,7 +125,7 @@ bh_uint64 _bh_timing(void)
 #else
     LARGE_INTEGER freq;
     LARGE_INTEGER s1;
-    QueryPerformanceFrequency(&freq);                   
+    QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&s1);
     long s = s1.QuadPart/freq.QuadPart;
     long rm = s1.QuadPart % freq.QuadPart;
@@ -144,27 +144,27 @@ void _bh_timing_dump_all(void)
     bh_intp pid;
 #ifdef _WIN32
     pid = (bh_intp) GetCurrentProcessId();
-#else 
+#else
     pid = (bh_intp) getpid();
 #endif
     char hname[1024];
     gethostname(hname, 1024);
     char fname[1024];
-    sprintf(fname, "bh_stat.%s.%lld",hname,(bh_int64)pid);
-        
+    sprintf(fname, "bh_stat.%s.%lld",hname,(long long)pid);
+
     s << "Timings from the execution (count):\n";
-    for(std::map<bh_intp, timing>::iterator it=id2timing.begin(); 
+    for(std::map<bh_intp, timing>::iterator it=id2timing.begin();
         it!=id2timing.end(); ++it)
     {
         //Write to file
         f << it->second.name << ":\n";
-        for(std::list<interval>::iterator it2=it->second.intervals->begin(); 
+        for(std::list<interval>::iterator it2=it->second.intervals->begin();
             it2!=it->second.intervals->end(); ++it2)
         {
             f << "\t" << it2->start << " > " << it2->end << "\n";
         }
         f << "\n";
-        
+
         //Write resume to screen
         s << "\t" << it->second.name << ": \t" << it->second.sum << "us (" << it->second.count << ")\n";
         delete it->second.intervals;
