@@ -45,7 +45,7 @@ static void reduce_chunk(bh_opcode opcode, bh_intp axis,
     inst.operand[1] = in;
     inst.constant.value.int64 = axis;
     inst.constant.type = BH_INT64;
-    batch_schedule(inst);
+    batch_schedule_inst(inst);
 }
 
 
@@ -113,14 +113,16 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
                 reduce_chunk(inst->opcode, axis, ltmp, in->ary);
 
                 //Send to output owner's mtmp array
-                batch_schedule(1, out->rank, ltmp);
+                bh_array tmp_view = *ltmp;
+                tmp_view.base = bh_base_array(ltmp);
+                batch_schedule_comm(1, out->rank, tmp_view);
 
                 //Lets free the tmp array
-                batch_schedule(BH_FREE, ltmp);
+                batch_schedule_inst(BH_FREE, ltmp);
             }
-            batch_schedule(BH_DISCARD, ltmp);
+            batch_schedule_inst(BH_DISCARD, ltmp);
             if(in->ary->base != NULL)
-                batch_schedule(BH_DISCARD, in->ary);
+                batch_schedule_inst(BH_DISCARD, in->ary);
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -128,17 +130,14 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
             if(pgrid_myrank != in->rank)//We don't own the input chunk
             {
                 //Create a tmp view for receiving
-                bh_array *recv_view = tmp_get_ary();
-                *recv_view = *mtmp;
-                recv_view->base = mtmp;
-                recv_view->shape[0] = 1;
-                recv_view->start = mtmp_count;
+                bh_array recv_view;
+                recv_view = *mtmp;
+                recv_view.base = mtmp;
+                recv_view.shape[0] = 1;
+                recv_view.start = mtmp_count;
 
                 //Recv from input owner's ltmp to the output owner's mtmp array
-                batch_schedule(0, in->rank, recv_view);
-
-                //Cleanup
-                batch_schedule(BH_DISCARD, recv_view);
+                batch_schedule_comm(0, in->rank, recv_view);
             }
             ++mtmp_count;//One scalar added to the master-tmp array
         }
@@ -160,11 +159,11 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
         reduce_chunk(inst->opcode, axis, out->ary, tmp);
 
         //Lets cleanup
-        batch_schedule(BH_DISCARD, tmp);
-        batch_schedule(BH_FREE, mtmp);
-        batch_schedule(BH_DISCARD, mtmp);
+        batch_schedule_inst(BH_DISCARD, tmp);
+        batch_schedule_inst(BH_FREE, mtmp);
+        batch_schedule_inst(BH_DISCARD, mtmp);
         if(out->ary->base != NULL)
-            batch_schedule(BH_DISCARD, out->ary);
+            batch_schedule_inst(BH_DISCARD, out->ary);
     }
 }
 
@@ -232,7 +231,7 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
                 reduce_chunk(inst->opcode, axis, tmp, in);
             }
             if(in->base != NULL)
-                batch_schedule(BH_DISCARD, in);
+                batch_schedule_inst(BH_DISCARD, in);
 
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
@@ -242,14 +241,14 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
 
             //Finally, we have to "reduce" the local chunks together
             bh_array *ops[] = {out, tmp};
-            batch_schedule(BH_IDENTITY, ops, NULL);
+            batch_schedule_inst(BH_IDENTITY, ops, NULL);
 
             //Cleanup
-            batch_schedule(BH_FREE, tmp);
-            batch_schedule(BH_DISCARD, tmp);
+            batch_schedule_inst(BH_FREE, tmp);
+            batch_schedule_inst(BH_DISCARD, tmp);
             if(out->base == NULL)
-                batch_schedule(BH_FREE, out);
-            batch_schedule(BH_DISCARD, out);
+                batch_schedule_inst(BH_FREE, out);
+            batch_schedule_inst(BH_DISCARD, out);
         }
 
         //Then we handle all the rest.
@@ -283,7 +282,7 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
                 reduce_chunk(inst->opcode, axis, tmp, in);
             }
             if(in->base != NULL)
-                batch_schedule(BH_DISCARD, in);
+                batch_schedule_inst(BH_DISCARD, in);
 
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
@@ -293,14 +292,14 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
 
             //Finally, we have to "reduce" the local chunks together
             bh_array *ops[] = {out, out, tmp};
-            batch_schedule(opcode, ops, NULL);
+            batch_schedule_inst(opcode, ops, NULL);
 
             //Cleanup
-            batch_schedule(BH_FREE, tmp);
-            batch_schedule(BH_DISCARD, tmp);
+            batch_schedule_inst(BH_FREE, tmp);
+            batch_schedule_inst(BH_DISCARD, tmp);
             if(out->base == NULL)
-                batch_schedule(BH_FREE, out);
-            batch_schedule(BH_DISCARD, out);
+                batch_schedule_inst(BH_FREE, out);
+            batch_schedule_inst(BH_DISCARD, out);
         }
     }
     catch(std::exception& e)

@@ -204,7 +204,7 @@ static void fallback_exec(bh_instruction *inst)
     //Do global instruction
     if(pgrid_myrank == 0)
     {
-        batch_schedule(*inst);
+        batch_schedule_inst(*inst);
     }
 
     //Scatter all data back to all processes
@@ -232,7 +232,7 @@ static void fallback_exec(bh_instruction *inst)
     {
         if((*it)->base != NULL)
         {
-            batch_schedule(BH_DISCARD, *it);
+            batch_schedule_inst(BH_DISCARD, *it);
         }
     }
     //Free and discard all local base arrays
@@ -241,8 +241,8 @@ static void fallback_exec(bh_instruction *inst)
     {
         if((*it)->base == NULL)
         {
-            batch_schedule(BH_FREE, *it);
-            batch_schedule(BH_DISCARD, *it);
+            batch_schedule_inst(BH_FREE, *it);
+            batch_schedule_inst(BH_DISCARD, *it);
         }
     }
 }
@@ -286,7 +286,7 @@ static void execute_regular(bh_instruction *inst)
             continue;
 
         //Schedule task
-        batch_schedule(local_inst);
+        batch_schedule_inst(local_inst);
 
         //Free and discard all local chunk arrays
         for(bh_intp k=0; k < nop; ++k)
@@ -296,8 +296,8 @@ static void execute_regular(bh_instruction *inst)
 
             bh_array *ary = chunks[k+c].ary;
             if(ary->base == NULL)
-                batch_schedule(BH_FREE, ary);
-            batch_schedule(BH_DISCARD, ary);
+                batch_schedule_inst(BH_FREE, ary);
+            batch_schedule_inst(BH_DISCARD, ary);
         }
     }
 }
@@ -369,7 +369,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                     bh_array *l_ary = array_get_existing_local(g_ary);
                     if(l_ary != NULL)
                     {
-                        batch_schedule(BH_DISCARD, l_ary);
+                        batch_schedule_inst(BH_DISCARD, l_ary);
                     }
                 }
                 dispatch_slave_known_remove(g_ary);
@@ -381,7 +381,7 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
                 bh_array *l_ary = array_get_existing_local(g_ary);
                 bh_data_free(g_ary);
                 if(l_ary != NULL)
-                    batch_schedule(BH_FREE, l_ary);
+                    batch_schedule_inst(BH_FREE, l_ary);
                 break;
             }
             case BH_SYNC:
@@ -432,8 +432,8 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
             ufunc->nin         = 0;
             ufunc->struct_size = sizeof(bh_random_type);
             ufunc->operand[0]  = chunks[c].ary;
-            batch_schedule(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
-            batch_schedule(BH_DISCARD, chunks[c].ary);
+            batch_schedule_inst(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
+            batch_schedule_inst(BH_DISCARD, chunks[c].ary);
         }
     }
     return BH_SUCCESS;
