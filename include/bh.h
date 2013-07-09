@@ -52,7 +52,7 @@ extern "C" {
  * @view   The view in question
  * @return The Base array
  */
-#define bh_base_array(view) (view->base)
+#define bh_base_array(view) ((view)->base)
 
 
 /* Reduce nDarray info to a base shape
@@ -250,10 +250,10 @@ DLLEXPORT bh_error bh_data_malloc(bh_base* base);
 /* Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
- * @view    The view in question
+ * @base    The base in question
  * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_free(bh_view* view);
+bh_error bh_data_free(bh_base* base);
 
 /* Retrive the operands of a instruction.
  *

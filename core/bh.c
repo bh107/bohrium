@@ -274,18 +274,15 @@ bh_error bh_data_malloc(bh_base* base)
 /* Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
- * @view    The view in question
+ * @base    The base in question
  * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_free(bh_view* view)
+bh_error bh_data_free(bh_base* base)
 {
     bh_intp bytes;
-    bh_base* base;
 
-    if(view == NULL)
+    if(base == NULL)
         return BH_SUCCESS;
-
-    base = bh_base_array(view);
 
     if(base->data == NULL)
         return BH_SUCCESS;

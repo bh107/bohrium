@@ -41,9 +41,9 @@ void batch_schedule_inst(const bh_instruction& inst);
 /* Schedule an instruction that only takes one instruction.
  *
  * @opcode   The opcode of the instruction
- * @operand  The local operand in the instruction
+ * @operand  The local base array in the instruction
  */
-void batch_schedule_inst(bh_opcode opcode, bh_array *operand);
+void batch_schedule_inst(bh_opcode opcode, bh_base *operand);
 
 
 /* Schedule an instruction.
@@ -52,19 +52,18 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operand);
  * @operands The local operands in the instruction
  * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
-void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
-                          bh_userfunc *ufunc);
+void batch_schedule_inst(bh_opcode opcode, bh_view *operands,
+                         bh_userfunc *ufunc);
+
 
 /* Schedule an send/receive instruction.
  *
  * @direction   If True the array is send else it is received.
  * @rank        The process to send to or receive from
- * @local_view  The local view to communicate (It MUST be a view)
- *              NB: This view will be copied and never seen by the rest of
- *                  Bohrium thus it should not be discarded.
- *                  Furthermore, it must be contiguous (row-major)
+ * @local_view  The local view to communicate
+ *              NB: it must be contiguous (row-major)
  */
-void batch_schedule_comm(bool direction, int rank, const bh_array &local_view);
+void batch_schedule_comm(bool direction, int rank, const bh_view &local_view);
 
 
 /* Flush all scheduled instructions

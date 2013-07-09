@@ -29,18 +29,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "tmp.h"
 
 
-/* Gather or scatter the global array processes.
+/* Gather or scatter the global base array between processes.
  * NB: this is a collective operation.
  *
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-void comm_gather_scatter(int scatter, bh_array *global_ary)
+void comm_gather_scatter(int scatter, bh_base *global_ary)
 {
-    assert(global_ary->base == NULL);
     bh_error err;
-    bh_array *local_ary = array_get_local(global_ary);
-    bh_intp totalsize = bh_nelements(global_ary->ndim, global_ary->shape);
+    bh_base *local_ary = array_get_local(global_ary);
+    bh_intp totalsize = global_ary->nelem;
 
     if(totalsize <= 0)
         return;
@@ -102,25 +101,25 @@ void comm_gather_scatter(int scatter, bh_array *global_ary)
 }
 
 
-/* Distribute the global array data to all slave processes.
+/* Distribute the global base array data to all slave processes.
  * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.
  *
  * @global_ary Global base array
  */
-void comm_master2slaves(bh_array *global_ary)
+void comm_master2slaves(bh_base *global_ary)
 {
     batch_flush();
     comm_gather_scatter(1, global_ary);
 }
 
 
-/* Gather the global array data at the master processes.
+/* Gather the global base array data at the master processes.
  * NB: this is a collective operation.
  *
  * @global_ary Global base array
  */
-void comm_slaves2master(bh_array *global_ary)
+void comm_slaves2master(bh_base *global_ary)
 {
     batch_flush();
     comm_gather_scatter(0, global_ary);
@@ -128,7 +127,6 @@ void comm_slaves2master(bh_array *global_ary)
 
 
 /* Communicate array data such that the processes can apply local computation.
- * This function may reshape the input array chunk.
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
  *
@@ -137,7 +135,7 @@ void comm_slaves2master(bh_array *global_ary)
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
+void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
 {
     //Check if communication is even necessary
     if(sending_rank == receiving_rank)
@@ -145,42 +143,25 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
 
     if(pgrid_myrank == receiving_rank)
     {
-        //This array is temporary and
-        //located contiguous in memory (row-major)
-        assert(chunk->base == NULL);
-        assert(chunk->start == 0);
-        assert(chunk->data == NULL);
-
         //Schedule the receive message
-        bh_array tmp_view = *chunk;
-        tmp_view.base = bh_base_array(chunk);
-        batch_schedule_comm(0, sending_rank, tmp_view);
+        batch_schedule_comm(0, sending_rank, chunk);
     }
     else if(pgrid_myrank == sending_rank)
     {
         //We need to copy the local array view into a base array.
-        bh_array *tmp_ary = tmp_get_ary();
-        *tmp_ary = *chunk;
-        tmp_ary->base  = NULL;
-        tmp_ary->data  = NULL;
-        tmp_ary->start = 0;
-
-        //Compute a row-major stride for the tmp array.
-        bh_set_contiguous_stride(tmp_ary);
+        bh_view tmp_view = chunk;
+        tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type, bh_nelements(chunk.ndim, chunk.shape));
 
         //Tell the VEM to do the data copy.
-        bh_array *ops[] = {tmp_ary, chunk};
+        bh_view ops[] = {tmp_view, chunk};
         batch_schedule_inst(BH_IDENTITY, ops, NULL);
 
         //Schedule the send message
-        bh_array tmp_view = *tmp_ary;
-        tmp_view.base = tmp_ary;
         batch_schedule_comm(1, receiving_rank, tmp_view);
 
         //Cleanup the local arrays
-        batch_schedule_inst(BH_FREE, tmp_ary);
-        batch_schedule_inst(BH_DISCARD, tmp_ary);
-        batch_schedule_inst(BH_DISCARD, chunk);
+        batch_schedule_inst(BH_FREE, bh_base_array(&chunk));
+        batch_schedule_inst(BH_DISCARD, bh_base_array(&chunk));
     }
 }
 
@@ -194,9 +175,9 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
  */
-void comm_array_data(ary_chunk *chunk, int receiving_rank)
+void comm_array_data(const ary_chunk &chunk, int receiving_rank)
 {
-    comm_array_data(chunk->ary, chunk->rank, receiving_rank);
+    comm_array_data(chunk.ary, chunk.rank, receiving_rank);
 }
 
 
