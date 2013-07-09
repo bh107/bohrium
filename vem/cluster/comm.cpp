@@ -152,7 +152,9 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
         assert(chunk->data == NULL);
 
         //Schedule the receive message
-        batch_schedule_comm(0, sending_rank, chunk);
+        bh_array tmp_view = *chunk;
+        tmp_view.base = bh_base_array(chunk);
+        batch_schedule_comm(0, sending_rank, tmp_view);
     }
     else if(pgrid_myrank == sending_rank)
     {
@@ -171,7 +173,9 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
         batch_schedule_inst(BH_IDENTITY, ops, NULL);
 
         //Schedule the send message
-        batch_schedule_comm(1, receiving_rank, tmp_ary);
+        bh_array tmp_view = *tmp_ary;
+        tmp_view.base = tmp_ary;
+        batch_schedule_comm(1, receiving_rank, tmp_view);
 
         //Cleanup the local arrays
         batch_schedule_inst(BH_FREE, tmp_ary);

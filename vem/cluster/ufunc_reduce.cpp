@@ -113,7 +113,9 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
                 reduce_chunk(inst->opcode, axis, ltmp, in->ary);
 
                 //Send to output owner's mtmp array
-                batch_schedule_comm(1, out->rank, ltmp);
+                bh_array tmp_view = *ltmp;
+                tmp_view.base = bh_base_array(ltmp);
+                batch_schedule_comm(1, out->rank, tmp_view);
 
                 //Lets free the tmp array
                 batch_schedule_inst(BH_FREE, ltmp);
@@ -128,17 +130,14 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
             if(pgrid_myrank != in->rank)//We don't own the input chunk
             {
                 //Create a tmp view for receiving
-                bh_array *recv_view = tmp_get_ary();
-                *recv_view = *mtmp;
-                recv_view->base = mtmp;
-                recv_view->shape[0] = 1;
-                recv_view->start = mtmp_count;
+                bh_array recv_view;
+                recv_view = *mtmp;
+                recv_view.base = mtmp;
+                recv_view.shape[0] = 1;
+                recv_view.start = mtmp_count;
 
                 //Recv from input owner's ltmp to the output owner's mtmp array
                 batch_schedule_comm(0, in->rank, recv_view);
-
-                //Cleanup
-                batch_schedule_inst(BH_DISCARD, recv_view);
             }
             ++mtmp_count;//One scalar added to the master-tmp array
         }

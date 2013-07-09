@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Schedule an task.
- * NB: for now, we will flush in every task scheduling
  * @t  The task to schedule
  */
 void batch_schedule(const task& t);
@@ -58,11 +57,14 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
 
 /* Schedule an send/receive instruction.
  *
- * @direction  If True the array is send else it is received.
- * @rank       The process to send to or receive from
- * @local_ary  The local array to communicate
+ * @direction   If True the array is send else it is received.
+ * @rank        The process to send to or receive from
+ * @local_view  The local view to communicate (It MUST be a view)
+ *              NB: This view will be copied and never seen by the rest of
+ *                  Bohrium thus it should not be discarded.
+ *                  Furthermore, it must be contiguous (row-major)
  */
-void batch_schedule_comm(bool direction, int rank, bh_array *local_ary);
+void batch_schedule_comm(bool direction, int rank, const bh_array &local_view);
 
 
 /* Flush all scheduled instructions

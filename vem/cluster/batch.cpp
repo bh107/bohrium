@@ -33,7 +33,6 @@ static std::vector<task> task_store;
 
 
 /* Schedule an task.
- * NB: for now, we will flush in every task scheduling
  * @t  The task to schedule
  */
 void batch_schedule(const task& t)
@@ -95,17 +94,21 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
 
 /* Schedule an send/receive instruction.
  *
- * @direction  If True the array is send else it is received.
- * @rank       The process to send to or receive from
- * @local_ary  The local array to communicate
+ * @direction   If True the array is send else it is received.
+ * @rank        The process to send to or receive from
+ * @local_view  The local view to communicate (It MUST be a view)
+ *              NB: This view will be copied and never seen by the rest of
+ *                  Bohrium thus it should not be discarded.
+ *                  Furthermore, it must be contiguous (row-major)
  */
-void batch_schedule_comm(bool direction, int rank, bh_array *local_ary)
+void batch_schedule_comm(bool direction, int rank, const bh_array &local_view)
 {
+    assert(local_view.base != NULL);
     task t;
-    t.send_recv.type      = TASK_SEND_RECV;
-    t.send_recv.direction = direction;
-    t.send_recv.rank      = rank;
-    t.send_recv.local_ary = local_ary;
+    t.send_recv.type       = TASK_SEND_RECV;
+    t.send_recv.direction  = direction;
+    t.send_recv.rank       = rank;
+    t.send_recv.local_view = local_view;
     batch_schedule(t);
 }
 
@@ -141,7 +144,7 @@ void batch_flush()
                 bh_error e;
                 bool dir      = (*it).send_recv.direction;
                 int rank      = (*it).send_recv.rank;
-                bh_array *ary = (*it).send_recv.local_ary;
+                bh_array *ary = &(*it).send_recv.local_view;
                 bh_intp s     = bh_type_size(ary->type);
                 bh_intp nelem = bh_nelements(ary->ndim, ary->shape);
 
