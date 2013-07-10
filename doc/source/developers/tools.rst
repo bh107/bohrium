@@ -52,6 +52,19 @@ Invoking valgrind to determine cache-utilization::
 
   --tool=callgrind --simulate-cache=yes <PROG> <PROG_PARAM>
 
+Cluster VEM (MPI)
+~~~~~~~~~~~~~~~~~
+
+In order to use MPI with valgrind, the MPI implementation needs to be compiled with PIC and debug flag. E.g, `MPICH2 <http://www.mpich.org/>`_ could be installed as follows::
+
+  ./configure --enable-g=all --with-pic --prefix /opt/mpich
+  make
+  sudo make install
+
+
+
+
+
 Writing Documentation
 ---------------------
 
@@ -80,7 +93,7 @@ Most used commands
 These commands assume that your current working dir is **bohrium/doc**.
 
 Initiate doxygen::
- 
+
   make doxy
 
 Render a html version of the docs::
