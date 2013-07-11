@@ -195,7 +195,10 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
             case BH_BITWISE_AND_REDUCE:
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
-                potentials.push_back(i);
+                if (bh_nelements(
+                    instr->operand[0]->ndim, instr->operand[0]->shape) == 1) {
+                    potentials.push_back(i);
+                }
 
             default:                                            // REFCOUNT
                 if (writes.count(instr->operand[0])>0) {        // Output
@@ -234,16 +237,42 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     //
     // Now; it is time to determine whether the potentials can become kernels.
     //
+    bh_intp prev_begin = (!potentials.empty()) ? potentials.back()+1 : 0;
     while(!potentials.empty()) {
         bh_intp potential = potentials.back();
         potentials.pop_back();
 
+        if (potential>=prev_begin) { // Overlapping potential; skip
+            continue;
+        }
+
+        bh_intp count = 0;
         for(bh_intp i=potential-1; i>=0; --i) {
             bh_instruction *instr = &list[i];
             bh_array *operand = instr->operand[0];  // Get the output operand
 
+            switch(instr[i].opcode) {
+                case BH_NONE:                       // Ignore these
+                case BH_DISCARD:
+                case BH_SYNC:
+                case BH_FREE:
+                case BH_ADD_REDUCE:                 // POTENTIALS
+                case BH_MULTIPLY_REDUCE:
+                case BH_MINIMUM_REDUCE:
+                case BH_MAXIMUM_REDUCE:
+                case BH_LOGICAL_AND_REDUCE:
+                case BH_LOGICAL_OR_REDUCE:
+                case BH_LOGICAL_XOR_REDUCE:
+                case BH_BITWISE_AND_REDUCE:
+                case BH_BITWISE_OR_REDUCE:
+                case BH_BITWISE_XOR_REDUCE:
+                    break;
+                default:
+                    ++count;
+            }
+
             if (!is_temp(operand, reads, writes)) { // Hit a non-temp.
-                if ((potential-i+1)>0) {            // More than one instr.
+                if (count>1) {                      // More than one instr.
                     kernel_t kernel;
                     kernel.begin = i+1;
                     kernel.end   = potential;
@@ -321,7 +350,7 @@ std::string name_operand(kernel_t& kernel, bh_array* operand)
 std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array *input, kernel_t& kernel)
 {
     if (cur < 0) { // Over the top! Could not find input
-        return "SHIT";
+        return "";
     } 
     bh_instruction *instr   = &list[cur];
     bh_opcode opcode        = instr->opcode;
@@ -347,6 +376,15 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
         case BH_DISCARD:
         case BH_NONE:
         case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
             return fused_expr(list, cur-1, max, input, kernel);
             break;
 
@@ -492,40 +530,88 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_dynamite_execute(bh_ir* bhir)
+std::string descend(bh_ir* bhir, bh_node_index idx)
 {
-    bh_intp count;
-    bh_intp instruction_count;
-    bh_instruction* instr;
-    bh_instruction* instruction_list;
-    bh_error res = BH_SUCCESS;
+    std::string expr = "";
 
-    instruction_count = bhir->instructions->count;
-    instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
-    
-    res = bh_graph_serialize(bhir, instruction_list, &instruction_count);
-    if (res != BH_SUCCESS)
-    {
-        free(instruction_list);
-        return res;
+    if (idx==INVALID_NODE) {
+        return expr;
+    }
+    bh_node_index left  = NODE_LOOKUP(idx).left_child;
+    bh_node_index right = NODE_LOOKUP(idx).right_child;
+
+    if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+        expr += "\n";
     }
 
-    kernel_storage kernels;
-    kernel_t kernel;
-    kernel.begin = 0;
-    kernel.end   = 0;
+    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "("+descend(bhir, left)+") op ("+descend(bhir, right)+")"; 
+    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
+        expr += "!("+descend(bhir, left)+")";
+    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "!("+descend(bhir, right)+")";
+    } else {
+        expr += "<END>";
+    }
 
+    return expr;
+}
+
+std::string ascend(bh_ir* bhir, bh_node_index idx)
+{
+    std::string expr = "";
+
+    if (idx==INVALID_NODE) {
+        return expr;
+    }
+    bh_node_index left  = NODE_LOOKUP(idx).left_child;
+    bh_node_index right = NODE_LOOKUP(idx).right_child;
+
+    if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+        expr += "\n";
+    }
+
+    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
+    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
+        expr += "!("+ascend(bhir, left)+")";
+    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "!("+ascend(bhir, right)+")";
+    } else {
+        expr += "<END>";
+    }
+
+    return expr;
+}
+
+
+
+bh_error bh_ve_dynamite_execute(bh_ir* bhir)
+{
+    bh_instruction *instr;
+    bh_graph_iterator *it;
+    bh_error res = BH_SUCCESS;
     #ifdef PROFILE
     bh_uint64 t_begin, t_end, m_begin, m_end;
     #endif
 
-    if (do_fuse && ((instruction_count>2))) {  // Find kernels in the instruction_list
-        //fprintf(stderr, "Looking for kernels...\n");
-        kernels = streaming(instruction_count, instruction_list);
+    res = bh_graph_iterator_create(bhir, &it);
+    if (BH_SUCCESS!=res) {
+        return res;
     }
-    
-    for (count=0; count<instruction_count; count++) {
-        instr = &instruction_list[count];
+    std::cout << "HMM" << std::endl;
+    std::cout << descend(bhir, 0) << std::endl;
+
+    /*
+    if (do_fuse && ((instruction_count>2))) {  // Find kernels in the instruction_list
+        kernel_storage kernels = streaming(instruction_count, instruction_list);
+
+        kernel_t kernel;
+        kernel.begin = 0;
+        kernel.end   = 0;
+    }*/
+
+    while (BH_SUCCESS == bh_graph_iterator_next_instruction(it, &instr)) {
         std::stringstream symbol_buf;
 
         #ifdef PROFILE
@@ -547,6 +633,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
 
+        /*
+
         if ((!kernels.empty()) && (kernel.begin == kernel.end)) {    // Grab a new kernel
             kernel = kernels.front();
             kernels.erase(kernels.begin());
@@ -560,8 +648,10 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             t_begin = _bh_timing();
             #endif
 
-            printf("KERNEL\n");
-            //bh_pprint_list(instruction_list, kernel.begin, kernel.end);
+            for(auto it=kernels.begin(); it!=kernels.end(); ++it) {
+                printf("KERNEL.\n");
+                bh_pprint_kernel(&kernel, instruction_list);
+            }
 
             symbol_buf << "BH_PFSTREAM";
             for(bh_int64 i=kernel.begin; i<kernel.end; ++i) {
@@ -648,6 +738,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             continue;
         }
 
+        */
+
         // NAIVE MODE
         //bh_pprint_instr(instr);
 
@@ -657,8 +749,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         #endif
         res = bh_vcache_malloc(instr);              // Allocate memory for operands
         if (BH_SUCCESS != res) {
-            printf("Unhandled error returned by bh_vcache_malloc() called from bh_ve_dynamite_execute()\n");
-            free(instruction_list);
+            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                            "called from bh_ve_dynamite_execute()\n");
             return res;
         }
         #ifdef PROFILE
@@ -1106,7 +1198,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         #endif
     }
 
-    free(instruction_list);
 	return res;
 }
 
