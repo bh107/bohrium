@@ -73,12 +73,7 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
     assert(chunks.size() > 0);
 
     //Master-tmp array that the master will reduce in the end.
-    bh_view mtmp;
-    mtmp.base = tmp_get_ary(bh_base_array(&inst->operand[1])->type, pgrid_worldsize);
-    mtmp.ndim = 1;
-    mtmp.start = 0;
-    mtmp.shape[0] = pgrid_worldsize;//Potential one scalar per process
-    mtmp.stride[0] = 1;
+    bh_base *mtmp = tmp_get_ary(bh_base_array(&inst->operand[1])->type, pgrid_worldsize);
     bh_intp mtmp_count=0;//Number of scalars received
 
     ary_chunk *out = &chunks[0];//The output chunks are all identical
@@ -97,7 +92,7 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
             if(pgrid_myrank == out->rank)//We also own the output chunk
             {
                 //Lets write directly to the master-tmp array
-                ltmp.base = bh_base_array(&mtmp);
+                ltmp.base = mtmp;
                 ltmp.start = mtmp_count;
                 reduce_chunk(inst->opcode, axis, ltmp, in->ary);
             }
@@ -127,9 +122,10 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
             {
                 //Create a tmp view for receiving
                 bh_view recv_view;
-                recv_view = mtmp;
-                recv_view.base = bh_base_array(&mtmp);
+                recv_view.base = mtmp;
+                recv_view.ndim = 1;
                 recv_view.shape[0] = 1;
+                recv_view.stride[0] = 1;
                 recv_view.start = mtmp_count;
 
                 //Recv from input owner's ltmp to the output owner's mtmp array
@@ -148,15 +144,17 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
     {
         assert(mtmp_count <= pgrid_worldsize);
         //Now we know the number of received scalars
-        bh_view tmp = mtmp;
-        tmp.base = tmp_get_ary(bh_base_array(&mtmp)->type, mtmp_count);
+        bh_view tmp;
+        tmp.base = mtmp;
+        tmp.start = 0;
+        tmp.ndim = 1;
         tmp.shape[0] = mtmp_count;
+        tmp.stride[0] = 1;
         reduce_chunk(inst->opcode, axis, out->ary, tmp);
 
         //Lets cleanup
-        batch_schedule_inst(BH_DISCARD, bh_base_array(&tmp));
-        batch_schedule_inst(BH_FREE, bh_base_array(&mtmp));
-        batch_schedule_inst(BH_DISCARD, bh_base_array(&mtmp));
+        batch_schedule_inst(BH_FREE, mtmp);
+        batch_schedule_inst(BH_DISCARD, mtmp);
         if(out->temporary)
             batch_schedule_inst(BH_DISCARD, bh_base_array(&out->ary));
     }
@@ -179,7 +177,7 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
 
         //For the mapping we have to "broadcast" the 'axis' dimension to an
         //output array view.
-        bh_view bcast_output    = inst->operand[0];
+        bh_view bcast_output     = inst->operand[0];
         bcast_output.base        = bh_base_array(&inst->operand[0]);
         bcast_output.ndim        = inst->operand[1].ndim;
         memcpy(bcast_output.shape, inst->operand[1].shape, bcast_output.ndim * sizeof(bh_intp));
