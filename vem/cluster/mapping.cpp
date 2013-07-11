@@ -119,6 +119,7 @@ static void find_largest_chunk(bh_intp nop,
             chunk.ary.start = start;
             chunk.ary.base = array_get_local(bh_base_array(ary));
             memcpy(chunk.ary.stride, ary->stride, ary->ndim * sizeof(bh_intp));
+            chunk.temporary = false;
         }
         else//This is a remote array thus we treat it as a base array.
         {   //Note we will set the stride when we know the final shape
