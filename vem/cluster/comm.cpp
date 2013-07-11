@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 /* Gather or scatter the global array processes.
  * NB: this is a collective operation.
- * 
+ *
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
@@ -70,10 +70,10 @@ void comm_gather_scatter(int scatter, bh_array *global_ary)
         }
         //The master-process MUST have allocated memory already
         assert(pgrid_myrank != 0 || global_ary->data != NULL);
-        
+
         //Scatter from master to slaves
-        e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE, 
-                         local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
+        e = MPI_Scatterv(global_ary->data, sendcnts, displs, MPI_BYTE,
+                         local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE,
                          0, MPI_COMM_WORLD);
     }
     else
@@ -84,28 +84,28 @@ void comm_gather_scatter(int scatter, bh_array *global_ary)
             if((err = bh_data_malloc(global_ary)) != BH_SUCCESS)
                 EXCEPT_OUT_OF_MEMORY();
         }
-        
-        //We will always allocate the local array when gathering because 
+
+        //We will always allocate the local array when gathering because
         //only the last process knows if the array has been initiated.
         if((err = bh_data_malloc(local_ary)) != BH_SUCCESS)
             EXCEPT_OUT_OF_MEMORY();
-    
+
         assert(sendcnts[pgrid_myrank] == 0 || local_ary->data != NULL);
-        
+
         //Gather from the slaves to the master
-        e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE, 
-                        global_ary->data, sendcnts, displs, MPI_BYTE, 
+        e = MPI_Gatherv(local_ary->data, sendcnts[pgrid_myrank], MPI_BYTE,
+                        global_ary->data, sendcnts, displs, MPI_BYTE,
                         0, MPI_COMM_WORLD);
     }
     if(e != MPI_SUCCESS)
-        EXCEPT_MPI(e);        
+        EXCEPT_MPI(e);
 }
 
 
 /* Distribute the global array data to all slave processes.
  * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.
- * 
+ *
  * @global_ary Global base array
  */
 void comm_master2slaves(bh_array *global_ary)
@@ -117,7 +117,7 @@ void comm_master2slaves(bh_array *global_ary)
 
 /* Gather the global array data at the master processes.
  * NB: this is a collective operation.
- * 
+ *
  * @global_ary Global base array
  */
 void comm_slaves2master(bh_array *global_ary)
@@ -131,7 +131,7 @@ void comm_slaves2master(bh_array *global_ary)
  * This function may reshape the input array chunk.
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
- *     
+ *
  * @chunk          The local array chunk to communicate
  * @sending_rank   The rank of the sending process
  * @receiving_rank The rank of the receiving process, e.g. the process that should
@@ -149,10 +149,12 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
         //located contiguous in memory (row-major)
         assert(chunk->base == NULL);
         assert(chunk->start == 0);
-        assert(chunk->data == NULL);        
-    
+        assert(chunk->data == NULL);
+
         //Schedule the receive message
-        batch_schedule(0, sending_rank, chunk);
+        bh_array tmp_view = *chunk;
+        tmp_view.base = bh_base_array(chunk);
+        batch_schedule_comm(0, sending_rank, tmp_view);
     }
     else if(pgrid_myrank == sending_rank)
     {
@@ -162,21 +164,23 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
         tmp_ary->base  = NULL;
         tmp_ary->data  = NULL;
         tmp_ary->start = 0;
-   
+
         //Compute a row-major stride for the tmp array.
         bh_set_contiguous_stride(tmp_ary);
 
         //Tell the VEM to do the data copy.
         bh_array *ops[] = {tmp_ary, chunk};
-        batch_schedule(BH_IDENTITY, ops, NULL);
+        batch_schedule_inst(BH_IDENTITY, ops, NULL);
 
         //Schedule the send message
-        batch_schedule(1, receiving_rank, tmp_ary);
+        bh_array tmp_view = *tmp_ary;
+        tmp_view.base = tmp_ary;
+        batch_schedule_comm(1, receiving_rank, tmp_view);
 
         //Cleanup the local arrays
-        batch_schedule(BH_FREE, tmp_ary);
-        batch_schedule(BH_DISCARD, tmp_ary);
-        batch_schedule(BH_DISCARD, chunk);
+        batch_schedule_inst(BH_FREE, tmp_ary);
+        batch_schedule_inst(BH_DISCARD, tmp_ary);
+        batch_schedule_inst(BH_DISCARD, chunk);
     }
 }
 
@@ -185,7 +189,7 @@ void comm_array_data(bh_array *chunk, int sending_rank, int receiving_rank)
  * This function may reshape the input array chunk.
  * NB: The process that owns the data and the process where the data is located
  *     must both call this function.
- *     
+ *
  * @chunk The local array chunk to communicate
  * @receiving_rank The rank of the receiving process, e.g. the process that should
  *                 apply the computation
