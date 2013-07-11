@@ -33,6 +33,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BH_DYNAMITE_KRN_MAX_OPERANDS 20
 
+#define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
+#define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
+
 // Execution Profile
 
 #ifdef PROFILE
