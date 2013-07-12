@@ -110,10 +110,13 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
 
                 //Lets free the tmp array
                 batch_schedule_inst(BH_FREE, bh_base_array(&ltmp));
+                batch_schedule_inst(BH_DISCARD, bh_base_array(&ltmp));
             }
-            batch_schedule_inst(BH_DISCARD, bh_base_array(&ltmp));
             if(in->temporary)
+            {
+                batch_schedule_inst(BH_FREE, bh_base_array(&in->ary));
                 batch_schedule_inst(BH_DISCARD, bh_base_array(&in->ary));
+            }
         }
 
         if(pgrid_myrank == out->rank)//We own the output chunk
@@ -151,12 +154,9 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
         tmp.shape[0] = mtmp_count;
         tmp.stride[0] = 1;
         reduce_chunk(inst->opcode, axis, out->ary, tmp);
-
-        //Lets cleanup
+        //Only the master needs to cleanup 'mtmp'
         batch_schedule_inst(BH_FREE, mtmp);
         batch_schedule_inst(BH_DISCARD, mtmp);
-        if(out->temporary)
-            batch_schedule_inst(BH_DISCARD, bh_base_array(&out->ary));
     }
 }
 
@@ -220,9 +220,9 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             if(pgrid_myrank == in_chunk->rank)
             {
                 reduce_chunk(inst->opcode, axis, tmp, *in);
+                if(in_chunk->temporary)
+                    batch_schedule_inst(BH_DISCARD, bh_base_array(in));
             }
-            if(in_chunk->temporary)
-                batch_schedule_inst(BH_DISCARD, bh_base_array(in));
 
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
@@ -238,8 +238,10 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             batch_schedule_inst(BH_FREE, bh_base_array(&tmp));
             batch_schedule_inst(BH_DISCARD, bh_base_array(&tmp));
             if(out_chunk->temporary)
+            {
                 batch_schedule_inst(BH_FREE, bh_base_array(out));
-            batch_schedule_inst(BH_DISCARD, bh_base_array(out));
+                batch_schedule_inst(BH_DISCARD, bh_base_array(out));
+            }
         }
 
         //Then we handle all the rest.
@@ -270,9 +272,12 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             if(pgrid_myrank == in_chunk->rank)
             {
                 reduce_chunk(inst->opcode, axis, tmp, *in);
+                if(in_chunk->temporary)
+                {
+                    batch_schedule_inst(BH_FREE, bh_base_array(in));
+                    batch_schedule_inst(BH_DISCARD, bh_base_array(in));
+                }
             }
-            if(in_chunk->temporary)
-                batch_schedule_inst(BH_DISCARD, bh_base_array(in));
 
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
@@ -288,8 +293,10 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             batch_schedule_inst(BH_FREE, bh_base_array(&tmp));
             batch_schedule_inst(BH_DISCARD, bh_base_array(&tmp));
             if(out_chunk->temporary)
+            {
                 batch_schedule_inst(BH_FREE, bh_base_array(out));
-            batch_schedule_inst(BH_DISCARD, bh_base_array(out));
+                batch_schedule_inst(BH_DISCARD, bh_base_array(out));
+            }
         }
     }
     catch(std::exception& e)
