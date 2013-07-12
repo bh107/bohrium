@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <StaticStore.hpp>
 #include <bh.h>
 #include <vector>
+#include <set>
 #include "task.h"
 #include "exec.h"
 #include "except.h"
@@ -30,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"
 
 static std::vector<task> task_store;
-
+static std::set<bh_base *> discard_store;
 
 /* Schedule an task.
  * @t  The task to schedule
@@ -60,6 +61,10 @@ void batch_schedule_inst(const bh_instruction& inst)
  */
 void batch_schedule_inst(bh_opcode opcode, bh_base *operand)
 {
+    //insert returns True if the operand didn't exist in the discard_store
+    if(opcode == BH_DISCARD && !discard_store.insert(operand).second)
+        return;//Avoid discarding a base array multiple times
+
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
@@ -177,6 +182,7 @@ void batch_flush()
         }
     }
     task_store.clear();
+    discard_store.clear();
     bh_timing_save(timing_flush, stime, bh_timing());
 }
 
