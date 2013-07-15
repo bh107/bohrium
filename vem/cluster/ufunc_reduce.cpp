@@ -221,18 +221,21 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             {
                 reduce_chunk(inst->opcode, axis, tmp, *in);
                 if(in_chunk->temporary)
+                {
+                    batch_schedule_inst(BH_FREE, bh_base_array(in));
                     batch_schedule_inst(BH_DISCARD, bh_base_array(in));
+                }
             }
 
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
 
-            if(pgrid_myrank != out_chunk->rank)
-                continue;//We do not own the output chunk
-
-            //Finally, we have to "reduce" the local chunks together
-            bh_view ops[] = {*out, tmp};
-            batch_schedule_inst(BH_IDENTITY, ops, NULL);
+            if(pgrid_myrank == out_chunk->rank)
+            {
+                //Finally, we have to "reduce" the local chunks together
+                bh_view ops[] = {*out, tmp};
+                batch_schedule_inst(BH_IDENTITY, ops, NULL);
+            }
 
             //Cleanup
             batch_schedule_inst(BH_FREE, bh_base_array(&tmp));
@@ -282,12 +285,12 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             //Lets make sure that all processes have the needed input data.
             comm_array_data(tmp, in_chunk->rank, out_chunk->rank);
 
-            if(pgrid_myrank != out_chunk->rank)
-                continue;//We do not own the output chunk
-
-            //Finally, we have to "reduce" the local chunks together
-            bh_view ops[] = {*out, *out, tmp};
-            batch_schedule_inst(opcode, ops, NULL);
+            if(pgrid_myrank == out_chunk->rank)
+            {
+                //Finally, we have to "reduce" the local chunks together
+                bh_view ops[] = {*out, *out, tmp};
+                batch_schedule_inst(opcode, ops, NULL);
+            }
 
             //Cleanup
             batch_schedule_inst(BH_FREE, bh_base_array(&tmp));
