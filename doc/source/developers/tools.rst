@@ -55,12 +55,20 @@ Invoking valgrind to determine cache-utilization::
 Cluster VEM (MPI)
 ~~~~~~~~~~~~~~~~~
 
-In order to use MPI with valgrind, the MPI implementation needs to be compiled with PIC and debug flag. E.g, `MPICH2 <http://www.mpich.org/>`_ could be installed as follows::
+In order to use MPI with valgrind, the MPI implementation needs to be compiled with PIC and no-dlopen flag. E.g, `OpenMPI <http://www.open-mpi.org/>`_ could be installed as follows::
 
-  ./configure --enable-g=all --with-pic --prefix /opt/mpich
+  wget http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.5.tar.gz
+  cd tar -xzf openmpi-1.6.5.tar.gz
+  cd openmpi-1.6.5
+  ./configure --with-pic --disable-dlopen --prefix=/opt/openmpi
   make
   sudo make install
 
+And then executed using valgrind::
+
+  export LD_LIBRARY_PATH=/opt/openmpi/lib/:$LD_LIBRARY_PATH
+  export PATH=/opt/openmpi/bin:$PATH
+  mpiexec -np 1 valgrind dython test/numpy/numpytest.py : -np 1 valgrind ~/.local/bh_vem_cluster_slave
 
 
 
