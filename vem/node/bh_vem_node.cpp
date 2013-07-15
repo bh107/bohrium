@@ -193,7 +193,7 @@ bh_error bh_vem_node_execute(bh_intp count,
 
         if(inst->opcode == BH_DISCARD)
         {
-                bh_base *base = operands[0].base;
+            bh_base *base = operands[0].base;
             if(allocated_bases.erase(base) != 1)
             {
                 fprintf(stderr, "[NODE-VEM] discarding unknown base array (%p)\n", base);

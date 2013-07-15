@@ -153,6 +153,8 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
         tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type,
                                     bh_nelements(chunk.ndim, chunk.shape));
 
+        bh_set_contiguous_stride(&tmp_view);
+
         //Tell the VEM to do the data copy.
         bh_view ops[] = {tmp_view, chunk};
         batch_schedule_inst(BH_IDENTITY, ops, NULL);

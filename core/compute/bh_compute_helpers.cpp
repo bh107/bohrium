@@ -72,7 +72,12 @@ void bh_tstate_reset( bh_tstate *state, bh_instruction *instr ) {
 
             // Precalculate the pointer
             basep = instr->operand[i].base->data;
-            assert(basep != NULL);
+            if(basep == NULL)
+            {
+                printf("Input array wasn't initiated ");
+                bh_pprint_array(&instr->operand[i]);
+                assert(basep != NULL);
+            }
             state->start[i] = (void*)(((char*)basep) + (instr->operand[i].start * elsize));
 
             // Precalculate the strides in bytes,

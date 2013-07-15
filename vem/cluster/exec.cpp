@@ -206,6 +206,7 @@ static void fallback_exec(bh_instruction *inst)
     {
         batch_schedule_inst(*inst);
     }
+    batch_flush();
 
     //Scatter all data back to all processes
     for(bh_intp o=0; o < nop; ++o)
