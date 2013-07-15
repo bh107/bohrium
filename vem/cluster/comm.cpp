@@ -150,7 +150,8 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
     {
         //We need to copy the local array view into a base array.
         bh_view tmp_view = chunk;
-        tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type, bh_nelements(chunk.ndim, chunk.shape));
+        tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type,
+                                    bh_nelements(chunk.ndim, chunk.shape));
 
         //Tell the VEM to do the data copy.
         bh_view ops[] = {tmp_view, chunk};
@@ -160,8 +161,8 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
         batch_schedule_comm(1, receiving_rank, tmp_view);
 
         //Cleanup the local arrays
-        batch_schedule_inst(BH_FREE, bh_base_array(&chunk));
-        batch_schedule_inst(BH_DISCARD, bh_base_array(&chunk));
+        batch_schedule_inst(BH_FREE, bh_base_array(&tmp_view));
+        batch_schedule_inst(BH_DISCARD, bh_base_array(&tmp_view));
     }
 }
 
