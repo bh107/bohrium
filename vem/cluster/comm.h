@@ -25,15 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_VEM_CLUSTER_COMM_H
 
 
-/* Gather or scatter the global base array between processes.
- * NB: this is a collective operation.
- *
- * @scatter If true we scatter else we gather
- * @global_ary Global base array
- */
-void comm_gather_scatter(int scatter, bh_base *global_ary);
-
-
 /* Distribute the global base array data to all slave processes.
  * The master-process MUST have allocated the @global_ary data.
  * NB: this is a collective operation.

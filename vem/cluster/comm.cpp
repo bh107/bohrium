@@ -35,7 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * @scatter If true we scatter else we gather
  * @global_ary Global base array
  */
-void comm_gather_scatter(int scatter, bh_base *global_ary)
+static void comm_gather_scatter(int scatter, bh_base *global_ary)
 {
     bh_error err;
     bh_base *local_ary = array_get_local(global_ary);
