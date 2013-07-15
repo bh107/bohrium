@@ -202,6 +202,18 @@ void bh_pprint_array( bh_view *view ) {
     puts( buf );
 }
 
+
+/* Pretty print an array.
+ *
+ * @base  The array base in question
+ */
+void bh_pprint_base( bh_base *base ) {
+
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_base( base, buf );
+    puts( buf );
+}
+
 void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
 
     char tmp[64];

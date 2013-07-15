@@ -34,6 +34,12 @@ extern "C" {
  */
 DLLEXPORT void bh_pprint_array( bh_view *view );
 
+/* Pretty print an array.
+ *
+ * @base  The array base in question
+ */
+DLLEXPORT void bh_pprint_base( bh_base *base );
+
 /** Print a single bh_instruction.
  *
  * @param instr The instruction to print.
