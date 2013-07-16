@@ -86,6 +86,13 @@ DLLEXPORT bool bh_is_continuous(bh_intp ndim,
                          const bh_index shape[],
                          const bh_index stride[]);
 
+/* Number of non-broadcasted elements in a given view
+ *
+ * @view    The view in question.
+ * @return  Number of elements.
+ */
+bh_index bh_nelements_nbcast(const bh_view *view);
+
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions

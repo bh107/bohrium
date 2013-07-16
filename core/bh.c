@@ -82,6 +82,22 @@ bool bh_is_continuous(bh_intp ndim,
     return true;
 }
 
+/* Number of non-broadcasted elements in a given view
+ *
+ * @view    The view in question.
+ * @return  Number of elements.
+ */
+bh_index bh_nelements_nbcast(const bh_view *view)
+{
+    bh_index res = 1;
+    for (int i = 0; i < view->ndim; ++i)
+    {
+        if(view->stride[i] > 0)
+            res *= view->shape[i];
+    }
+    return res;
+}
+
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
