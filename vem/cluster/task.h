@@ -53,7 +53,7 @@ typedef struct
 	//NB: This view should never be seen by the rest of Bohrium 
 	//    and thus never discarded. 
     //    Furthermore, it must be contiguous (row-major)
-    bh_array local_view;
+    bh_view local_view;
     //The process to send to or receive from
     int rank;
 }task_send_recv;

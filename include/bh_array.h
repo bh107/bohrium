@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -31,19 +31,27 @@ extern "C" {
 
 #define BH_MAXDIM (16)
 
-typedef struct bh_array bh_array;
-struct bh_array
+typedef struct
 {
-    /// Pointer to the base array. If NULL this is a base array
-    bh_array*     base;
-
     /// The type of data in the array
     bh_type       type;
+
+    /// The number of elements in the array
+    bh_index      nelem;
+
+    /// Pointer to the actual data.
+    bh_data_ptr   data;
+}bh_base;
+
+typedef struct
+{
+    /// Pointer to the base array.
+    bh_base*      base;
 
     /// Number of dimentions
     bh_intp       ndim;
 
-    /// Index of the start element (always 0 for base-array)
+    /// Index of the start element
     bh_index      start;
 
     /// Number of elements in each dimention
@@ -51,37 +59,18 @@ struct bh_array
 
     /// The stride for each dimention
     bh_index      stride[BH_MAXDIM];
+}bh_view;
 
-    /// Pointer to the actual data. Ignored for views
-    bh_data_ptr   data;
-};
-
-/** Create a new array.
+/** Create a new base array.
  *
- * @param base Pointer to the base array. If NULL this is a base array
  * @param type The type of data in the array
- * @param ndim Number of dimensions
- * @param start Index of the start element (always 0 for base-array)
- * @param shape[BH_MAXDIM] Number of elements in each dimention
- * @param stride[BH_MAXDIM] The stride for each dimention
- * @param new_array The handler for the newly created array
+ * @param nelements The number of elements
+ * @param new_base The handler for the newly created base
  * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_create_array(bh_array*   base,
-                               bh_type     type,
-                               bh_intp     ndim,
-                               bh_index    start,
-                               bh_index    shape[BH_MAXDIM],
-                               bh_index    stride[BH_MAXDIM],
-                               bh_array**  new_array);
-
-/** Destroy array.
- *
- * @param array The array to destroy
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
- */
-DLLEXPORT bh_error bh_destroy_array(bh_array* array);
-
+DLLEXPORT bh_error bh_create_base(bh_type    type,
+                                  bh_index   nelements,
+                                  bh_base**  new_base);
 
 #ifdef __cplusplus
 }

@@ -163,16 +163,16 @@ if __name__ == "__main__":
                   ("CORE-GRAPH", "core/graph", True),\
                   ("CORE", "core", True),\
                   ("VE-PRINT", "ve/print", False),\
-                  ("VE-GPU", "ve/gpu", False),\
+                  #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
-                  ("VE-TILING", "ve/tiling", False),\
-                  ("VE-MCORE", "ve/mcore", False),\
-                  ("VE-DYNAMITE", "ve/dynamite", False),\
+                  #("VE-TILING", "ve/tiling", False),\
+                  #("VE-MCORE", "ve/mcore", False),\
+                  #("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
-                  ("NumCIL", "bridge/NumCIL", False),\
+                  #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
-                  ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 

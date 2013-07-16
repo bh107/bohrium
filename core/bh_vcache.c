@@ -148,13 +148,13 @@ void bh_vcache_insert(bh_data_ptr data, bh_intp size)
  */
 bh_error bh_vcache_free(bh_instruction* inst)
 {
-    bh_array* base;
+    bh_base* base;
     bh_intp nelements, bytes;
 
-    base = bh_base_array(inst->operand[0]);
+    base = inst->operand[0].base;
 
     if (NULL != base->data) {
-        nelements   = bh_nelements(base->ndim, base->shape);
+        nelements   = base->nelem;
         bytes       = nelements * bh_type_size(base->type);
 
 		DEBUG_PRINT("Deallocate=%p\n", base_data);
@@ -166,7 +166,6 @@ bh_error bh_vcache_free(bh_instruction* inst)
         }
 		base->data = NULL;
     }
-    inst->operand[0] = NULL;
 
     return BH_SUCCESS;
 }
@@ -174,21 +173,21 @@ bh_error bh_vcache_free(bh_instruction* inst)
 /**
  *  Allocate memory for the given array.
  */
-bh_error bh_vcache_malloc_op(bh_array* array)
+bh_error bh_vcache_malloc_op(bh_view* array)
 {
     bh_intp bytes;
-    bh_array* base;
+    bh_base* base;
 
     if (array == NULL) {
         return BH_SUCCESS;          // For convenience BH_SUCCESS is returned
     }                               // since this often occurs when the operand
                                     // is a constant...
-    base = bh_base_array(array);
+    base = array->base;
     if (base->data != NULL) {       // For convenience BH_SUCCESS is returned
         return BH_SUCCESS;          // when data is already allocated.
     }
 
-    bytes = bh_array_size(base);
+    bytes = bh_base_size(base);
     if (bytes <= 0) {
         fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (long long)bytes);
         return BH_ERROR;
@@ -224,7 +223,7 @@ bh_error bh_vcache_malloc(bh_instruction* inst)
         case BH_FREE:
             break;
         default:
-            return bh_vcache_malloc_op(inst->operand[0]);
+            return bh_vcache_malloc_op(&inst->operand[0]);
             break;
     }
     return BH_SUCCESS;

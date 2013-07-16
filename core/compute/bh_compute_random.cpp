@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -123,7 +123,7 @@ rk_uint32(rk_state *state)
 uint64_t
 rk_uint64(rk_state *state)
 {
-    uint64_t res = rk_random(state); 
+    uint64_t res = rk_random(state);
     res = (res << 32) | rk_random(state);
     return res;
 }
@@ -188,9 +188,9 @@ rk_initseed(rk_state *state)
 bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 {
     bh_random_type *a = (bh_random_type *) arg;
-    bh_array *ary = a->operand[0];
+    bh_view *ary = &a->operand[0];
     bh_intp size = bh_nelements(ary->ndim, ary->shape);
-    bh_array *base = bh_base_array(ary);
+    bh_base *base = bh_base_array(ary);
     bh_error res = BH_SUCCESS;
 
     res = bh_vcache_malloc_op(ary); // Make sure that the output array is allocated.
@@ -200,8 +200,8 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 
     rk_state state;
     rk_initseed(&state);
-    
-    switch (ary->type)
+
+    switch (base->type)
     {
     	case BH_INT8:
 		{
@@ -234,7 +234,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
 				data[i] = rk_int64(&state);
 		}
 		break;
-		
+
 		case BH_UINT8:
 		{
 			bh_uint8* data = (bh_uint8*)base->data;
@@ -286,7 +286,7 @@ bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg)
     	default:
 	        return BH_TYPE_NOT_SUPPORTED;
 
-	}		
+	}
 
     return BH_SUCCESS;
 }

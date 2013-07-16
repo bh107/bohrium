@@ -88,11 +88,17 @@ static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
 
 }
 
-static void bh_sprint_array( bh_array *op, char buf[] ) {
+static void bh_sprint_base( bh_base *base, char buf[] ) {
+
+        sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
+                base, bh_type_text(base->type), (long) base->nelem, base->data
+        );
+}
+
+static void bh_sprint_view( bh_view *op, char buf[] ) {
 
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
             shape[PPRINT_BUF_SHAPE_SIZE]    = "?",
-            base[PPRINT_BUF_OPSTR_SIZE]     = "?",
             tmp[PPRINT_BUF_OPSTR_SIZE]      = "?";
 
     if (op == NULL) {
@@ -113,22 +119,11 @@ static void bh_sprint_array( bh_array *op, char buf[] ) {
                 strcat(stride, tmp);
                 if (i< op->ndim-1)
                     strcat(stride, ",");
-
             }
         }
-                                            // Text of base-operand
-        if (op->base != NULL) {
-            bh_sprint_array( op->base, tmp );
-            sprintf( base, "%p -->\n      %s\n", op->base, tmp  );
-        } else {
-            sprintf( base, "%p", op->base );
-        }
-
-        sprintf(buf, "[ Addr: %p Dims: %d Start: %d Shape: %s Stride: %s Type: %s Data: %p, Base: %s  ]",
-                op, (int)op->ndim, (int)op->start, shape, stride,
-                bh_type_text(op->type), op->data, base
-        );
-
+        bh_sprint_base(op->base, tmp);
+        sprintf(buf, "[ Dims: %d Start: %d Shape: %s Stride: %s Base=>%s]",
+                (int)op->ndim, (int)op->start, shape, stride, tmp);
     }
 
 }
@@ -142,8 +137,8 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
     sprintf(buf, "%s OPS=%d{\n", bh_opcode_text( instr->opcode), op_count );
     for(i=0; i < op_count; i++) {
 
-        if (!bh_is_constant(instr->operand[i]))
-            bh_sprint_array( instr->operand[i], op_str );
+        if (!bh_is_constant(&instr->operand[i]))
+            bh_sprint_view( &instr->operand[i], op_str );
         else
             //sprintf(op_str, "CONSTANT");
             bh_sprint_const( instr, op_str );
@@ -156,12 +151,12 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
     {
         bh_userfunc* userfunc = instr->userfunc;
         for(i=0; i < userfunc->nout; i++) {
-            bh_sprint_array( userfunc->operand[i], op_str );
+            bh_sprint_view( &userfunc->operand[i], op_str );
             sprintf(tmp, "  OUT%d %s\n", i, op_str);
             strcat(buf, tmp);
         }
         for(i=userfunc->nout; i < userfunc->nout + userfunc->nin; i++) {
-            bh_sprint_array( userfunc->operand[i], op_str );
+            bh_sprint_view( &userfunc->operand[i], op_str );
             sprintf(tmp, "  IN%d %s\n", i, op_str);
             strcat(buf, tmp);
         }
@@ -198,12 +193,24 @@ void bh_pprint_bundle( bh_instruction* instruction_list, bh_intp instruction_cou
 
 /* Pretty print an array.
  *
- * @instr  The array in question
+ * @view  The array view in question
  */
-void bh_pprint_array( bh_array *array ) {
+void bh_pprint_array( bh_view *view ) {
 
     char buf[PPRINT_BUF_OPSTR_SIZE];
-    bh_sprint_array( array, buf );
+    bh_sprint_view( view, buf );
+    puts( buf );
+}
+
+
+/* Pretty print an array.
+ *
+ * @base  The array base in question
+ */
+void bh_pprint_base( bh_base *base ) {
+
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_base( base, buf );
     puts( buf );
 }
 

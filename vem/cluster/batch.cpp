@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <StaticStore.hpp>
 #include <bh.h>
 #include <vector>
+#include <set>
 #include "task.h"
 #include "exec.h"
 #include "except.h"
@@ -30,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"
 
 static std::vector<task> task_store;
-
+static std::set<bh_base *> discard_store;
 
 /* Schedule an task.
  * @t  The task to schedule
@@ -56,14 +57,18 @@ void batch_schedule_inst(const bh_instruction& inst)
 /* Schedule an instruction that only takes one instruction.
  *
  * @opcode   The opcode of the instruction
- * @operand  The local operand in the instruction
+ * @operand  The local base array in the instruction
  */
-void batch_schedule_inst(bh_opcode opcode, bh_array *operand)
+void batch_schedule_inst(bh_opcode opcode, bh_base *operand)
 {
+    //insert returns True if the operand didn't exist in the discard_store
+    if(opcode == BH_DISCARD && !discard_store.insert(operand).second)
+        return;//Avoid discarding a base array multiple times
+
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.operand[0] = operand;
+    bh_assign_complete_base(&t.inst.inst.operand[0], operand);
     assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t);
 }
@@ -75,7 +80,7 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operand)
  * @operands The local operands in the instruction
  * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
-void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
+void batch_schedule_inst(bh_opcode opcode, bh_view *operands,
                          bh_userfunc *ufunc)
 {
     task t;
@@ -86,7 +91,7 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
     {
         assert(opcode != BH_USERFUNC);
         memcpy(t.inst.inst.operand, operands, bh_operands(opcode)
-                                              * sizeof(bh_array*));
+                                              * sizeof(bh_view));
     }
     batch_schedule(t);
 }
@@ -96,14 +101,11 @@ void batch_schedule_inst(bh_opcode opcode, bh_array *operands[],
  *
  * @direction   If True the array is send else it is received.
  * @rank        The process to send to or receive from
- * @local_view  The local view to communicate (It MUST be a view)
- *              NB: This view will be copied and never seen by the rest of
- *                  Bohrium thus it should not be discarded.
- *                  Furthermore, it must be contiguous (row-major)
+ * @local_view  The local view to communicate
+ *              NB: it must be contiguous (row-major)
  */
-void batch_schedule_comm(bool direction, int rank, const bh_array &local_view)
+void batch_schedule_comm(bool direction, int rank, const bh_view &local_view)
 {
-    assert(local_view.base != NULL);
     task t;
     t.send_recv.type       = TASK_SEND_RECV;
     t.send_recv.direction  = direction;
@@ -134,8 +136,7 @@ void batch_flush()
 
                 if(inst->opcode == BH_DISCARD)
                 {
-                    if(inst->operand[0]->base == NULL)
-                        array_rm_local(inst->operand[0]);
+                    array_rm_local(bh_base_array(&inst->operand[0]));
                 }
                 break;
             }
@@ -144,26 +145,26 @@ void batch_flush()
                 bh_error e;
                 bool dir      = (*it).send_recv.direction;
                 int rank      = (*it).send_recv.rank;
-                bh_array *ary = &(*it).send_recv.local_view;
-                bh_intp s     = bh_type_size(ary->type);
-                bh_intp nelem = bh_nelements(ary->ndim, ary->shape);
+                bh_view *view = &(*it).send_recv.local_view;
+                bh_intp s     = bh_type_size(bh_base_array(view)->type);
+                bh_intp nelem = bh_nelements_nbcast(view);
 
                 bh_uint64 stime = bh_timing();
                 if(dir)//Sending
                 {
-                    char *data = (char*) bh_base_array(ary)->data;
+                    char *data = (char*) view->base->data;
                     assert(data != NULL);
-                    data += ary->start * s;
+                    data += view->start * s;
                     if((e = MPI_Send(data, nelem * s, MPI_BYTE, rank, 0,
                                      MPI_COMM_WORLD)) != MPI_SUCCESS)
                     EXCEPT_MPI(e);
                 }
                 else//Receiving
                 {
-                    if((e = bh_data_malloc(ary)) != BH_SUCCESS)
+                    if((e = bh_data_malloc(view->base)) != BH_SUCCESS)
                         EXCEPT_OUT_OF_MEMORY();
-                    char *data = (char*) bh_base_array(ary)->data;
-                    data += ary->start * s;
+                    char *data = (char*) view->base->data;
+                    data += view->start * s;
                     if((e = MPI_Recv(data, nelem * s, MPI_BYTE, rank,
                                      0, MPI_COMM_WORLD,
                                      MPI_STATUS_IGNORE)) != MPI_SUCCESS)
@@ -181,6 +182,7 @@ void batch_flush()
         }
     }
     task_store.clear();
+    discard_store.clear();
     bh_timing_save(timing_flush, stime, bh_timing());
 }
 

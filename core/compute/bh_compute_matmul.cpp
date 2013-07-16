@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -21,10 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_compute.h>
 
 
-template <typename Type> bh_error do_matmul(bh_array *A, bh_array *B, bh_array *C){
+template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
 
-    if(bh_data_malloc(C) != BH_SUCCESS)
-        return BH_OUT_OF_MEMORY;    
+    if(bh_data_malloc(C->base) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
 
     Type* A_data;
     Type* B_data;
@@ -46,9 +46,9 @@ template <typename Type> bh_error do_matmul(bh_array *A, bh_array *B, bh_array *
                          A_data[A->start + i*A->stride[0]+k*A->stride[1]] * \
                            B_data[B->start + k*B->stride[0]+j*B->stride[1]];
             }
-        }	
+        }
     }
-    
+
     return BH_SUCCESS;
 }
 
@@ -64,19 +64,19 @@ template <typename Type> bh_error do_matmul(bh_array *A, bh_array *B, bh_array *
 bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg)
 {
     bh_matmul_type *m_arg = (bh_matmul_type *) arg;
-    bh_array *C = m_arg->operand[0];
-    bh_array *A = m_arg->operand[1];
-    bh_array *B = m_arg->operand[2];
+    bh_view *C = &m_arg->operand[0];
+    bh_view *A = &m_arg->operand[1];
+    bh_view *B = &m_arg->operand[2];
 
     //Make sure that the arrays memory are allocated.
-    if(bh_data_malloc(A) != BH_SUCCESS)
-        return BH_OUT_OF_MEMORY; 
-    if(bh_data_malloc(B) != BH_SUCCESS)
-        return BH_OUT_OF_MEMORY; 
-    if(bh_data_malloc(C) != BH_SUCCESS)
-        return BH_OUT_OF_MEMORY; 
+    if(bh_data_malloc(A->base) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
+    if(bh_data_malloc(B->base) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
+    if(bh_data_malloc(C->base) != BH_SUCCESS)
+        return BH_OUT_OF_MEMORY;
 
-    switch (C->type)
+    switch (bh_base_array(C)->type)
     {
     	case BH_INT8:
 		    return do_matmul<bh_int8>(A, B, C);

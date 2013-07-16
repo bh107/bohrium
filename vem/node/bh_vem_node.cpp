@@ -41,8 +41,8 @@ static bh_component *vem_node_myself;
 //Number of user-defined functions registered.
 static bh_intp userfunc_count = 0;
 
-//Allocated arrays
-static std::set<bh_array*> allocated_arys;
+//Allocated base arrays
+static std::set<bh_base*> allocated_bases;
 
 //The timing ID for executions
 static bh_intp exec_timing;
@@ -103,21 +103,21 @@ bh_error bh_vem_node_shutdown(void)
     bh_component_free_ptr(vem_node_components);
     vem_node_components = NULL;
 
-    if(allocated_arys.size() > 0)
+    if(allocated_bases.size() > 0)
     {
-        long s = (long) allocated_arys.size();
+        long s = (long) allocated_bases.size();
         if(s > 20)
-            fprintf(stderr, "[NODE-VEM] Warning %ld arrays were not discarded "
+            fprintf(stderr, "[NODE-VEM] Warning %ld base arrays were not discarded "
                             "on exit (too many to show here).\n", s);
         else
         {
-            fprintf(stderr, "[NODE-VEM] Warning %ld arrays were not discarded "
+            fprintf(stderr, "[NODE-VEM] Warning %ld base arrays were not discarded "
                             "on exit (only showing the array IDs because the "
-                            "array list may be corrupted due to reuse of array structs):\n", s);
-            for(std::set<bh_array*>::iterator it=allocated_arys.begin();
-                it != allocated_arys.end(); ++it)
+                            "view list may be corrupted due to reuse of base structs):\n", s);
+            for(std::set<bh_base*>::iterator it=allocated_bases.begin();
+                it != allocated_bases.end(); ++it)
             {
-                fprintf(stderr, "array id: %p\n", *it);
+                fprintf(stderr, "base id: %p\n", *it);
             }
         }
     }
@@ -178,19 +178,19 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         #endif
 
         int nop = bh_operands_in_instruction(inst);
-        bh_array **operands = bh_inst_operands(inst);
+        bh_view *operands = bh_inst_operands(inst);
 
-        //Save all new arrays
+        //Save all new base arrays
         for(bh_intp o=0; o<nop; ++o)
         {
-            if(operands[o] != NULL)
-                allocated_arys.insert(operands[o]);
+            if(!bh_is_constant(&operands[o]))
+                allocated_bases.insert(operands[o].base);
         }
 
         #ifdef BH_TIMING
             if(operands[nop-1] != NULL)
             {
-                bh_array *a = operands[nop-1];
+                bh_view *a = operands[nop-1];
                 total_execution_size += bh_nelements(a->ndim, a->shape);
             }
         #endif
@@ -198,23 +198,11 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         //And remove discared arrays
         if(inst->opcode == BH_DISCARD)
         {
-            bh_array *ary = operands[0];
-            // Check that we are not discarding a base that still has views.
-            if(ary->base == NULL)
+            bh_base *base = operands[0].base;
+            if(allocated_bases.erase(base) != 1)
             {
-                for(std::set<bh_array*>::iterator it=allocated_arys.begin();
-                    it != allocated_arys.end(); ++it)
-                {
-                    if ((*it)->base == ary) {
-                        fprintf(stderr,
-                                "[NODE-VEM] discarding base (%p) that "
-                                "still has view(%p).\n", ary, *it);
-                        return BH_ERROR;
-                    }
-                }
-            }
-            if(allocated_arys.erase(ary) != 1) {
-                fprintf(stderr, "[NODE-VEM] discarding unknown array\n");
+                fprintf(stderr, "[NODE-VEM] discarding unknown base array (%p)\n", base);
+                return BH_ERROR;
             }
         }
     }

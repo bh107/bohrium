@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,12 +12,12 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
- 
+
 #include <bh.h>
 #include <assert.h>
 
@@ -258,7 +258,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 		bh_index stride0 = state->stride[0][0];
 		bh_index stride1 = state->stride[1][0];
 		bh_index stride2 = state->stride[2][0];
-		
+
 		bh_index total_ops = state->shape[0];
 
 		bh_index remainder = total_ops % 4;
@@ -272,7 +272,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 		// Basic 2D loop with unrolling
 		bh_index ops_outer = state->shape[0];
 		bh_index ops_inner = state->shape[1];
-		
+
 		bh_index outer_stride0 = state->stride[0][0];
 		bh_index outer_stride1 = state->stride[1][0];
 		bh_index outer_stride2 = state->stride[2][0];
@@ -298,12 +298,12 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
 		bh_index counters[BH_MAXDIM - 3];
-		memset(&counters, 0, sizeof(bh_index) * n);		
+		memset(&counters, 0, sizeof(bh_index) * n);
 
 		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
-			
+
 		//This chunk of variables prevents repeated calculations of offsets
 		bh_index dim_index0 = n + 0;
 		bh_index dim_index1 = n + 1;
@@ -324,7 +324,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
 		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
 		bh_index inner_inner_stride2 = state->stride[2][dim_index2];
-        
+
 		bh_index remainder = ops_inner_inner % 4;
 		bh_index fulls = ops_inner_inner / 4;
 
@@ -367,7 +367,7 @@ bh_error traverse_aaa( bh_instruction *instr, bh_tstate* state ) {
 					d2 += state->stride[2][p];
 				}
 			}
-		}		
+		}
 	}
 
     return BH_SUCCESS;
@@ -398,7 +398,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 		// Simple 1D loop
 		bh_index stride0 = state->stride[0][0];
 		bh_index stride1 = state->stride[1][0];
-		
+
 		bh_index total_ops = state->shape[0];
 
 		bh_index remainder = total_ops % 4;
@@ -412,7 +412,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 		// Basic 2D loop with unrolling
 		bh_index ops_outer = state->shape[0];
 		bh_index ops_inner = state->shape[1];
-		
+
 		bh_index outer_stride0 = state->stride[0][0];
 		bh_index outer_stride1 = state->stride[1][0];
 
@@ -435,12 +435,12 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
 		bh_index counters[BH_MAXDIM - 3];
-		memset(&counters, 0, sizeof(bh_index) * n);		
+		memset(&counters, 0, sizeof(bh_index) * n);
 
 		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
-			
+
 		//This chunk of variables prevents repeated calculations of offsets
 		bh_index dim_index0 = n + 0;
 		bh_index dim_index1 = n + 1;
@@ -458,7 +458,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 
 		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
 		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
-        
+
 		bh_index remainder = ops_inner_inner % 4;
 		bh_index fulls = ops_inner_inner / 4;
 
@@ -497,7 +497,7 @@ bh_error traverse_aac( bh_instruction *instr, bh_tstate* state ) {
 					d1 += state->stride[1][p];
 				}
 			}
-		}		
+		}
 	}
 
     return BH_SUCCESS;
@@ -528,7 +528,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 		// Simple 1D loop
 		bh_index stride0 = state->stride[0][0];
 		bh_index stride2 = state->stride[2][0];
-		
+
 		bh_index total_ops = state->shape[0];
 
 		bh_index remainder = total_ops % 4;
@@ -542,7 +542,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 		// Basic 2D loop with unrolling
 		bh_index ops_outer = state->shape[0];
 		bh_index ops_inner = state->shape[1];
-		
+
 		bh_index outer_stride0 = state->stride[0][0];
 		bh_index outer_stride2 = state->stride[2][0];
 
@@ -565,12 +565,12 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
 		bh_index counters[BH_MAXDIM - 3];
-		memset(&counters, 0, sizeof(bh_index) * n);		
+		memset(&counters, 0, sizeof(bh_index) * n);
 
 		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
-			
+
 		//This chunk of variables prevents repeated calculations of offsets
 		bh_index dim_index0 = n + 0;
 		bh_index dim_index1 = n + 1;
@@ -588,7 +588,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 
 		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
 		bh_index inner_inner_stride2 = state->stride[2][dim_index2];
-        
+
 		bh_index remainder = ops_inner_inner % 4;
 		bh_index fulls = ops_inner_inner / 4;
 
@@ -627,7 +627,7 @@ bh_error traverse_aca( bh_instruction *instr, bh_tstate* state ) {
 					d2 += state->stride[2][p];
 				}
 			}
-		}		
+		}
 	}
 
     return BH_SUCCESS;
@@ -657,7 +657,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 		// Simple 1D loop
 		bh_index stride0 = state->stride[0][0];
 		bh_index stride1 = state->stride[1][0];
-		
+
 		bh_index total_ops = state->shape[0];
 
 		bh_index remainder = total_ops % 4;
@@ -671,7 +671,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 		// Basic 2D loop with unrolling
 		bh_index ops_outer = state->shape[0];
 		bh_index ops_inner = state->shape[1];
-		
+
 		bh_index outer_stride0 = state->stride[0][0];
 		bh_index outer_stride1 = state->stride[1][0];
 
@@ -694,12 +694,12 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
 		bh_index counters[BH_MAXDIM - 3];
-		memset(&counters, 0, sizeof(bh_index) * n);		
+		memset(&counters, 0, sizeof(bh_index) * n);
 
 		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
-			
+
 		//This chunk of variables prevents repeated calculations of offsets
 		bh_index dim_index0 = n + 0;
 		bh_index dim_index1 = n + 1;
@@ -717,7 +717,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 
 		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
 		bh_index inner_inner_stride1 = state->stride[1][dim_index2];
-        
+
 		bh_index remainder = ops_inner_inner % 4;
 		bh_index fulls = ops_inner_inner / 4;
 
@@ -756,7 +756,7 @@ bh_error traverse_aa( bh_instruction *instr, bh_tstate* state ) {
 					d1 += state->stride[1][p];
 				}
 			}
-		}		
+		}
 	}
 
     return BH_SUCCESS;
@@ -785,7 +785,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 	{
 		// Simple 1D loop
 		bh_index stride0 = state->stride[0][0];
-		
+
 		bh_index total_ops = state->shape[0];
 
 		bh_index remainder = total_ops % 4;
@@ -799,7 +799,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 		// Basic 2D loop with unrolling
 		bh_index ops_outer = state->shape[0];
 		bh_index ops_inner = state->shape[1];
-		
+
 		bh_index outer_stride0 = state->stride[0][0];
 
 		bh_index inner_stride0 = state->stride[0][1];
@@ -819,12 +819,12 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 		//General case, optimal up to 3D, and almost optimal for 4D
 		bh_index n = state->ndim - 3;
 		bh_index counters[BH_MAXDIM - 3];
-		memset(&counters, 0, sizeof(bh_index) * n);		
+		memset(&counters, 0, sizeof(bh_index) * n);
 
 		bh_index total_ops = 1;
 		for(i = 0; i < n; i++)
 			total_ops *= state->shape[i];
-			
+
 		//This chunk of variables prevents repeated calculations of offsets
 		bh_index dim_index0 = n + 0;
 		bh_index dim_index1 = n + 1;
@@ -839,7 +839,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 		bh_index inner_stride0 = state->stride[0][dim_index1];
 
 		bh_index inner_inner_stride0 = state->stride[0][dim_index2];
-        
+
 		bh_index remainder = ops_inner_inner % 4;
 		bh_index fulls = ops_inner_inner / 4;
 
@@ -874,7 +874,7 @@ bh_error traverse_ac( bh_instruction *instr, bh_tstate* state ) {
 					d0 += state->stride[0][p];
 				}
 			}
-		}		
+		}
 	}
 
     return BH_SUCCESS;
@@ -895,13 +895,13 @@ bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_array *a0 = instr->operand[0];        // Operand pointers
-    bh_array *a1 = instr->operand[1];
-    bh_array *a2 = instr->operand[2];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
+    bh_view *a2 = &instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
-    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
+    T2* d2 = (T2*) instr->operand[2].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
@@ -928,7 +928,7 @@ bh_error traverse_naive_aaa( bh_instruction *instr, bh_tstate_naive* state, bh_i
             off2 += state->coord[j] * a2->stride[j];
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )
         {
             opcode_func( (off0+d0), (off1+d1), (off2+d2) );
 
@@ -970,11 +970,11 @@ bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_array *a0 = instr->operand[0];        // Operand pointers
-    bh_array *a1 = instr->operand[1];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
     T2* d2 = (T2*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated
@@ -998,7 +998,7 @@ bh_error traverse_naive_aac( bh_instruction *instr, bh_tstate_naive* state, bh_i
             off1 += state->coord[j] * a1->stride[j];
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )
         {
             opcode_func( (off0+d0), (off1+d1), d2 );
 
@@ -1039,12 +1039,12 @@ bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_i
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_array *a0 = instr->operand[0];        // Operand pointers
-    bh_array *a2 = instr->operand[2];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a2 = &instr->operand[2];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
     T1* d1 = (T1*) &(instr->constant.value);
-    T2* d2 = (T2*) bh_base_array(instr->operand[2])->data;
+    T2* d2 = (T2*) instr->operand[2].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d2 != NULL);
@@ -1067,7 +1067,7 @@ bh_error traverse_naive_aca( bh_instruction *instr, bh_tstate_naive* state, bh_i
             off2 += state->coord[j] * a2->stride[j];
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )
         {
             opcode_func( (off0+d0), d1, (off2+d2) );
 
@@ -1108,11 +1108,11 @@ bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_array *a0 = instr->operand[0];        // Operand pointers
-    bh_array *a1 = instr->operand[1];
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
+    bh_view *a1 = &instr->operand[1];
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
-    T1* d1 = (T1*) bh_base_array(instr->operand[1])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
+    T1* d1 = (T1*) instr->operand[1].base->data;
 
     assert(d0 != NULL);                         // Ensure that data is allocated
     assert(d1 != NULL);
@@ -1135,7 +1135,7 @@ bh_error traverse_naive_aa( bh_instruction *instr, bh_tstate_naive* state, bh_in
             off1 += state->coord[j] * a1->stride[j];
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )
         {
             opcode_func( (off0+d0), (off1+d1) );
 
@@ -1176,9 +1176,9 @@ bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_in
 
     Instr opcode_func;                          // Element-wise functor-pointer
 
-    bh_array *a0 = instr->operand[0];        // Operand pointers
+    bh_view *a0 = &instr->operand[0];        // Operand pointers
                                                 // Pointers to start of data elements
-    T0* d0 = (T0*) bh_base_array(instr->operand[0])->data;
+    T0* d0 = (T0*) instr->operand[0].base->data;
     T1* d1 = (T1*) &(instr->constant.value);
 
     assert(d0 != NULL);                         // Ensure that data is allocated
@@ -1198,7 +1198,7 @@ bh_error traverse_naive_ac( bh_instruction *instr, bh_tstate_naive* state, bh_in
             off0 += state->coord[j] * a0->stride[j];
         }
                                                     // Iterate over "last" / "innermost" dimension
-        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )    
+        for(; (state->coord[last_dim] < a0->shape[last_dim]) && (state->cur_e <= last_e); state->coord[last_dim]++, state->cur_e++ )
         {
             opcode_func( (off0+d0), d1 );
 
