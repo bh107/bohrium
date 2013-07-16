@@ -62,7 +62,7 @@ char* snippet_path;
 process* target;
 
 typedef struct {
-    bh_array* operands[BH_DYNAMITE_KRN_MAX_OPERANDS];
+    bh_view* operands[BH_DYNAMITE_KRN_MAX_OPERANDS];
     size_t noperands; // Number of operands the kernel uses
 
     int64_t begin;  // Kernel starts with this instruction
@@ -71,7 +71,7 @@ typedef struct {
 } kernel_t;
 
 typedef std::vector<kernel_t> kernel_storage;
-typedef std::unordered_map<bh_array*, size_t> ref_storage;
+typedef std::unordered_map<bh_view*, size_t> ref_storage;
 
 void bh_pprint_list(bh_instruction* list, bh_intp start, bh_intp end)
 {
@@ -100,7 +100,7 @@ void bh_pprint_kernel(kernel_t *kernel, bh_instruction *list)
     printf("  ]\n\n}\n");
 }
 
-bool is_temp(bh_array* op, ref_storage& reads, ref_storage& writes)
+bool is_temp(bh_view* op, ref_storage& reads, ref_storage& writes)
 {
     return ((reads[op] == 1) && (writes[op] == 1));
 }
@@ -112,33 +112,33 @@ int hash(bh_instruction *instr)
         a0_type, a1_type, a2_type,
         a0_dense, a1_dense, a2_dense;
 
-    dims     = instr->operand[0]->ndim;
+    dims     = instr->operand[0].ndim;
     nop      = bh_operands(instr->opcode);
-    a0_type  = instr->operand[0]->type;
+    a0_type  = instr->operand[0].base->type;
     a0_dense = 1;
     if (3 == nop) {
-        if (bh_is_constant(instr->operand[1])) {            // DDC
+        if (bh_is_constant(&instr->operand[1])) {            // DDC
             a1_type  = instr->constant.type;
             a1_dense = 0;
-            a2_type  = instr->operand[2]->type;
+            a2_type  = instr->operand[2].base->type;
             a2_dense = 1;
-        } else if (bh_is_constant(instr->operand[2])) {     // DCD
-            a1_type  = instr->operand[1]->type;
+        } else if (bh_is_constant(&instr->operand[2])) {     // DCD
+            a1_type  = instr->operand[1].base->type;
             a1_dense = 1;
             a2_type  = instr->constant.type;
             a2_dense = 0;   
         } else {                                            // DDD
-            a1_type  = instr->operand[1]->type;
+            a1_type  = instr->operand[1].base->type;
             a1_dense = 1;
-            a2_type  = instr->operand[2]->type;
+            a2_type  = instr->operand[2].base->type;
             a2_dense = 1;
         }
     } else if (2 == nop) {
-        if (bh_is_constant(instr->operand[1])) {            // DDC
+        if (bh_is_constant(&instr->operand[1])) {            // DDC
             a1_type  = instr->constant.type;
             a1_dense = 0;
         } else {                                            // DDD
-            a1_type  = instr->operand[1]->type;
+            a1_type  = instr->operand[1].base->type;
             a1_dense = 1;
         }
         a2_type = 0;
@@ -199,24 +199,24 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
                 if (bh_nelements(
-                    instr->operand[0]->ndim, instr->operand[0]->shape) == 1) {
+                    instr->operand[0].ndim, instr->operand[0].shape) == 1) {
                     potentials.push_back(i);
                 }
 
             default:                                            // REFCOUNT
-                if (writes.count(instr->operand[0])>0) {        // Output
-                    ++(writes[instr->operand[0]]);
+                if (writes.count(&instr->operand[0])>0) {        // Output
+                    ++(writes[&instr->operand[0]]);
                 } else {
-                    writes.insert(std::make_pair(instr->operand[0], 1));
+                    writes.insert(std::make_pair(&instr->operand[0], 1));
                 }
                 for(int op_i=1; op_i<noperands; ++op_i) {       // Input
-                    if (bh_is_constant(instr->operand[op_i])) { // Skip constants
+                    if (bh_is_constant(&instr->operand[op_i])) { // Skip constants
                         continue;
                     }
-                    if (reads.count(instr->operand[op_i])>0) {
-                        ++(reads[instr->operand[op_i]]);
+                    if (reads.count(&instr->operand[op_i])>0) {
+                        ++(reads[&instr->operand[op_i]]);
                     } else {
-                        reads.insert(std::make_pair(instr->operand[op_i], 1));
+                        reads.insert(std::make_pair(&instr->operand[op_i], 1));
                     }
                 }
         }
@@ -252,7 +252,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
         bh_intp count = 0;
         for(bh_intp i=potential-1; i>=0; --i) {
             bh_instruction *instr = &list[i];
-            bh_array *operand = instr->operand[0];  // Get the output operand
+            bh_view *operand = &instr->operand[0];  // Get the output operand
 
             switch(instr[i].opcode) {
                 case BH_NONE:                       // Ignore these
@@ -281,7 +281,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
                     kernel.end   = potential;
                     kernel.size = kernel.end - kernel.begin;
                     kernel.noperands = 0;
-                    kernel.operands[kernel.noperands] = &*list[potential].operand[0];
+                    kernel.operands[kernel.noperands] = &list[potential].operand[0];
                     ++(kernel.noperands);
                     kernels.insert(kernels.begin(), kernel);
                     //fprintf(stderr, "i=%ld, potential=%ld, output=%p\n", i, potential, list[potential].operand[0]);
@@ -341,7 +341,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     return kernels;
 }
 
-std::string name_operand(kernel_t& kernel, bh_array* operand)
+std::string name_operand(kernel_t& kernel, bh_view* operand)
 {
     char varchar[20];
     kernel.operands[kernel.noperands] = operand;
@@ -350,7 +350,7 @@ std::string name_operand(kernel_t& kernel, bh_array* operand)
     return varname;
 }
 
-std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array *input, kernel_t& kernel)
+std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_view *input, kernel_t& kernel)
 {
     if (cur < 0) { // Over the top! Could not find input
         return "";
@@ -359,8 +359,8 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
     bh_opcode opcode        = instr->opcode;
 
     bh_intp  noperands  = bh_operands(opcode);
-    bh_array *output    = instr->operand[0];
-    bh_array *a1=NULL, *a2=NULL; // input operands
+    bh_view *output    = &instr->operand[0];
+    bh_view *a1=NULL, *a2=NULL; // input operands
     std::string lh_str, rh_str;
 
     switch(opcode) {
@@ -368,7 +368,7 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
             bh_random_type *random_args;
             if ((opcode == BH_USERFUNC) && (instr->userfunc->id==random_impl_id)) {
                 random_args = (bh_random_type*)instr->userfunc;
-                output      = random_args->operand[0];
+                output      = &random_args->operand[0];
                 if (input==output) {
                     break;
                 }
@@ -402,8 +402,8 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
         return name_operand(kernel, output);
     } else {                            // Within the kernel
 
-        a1 = instr->operand[1];     // Lefthandside
-        a2 = instr->operand[2];     // Righthandside
+        a1 = &instr->operand[1];     // Lefthandside
+        a2 = &instr->operand[2];     // Righthandside
 
         if (bh_is_constant(a1)) {  // Inline the constant value
             lh_str = "("+std::string(bhtype_to_ctype(instr->constant.type))+")("+\
@@ -442,7 +442,7 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_array 
             case BH_SQRT:
                 return "sqrt("+lh_str+")";
             case BH_IDENTITY:
-                return "("+std::string(bhtype_to_ctype(output->type))+")("+lh_str+")";
+                return "("+std::string(bhtype_to_ctype(output->base->type))+")("+lh_str+")";
 
             default:
                 return "__ERROR__";
@@ -690,16 +690,16 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 dict.SetValue("SYMBOL", symbol);
                 dict.SetValue("OPERATOR", cmd_str);
                 for(size_t it=0; it<kernel.noperands; ++it) {
-                    bh_array *krn_operand = kernel.operands[it];
+                    bh_view *krn_operand = kernel.operands[it];
                     std::ostringstream buff;
                     buff << "a" << it << "_dense";
                     dict.ShowSection(buff.str());
                     buff.str("");
                     buff << "TYPE_A" << it;
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand->type));
+                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand.base->type));
                     buff.str("");
                     buff << "TYPE_A" << it << "_SHORTHAND";
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand->type));
+                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand.base->type));
                 }
 
                 sprintf(snippet_fn, "%s/partial.streaming.tpl", snippet_path);
@@ -796,7 +796,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     #ifdef PROFILE
                     m_begin = _bh_timing();
                     #endif
-                    if (BH_SUCCESS != bh_vcache_malloc_op(random_args->operand[0])) {
+                    if (BH_SUCCESS != bh_vcache_malloc_op(&random_args->operand[0])) {
                         std::cout << "SHIT HIT THE FAN" << std::endl;
                     }
                     #ifdef PROFILE
@@ -807,7 +807,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     sprintf(
                         symbol_c,
                         "BH_RANDOM_D_%s",
-                        bhtype_to_shorthand(random_args->operand[0]->type)
+                        bhtype_to_shorthand(random_args->operand[0].base->type)
                     );
                     symbol = std::string(symbol_c);
 
@@ -816,8 +816,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         sourcecode = "";
 
                         dict.SetValue("SYMBOL",     symbol);
-                        dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0]->type));
-                        dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0]->type));
+                        dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
+                        dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
                         sprintf(snippet_fn, "%s/random.tpl", snippet_path);
                         ctemplate::ExpandTemplate(
                             snippet_fn,
@@ -834,8 +834,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     } else {
                         // De-assemble the RANDOM_UFUNC     // CALL
                         target->funcs[symbol](0,
-                            bh_base_array(random_args->operand[0])->data,
-                            bh_nelements(random_args->operand[0]->ndim, random_args->operand[0]->shape)
+                            bh_base_array(&random_args->operand[0])->data,
+                            bh_nelements(random_args->operand[0].ndim, random_args->operand[0].shape)
                         );
                         res = BH_SUCCESS;
                     }
@@ -864,9 +864,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
                 sprintf(symbol_c, "%s_DD_%s%s%s",
                     bh_opcode_text(instr->opcode),
-                    bhtype_to_shorthand(instr->operand[0]->type),
-                    bhtype_to_shorthand(instr->operand[1]->type),
-                    bhtype_to_shorthand(instr->operand[1]->type)
+                    bhtype_to_shorthand(instr->operand[0].base->type),
+                    bhtype_to_shorthand(instr->operand[1].base->type),
+                    bhtype_to_shorthand(instr->operand[1].base->type)
                 );
                 symbol = std::string(symbol_c);
 
@@ -876,8 +876,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.SetValue("SYMBOL", symbol);
-                    dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
-                    dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
+                    dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                    dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
 
                     sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
                     //sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
@@ -895,17 +895,17 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     res = BH_ERROR;
                 } else {    // CALL
                     target->funcs[symbol](0,
-                        bh_base_array(instr->operand[0])->data,
-                        instr->operand[0]->start,
-                        instr->operand[0]->stride,
-                        instr->operand[0]->shape,
-                        instr->operand[0]->ndim,
+                        bh_base_array(&instr->operand[0])->data,
+                        instr->operand[0].start,
+                        instr->operand[0].stride,
+                        instr->operand[0].shape,
+                        instr->operand[0].ndim,
 
-                        bh_base_array(instr->operand[1])->data,
-                        instr->operand[1]->start,
-                        instr->operand[1]->stride,
-                        instr->operand[1]->shape,
-                        instr->operand[1]->ndim,
+                        bh_base_array(&instr->operand[1])->data,
+                        instr->operand[1].start,
+                        instr->operand[1].stride,
+                        instr->operand[1].shape,
+                        instr->operand[1].ndim,
 
                         instr->constant.value
                     );
@@ -939,35 +939,35 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             case BH_ARCTAN2:
             case BH_MOD:
 
-                dims = instr->operand[0]->ndim;
+                dims = instr->operand[0].ndim;
                 if (dims < 4) {
                     sprintf(dims_str, "%ldd", dims);
                 } else {
                     sprintf(dims_str, "naive");
                 }
-                if (bh_is_constant(instr->operand[2])) {
+                if (bh_is_constant(&instr->operand[2])) {
                     sprintf(symbol_c, "%s_%s_DDC_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims_str,
-                        bhtype_to_shorthand(instr->operand[0]->type),
-                        bhtype_to_shorthand(instr->operand[1]->type),
+                        bhtype_to_shorthand(instr->operand[0].base->type),
+                        bhtype_to_shorthand(instr->operand[1].base->type),
                         bhtype_to_shorthand(instr->constant.type)
                     );
-                } else if(bh_is_constant(instr->operand[1])) {
+                } else if(bh_is_constant(&instr->operand[1])) {
                     sprintf(symbol_c, "%s_%s_DCD_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims_str,
-                        bhtype_to_shorthand(instr->operand[0]->type),
+                        bhtype_to_shorthand(instr->operand[0].base->type),
                         bhtype_to_shorthand(instr->constant.type),
-                        bhtype_to_shorthand(instr->operand[2]->type)
+                        bhtype_to_shorthand(instr->operand[2].base->type)
                     );
                 } else {
                     sprintf(symbol_c, "%s_%s_DDD_%s%s%s",
                         bh_opcode_text(instr->opcode),
                         dims_str,
-                        bhtype_to_shorthand(instr->operand[0]->type),
-                        bhtype_to_shorthand(instr->operand[1]->type),
-                        bhtype_to_shorthand(instr->operand[2]->type)
+                        bhtype_to_shorthand(instr->operand[0].base->type),
+                        bhtype_to_shorthand(instr->operand[1].base->type),
+                        bhtype_to_shorthand(instr->operand[2].base->type)
                     );
                 }
                 symbol = std::string(symbol_c);
@@ -978,25 +978,25 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.ShowSection("binary");
-                    if (bh_is_constant(instr->operand[2])) {
+                    if (bh_is_constant(&instr->operand[2])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
                         dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_scalar");
-                    } else if (bh_is_constant(instr->operand[1])) {
+                    } else if (bh_is_constant(&instr->operand[1])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
                         dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
-                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2]->type));
+                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
                         dict.ShowSection("a1_scalar");
                         dict.ShowSection("a2_dense");
                     } else {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
-                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+                        dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_dense");
                     }
@@ -1021,52 +1021,52 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 }
 
                 if (cres) { // CALL
-                    if (bh_is_constant(instr->operand[2])) {         // DDC
+                    if (bh_is_constant(&instr->operand[2])) {         // DDC
                         target->funcs[symbol](0,
-                            bh_base_array(instr->operand[0])->data,
-                            instr->operand[0]->start,
-                            instr->operand[0]->stride,
+                            bh_base_array(&instr->operand[0])->data,
+                            instr->operand[0].start,
+                            instr->operand[0].stride,
 
-                            bh_base_array(instr->operand[1])->data,
-                            instr->operand[1]->start,
-                            instr->operand[1]->stride,
+                            bh_base_array(&instr->operand[1])->data,
+                            instr->operand[1].start,
+                            instr->operand[1].stride,
 
                             &(instr->constant.value),
 
-                            instr->operand[0]->shape,
-                            instr->operand[0]->ndim
+                            instr->operand[0].shape,
+                            instr->operand[0].ndim
                         );
-                    } else if (bh_is_constant(instr->operand[1])) {  // DCD
+                    } else if (bh_is_constant(&instr->operand[1])) {  // DCD
                         target->funcs[symbol](0,
-                            bh_base_array(instr->operand[0])->data,
-                            instr->operand[0]->start,
-                            instr->operand[0]->stride,
+                            bh_base_array(&instr->operand[0])->data,
+                            instr->operand[0].start,
+                            instr->operand[0].stride,
 
                             &(instr->constant.value),
 
-                            bh_base_array(instr->operand[2])->data,
-                            instr->operand[2]->start,
-                            instr->operand[2]->stride,
+                            bh_base_array(&instr->operand[2])->data,
+                            instr->operand[2].start,
+                            instr->operand[2].stride,
 
-                            instr->operand[0]->shape,
-                            instr->operand[0]->ndim
+                            instr->operand[0].shape,
+                            instr->operand[0].ndim
                         );
                     } else {                                        // DDD
                         target->funcs[symbol](0,
-                            bh_base_array(instr->operand[0])->data,
-                            instr->operand[0]->start,
-                            instr->operand[0]->stride,
+                            bh_base_array(&instr->operand[0])->data,
+                            instr->operand[0].start,
+                            instr->operand[0].stride,
 
-                            bh_base_array(instr->operand[1])->data,
-                            instr->operand[1]->start,
-                            instr->operand[1]->stride,
+                            bh_base_array(&instr->operand[1])->data,
+                            instr->operand[1].start,
+                            instr->operand[1].stride,
 
-                            bh_base_array(instr->operand[2])->data,
-                            instr->operand[2]->start,
-                            instr->operand[2]->stride,
+                            bh_base_array(&instr->operand[2])->data,
+                            instr->operand[2].start,
+                            instr->operand[2].stride,
 
-                            instr->operand[0]->shape,
-                            instr->operand[0]->ndim
+                            instr->operand[0].shape,
+                            instr->operand[0].ndim
                         );
                     }
                     
@@ -1109,25 +1109,25 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             case BH_ISINF:
             case BH_IDENTITY:
 
-                dims = instr->operand[0]->ndim;
+                dims = instr->operand[0].ndim;
                 if (dims < 4) {
                     sprintf(dims_str, "%ldd", dims);
                 } else {
                     sprintf(dims_str, "naive");
                 }
-                if (bh_is_constant(instr->operand[1])) {
+                if (bh_is_constant(&instr->operand[1])) {
                     sprintf(symbol_c, "%s_%s_DC_%s%s",
                             bh_opcode_text(instr->opcode),
                             dims_str,
-                            bhtype_to_shorthand(instr->operand[0]->type),
+                            bhtype_to_shorthand(instr->operand[0].base->type),
                             bhtype_to_shorthand(instr->constant.type)
                     );
                 } else {
                     sprintf(symbol_c, "%s_%s_DD_%s%s",
                             bh_opcode_text(instr->opcode),
                             dims_str,
-                            bhtype_to_shorthand(instr->operand[0]->type),
-                            bhtype_to_shorthand(instr->operand[1]->type)
+                            bhtype_to_shorthand(instr->operand[0].base->type),
+                            bhtype_to_shorthand(instr->operand[1].base->type)
                     );
                 }
                 symbol = std::string(symbol_c);
@@ -1138,15 +1138,15 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     sourcecode = "";
                     dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
                     dict.ShowSection("unary");
-                    if (bh_is_constant(instr->operand[1])) {
+                    if (bh_is_constant(&instr->operand[1])) {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
                         dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
                         dict.ShowSection("a1_scalar");
                     } else {
                         dict.SetValue("SYMBOL", symbol);
-                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0]->type));
-                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1]->type));
+                        dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                        dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
                         dict.ShowSection("a1_dense");
                     } 
                     if (1 == dims) {
@@ -1171,29 +1171,29 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 if (!cres) {
                     res = BH_ERROR;
                 } else {    // CALL
-                    if (bh_is_constant(instr->operand[1])) {
+                    if (bh_is_constant(&instr->operand[1])) {
                         target->funcs[symbol](0,
-                            bh_base_array(instr->operand[0])->data,
-                            instr->operand[0]->start,
-                            instr->operand[0]->stride,
+                            bh_base_array(&instr->operand[0])->data,
+                            instr->operand[0].start,
+                            instr->operand[0].stride,
 
                             &(instr->constant.value),
 
-                            instr->operand[0]->shape,
-                            instr->operand[0]->ndim
+                            instr->operand[0].shape,
+                            instr->operand[0].ndim
                         );
                     } else {
                         target->funcs[symbol](0,
-                            bh_base_array(instr->operand[0])->data,
-                            instr->operand[0]->start,
-                            instr->operand[0]->stride,
+                            bh_base_array(&instr->operand[0])->data,
+                            instr->operand[0].start,
+                            instr->operand[0].stride,
 
-                            bh_base_array(instr->operand[1])->data,
-                            instr->operand[1]->start,
-                            instr->operand[1]->stride,
+                            bh_base_array(&instr->operand[1])->data,
+                            instr->operand[1].start,
+                            instr->operand[1].stride,
 
-                            instr->operand[0]->shape,
-                            instr->operand[0]->ndim
+                            instr->operand[0].shape,
+                            instr->operand[0].ndim
                         );
                     }
                     res = BH_SUCCESS;
