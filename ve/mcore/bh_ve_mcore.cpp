@@ -221,7 +221,7 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
     bh_index  last_dim, start, end, size;
 
     loop     = bh_compute_get_naive( instr );
-    last_dim = instr->operand[0]->ndim-1;
+    last_dim = instr->operand[0].ndim-1;
     size     = nelements / worker_count;
 
     for (i=0; i<worker_count;i++) {       // tstate = (0, 0, 0, ..., 0)
@@ -264,10 +264,11 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_mcore_execute( bh_ir* bhir )
+bh_error bh_ve_mcore_execute(bh_ir* bhir)
 {
-    bh_intp count;
+    //bh_intp count;
     bh_instruction* inst;
+    bh_graph_iterator* it;
     bh_index  nelements;
     bh_error res = BH_SUCCESS;
 
@@ -324,10 +325,10 @@ bh_error bh_ve_mcore_execute( bh_ir* bhir )
 
             default:                            // Built-in operations
 
-                nelements = bh_nelements( inst->operand[0]->ndim, inst->operand[0]->shape );
+                nelements = bh_nelements(inst->operand[0].ndim, inst->operand[0].shape);
                 if (nelements < 1024*1024) {        // Do not bother threading...
                     res = bh_compute_apply_naive(inst);
-                } else if (inst->operand[0]->shape[inst->operand[0]->ndim-1] < 100) {
+                } else if (inst->operand[0].shape[inst->operand[0].ndim-1] < 100) {
                     res = bh_compute_apply_naive(inst);
                 } else {                            // DO bother!
                     res = dispatch(inst, nelements);
