@@ -543,21 +543,39 @@ std::string descend(bh_ir* bhir, bh_node_index idx)
     bh_node_index left  = NODE_LOOKUP(idx).left_child;
     bh_node_index right = NODE_LOOKUP(idx).right_child;
 
-    if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
-        expr += "\n";
+    if ((NODE_LOOKUP(idx).type == BH_INSTRUCTION)) {
+        switch((INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction)).opcode) {
+            case BH_FREE:
+            case BH_DISCARD:
+            case BH_SYNC:
+            case BH_NONE:
+                return "";
+            case BH_USERFUNC:
+                return "(UF)";
+        }
     }
 
     if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "("+descend(bhir, left)+") op ("+descend(bhir, right)+")"; 
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, left) +"\n"+ descend(bhir, right); 
+        } else {
+            return "("+descend(bhir, left)+") op ("+descend(bhir, right)+")"; 
+        }
     } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
-        expr += "!("+descend(bhir, left)+")";
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, left);
+        } else {
+            return "("+descend(bhir, left)+")";
+        }
     } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "!("+descend(bhir, right)+")";
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, right);
+        } else {
+            return "("+descend(bhir, right)+")";
+        }
     } else {
-        expr += "<END>";
+        return "<END>";
     }
-
-    return expr;
 }
 
 std::string ascend(bh_ir* bhir, bh_node_index idx)
@@ -569,10 +587,6 @@ std::string ascend(bh_ir* bhir, bh_node_index idx)
     }
     bh_node_index left  = NODE_LOOKUP(idx).left_child;
     bh_node_index right = NODE_LOOKUP(idx).right_child;
-
-    if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
-        expr += "\n";
-    }
 
     if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
         expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
@@ -602,8 +616,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     if (BH_SUCCESS!=res) {
         return res;
     }
-    std::cout << "HMM" << std::endl;
-    std::cout << descend(bhir, 0) << std::endl;
+    //std::cout << "HMM" << std::endl;
+    //std::cout << descend(bhir, 0) << std::endl;
 
     /*
     if (do_fuse && ((instruction_count>2))) {  // Find kernels in the instruction_list
