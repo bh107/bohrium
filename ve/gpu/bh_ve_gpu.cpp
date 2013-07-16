@@ -38,12 +38,11 @@ bh_error bh_ve_gpu_init(bh_component* _component)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_gpu_execute(bh_intp instruction_count,
-                                 bh_instruction instruction_list[])
+bh_error bh_ve_gpu_execute(bh_ir* bhir)
 {
     try 
     {
-        return instructionScheduler->schedule(instruction_count, instruction_list);
+        return instructionScheduler->schedule(bhir);
     }
     catch (std::exception& e)
     {

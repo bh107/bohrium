@@ -33,7 +33,7 @@ enum bh_cpu_traverser {
 
 DLLEXPORT bh_error bh_ve_cpu_init(bh_component *self);
 
-DLLEXPORT bh_error bh_ve_cpu_execute(bh_intp instruction_count, bh_instruction* instruction_list);
+DLLEXPORT bh_error bh_ve_cpu_execute(bh_ir* bhir);
 
 DLLEXPORT bh_error bh_ve_cpu_shutdown(void);
 

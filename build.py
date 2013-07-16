@@ -160,6 +160,7 @@ if __name__ == "__main__":
                   ("INIPARSER","iniparser",True),\
                   ("CORE-BUNDLER", "core/bundler", True),\
                   ("CORE-COMPUTE", "core/compute", True),\
+                  ("CORE-GRAPH", "core/graph", True),\
                   ("CORE", "core", True),\
                   ("VE-PRINT", "ve/print", False),\
                   #("VE-GPU", "ve/gpu", False),\
@@ -168,7 +169,7 @@ if __name__ == "__main__":
                   #("VE-MCORE", "ve/mcore", False),\
                   #("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
-                  ("VEM-CLUSTER", "vem/cluster", True),\
+                  ("VEM-CLUSTER", "vem/cluster", False),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\

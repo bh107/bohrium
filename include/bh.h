@@ -36,6 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_win.h"
 #include "bh_memory.h"
 #include "bh_timing.h"
+#include "bh_graph.h"
 
 #ifdef __cplusplus
 /* C++ includes go here */
