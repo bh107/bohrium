@@ -88,7 +88,7 @@ bh_error bh_ve_tiling_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end) {
+inline bh_error block_execute(bh_instruction* instr, bh_intp start, bh_intp end) {
 
     bh_intp i, k;
 
@@ -148,8 +148,8 @@ inline bh_error block_execute( bh_instruction* instr, bh_intp start, bh_intp end
     }
                                                     // Block-size split
     nelements = bh_nelements(
-        instr[start].operand[0]->ndim,
-        instr[start].operand[0]->shape
+        instr[start].operand[0].ndim,
+        instr[start].operand[0].shape
     );
     while (nelements>trav_end) {
         trav_end    += block_size;
@@ -187,8 +187,7 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
     bh_intp instruction_count = bhir->instructions->count;
     bh_instruction* instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
     res = bh_graph_serialize(bhir, instruction_list, &instruction_count);
-    if (res != BH_SUCCESS)
-    {
+    if (res != BH_SUCCESS) {
         free(instruction_list);
         return res;
     }
