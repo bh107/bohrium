@@ -144,8 +144,13 @@ static void find_largest_chunk(bh_intp nop,
             bh_intp s = 1;
             for(bh_intp i=chunk->ary.ndim-1; i >= 0; --i)
             {
-                chunk->ary.stride[i] = s;
-                s *= chunk->ary.shape[i];
+                if(ary->stride[i] == 0)
+                    chunk->ary.stride[i] = 0;
+                else
+                {
+                    chunk->ary.stride[i] = s;
+                    s *= chunk->ary.shape[i];
+                }
             }
             chunk->ary.base  = tmp_get_ary(bh_base_array(ary)->type, s);
             chunk->temporary = true;//This array should be cleared when finished

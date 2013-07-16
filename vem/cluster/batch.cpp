@@ -147,14 +147,14 @@ void batch_flush()
                 int rank      = (*it).send_recv.rank;
                 bh_view *view = &(*it).send_recv.local_view;
                 bh_intp s     = bh_type_size(bh_base_array(view)->type);
-                bh_intp nelem = bh_nelements(view->ndim, view->shape);
+                bh_intp nelem = bh_nelements_nbcast(view);
 
                 bh_uint64 stime = bh_timing();
                 if(dir)//Sending
                 {
                     char *data = (char*) view->base->data;
                     assert(data != NULL);
-                    data += view ->start * s;
+                    data += view->start * s;
                     if((e = MPI_Send(data, nelem * s, MPI_BYTE, rank, 0,
                                      MPI_COMM_WORLD)) != MPI_SUCCESS)
                     EXCEPT_MPI(e);

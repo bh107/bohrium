@@ -137,6 +137,10 @@ void comm_slaves2master(bh_base *global_ary)
  */
 void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
 {
+//    printf("comm_array_data %d => %d: ", sending_rank, receiving_rank);
+//    bh_view v = chunk;
+//    bh_pprint_array(&v);
+
     //Check if communication is even necessary
     if(sending_rank == receiving_rank)
         return;
@@ -148,12 +152,22 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
     }
     else if(pgrid_myrank == sending_rank)
     {
-        //We need to copy the local array view into a base array.
+        //We need to copy the local array view into a base array buffer.
         bh_view tmp_view = chunk;
         tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type,
-                                    bh_nelements(chunk.ndim, chunk.shape));
+                                    bh_nelements_nbcast(&chunk));
 
-        bh_set_contiguous_stride(&tmp_view);
+        //Set a contiguous row-major stride while preserving the zero-strided
+        //dimensions (i.e. preserving broadcasted dimensions).
+        bh_intp s = 1;
+        for(bh_intp i=chunk.ndim-1; i >= 0; --i)
+        {
+            if(tmp_view.stride[i] > 0)
+            {
+                tmp_view.stride[i] = s;
+                s *= tmp_view.shape[i];
+            }
+        }
 
         //Tell the VEM to do the data copy.
         bh_view ops[] = {tmp_view, chunk};
