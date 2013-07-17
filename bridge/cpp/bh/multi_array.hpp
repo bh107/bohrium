@@ -27,10 +27,11 @@ namespace bh {
 
 template <typename T>
 void multi_array<T>::init()     // Pseudo-default constructor
-{
+{                               // Associates a multi_array
+                                // with a bh_base
     key     = Runtime::instance().keys++;
     temp    = false;
-    Runtime::instance().storage.insert(key, new bh_array);
+    Runtime::instance().storage.insert(key, new bh_base);
     assign_array_type<T>(&Runtime::instance().storage[key]);
 }
 
@@ -38,7 +39,7 @@ template <typename T>           // Default constructor - rank 0
 multi_array<T>::multi_array() : key(0), temp(false) { }
 
 /**
- * Inherit ndim / shape from another operand
+ * Inherit meta-data (ndim, start, shape, stride) from another operand.
  * Does not copy data.
  *
  */
@@ -47,17 +48,8 @@ multi_array<T>::multi_array(const multi_array<T>& operand)
 {
     init();
 
-    Runtime::instance().storage[key].data        = NULL;
-    Runtime::instance().storage[key].base        = NULL;
-    Runtime::instance().storage[key].ndim        = Runtime::instance().storage[operand.getKey()].ndim;
-    Runtime::instance().storage[key].start       = Runtime::instance().storage[operand.getKey()].start;
+    meta = operand.getMeta();
 
-    for(int64_t i=0; i< Runtime::instance().storage[operand.getKey()].ndim; i++) {
-        Runtime::instance().storage[key].shape[i] = Runtime::instance().storage[operand.getKey()].shape[i];
-    }
-    for(int64_t i=0; i< Runtime::instance().storage[operand.getKey()].ndim; i++) {
-        Runtime::instance().storage[key].stride[i] = Runtime::instance().storage[operand.getKey()].stride[i];
-    }
 }
 
 template <typename T>
@@ -66,17 +58,16 @@ multi_array<T>::multi_array(Dimensions... shape)
 {
     init();
 
-    Runtime::instance().storage[key].data        = NULL;
-    Runtime::instance().storage[key].base        = NULL;
-    Runtime::instance().storage[key].ndim        = sizeof...(Dimensions);
-    Runtime::instance().storage[key].start       = 0;
+    meta.base        = NULL;
+    meta.ndim        = sizeof...(Dimensions);
+    meta.start       = 0;
 
-    unpack_shape(Runtime::instance().storage[key].shape, 0, shape...);
+    unpack_shape(meta.shape, 0, shape...);
 
     int64_t stride = 1;                 // Setup strides
-    for(int64_t i=Runtime::instance().storage[key].ndim-1; 0 <= i; --i) {
-        Runtime::instance().storage[key].stride[i] = stride;
-        stride *= Runtime::instance().storage[key].shape[i];
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
     }
 }
 
@@ -84,12 +75,19 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (key>0) {
-        if (NULL == Runtime::instance().storage[key].base) {    // Only send free on base-array
+        if (NULL == meta.base) {        // Only send free on base-array
             Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         }
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
         Runtime::instance().trash(key);
     }
+}
+
+template <typename T>
+inline
+bh_view multi_array<T>::getMeta() const
+{
+    return meta;
 }
 
 template <typename T>
@@ -103,7 +101,7 @@ template <typename T>
 inline
 unsigned long multi_array<T>::getRank() const
 {
-    return (unsigned long)*(&Runtime::instance().storage[key].ndim);
+    return (unsigned long)meta.ndim;
 }
 
 template <typename T>
@@ -148,7 +146,7 @@ typename multi_array<T>::iterator multi_array<T>::begin()
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance().flush();
 
-    return multi_array<T>::iterator(Runtime::instance().storage[this->key]);
+    return multi_array<T>::iterator(Runtime::instance().storage[this->key], meta);
 }
 
 template <typename T>
@@ -268,7 +266,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            if (NULL == Runtime::instance().storage[key].base) {
+            if (NULL == meta.base) {
                 Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
             }
             Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
@@ -282,15 +280,14 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         } else {                    // Create an alias of rhs.
             init();
 
-            Runtime::instance().storage[key].data       = NULL;
-            Runtime::instance().storage[key].base       = &Runtime::instance().storage[rhs.getKey()];
-            Runtime::instance().storage[key].ndim       = Runtime::instance().storage[rhs.getKey()].ndim;
-            Runtime::instance().storage[key].start      = Runtime::instance().storage[rhs.getKey()].start;
-            for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
-                Runtime::instance().storage[key].shape[i] = Runtime::instance().storage[rhs.getKey()].shape[i];
+            meta.base   = rhs.meta.base;
+            meta.ndim   = rhs.meta.ndim;
+            meta.start  = rhs.meta.start;
+            for(int64_t i=0; i< rhs.meta.ndim; i++) {
+                meta.shape[i] = rhs.meta.shape[i];
             }
-            for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
-                Runtime::instance().storage[key].stride[i] = Runtime::instance().storage[rhs.getKey()].stride[i];
+            for(int64_t i=0; i< rhs.meta.ndim; i++) {
+                meta.stride[i] = rhs.meta.stride[i];
             }
         }
     }
@@ -390,35 +387,23 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
     int64_t dims    = sizeof...(Dimensions),
             stride  = 1;
 
-    size_t rhs_key,
-           res_key;
-
-    rhs_key = rhs.getKey();
-    if (1>rhs_key) {            // We do not have anything to view!
+    if (1>rhs.getKey()) {            // We do not have anything to view!
         throw std::runtime_error("Far out dude! you are trying create a view "
                                  "of something that does not exist!\n");
     }
 
-    if (NULL!=Runtime::instance().storage[rhs_key].base) {   // Not supported!
-        throw std::runtime_error("Far out dude! you are trying create a view "
-                                 "of something that is not a base. "
-                                 "Such behavior is currently unsupported.\n");
-    }
-
     multi_array<T>* result = &Runtime::instance().temp_view(rhs);
-    res_key = result->getKey();
-    unpack_shape(Runtime::instance().storage[res_key].shape, 0, shape...);
-    Runtime::instance().storage[res_key].ndim = dims;
+    unpack_shape(result->meta.shape, 0, shape...);
+    result->meta.ndim = dims;
 
     for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
-        Runtime::instance().storage[res_key].stride[i] = stride;
-        stride *= Runtime::instance().storage[res_key].shape[i];
+        result->meta.stride[i] = stride;
+        stride *= result->meta.shape[i];
     }
 
     // TODO: Verify that the number of elements match
 
     return *result;
-
 }
 
 // NON-MEMBER STUFF

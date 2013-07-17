@@ -37,13 +37,13 @@ public:
     // Constructors
     multi_array_iter() : data(NULL), offset(NULL) {}
 
-    multi_array_iter(bh_array x) : operand(x)
+    multi_array_iter(bh_base x, bh_view meta) : base(x), view(meta)
     {
-        data        = (pointer)bh_base_array(&operand)->data;
-        offset      = data + operand.start;
+        data        = (pointer)base.data;
+        offset      = data + view.start;
 
-        last_dim    = operand.ndim-1;
-        last_e      = bh_nelements(operand.ndim, operand.shape)-1;
+        last_dim    = view.ndim-1;
+        last_e      = bh_nelements(view.ndim, view.shape)-1;
         cur_e       = 0;
         memset(coord, 0, BH_MAXDIM * sizeof(int64_t));
     }
@@ -64,11 +64,11 @@ public:
         cur_e++;
         coord[last_dim]++;
 
-        if (coord[last_dim] >= operand.shape[last_dim]) {
+        if (coord[last_dim] >= view.shape[last_dim]) {
             coord[last_dim] = 0;        // Increment coordinates for the remaining dimensions
             for(int64_t j = last_dim-1; j >= 0; --j) {  
                 coord[j]++;             // Still within this dimension
-                if (coord[j] < operand.shape[j]) {      
+                if (coord[j] < view.shape[j]) {      
                     break;
                 } else {                // Reached the end of this dimension
                     coord[j] = 0;       // Reset coordinate
@@ -79,9 +79,9 @@ public:
         if (cur_e > last_e) {
             offset = NULL;
         } else {
-            offset = data + operand.start;
+            offset = data + view.start;
             for (int64_t j=0; j<=last_dim; ++j) {
-                offset += coord[j] * operand.stride[j];
+                offset += coord[j] * view.stride[j];
             }
         }
 
@@ -107,7 +107,8 @@ public:
 
 private:
 
-    bh_array operand;
+    bh_base base;
+    bh_view view;
 
     pointer data,
             offset;

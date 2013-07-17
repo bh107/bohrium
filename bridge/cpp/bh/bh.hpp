@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-typedef boost::ptr_map<size_t, bh_array> storage_type;
+typedef boost::ptr_map<size_t, bh_base> storage_type;
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
@@ -118,6 +118,9 @@ private:
 template <typename T>
 class multi_array {
 public:
+
+    bh_view meta;
+
     // ** Constructors **
     multi_array();                              // Empty
 
@@ -137,6 +140,7 @@ public:
     unsigned long getRank() const;
     bool getTemp() const;
     void setTemp(bool temp);
+    bh_view getMeta() const;
 
     // Iterator
     iterator begin();
@@ -314,16 +318,16 @@ private:
                     *vem_component;
 
     int64_t children_count;
-                                                
-    std::list<size_t> garbage;                  // DSEL stuff
-                                                // Collection of bh_arrays which will
+                                                // DSEL stuff
+    std::list<size_t> garbage;                  // NOTE: This is probably deprecated with bh_base...
+                                                // Collection of bh_base which will
                                                 // be deleted when the current batch is flushed.
 
     Runtime();                                  // Ensure no external instantiation.
     Runtime(Runtime const&);
     void operator=(Runtime const&);
 
-    size_t deallocate_meta(size_t count);       // De-allocate bh_arrays
+    size_t deallocate_meta(size_t count);       // De-allocate bh_base
     size_t deallocate_ext();                    // De-allocate userdefined functions structs
 
     size_t execute();                           // Send instructions to Bohrium

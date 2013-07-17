@@ -59,25 +59,22 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>();
 
-    bh_array* res_a = &Runtime::instance().storage[result->getKey()];
-    bh_array* op_a  = &Runtime::instance().storage[op.getKey()];
+    result->meta.base  = NULL;
+    result->meta.data  = NULL;
+    result->meta.start = 0;
 
-    res_a->base  = NULL;
-    res_a->data  = NULL;
-    res_a->start = 0;
-
-    if (op_a->ndim == 1) {                  // Pseudo-scalar; one element
-        res_a->ndim      = 1;
-        res_a->shape[0]  = 1;
-        res_a->stride[0] = op_a->stride[0];
+    if (op.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = op.meta.stride[0];
     } else {                                // Remove axis
-        res_a->ndim  = op_a->ndim -1;
+        result->meta.ndim  = op.meta.ndim -1;
         int64_t stride = 1; 
-        for(int64_t i=op_a->ndim-1, j=res_a->ndim-1; i>=0; --i) {
+        for(int64_t i=op.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
             if (i!=(int64_t)axis) {
-                res_a->shape[j]  = op_a->shape[i];
-                res_a->stride[j] = stride;
-                stride *= res_a->shape[j];
+                result->meta.shape[j]  = op.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
                 --j;
             }
         }

@@ -94,46 +94,43 @@ multi_array<T>& slice<T>::operator=(T rhs)
 template <typename T>
 bh::multi_array<T>& slice<T>::view()
 {
-    multi_array<T>* alias = &Runtime::instance().view(*op);
+    multi_array<T>* lhs = &Runtime::instance().view(*op);
 
-    bh_array* rhs = &Runtime::instance().storage[op->getKey()];     // The operand getting sliced
-    bh_array* lhs = &Runtime::instance().storage[alias->getKey()];  // The view as a result of slicing
-
-    lhs->ndim   = rhs->ndim;                    // Rank is maintained
-    lhs->start  = rhs->start;                   // Start is initialy the same
+    lhs->meta.ndim   = op->meta.ndim;                    // Rank is maintained
+    lhs->meta.start  = op->meta.start;                   // Start is initialy the same
     int b, e;
 
-    for(int i=0, lhs_dim=0; i < rhs->ndim; ++i) {
+    for(int i=0, lhs_dim=0; i < op->meta.ndim; ++i) {
                                                 // Compute the "[beginning, end[" indexes
-        b = ranges[i].begin < 0 ? rhs->shape[i] + ranges[i].begin : ranges[i].begin;
-        e = ranges[i].end   < 0 ? rhs->shape[i] + ranges[i].end   : ranges[i].end;
+        b = ranges[i].begin < 0 ? op->meta.shape[i] + ranges[i].begin : ranges[i].begin;
+        e = ranges[i].end   < 0 ? op->meta.shape[i] + ranges[i].end   : ranges[i].end;
 
         // NOTICE: e = 0 is special-case to make the last-element inclusive
         //         it is also used for single-element indexing but in that case
         //         inclusive_end should be false...
         if (ranges[i].inclusive_end && (ranges[i].end == 0)) {
-            e = rhs->shape[i];
+            e = op->meta.shape[i];
         }
 
         if (b<e) {                              // Range
-            lhs->shape[lhs_dim]   = 1 + (((e-b) - 1) / ranges[i].stride); // ceil
-            lhs->stride[lhs_dim]  = ranges[i].stride * rhs->stride[i];
+            lhs->meta.shape[lhs_dim]   = 1 + (((e-b) - 1) / ranges[i].stride); // ceil
+            lhs->meta.stride[lhs_dim]  = ranges[i].stride * op->meta.stride[i];
             ++lhs_dim;
         } else if (b==e) {                      // Single-element
-            lhs->ndim   = lhs->ndim -1;
+            lhs->meta.ndim   = lhs->meta.ndim -1;
         } else {
             throw std::runtime_error("Invalid range.");
         }
-        lhs->start  += b * rhs->stride[i];
+        lhs->meta.start  += b * op->meta.stride[i];
     }
 
-    if (lhs->ndim == 0) {                       // Fix up the pseudo-scalar
-        lhs->ndim = 1;
-        lhs->shape[0]   = 1;
-        lhs->stride[0]  = 1;
+    if (lhs->meta.ndim == 0) {                       // Fix up the pseudo-scalar
+        lhs->meta.ndim = 1;
+        lhs->meta.shape[0]   = 1;
+        lhs->meta.stride[0]  = 1;
     }
 
-    return *alias;
+    return *lhs;
 }
 
 }
