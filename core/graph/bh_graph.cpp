@@ -594,12 +594,21 @@ bh_error bh_graph_iterator_next_node(bh_graph_iterator* iterator, bh_node_index*
                     {
                         n = iterator->blocked->front();
                         iterator->blocked->pop_front();
-/*
-                        printf("%s: self: %lld, left_parent: %lld, right_parent: %lld, left_child: %lld, right_child: %lld\n", NODE_LOOKUP(n).type == BH_INSTRUCTION ? bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode) : "BH_COLLECTION", (long long)n, (long long)NODE_LOOKUP(n).left_parent, (long long)NODE_LOOKUP(n).right_parent, (long long)NODE_LOOKUP(n).left_child, (long long)NODE_LOOKUP(n).right_child);
+
+                        printf("%s: self: %lld, left_parent: %lld, right_parent: %lld, left_child: %lld, right_child: %lld\n",
+                                NODE_LOOKUP(n).type == BH_INSTRUCTION ? bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode) : "BH_COLLECTION",
+                                (long long)n,
+                                (long long)NODE_LOOKUP(n).left_parent,
+                                (long long)NODE_LOOKUP(n).right_parent,
+                                (long long)NODE_LOOKUP(n).left_child,
+                                (long long)NODE_LOOKUP(n).right_child);
 
                         if (NODE_LOOKUP(n).type == BH_INSTRUCTION)
-                            printf("INSTRUCTION %lld: %s -> %lld\n", (long long)NODE_LOOKUP(n).instruction, bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode), (long long)INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).operand[0]);
-*/
+                            printf("INSTRUCTION %lld: %s -> %lld\n",
+                                    (long long)NODE_LOOKUP(n).instruction,
+                                    bh_opcode_text(INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).opcode),
+                                    (long long)&INSTRUCTION_LOOKUP(NODE_LOOKUP(n).instruction).operand[0]);
+
                     }
 
                     return BH_ERROR;
