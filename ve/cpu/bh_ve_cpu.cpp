@@ -111,7 +111,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
                                     "bh_error=%lld;"
                                     " called from bh_ve_cpu_execute()\n",
-                                    (bh_int64)res);
+                                    (long long)res);
                     break;
                 }
 
