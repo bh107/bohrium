@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -24,64 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <errno.h>
 
-/* Reduce nDarray info to a base shape
- *
- * Remove dimentions that just indicate orientation in a
- * higher dimention (Py:newaxis)
- *
- * @ndim          Number of dimentions
- * @shape[]       Number of elements in each dimention.
- * @stride[]      Stride in each dimention.
- * @base_ndim     Placeholder for base number of dimentions
- * @base_shape    Placeholder for base number of elements in each dimention.
- * @base_stride   Placeholder for base stride in each dimention.
- */
-void bh_base_shape(bh_intp ndim,
-                      const bh_index shape[],
-                      const bh_index stride[],
-                      bh_intp* base_ndim,
-                      bh_index* base_shape,
-                      bh_index* base_stride)
-{
-    *base_ndim = 0;
-    for (int i = 0; i < ndim; ++i)
-    {
-        // skipping (shape[i] == 1 && stride[i] == 0)
-        if (shape[i] != 1 || stride[i] != 0)
-        {
-            base_shape[*base_ndim] = shape[i];
-            base_stride[*base_ndim] = stride[i];
-            ++(*base_ndim);
-        }
-    }
-}
-
-/* Is the data accessed continuously, and only once
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @return   Truth value indicating continuousity.
- */
-bool bh_is_continuous(bh_intp ndim,
-                         const bh_index shape[],
-                         const bh_index stride[])
-{
-    bh_intp my_ndim = 0;
-    bh_index my_shape[BH_MAXDIM];
-    bh_index my_stride[BH_MAXDIM];
-    bh_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
-    for (int i = 0; i < my_ndim - 1; ++i)
-    {
-        if (my_shape[i+1] != my_stride[i])
-            return true;
-    }
-    if (my_stride[my_ndim-1] != 1)
-        return false;
-
-    return true;
-}
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
@@ -89,7 +31,7 @@ bool bh_is_continuous(bh_intp ndim,
  * @return   Number of element operations
  */
 bh_index bh_nelements(bh_intp ndim,
-                            const bh_index shape[])
+                      const bh_index shape[])
 {
     bh_index res = 1;
     for (int i = 0; i < ndim; ++i)
@@ -107,25 +49,8 @@ bh_index bh_nelements(bh_intp ndim,
 bh_index bh_array_size(const bh_array *array)
 {
     const bh_array *b = bh_base_array(array);
-    return bh_nelements(b->ndim, b->shape) * 
+    return bh_nelements(b->ndim, b->shape) *
            bh_type_size(b->type);
-}
-
-/* Calculate the dimention boundries for shape
- *
- * @ndim      Number of dimentions
- * @shape[]   Number of elements in each dimention.
- * @dimbound  Placeholder for dimbound (return
- */
-void bh_dimbound(bh_intp ndim,
-                    const bh_index shape[],
-                    bh_index* dimbound)
-{
-    dimbound[ndim -1] = shape[ndim -1];
-    for (int i = ndim -2 ; i >= 0; --i)
-    {
-        dimbound[i] = dimbound[i+1] * shape[i];
-    }
 }
 
 /* Set the array stride to contiguous row-major
@@ -137,37 +62,11 @@ bh_intp bh_set_contiguous_stride(bh_array *array)
 {
     bh_intp s = 1;
     for(bh_intp i=array->ndim-1; i >= 0; --i)
-    {    
+    {
         array->stride[i] = s;
         s *= array->shape[i];
     }
     return s;
-}
-
-/* Calculate the offset into an array based on element index
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @element  Index of element in question
- * @return   Truth value indicating continuousity.
- */
-bh_index bh_calc_offset(bh_intp ndim,
-                              const bh_index shape[],
-                              const bh_index stride[],
-                              const bh_index element)
-{
-    bh_index offset = 0;
-    bh_index dimIndex;
-    bh_intp i;
-    for (i = 0; i < ndim; ++i)
-    {
-        dimIndex = element % bh_nelements(ndim - i, &shape[i]);
-        if (i != ndim - 1)
-            dimIndex = dimIndex / bh_nelements(ndim - (i+1), &shape[i+1]);
-        offset += dimIndex * stride[i];
-    }
-    return offset;
 }
 
 /* Find the base array for a given array/view
@@ -344,9 +243,9 @@ bh_type bh_type_operand(const bh_instruction *instruction,
 }
 
 /* Determines whether two arrays overlap.
- * NB: This functions may return True on non-overlapping arrays. 
+ * NB: This functions may return True on non-overlapping arrays.
  *     But will always return False on overlapping arrays.
- * 
+ *
  * @a The first array
  * @b The second array
  * @return The boolean answer
@@ -376,7 +275,7 @@ bool bh_array_overlap(const bh_array *a, const bh_array *b)
         return true;
     if(b->start <= a_end && a_end < b_end)
         return true;
-    
+
     return false;
 }
 
@@ -401,25 +300,6 @@ bool bh_is_constant(const bh_array* o)
     return (o == NULL);
 }
 
-/* Determines whether the two views are the same
- *
- * @a The first array
- * @b The second array
- * @return The boolean answer
- */
-bool bh_same_view(const bh_array* a, const bh_array* b)
-{
-    if (a == b)
-        return true;
-    if (bh_base_array(a) != bh_base_array(b))
-        return false;
-    if (memcmp(((char*)a)+sizeof(bh_array*),
-               ((char*)b)+sizeof(bh_array*),
-               sizeof(bh_array)-sizeof(bh_array*)-sizeof(bh_data_ptr)))
-        return false;
-    return true;
-}
-
 
 inline int gcd(int a, int b)
 {
@@ -440,7 +320,7 @@ inline int gcd(int a, int b)
  */
 bool bh_disjoint_views(const bh_array *a, const bh_array *b)
 {
-    if (a == NULL || b == NULL) // One is a constant 
+    if (a == NULL || b == NULL) // One is a constant
         return true;
     if(bh_base_array(a) != bh_base_array(b)) //different base
         return true;

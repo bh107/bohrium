@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -47,37 +47,6 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
-/* Reduce nDarray info to a base shape
- *
- * Remove dimentions that just indicate orientation in a
- * higher dimention (Py:newaxis)
- *
- * @ndim          Number of dimentions
- * @shape[]       Number of elements in each dimention.
- * @stride[]      Stride in each dimention.
- * @base_ndim     Placeholder for base number of dimentions
- * @base_shape    Placeholder for base number of elements in each dimention.
- * @base_stride   Placeholder for base stride in each dimention.
- */
-DLLEXPORT void bh_base_shape(bh_intp ndim,
-                      const bh_index shape[],
-                      const bh_index stride[],
-                      bh_intp* base_ndim,
-                      bh_index* base_shape,
-                      bh_index* base_stride);
-
-
-/* Is the data accessed continuously, and only once
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @return   Truth value indicating continuousity.
- */
-DLLEXPORT bool bh_is_continuous(bh_intp ndim,
-                         const bh_index shape[],
-                         const bh_index stride[]);
-
 
 /* Number of element in a given shape
  *
@@ -86,7 +55,7 @@ DLLEXPORT bool bh_is_continuous(bh_intp ndim,
  * @return   Number of element operations
  */
 DLLEXPORT bh_index bh_nelements(bh_intp ndim,
-                            const bh_index shape[]);
+                                const bh_index shape[]);
 
 
 /* Size of the array data
@@ -95,32 +64,6 @@ DLLEXPORT bh_index bh_nelements(bh_intp ndim,
  * @return   The size of the array data in bytes
  */
 DLLEXPORT bh_index bh_array_size(const bh_array *array);
-
-
-/* Calculate the offset into an array based on element index
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @element  Index of element in question
- * @return   Truth value indicating continuousity.
- */
-DLLEXPORT bh_index bh_calc_offset(bh_intp ndim,
-                              const bh_index shape[],
-                              const bh_index stride[],
-                              bh_index element);
-
-
-/* Calculate the dimention boundries for shape
- *
- * @ndim      Number of dimentions
- * @shape[]   Number of elements in each dimention.
- * @dimbound  Placeholder for dimbound (return
- */
-DLLEXPORT void bh_dimbound(bh_intp ndim,
-                    const bh_index shape[],
-                    bh_index dimbound[BH_MAXDIM]);
-
 
 /* Set the array stride to contiguous row-major
  *
@@ -176,7 +119,7 @@ DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
  */
 DLLEXPORT bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh_type inputtype2, bh_type constanttype);
 
-/* Determines if the types are acceptable for the operation, 
+/* Determines if the types are acceptable for the operation,
  * and provides a suggestion for converting them
  *
  * @opcode Opcode for operation
@@ -272,9 +215,9 @@ DLLEXPORT bh_type bh_type_operand(const bh_instruction *instruction,
                                         bh_intp operand_no);
 
 /* Determines whether two arrays overlap.
- * NB: This functions may return True on non-overlapping arrays. 
+ * NB: This functions may return True on non-overlapping arrays.
  *     But will always return False on overlapping arrays.
- * 
+ *
  * @a The first array
  * @b The second array
  * @return The boolean answer
@@ -295,14 +238,6 @@ DLLEXPORT bool bh_is_scalar(const bh_array *array);
  * @return The boolean answer
  */
 DLLEXPORT bool bh_is_constant(const bh_array* o);
-
-/* Determines whether the two views are the same
- *
- * @a The first array
- * @b The second array
- * @return The boolean answer
- */
-DLLEXPORT bool bh_same_view(const bh_array* a, const bh_array* b);
 
 /* Determines whether two array(views)s access some of the same data points
  *

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -51,7 +51,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
     env = getenv("BH_VE_CPU_TRAVERSAL");    // Traversal method
     if (NULL != env) {
         if (strcmp("fruit_loops", env) == 0) {
-            traverse_method = FRUIT_LOOPS; 
+            traverse_method = FRUIT_LOOPS;
         } else if (strcmp("naive", env) == 0) {
             traverse_method = NAIVE;
         } else {
@@ -76,7 +76,7 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
         #ifdef DEBUG
         bh_pprint_instr(instr);
         #endif
-                                                    
+
         switch (instr->opcode) {                // Dispatch instruction
             case BH_NONE:                       // NOOP.
             case BH_DISCARD:
@@ -101,14 +101,14 @@ bh_error bh_ve_cpu_execute(bh_intp instruction_count,
 
             default:                            // Built-in operations
                                                 // Allocate memory
-                if (bh_base_array(instr->operand[0])->data == NULL) { 
+                if (bh_base_array(instr->operand[0])->data == NULL) {
                     res = bh_vcache_malloc(instr);
                 }
                 if (res != BH_SUCCESS) {
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
                                     "bh_error=%lld;"
                                     " called from bh_ve_cpu_execute()\n",
-                                    (bh_int64)res);
+                                    (long long)res);
                     break;
                 }
 
@@ -140,7 +140,7 @@ bh_error bh_ve_cpu_shutdown( void )
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id) 
+bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
@@ -149,7 +149,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 				return BH_USERFUNC_NOT_SUPPORTED;
 
 			random_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = random_impl_id;
         	return BH_SUCCESS;
@@ -161,7 +161,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
                 return BH_USERFUNC_NOT_SUPPORTED;
             }
             matmul_impl_id = *id;
-            return BH_SUCCESS;			
+            return BH_SUCCESS;
         } else {
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
@@ -179,7 +179,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
             return BH_SUCCESS;
         }
     }
-        
+
     return BH_USERFUNC_NOT_SUPPORTED;
 }
 
