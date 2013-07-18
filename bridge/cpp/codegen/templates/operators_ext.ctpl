@@ -40,6 +40,8 @@ multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$o
             equiv<$ret_type, $op1_type>(*result, *right);
         }
     }
+
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
     return *result;
 }
@@ -49,6 +51,7 @@ multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_ty
     multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type>(); 
     equiv<$ret_type, $op1_type>(*result, lhs);
 
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;
@@ -59,6 +62,7 @@ multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_typ
     multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type>(); 
     equiv<$ret_type, $op1_type>(*result, rhs);
 
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;
@@ -81,6 +85,7 @@ multi_array<T> & operator$op (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp(rhs);
 
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
 
     return *result;

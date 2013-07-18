@@ -118,7 +118,6 @@ private:
 template <typename T>
 class multi_array {
 public:
-
     bh_view meta;
 
     // ** Constructors **
@@ -135,12 +134,9 @@ public:
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    // Getter / Setter:
-    size_t getKey() const;
+    size_t len();
+    int64_t shape(int64_t dim);             // Probe for the shape of the given dimension
     unsigned long getRank() const;
-    bool getTemp() const;
-    void setTemp(bool temp);
-    bh_view getMeta() const;
 
     // Iterator
     iterator begin();
@@ -207,18 +203,19 @@ public:
     multi_array& operator--();              // Decrement all elements in container
     multi_array& operator--(int);
 
-    size_t len();
-    int64_t shape(int64_t dim);             // Probe for the shape of a dimension
-
-    void link(size_t);
+    void link();                            // Bohrium Runtime Specifics
+    void link(size_t);                      // Bohrium Runtime Specifics
     size_t unlink();
+
+    size_t getKey() const;
+    bool getTemp() const;
+    void setTemp(bool temp);
 
 protected:
     size_t key;
     bool temp;
 
 private:
-    void init();
 
 };
 

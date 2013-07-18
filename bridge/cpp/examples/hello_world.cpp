@@ -27,15 +27,11 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<float> x, y;
-    x = random<float>(27);
+    multi_array<float> x;
+    //x = random<float>(27);
+    x = ones<float>(3,3);
     
-    y = view_as(x, 3,3,3);
-
-    bh_pprint_array(&y.meta);
-
     cout << x << endl;
-    cout << y << endl;
 
     std::cout << "Leaving compute!" << std::endl;
 }

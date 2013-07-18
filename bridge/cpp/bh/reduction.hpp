@@ -57,11 +57,9 @@ bh_opcode reducible_to_opcode(reducible opcode)
 template <typename T>
 multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>();
+    multi_array<T>* result = new multi_array<T>();
 
-    result->meta.base  = NULL;
-    result->meta.data  = NULL;
-    result->meta.start = 0;
+    result->meta.start = 0;                 // Update meta-data
 
     if (op.meta.ndim == 1) {                // Pseudo-scalar; one element
         result->meta.ndim      = 1;
@@ -79,6 +77,7 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
             }
         }
     }
+    result->init();                         // Bind the base
 
     Runtime::instance().enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
 
@@ -88,7 +87,7 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 template <typename T>
 multi_array<T>& sum(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, ADD, 0);
     for(size_t i=1; i<dims; i++) {
@@ -100,7 +99,7 @@ multi_array<T>& sum(multi_array<T>& op)
 template <typename T>
 multi_array<T>& product(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, MULTIPLY, 0);
     for(size_t i=1; i<dims; i++) {
@@ -113,7 +112,7 @@ multi_array<T>& product(multi_array<T>& op)
 template <typename T>
 multi_array<T>& min(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, MIN, 0);
     for(size_t i=1; i<dims; i++) {
@@ -125,7 +124,7 @@ multi_array<T>& min(multi_array<T>& op)
 template <typename T>
 multi_array<T>& max(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, MAX, 0);
     for(size_t i=1; i<dims; i++) {
@@ -137,7 +136,7 @@ multi_array<T>& max(multi_array<T>& op)
 template <typename T>
 multi_array<bool>& any(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, LOGICAL_OR, 0);
     for(size_t i=1; i<dims; i++) {
@@ -149,7 +148,7 @@ multi_array<bool>& any(multi_array<T>& op)
 template <typename T>
 multi_array<bool>& all(multi_array<T>& op)
 {
-    size_t dims = Runtime::instance().storage[op.getKey()].ndim;
+    size_t dims = op.meta.ndim;
 
     multi_array<T>* result = &reduce(op, LOGICAL_AND, 0);
     for(size_t i=1; i<dims; i++) {
@@ -161,12 +160,7 @@ multi_array<bool>& all(multi_array<T>& op)
 template <typename T>
 multi_array<size_t>& count(multi_array<T>& op)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->setTemp(true);
-
-    result = &sum(op.template as<size_t>());
-
-    return *result;
+    return sum(op.template as<size_t>());
 }
 
 }

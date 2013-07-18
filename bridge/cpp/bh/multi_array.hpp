@@ -25,42 +25,33 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-template <typename T>
-void multi_array<T>::init()     // Pseudo-default constructor
-{                               // Associates a multi_array
-                                // with a bh_base
-    key     = Runtime::instance().keys++;
-    temp    = false;
-    Runtime::instance().storage.insert(key, new bh_base);
-    assign_array_type<T>(&Runtime::instance().storage[key]);
+template <typename T>           // Default constructor - rank 0
+multi_array<T>::multi_array() : key(0), temp(false)
+{
+    meta.base       = NULL;
+    meta.ndim       = 0;
+    meta.start      = 0;
+    meta.shape[0]   = 0;
+    meta.stride[0]  = 0;
 }
 
-template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array() : key(0), temp(false) { }
-
 /**
- * Inherit meta-data (ndim, start, shape, stride) from another operand.
- * Does not copy data.
- *
+ * Inherit meta-data (ndim, start, shape, stride) except from base!
  */
 template <typename T>           // Copy constructor
-multi_array<T>::multi_array(const multi_array<T>& operand)
+multi_array<T>::multi_array(const multi_array<T>& operand) : key(0), temp(false)
 {
-    init();
-
-    meta = operand.getMeta();
-
+    meta = operand.meta;
+    meta.base = NULL;
 }
 
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
-multi_array<T>::multi_array(Dimensions... shape)
+multi_array<T>::multi_array(Dimensions... shape) : key(0), temp(false)
 {
-    init();
-
-    meta.base        = NULL;
-    meta.ndim        = sizeof...(Dimensions);
-    meta.start       = 0;
+    meta.base   = NULL;
+    meta.ndim   = sizeof...(Dimensions);
+    meta.start  = 0;
 
     unpack_shape(meta.shape, 0, shape...);
 
@@ -74,20 +65,10 @@ multi_array<T>::multi_array(Dimensions... shape)
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
-    if (key>0) {
-        if (NULL == meta.base) {        // Only send free on base-array
-            Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-        }
-        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+    if (key>0) {                        // Only free base-array
+        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().trash(key);
     }
-}
-
-template <typename T>
-inline
-bh_view multi_array<T>::getMeta() const
-{
-    return meta;
 }
 
 template <typename T>
@@ -123,8 +104,8 @@ inline
 size_t multi_array<T>::len()
 {
     size_t nelements = 1;
-    for (int i = 0; i < Runtime::instance().storage[key].ndim; ++i) {
-        nelements *= Runtime::instance().storage[key].shape[i];
+    for (int i = 0; i < meta.ndim; ++i) {
+        nelements *= meta.shape[i];
     }
     return nelements;
 }
@@ -133,11 +114,11 @@ template <typename T>
 inline
 int64_t multi_array<T>::shape(int64_t dim)
 {
-    if (dim>=Runtime::instance().storage[key].ndim) {
+    if (dim>=meta.ndim) {
         throw std::runtime_error("Dude you are like totally out of bounds!\n");
     }
 
-    return Runtime::instance().storage[key].shape[dim];
+    return meta.shape[dim];
 }
 
 template <typename T>
@@ -146,7 +127,7 @@ typename multi_array<T>::iterator multi_array<T>::begin()
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance().flush();
 
-    return multi_array<T>::iterator(Runtime::instance().storage[this->key], meta);
+    return multi_array<T>::iterator(meta);
 }
 
 template <typename T>
@@ -195,7 +176,6 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     bool first = true;
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
-
     stream << "[ ";
     for(; it != end; it++) {
         if (!first) {
@@ -227,8 +207,6 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
     return (*(new slice<T>(*this)))[rhs];
 }
 
-
-
 // Initialization
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
@@ -237,7 +215,27 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
     return *this;
 }
 
-// Linking
+// Linking - Assign a base to the multi_array.
+template <typename T>
+void multi_array<T>::link()
+{                               
+    if (0!=key) {
+        throw std::runtime_error("Dude you are ALREADY linked!");
+    }
+
+    key = Runtime::instance().keys++;
+    Runtime::instance().storage.insert(key, new bh_base);   // CREATE BASE
+    assign_array_type<T>(                                   // type
+        &Runtime::instance().storage[key]
+    );    
+    Runtime::instance().storage[key].nelem  = bh_nelements( // n elements 
+        meta.ndim, meta.shape
+    );
+    Runtime::instance().storage[key].data   = NULL;         // data pointer
+
+    meta.base = &Runtime::instance().storage[key];          // UPDATE meta
+}
+
 template <typename T>
 void multi_array<T>::link(const size_t ext_key)
 {
@@ -245,6 +243,7 @@ void multi_array<T>::link(const size_t ext_key)
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
     key = ext_key;
+    meta.base = &Runtime::instance().storage[key];          // UPDATE meta
 }
 
 template <typename T>
@@ -256,6 +255,7 @@ size_t multi_array<T>::unlink()
 
     size_t retKey = key;
     key = 0;
+    meta.base = NULL;
     return retKey;
 }
 
@@ -266,29 +266,17 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (key != rhs.getKey()) {      // Prevent self-aliasing
         
         if (key>0) {                // Release current linkage
-            if (NULL == meta.base) {
-                Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-            }
+            Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
             Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
             unlink();
         }
 
         if (rhs.getTemp()) {        // Take over temporary reference
             link(rhs.unlink());
-            temp = false;
+            //temp = false;   // TODO: This might not be right...
             delete &rhs;
         } else {                    // Create an alias of rhs.
-            init();
-
-            meta.base   = rhs.meta.base;
-            meta.ndim   = rhs.meta.ndim;
-            meta.start  = rhs.meta.start;
-            for(int64_t i=0; i< rhs.meta.ndim; i++) {
-                meta.shape[i] = rhs.meta.shape[i];
-            }
-            for(int64_t i=0; i< rhs.meta.ndim; i++) {
-                meta.stride[i] = rhs.meta.stride[i];
-            }
+            meta = rhs.meta;
         }
     }
 
@@ -311,9 +299,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     multi_array<T>* vv = &rhs.view();
 
     if (key>0) {                // Release current linkage
-        if (NULL == Runtime::instance().storage[key].base) {
-            Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-        }
+        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
         unlink();
     }
@@ -323,9 +309,6 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 
     return *this;
 }
-
-
-
 
 //
 // Update

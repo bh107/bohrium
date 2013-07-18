@@ -37,9 +37,9 @@ public:
     // Constructors
     multi_array_iter() : data(NULL), offset(NULL) {}
 
-    multi_array_iter(bh_base x, bh_view meta) : base(x), view(meta)
+    multi_array_iter(bh_view meta) : view(meta)
     {
-        data        = (pointer)base.data;
+        data        = (pointer)(view.base->data);
         offset      = data + view.start;
 
         last_dim    = view.ndim-1;
@@ -106,8 +106,6 @@ public:
     }
 
 private:
-
-    bh_base base;
     bh_view view;
 
     pointer data,

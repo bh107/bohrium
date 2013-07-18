@@ -39,14 +39,12 @@ TEST(slicing,vector_neg)
     multi_array<double> b(20);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(1,-1,2)];
 
     int shape[]     = {9};
     int stride[]    = {2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 1, 1));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 1, 1));
 }
 
 TEST(slicing,vector_neg2)
@@ -54,14 +52,12 @@ TEST(slicing,vector_neg2)
     multi_array<double> b(20);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,-2,1)];
 
     int shape[]     = {18};
     int stride[]    = {1};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 1, 0));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 1, 0));
 }
 
 TEST(slicing,vector_even)
@@ -69,14 +65,12 @@ TEST(slicing,vector_even)
     multi_array<double> b(20);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,20,2)];
 
     int shape[]     = {10};
     int stride[]    = {2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 1, 0));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 1, 0));
 }
 
 
@@ -86,14 +80,12 @@ TEST(slicing,vector_odd)
     multi_array<double> b(20);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(1,20,2)];
 
     int shape[]     = {10};
     int stride[]    = {2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 1, 1));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 1, 1));
 }
 
 TEST(slicing,vector_sub)
@@ -101,14 +93,12 @@ TEST(slicing,vector_sub)
     multi_array<double> b(20);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(3,20,2)];
 
     int shape[]     = {9};
     int stride[]    = {2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 1, 3));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 1, 3));
 }
 
 TEST(slicing,matrix_A_AA2_inner_even)
@@ -116,14 +106,12 @@ TEST(slicing,matrix_A_AA2_inner_even)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,9,1)][_(0,9,2)];
 
     int shape[]     = {9,5};
     int stride[]    = {9,2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 0));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 0));
 }
 
 TEST(slicing,matrix_AA2_A_outer_even)
@@ -131,14 +119,12 @@ TEST(slicing,matrix_AA2_A_outer_even)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,9,2)][_(0,9,1)];
 
     int shape[]     = {5,9};
     int stride[]    = {18,1};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 0));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 0));
 }
 
 TEST(slicing,matrix_AA2_AA2_both_even)
@@ -146,15 +132,12 @@ TEST(slicing,matrix_AA2_AA2_both_even)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,9,2)][_(0,9,2)];
 
     int shape[]     = {5,5};
     int stride[]    = {18,2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 0));
-
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 0));
 }
 
 TEST(slicing,matrix_A_AA2_inner_odd)
@@ -162,14 +145,12 @@ TEST(slicing,matrix_A_AA2_inner_odd)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(0,9,1)][_(3,9,2)];
 
     int shape[]     = {9,3};
     int stride[]    = {9,2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 3));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 3));
 }
 
 TEST(slicing,matrix_AA2_A_outer_odd)
@@ -177,14 +158,12 @@ TEST(slicing,matrix_AA2_A_outer_odd)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(3,9,2)][_(0,9,1)];
 
     int shape[]     = {3,9};
     int stride[]    = {18,1};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 27));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 27));
 }
 
 TEST(slicing,matrix_AA2_AA2_both_odd)
@@ -192,14 +171,12 @@ TEST(slicing,matrix_AA2_AA2_both_odd)
     multi_array<double> b(9,9);
     multi_array<double> v;
 
-    bh_array* view = &storage[v.getKey()];
-
     b = 1.0;
     v = b[_(3,9,2)][_(3,9,2)];
 
     int shape[]     = {3,3};
     int stride[]    = {18,2};
-    EXPECT_TRUE(VerifySlicing(view, shape, stride, 2, 30));
+    EXPECT_TRUE(VerifySlicing(&v.meta, shape, stride, 2, 30));
 }
 
 /*

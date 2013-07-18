@@ -25,17 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 // Runtime : Definition
-/*
-Runtime* Runtime::pInstance = 0;
-
-Runtime* Runtime::instance()
-{
-    if (pInstance == 0) {
-        pInstance = new Runtime;
-    }
-    return pInstance;
-}
-*/
 Runtime& Runtime::instance()
 {
     static Runtime instance;
@@ -44,7 +33,6 @@ Runtime& Runtime::instance()
 
 void stop()
 {
-    //delete Runtime::instance();
 }
 
 Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
@@ -95,7 +83,6 @@ Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
 
 Runtime::~Runtime()
 {
-    std::cout << "TEARING DOWN!" << std::endl;
     // Deconstructor is not called in a timely fashion.
     flush();
 
@@ -224,45 +211,37 @@ size_t Runtime::flush()
     return 0;
 }
 
-template <typename T>
-inline
-multi_array<T>& Runtime::op()
-{
-    multi_array<T>* operand = new multi_array<T>();
-
-    return *operand;
-}
-
 /**
- * Create an intermediate operand.
+ * Create an unitialized intermediate operand.
+ * This operand will not have a base or meta!
  */
 template <typename T>
 inline
 multi_array<T>& Runtime::temp()
 {
-    size_t key = keys++;
-
     multi_array<T>* operand = new multi_array<T>();
     operand->setTemp(true);
-    operand->link(key);
-
-    storage.insert(key, new bh_base);
-    assign_array_type<T>(&storage[key]);
 
     return *operand;
 }
 
+/**
+ *  Create an intermediate operand based on a shape.
+ *  This operand will be a base and have meta-data.
+ */
 template <typename T, typename ...Dimensions>
 inline
 multi_array<T>& Runtime::temp(Dimensions... shape)
 {
     multi_array<T>* operand = new multi_array<T>(shape...);
     operand->setTemp(true);
+
     return *operand;
 }
 
 /**
  * Create an intermediate operand based on another operand.
+ * This operand will be a base and have meta-data.
  */
 template <typename T>
 inline
@@ -282,7 +261,7 @@ inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    operand->meta.base = base.meta.base;
+    operand->meta.base = &storage[base.getKey()];
 
     return *operand;
 }
@@ -331,7 +310,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    //instr->operand[2] = NULL;
+    instr->operand[2].base = NULL;
     assign_const_type(&instr->constant, op2);
 
     if (op1.getTemp()) { delete &op1; }
@@ -348,7 +327,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
-    //instr->operand[1] = NULL;
+    instr->operand[1].base = NULL;
     instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
@@ -367,7 +346,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    //instr->operand[2] = NULL;
+    instr->operand[2].base = NULL;
 
     if (op1.getTemp()) { delete &op1; }
 }
@@ -383,9 +362,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1)
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
-    //instr->operand[1] = NULL;
-    //instr->operand[2] = NULL;
-    assign_const_type( &instr->constant, op1 );
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
+    assign_const_type(&instr->constant, op1);
 }
 
 template <typename T>
@@ -399,8 +378,8 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
-    //instr->operand[1] = NULL;
-    //instr->operand[2] = NULL;
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
 }
 
 template <typename Ret, typename In>    // x = y
@@ -415,7 +394,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    //instr->operand[2] = NULL;
+    instr->operand[2].base = NULL;
 
     if (op1.getTemp()) { delete &op1; }
 }
@@ -450,7 +429,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    //instr->operand[2] = NULL;
+    instr->operand[2].base = NULL;
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
@@ -468,7 +447,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>&
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    //instr->operand[2] = NULL;
+    instr->operand[2].base = NULL;
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
@@ -485,7 +464,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
-    //instr->operand[1] = NULL;
+    instr->operand[1].base = NULL;
     instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
@@ -508,33 +487,13 @@ void Runtime::enqueue(bh_userfunc* rinstr)
 }
 
 //
-//  Copy... properties
+//  Copy meta-data
 //
-// TODO: fix this!
 template <typename Ret, typename In>
 void equiv(multi_array<Ret>& ret, multi_array<In>& in)
 {
-    /*
-    bh_base *ret_a, *in_a;
-
-    ret_a   = &Runtime::instance().storage[ret.getKey()];
-    in_a    = &Runtime::instance().storage[in.getKey()];
-
-    ret_a->base        = NULL;
-    ret_a->ndim        = in_a->ndim;
-    ret_a->start       = in_a->start;
-    for(int64_t i=0; i< in_a->ndim; i++) {
-        ret_a->shape[i] = in_a->shape[i];
-    }
-    for(int64_t i=0; i< in_a->ndim; i++) {
-        ret_a->stride[i] = in_a->stride[i];
-    }
-    ret_a->data        = NULL;
-
-    assign_array_type<Ret>(ret_a);
-    */
-    ret.meta = in.meta;
-    //ret.setMeta(in.getMeta());
+    ret.meta      = in.meta;
+    ret.meta.base = NULL;
 }
 
 template <typename T>
@@ -545,7 +504,7 @@ T scalar(multi_array<T>& op)
 
     bh_base* op_a = &Runtime::instance().storage[op.getKey()];
     T* data = (T*)(op_a->data);
-    data += op.getStart();
+    data += op.meta.start;
 
     T value = *data;
 

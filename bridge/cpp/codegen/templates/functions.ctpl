@@ -22,6 +22,7 @@ template <typename T>
 multi_array<T>& $op (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
     return *result;
@@ -32,6 +33,7 @@ template <typename T>
 multi_array<T>& $op (multi_array<T>&lhs, multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
     return *result;
@@ -41,6 +43,7 @@ template <typename T>
 multi_array<T>& $op (multi_array<T>&lhs, const T& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
     return *result;
