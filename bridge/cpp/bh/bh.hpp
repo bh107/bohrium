@@ -128,6 +128,9 @@ public:
 
     multi_array(multi_array<T> const& operand); // Copy
 
+    template <typename OtherT>
+    multi_array(multi_array<OtherT> const& operand); // Copy
+
     // ** Deconstructor **
     ~multi_array();
 

@@ -45,6 +45,14 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : key(0), temp(false)
     meta.base = NULL;
 }
 
+template <typename T>           // Copy constructor
+template <typename OtherT>
+multi_array<T>::multi_array(const multi_array<OtherT>& operand) : key(0), temp(false)
+{
+    meta = operand.meta;
+    meta.base = NULL;
+}
+
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
 multi_array<T>::multi_array(Dimensions... shape) : key(0), temp(false)
@@ -86,26 +94,7 @@ unsigned long multi_array<T>::getRank() const
     return (unsigned long)meta.ndim;
 }
 
-template <typename T>
-inline
-bool multi_array<T>::getTemp() const
-{
-    return temp;
-}
 
-template <typename T>
-inline
-void multi_array<T>::setTemp(bool temp)
-{
-    this->temp = temp;
-}
-
-template <typename T>
-inline
-bool multi_array<T>::initialized() const
-{
-    return (meta.base != NULL);
-}
 
 template <typename T>
 inline
@@ -150,7 +139,10 @@ typename multi_array<T>::iterator multi_array<T>::end()
 template <typename T>
 multi_array<T>& multi_array<T>::operator++()
 {
-    // TODO: Check for initialization...
+    if (!this->initialized()) {
+        throw std::runtime_error("Err: Increment of a unintialized operand.");
+    }
+
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
@@ -158,7 +150,10 @@ multi_array<T>& multi_array<T>::operator++()
 template <typename T>
 multi_array<T>& multi_array<T>::operator++(int)
 {
-    // TODO: Check for initialization...
+    if (!this->initialized()) {
+        throw std::runtime_error("Err: Increment of a unintialized operand.");
+    }
+
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
@@ -166,7 +161,10 @@ multi_array<T>& multi_array<T>::operator++(int)
 template <typename T>
 multi_array<T>& multi_array<T>::operator--()
 {
-    // TODO: Check for initialization...
+    if (!this->initialized()) {
+        throw std::runtime_error("Err: Decrement of a unintialized operand.");
+    }
+
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
@@ -174,7 +172,10 @@ multi_array<T>& multi_array<T>::operator--()
 template <typename T>
 multi_array<T>& multi_array<T>::operator--(int)
 {
-    // TODO: Check for initialization...
+    if (!this->initialized()) {
+        throw std::runtime_error("Err: Decrement of a unintialized operand.");
+    }
+
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
@@ -186,8 +187,9 @@ template <typename T>
 std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 {
     if (!rhs.initialized()) {
-        throw std::runtime_error("Cannot output unintialized operand.");
+        throw std::runtime_error("Err: Cannot output an unintialized operand.");
     }
+
     bool first = true;
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
@@ -226,9 +228,33 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
 {
-    // TODO: Check for initialization...
+    if (!this->initialized()) {
+        throw std::runtime_error("Err: cannot assign to an unintialized operand.");
+    }
+
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
     return *this;
+}
+
+template <typename T>
+inline
+bool multi_array<T>::getTemp() const
+{
+    return temp;
+}
+
+template <typename T>
+inline
+void multi_array<T>::setTemp(bool temp)
+{
+    this->temp = temp;
+}
+
+template <typename T>
+inline
+bool multi_array<T>::initialized() const
+{
+    return (meta.base != NULL);
 }
 
 // Linking - Assign a base to the multi_array.
@@ -258,6 +284,7 @@ void multi_array<T>::link(const size_t ext_key)
     if (0!=key) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
+
     key = ext_key;
     meta.base = &Runtime::instance().storage[key];          // UPDATE meta
 }
@@ -355,8 +382,7 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
 template <typename T, typename FromT>
 multi_array<T>& as(multi_array<FromT>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-    equiv<T, FromT>(*result, rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
