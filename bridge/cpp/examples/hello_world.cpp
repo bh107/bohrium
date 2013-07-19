@@ -28,10 +28,12 @@ void compute()
     cout << "Hello World." << endl;
 
     multi_array<float> x;
-    //x = random<float>(27);
+    cout << "#1" << endl;
     x = ones<float>(3,3);
+    cout << "#2" << endl;
     
     cout << x << endl;
+    cout << "#3" << endl;
 
     std::cout << "Leaving compute!" << std::endl;
 }

@@ -67,6 +67,7 @@ multi_array<T>::~multi_array()
 {
     if (key>0) {                        // Only free base-array
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
+        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
         Runtime::instance().trash(key);
     }
 }
@@ -97,6 +98,13 @@ inline
 void multi_array<T>::setTemp(bool temp)
 {
     this->temp = temp;
+}
+
+template <typename T>
+inline
+bool multi_array<T>::initialized() const
+{
+    return (meta.base != NULL);
 }
 
 template <typename T>
@@ -142,6 +150,7 @@ typename multi_array<T>::iterator multi_array<T>::end()
 template <typename T>
 multi_array<T>& multi_array<T>::operator++()
 {
+    // TODO: Check for initialization...
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
@@ -149,6 +158,7 @@ multi_array<T>& multi_array<T>::operator++()
 template <typename T>
 multi_array<T>& multi_array<T>::operator++(int)
 {
+    // TODO: Check for initialization...
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
     return *this;
 }
@@ -156,6 +166,7 @@ multi_array<T>& multi_array<T>::operator++(int)
 template <typename T>
 multi_array<T>& multi_array<T>::operator--()
 {
+    // TODO: Check for initialization...
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
@@ -163,6 +174,7 @@ multi_array<T>& multi_array<T>::operator--()
 template <typename T>
 multi_array<T>& multi_array<T>::operator--(int)
 {
+    // TODO: Check for initialization...
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
     return *this;
 }
@@ -173,6 +185,9 @@ multi_array<T>& multi_array<T>::operator--(int)
 template <typename T>
 std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 {
+    if (!rhs.initialized()) {
+        throw std::runtime_error("Cannot output unintialized operand.");
+    }
     bool first = true;
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
@@ -211,6 +226,7 @@ slice<T>& multi_array<T>::operator[](slice_range& rhs) {
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
 {
+    // TODO: Check for initialization...
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
     return *this;
 }
@@ -263,21 +279,20 @@ size_t multi_array<T>::unlink()
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if (key != rhs.getKey()) {      // Prevent self-aliasing
+    if (key == rhs.getKey()) {  // Self-aliasing is a noop
+        return *this;
+    }
         
-        if (key>0) {                // Release current linkage
-            Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-            Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
-            unlink();
-        }
-
-        if (rhs.getTemp()) {        // Take over temporary reference
-            link(rhs.unlink());
-            //temp = false;   // TODO: This might not be right...
-            delete &rhs;
-        } else {                    // Create an alias of rhs.
-            meta = rhs.meta;
-        }
+    if (key>0) {                // Release current linkage
+        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
+        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        unlink();
+    }
+                                // Create alias of rhs
+    meta = rhs.meta;            // Inherit all meta
+    if (rhs.getTemp()) {        // Take over temporary reference
+        link(rhs.unlink());
+        delete &rhs;
     }
 
     return *this;
@@ -290,20 +305,17 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
  *  Such as:
  *
  *  center = grid[_(1,-1,1)][_(1,-1,1)];
- *
- *  TODO: this is probobaly not entirely correct...
  */
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 {
-    multi_array<T>* vv = &rhs.view();
-
     if (key>0) {                // Release current linkage
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
         unlink();
     }
 
+    multi_array<T>* vv = &rhs.view();
     link(vv->unlink());
     delete vv;
 
@@ -316,7 +328,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
 {
-    if (1>key) {    // We do not have anything to update!
+    if (key<1) {    // We do not have anything to update!
         throw std::runtime_error("Far out dude! you are trying to update "
                                  "something that does not exist!");
     }
@@ -328,7 +340,7 @@ multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(const T& value) {
 
-    if (1>key) {    // We do not have anything to update!
+    if (key<1) {    // We do not have anything to update!
         throw std::runtime_error("Far out dude! you are trying to update "
                                  "something that does not exist!");
     }
@@ -344,19 +356,8 @@ template <typename T, typename FromT>
 multi_array<T>& as(multi_array<FromT>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->setTemp(true);
-
-    Runtime::instance().storage[result->getKey()].base        = NULL;
-    Runtime::instance().storage[result->getKey()].ndim        = Runtime::instance().storage[rhs.getKey()].ndim;
-    Runtime::instance().storage[result->getKey()].start       = Runtime::instance().storage[rhs.getKey()].start;
-    for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
-        Runtime::instance().storage[result->getKey()].shape[i] = Runtime::instance().storage[rhs.getKey()].shape[i];
-    }
-    for(int64_t i=0; i< Runtime::instance().storage[rhs.getKey()].ndim; i++) {
-
-        Runtime::instance().storage[result->getKey()].stride[i] = Runtime::instance().storage[rhs.getKey()].stride[i];
-    }
-    Runtime::instance().storage[result->getKey()].data        = NULL;
+    equiv<T, FromT>(*result, rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
@@ -398,8 +399,8 @@ multi_array<T>& copy(multi_array<T>& rhs)
                                  "of something that does not exist!\n");
     }
 
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
@@ -417,7 +418,11 @@ multi_array<T>& flatten(multi_array<T>& rhs)
     throw std::runtime_error("flatten: Not implemented.\n");
 
     multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->setTemp(true);
+    result->meta.ndims = 1;
+    result->meta.start = 0;
+    result->meta.shape[rhs.len()];
+    result->meta.stride[0] = 1;
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
@@ -434,8 +439,8 @@ multi_array<T>& transpose(multi_array<T>& rhs)
 
     throw std::runtime_error("transpose: Not implemented.\n");
 
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->setTemp(true);
+    multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 

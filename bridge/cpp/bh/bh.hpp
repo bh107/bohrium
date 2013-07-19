@@ -211,6 +211,8 @@ public:
     bool getTemp() const;
     void setTemp(bool temp);
 
+    bool initialized() const;
+
 protected:
     size_t key;
     bool temp;

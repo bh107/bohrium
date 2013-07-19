@@ -213,7 +213,6 @@ size_t Runtime::flush()
 
 /**
  * Create an unitialized intermediate operand.
- * This operand will not have a base or meta!
  */
 template <typename T>
 inline
@@ -226,8 +225,7 @@ multi_array<T>& Runtime::temp()
 }
 
 /**
- *  Create an intermediate operand based on a shape.
- *  This operand will be a base and have meta-data.
+ *  Create an intermediate operand based on the given shape.
  */
 template <typename T, typename ...Dimensions>
 inline
@@ -240,8 +238,7 @@ multi_array<T>& Runtime::temp(Dimensions... shape)
 }
 
 /**
- * Create an intermediate operand based on another operand.
- * This operand will be a base and have meta-data.
+ * Create an intermediate operand based on another operands meta-data.
  */
 template <typename T>
 inline
@@ -261,6 +258,7 @@ inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
+    operand->setTemp(true);
     operand->meta.base = &storage[base.getKey()];
 
     return *operand;

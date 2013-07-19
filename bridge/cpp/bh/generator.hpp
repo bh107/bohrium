@@ -26,6 +26,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& value(T val, const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    result->link();
     *result = val;
 
     return *result;
@@ -35,6 +36,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& empty(const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    result->link();
 
     return *result;
 }
@@ -43,6 +45,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& ones(const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    result->link();
     *result = (T)1;
 
     return *result;
@@ -52,6 +55,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& zeros(const Dimensions&... shape)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    result->link();
     *result = (T)0;
 
     return *result;
@@ -68,6 +72,7 @@ multi_array<T>& random(const Dimensions&... shape)
     }
 
     multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    result->link();
 
     rinstr->id          = Runtime::instance().random_id;        //Set the instruction
     rinstr->nout        = 1;
@@ -84,6 +89,8 @@ template <typename T>
 multi_array<T>& range(size_t start, size_t end, size_t skip)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
+    result->link();
+
     std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
 
     return *result;

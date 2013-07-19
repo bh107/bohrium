@@ -57,7 +57,7 @@ bh_opcode reducible_to_opcode(reducible opcode)
 template <typename T>
 multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 {
-    multi_array<T>* result = new multi_array<T>();
+    multi_array<T>* result = &Runtime::instance().temp<T>();
 
     result->meta.start = 0;                 // Update meta-data
 
@@ -77,7 +77,7 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
             }
         }
     }
-    result->init();                         // Bind the base
+    result->link();                         // Bind the base
 
     Runtime::instance().enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
 
