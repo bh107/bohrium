@@ -484,16 +484,6 @@ void Runtime::enqueue(bh_userfunc* rinstr)
     ext_queue[ext_in_queue++] = instr->userfunc;
 }
 
-//
-//  Copy meta-data
-//
-template <typename Ret, typename In>
-void equiv(multi_array<Ret>& ret, multi_array<In>& in)
-{
-    ret.meta      = in.meta;
-    ret.meta.base = NULL;
-}
-
 template <typename T>
 T scalar(multi_array<T>& op)
 {
