@@ -258,7 +258,6 @@ inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    operand->setTemp(true);
     operand->meta.base = &storage[base.getKey()];
 
     return *operand;

@@ -123,13 +123,13 @@ public:
     // ** Constructors **
     multi_array();                              // Empty
 
-    template <typename ...Dimensions>           // Variadic constructor
-    multi_array(Dimensions... shape);
-
     multi_array(multi_array<T> const& operand); // Copy
 
     template <typename OtherT>
     multi_array(multi_array<OtherT> const& operand); // Copy
+
+    template <typename ...Dimensions>           // Variadic constructor
+    multi_array(Dimensions... shape);
 
     // ** Deconstructor **
     ~multi_array();
@@ -213,7 +213,7 @@ public:
     size_t getKey() const;
     bool getTemp() const;
     void setTemp(bool temp);
-
+    bool linked() const;
     bool initialized() const;
 
 protected:

@@ -25,6 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
+//
+//
+//  CONSTRUCTORS
+//
+//
 template <typename T>           // Default constructor - rank 0
 multi_array<T>::multi_array() : key(0), temp(false)
 {
@@ -73,12 +78,16 @@ multi_array<T>::multi_array(Dimensions... shape) : key(0), temp(false)
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
-    if (key>0) {                        // Only free base-array
+    if (key>0) {    // Free the base-array and discard meta
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
         Runtime::instance().trash(key);
     }
 }
+
+//
+// Methods
+//
 
 template <typename T>
 inline
@@ -93,8 +102,6 @@ unsigned long multi_array<T>::getRank() const
 {
     return (unsigned long)meta.ndim;
 }
-
-
 
 template <typename T>
 inline
@@ -216,20 +223,36 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 //
 template <typename T>
 slice<T>& multi_array<T>::operator[](int rhs) {
+    if (!initialized()) {
+        throw std::runtime_error("Err: cannot slice an uninitialized operand.");
+    }
     return (*(new slice<T>(*this)))[rhs];
 }
                                                         
 template <typename T>
 slice<T>& multi_array<T>::operator[](slice_range& rhs) {
+    if (!initialized()) {
+        throw std::runtime_error("Err: cannot slice an uninitialized operand.");
+    }
     return (*(new slice<T>(*this)))[rhs];
 }
 
-// Initialization
+//
+// MISC
+//
+
+// Filling / assignment.
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(const T& rhs)
 {
     if (!this->initialized()) {
-        throw std::runtime_error("Err: cannot assign to an unintialized operand.");
+        if (this->meta.ndim != 0) {   // Very special case!
+            // The operand has a shape but it is not initialized.
+            // it based on its shape and assign the constant value
+            link();
+        } else {
+            throw std::runtime_error("Err: cannot assign to an uninitialized operand.");
+        }
     }
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
@@ -248,6 +271,13 @@ inline
 void multi_array<T>::setTemp(bool temp)
 {
     this->temp = temp;
+}
+
+template <typename T>
+inline
+bool multi_array<T>::linked() const
+{
+    return (key != 0);
 }
 
 template <typename T>
@@ -293,7 +323,7 @@ template <typename T>
 size_t multi_array<T>::unlink()
 {
     if (0==key) {
-        throw std::runtime_error("Dude! THis one aint linked at all!");
+        throw std::runtime_error("Err: Unlinking operand which is not linked!");
     }
 
     size_t retKey = key;
@@ -302,11 +332,13 @@ size_t multi_array<T>::unlink()
     return retKey;
 }
 
-// Aliasing
+//
+//  Aliasing
+//
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if (key == rhs.getKey()) {  // Self-aliasing is a noop
+    if (key == rhs.getKey()) {  // Self-aliasing is a NOOP
         return *this;
     }
         
@@ -317,9 +349,12 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     }
                                 // Create alias of rhs
     meta = rhs.meta;            // Inherit all meta
+
     if (rhs.getTemp()) {        // Take over temporary reference
-        link(rhs.unlink());
-        delete &rhs;
+        if (rhs.linked()) { 
+            link(rhs.unlink());
+        }
+        delete &rhs;            // Cleanup
     }
 
     return *this;
@@ -343,10 +378,38 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     }
 
     multi_array<T>* vv = &rhs.view();
-    link(vv->unlink());
+    this->meta = vv->meta;
     delete vv;
 
     return *this;
+}
+
+/**
+ *  Aliasing through reshaping.
+ */
+template <typename T, typename ...Dimensions>
+multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
+{
+    int64_t dims    = sizeof...(Dimensions),
+            stride  = 1;
+
+    if (!rhs.initialized()) {            // We do not have anything to view!
+        throw std::runtime_error("Err: Trying to create a view "
+                                 "of something that does not exist!\n");
+    }
+
+    multi_array<T>* result = &Runtime::instance().temp_view(rhs);
+    unpack_shape(result->meta.shape, 0, shape...);
+    result->meta.ndim = dims;
+
+    for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
+        result->meta.stride[i] = stride;
+        stride *= result->meta.shape[i];
+    }
+
+    // TODO: Verify that the number of elements match
+
+    return *result;
 }
 
 //
@@ -355,8 +418,8 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
 {
-    if (key<1) {    // We do not have anything to update!
-        throw std::runtime_error("Far out dude! you are trying to update "
+    if (!initialized()) {   // We do not have anything to update!
+        throw std::runtime_error("Err: You are trying to update "
                                  "something that does not exist!");
     }
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
@@ -367,8 +430,8 @@ multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(const T& value) {
 
-    if (key<1) {    // We do not have anything to update!
-        throw std::runtime_error("Far out dude! you are trying to update "
+    if (!initialized()) {    // We do not have anything to update!
+        throw std::runtime_error("Err: You are trying to update "
                                  "something that does not exist!");
     }
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, value);
@@ -386,32 +449,6 @@ multi_array<T>& as(multi_array<FromT>& rhs)
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
-
-    return *result;
-}
-
-// Create a view of an operand which has a different shape
-template <typename T, typename ...Dimensions>
-multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
-{
-    int64_t dims    = sizeof...(Dimensions),
-            stride  = 1;
-
-    if (1>rhs.getKey()) {            // We do not have anything to view!
-        throw std::runtime_error("Far out dude! you are trying create a view "
-                                 "of something that does not exist!\n");
-    }
-
-    multi_array<T>* result = &Runtime::instance().temp_view(rhs);
-    unpack_shape(result->meta.shape, 0, shape...);
-    result->meta.ndim = dims;
-
-    for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
-        result->meta.stride[i] = stride;
-        stride *= result->meta.shape[i];
-    }
-
-    // TODO: Verify that the number of elements match
 
     return *result;
 }

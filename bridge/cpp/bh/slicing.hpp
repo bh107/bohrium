@@ -94,10 +94,12 @@ multi_array<T>& slice<T>::operator=(T rhs)
 template <typename T>
 bh::multi_array<T>& slice<T>::view()
 {
-    multi_array<T>* lhs = &Runtime::instance().view(*op);
+    multi_array<T>* lhs = &Runtime::instance().temp_view(*op);
 
-    lhs->meta.ndim   = op->meta.ndim;                    // Rank is maintained
-    lhs->meta.start  = op->meta.start;                   // Start is initialy the same
+    lhs->meta = op->meta;
+
+    //lhs->meta.ndim   = op->meta.ndim;                    // Rank is maintained
+    //lhs->meta.start  = op->meta.start;                   // Start is initialy the same
     int b, e;
 
     for(int i=0, lhs_dim=0; i < op->meta.ndim; ++i) {

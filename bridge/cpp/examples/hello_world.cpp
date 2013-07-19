@@ -27,15 +27,12 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<float> x;
-    cout << "#1" << endl;
+    multi_array<float> x, y(1,1);
+    y = 1.0;
     x = ones<float>(3,3);
-    cout << "#2" << endl;
     
     cout << x << endl;
-    cout << "#3" << endl;
-
-    std::cout << "Leaving compute!" << std::endl;
+    cout << "Leaving compute!" << endl;
 }
 
 int main()

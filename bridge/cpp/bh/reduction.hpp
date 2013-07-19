@@ -60,7 +60,6 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
     multi_array<T>* result = &Runtime::instance().temp<T>();
 
     result->meta.start = 0;                 // Update meta-data
-
     if (op.meta.ndim == 1) {                // Pseudo-scalar; one element
         result->meta.ndim      = 1;
         result->meta.shape[0]  = 1;
