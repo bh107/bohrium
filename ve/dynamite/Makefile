@@ -26,7 +26,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 precompiler: precompiler.cpp
-	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lexplain -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
 
 precompile:
 		/usr/bin/time ./precompiler
