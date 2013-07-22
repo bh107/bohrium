@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include "dirent.h"
 #include <dlfcn.h>
+#include <unistd.h>
 #include "utils.cpp"
 #include <fcntl.h>
 
