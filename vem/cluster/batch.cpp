@@ -131,13 +131,16 @@ void batch_flush()
             {
                 bh_error e;
                 bh_instruction *inst = &((*it).inst.inst);
-                if((e = exec_vem_execute(1, inst)) != BH_SUCCESS)
+                bh_ir* bhir;
+                if((e = bh_graph_create(&bhir, inst, 1)) != BH_SUCCESS)
+                    EXCEPT("bh_graph_create() failed");
+
+                if((e = exec_vem_execute(bhir)) != BH_SUCCESS)
                     EXCEPT_INST(inst->opcode, e);
+                bh_graph_destroy(bhir);
 
                 if(inst->opcode == BH_DISCARD)
-                {
                     array_rm_local(bh_base_array(&inst->operand[0]));
-                }
                 break;
             }
             case TASK_SEND_RECV:
