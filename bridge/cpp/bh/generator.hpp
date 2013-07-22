@@ -25,9 +25,8 @@ namespace bh {
 template <typename T, typename ...Dimensions>
 multi_array<T>& value(T val, const Dimensions&... shape)
 {
-    //multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
     multi_array<T>* result = new multi_array<T>(shape...);
-    result->temp(true);
+    result->setTemp(true);
     result->link();
     *result = val;
 
@@ -37,7 +36,8 @@ multi_array<T>& value(T val, const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& empty(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->setTemp(true);
     result->link();
 
     return *result;
@@ -46,7 +46,9 @@ multi_array<T>& empty(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& ones(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->setTemp(true);
+
     result->link();
     *result = (T)1;
 
@@ -56,7 +58,9 @@ multi_array<T>& ones(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& zeros(const Dimensions&... shape)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->setTemp(true);
+
     result->link();
     *result = (T)0;
 
