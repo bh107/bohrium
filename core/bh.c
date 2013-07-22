@@ -24,80 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <errno.h>
 
-/* Reduce nDarray info to a base shape
- *
- * Remove dimentions that just indicate orientation in a
- * higher dimention (Py:newaxis)
- *
- * @ndim          Number of dimentions
- * @shape[]       Number of elements in each dimention.
- * @stride[]      Stride in each dimention.
- * @base_ndim     Placeholder for base number of dimentions
- * @base_shape    Placeholder for base number of elements in each dimention.
- * @base_stride   Placeholder for base stride in each dimention.
- */
-void bh_base_shape(bh_intp ndim,
-                      const bh_index shape[],
-                      const bh_index stride[],
-                      bh_intp* base_ndim,
-                      bh_index* base_shape,
-                      bh_index* base_stride)
-{
-    *base_ndim = 0;
-    for (int i = 0; i < ndim; ++i)
-    {
-        // skipping (shape[i] == 1 && stride[i] == 0)
-        if (shape[i] != 1 || stride[i] != 0)
-        {
-            base_shape[*base_ndim] = shape[i];
-            base_stride[*base_ndim] = stride[i];
-            ++(*base_ndim);
-        }
-    }
-}
-
-/* Is the data accessed continuously, and only once
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @return   Truth value indicating continuousity.
- */
-bool bh_is_continuous(bh_intp ndim,
-                         const bh_index shape[],
-                         const bh_index stride[])
-{
-    bh_intp my_ndim = 0;
-    bh_index my_shape[BH_MAXDIM];
-    bh_index my_stride[BH_MAXDIM];
-    bh_base_shape(ndim, shape, stride, &my_ndim, my_shape, my_stride);
-    for (int i = 0; i < my_ndim - 1; ++i)
-    {
-        if (my_shape[i+1] != my_stride[i])
-            return true;
-    }
-    if (my_stride[my_ndim-1] != 1)
-        return false;
-
-    return true;
-}
-
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-bh_index bh_nelements_nbcast(const bh_view *view)
-{
-    bh_index res = 1;
-    for (int i = 0; i < view->ndim; ++i)
-    {
-        if(view->stride[i] > 0)
-            res *= view->shape[i];
-    }
-    return res;
-}
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
@@ -105,7 +31,7 @@ bh_index bh_nelements_nbcast(const bh_view *view)
  * @return   Number of element operations
  */
 bh_index bh_nelements(bh_intp ndim,
-                            const bh_index shape[])
+                      const bh_index shape[])
 {
     bh_index res = 1;
     for (int i = 0; i < ndim; ++i)
@@ -125,22 +51,6 @@ bh_index bh_base_size(const bh_base *base)
     return base->nelem * bh_type_size(base->type);
 }
 
-/* Calculate the dimention boundries for shape
- *
- * @ndim      Number of dimentions
- * @shape[]   Number of elements in each dimention.
- * @dimbound  Placeholder for dimbound (return
- */
-void bh_dimbound(bh_intp ndim,
-                    const bh_index shape[],
-                    bh_index* dimbound)
-{
-    dimbound[ndim -1] = shape[ndim -1];
-    for (int i = ndim -2 ; i >= 0; --i)
-    {
-        dimbound[i] = dimbound[i+1] * shape[i];
-    }
-}
 
 /* Set the view stride to contiguous row-major
  *
@@ -171,32 +81,6 @@ void bh_assign_complete_base(bh_view *view, bh_base *base)
     view->start = 0;
     view->shape[0] = view->base->nelem;
     view->stride[0] = 1;
-}
-
-/* Calculate the offset into an array based on element index
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @element  Index of element in question
- * @return   Truth value indicating continuousity.
- */
-bh_index bh_calc_offset(bh_intp ndim,
-                              const bh_index shape[],
-                              const bh_index stride[],
-                              const bh_index element)
-{
-    bh_index offset = 0;
-    bh_index dimIndex;
-    bh_intp i;
-    for (i = 0; i < ndim; ++i)
-    {
-        dimIndex = element % bh_nelements(ndim - i, &shape[i]);
-        if (i != ndim - 1)
-            dimIndex = dimIndex / bh_nelements(ndim - (i+1), &shape[i+1]);
-        offset += dimIndex * stride[i];
-    }
-    return offset;
 }
 
 /* Set the data pointer for the view.
@@ -357,25 +241,6 @@ bool bh_is_constant(const bh_view* o)
 void bh_flag_constant(bh_view* o)
 {
     o->base = NULL;
-}
-
-/* Determines whether the two views are the same
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_same_view(const bh_view* a, const bh_view* b)
-{
-    if (a == b)
-        return true;
-    if (bh_base_array(a) != bh_base_array(b))
-        return false;
-    if (memcmp(((char*)a)+sizeof(bh_view*),
-               ((char*)b)+sizeof(bh_view*),
-               sizeof(bh_view)-sizeof(bh_view*)-sizeof(bh_data_ptr)))
-        return false;
-    return true;
 }
 
 inline int gcd(int a, int b)

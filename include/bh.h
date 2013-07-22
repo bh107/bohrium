@@ -55,38 +55,6 @@ extern "C" {
  */
 #define bh_base_array(view) ((view)->base)
 
-
-/* Reduce nDarray info to a base shape
- *
- * Remove dimentions that just indicate orientation in a
- * higher dimention (Py:newaxis)
- *
- * @ndim          Number of dimentions
- * @shape[]       Number of elements in each dimention.
- * @stride[]      Stride in each dimention.
- * @base_ndim     Placeholder for base number of dimentions
- * @base_shape    Placeholder for base number of elements in each dimention.
- * @base_stride   Placeholder for base stride in each dimention.
- */
-DLLEXPORT void bh_base_shape(bh_intp ndim,
-                      const bh_index shape[],
-                      const bh_index stride[],
-                      bh_intp* base_ndim,
-                      bh_index* base_shape,
-                      bh_index* base_stride);
-
-
-/* Is the data accessed continuously, and only once
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @return   Truth value indicating continuousity.
- */
-DLLEXPORT bool bh_is_continuous(bh_intp ndim,
-                         const bh_index shape[],
-                         const bh_index stride[]);
-
 /* Number of non-broadcasted elements in a given view
  *
  * @view    The view in question.
@@ -109,29 +77,6 @@ DLLEXPORT bh_index bh_nelements(bh_intp ndim,
  * @return  The size of the base array in bytes
  */
 bh_index bh_base_size(const bh_base *base);
-
-/* Calculate the offset into an array based on element index
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @stride[] Stride in each dimention.
- * @element  Index of element in question
- * @return   Truth value indicating continuousity.
- */
-DLLEXPORT bh_index bh_calc_offset(bh_intp ndim,
-                              const bh_index shape[],
-                              const bh_index stride[],
-                              bh_index element);
-
-/* Calculate the dimention boundries for shape
- *
- * @ndim      Number of dimentions
- * @shape[]   Number of elements in each dimention.
- * @dimbound  Placeholder for dimbound (return
- */
-DLLEXPORT void bh_dimbound(bh_intp ndim,
-                    const bh_index shape[],
-                    bh_index dimbound[BH_MAXDIM]);
 
 /* Set the view stride to contiguous row-major
  *
@@ -270,7 +215,7 @@ bh_error bh_data_free(bh_base* base);
  */
 DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
 
-/* Determines whether the base array is a scalar.
+/* Determines whether the view is a scalar or a broadcasted scalar.
  *
  * @view The view
  * @return The boolean answer
