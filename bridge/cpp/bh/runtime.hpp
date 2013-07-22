@@ -225,24 +225,11 @@ multi_array<T>& Runtime::temp()
 }
 
 /**
- *  Create an intermediate operand based on the given shape.
- */
-template <typename T, typename ...Dimensions>
-inline
-multi_array<T>& Runtime::temp(Dimensions... shape)
-{
-    multi_array<T>* operand = new multi_array<T>(shape...);
-    operand->setTemp(true);
-
-    return *operand;
-}
-
-/**
  * Create an intermediate operand based on another operands meta-data.
  */
-template <typename T>
+template <typename T, typename OtherT>
 inline
-multi_array<T>& Runtime::temp(multi_array<T>& input)
+multi_array<T>& Runtime::temp(const multi_array<OtherT>& input)
 {
     multi_array<T>* operand = new multi_array<T>(input);
     operand->setTemp(true);
@@ -251,14 +238,35 @@ multi_array<T>& Runtime::temp(multi_array<T>& input)
 }
 
 /**
+ *  Create an intermediate operand based on the given shape.
+ *  This definition is clunky to work around a gcc-bug:
+ *  "sorry, unimplemented: use of ‘type_pack_expansion’ in template".
+ */
+/*
+template <typename T, typename ...Dimensions>
+inline
+multi_array<T>& Runtime::temp(int64_t shape0, Dimensions... dimensions)
+{
+    multi_array<T>* operand = new multi_array<T>();
+    operand->setTemp(true);
+    operand->meta.start = 0;
+    operand->meta.ndim = sizeof...(dimensions);
+    operand->meta.shape[0] = shape0;
+    unpack_shape(operand->meta.shape, 1, dimensions...);
+    // Fix the stride...
+
+    return *operand;
+}*/
+
+/**
  * Create an alias/segment/view of the supplied base operand.
  */
 template <typename T>
 inline
-multi_array<T>& Runtime::view(multi_array<T>& base)
+multi_array<T>& Runtime::view(const multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    operand->meta.base = &storage[base.getKey()];
+    operand->meta.base = base.meta.base;
 
     return *operand;
 }
@@ -271,7 +279,7 @@ inline
 multi_array<T>& Runtime::temp_view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    operand->meta.base = &storage[base.getKey()];
+    operand->meta.base = base.meta.base;
     operand->setTemp(true);
 
     return *operand;

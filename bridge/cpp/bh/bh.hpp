@@ -122,14 +122,13 @@ public:
 
     // ** Constructors **
     multi_array();                              // Empty
-
-    multi_array(multi_array<T> const& operand); // Copy
+    multi_array(const multi_array<T> &operand); // Copy
 
     template <typename OtherT>
-    multi_array(multi_array<OtherT> const& operand); // Copy
+    multi_array(const multi_array<OtherT> &operand);    // Copy
 
-    template <typename ...Dimensions>           // Variadic constructor
-    multi_array(Dimensions... shape);
+    template <typename ...Dimensions>                   // Variadic constructor
+    multi_array(Dimensions... dims);
 
     // ** Deconstructor **
     ~multi_array();
@@ -288,14 +287,14 @@ public:
     template <typename T>
     multi_array<T>& temp();
 
+    template <typename T, typename OtherT>
+    multi_array<T>& temp(const multi_array<OtherT>& input);
+
     template <typename T, typename ...Dimensions>
-    multi_array<T>& temp(Dimensions... shape);
+    multi_array<T>& temp(int64_t shape0, Dimensions... shape);
 
     template <typename T>
-    multi_array<T>& temp(multi_array<T>& input);
-
-    template <typename T>
-    multi_array<T>& view(multi_array<T>& base);
+    multi_array<T>& view(const multi_array<T>& base);
 
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);

@@ -30,6 +30,9 @@ void compute()
     multi_array<float> x, y(1,1);
     y = 1.0;
     x = ones<float>(3,3);
+    new multi_array<float>(x);
+
+    y = random<float>(3,3,3);
     
     cout << x << endl;
     cout << "Leaving compute!" << endl;

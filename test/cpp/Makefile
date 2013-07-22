@@ -23,6 +23,9 @@ GTEST_DIR = gtest
 USER_DIR = .
 BIN_DIR = bin
 
+CXX="clang"
+CXX="gcc"
+
 # Flags passed to the preprocessor.
 CPPFLAGS += -I$(GTEST_DIR)/include -I$(BH_CPP_BRIDGE) -I$(BH_HEADER)
 

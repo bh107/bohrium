@@ -40,9 +40,6 @@ multi_array<T>::multi_array() : key(0), temp(false)
     meta.stride[0]  = 0;
 }
 
-/**
- * Inherit meta-data (ndim, start, shape, stride) except from base!
- */
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand) : key(0), temp(false)
 {
