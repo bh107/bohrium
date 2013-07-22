@@ -290,8 +290,10 @@ public:
     template <typename T, typename OtherT>
     multi_array<T>& temp(const multi_array<OtherT>& input);
 
+        /*
     template <typename T, typename ...Dimensions>
     multi_array<T>& temp(int64_t shape0, Dimensions... shape);
+    */
 
     template <typename T>
     multi_array<T>& view(const multi_array<T>& base);

@@ -300,7 +300,7 @@ multi_array<int8_t>& operator+ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -352,7 +352,7 @@ multi_array<double>& operator+ (multi_array<double>& lhs, multi_array<double>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<double>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -404,7 +404,7 @@ multi_array<uint16_t>& operator+ (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -456,7 +456,7 @@ multi_array<uint64_t>& operator+ (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -508,7 +508,7 @@ multi_array<int16_t>& operator+ (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -560,7 +560,7 @@ multi_array<float>& operator+ (multi_array<float>& lhs, multi_array<float>& rhs)
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<float>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -612,7 +612,7 @@ multi_array<unsigned char>& operator+ (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -664,7 +664,7 @@ multi_array<int32_t>& operator+ (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -716,7 +716,7 @@ multi_array<int64_t>& operator+ (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -768,7 +768,7 @@ multi_array<uint32_t>& operator+ (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -820,7 +820,7 @@ multi_array<std::complex<float> >& operator+ (multi_array<std::complex<float> >&
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<float> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -872,7 +872,7 @@ multi_array<std::complex<double> >& operator+ (multi_array<std::complex<double> 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<double> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -924,7 +924,7 @@ multi_array<int8_t>& operator- (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -976,7 +976,7 @@ multi_array<double>& operator- (multi_array<double>& lhs, multi_array<double>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<double>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1028,7 +1028,7 @@ multi_array<uint16_t>& operator- (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1080,7 +1080,7 @@ multi_array<uint64_t>& operator- (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1132,7 +1132,7 @@ multi_array<int16_t>& operator- (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1184,7 +1184,7 @@ multi_array<float>& operator- (multi_array<float>& lhs, multi_array<float>& rhs)
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<float>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1236,7 +1236,7 @@ multi_array<unsigned char>& operator- (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1288,7 +1288,7 @@ multi_array<int32_t>& operator- (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1340,7 +1340,7 @@ multi_array<int64_t>& operator- (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1392,7 +1392,7 @@ multi_array<uint32_t>& operator- (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1444,7 +1444,7 @@ multi_array<std::complex<float> >& operator- (multi_array<std::complex<float> >&
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<float> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1496,7 +1496,7 @@ multi_array<std::complex<double> >& operator- (multi_array<std::complex<double> 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<double> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1548,7 +1548,7 @@ multi_array<int8_t>& operator* (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1600,7 +1600,7 @@ multi_array<double>& operator* (multi_array<double>& lhs, multi_array<double>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<double>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1652,7 +1652,7 @@ multi_array<uint16_t>& operator* (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1704,7 +1704,7 @@ multi_array<uint64_t>& operator* (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1756,7 +1756,7 @@ multi_array<int16_t>& operator* (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1808,7 +1808,7 @@ multi_array<float>& operator* (multi_array<float>& lhs, multi_array<float>& rhs)
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<float>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1860,7 +1860,7 @@ multi_array<unsigned char>& operator* (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1912,7 +1912,7 @@ multi_array<int32_t>& operator* (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -1964,7 +1964,7 @@ multi_array<int64_t>& operator* (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2016,7 +2016,7 @@ multi_array<uint32_t>& operator* (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2068,7 +2068,7 @@ multi_array<std::complex<float> >& operator* (multi_array<std::complex<float> >&
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<float> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2120,7 +2120,7 @@ multi_array<std::complex<double> >& operator* (multi_array<std::complex<double> 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<double> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2172,7 +2172,7 @@ multi_array<int8_t>& operator/ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2224,7 +2224,7 @@ multi_array<double>& operator/ (multi_array<double>& lhs, multi_array<double>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<double>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2276,7 +2276,7 @@ multi_array<uint16_t>& operator/ (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2328,7 +2328,7 @@ multi_array<uint64_t>& operator/ (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2380,7 +2380,7 @@ multi_array<int16_t>& operator/ (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2432,7 +2432,7 @@ multi_array<float>& operator/ (multi_array<float>& lhs, multi_array<float>& rhs)
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<float>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2484,7 +2484,7 @@ multi_array<int32_t>& operator/ (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2536,7 +2536,7 @@ multi_array<int64_t>& operator/ (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2588,7 +2588,7 @@ multi_array<uint32_t>& operator/ (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2640,7 +2640,7 @@ multi_array<std::complex<float> >& operator/ (multi_array<std::complex<float> >&
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<float> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2692,7 +2692,7 @@ multi_array<std::complex<double> >& operator/ (multi_array<std::complex<double> 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<std::complex<double> >(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2744,7 +2744,7 @@ multi_array<int8_t>& operator% (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2796,7 +2796,7 @@ multi_array<double>& operator% (multi_array<double>& lhs, multi_array<double>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<double>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2848,7 +2848,7 @@ multi_array<uint16_t>& operator% (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2900,7 +2900,7 @@ multi_array<uint64_t>& operator% (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -2952,7 +2952,7 @@ multi_array<int16_t>& operator% (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3004,7 +3004,7 @@ multi_array<float>& operator% (multi_array<float>& lhs, multi_array<float>& rhs)
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<float>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3056,7 +3056,7 @@ multi_array<int32_t>& operator% (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3108,7 +3108,7 @@ multi_array<int64_t>& operator% (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3160,7 +3160,7 @@ multi_array<uint32_t>& operator% (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3212,7 +3212,7 @@ multi_array<unsigned char>& operator== (multi_array<int8_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3264,7 +3264,7 @@ multi_array<unsigned char>& operator== (multi_array<double>& lhs, multi_array<do
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3316,7 +3316,7 @@ multi_array<unsigned char>& operator== (multi_array<uint16_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3368,7 +3368,7 @@ multi_array<unsigned char>& operator== (multi_array<uint64_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3420,7 +3420,7 @@ multi_array<unsigned char>& operator== (multi_array<int16_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3472,7 +3472,7 @@ multi_array<unsigned char>& operator== (multi_array<float>& lhs, multi_array<flo
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3524,7 +3524,7 @@ multi_array<unsigned char>& operator== (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3576,7 +3576,7 @@ multi_array<unsigned char>& operator== (multi_array<int32_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3628,7 +3628,7 @@ multi_array<unsigned char>& operator== (multi_array<int64_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3680,7 +3680,7 @@ multi_array<unsigned char>& operator== (multi_array<uint32_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3732,7 +3732,7 @@ multi_array<unsigned char>& operator== (multi_array<std::complex<float> >& lhs, 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3784,7 +3784,7 @@ multi_array<unsigned char>& operator== (multi_array<std::complex<double> >& lhs,
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3836,7 +3836,7 @@ multi_array<unsigned char>& operator!= (multi_array<int8_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3888,7 +3888,7 @@ multi_array<unsigned char>& operator!= (multi_array<double>& lhs, multi_array<do
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3940,7 +3940,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint16_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -3992,7 +3992,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint64_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4044,7 +4044,7 @@ multi_array<unsigned char>& operator!= (multi_array<int16_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4096,7 +4096,7 @@ multi_array<unsigned char>& operator!= (multi_array<float>& lhs, multi_array<flo
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4148,7 +4148,7 @@ multi_array<unsigned char>& operator!= (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4200,7 +4200,7 @@ multi_array<unsigned char>& operator!= (multi_array<int32_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4252,7 +4252,7 @@ multi_array<unsigned char>& operator!= (multi_array<int64_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4304,7 +4304,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint32_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4356,7 +4356,7 @@ multi_array<unsigned char>& operator!= (multi_array<std::complex<float> >& lhs, 
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4408,7 +4408,7 @@ multi_array<unsigned char>& operator!= (multi_array<std::complex<double> >& lhs,
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4460,7 +4460,7 @@ multi_array<unsigned char>& operator> (multi_array<int8_t>& lhs, multi_array<int
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4512,7 +4512,7 @@ multi_array<unsigned char>& operator> (multi_array<double>& lhs, multi_array<dou
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4564,7 +4564,7 @@ multi_array<unsigned char>& operator> (multi_array<uint16_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4616,7 +4616,7 @@ multi_array<unsigned char>& operator> (multi_array<uint64_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4668,7 +4668,7 @@ multi_array<unsigned char>& operator> (multi_array<int16_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4720,7 +4720,7 @@ multi_array<unsigned char>& operator> (multi_array<float>& lhs, multi_array<floa
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4772,7 +4772,7 @@ multi_array<unsigned char>& operator> (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4824,7 +4824,7 @@ multi_array<unsigned char>& operator> (multi_array<int32_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4876,7 +4876,7 @@ multi_array<unsigned char>& operator> (multi_array<int64_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4928,7 +4928,7 @@ multi_array<unsigned char>& operator> (multi_array<uint32_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -4980,7 +4980,7 @@ multi_array<unsigned char>& operator>= (multi_array<int8_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5032,7 +5032,7 @@ multi_array<unsigned char>& operator>= (multi_array<double>& lhs, multi_array<do
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5084,7 +5084,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint16_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5136,7 +5136,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint64_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5188,7 +5188,7 @@ multi_array<unsigned char>& operator>= (multi_array<int16_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5240,7 +5240,7 @@ multi_array<unsigned char>& operator>= (multi_array<float>& lhs, multi_array<flo
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5292,7 +5292,7 @@ multi_array<unsigned char>& operator>= (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5344,7 +5344,7 @@ multi_array<unsigned char>& operator>= (multi_array<int32_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5396,7 +5396,7 @@ multi_array<unsigned char>& operator>= (multi_array<int64_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5448,7 +5448,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint32_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5500,7 +5500,7 @@ multi_array<unsigned char>& operator< (multi_array<int8_t>& lhs, multi_array<int
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5552,7 +5552,7 @@ multi_array<unsigned char>& operator< (multi_array<double>& lhs, multi_array<dou
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5604,7 +5604,7 @@ multi_array<unsigned char>& operator< (multi_array<uint16_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5656,7 +5656,7 @@ multi_array<unsigned char>& operator< (multi_array<uint64_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5708,7 +5708,7 @@ multi_array<unsigned char>& operator< (multi_array<int16_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5760,7 +5760,7 @@ multi_array<unsigned char>& operator< (multi_array<float>& lhs, multi_array<floa
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5812,7 +5812,7 @@ multi_array<unsigned char>& operator< (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5864,7 +5864,7 @@ multi_array<unsigned char>& operator< (multi_array<int32_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5916,7 +5916,7 @@ multi_array<unsigned char>& operator< (multi_array<int64_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -5968,7 +5968,7 @@ multi_array<unsigned char>& operator< (multi_array<uint32_t>& lhs, multi_array<u
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6020,7 +6020,7 @@ multi_array<unsigned char>& operator<= (multi_array<int8_t>& lhs, multi_array<in
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6072,7 +6072,7 @@ multi_array<unsigned char>& operator<= (multi_array<double>& lhs, multi_array<do
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6124,7 +6124,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint16_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6176,7 +6176,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint64_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6228,7 +6228,7 @@ multi_array<unsigned char>& operator<= (multi_array<int16_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6280,7 +6280,7 @@ multi_array<unsigned char>& operator<= (multi_array<float>& lhs, multi_array<flo
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6332,7 +6332,7 @@ multi_array<unsigned char>& operator<= (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6384,7 +6384,7 @@ multi_array<unsigned char>& operator<= (multi_array<int32_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6436,7 +6436,7 @@ multi_array<unsigned char>& operator<= (multi_array<int64_t>& lhs, multi_array<i
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6488,7 +6488,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint32_t>& lhs, multi_array<
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6540,7 +6540,7 @@ multi_array<unsigned char>& operator&& (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6592,7 +6592,7 @@ multi_array<unsigned char>& operator|| (multi_array<unsigned char>& lhs, multi_a
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6644,7 +6644,7 @@ multi_array<int8_t>& operator& (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6696,7 +6696,7 @@ multi_array<uint16_t>& operator& (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6748,7 +6748,7 @@ multi_array<uint64_t>& operator& (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6800,7 +6800,7 @@ multi_array<int16_t>& operator& (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6852,7 +6852,7 @@ multi_array<unsigned char>& operator& (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6904,7 +6904,7 @@ multi_array<int32_t>& operator& (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -6956,7 +6956,7 @@ multi_array<int64_t>& operator& (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7008,7 +7008,7 @@ multi_array<uint32_t>& operator& (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7060,7 +7060,7 @@ multi_array<int8_t>& operator| (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7112,7 +7112,7 @@ multi_array<uint16_t>& operator| (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7164,7 +7164,7 @@ multi_array<uint64_t>& operator| (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7216,7 +7216,7 @@ multi_array<int16_t>& operator| (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7268,7 +7268,7 @@ multi_array<unsigned char>& operator| (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7320,7 +7320,7 @@ multi_array<int32_t>& operator| (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7372,7 +7372,7 @@ multi_array<int64_t>& operator| (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7424,7 +7424,7 @@ multi_array<uint32_t>& operator| (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7476,7 +7476,7 @@ multi_array<int8_t>& operator^ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int8_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7528,7 +7528,7 @@ multi_array<uint16_t>& operator^ (multi_array<uint16_t>& lhs, multi_array<uint16
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7580,7 +7580,7 @@ multi_array<uint64_t>& operator^ (multi_array<uint64_t>& lhs, multi_array<uint64
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7632,7 +7632,7 @@ multi_array<int16_t>& operator^ (multi_array<int16_t>& lhs, multi_array<int16_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int16_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7684,7 +7684,7 @@ multi_array<unsigned char>& operator^ (multi_array<unsigned char>& lhs, multi_ar
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<unsigned char>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7736,7 +7736,7 @@ multi_array<int32_t>& operator^ (multi_array<int32_t>& lhs, multi_array<int32_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7788,7 +7788,7 @@ multi_array<int64_t>& operator^ (multi_array<int64_t>& lhs, multi_array<int64_t>
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<int64_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -7840,7 +7840,7 @@ multi_array<uint32_t>& operator^ (multi_array<uint32_t>& lhs, multi_array<uint32
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<uint32_t>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);

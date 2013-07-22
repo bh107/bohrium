@@ -21,7 +21,7 @@ multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$o
 
     if (same_shape(lhs, rhs)) {
         result = &Runtime::instance().temp<$ret_type>(lhs);
-    } else {
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);

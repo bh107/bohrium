@@ -245,15 +245,10 @@ multi_array<T>& Runtime::temp(const multi_array<OtherT>& input)
 /*
 template <typename T, typename ...Dimensions>
 inline
-multi_array<T>& Runtime::temp(int64_t shape0, Dimensions... dimensions)
+multi_array<T>& Runtime::temp(Dimensions... dimensions)
 {
-    multi_array<T>* operand = new multi_array<T>();
+    multi_array<T>* operand = new multi_array<T>(dimensions...);
     operand->setTemp(true);
-    operand->meta.start = 0;
-    operand->meta.ndim = sizeof...(dimensions);
-    operand->meta.shape[0] = shape0;
-    unpack_shape(operand->meta.shape, 1, dimensions...);
-    // Fix the stride...
 
     return *operand;
 }*/

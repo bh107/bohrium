@@ -73,8 +73,8 @@ typedef struct {
 /* Node types codes */
 enum /* bh_node_types */
 {
-    BH_INSTRUCTION,    // The node contains an actual instructions
-    BH_COLLECTION,     // The node is a collection node
+    BH_INSTRUCTION,     // The node contains an actual instructions
+    BH_COLLECTION       // The node is a collection node
 };
 
 /* Creates a new graph storage element
