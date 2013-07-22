@@ -147,9 +147,6 @@ bh_error bh_graph_create(bh_ir** bhir, bh_instruction* instructions, bh_intp ins
             return BH_ERROR;
         }
     }
-
-
-
     *bhir = ir;
     return BH_SUCCESS;
 }
@@ -255,37 +252,37 @@ void bh_graph_free_node(bh_ir* bhir, bh_node_index node)
  */
 bh_error bh_graph_parse(bh_ir* bhir)
 {
-	hashmap<bh_base*, bh_node_index, hash_bh_base_p> writemap;
-	hashmap<bh_base*, std::set<bh_node_index>*, hash_bh_base_p> readmap;
-	hashmap<bh_base*, bh_node_index, hash_bh_base_p>::iterator write_it;
-	hashmap<bh_base*, std::set<bh_node_index>*, hash_bh_base_p>::iterator read_it;
+    hashmap<bh_base*, bh_node_index, hash_bh_base_p> writemap;
+    hashmap<bh_base*, std::set<bh_node_index>*, hash_bh_base_p> readmap;
+    hashmap<bh_base*, bh_node_index, hash_bh_base_p>::iterator write_it;
+    hashmap<bh_base*, std::set<bh_node_index>*, hash_bh_base_p>::iterator read_it;
 
-	// If already parsed, just return
-	if (bhir->root >= 0)
-	    return BH_SUCCESS;
+    // If already parsed, just return
+    if (bhir->root >= 0)
+        return BH_SUCCESS;
 
     print_graph_filename++;
 
-	if (getenv("BH_PRINT_INSTRUCTION_GRAPH") != NULL)
-	{
-	    //Debug case only!
+    if (getenv("BH_PRINT_INSTRUCTION_GRAPH") != NULL)
+    {
+        //Debug case only!
         char filename[8000];
 
         snprintf(filename, 8000, "%sinstlist-%lld.dot", getenv("BH_PRINT_INSTRUCTION_GRAPH"), (long long)print_graph_filename);
         bh_graph_print_from_instructions(bhir, filename);
-	}
+    }
 
 #ifdef DEBUG
-	bh_intp instrCount = 0;
+    bh_intp instrCount = 0;
 #endif
 
-	bh_intp root = bh_graph_new_node(bhir, BH_COLLECTION, INVALID_INSTRUCTION);
+    bh_intp root = bh_graph_new_node(bhir, BH_COLLECTION, INVALID_INSTRUCTION);
 
-	for(bh_intp i = 0; i < bhir->instructions->count; i++)
-	{
-	    // We can keep a reference pointer as we do not need to update the list
-	    // while traversing it
-	    bh_instruction* instr = &(((bh_instruction*)bhir->instructions->data)[i]);
+    for(bh_intp i = 0; i < bhir->instructions->count; i++)
+    {
+        // We can keep a reference pointer as we do not need to update the list
+        // while traversing it
+        bh_instruction* instr = &(((bh_instruction*)bhir->instructions->data)[i]);
 
         bh_base* selfId;
         bh_base* leftId;
@@ -305,12 +302,10 @@ bh_error bh_graph_parse(bh_ir* bhir)
             return BH_ERROR;
         }
 
-        bh_node_index oldTarget = INVALID_NODE;
-        bool hasReadDep = false;
         write_it = writemap.find(selfId);
         if (write_it != writemap.end())
         {
-            oldTarget = write_it->second;
+            bh_node_index oldTarget = write_it->second;
             if (bh_grap_node_add_child(bhir, oldTarget, selfNode) != BH_SUCCESS)
             {
                 bh_graph_delete_all_nodes(bhir);
@@ -332,7 +327,6 @@ bh_error bh_graph_parse(bh_ir* bhir)
         read_it = readmap.find(selfId);
         if (read_it != readmap.end())
         {
-            hasReadDep = true;
             for(std::set<bh_node_index>::iterator it = read_it->second->begin(); it != read_it->second->end(); ++it)
             {
                 if (*it != leftDep && *it != rightDep)
@@ -344,9 +338,8 @@ bh_error bh_graph_parse(bh_ir* bhir)
                     }
                 }
             }
-
-            readmap.erase(read_it);
             delete read_it->second;
+            readmap.erase(read_it);
         }
 
         if (leftId != NULL)
@@ -407,9 +400,9 @@ bh_error bh_graph_parse(bh_ir* bhir)
                 return BH_ERROR;
             }
         }
-	}
+    }
 
-	// Clean up dynamically allocated memory
+    // Clean up dynamically allocated memory
     read_it = readmap.begin();
     while(read_it != readmap.end())
     {
@@ -417,18 +410,18 @@ bh_error bh_graph_parse(bh_ir* bhir)
         ++read_it;
     }
 
-	bhir->root = root;
+    bhir->root = root;
 
-	if (getenv("BH_PRINT_NODE_INPUT_GRAPH") != NULL)
-	{
-	    //Debug case only!
+    if (getenv("BH_PRINT_NODE_INPUT_GRAPH") != NULL)
+    {
+        //Debug case only!
         char filename[8000];
 
         snprintf(filename, 8000, "%sinput-graph-%lld.dot", getenv("BH_PRINT_NODE_INPUT_GRAPH"), (long long)print_graph_filename);
         bh_graph_print_graph(bhir, filename);
-	}
+    }
 
-	return BH_SUCCESS;
+    return BH_SUCCESS;
 }
 
 struct bh_graph_iterator {
@@ -452,14 +445,14 @@ struct bh_graph_iterator {
  */
 bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
 {
-	if (getenv("BH_PRINT_NODE_OUTPUT_GRAPH") != NULL)
-	{
-	    //Debug case only!
+    if (getenv("BH_PRINT_NODE_OUTPUT_GRAPH") != NULL)
+    {
+        //Debug case only!
         char filename[8000];
 
         snprintf(filename, 8000, "%soutput-graph-%lld.dot", getenv("BH_PRINT_NODE_OUTPUT_GRAPH"), (long long)print_graph_filename);
         bh_graph_print_graph(bhir, filename);
-	}
+    }
 
     struct bh_graph_iterator* t = (struct bh_graph_iterator*)malloc(sizeof(struct bh_graph_iterator));
     if (t == NULL)
@@ -469,8 +462,8 @@ bh_error bh_graph_iterator_create(bh_ir* bhir, bh_graph_iterator** iterator)
     }
 
     // Make sure we have the graph parsed
-	if (bhir->root < 0 && getenv("BH_DISABLE_BHIR_GRAPH") == NULL)
-	{
+    if (bhir->root < 0 && getenv("BH_DISABLE_BHIR_GRAPH") == NULL)
+    {
         if (bh_graph_parse(bhir) != BH_SUCCESS)
         {
             free(t);
