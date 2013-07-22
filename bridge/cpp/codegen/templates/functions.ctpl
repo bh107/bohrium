@@ -19,9 +19,9 @@ namespace bh {
 %slurp
 %if $opcount == 2
 template <typename T>
-multi_array<T>& $op (multi_array<T>& rhs)
+multi_array<T>& $op (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
@@ -30,9 +30,9 @@ multi_array<T>& $op (multi_array<T>& rhs)
 %end if
 %if $opcount == 3
 template <typename T>
-multi_array<T>& $op (multi_array<T>&lhs, multi_array<T>& rhs)
+multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
@@ -40,9 +40,9 @@ multi_array<T>& $op (multi_array<T>&lhs, multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& $op (multi_array<T>&lhs, const T& rhs)
+multi_array<T>& $op (multi_array<T> &lhs, const T &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);

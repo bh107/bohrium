@@ -53,9 +53,9 @@ TEST(broadcast,vector_EQ_matrix)
     multi_array<double> v(3);
 
     m = 3.5;
+    v = m; /// This is the subject of the test
 
-    EXPECT_TRUE(CheckEqualCollections(m.begin(), m.end(), res));
-    EXPECT_THROW( v=m, std::runtime_error ); /// This is the subject of the test
+    EXPECT_TRUE(CheckEqualCollections(v.begin(), v.end(), res));
 }
 
 TEST(broadcast,matrix_EQ_matrix_plus_vector)

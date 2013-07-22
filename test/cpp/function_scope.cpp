@@ -27,7 +27,9 @@ using namespace bh;
 #define M_SIZE 9
 #define T_SIZE 27
 const double res [] = {
-    3.5,3.5,3.5, 3.5,3.5,3.5, 3.5,3.5,3.5
+    3.5,3.5,3.5,
+    3.5,3.5,3.5,
+    3.5,3.5,3.5
 };
 
 multi_array<float>& adder(float c)
@@ -41,21 +43,13 @@ multi_array<float>& adder(float c)
 
 float resser(multi_array<float>& res)
 {
-    float val;
-    multi_array<float> x(3);
-
-    x = (float)5.0;
-    x = adder(1.5);
-    val = scalar(x);
-
-    return val;
+    return scalar(res);
 }
 
 TEST(function__scope, external)
 {
 
     float res = resser(adder(1.5));
-    stop();
 
     EXPECT_TRUE(res == 3.5);
 }
