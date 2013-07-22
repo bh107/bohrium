@@ -27,10 +27,10 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<double> x;
+    multi_array<double> x, y;
     x = ones<double>(3,3);
 
-    pow(x, (double)1.0);
+    x = pow(x, 1.0);
     
     cout << x << endl;
     cout << "Leaving compute!" << endl;
