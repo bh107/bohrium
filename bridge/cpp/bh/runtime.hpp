@@ -229,7 +229,7 @@ multi_array<T>& Runtime::temp()
  */
 template <typename T, typename OtherT>
 inline
-multi_array<T>& Runtime::temp(const multi_array<OtherT>& input)
+multi_array<T>& Runtime::temp(multi_array<OtherT>& input)
 {
     multi_array<T>* operand = new multi_array<T>(input);
     operand->setTemp(true);
@@ -258,7 +258,7 @@ multi_array<T>& Runtime::temp(Dimensions... dimensions)
  */
 template <typename T>
 inline
-multi_array<T>& Runtime::view(const multi_array<T>& base)
+multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
     operand->meta.base = base.meta.base;

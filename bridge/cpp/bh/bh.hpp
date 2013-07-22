@@ -288,7 +288,7 @@ public:
     multi_array<T>& temp();
 
     template <typename T, typename OtherT>
-    multi_array<T>& temp(const multi_array<OtherT>& input);
+    multi_array<T>& temp(multi_array<OtherT>& input);
 
         /*
     template <typename T, typename ...Dimensions>
@@ -296,7 +296,7 @@ public:
     */
 
     template <typename T>
-    multi_array<T>& view(const multi_array<T>& base);
+    multi_array<T>& view(multi_array<T>& base);
 
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);

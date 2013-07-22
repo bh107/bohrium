@@ -27,12 +27,10 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<float> x, y(1,1);
-    y = 1.0;
-    x = ones<float>(3,3);
-    new multi_array<float>(x);
+    multi_array<double> x;
+    x = ones<double>(3,3);
 
-    y = random<float>(3,3,3);
+    pow(x, (double)1.0);
     
     cout << x << endl;
     cout << "Leaving compute!" << endl;
