@@ -77,7 +77,6 @@ multi_array<T>& random(const Dimensions&... shape)
         throw std::runtime_error(err_msg);
     }
 
-    //multi_array<T>* result = &Runtime::instance().temp<T>(shape...);
     multi_array<T>* result = new multi_array<T>(shape...);
     result->setTemp(true);
     result->link();
