@@ -4,8 +4,7 @@ CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
-BENCHMARKS = black_scholes monte_carlo_pi
-#BENCHMARKS = jacobi_stencil
+BENCHMARKS = black_scholes
 
 #CXX=clang
 CXX=g++
@@ -24,4 +23,4 @@ clean:
 # Benchmarks
 #
 black_scholes: src/black_scholes.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -I/usr/include/eigen3 $(LCFLAGS) $(CXXFLAGS) -lstdc++
