@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <sstream>
 #include <vector>
+#include <set>
 #include <stdexcept>
 #include <unordered_map>
 #include <errno.h>
@@ -30,11 +31,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_vcache.h>
 #include "bh_ve_dynamite.h"
 #include "compiler.cpp"
+#include "streaming_filter.cpp"
 
 #define BH_DYNAMITE_KRN_MAX_OPERANDS 20
 
-#define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
-#define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
 
 // Execution Profile
 
@@ -71,7 +71,7 @@ typedef struct {
 } kernel_t;
 
 typedef std::vector<kernel_t> kernel_storage;
-typedef std::unordered_map<bh_view*, size_t> ref_storage;
+typedef std::unordered_map<bh_base*, size_t> ref_storage;
 
 void bh_pprint_list(bh_instruction* list, bh_intp start, bh_intp end)
 {
@@ -100,7 +100,7 @@ void bh_pprint_kernel(kernel_t *kernel, bh_instruction *list)
     printf("  ]\n\n}\n");
 }
 
-bool is_temp(bh_view* op, ref_storage& reads, ref_storage& writes)
+bool is_temp(bh_base* op, ref_storage& reads, ref_storage& writes)
 {
     return ((reads[op] == 1) && (writes[op] == 1));
 }
@@ -169,6 +169,7 @@ int hash(bh_instruction *instr)
  *  Deduce a set of kernels based
  *
  */
+/*
 kernel_storage streaming(bh_intp count, bh_instruction* list)
 {
     std::vector<bh_intp> potentials;
@@ -207,7 +208,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
                 if (writes.count(&instr->operand[0])>0) {        // Output
                     ++(writes[&instr->operand[0]]);
                 } else {
-                    writes.insert(std::make_pair(&instr->operand[0], 1));
+                    writes.insert(std::make_pair(&instr->operand[0].base, 1));
                 }
                 for(int op_i=1; op_i<noperands; ++op_i) {       // Input
                     if (bh_is_constant(&instr->operand[op_i])) { // Skip constants
@@ -222,7 +223,6 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
         }
     }
 
-    /*
     /// DEBUG PRINTING
     std::cout << "** Potentials #" << potentials.size() << ":" << std::endl;
     for(auto it=potentials.begin(); it!=potentials.end(); ++it) {
@@ -232,7 +232,6 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
         std::cout << (*it);
     }
     std::cout << "." << std::endl;
-    */
 
     //
     // Now we have a list of potential endpoints for streaming kernels.
@@ -274,7 +273,7 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
                     ++count;
             }
 
-            if (!is_temp(operand, reads, writes)) { // Hit a non-temp.
+            if (!is_temp(operand->base, reads, writes)) { // Hit a non-temp.
                 if (count>1) {                      // More than one instr.
                     kernel_t kernel;
                     kernel.begin = i+1;
@@ -296,7 +295,6 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     // to create kernels with...
     //
 
-    /*
     //
     // DEBUG PRINTING
     //
@@ -337,9 +335,9 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
             }
         }
     }
-    */
     return kernels;
 }
+*/
 
 std::string name_operand(kernel_t& kernel, bh_view* operand)
 {
@@ -533,6 +531,32 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     return BH_SUCCESS;
 }
 
+
+
+/*
+std::string ascend(bh_ir* bhir, bh_node_index idx)
+{
+    std::string expr = "";
+
+    if (idx==INVALID_NODE) {
+        return expr;
+    }
+    bh_node_index left  = NODE_LOOKUP(idx).left_parent;
+    bh_node_index right = NODE_LOOKUP(idx).right_parent;
+
+    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
+    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
+        expr += "!("+ascend(bhir, left)+")";
+    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "!("+ascend(bhir, right)+")";
+    } else {
+        expr += "<END>";
+    }
+
+    return expr;
+}
+
 std::string descend(bh_ir* bhir, bh_node_index idx)
 {
     std::string expr = "";
@@ -578,55 +602,53 @@ std::string descend(bh_ir* bhir, bh_node_index idx)
     }
 }
 
-std::string ascend(bh_ir* bhir, bh_node_index idx)
+*/
+
+struct kern_tree {
+    kern_tree *left;
+    kern_tree *right;
+    bh_instruction instruction;
+} kernel_tree_t;
+
+void bh_pprint_node(bh_ir* bhir, bh_node_index idx)
 {
-    std::string expr = "";
+    bh_graph_node *node = &(NODE_LOOKUP(idx));
 
-    if (idx==INVALID_NODE) {
-        return expr;
-    }
-    bh_node_index left  = NODE_LOOKUP(idx).left_child;
-    bh_node_index right = NODE_LOOKUP(idx).right_child;
-
-    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
-    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
-        expr += "!("+ascend(bhir, left)+")";
-    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "!("+ascend(bhir, right)+")";
-    } else {
-        expr += "<END>";
+    switch(node->type) {
+        case BH_INSTRUCTION:
+            std::cout << "Instruction";
+            break;
+        case BH_COLLECTION:
+            std::cout << "Collection";
+            break;
     }
 
-    return expr;
+    std::cout << " {" << std::endl;
+    if (node->type == BH_INSTRUCTION) {
+        bh_pprint_instr(&INSTRUCTION_LOOKUP(node->instruction));
+    }
+    std::cout << "  node=" << idx << std::endl;
+    std::cout << "  lp=" << node->left_parent << ",rp=" << node->right_parent << std::endl;
+    std::cout << "  lc=" << node->left_child << ",rc=" << node->right_child << std::endl;
+    std::cout << "}" << std::endl;
 }
-
-
 
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
-    bh_instruction *instr;
-    bh_graph_iterator *it;
-    bh_error res = BH_SUCCESS;
     #ifdef PROFILE
     bh_uint64 t_begin, t_end, m_begin, m_end;
     #endif
+
+    bh_instruction *instr;
+    bh_graph_iterator *it;
+    bh_error res = BH_SUCCESS;
 
     res = bh_graph_iterator_create(bhir, &it);
     if (BH_SUCCESS!=res) {
         return res;
     }
-    //std::cout << "HMM" << std::endl;
-    //std::cout << descend(bhir, 0) << std::endl;
 
-    /*
-    if (do_fuse && ((instruction_count>2))) {  // Find kernels in the instruction_list
-        kernel_storage kernels = streaming(instruction_count, instruction_list);
-
-        kernel_t kernel;
-        kernel.begin = 0;
-        kernel.end   = 0;
-    }*/
+    bh_filter_streaming(bhir);
 
     while (BH_SUCCESS == bh_graph_iterator_next_instruction(it, &instr)) {
         std::stringstream symbol_buf;
