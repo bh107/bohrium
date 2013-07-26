@@ -32,6 +32,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_dynamite.h"
 #include "compiler.cpp"
 #include "streaming_filter.cpp"
+#include "fusion_filter.cpp"
+#include "power_filter.cpp"
 
 #define BH_DYNAMITE_KRN_MAX_OPERANDS 20
 
@@ -643,12 +645,14 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     bh_graph_iterator *it;
     bh_error res = BH_SUCCESS;
 
+    bh_filter_power(bhir);
+    //bh_filter_fusion(bhir);
+    //bh_filter_streaming(bhir);
+
     res = bh_graph_iterator_create(bhir, &it);
     if (BH_SUCCESS!=res) {
         return res;
     }
-
-    bh_filter_streaming(bhir);
 
     while (BH_SUCCESS == bh_graph_iterator_next_instruction(it, &instr)) {
         std::stringstream symbol_buf;
