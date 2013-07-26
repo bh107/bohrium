@@ -26,10 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_graph.hpp"
 
-#define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
-#define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
-
-
 #ifdef __GNUC__
 #include <ext/hash_map>
 namespace std { using namespace __gnu_cxx; }

@@ -32,6 +32,9 @@ typedef bh_intp bh_instruction_index;
 #define INVALID_NODE (-1)
 #define INVALID_INSTRUCTION (-1)
 
+#define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
+#define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
+
 //Basic entry in a parsed graph
 struct bh_graph_node {
     // The node type

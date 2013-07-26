@@ -23,9 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <bh.h>
 
-#define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
-#define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
-
 using namespace std;
 
 void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited)
