@@ -94,6 +94,7 @@ typedef enum
     BH_BRIDGE,
     BH_VEM,
     BH_VE,
+    BH_FILTER,
     BH_COMPONENT_ERROR
 }bh_component_type;
 

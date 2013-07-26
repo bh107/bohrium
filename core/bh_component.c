@@ -72,6 +72,8 @@ static bh_component_type get_type(dictionary *dict, const char *name)
             return BH_VEM;
         if(!strcasecmp(s, "ve"))
             return BH_VE;
+        if(!strcasecmp(s, "filter"))
+            return BH_FILTER;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
             name, s);
@@ -90,6 +92,8 @@ static void *get_dlsym(void *handle, const char *name,
         stype = "vem";
     else if(type == BH_VE)
         stype = "ve";
+    else if(type == BH_FILTER)
+        stype = "filter";
     else
     {
         fprintf(stderr, "get_dlsym - unknown component type.\n");

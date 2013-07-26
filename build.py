@@ -170,6 +170,7 @@ if __name__ == "__main__":
                   ("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
+                  ("FILTER-STREAMING", "filter/streaming", False),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
