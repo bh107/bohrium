@@ -32,6 +32,10 @@ typedef bh_intp bh_instruction_index;
 #define INVALID_NODE (-1)
 #define INVALID_INSTRUCTION (-1)
 
+#define LEFT_C(x)      (((bh_graph_node*)bhir->nodes->data)[(x)].left_child)
+#define RIGHT_C(x)     (((bh_graph_node*)bhir->nodes->data)[(x)].right_child)
+#define LEFT_P(x)      (((bh_graph_node*)bhir->nodes->data)[(x)].left_parent)
+#define RIGHT_P(x)     (((bh_graph_node*)bhir->nodes->data)[(x)].right_parent)
 #define NODE_LOOKUP(x) (((bh_graph_node*)bhir->nodes->data)[(x)])
 #define INSTRUCTION_LOOKUP(x) (((bh_instruction*)bhir->instructions->data)[(x)])
 
