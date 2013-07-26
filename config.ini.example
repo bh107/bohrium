@@ -2,6 +2,9 @@
 type = bridge
 children = node
 
+#
+# Managers
+#
 [cluster]
 type = vem
 children = node
@@ -12,14 +15,13 @@ type = vem
 children = cpu
 impl = /opt/bohrium/libbh_vem_node.so
 
-[streaming]
-type = filter
-impl = /opt/bohrium/libbh_filter_streaming.so
-children = cpu
-
-[print]
+#
+# Engines
+#
+[gpu]
 type = ve
-impl = /opt/bohrium/libbh_ve_print.so
+ocldir = /opt/bohrium/lib/ocl_source
+impl = /opt/bohrium/libbh_ve_gpu.so
 
 [cpu]
 type = ve
@@ -35,17 +37,33 @@ impl = /opt/bohrium/libbh_ve_mcore.so
 
 [dynamite]
 type = ve
-compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="gcc -lm -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
-#compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="/opt/a64/bin/opencc -lm -O2 -fPIC -std=c99 -x c -shared - -o "
 object_path=/opt/bohrium/dynamite/objects
 kernel_path=/opt/bohrium/dynamite/kernels
 snippet_path=/opt/bohrium/dynamite/snippets
 impl = /opt/bohrium/libbh_ve_dynamite.so
 
-[gpu]
+[print]
 type = ve
-ocldir = /opt/bohrium/lib/ocl_source
-impl = /opt/bohrium/libbh_ve_gpu.so
+impl = /opt/bohrium/libbh_ve_print.so
 
+#
+# Filters
+#
+[power]
+type = filter
+impl = /opt/bohrium/libbh_filter_power.so
+children = cpu
+
+[fusion]
+type = filter
+impl = /opt/bohrium/libbh_filter_fusion.so
+children = cpu
+
+[streaming]
+type = filter
+impl = /opt/bohrium/libbh_filter_streaming.so
+children = cpu

@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
 #include <bh.h>
-#include "bh_filter_streaming.h"
+#include "bh_filter_fusion.h"
 
 //
 // Components
@@ -37,7 +37,7 @@ static bh_reg_func  child_reg_func;
 // Component interface init/execute/shutdown
 //
 
-bh_error bh_filter_streaming_init(bh_component *self)
+bh_error bh_filter_fusion_init(bh_component *self)
 {
     bh_intp children_count;
     bh_error ret;
@@ -64,13 +64,13 @@ bh_error bh_filter_streaming_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_filter_streaming_execute(bh_ir* bhir)
+bh_error bh_filter_fusion_execute(bh_ir* bhir)
 {
-    streaming_filter(bhir);                 // Run the filter
+    fusion_filter(bhir);                 // Run the filter
     return child_execute(bhir);             // Execute the filtered bhir
 }
 
-bh_error bh_filter_streaming_shutdown(void)
+bh_error bh_filter_fusion_shutdown(void)
 {
     bh_error ret;
 
@@ -86,7 +86,7 @@ bh_error bh_filter_streaming_shutdown(void)
     return ret;
 }
 
-bh_error bh_filter_streaming_reg_func(const char *fun, bh_intp *id)
+bh_error bh_filter_fusion_reg_func(const char *fun, bh_intp *id)
 {
     return child_reg_func(fun, id);
 }

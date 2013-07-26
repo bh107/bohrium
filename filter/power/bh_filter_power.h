@@ -17,20 +17,20 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_FILTER_STREAMING_H
-#define __BH_FILTER_STREAMING_H
+#ifndef __BH_FILTER_POWER_H
+#define __BH_FILTER_POWER_H
 
 #include <bh.h>
-#include "streaming_filter.h"
+#include "power_filter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT bh_error bh_filter_streaming_init(bh_component *self);
-DLLEXPORT bh_error bh_filter_streaming_execute(bh_ir* bhir);
-DLLEXPORT bh_error bh_filter_streaming_shutdown(void);
-DLLEXPORT bh_error bh_filter_streaming_reg_func(const char *fun, bh_intp *id);
+DLLEXPORT bh_error bh_filter_power_init(bh_component *self);
+DLLEXPORT bh_error bh_filter_power_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_power_shutdown(void);
+DLLEXPORT bh_error bh_filter_power_reg_func(const char *fun, bh_intp *id);
 
 #ifdef __cplusplus
 }
