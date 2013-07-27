@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <set>
@@ -25,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited)
+void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited, set<bh_node_index> &hits)
 {
     visited[idx] = true;    // Update to avoid revisiting this node.
 
@@ -71,6 +72,7 @@ void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited)
             if (roll) {
                 instr->opcode = BH_MULTIPLY;
                 instr->operand[2] = instr->operand[1];
+                hits.insert(idx);
             }
         }
     }
@@ -78,10 +80,10 @@ void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited)
     bh_node_index left  = NODE_LOOKUP(idx).left_child;  // Continue
     bh_node_index right = NODE_LOOKUP(idx).right_child;
     if ((left!=INVALID_NODE) && (!visited[left])) {
-        pow_to_mul(bhir, left, visited);
+        pow_to_mul(bhir, left, visited, hits);
     }
     if ((right!=INVALID_NODE) && (!visited[right])) {
-        pow_to_mul(bhir, right, visited);
+        pow_to_mul(bhir, right, visited, hits);
     }
 }
 
@@ -90,9 +92,26 @@ void pow_to_mul(bh_ir* bhir, bh_node_index idx, vector<bool> &visited)
  */
 void power_filter(bh_ir* bhir)
 {
-    //cout << "### Power-filter searching through " << bhir->nodes->count << " nodes." << endl;
+    set<bh_node_index> hits;
     vector<bool> visited(bhir->nodes->count, false);
-    pow_to_mul(bhir, 0, visited);
-    //cout << "###" << endl;
+
+    cout << "### Power-filter searching through " << bhir->nodes->count << " nodes." << endl;
+    pow_to_mul(bhir, 0, visited, hits);
+    cout << "## transformed " << hits.size() << " instructions." << endl;
+
+    if (hits.size()>0) {
+        cout << "## [";
+        bool first = true;
+        for(set<bh_node_index>::iterator it=hits.begin(); it != hits.end(); ++it) {
+            if (!first) {
+                cout << ", ";
+            }
+            first = false;
+            std::cout << *it;
+        }
+        std::cout << "]" << std::endl;
+    }
+
+    cout << "###" << endl;
 }
 

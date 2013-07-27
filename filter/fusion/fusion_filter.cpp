@@ -50,6 +50,8 @@ bool only_free(bh_ir* bhir, bh_node_index idx)
 void find_fusion(bh_ir* bhir,
                     bh_node_index idx,
                     bh_node_index parent,
+                    size_t count,
+                    size_t score,
                     vector<bh_node_index> &hits,
                     vector<bool> &visited)
 {
@@ -61,43 +63,62 @@ void find_fusion(bh_ir* bhir,
     if ((only_free(bhir, left) || only_free(bhir, right)) && \
         (other_parent == INVALID_NODE)) {
 
+        if (NODE_LOOKUP(idx).type == BH_INSTRUCTION) {
+            ++score;
+        }
+        ++count;
         parent = idx;
-
         hits.push_back(idx);
 
         if (((left!=INVALID_NODE) && (!visited[left])) && \
             (!only_free(bhir, left))) {
-            find_fusion(bhir, left, parent, hits, visited);
+            find_fusion(bhir, left, parent, count, score, hits, visited);
         } else if (((right!=INVALID_NODE) && (!visited[right])) && \
                    (!only_free(bhir, right))) {
-            find_fusion(bhir, right, parent, hits, visited);
+            find_fusion(bhir, right, parent, count, score, hits, visited);
         } else {
             if (parent != INVALID_NODE) {
-                hits.push_back(INVALID_NODE);
+                if (score<2) {
+                    for(size_t i=0; i<count; ++i) {
+                        hits.pop_back();
+                    }
+                } else {
+                    hits.push_back(INVALID_NODE);
+                }
+                count = 0;
+                score = 0;
             }
         }
     } else {
         if (parent != INVALID_NODE) {
-            hits.push_back(INVALID_NODE);
+            if (score<2) {
+                for(size_t i=0; i<count; ++i) {
+                    hits.pop_back();
+                }
+            } else {
+                hits.push_back(INVALID_NODE);
+            }
+            count = 0;
+            score = 0;
         }
         parent = INVALID_NODE;
         if ((left!=INVALID_NODE) && (!visited[left])) {
-            find_fusion(bhir, left, parent, hits, visited);
+            find_fusion(bhir, left, parent, count, score, hits, visited);
         }
         if ((right!=INVALID_NODE) && (!visited[right])) {
-            find_fusion(bhir, right, parent, hits, visited);
+            find_fusion(bhir, right, parent, count, score, hits, visited);
         }
     }
-
 }
 
 void fusion_filter(bh_ir* bhir)
 {
-    std::cout << "Fusion filter..." << std::endl;
     vector<bool> visited(bhir->nodes->count, false);
     vector<bh_node_index> hits;
-    find_fusion(bhir, 0, INVALID_NODE, hits, visited);
-    std::cout << "[" << std::endl << "  ";
+    cout << "### Fusion filter, searching through " << bhir->nodes->count << " nodes." << endl;
+    find_fusion(bhir, 0, INVALID_NODE, 0, 0, hits, visited);
+    std::cout << "# found = [" << std::endl << "  ";
+
     bh_node_index prev = INVALID_NODE;
     for(vector<bh_node_index>::iterator it=hits.begin(); it != hits.end(); ++it) {
         if (*it == INVALID_NODE) {
@@ -111,5 +132,6 @@ void fusion_filter(bh_ir* bhir)
         prev = *it;
     }
     std::cout << "]" << std::endl;
+    std::cout << "###" << std::endl;
 }
 
