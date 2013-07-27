@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <set>
@@ -28,13 +29,13 @@ using namespace std;
 // Assumes that the given node is valid
 bool only_free(bh_ir* bhir, bh_node_index idx)
 {
-    bh_node_index left_c    = NODE_LOOKUP(idx).left_child;
-    bh_node_index right_c   = NODE_LOOKUP(idx).right_child;
-
+    if (idx == INVALID_NODE) {
+        return true;
+    }
     switch(NODE_LOOKUP(idx).type) {
         case BH_COLLECTION:             // Go deeper
-            return (((left_c  == INVALID_NODE) || (only_free(bhir, left_c))) && \
-                    ((right_c == INVALID_NODE) || (only_free(bhir, right_c))));
+            return (((LEFT_C(idx) == INVALID_NODE) || (only_free(bhir, LEFT_C(idx)))) && \
+                   ((RIGHT_C(idx) == INVALID_NODE) || (only_free(bhir, RIGHT_C(idx)))));
         case BH_INSTRUCTION:            // If am a free instruction then we are happy
             return INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction).opcode == BH_FREE;
         default:
@@ -46,59 +47,69 @@ bool only_free(bh_ir* bhir, bh_node_index idx)
  *  Search the graph for reductions.
  *  Assumes that given node is valid and not previously visited.
  */
-void find_fusion(bh_ir* bhir, bh_node_index idx,
-                    set<bh_node_index> &hits, vector<bool> &visited)
+void find_fusion(bh_ir* bhir,
+                    bh_node_index idx,
+                    bh_node_index parent,
+                    vector<bh_node_index> &hits,
+                    vector<bool> &visited)
 {
     visited[idx] = true;    // Update to avoid revisiting this node.
-    bh_node_index left  = NODE_LOOKUP(idx).left_child;
-    bh_node_index right = NODE_LOOKUP(idx).right_child;
+    bh_node_index left  = LEFT_C(idx);
+    bh_node_index right = RIGHT_C(idx);
+    bh_node_index other_parent = (LEFT_P(idx) == parent) ? RIGHT_P(idx) : parent;
 
-    bool left_free  = only_free(bhir, left);
-    bool right_free = only_free(bhir, right);
+    if ((only_free(bhir, left) || only_free(bhir, right)) && \
+        (other_parent == INVALID_NODE)) {
 
-    bool able = true;
-    if ((NODE_LOOKUP(idx).type == BH_INSTRUCTION)) {
-        switch(INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction).opcode) {
-            case BH_ADD_REDUCE:
-            case BH_MULTIPLY_REDUCE:
-            case BH_MINIMUM_REDUCE:
-            case BH_MAXIMUM_REDUCE:
-            case BH_LOGICAL_AND_REDUCE:
-            case BH_LOGICAL_OR_REDUCE:
-            case BH_LOGICAL_XOR_REDUCE:
-            case BH_BITWISE_AND_REDUCE:
-            case BH_BITWISE_OR_REDUCE:
-            case BH_BITWISE_XOR_REDUCE:
-            case BH_USERFUNC:
-            case BH_FREE:
-            case BH_SYNC:
-            case BH_DISCARD:
-                able = false;
-                break;
+        parent = idx;
+
+        hits.push_back(idx);
+
+        if (((left!=INVALID_NODE) && (!visited[left])) && \
+            (!only_free(bhir, left))) {
+            find_fusion(bhir, left, parent, hits, visited);
+        } else if (((right!=INVALID_NODE) && (!visited[right])) && \
+                   (!only_free(bhir, right))) {
+            find_fusion(bhir, right, parent, hits, visited);
+        } else {
+            if (parent != INVALID_NODE) {
+                hits.push_back(INVALID_NODE);
+            }
         }
-    }
-
-    if (left_free && (!right_free)) {
-        hits.insert(idx);
-    } else if (right_free && (!left_free)) {
-        hits.insert(idx);
-    }
-
-    // A collection or an instruction
-    if ((left!=INVALID_NODE) && (!visited[left])) {
-        find_fusion(bhir, left, hits, visited);
-    }
-    if ((right!=INVALID_NODE) && (!visited[right])) {
-        find_fusion(bhir, right, hits, visited);
+    } else {
+        if (parent != INVALID_NODE) {
+            hits.push_back(INVALID_NODE);
+        }
+        parent = INVALID_NODE;
+        if ((left!=INVALID_NODE) && (!visited[left])) {
+            find_fusion(bhir, left, parent, hits, visited);
+        }
+        if ((right!=INVALID_NODE) && (!visited[right])) {
+            find_fusion(bhir, right, parent, hits, visited);
+        }
     }
 
 }
 
 void fusion_filter(bh_ir* bhir)
 {
-    set<bh_node_index> hits;
+    std::cout << "Fusion filter..." << std::endl;
     vector<bool> visited(bhir->nodes->count, false);
-    find_fusion(bhir, 0, hits, visited);
-    // At this point we know the sub-graph... so what to do now...
+    vector<bh_node_index> hits;
+    find_fusion(bhir, 0, INVALID_NODE, hits, visited);
+    std::cout << "[" << std::endl << "  ";
+    bh_node_index prev = INVALID_NODE;
+    for(vector<bh_node_index>::iterator it=hits.begin(); it != hits.end(); ++it) {
+        if (*it == INVALID_NODE) {
+            cout << endl << "  ";
+        } else {
+            if (prev != INVALID_NODE) {
+                std::cout << ", ";
+            }
+            std::cout << *it;
+        }
+        prev = *it;
+    }
+    std::cout << "]" << std::endl;
 }
 
