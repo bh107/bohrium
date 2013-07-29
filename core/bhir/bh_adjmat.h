@@ -44,6 +44,18 @@ typedef struct
 } bh_adjmat;
 
 
+/* Creates an adjacency matrix based on a instruction list
+ * where an index in the instruction list refer to a row or
+ * a column index in the adjacency matrix.
+ *
+ * @adjmat      The adjacency matrix handle
+ * @ninstr      Number of instructions
+ * @instr_list  The instruction list
+ * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ */
+DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
+                                               const bh_instruction instr_list[]);
+
 
 #ifdef __cplusplus
 }

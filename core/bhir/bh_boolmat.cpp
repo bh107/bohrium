@@ -61,11 +61,16 @@ bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows)
  * @row       The index to the empty row
  * @ncol_idx  Number of column indexes
  * @col_idx   List of column indexes (see CSR documentation)
- * @return    Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @return    Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row, bh_intp ncol_idx, bh_intp col_idx[])
+bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row, bh_intp ncol_idx,
+                                   const bh_intp col_idx[])
 {
-    assert(0 <= row && row < boolmat->nrows);
+    if(!(0 <= row && row < boolmat->nrows))
+    {
+        fprintf(stderr, "ERR: bh_boolmat_fill_empty_row() - argument 'row' is out of range\n");
+        return BH_ERROR;
+    }
 
     bh_intp r = boolmat->row_ptr[row];
     for(bh_intp i=0; i<ncol_idx; ++i)
@@ -81,3 +86,29 @@ bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row, bh_intp nco
     boolmat->row_ptr[row+1] += ncol_idx;
     return BH_SUCCESS;
 }
+
+
+
+/* Retrieves a reference to a row in the boolean matrix
+ *
+ * @boolmat   The boolean matrix
+ * @row       The index to the row
+ * @ncol_idx  Number of column indexes (output)
+ * @col_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+bh_error bh_boolmat_get_row(bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
+                            bh_intp *col_idx[])
+{
+    if(!(0 <= row && row < boolmat->nrows))
+    {
+        fprintf(stderr, "ERR: bh_boolmat_get_row() - argument 'row' is out of range\n");
+        return BH_ERROR;
+    }
+    bh_intp s = boolmat->row_ptr[row];//Start index in col_idx
+    bh_intp e = boolmat->row_ptr[row+1];//End index in col_idx
+    *ncol_idx = e - s;
+    *col_idx = &((bh_intp*)boolmat->col_idx)[s];
+    return BH_SUCCESS;
+}
+

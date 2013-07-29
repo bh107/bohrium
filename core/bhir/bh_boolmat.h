@@ -64,8 +64,18 @@ DLLEXPORT bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows);
  * @return    Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row,
-                                             bh_intp ncol_idx, bh_intp col_idx[]);
+                                             bh_intp ncol_idx, const bh_intp col_idx[]);
 
+/* Retrieves a reference to a row in the boolean matrix
+ *
+ * @boolmat   The boolean matrix
+ * @row       The index to the row
+ * @ncol_idx  Number of column indexes (output)
+ * @col_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+DLLEXPORT bh_error bh_boolmat_get_row(bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
+                                      bh_intp *col_idx[]);
 
 #ifdef __cplusplus
 }
