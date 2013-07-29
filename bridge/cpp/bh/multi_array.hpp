@@ -31,7 +31,7 @@ namespace bh {
 //
 //
 template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array() : key(0), temp(false)
+multi_array<T>::multi_array() : temp(false), base(NULL)
 {
     meta.base       = NULL;
     meta.ndim       = 0;
@@ -41,7 +41,7 @@ multi_array<T>::multi_array() : key(0), temp(false)
 }
 
 template <typename T>           // Copy constructor
-multi_array<T>::multi_array(const multi_array<T>& operand) : key(0), temp(false)
+multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(NULL)
 {
     meta = operand.meta;
     meta.base = NULL;
@@ -49,7 +49,7 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : key(0), temp(false)
 
 template <typename T>           // Copy constructor
 template <typename OtherT>
-multi_array<T>::multi_array(const multi_array<OtherT>& operand) : key(0), temp(false)
+multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), base(NULL)
 {
     meta = operand.meta;
     meta.base = NULL;
@@ -57,7 +57,7 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : key(0), temp(f
 
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
-multi_array<T>::multi_array(Dimensions... shape) : key(0), temp(false)
+multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
 {
     meta.base   = NULL;
     meta.ndim   = sizeof...(Dimensions);
@@ -75,10 +75,10 @@ multi_array<T>::multi_array(Dimensions... shape) : key(0), temp(false)
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
-    if (key>0) {    // Free the base-array and discard meta
+    if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
-        Runtime::instance().trash(key);
+        Runtime::instance().trash(base);
     }
 }
 
@@ -88,9 +88,9 @@ multi_array<T>::~multi_array()
 
 template <typename T>
 inline
-size_t multi_array<T>::getKey() const
+bh_base* multi_array<T>::getBase() const
 {
-    return key;
+    return base;
 }
 
 template <typename T>
@@ -274,7 +274,8 @@ template <typename T>
 inline
 bool multi_array<T>::linked() const
 {
-    return (key != 0);
+    //return (key != 0);
+    return (base != NULL);
 }
 
 template <typename T>
@@ -287,46 +288,40 @@ bool multi_array<T>::initialized() const
 // Linking - Assign a base to the multi_array.
 template <typename T>
 void multi_array<T>::link()
-{                               
-    if (0!=key) {
+{
+    if (base) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
-
-    key = Runtime::instance().keys++;
-    Runtime::instance().storage.insert(key, new bh_base);   // CREATE BASE
-    assign_array_type<T>(                                   // type
-        &Runtime::instance().storage[key]
-    );    
-    Runtime::instance().storage[key].nelem  = bh_nelements( // n elements 
-        meta.ndim, meta.shape
-    );
-    Runtime::instance().storage[key].data   = NULL;         // data pointer
-
-    meta.base = &Runtime::instance().storage[key];          // UPDATE meta
+    base = new bh_base;
+    assign_array_type<T>(base);
+    base->nelem = bh_nelements(meta.ndim, meta.shape);
+    base->data  = NULL;
+    meta.base   = base;
 }
 
 template <typename T>
-void multi_array<T>::link(const size_t ext_key)
+void multi_array<T>::link(bh_base *base_ptr)
 {
-    if (0!=key) {
+    if (base) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
-
-    key = ext_key;
-    meta.base = &Runtime::instance().storage[key];          // UPDATE meta
+    base      = base_ptr;
+    meta.base = base;
 }
 
 template <typename T>
-size_t multi_array<T>::unlink()
+bh_base* multi_array<T>::unlink()
 {
-    if (0==key) {
+    if (!base) {
         throw std::runtime_error("Err: Unlinking operand which is not linked!");
     }
 
-    size_t retKey = key;
-    key = 0;
+    bh_base *ret_base;
+    ret_base = base;
+
+    base      = NULL;
     meta.base = NULL;
-    return retKey;
+    return ret_base;
 }
 
 //
@@ -335,13 +330,14 @@ size_t multi_array<T>::unlink()
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if (key == rhs.getKey()) {  // Self-aliasing is a NOOP
+    if (base == rhs.getBase()) {  // Self-aliasing is a NOOP
         return *this;
     }
         
-    if (key>0) {                // Release current linkage
+    if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        Runtime::instance().trash(base);
         unlink();
     }
                                 // Create alias of rhs
@@ -368,9 +364,10 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 {
-    if (key>0) {                // Release current linkage
+    if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        Runtime::instance().trash(base);
         unlink();
     }
 
@@ -454,7 +451,7 @@ multi_array<T>& as(multi_array<FromT>& rhs)
 template <typename T>
 multi_array<T>& copy(multi_array<T>& rhs)
 {
-    if (1>rhs.getKey()) {   // We do not have anything to copy!
+    if (!rhs.linked()) {
         throw std::runtime_error("Far out dude! you are trying create a copy "
                                  "of something that does not exist!\n");
     }
@@ -470,7 +467,7 @@ multi_array<T>& copy(multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& flatten(multi_array<T>& rhs)
 {
-    if (1>rhs.getKey()) {   // We do not have anything to copy!
+    if (!rhs.linked()) {
         throw std::runtime_error("Far out dude! you are trying to flatten "
                                  "something that does not exist!\n");
     }
@@ -492,7 +489,7 @@ multi_array<T>& flatten(multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& transpose(multi_array<T>& rhs)
 {
-    if (1>rhs.getKey()) {   // We do not have anything to copy!
+    if (!rhs.linked()) {
         throw std::runtime_error("Far out dude! you are trying to transpose "
                                  "something that does not exist!\n");
     }

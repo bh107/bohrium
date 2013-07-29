@@ -25,7 +25,7 @@ namespace bh {
 template <typename T>
 void pprint(multi_array<T>& op)
 {
-    bh_pprint_array(&Runtime::instance().storage[op.getKey()]);
+    bh_pprint_array(op.getBase());
 }
 
 }

@@ -10,9 +10,7 @@ using namespace argparse;
 double monte_carlo_pi(int samples, int iterations)
 {
     multi_array<double> x, y, m, c, accu(1);        // Operands
-    std::cout << "HMM" << std::endl;
     accu = (double)0.0;                             // Acculumate across iterations
-    std::cout << "HMM2" << std::endl;
     for(int i=0; i<iterations; ++i) {
         x = random<double>(samples);                // Sample random numbers
         y = random<double>(samples);
