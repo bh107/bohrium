@@ -110,6 +110,7 @@ size_t Runtime::deallocate_meta(size_t count)
     }
     while(!garbage.empty()) {
         delete garbage.front();
+        ++deallocated;
         garbage.pop_front();
     }
     return deallocated;

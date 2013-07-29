@@ -337,6 +337,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        Runtime::instance().trash(base);
         unlink();
     }
                                 // Create alias of rhs
@@ -366,6 +367,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        Runtime::instance().trash(base);
         unlink();
     }
 
