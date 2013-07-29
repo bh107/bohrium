@@ -161,6 +161,7 @@ if __name__ == "__main__":
                   ("CORE-BUNDLER", "core/bundler", True),\
                   ("CORE-COMPUTE", "core/compute", True),\
                   ("CORE-GRAPH", "core/graph", True),\
+                  ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
                   ("VE-PRINT", "ve/print", False),\
                   #("VE-GPU", "ve/gpu", False),\

@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_adjmat.h"
 #include "bh_boolmat.h"
 #include <map>
+#include <set>
 #include <vector>
 
 
@@ -43,35 +44,60 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         return e;
 
     //Record over which instructions (identified by indexes in the instruction list)
-    //are writting to a specific array. We use a std::vector since multiple instructions
-    //may write to the same array.
-    std::map<bh_base*, std::vector<bh_intp> > writes, reads;
+    //are reading to a specific array. We use a std::vector since multiple instructions
+    //may read to the same array.
+    std::map<bh_base*, std::vector<bh_intp> > reads;
 
+    //Record over the last instruction (identified by indexes in the instruction list)
+    //that wrote to a specific array.
+    //We only need the most recent write instruction since that instruction will depend on
+    //all preceding write instructions.
+    std::map<bh_base*, bh_intp> writes;
 
     for(bh_intp i=0; i<ninstr; ++i)
     {
         const bh_instruction *inst = &instr_list[i];
         const bh_view *ops = bh_inst_operands((bh_instruction *)inst);
         int nops = bh_operands_in_instruction(inst);
-        //Check for dependencies
+
+        //Find the instructions that the i'th instruction depend on and insert them into
+        //the sorted set 'deps'.
+        std::set<bh_intp> deps;
+        for(bh_intp j=0; j<nops; ++j)
+        {
+            if(bh_is_constant(&ops[j]))
+                continue;//Ignore constants
+            bh_base *base = bh_base_array(&ops[j]);
+            //When we are accessing an array, we depend on the instruction that wrote
+            //to it previously (if any).
+            std::map<bh_base*, bh_intp>::iterator w = writes.find(base);
+            if(w != writes.end())
+                deps.insert(w->second);
+
+        }
+        //When we are writing to an array, we depend on all previous reads that hasn't
+        //already been overwritten
+        bh_base *base = bh_base_array(&ops[0]);
+        std::vector<bh_intp> &r(reads[base]);
+        deps.insert(r.begin(), r.end());
+
+        //Fill the i'th row in the boolean matrix with the found dependencies
+        if(deps.size() > 0)
+        {
+            std::vector<bh_intp> sorted_vector(deps.begin(), deps.end());
+            bh_boolmat_fill_empty_row(&adjmat->m, i, deps.size(), &sorted_vector[0]);
+        }
+
+        //The i'th instruction is now the newest write to array 'ops[0]'
+        writes[base] = i;
+        //and among the reads to arrays 'ops[1:]'
         for(bh_intp j=1; j<nops; ++j)
         {
             if(bh_is_constant(&ops[j]))
                 continue;//Ignore constants
             bh_base *base = bh_base_array(&ops[j]);
-            //Find the instructions the i'th instruction depends on
-            std::vector<bh_intp> &deps(writes[base]);
-            if(deps.size() > 0)
-            {
-                //Fill the i'th row in the boolean matrix with the found dependencies
-                bh_boolmat_fill_empty_row(&adjmat->m, i, deps.size(), &deps[0]);
-            }
+            reads[base].push_back(i);
         }
-        //
-        bh_base *base = bh_base_array(&ops[0]);
-        writes[base].push_back(i);
-//        NOT FINISHED
-
     }
     return BH_SUCCESS;
 }
