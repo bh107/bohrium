@@ -60,7 +60,35 @@ void find_fusion(bh_ir* bhir,
     bh_node_index right = RIGHT_C(idx);
     bh_node_index other_parent = (LEFT_P(idx) == parent) ? RIGHT_P(idx) : parent;
 
-    if ((only_free(bhir, left) || only_free(bhir, right)) && \
+    bool supported = false;
+    if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+        supported = true;
+    } else {
+        switch(INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction).opcode) {
+            case BH_USERFUNC:
+            case BH_NONE:
+            case BH_DISCARD:
+            case BH_SYNC:
+            case BH_FREE:
+
+            case BH_ADD_REDUCE:                 // Reductions
+            case BH_MULTIPLY_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
+            case BH_LOGICAL_AND_REDUCE:
+            case BH_LOGICAL_OR_REDUCE:
+            case BH_LOGICAL_XOR_REDUCE:
+            case BH_BITWISE_AND_REDUCE:
+            case BH_BITWISE_OR_REDUCE:
+            case BH_BITWISE_XOR_REDUCE:
+                supported = false;
+                break;
+            default:
+                supported = true;
+        }
+    }
+
+    if (supported && (only_free(bhir, left) || only_free(bhir, right)) && \
         (other_parent == INVALID_NODE)) {
 
         if (NODE_LOOKUP(idx).type == BH_INSTRUCTION) {
