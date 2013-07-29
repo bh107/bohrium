@@ -81,6 +81,9 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         std::vector<bh_intp> &r(reads[base]);
         deps.insert(r.begin(), r.end());
 
+        //Now all previous reads is overwritten
+        r.clear();
+
         //Fill the i'th row in the boolean matrix with the found dependencies
         if(deps.size() > 0)
         {
