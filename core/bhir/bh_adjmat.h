@@ -33,14 +33,21 @@ extern "C" {
  * nodes <http://en.wikipedia.org/wiki/Adjacency_matrix>.
  * The adjacencies are directed such that a row index represents
  * the source node and the column index represents the target node.
+ * The index order always represents the topological order of the nodes
+ * and thus a legal order of execution.
+ *
  * In this implementation, we use sparse boolean matrices to store
  * the adjacencies but alternatives such as adjacency lists or
  * incidence lists is also a possibility.
 */
 typedef struct
 {
-    //Boolean matrix with the adjancencies
+    //Adjacency matrix with a top-down direction, i.e. the adjacencies
+    //of a row is its dependencies (who it depends on).
     bh_boolmat m;
+    //Adjacency matrix with a bottom-up direction, i.e. the adjacencies
+    //of a row is its dependees (who depends on it).
+    bh_boolmat mT;//Note, it is simply a transposed copy of 'm'.
 } bh_adjmat;
 
 
@@ -56,6 +63,31 @@ typedef struct
 DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
                                                const bh_instruction instr_list[]);
 
+
+/* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
+ * node indexes that depend on the row'th node.
+ *
+ * @adjmat    The adjacency matrix
+ * @row       The index to the row
+ * @ncol_idx  Number of column indexes (output)
+ * @col_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+DLLEXPORT bh_error bh_adjmat_get_row(bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx,
+                                     bh_intp *col_idx[]);
+
+
+/* Retrieves a reference to a column in the adjacency matrix, i.e retrieval of the
+ * node indexes that the col'th node depend on.
+ *
+ * @adjmat    The adjacency matrix
+ * @col       The index to the row
+ * @nrow_idx  Number of column indexes (output)
+ * @row_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+DLLEXPORT bh_error bh_adjmat_get_col(bh_adjmat *adjmat, bh_intp col, bh_intp *nrow_idx,
+                                     bh_intp *row_idx[]);
 
 #ifdef __cplusplus
 }

@@ -39,7 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
                                      const bh_instruction instr_list[])
 {
-    bh_error e = bh_boolmat_create(&adjmat->m, ninstr);
+    bh_error e = bh_boolmat_create(&adjmat->mT, ninstr);
     if(e != BH_SUCCESS)
         return e;
 
@@ -88,7 +88,7 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         if(deps.size() > 0)
         {
             std::vector<bh_intp> sorted_vector(deps.begin(), deps.end());
-            bh_boolmat_fill_empty_row(&adjmat->m, i, deps.size(), &sorted_vector[0]);
+            bh_boolmat_fill_empty_row(&adjmat->mT, i, deps.size(), &sorted_vector[0]);
         }
 
         //The i'th instruction is now the newest write to array 'ops[0]'
@@ -102,5 +102,39 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
             reads[base].push_back(i);
         }
     }
+    //TODO: we need to compute the transposed matrix 'adjmat->m'
+
     return BH_SUCCESS;
+}
+
+
+/* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
+ * node indexes that depend on the row'th node.
+ *
+ * @adjmat    The adjacency matrix
+ * @row       The index to the row
+ * @ncol_idx  Number of column indexes (output)
+ * @col_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+bh_error bh_adjmat_get_row(bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx,
+                           bh_intp *col_idx[])
+{
+    return bh_boolmat_get_row(&adjmat->m, row, ncol_idx, col_idx);
+}
+
+
+/* Retrieves a reference to a column in the adjacency matrix, i.e retrieval of the
+ * node indexes that the col'th node depend on.
+ *
+ * @adjmat    The adjacency matrix
+ * @col       The index to the row
+ * @nrow_idx  Number of column indexes (output)
+ * @row_idx   List of column indexes (output)
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+bh_error bh_adjmat_get_col(bh_adjmat *adjmat, bh_intp col, bh_intp *nrow_idx,
+                           bh_intp *row_idx[])
+{
+    return bh_boolmat_get_row(&adjmat->mT, col, nrow_idx, row_idx);
 }
