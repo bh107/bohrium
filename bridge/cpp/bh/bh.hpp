@@ -19,14 +19,15 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP
 #define __BOHRIUM_BRIDGE_CPP
-#include "bh.h"
-#include <complex>
-#include <list>
-#include <boost/ptr_container/ptr_map.hpp>
 
 #define BH_CPP_QUEUE_MAX 1000
-#include "iterator.hpp"
+
 #include <stdexcept>
+#include <complex>
+#include <list>
+
+#include "bh.h"
+#include "iterator.hpp"
 
 #ifdef DEBUG
 #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
@@ -35,8 +36,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 namespace bh {
-
-typedef boost::ptr_map<size_t, bh_base> storage_type;
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
@@ -206,18 +205,18 @@ public:
     multi_array& operator--(int);
 
     void link();                            // Bohrium Runtime Specifics
-    void link(size_t);                      // Bohrium Runtime Specifics
-    size_t unlink();
+    void link(bh_base *base_ptr);     // Bohrium Runtime Specifics
+    bh_base* unlink();
 
-    size_t getKey() const;
+    bh_base* getBase() const;
     bool getTemp() const;
     void setTemp(bool temp);
     bool linked() const;
     bool initialized() const;
 
 protected:
-    size_t key;
     bool temp;
+    bh_base *base;
 
 private:
 
@@ -231,10 +230,6 @@ private:
  */
 class Runtime {
 public:
-
-    storage_type storage;   // TODO: make it private
-    size_t keys;            // TODO: make it private
-
     static Runtime& instance(); // Singleton method
     ~Runtime();                 // Deconstructor
 
@@ -290,7 +285,7 @@ public:
     template <typename T, typename OtherT>
     multi_array<T>& temp(multi_array<OtherT>& input);
 
-        /*
+    /*
     template <typename T, typename ...Dimensions>
     multi_array<T>& temp(int64_t shape0, Dimensions... shape);
     */
@@ -303,7 +298,7 @@ public:
 
     int64_t random_id;                          // Extension IDs
 
-    void trash(size_t key);
+    void trash(bh_base *base_ptr);
 
 private:
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
@@ -322,7 +317,7 @@ private:
 
     int64_t children_count;
                                                 // DSEL stuff
-    std::list<size_t> garbage;                  // NOTE: This is probably deprecated with bh_base...
+    std::list<bh_base*> garbage;                // NOTE: This is probably deprecated with bh_base...
                                                 // Collection of bh_base which will
                                                 // be deleted when the current batch is flushed.
 

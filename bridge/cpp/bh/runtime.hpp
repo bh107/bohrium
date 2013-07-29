@@ -35,7 +35,7 @@ void stop()
 {
 }
 
-Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
+Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
@@ -83,13 +83,7 @@ Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
 
 Runtime::~Runtime()
 {
-    // Deconstructor is not called in a timely fashion.
     flush();
-
-    // De-allocate / reset storage
-    // erase all entries in storage
-    // send discards for whatever might be hanging around
-    keys = 0;
 
     vem_shutdown();
     bh_component_free(self_component);
@@ -115,7 +109,7 @@ size_t Runtime::deallocate_meta(size_t count)
         throw std::runtime_error("Trying to de-allocate more than physically possible.");
     }
     while(!garbage.empty()) {
-        storage.erase(garbage.front());
+        delete garbage.front();
         garbage.pop_front();
     }
     return deallocated;
@@ -236,22 +230,6 @@ multi_array<T>& Runtime::temp(multi_array<OtherT>& input)
 
     return *operand;
 }
-
-/**
- *  Create an intermediate operand based on the given shape.
- *  This definition is clunky to work around a gcc-bug:
- *  "sorry, unimplemented: use of ‘type_pack_expansion’ in template".
- */
-/*
-template <typename T, typename ...Dimensions>
-inline
-multi_array<T>& Runtime::temp(Dimensions... dimensions)
-{
-    multi_array<T>* operand = new multi_array<T>(dimensions...);
-    operand->setTemp(true);
-
-    return *operand;
-}*/
 
 /**
  * Create an alias/segment/view of the supplied base operand.
@@ -492,7 +470,7 @@ T scalar(multi_array<T>& op)
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
     Runtime::instance().flush();
 
-    bh_base* op_a = &Runtime::instance().storage[op.getKey()];
+    bh_base *op_a = op.getBase();
     T* data = (T*)(op_a->data);
     data += op.meta.start;
 
@@ -506,9 +484,9 @@ T scalar(multi_array<T>& op)
     return value;
 }
 
-void Runtime::trash(size_t key)
+void Runtime::trash(bh_base *base_ptr)
 {
-    garbage.push_back(key);
+    garbage.push_back(base_ptr);
 }
 
 }
