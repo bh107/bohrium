@@ -644,6 +644,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
     res = bh_graph_iterator_create(bhir, &it);
     if (BH_SUCCESS!=res) {
+        bh_graph_iterator_destroy(it);
         return res;
     }
 
@@ -787,6 +788,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_dynamite_execute()\n");
+
+            bh_graph_iterator_destroy(it);
             return res;
         }
         #ifdef PROFILE
@@ -1234,6 +1237,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         #endif
     }
 
+    bh_graph_iterator_destroy(it);
 	return res;
 }
 

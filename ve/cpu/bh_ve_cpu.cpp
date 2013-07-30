@@ -84,8 +84,10 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     #endif
 
     res = bh_graph_iterator_create(bhir, &it);
-    if (res != BH_SUCCESS)
+    if (res != BH_SUCCESS) {
+        bh_graph_iterator_destroy(it);
         return res;
+    }
 
     while (bh_graph_iterator_next_instruction(it, &instr) == BH_SUCCESS)
     {
@@ -150,6 +152,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         #endif
     }
 
+    bh_graph_iterator_destroy(it);
 	return res;
 }
 

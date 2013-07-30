@@ -339,6 +339,8 @@ bh_error bh_ve_mcore_execute(bh_ir* bhir)
             break;
         }
     }
+
+    bh_graph_iterator_destroy(it);
     return res;
 }
 
