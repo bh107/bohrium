@@ -301,21 +301,14 @@ public:
     void trash(bh_base *base_ptr);
 
 private:
+                                                // Bohrium
+    bh_component    *self;                      // Component setup
+    bh_component    *child;
+
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
     size_t          ext_in_queue;
     size_t          queue_size;
-
-    bh_init         vem_init;                   // Bohrium interface
-    bh_execute      vem_execute;
-    bh_shutdown     vem_shutdown;
-    bh_reg_func     vem_reg_func;
-
-    bh_component    **components,               // Bohrium component setup
-                    *self_component,
-                    *vem_component;
-
-    int64_t children_count;
                                                 // DSEL stuff
     std::list<bh_base*> garbage;                // NOTE: This is probably deprecated with bh_base...
                                                 // Collection of bh_base which will

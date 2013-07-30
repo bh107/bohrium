@@ -39,34 +39,31 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
+                        
+    bh_component **components;          // Bohrium component setup
+    int64_t component_count;
 
-    self_component = bh_component_setup(NULL);
-    bh_component_children(self_component, &children_count, &components);
+    self = bh_component_setup(NULL);
+    bh_component_children(self, &component_count, &components);
 
-    if(children_count != 1 || components[0]->type != BH_VEM) {
+    if (component_count != 1 || components[0]->type != BH_VEM) {
         fprintf(stderr, "Error in the configuration: the bridge must "
                         "have exactly one child of type VEM\n");
         exit(-1);
     }
-    vem_component   = components[0];
-
-    vem_init        = vem_component->init;
-    vem_execute     = vem_component->execute;
-    vem_shutdown    = vem_component->shutdown;
-
-    vem_reg_func    = vem_component->reg_func;
+    child = components[0];
     free(components);
 
-    err = vem_init(vem_component);
+    err = child->init(child);           // Initialize child
     if (err) {
-        fprintf(stderr, "Error in vem_init()\n");
+        fprintf(stderr, "Error in child->init()\n");
         exit(-1);
     }
 
     //
     // Register extensions
     //
-    err = vem_reg_func("bh_random", &random_id);
+    err = child->reg_func("bh_random", &random_id);
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
                         "-defined random operation: %s.\n",
@@ -85,9 +82,9 @@ Runtime::~Runtime()
 {
     flush();
 
-    vem_shutdown();
-    bh_component_free(self_component);
-    bh_component_free(vem_component);
+    child->shutdown();
+    bh_component_free(self);
+    bh_component_free(child);
 }
 
 size_t Runtime::get_queue_size()
@@ -153,7 +150,7 @@ size_t Runtime::execute()
     bh_ir* bhir;
     bh_error status = bh_graph_create(&bhir, queue, queue_size);
     if (status == BH_SUCCESS) {
-        status = vem_execute(bhir);     // Send instructions to Bohrium
+        status = child->execute(bhir);   // Send instructions to Bohrium
         queue_size = 0;                 // Reset size of the queue
     }
     
@@ -162,7 +159,7 @@ size_t Runtime::execute()
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
-        err_msg << "Runtime::execute() -> vem_execute() failed: " << bh_error_text(status) << std::endl;
+        err_msg << "Err: Runtime::execute() child->execute() failed: " << bh_error_text(status) << std::endl;
 
         throw std::runtime_error(err_msg.str());
     }
