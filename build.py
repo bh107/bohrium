@@ -160,20 +160,19 @@ if __name__ == "__main__":
                   ("INIPARSER","iniparser",True),\
                   ("CORE-BUNDLER", "core/bundler", True),\
                   ("CORE-COMPUTE", "core/compute", True),\
-                  ("CORE-GRAPH", "core/graph", True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
                   ("VE-PRINT", "ve/print", False),\
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
                   ("VE-TILING", "ve/tiling", False),\
-                  ("VE-MCORE", "ve/mcore", False),\
-                  ("VE-DYNAMITE", "ve/dynamite", False),\
+                  #("VE-MCORE", "ve/mcore", False),\
+                  #("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
-                  ("FILTER-POWER", "filter/power", False),\
-                  ("FILTER-FUSION", "filter/fusion", False),\
-                  ("FILTER-STREAMING", "filter/streaming", False),\
+                  #("FILTER-POWER", "filter/power", False),\
+                  #("FILTER-FUSION", "filter/fusion", False),\
+                  #("FILTER-STREAMING", "filter/streaming", False),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\

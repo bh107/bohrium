@@ -31,7 +31,7 @@ extern "C" {
 #include <bh_error.h>
 #include <iniparser.h>
 #include <bh_win.h>
-#include <bh_graph.h>
+#include <bh_ir.h>
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.

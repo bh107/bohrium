@@ -36,19 +36,12 @@ bh_error bh_ve_print_init(bh_component* _component)
 bh_error bh_ve_print_execute(bh_ir* bhir)
 {
     std::cout << "# ----------------------------- Recieved batch with " <<
-        bhir->instructions->count <<
+        bhir->ninstr <<
         " instructions --------------------------------------- #" << std::endl;
 
-    bh_graph_iterator* it;
-    bh_instruction* inst;
-    bh_error res = bh_graph_iterator_create(bhir, &it);
-    if (res != BH_SUCCESS)
-        return res;
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
+        bh_pprint_instr(&bhir->instr_list[i]);
 
-    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
-        bh_pprint_instr(inst);
-
-    bh_graph_iterator_destroy(it);
     return BH_SUCCESS;
 }
 
