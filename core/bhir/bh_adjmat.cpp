@@ -117,7 +117,7 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
  * @col_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_adjmat_get_row(bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx,
+bh_error bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx,
                            bh_intp *col_idx[])
 {
     return bh_boolmat_get_row(&adjmat->m, row, ncol_idx, col_idx);

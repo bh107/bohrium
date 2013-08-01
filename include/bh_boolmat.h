@@ -75,7 +75,7 @@ DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row,
  * @col_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_boolmat_get_row(bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
+DLLEXPORT bh_error bh_boolmat_get_row(const bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
                                       bh_intp *col_idx[]);
 
 #ifdef __cplusplus

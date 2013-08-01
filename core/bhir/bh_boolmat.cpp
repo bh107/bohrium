@@ -97,7 +97,7 @@ bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row, bh_intp nco
  * @col_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_boolmat_get_row(bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
+bh_error bh_boolmat_get_row(const bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
                             bh_intp *col_idx[])
 {
     if(!(0 <= row && row < boolmat->nrows))
