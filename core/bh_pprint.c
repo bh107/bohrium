@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PPRINT_BUF_OPSTR_SIZE 512
 #define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*4
 
-static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
+static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
 
     switch( instr->constant.type) {
         case BH_BOOL:
@@ -88,14 +88,14 @@ static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
 
 }
 
-static void bh_sprint_base( bh_base *base, char buf[] ) {
+static void bh_sprint_base(const bh_base *base, char buf[] ) {
 
         sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
                 base, bh_type_text(base->type), (long) base->nelem, base->data
         );
 }
 
-static void bh_sprint_view( bh_view *op, char buf[] ) {
+static void bh_sprint_view(const bh_view *op, char buf[] ) {
 
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
             shape[PPRINT_BUF_SHAPE_SIZE]    = "?",
@@ -128,7 +128,8 @@ static void bh_sprint_view( bh_view *op, char buf[] ) {
 
 }
 
-static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
+static void bh_sprint_instr(const bh_instruction *instr, char buf[])
+{
 
     char op_str[PPRINT_BUF_OPSTR_SIZE];
     char tmp[PPRINT_BUF_OPSTR_SIZE];
@@ -165,56 +166,7 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
 
 }
 
-/* Pretty print an instruction.
- *
- * @instr  The instruction in question
- */
-void bh_pprint_instr( bh_instruction *instr ) {
-
-    char buf[PPRINT_BUF_SIZE];
-    bh_sprint_instr( instr, buf );
-    puts( buf );
-}
-
-void bh_pprint_instr_list( bh_instruction* instruction_list, bh_intp instruction_count, const char* txt )
-{
-    bh_intp count;
-    printf("%s %d {\n", txt, (int)instruction_count);
-    for(count=0; count < instruction_count; count++) {
-        bh_pprint_instr( &instruction_list[count] );
-    }
-    printf("}\n");
-}
-
-void bh_pprint_bundle( bh_instruction* instruction_list, bh_intp instruction_count  )
-{
-    bh_pprint_instr_list( instruction_list, instruction_count, "BUNDLE");
-}
-
-/* Pretty print an array.
- *
- * @view  The array view in question
- */
-void bh_pprint_array( bh_view *view ) {
-
-    char buf[PPRINT_BUF_OPSTR_SIZE];
-    bh_sprint_view( view, buf );
-    puts( buf );
-}
-
-
-/* Pretty print an array.
- *
- * @base  The array base in question
- */
-void bh_pprint_base( bh_base *base ) {
-
-    char buf[PPRINT_BUF_OPSTR_SIZE];
-    bh_sprint_base( base, buf );
-    puts( buf );
-}
-
-void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
+static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims ) {
 
     char tmp[64];
     bh_index j;
@@ -229,12 +181,71 @@ void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
     }
 }
 
-void bh_pprint_coord( bh_index* coord, bh_index dims ) {
+/*********************************************************/
+/****************** Public functions *********************/
+/*********************************************************/
 
+
+/* Pretty print an instruction.
+ *
+ * @instr  The instruction in question
+ */
+void bh_pprint_instr(const bh_instruction *instr)
+{
+
+    char buf[PPRINT_BUF_SIZE];
+    bh_sprint_instr( instr, buf );
+    puts( buf );
+}
+
+/* Pretty print an instruction list.
+ *
+ * @instr_list  The instruction list in question
+ * @ninstr      Number of instructions
+ * @txt         Text prepended the instruction list,
+ *              ignored when NULL
+ */
+void bh_pprint_instr_list(const bh_instruction instr_list[],
+                          bh_intp ninstr, const char* txt)
+{
+    printf("%s %d {\n", txt, (int)ninstr);
+    for(bh_intp i=0; i < ninstr; ++i)
+        bh_pprint_instr(&instr_list[i]);
+    printf("}\n");
+}
+
+/* Pretty print an array view.
+ *
+ * @view  The array view in question
+ */
+void bh_pprint_array(const bh_view *view)
+{
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_view(view, buf);
+    puts(buf);
+}
+
+/* Pretty print an array base.
+ *
+ * @base  The array base in question
+ */
+void bh_pprint_base(const bh_base *base)
+{
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_base(base, buf);
+    puts(buf);
+}
+
+/* Pretty print an coordinate.
+ *
+ * @coord  The coordinate in question
+ * @ndims  Number of dimensions
+ */
+void bh_pprint_coord(bh_index coord[], bh_index ndims)
+{
     char buf[1024];
     sprintf(buf, "Coord ( ");
-    bh_sprint_coord( buf, coord, dims );
+    bh_sprint_coord(buf, coord, ndims);
     strcat(buf, " )");
     puts(buf);
-
 }
