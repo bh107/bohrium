@@ -41,12 +41,14 @@ bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows)
 {
     boolmat->nrows   = nrows;
     //We know the final size of row_ptr at creation time
-    boolmat->row_ptr = (bh_intp*) malloc(sizeof(bh_intp)*nrows+1);
-    memset(boolmat->row_ptr, 0, sizeof(bh_intp)*nrows);
+    boolmat->row_ptr = (bh_intp*) malloc(sizeof(bh_intp)*(nrows+1));
+    if(boolmat->row_ptr == NULL)
+        return BH_OUT_OF_MEMORY;
+    memset(boolmat->row_ptr, 0, sizeof(bh_intp)*(nrows+1));
     //The size of column index list is equal to the number of True values
     //in the boolean matrix, which is unknown at creation time
     boolmat->col_idx = bh_dynamic_list_create(sizeof(bh_intp), nrows*2);
-    if(boolmat->row_ptr == NULL || boolmat->col_idx == NULL)
+    if(boolmat->col_idx == NULL)
         return BH_OUT_OF_MEMORY;
     return BH_SUCCESS;
 }
@@ -71,7 +73,6 @@ bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row, bh_intp nco
         fprintf(stderr, "ERR: bh_boolmat_fill_empty_row() - argument 'row' is out of range\n");
         return BH_ERROR;
     }
-
     bh_intp r = boolmat->row_ptr[row];
     for(bh_intp i=0; i<ncol_idx; ++i)
     {
