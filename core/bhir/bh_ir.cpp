@@ -71,26 +71,16 @@ void bh_ir_destroy(bh_ir *bhir)
 }
 
 
-/* Go to the root node of a specific DAG.
+/* Resets the node to the first node in the BhIR (topologically).
  *
- * @dag_node  The node that points to the DAG
- * @new_node  The BhIR node (output)
- * @return    BH_ERROR when the 'dag_node' dosn't points
- *            to a DAG in which case the 'new_node' is
- *            untouched, BH_SUCCESS otherwise.
+ * @node    The node to reset
+ * @bhir    The BhIR handle
 */
-bh_error bh_ir_node_goto_dag(const bh_ir_node *dag_node,
-                             bh_ir_node *new_node)
+void bh_node_reset(bh_node *node, const bh_ir *bhir)
 {
-    bh_dag *dag = &dag_node->bhir->dag_list[dag_node->dag_idx];
-    bh_intp idx = dag->node_map[dag_node->node_map_idx];
-    if(idx > 0)//Positive indexes are instruction list references.
-        return BH_ERROR;
-
-    new_node->bhir = dag_node->bhir;
-    new_node->node_map_idx = 0;//We go to the root of the DAG
-    new_node->dag_idx = -1*idx-1;
-    return BH_SUCCESS;
+    node->bhir = bhir;
+    node->dag_idx = 0;
+    node->node_map_idx = 0;
 }
 
 
@@ -100,7 +90,7 @@ bh_error bh_ir_node_goto_dag(const bh_ir_node *dag_node,
  * @node     The BhIR node
  * @return   BH_ERROR when at the end, BH_SUCCESS otherwise
  */
-bh_error bh_ir_node_next(bh_ir_node *node)
+bh_error bh_node_next(bh_node *node)
 {
     if(node->dag_idx >= node->bhir->ndag)
         return BH_ERROR;
@@ -114,5 +104,29 @@ bh_error bh_ir_node_next(bh_ir_node *node)
     }
     return BH_SUCCESS;
 }
+
+
+/* Go to the root node of a specific DAG.
+ *
+ * @dag_node  The node that points to the DAG
+ * @new_node  The BhIR node (output)
+ * @return    BH_ERROR when the 'dag_node' dosn't points
+ *            to a DAG in which case the 'new_node' is
+ *            untouched, BH_SUCCESS otherwise.
+*/
+bh_error bh_node_goto_dag(const bh_node *dag_node,
+                          bh_node *new_node)
+{
+    bh_dag *dag = &dag_node->bhir->dag_list[dag_node->dag_idx];
+    bh_intp idx = dag->node_map[dag_node->node_map_idx];
+    if(idx > 0)//Positive indexes are instruction list references.
+        return BH_ERROR;
+
+    new_node->bhir = dag_node->bhir;
+    new_node->node_map_idx = 0;//We go to the root of the DAG
+    new_node->dag_idx = -1*idx-1;
+    return BH_SUCCESS;
+}
+
 
 
