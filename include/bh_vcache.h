@@ -20,7 +20,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef BH_VCACHE_H
 #define BH_VCACHE_H
-#include <bh.h>
+
+#include <stdlib.h>
+#include <string.h>
+#include "bh_type.h"
+#include "bh_win.h"
+#include "bh_instruction.h"
 
 #ifdef __cplusplus
 extern "C" {

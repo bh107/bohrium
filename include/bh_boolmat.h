@@ -21,8 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_BOOLMAT_H
 #define __BH_BOOLMAT_H
 
-#include <bh.h>
-#include <bh_dynamic_list.h>
+#include "bh_error.h"
+#include "bh_type.h"
+#include "bh_dynamic_list.h"
 
 #ifdef __cplusplus
 extern "C" {

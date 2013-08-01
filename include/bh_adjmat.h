@@ -21,8 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_ADJMAT_H
 #define __BH_ADJMAT_H
 
-#include <bh.h>
 #include "bh_boolmat.h"
+#include "bh_instruction.h"
+#include "bh_type.h"
+#include "bh_error.h"
 
 #ifdef __cplusplus
 extern "C" {

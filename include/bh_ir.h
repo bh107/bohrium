@@ -21,8 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_H
 #define __BH_IR_H
 
-#include <bh.h>
 #include "bh_adjmat.h"
+#include "bh_type.h"
+#include "bh_error.h"
 
 #ifdef __cplusplus
 extern "C" {
