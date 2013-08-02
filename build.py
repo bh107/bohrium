@@ -158,17 +158,17 @@ if __name__ == "__main__":
     components = [\
                   ("OPCODES","core/codegen",True),\
                   ("INIPARSER","iniparser",True),\
-                  ("CORE-BUNDLER", "core/bundler", True),\
-                  ("CORE-COMPUTE", "core/compute", True),\
                   ("CORE-GRAPH", "core/graph", True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
-                  ("VE-PRINT", "ve/print", False),\
+                  ("VE-SHARED-BUNDLER", "ve/shared/bundler", True),\
+                  ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
                   ("VE-TILING", "ve/tiling", False),\
                   ("VE-MCORE", "ve/mcore", False),\
                   ("VE-DYNAMITE", "ve/dynamite", False),\
+                  ("VE-PRINT", "ve/print", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
                   ("FILTER-POWER", "filter/power", False),\

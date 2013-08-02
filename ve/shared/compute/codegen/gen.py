@@ -20,7 +20,7 @@ def main():
     ]
 
     ignore  = json.load(open(script_dir+'ignore.json'))
-    opcodes = json.loads(open(script_dir+'../../codegen/opcodes.json').read())
+    opcodes = json.loads(open(script_dir+'../../../core/codegen/opcodes.json').read())
 
     for mod_name, tmpl_fn, output_fn in gens:
 

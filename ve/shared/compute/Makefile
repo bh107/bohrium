@@ -1,16 +1,16 @@
-ROOT=../..
-LIB=bh_bundler
-CXX?=g++
+ROOT=../../..
+CXX=g++
+#CXX=clang
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include
 LDFLAGS=-L$(ROOT)/core -lbh -lrt -shared -Wl,-soname
-HEADER=$(ROOT)/include/*
+HEADER=./*.hpp $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/bohrium/
 
-all: $(LIB).o
+all: $(OBJ)
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
