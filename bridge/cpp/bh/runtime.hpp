@@ -39,31 +39,34 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
-                        
-    bh_component **components;          // Bohrium component setup
-    int64_t component_count;
 
-    self = bh_component_setup(NULL);
-    bh_component_children(self, &component_count, &components);
+    int64_t        component_count; // Bohrium Runtime / Bridge setup
+    bh_component **components;          
+    bh_component  *bridge;
 
-    if (component_count != 1 || components[0]->type != BH_VEM) {
-        fprintf(stderr, "Error in the configuration: the bridge must "
-                        "have exactly one child of type VEM\n");
-        exit(-1);
+    bridge = bh_component_setup(NULL);
+    bh_component_children(bridge, &component_count, &components);
+
+    if (component_count != 1 || (!((components[0]->type == BH_VEM) || \
+                                   (components[0]->type != BH_VEM)))) {
+        sprintf(err_msg, "Error in the runtime configuration: the bridge must "
+                         "have exactly one child of type VEM or FILTER.\n");
+        free(components);
+        throw std::runtime_error(err_msg);
     }
-    child = components[0];
+    runtime = components[0];
     free(components);
 
-    err = child->init(child);           // Initialize child
+    err = runtime->init(runtime);   // Initialize child
     if (err) {
-        fprintf(stderr, "Error in child->init()\n");
+        fprintf(stderr, "Error in runtime->init(runtime)\n");
         exit(-1);
     }
 
     //
     // Register extensions
     //
-    err = child->reg_func("bh_random", &random_id);
+    err = runtime->reg_func("bh_random", &random_id);
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
                         "-defined random operation: %s.\n",
@@ -76,15 +79,17 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
                         " (%ld).\n", (long)random_id);
         throw std::runtime_error(err_msg);
     }
+
+    bh_component_free(bridge);      // The bridge component is no longer
+                                    // needed
 }
 
 Runtime::~Runtime()
 {
     flush();
 
-    child->shutdown();
-    bh_component_free(self);
-    bh_component_free(child);
+    runtime->shutdown();
+    bh_component_free(runtime);
 }
 
 size_t Runtime::get_queue_size()
@@ -150,7 +155,7 @@ size_t Runtime::execute()
     bh_ir* bhir;
     bh_error status = bh_graph_create(&bhir, queue, queue_size);
     if (status == BH_SUCCESS) {
-        status = child->execute(bhir);  // Send instructions to Bohrium
+        status = runtime->execute(bhir);  // Send instructions to Bohrium
         queue_size = 0;                 // Reset size of the queue
     }
     
@@ -159,7 +164,7 @@ size_t Runtime::execute()
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
-        err_msg << "Err: Runtime::execute() child->execute() failed: " << bh_error_text(status) << std::endl;
+        err_msg << "Err: Runtime::execute() runtime->execute() failed: " << bh_error_text(status) << std::endl;
 
         throw std::runtime_error(err_msg.str());
     }

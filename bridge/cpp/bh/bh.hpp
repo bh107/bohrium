@@ -302,8 +302,8 @@ public:
 
 private:
                                                 // Bohrium
-    bh_component    *self;                      // Component setup
-    bh_component    *child;
+    bh_component    *bridge;
+    bh_component    *runtime;
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
