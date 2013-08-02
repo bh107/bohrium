@@ -49,12 +49,11 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
         return BH_OUT_OF_MEMORY;
     bhir->ndag = 1;
 
-    return BH_SUCCESS;
     //Initiate the first (and only) DAG
     bh_dag *dag = &bhir->dag_list[0];
-    dag->node_map = (bh_intp*) malloc(sizeof(bh_intp));
+    dag->node_map = (bh_intp*) malloc(sizeof(bh_intp)*ninstr);
     for(bh_intp i=0; i<ninstr; ++i)
-        dag->node_map[0] = i;//A simple 1:1 map
+        dag->node_map[i] = i;//A simple 1:1 map
     dag->nnode = ninstr;
     return bh_adjmat_create_from_instr(&dag->adjmat, ninstr, instr_list);
 }
@@ -66,6 +65,12 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
  */
 void bh_ir_destroy(bh_ir *bhir)
 {
+    for(bh_intp i=0; i < bhir->ndag; ++i)
+    {
+        bh_dag *dag = &bhir->dag_list[i];
+        free(dag->node_map);
+        bh_adjmat_destroy(&dag->adjmat);
+    }
     free(bhir->instr_list);
     free(bhir->dag_list);
 }

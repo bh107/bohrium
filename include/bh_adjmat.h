@@ -65,6 +65,11 @@ typedef struct
 DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
                                                const bh_instruction instr_list[]);
 
+/* De-allocate the adjacency matrix
+ *
+ * @adjmat  The adjacency matrix in question
+ */
+DLLEXPORT void bh_adjmat_destroy(bh_adjmat *adjmat);
 
 /* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
  * node indexes that depend on the row'th node.
@@ -75,9 +80,8 @@ DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr
  * @col_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx,
-                                     bh_intp *col_idx[]);
-
+DLLEXPORT const bh_intp *bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row,
+                                     bh_intp *ncol_idx);
 
 /* Retrieves a reference to a column in the adjacency matrix, i.e retrieval of the
  * node indexes that the col'th node depend on.
@@ -88,8 +92,8 @@ DLLEXPORT bh_error bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row, bh_in
  * @row_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_adjmat_get_col(bh_adjmat *adjmat, bh_intp col, bh_intp *nrow_idx,
-                                     bh_intp *row_idx[]);
+DLLEXPORT const bh_intp *bh_adjmat_get_col(const bh_adjmat *adjmat, bh_intp col,
+                                     bh_intp *nrow_idx);
 
 #ifdef __cplusplus
 }
