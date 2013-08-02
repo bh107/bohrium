@@ -181,6 +181,83 @@ static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims )
     }
 }
 
+static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
+{
+    //Print the node mappings
+    sprintf(buf, "NodeMap:\n");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        sprintf(buf+strlen(buf), "%ld =>\n", (long) i);
+        bh_sprint_instr(&bhir->instr_list[i], buf+strlen(buf));
+        sprintf(buf+strlen(buf), "\n");
+    }
+
+    //Print the adjacency matrix header
+    sprintf(buf+strlen(buf), "Adjacency Matrix:\n");
+    sprintf(buf+strlen(buf), "  |");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "%2ld", (long)i);
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print line between header and body
+    sprintf(buf+strlen(buf), "--+");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "--");
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print the adjacency matrix body
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        sprintf(buf+strlen(buf), "%2ld|", (long)i);
+        bh_intp ncol_idx, count=0;
+        const bh_intp *col_idx = bh_adjmat_get_row(&dag->adjmat, i, &ncol_idx);
+        for(bh_intp j=0; j<dag->nnode; ++j)
+        {
+            int value = 0;
+            if(ncol_idx > 0 && j == col_idx[count])
+            {
+                value = 1;
+                ++count;
+            }
+            sprintf(buf+strlen(buf), " %d",value);
+        }
+        sprintf(buf+strlen(buf), "\n");
+    }
+
+    //Print the adjacency matrix header
+    sprintf(buf+strlen(buf), "Adjacency MatrixT:\n");
+    sprintf(buf+strlen(buf), "  |");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "%2ld", (long)i);
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print line between header and body
+    sprintf(buf+strlen(buf), "--+");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "--");
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print the adjacency matrix body
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        sprintf(buf+strlen(buf), "%2ld|", (long)i);
+        bh_intp ncol_idx, count=0;
+        const bh_intp *col_idx = bh_adjmat_get_row(&dag->adjmat, i, &ncol_idx);
+        for(bh_intp j=0; j<dag->nnode; ++j)
+        {
+            int value = 0;
+            if(ncol_idx > 0 && j == col_idx[count])
+            {
+                value = 1;
+                ++count;
+            }
+            sprintf(buf+strlen(buf), " %d",value);
+        }
+        sprintf(buf+strlen(buf), "\n");
+    }
+
+}
+
 /*********************************************************/
 /****************** Public functions *********************/
 /*********************************************************/
@@ -249,3 +326,18 @@ void bh_pprint_coord(bh_index coord[], bh_index ndims)
     strcat(buf, " )");
     puts(buf);
 }
+
+
+/* Pretty print an BhIR DAG.
+ *
+ * @bhir The BhIR in question
+ * @dag  The DAG in question
+ *
+ */
+void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag)
+{
+    char buf[PPRINT_BUF_SIZE];
+    bh_sprint_dag(buf, bhir, dag);
+    puts(buf);
+}
+

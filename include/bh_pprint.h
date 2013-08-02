@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_opcode.h"
 #include "bh_array.h"
 #include "bh_error.h"
+#include "bh_ir.h"
+#include "bh_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +71,14 @@ DLLEXPORT void bh_pprint_base(const bh_base *base);
  * @ndims  Number of dimensions
  */
 DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
+
+/* Pretty print an BhIR DAG.
+ *
+ * @bhir The BhIR in question
+ * @dag  The DAG in question
+ *
+ */
+DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
 
 #ifdef __cplusplus
 }
