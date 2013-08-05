@@ -80,6 +80,13 @@ DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
  */
 DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
 
+/* Pretty print an BhIR.
+ *
+ * @bhir The BhIR in question
+ *
+ */
+DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
+
 #ifdef __cplusplus
 }
 #endif
