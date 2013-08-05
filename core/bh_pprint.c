@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PPRINT_BUF_STRIDE_SIZE 50
 #define PPRINT_BUF_SHAPE_SIZE 50
 #define PPRINT_BUF_OPSTR_SIZE 512
-#define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*4
+#define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*1024
 
 static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
 
