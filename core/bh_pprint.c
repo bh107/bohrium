@@ -214,7 +214,7 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
         for(bh_intp j=0; j<dag->nnode; ++j)
         {
             int value = 0;
-            if(ncol_idx > 0 && j == col_idx[count])
+            if(ncol_idx > 0 && count < ncol_idx && j == col_idx[count])
             {
                 value = 1;
                 ++count;
@@ -242,11 +242,11 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
     {
         sprintf(buf+strlen(buf), "%2ld|", (long)i);
         bh_intp ncol_idx, count=0;
-        const bh_intp *col_idx = bh_adjmat_get_row(&dag->adjmat, i, &ncol_idx);
+        const bh_intp *col_idx = bh_adjmat_get_col(&dag->adjmat, i, &ncol_idx);
         for(bh_intp j=0; j<dag->nnode; ++j)
         {
             int value = 0;
-            if(ncol_idx > 0 && j == col_idx[count])
+            if(ncol_idx > 0 && count < ncol_idx && j == col_idx[count])
             {
                 value = 1;
                 ++count;
@@ -255,7 +255,6 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
         }
         sprintf(buf+strlen(buf), "\n");
     }
-
 }
 
 /*********************************************************/
