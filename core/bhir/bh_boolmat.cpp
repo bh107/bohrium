@@ -116,6 +116,17 @@ bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat,
     for(bh_intp i=row+1; i<=boolmat->nrows; ++i)
         boolmat->row_ptr[i] += ncol_idx;
     boolmat->non_zeroes += ncol_idx;
+    assert(boolmat->non_zeroes == bh_vector_nelem(boolmat->col_idx));
+/*
+    printf("col idx:");
+    for(bh_intp i=0; i<boolmat->non_zeroes; ++i)
+        printf(" %ld", (long) boolmat->col_idx[i]);
+    printf("\n");
+    printf("row ptr:");
+    for(bh_intp i=0; i<=boolmat->nrows; ++i)
+        printf(" %ld", (long) boolmat->row_ptr[i]);
+    printf("\n");
+*/
     return BH_SUCCESS;
 }
 
