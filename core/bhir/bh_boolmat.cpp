@@ -50,8 +50,7 @@ bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows)
     memset(boolmat->row_ptr, 0, sizeof(bh_intp)*(nrows+1));
     //The size of column index list is equal to the number of True values
     //in the boolean matrix, which is unknown at creation time
-    boolmat->col_idx = (bh_intp *) bh_vector_create(boolmat->col_idx,
-                                                    sizeof(bh_intp), 0,
+    boolmat->col_idx = (bh_intp *) bh_vector_create(sizeof(bh_intp), 0,
                                                     nrows*2);
     if(boolmat->col_idx == NULL)
         return BH_OUT_OF_MEMORY;

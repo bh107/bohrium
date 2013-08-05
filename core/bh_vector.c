@@ -69,7 +69,7 @@ bh_intp bh_vector_elsize(const void *vector)
  *                It must be greater or equal to the initial size
  * @return        The new vector as a void pointer, or NULL if out of memory
  */
-void *bh_vector_create(void *vector, bh_intp elsize, bh_intp initial_size,
+void *bh_vector_create(bh_intp elsize, bh_intp initial_size,
                        bh_intp reserve_size)
 {
     assert(elsize > 0);
