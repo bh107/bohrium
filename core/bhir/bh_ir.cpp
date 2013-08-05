@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <assert.h>
 #include "bh_ir.h"
+#include "bh_vector.h"
 
 
 /* Creates a Bohrium Internal Representation (BhIR)
@@ -37,21 +38,21 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
     bh_intp instr_nbytes = sizeof(bh_instruction)*ninstr;
 
     //Make a copy of the instruction list
-    bhir->instr_list = (bh_instruction*) malloc(instr_nbytes);
+    bhir->instr_list = (bh_instruction*) bh_vector_create(instr_nbytes, ninstr, ninstr);
     if(bhir->instr_list == NULL)
         return BH_OUT_OF_MEMORY;
     memcpy(bhir->instr_list, instr_list, instr_nbytes);
     bhir->ninstr = ninstr;
 
     //Allocate the DAG list
-    bhir->dag_list = (bh_dag*) malloc(sizeof(bh_dag));
+    bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), 1, 10);
     if(bhir->dag_list == NULL)
         return BH_OUT_OF_MEMORY;
     bhir->ndag = 1;
 
     //Initiate the first (and only) DAG
     bh_dag *dag = &bhir->dag_list[0];
-    dag->node_map = (bh_intp*) malloc(sizeof(bh_intp)*ninstr);
+    dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), ninstr, ninstr);
     for(bh_intp i=0; i<ninstr; ++i)
         dag->node_map[i] = i;//A simple 1:1 map
     dag->nnode = ninstr;
@@ -68,11 +69,11 @@ void bh_ir_destroy(bh_ir *bhir)
     for(bh_intp i=0; i < bhir->ndag; ++i)
     {
         bh_dag *dag = &bhir->dag_list[i];
-        free(dag->node_map);
+        bh_vector_destroy(dag->node_map);
         bh_adjmat_destroy(&dag->adjmat);
     }
-    free(bhir->instr_list);
-    free(bhir->dag_list);
+    bh_vector_destroy(bhir->instr_list);
+    bh_vector_destroy(bhir->dag_list);
 }
 
 
