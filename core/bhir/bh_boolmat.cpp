@@ -63,8 +63,14 @@ bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows)
  */
 void bh_boolmat_destroy(bh_boolmat *boolmat)
 {
-    free(boolmat->row_ptr);
-    bh_vector_destroy(boolmat->col_idx);
+    if(boolmat->row_ptr != NULL)
+        free(boolmat->row_ptr);
+    if(boolmat->col_idx != NULL)
+        bh_vector_destroy(boolmat->col_idx);
+    boolmat->row_ptr = NULL;
+    boolmat->col_idx = NULL;
+    boolmat->nrows = 0;
+    boolmat->non_zeroes = 0;
 }
 
 

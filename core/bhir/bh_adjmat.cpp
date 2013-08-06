@@ -106,9 +106,7 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         }
     }
     //Lets compute the transposed matrix
-    bh_boolmat_transpose(&adjmat->m, &adjmat->mT);
-
-    return BH_SUCCESS;
+    return bh_boolmat_transpose(&adjmat->m, &adjmat->mT);
 }
 
 
