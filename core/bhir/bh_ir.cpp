@@ -53,6 +53,8 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
     //Initiate the first (and only) DAG
     bh_dag *dag = &bhir->dag_list[0];
     dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), ninstr, ninstr);
+    if(dag->node_map == NULL)
+        return BH_OUT_OF_MEMORY;
     for(bh_intp i=0; i<ninstr; ++i)
         dag->node_map[i] = i;//A simple 1:1 map
     dag->nnode = ninstr;
