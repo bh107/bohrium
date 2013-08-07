@@ -31,7 +31,10 @@ bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
     if (bh_is_scalar(inst->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        bh_error err = bh_compute_reduce(inst);
+	bh_error err = bh_data_malloc(inst->operand[0]);
+	if (err != BH_SUCCESS)
+	  return err;		  
+        err = bh_compute_reduce(inst);
         if (err == BH_SUCCESS)
             static_cast<BaseArray*>(userFuncArg->operands[0])->update();
         return err;
