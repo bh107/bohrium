@@ -183,6 +183,15 @@ static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims )
 
 static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
 {
+    if(bhir->ninstr > 100)
+    {
+        sprintf(buf, "NodeMap: (%d nodes are too many to show)\n",
+                (int) bhir->ninstr);
+        sprintf(buf, "Adjacency Matrix: (%d rows/columns are too many to show)\n",
+                (int) bhir->ninstr);
+        return;
+    }
+
     //Print the node mappings
     sprintf(buf, "NodeMap:\n");
     for(bh_intp i=0; i<dag->nnode; ++i)
@@ -255,6 +264,15 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
 
 static void bh_sprint_bhir(char buf[], const bh_ir *bhir)
 {
+    if(bhir->ninstr > 100)
+    {
+        sprintf(buf, "Instruction list (%d): {...} (too large to show)\n",
+                (int) bhir->ninstr);
+        sprintf(buf+strlen(buf), "DAG list (%d): {...} (too large to show)\n",
+                (int) bhir->ndag);
+        return;
+    }
+
     sprintf(buf, "Instruction list (%d): {\n", (int) bhir->ninstr);
     for(bh_intp i=0; i < bhir->ninstr; ++i)
     {
