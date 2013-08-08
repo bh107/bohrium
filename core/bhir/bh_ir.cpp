@@ -20,6 +20,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 #include <assert.h>
+#include <map>
+#include <set>
+#include <algorithm>
+#include <vector>
 #include "bh_ir.h"
 #include "bh_vector.h"
 
@@ -137,4 +141,218 @@ bh_error bh_node_goto_dag(const bh_node *dag_node,
 }
 
 
+/* Splits the DAG into an updated version of itself and a new sub-DAG that
+ * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
+ * the updated DAG will have a new node that represents the sub-DAG.
+ *
+ * @bhir        The BhIR node
+ * @nnodes      Number of nodes in the new sub-DAG
+ * @nodes_idx   The nodes in the original DAG that will constitute the new sub-DAG.
+ *              NB: this list will be sorted inplace
+ * @dag_idx     The original DAG to split and thus modified
+ * @sub_dag_idx The new sub-DAG which will be overwritten. -1 indicates that the
+ *              new sub-DAG should be appended the DAG list
+ *
+ * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+*/
+bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
+                      bh_intp dag_idx, bh_intp sub_dag_idx)
+{
+    bh_error e;
+    assert(bhir->ndag == bh_vector_nelem(bhir->dag_list));
+    assert(dag_idx < bhir->ndag);
+    bh_dag *dag = &bhir->dag_list[dag_idx];
 
+    if(sub_dag_idx == -1)
+    {   //Lets make room for the new DAG
+        bhir->dag_list = (bh_dag*) bh_vector_resize(bhir->dag_list, ++bhir->ndag);
+        if(bhir->dag_list == NULL)
+            return BH_OUT_OF_MEMORY;
+        sub_dag_idx = bhir->ndag - 1;
+    }
+    else
+    {   //Lets cleanup the DAG that might already exist at the index
+        assert(sub_dag_idx < bhir->ndag);
+        bh_dag *d = &bhir->dag_list[sub_dag_idx];
+        bh_vector_destroy(d->node_map);
+        bh_adjmat_destroy(&d->adjmat);
+    }
+
+    //Create the sub-DAG and the associated adjacency matrix
+    bh_dag *sub_dag = &bhir->dag_list[sub_dag_idx];
+    sub_dag->nnode = nnodes;
+    sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
+    if(sub_dag->node_map == NULL)
+        return BH_OUT_OF_MEMORY;
+    e = bh_boolmat_create(&sub_dag->adjmat.m, nnodes);
+    if(e != BH_SUCCESS)
+        return e;
+
+    //Just by sorting the nodes we find the topological order
+    std::sort(nodes_idx, nodes_idx+nnodes);
+
+    //Lets create a map from the original node indexes to the new sub-DAG node
+    //indexes and create a node map for the sub-DAG
+    std::map<bh_intp, bh_intp> org2sub;
+    for(bh_intp i=0; i<nnodes; ++i)
+    {
+        org2sub[nodes_idx[i]] = i;
+        sub_dag->node_map[i] = dag->node_map[nodes_idx[i]];
+    }
+
+    //In order to update the original DAG, we need to find the new sub-DAG's
+    //input and output nodes. Additionally, we need to convert the node indexes
+    //in 'nodes_idx' into sub-DAG node indexes.
+    std::set<bh_intp> input, output;
+    for(bh_intp i=0; i<nnodes; ++i)
+    {
+        bh_intp nchildren, nparents;
+        //Check all the i'th nodes's children
+        const bh_intp *children = bh_adjmat_get_row(&dag->adjmat, nodes_idx[i], &nchildren);
+        std::vector<bh_intp> children_in_sub_dag;
+        for(bh_intp j=0; j<nchildren; ++j)
+        {
+            bh_intp child = children[j];
+            if(org2sub.find(child) != org2sub.end())//The child is part of the sub-DAG
+                children_in_sub_dag.push_back(org2sub[child]);
+            else
+                output.insert(child);
+        }
+        //Check all the i'th nodes's parents
+        const bh_intp *parents = bh_adjmat_get_col(&dag->adjmat, nodes_idx[i], &nparents);
+        for(bh_intp j=0; j<nparents; ++j)
+        {
+            bh_intp parent = parents[j];
+            if(org2sub.find(parent) == org2sub.end())//The parent is NOT part of the sub-DAG
+                input.insert(parent);
+        }
+
+        //Now we know the i'th node's children that are within the sub-DAG
+        e = bh_boolmat_fill_empty_row(&sub_dag->adjmat.m, i, children_in_sub_dag.size(),
+                                      &children_in_sub_dag[0]);
+        if(e != BH_SUCCESS)
+            return e;
+    }
+    //To finish the sub-DAG we have to save the transposed matrix as well
+    e = bh_boolmat_transpose(&sub_dag->adjmat.mT, &sub_dag->adjmat.m);
+    if(e != BH_SUCCESS)
+        return e;
+
+
+    //Save a copy of the original DAG and create a new DAG
+    bh_dag org_dag = *dag;
+    dag->nnode = org_dag.nnode - nnodes + 1;
+    e = bh_boolmat_create(&dag->adjmat.mT, dag->nnode);
+    if(e != BH_SUCCESS)
+        return e;
+    dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), dag->nnode, dag->nnode);
+    if(dag->node_map == NULL)
+        return BH_OUT_OF_MEMORY;
+
+/* We fill the new DAG in three phases:
+ *   1) Fill the initial rows in the new DAG with all nodes that do
+ *      NOT depend on the sub-DAG (preserving their topological order)
+ *   2) Fill the next row in the new DAG with a new node that represents
+ *      the sub-DAG. The topological order is preserved since no previous
+ *      nodes depend on the sub-DAG.
+ *   3) Fill the last rows in the new DAG with all nodes that depend on
+ *      the sub-DAG (preserving their topological order)
+ *
+ * Additionally, while inserting a row in the new DAG we convert the node’s
+ * dependency indexes to match their new location.
+ */
+
+    //Phases 1)
+    std::map<bh_intp, bh_intp> org2new;
+    bh_intp nrows=0;//Current number of filled rows in the new DAG
+    for(bh_intp org_idx=0; org_idx < org_dag.nnode; ++org_idx)
+    {
+        if(org2sub.find(org_idx) != org2sub.end())//The original node is part of the sub-DAG
+            continue;//Ignore all sub-DAG nodes
+
+        if(output.find(org_idx) == output.end())//The original node dosn't depend on the sub-DAG
+        {
+            org2new[org_idx] = nrows;
+            bh_intp nparents;
+            const bh_intp *parents = bh_adjmat_get_col(&org_dag.adjmat, org_idx, &nparents);
+            std::vector<bh_intp> parents_in_new_dag;
+            //Lets save the parents as indexes in the new DAG
+            for(bh_intp i=0; i<nparents; ++i)
+            {
+                bh_intp parent = parents[i];
+                if(org2sub.find(parent) == org2sub.end())//The parent is NOT part of the sub-DAG
+                    parents_in_new_dag.push_back(org2new[parent]);
+            }
+            e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+                                          &parents_in_new_dag[0]);
+            if(e != BH_SUCCESS)
+                return e;
+
+            dag->node_map[nrows] = org_dag.node_map[org_idx];
+            ++nrows;
+        }
+        else//The original node depend on the sub-DAG
+        {
+            output.insert(org_idx);
+        }
+    }
+
+    //Phases 2)
+    //Insert the new sub-DAG and at the nrows
+    bh_intp sub_dag_location = nrows;
+    {
+        std::vector<bh_intp> parents_in_new_dag;
+        //Lets save the parents as indexes in the new DAG
+        for(std::set<bh_intp>::iterator it=input.begin(); it != input.end(); ++it)
+        {
+            parents_in_new_dag.push_back(org2new[*it]);
+        }
+        e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+                                      &parents_in_new_dag[0]);
+        if(e != BH_SUCCESS)
+            return e;
+
+        dag->node_map[nrows] = -1*(sub_dag_idx+1);
+        ++nrows;
+    }
+
+    //Phases 3)
+    for(bh_intp org_idx=0; org_idx < org_dag.nnode; ++org_idx)
+    {
+        if(org2sub.find(org_idx) != org2sub.end())//The original node is part of the sub-DAG
+            continue;//Ignore all sub-DAG nodes
+
+        if(output.find(org_idx) != output.end())//The original node depends on the sub-DAG
+        {
+            org2new[org_idx] = nrows;
+            bh_intp nparents;
+            const bh_intp *parents = bh_adjmat_get_col(&org_dag.adjmat, org_idx, &nparents);
+            std::vector<bh_intp> parents_in_new_dag;
+            //Lets save the parents as indexes in the new DAG
+            for(bh_intp i=0; i<nparents; ++i)
+            {
+                bh_intp parent = parents[i];
+                if(org2sub.find(parent) == org2sub.end())//The parent is NOT part of the sub-DAG
+                    parents_in_new_dag.push_back(org2new[parent]);
+            }
+            parents_in_new_dag.push_back(sub_dag_location);
+            e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+                                          &parents_in_new_dag[0]);
+            if(e != BH_SUCCESS)
+                return e;
+
+            dag->node_map[nrows] = org_dag.node_map[org_idx];
+            ++nrows;
+        }
+    }
+    assert(dag->nnode == nrows);
+    //Finally we need the transposed matrix aswell
+    e = bh_boolmat_transpose(&dag->adjmat.m, &dag->adjmat.mT);
+    if(e != BH_SUCCESS)
+        return e;
+
+    //Cleanup the original DAG
+    bh_vector_destroy(org_dag.node_map);
+    bh_adjmat_destroy(&org_dag.adjmat);
+    return BH_SUCCESS;
+}

@@ -110,6 +110,24 @@ DLLEXPORT void bh_node_reset(bh_node *node, const bh_ir *bhir);
  */
 DLLEXPORT bh_error bh_node_next(bh_node *node);
 
+/* Splits the DAG into an updated version of itself and a new sub-DAG that
+ * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
+ * the updated DAG will have a new node that represents the sub-DAG.
+ *
+ * @bhir        The BhIR node
+ * @nnodes      Number of nodes in the new sub-DAG
+ * @nodes_idx   The nodes in the original DAG that will constitute the new sub-DAG.
+ *              NB: this list will be sorted inplace
+ * @dag_idx     The original DAG to split and thus modified
+ * @sub_dag_idx The new sub-DAG which will be overwritten. -1 indicates that the
+ *              new sub-DAG should be appended the DAG list
+ *
+ * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+*/
+DLLEXPORT bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
+                                bh_intp dag_idx, bh_intp sub_dag_idx);
+
+
 
 #ifdef __cplusplus
 }
