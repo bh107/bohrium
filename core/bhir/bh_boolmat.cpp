@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include "bh_boolmat.h"
 #include <bh_vector.h>
+#include <algorithm>
 
 /* The Boolean matrix (bh_boolmat) is a squared matrix that
  * uses the sparse matrix representation Compressed sparse row (CSR).
@@ -83,6 +84,7 @@ void bh_boolmat_destroy(bh_boolmat *boolmat)
  * @row       The index to the empty row
  * @ncol_idx  Number of column indexes
  * @col_idx   List of column indexes (see CSR documentation)
+ *            NB: this list will be sorted thus any order is acceptable
  * @return    Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
 bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat,
@@ -105,23 +107,27 @@ bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat,
                 "rows (rows greater than %ld) is not all zeroes\n", (long) row);
         return BH_ERROR;
     }
-//    printf("bh_boolmat_fill_empty_row - row: %ld, col_idx: [", row);
-    for(bh_intp i=0; i<ncol_idx; ++i)
-    {
-//        printf("%ld ", col_idx[i]);
-        //Since the boolean matrix should be filled in ascending row order
-        //we know that the vector grows synchronously
-        boolmat->col_idx = (bh_intp*) bh_vector_push_back(boolmat->col_idx, &col_idx[i]);
-        if(boolmat->col_idx == NULL)
-            return BH_OUT_OF_MEMORY;
-        //Check that the boolean matrix grows in ascending row order
-        assert(bh_vector_nelem(boolmat->col_idx)-1 == boolmat->row_ptr[row] + i);
-    }
-//    printf("]\n");
+
+    //Since the boolean matrix should be filled in ascending row order
+    //we know that the vector grows by appending the new column indexes
+    bh_intp size = bh_vector_nelem(boolmat->col_idx);
+    boolmat->col_idx = (bh_intp*) bh_vector_resize(boolmat->col_idx, size+ncol_idx);
+    if(boolmat->col_idx == NULL)
+        return BH_OUT_OF_MEMORY;
+
+    //Lets copy the new column indexes to the end
+    bh_intp *start = boolmat->col_idx+size;
+    memcpy(start, col_idx, ncol_idx*sizeof(bh_intp));
+
+    //Lets sort the column list in ascending order (inplace)
+    std::sort(start, start+ncol_idx);
+
+    //Lets update the preceding row pointers and the number of non-zeroes
     for(bh_intp i=row+1; i<=boolmat->nrows; ++i)
         boolmat->row_ptr[i] += ncol_idx;
     boolmat->non_zeroes += ncol_idx;
     assert(boolmat->non_zeroes == bh_vector_nelem(boolmat->col_idx));
+
 /*
     printf("col idx:");
     for(bh_intp i=0; i<boolmat->non_zeroes; ++i)

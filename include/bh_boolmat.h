@@ -70,6 +70,7 @@ DLLEXPORT void bh_boolmat_destroy(bh_boolmat *boolmat);
  * @row       The index to the empty row
  * @ncol_idx  Number of column indexes
  * @col_idx   List of column indexes (see CSR documentation)
+ *            NB: this list will be sorted thus any order is acceptable
  * @return    Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
 DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat,
