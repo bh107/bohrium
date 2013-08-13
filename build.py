@@ -166,8 +166,8 @@ if __name__ == "__main__":
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
                   ("VE-TILING", "ve/tiling", False),\
-                  #("VE-MCORE", "ve/mcore", False),\
-                  #("VE-DYNAMITE", "ve/dynamite", False),\
+                  ("VE-MCORE", "ve/mcore", False),\
+                  ("VE-DYNAMITE", "ve/dynamite", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
                   #("FILTER-POWER", "filter/power", False),\
