@@ -147,15 +147,14 @@ size_t Runtime::execute()
 {
     size_t cur_size = queue_size;
     
-    bh_ir* bhir;
-    bh_error status = bh_graph_create(&bhir, queue, queue_size);
+    bh_ir bhir;
+    bh_error status = bh_ir_create(&bhir, queue_size, queue);
     if (status == BH_SUCCESS) {
-        status = child->execute(bhir);   // Send instructions to Bohrium
+        status = child->execute(&bhir);   // Send instructions to Bohrium
         queue_size = 0;                 // Reset size of the queue
     }
     
-    bh_graph_destroy(bhir);
-    bhir = NULL;
+    bh_ir_destroy(&bhir);
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
