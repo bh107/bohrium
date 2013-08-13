@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <algorithm>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "bh_ir.h"
 #include "bh_vector.h"
 
@@ -356,3 +358,56 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     bh_adjmat_destroy(&org_dag.adjmat);
     return BH_SUCCESS;
 }
+
+
+/* Write the BhIR in the DOT format.
+ *
+ * @bhir      The graph to print
+ * @filename  Name of the written dot file, the DAG number
+ *            and ".dot" is appended the file name
+ */
+void bh_bhir2dot(const bh_ir* bhir, const char* filename)
+{
+
+    for(bh_intp dag_idx=0; dag_idx<bhir->ndag; ++dag_idx)
+    {
+        char f[8000];
+        snprintf(f, 8000, "%s-DAG%d.dot", filename, (int) dag_idx);
+        std::ofstream fs(f);
+
+        fs << "digraph {" << std::endl;
+        const bh_dag *dag = &bhir->dag_list[dag_idx];
+        for(bh_intp node_idx=0; node_idx<dag->nnode; ++node_idx)
+        {
+            bh_intp idx = dag->node_map[node_idx];
+            fs << "d" << dag_idx << "_n" << node_idx;
+            if(idx >= 0)
+            {
+                const bh_instruction *instr = &bhir->instr_list[idx];
+                fs << " [shape=box label=\"I" << idx << "_";
+                fs << bh_opcode_text(instr->opcode) << "\"]";
+
+            }
+            else
+            {
+                fs << " [label=\"D" << -1*(idx+1) << "_sub-DAG\"]";
+            }
+            fs << ";" << std::endl;
+
+            bh_intp nparents;
+            const bh_intp *children = bh_adjmat_get_row(&dag->adjmat,
+                                                        node_idx, &nparents);
+            for(bh_intp i=0; i<nparents; ++i)
+            {
+                bh_intp child = children[i];
+                fs << "d" << dag_idx << "_n" << node_idx;
+                fs << " -> ";
+                fs << "d" << dag_idx << "_n" << child;
+                fs << ";" << std::endl;
+            }
+        }
+        fs << "}" << std::endl;
+        fs.close();
+    }
+}
+
