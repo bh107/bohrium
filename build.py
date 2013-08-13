@@ -173,6 +173,7 @@ if __name__ == "__main__":
                   #("FILTER-POWER", "filter/power", False),\
                   #("FILTER-FUSION", "filter/fusion", False),\
                   #("FILTER-STREAMING", "filter/streaming", False),\
+                  ("FILTER-PPRINT", "filter/pprint", True),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
