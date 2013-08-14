@@ -165,20 +165,17 @@ bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
 bh_error bh_vem_node_execute(bh_ir* bhir)
 {
     bh_uint64 start = bh_timing();
-    
-    bh_graph_iterator* it;
-    bh_instruction* inst;
-    if (bh_graph_iterator_create(bhir, &it) != BH_SUCCESS)
-        return BH_ERROR;
 
-    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
     {
+        bh_instruction *instr = &bhir->instr_list[i];
+
         #ifdef BH_TRACE
-            bh_component_trace_inst(vem_node_myself, inst);
+            bh_component_trace_inst(vem_node_myself, instr);
         #endif
 
-        int nop = bh_operands_in_instruction(inst);
-        bh_view *operands = bh_inst_operands(inst);
+        int nop = bh_operands_in_instruction(instr);
+        bh_view *operands = bh_inst_operands(instr);
 
         //Save all new base arrays
         for(bh_intp o=0; o<nop; ++o)
@@ -196,7 +193,7 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         #endif
 
         //And remove discared arrays
-        if(inst->opcode == BH_DISCARD)
+        if(instr->opcode == BH_DISCARD)
         {
             bh_base *base = operands[0].base;
             if(allocated_bases.erase(base) != 1)
@@ -207,8 +204,6 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         }
     }
 
-    bh_graph_iterator_destroy(it);
-    
 //    bh_pprint_instr_list(inst_list, count, "NODE");
 
     bh_error ret = ve_execute(bhir);

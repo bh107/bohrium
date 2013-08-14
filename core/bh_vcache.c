@@ -18,7 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <errno.h>
+#include <bh.h>
 #include <bh_vcache.h>
+
 //
 // C-Friendly version of the vcache.
 //

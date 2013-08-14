@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -100,38 +100,38 @@ inline bh_error block_execute(bh_instruction* instr, bh_intp start, bh_intp end)
         }
 
     	bh_ve_tiling_buffersizes = 0;                   // Make sure we re-allocate on error
-    	
+
     	if (bh_ve_tiling_compute_loops != NULL) {
     		free(bh_ve_tiling_compute_loops);
     		free(bh_ve_tiling_tstates);
     		bh_ve_tiling_compute_loops = NULL;
     		bh_ve_tiling_tstates = NULL;
     	}
-    	
+
     	bh_ve_tiling_compute_loops    = (bh_computeloop_naive*)malloc(sizeof(bh_computeloop_naive) * mcount);
         bh_ve_tiling_tstates          = (bh_tstate_naive*)malloc(sizeof(bh_tstate_naive)*mcount);
-    	
+
     	if (bh_ve_tiling_compute_loops == NULL) {
     		return BH_OUT_OF_MEMORY;
         }
     	if (bh_ve_tiling_tstates == NULL) {
     		return BH_OUT_OF_MEMORY;
         }
-    	
+
     	bh_ve_tiling_buffersizes = mcount;
     }
-    
+
     bh_computeloop_naive* compute_loops = bh_ve_tiling_compute_loops;
     bh_tstate_naive* states = bh_ve_tiling_tstates;
     bh_intp  nelements, trav_end=0;
     bh_error ret_errcode = BH_SUCCESS;
-    
+
     for(i=0; i<= (end-start);i++) {                 // Reset traversal coordinates
         bh_tstate_reset_naive(&states[i]);
     }
 
     for(i=start, k=0; i <= end; i++,k++) {          // Get the compute-loops
-        switch(instr[i].opcode) {                   
+        switch(instr[i].opcode) {
             case BH_DISCARD:                        // Ignore sys-ops
             case BH_FREE:
             case BH_SYNC:
@@ -156,9 +156,9 @@ inline bh_error block_execute(bh_instruction* instr, bh_intp start, bh_intp end)
         if (trav_end > nelements) {
             trav_end = nelements;
         }
-        
+
         for(i=start, k=0; i <= end; i++, k++) {
-            switch(instr[i].opcode) {               
+            switch(instr[i].opcode) {
                 case BH_DISCARD:                    // Ignore sys-ops
                 case BH_FREE:
                 case BH_SYNC:
@@ -171,7 +171,7 @@ inline bh_error block_execute(bh_instruction* instr, bh_intp start, bh_intp end)
             }
         }
     }
-    
+
     return ret_errcode;
 }
 
@@ -184,20 +184,14 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
     bh_intp bundle_start, bundle_end, bundle_size;
     bh_error res = BH_SUCCESS;
 
-    bh_intp instruction_count = bhir->instructions->count;
-    bh_instruction* instruction_list = (bh_instruction*)malloc(sizeof(bh_instruction) * instruction_count);
-    res = bh_graph_serialize(bhir, instruction_list, &instruction_count);
-    if (res != BH_SUCCESS) {
-        free(instruction_list);
-        return res;
-    }
+    bh_intp instruction_count = bhir->ninstr;
+    bh_instruction* instruction_list = bhir->instr_list;
 
     for(cur_index=0; cur_index<instruction_count; cur_index++) {
         inst = &instruction_list[cur_index];
 
         res = bh_vcache_malloc(inst);       // Allocate memory for operands
         if (res != BH_SUCCESS) {
-            free(instruction_list);
             return res;
         }
         switch(inst->opcode) {              // Dispatch instruction
@@ -244,18 +238,18 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
                 break;
 
             default:                            // Built-in operations
-                
+
                 //
                 // -={[ BINNING ]}=-
                 // Count built-ins and their start/end indexes and
                 // allocate memory for them.
                 //
-                bin_start   = cur_index; 
+                bin_start   = cur_index;
                 bin_end     = cur_index;
                 bool has_sys = false;
                 for(j=bin_start+1; (j<instruction_count) && (j<bin_start+1+bin_max); j++) {
-                    binst = &instruction_list[j];               
-                    
+                    binst = &instruction_list[j];
+
                     if ((binst->opcode == BH_USERFUNC)              || \
                         (binst->opcode == BH_ADD_REDUCE)            || \
                         (binst->opcode == BH_MULTIPLY_REDUCE)       || \
@@ -266,7 +260,7 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
                         (binst->opcode == BH_LOGICAL_XOR_REDUCE)    || \
                         (binst->opcode == BH_BITWISE_AND_REDUCE)    || \
                         (binst->opcode == BH_BITWISE_OR_REDUCE)     || \
-                        (binst->opcode == BH_BITWISE_XOR_REDUCE)) { 
+                        (binst->opcode == BH_BITWISE_XOR_REDUCE)) {
                         break;          // Cannot bin reductions and userfuncs.
                     }
                                                                 // Delay sys-op
@@ -281,7 +275,6 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
                     bin_end++;                                  // The "end" index
                     res = bh_vcache_malloc(binst);              // Allocate memory for operands
                     if (res != BH_SUCCESS) {
-                        free(instruction_list);
                         return res;
                     }
                 }
@@ -289,7 +282,7 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
 
                 //
                 // -={[ BUNDLING ]}=-
-                // 
+                //
                 // Determine whether the list of instructions can be executed in a tiled fashion.
                 //
                 bundle_size     = (bin_size > 1) ? bh_inst_bundle(instruction_list, bin_start, bin_end, base_max) : 1;
@@ -299,7 +292,7 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
                 //printf("Bundle: %ld %ld -> %ld\n", bundle_size, bundle_start, bundle_end);
                 if (bundle_size > 1) {                  // Execute in a tiled fashion
                     block_execute(instruction_list, bundle_start, bundle_end);
-                    
+
                     if (has_sys) {                      // De-allocate memory for operands.
                         for(j=bundle_start; j <= bundle_end; j++) {
                             inst = &instruction_list[j];
@@ -314,7 +307,7 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
                                     res = bh_vcache_free(inst);
                                     break;
                             }
-                            
+
                             if (res != BH_SUCCESS) {    // De-allocation failed.
                             	break;
                             }
@@ -338,7 +331,6 @@ bh_error bh_ve_tiling_execute(bh_ir* bhir)
         }
     }
 
-    free(instruction_list);
 	return res;
 }
 
@@ -361,7 +353,7 @@ bh_error bh_ve_tiling_reg_func(char *fun, bh_intp *id)
             }
 
 			random_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = random_impl_id;
         	return BH_SUCCESS;
@@ -374,7 +366,7 @@ bh_error bh_ve_tiling_reg_func(char *fun, bh_intp *id)
             }
 
 			matmul_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
@@ -387,7 +379,7 @@ bh_error bh_ve_tiling_reg_func(char *fun, bh_intp *id)
             }
 
 			lu_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = lu_impl_id;
         	return BH_SUCCESS;
@@ -400,7 +392,7 @@ bh_error bh_ve_tiling_reg_func(char *fun, bh_intp *id)
             }
 
 			fft_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = fft_impl_id;
         	return BH_SUCCESS;
@@ -413,13 +405,13 @@ bh_error bh_ve_tiling_reg_func(char *fun, bh_intp *id)
             }
 
 			fft2_impl_id = *id;
-			return BH_SUCCESS;			
+			return BH_SUCCESS;
         } else {
         	*id = fft2_impl_id;
         	return BH_SUCCESS;
         }
     }
-    
+
     return BH_USERFUNC_NOT_SUPPORTED;
 }
 

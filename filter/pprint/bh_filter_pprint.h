@@ -17,45 +17,23 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __BH_FILTER_PPRINT_H
+#define __BH_FILTER_PPRINT_H
 
-#include <iostream>
 #include <bh.h>
+#include "pprint_filter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static bh_component* component = NULL;
-
-bh_error bh_ve_print_init(bh_component* _component)
-{
-    component = _component;
-    return BH_SUCCESS;
-}
-
-bh_error bh_ve_print_execute(bh_ir* bhir)
-{
-    std::cout << "# ----------------------------- Recieved batch with " <<
-        bhir->ninstr <<
-        " instructions --------------------------------------- #" << std::endl;
-
-    for(bh_intp i=0; i<bhir->ninstr; ++i)
-        bh_pprint_instr(&bhir->instr_list[i]);
-
-    return BH_SUCCESS;
-}
-
-bh_error bh_ve_print_shutdown()
-{
-    return BH_SUCCESS;
-}
-
-bh_error bh_ve_print_reg_func(char *fun,
-                                  bh_intp *id)
-{
-    return BH_SUCCESS;
-}
+DLLEXPORT bh_error bh_filter_pprint_init(bh_component *self);
+DLLEXPORT bh_error bh_filter_pprint_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_pprint_shutdown(void);
+DLLEXPORT bh_error bh_filter_pprint_reg_func(const char *fun, bh_intp *id);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

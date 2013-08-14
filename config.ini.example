@@ -67,3 +67,8 @@ children = cpu
 type = filter
 impl = /opt/bohrium/libbh_filter_streaming.so
 children = cpu
+
+[pprint]
+type = filter
+impl = /opt/bohrium/libbh_filter_pprint.so
+children = cpu

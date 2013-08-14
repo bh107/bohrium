@@ -267,23 +267,19 @@ inline bh_error dispatch( bh_instruction* instr, bh_index nelements) {
 bh_error bh_ve_mcore_execute(bh_ir* bhir)
 {
     //bh_intp count;
-    bh_instruction* inst;
-    bh_graph_iterator* it;
+    bh_instruction* instr;
     bh_index  nelements;
     bh_error res = BH_SUCCESS;
 
-    res = bh_graph_iterator_create(bhir, &it);
-    if (res != BH_SUCCESS)
-        return res;
+    for(bh_intp i=0; i < bhir->ninstr; ++i) {
+        instr = &bhir->instr_list[i];
 
-    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
-    {
-        res = bh_vcache_malloc(inst);     // Allocate memory for operands
+        res = bh_vcache_malloc(instr);     // Allocate memory for operands
         if (res != BH_SUCCESS) {
             return res;
         }
 
-        switch(inst->opcode) {              // Dispatch instruction
+        switch(instr->opcode) {              // Dispatch instruction
             case BH_NONE:                    // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
@@ -291,7 +287,7 @@ bh_error bh_ve_mcore_execute(bh_ir* bhir)
                 break;
 
             case BH_FREE:
-                res = bh_vcache_free(inst);
+                res = bh_vcache_free(instr);
                 break;
 
             case BH_ADD_REDUCE:
@@ -304,20 +300,20 @@ bh_error bh_ve_mcore_execute(bh_ir* bhir)
             case BH_BITWISE_OR_REDUCE:
             case BH_LOGICAL_XOR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
-				res = bh_compute_reduce_naive(inst);
+				res = bh_compute_reduce_naive(instr);
             	break;
 
             case BH_USERFUNC:                // External libraries
-                if(inst->userfunc->id == random_impl_id) {
-                    res = random_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == matmul_impl_id) {
-                    res = matmul_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == lu_impl_id) {
-                    res = lu_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == fft_impl_id) {
-                    res = fft_impl(inst->userfunc, NULL);
-                } else if(inst->userfunc->id == fft2_impl_id) {
-                    res = fft2_impl(inst->userfunc, NULL);
+                if(instr->userfunc->id == random_impl_id) {
+                    res = random_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == matmul_impl_id) {
+                    res = matmul_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == lu_impl_id) {
+                    res = lu_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == fft_impl_id) {
+                    res = fft_impl(instr->userfunc, NULL);
+                } else if(instr->userfunc->id == fft2_impl_id) {
+                    res = fft2_impl(instr->userfunc, NULL);
                 } else {
                     res = BH_USERFUNC_NOT_SUPPORTED;// Unsupported userfunc
                 }
@@ -325,13 +321,13 @@ bh_error bh_ve_mcore_execute(bh_ir* bhir)
 
             default:                            // Built-in operations
 
-                nelements = bh_nelements(inst->operand[0].ndim, inst->operand[0].shape);
+                nelements = bh_nelements(instr->operand[0].ndim, instr->operand[0].shape);
                 if (nelements < 1024*1024) {        // Do not bother threading...
-                    res = bh_compute_apply_naive(inst);
-                } else if (inst->operand[0].shape[inst->operand[0].ndim-1] < 100) {
-                    res = bh_compute_apply_naive(inst);
+                    res = bh_compute_apply_naive(instr);
+                } else if (instr->operand[0].shape[instr->operand[0].ndim-1] < 100) {
+                    res = bh_compute_apply_naive(instr);
                 } else {                            // DO bother!
-                    res = dispatch(inst, nelements);
+                    res = dispatch(instr, nelements);
                 }
         }
 
@@ -340,7 +336,6 @@ bh_error bh_ve_mcore_execute(bh_ir* bhir)
         }
     }
 
-    bh_graph_iterator_destroy(it);
     return res;
 }
 

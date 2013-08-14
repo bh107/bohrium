@@ -21,7 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_BOOLMAT_H
 #define __BH_BOOLMAT_H
 
-#include "bh.h"
+#include "bh_error.h"
+#include "bh_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +42,9 @@ typedef struct
     //that points to the last column index (see CSR documentation)
     bh_intp *row_ptr;
     //List of column indexes (see CSR documentation)
-    bh_dynamic_list *col_idx;
+    bh_intp *col_idx;
+    //Number of non-zeroes in the matrix
+    bh_intp non_zeroes;
 } bh_boolmat;
 
 /* Creates a empty squared boolean matrix.
@@ -52,6 +55,12 @@ typedef struct
  */
 DLLEXPORT bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows);
 
+/* De-allocate the boolean matrix
+ *
+ * @boolmat  The boolean matrix in question
+ */
+DLLEXPORT void bh_boolmat_destroy(bh_boolmat *boolmat);
+
 /* Fills a empty row in the boolean matrix where all
  * the following rows are empty as well.
  * Hint: use this function to build a Boolean matrix from
@@ -61,10 +70,13 @@ DLLEXPORT bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows);
  * @row       The index to the empty row
  * @ncol_idx  Number of column indexes
  * @col_idx   List of column indexes (see CSR documentation)
+ *            NB: this list will be sorted thus any order is acceptable
  * @return    Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row,
-                                             bh_intp ncol_idx, const bh_intp col_idx[]);
+DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat,
+                                             bh_intp row,
+                                             bh_intp ncol_idx,
+                                             const bh_intp col_idx[]);
 
 /* Retrieves a reference to a row in the boolean matrix
  *
@@ -74,8 +86,18 @@ DLLEXPORT bh_error bh_boolmat_fill_empty_row(bh_boolmat *boolmat, bh_intp row,
  * @col_idx   List of column indexes (output)
  * @return    Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_boolmat_get_row(bh_boolmat *boolmat, bh_intp row, bh_intp *ncol_idx,
-                                      bh_intp *col_idx[]);
+DLLEXPORT const bh_intp *bh_boolmat_get_row(const bh_boolmat *boolmat,
+                                            bh_intp row,
+                                            bh_intp *ncol_idx);
+
+
+/* Returns a transposed copy
+ *
+ * @out  The output matrix
+ * @in   The input matrix
+ * @return    Error code (BH_SUCCESS, BH_ERROR)
+ */
+DLLEXPORT bh_error bh_boolmat_transpose(bh_boolmat *out, const bh_boolmat *in);
 
 #ifdef __cplusplus
 }

@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PPRINT_BUF_STRIDE_SIZE 50
 #define PPRINT_BUF_SHAPE_SIZE 50
 #define PPRINT_BUF_OPSTR_SIZE 512
-#define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*4
+#define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*1024
 
-static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
+static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
 
     switch( instr->constant.type) {
         case BH_BOOL:
@@ -88,14 +88,14 @@ static void bh_sprint_const( bh_instruction *instr, char buf[] ) {
 
 }
 
-static void bh_sprint_base( bh_base *base, char buf[] ) {
+static void bh_sprint_base(const bh_base *base, char buf[] ) {
 
         sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
                 base, bh_type_text(base->type), (long) base->nelem, base->data
         );
 }
 
-static void bh_sprint_view( bh_view *op, char buf[] ) {
+static void bh_sprint_view(const bh_view *op, char buf[] ) {
 
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
             shape[PPRINT_BUF_SHAPE_SIZE]    = "?",
@@ -128,7 +128,8 @@ static void bh_sprint_view( bh_view *op, char buf[] ) {
 
 }
 
-static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
+static void bh_sprint_instr(const bh_instruction *instr, char buf[])
+{
 
     char op_str[PPRINT_BUF_OPSTR_SIZE];
     char tmp[PPRINT_BUF_OPSTR_SIZE];
@@ -165,58 +166,9 @@ static void bh_sprint_instr( bh_instruction *instr, char buf[] ) {
 
 }
 
-/* Pretty print an instruction.
- *
- * @instr  The instruction in question
- */
-void bh_pprint_instr( bh_instruction *instr ) {
+static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims ) {
 
-    char buf[PPRINT_BUF_SIZE];
-    bh_sprint_instr( instr, buf );
-    puts( buf );
-}
-
-void bh_pprint_instr_list( bh_instruction* instruction_list, bh_intp instruction_count, const char* txt )
-{
-    bh_intp count;
-    printf("%s %d {\n", txt, (int)instruction_count);
-    for(count=0; count < instruction_count; count++) {
-        bh_pprint_instr( &instruction_list[count] );
-    }
-    printf("}\n");
-}
-
-void bh_pprint_bundle( bh_instruction* instruction_list, bh_intp instruction_count  )
-{
-    bh_pprint_instr_list( instruction_list, instruction_count, "BUNDLE");
-}
-
-/* Pretty print an array.
- *
- * @view  The array view in question
- */
-void bh_pprint_array( bh_view *view ) {
-
-    char buf[PPRINT_BUF_OPSTR_SIZE];
-    bh_sprint_view( view, buf );
-    puts( buf );
-}
-
-
-/* Pretty print an array.
- *
- * @base  The array base in question
- */
-void bh_pprint_base( bh_base *base ) {
-
-    char buf[PPRINT_BUF_OPSTR_SIZE];
-    bh_sprint_base( base, buf );
-    puts( buf );
-}
-
-void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
-
-    char tmp[64];
+    char tmp[PPRINT_BUF_SHAPE_SIZE];
     bh_index j;
 
     for(j=0; j<dims; j++)
@@ -229,12 +181,206 @@ void bh_sprint_coord( char buf[], bh_index* coord, bh_index dims ) {
     }
 }
 
-void bh_pprint_coord( bh_index* coord, bh_index dims ) {
+static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
+{
+    if(bhir->ninstr > 100)
+    {
+        sprintf(buf, "NodeMap: (%d nodes are too many to show)\n",
+                (int) bhir->ninstr);
+        sprintf(buf, "Adjacency Matrix: (%d rows/columns are too many to show)\n",
+                (int) bhir->ninstr);
+        return;
+    }
 
-    char buf[1024];
+    //Print the node mappings
+    sprintf(buf, "NodeMap:\n");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "%ld => %ld\n", (long) i, (long) dag->node_map[i]);
+
+    //Print the adjacency matrix header
+    sprintf(buf+strlen(buf), "Adjacency Matrix:\n");
+    sprintf(buf+strlen(buf), "  |");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "%2ld", (long)i);
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print line between header and body
+    sprintf(buf+strlen(buf), "--+");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "--");
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print the adjacency matrix body
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        sprintf(buf+strlen(buf), "%2ld|", (long)i);
+        bh_intp ncol_idx, count=0;
+        const bh_intp *col_idx = bh_adjmat_get_row(&dag->adjmat, i, &ncol_idx);
+        for(bh_intp j=0; j<dag->nnode; ++j)
+        {
+            int value = 0;
+            if(ncol_idx > 0 && count < ncol_idx && j == col_idx[count])
+            {
+                value = 1;
+                ++count;
+            }
+            sprintf(buf+strlen(buf), " %d",value);
+        }
+        sprintf(buf+strlen(buf), "\n");
+    }
+
+    //Print the adjacency matrix header
+    sprintf(buf+strlen(buf), "Adjacency MatrixT:\n");
+    sprintf(buf+strlen(buf), "  |");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "%2ld", (long)i);
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print line between header and body
+    sprintf(buf+strlen(buf), "--+");
+    for(bh_intp i=0; i<dag->nnode; ++i)
+        sprintf(buf+strlen(buf), "--");
+    sprintf(buf+strlen(buf), "\n");
+
+    //Print the adjacency matrix body
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        sprintf(buf+strlen(buf), "%2ld|", (long)i);
+        bh_intp ncol_idx, count=0;
+        const bh_intp *col_idx = bh_adjmat_get_col(&dag->adjmat, i, &ncol_idx);
+        for(bh_intp j=0; j<dag->nnode; ++j)
+        {
+            int value = 0;
+            if(ncol_idx > 0 && count < ncol_idx && j == col_idx[count])
+            {
+                value = 1;
+                ++count;
+            }
+            sprintf(buf+strlen(buf), " %d",value);
+        }
+        sprintf(buf+strlen(buf), "\n");
+    }
+}
+
+static void bh_sprint_bhir(char buf[], const bh_ir *bhir)
+{
+    if(bhir->ninstr > 100)
+    {
+        sprintf(buf, "Instruction list (%d): {...} (too large to show)\n",
+                (int) bhir->ninstr);
+        sprintf(buf+strlen(buf), "DAG list (%d): {...} (too large to show)\n",
+                (int) bhir->ndag);
+        return;
+    }
+
+    sprintf(buf, "Instruction list (%d): {\n", (int) bhir->ninstr);
+    for(bh_intp i=0; i < bhir->ninstr; ++i)
+    {
+        sprintf(buf+strlen(buf), "%3ld: ", (long) i);
+        bh_sprint_instr(&bhir->instr_list[i], buf+strlen(buf));
+    }
+    sprintf(buf+strlen(buf), "}\n");
+
+    sprintf(buf+strlen(buf), "DAG list (%d): {\n", (int) bhir->ndag);
+    for(bh_intp i=0; i < bhir->ndag; ++i)
+    {
+        sprintf(buf+strlen(buf), "*****%3ld  *****\n", (long) i);
+        bh_sprint_dag(buf+strlen(buf), bhir, &bhir->dag_list[i]);
+    }
+    sprintf(buf+strlen(buf), "}\n");
+}
+
+/*********************************************************/
+/****************** Public functions *********************/
+/*********************************************************/
+
+
+/* Pretty print an instruction.
+ *
+ * @instr  The instruction in question
+ */
+void bh_pprint_instr(const bh_instruction *instr)
+{
+
+    char buf[PPRINT_BUF_SIZE];
+    bh_sprint_instr( instr, buf );
+    puts( buf );
+}
+
+/* Pretty print an instruction list.
+ *
+ * @instr_list  The instruction list in question
+ * @ninstr      Number of instructions
+ * @txt         Text prepended the instruction list,
+ *              ignored when NULL
+ */
+void bh_pprint_instr_list(const bh_instruction instr_list[],
+                          bh_intp ninstr, const char* txt)
+{
+    printf("%s %d {\n", txt, (int)ninstr);
+    for(bh_intp i=0; i < ninstr; ++i)
+        bh_pprint_instr(&instr_list[i]);
+    printf("}\n");
+}
+
+/* Pretty print an array view.
+ *
+ * @view  The array view in question
+ */
+void bh_pprint_array(const bh_view *view)
+{
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_view(view, buf);
+    puts(buf);
+}
+
+/* Pretty print an array base.
+ *
+ * @base  The array base in question
+ */
+void bh_pprint_base(const bh_base *base)
+{
+    char buf[PPRINT_BUF_OPSTR_SIZE];
+    bh_sprint_base(base, buf);
+    puts(buf);
+}
+
+/* Pretty print an coordinate.
+ *
+ * @coord  The coordinate in question
+ * @ndims  Number of dimensions
+ */
+void bh_pprint_coord(bh_index coord[], bh_index ndims)
+{
+    char buf[PPRINT_BUF_SHAPE_SIZE];
     sprintf(buf, "Coord ( ");
-    bh_sprint_coord( buf, coord, dims );
+    bh_sprint_coord(buf, coord, ndims);
     strcat(buf, " )");
     puts(buf);
+}
 
+
+/* Pretty print an BhIR DAG.
+ *
+ * @bhir The BhIR in question
+ * @dag  The DAG in question
+ *
+ */
+void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag)
+{
+    char buf[PPRINT_BUF_SIZE];
+    bh_sprint_dag(buf, bhir, dag);
+    puts(buf);
+}
+
+/* Pretty print an BhIR.
+ *
+ * @bhir The BhIR in question
+ *
+ */
+void bh_pprint_bhir(const bh_ir *bhir)
+{
+    char buf[PPRINT_BUF_SIZE];
+    bh_sprint_bhir(buf, bhir);
+    puts(buf);
 }

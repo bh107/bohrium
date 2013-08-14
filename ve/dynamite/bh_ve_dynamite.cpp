@@ -609,6 +609,7 @@ struct kern_tree {
     bh_instruction instruction;
 } kernel_tree_t;
 
+/*
 void bh_pprint_node(bh_ir* bhir, bh_node_index idx)
 {
     bh_graph_node *node = &(NODE_LOOKUP(idx));
@@ -631,6 +632,7 @@ void bh_pprint_node(bh_ir* bhir, bh_node_index idx)
     std::cout << "  lc=" << node->left_child << ",rc=" << node->right_child << std::endl;
     std::cout << "}" << std::endl;
 }
+*/
 
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
@@ -639,16 +641,12 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     #endif
 
     bh_instruction *instr;
-    bh_graph_iterator *it;
     bh_error res = BH_SUCCESS;
 
-    res = bh_graph_iterator_create(bhir, &it);
-    if (BH_SUCCESS!=res) {
-        bh_graph_iterator_destroy(it);
-        return res;
-    }
+    for(bh_intp i=0; i<bhir->ninstr; ++i) {
 
-    while (BH_SUCCESS == bh_graph_iterator_next_instruction(it, &instr)) {
+        instr = &bhir->instr_list[i];
+
         std::stringstream symbol_buf;
 
         #ifdef PROFILE
@@ -788,8 +786,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_dynamite_execute()\n");
-
-            bh_graph_iterator_destroy(it);
             return res;
         }
         #ifdef PROFILE
@@ -1237,7 +1233,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         #endif
     }
 
-    bh_graph_iterator_destroy(it);
 	return res;
 }
 

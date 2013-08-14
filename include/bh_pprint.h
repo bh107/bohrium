@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_opcode.h"
 #include "bh_array.h"
 #include "bh_error.h"
+#include "bh_ir.h"
+#include "bh_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,42 +34,58 @@ extern "C" {
  *
  * @view  The array view in question
  */
-DLLEXPORT void bh_pprint_array( bh_view *view );
+DLLEXPORT void bh_pprint_array(const bh_view *view);
 
-/* Pretty print an array.
+
+/* Pretty print an instruction.
+ *
+ * @instr  The instruction in question
+ */
+DLLEXPORT void bh_pprint_instr(const bh_instruction *instr);
+
+/* Pretty print an instruction list.
+ *
+ * @instr_list  The instruction list in question
+ * @ninstr      Number of instructions
+ * @txt         Text prepended the instruction list,
+ *              ignored when NULL
+ */
+DLLEXPORT void bh_pprint_instr_list(const bh_instruction instr_list[],
+                                    bh_intp ninstr, const char* txt);
+
+/* Pretty print an array view.
+ *
+ * @view  The array view in question
+ */
+DLLEXPORT void bh_pprint_array(const bh_view *view);
+
+/* Pretty print an array base.
  *
  * @base  The array base in question
  */
-DLLEXPORT void bh_pprint_base( bh_base *base );
+DLLEXPORT void bh_pprint_base(const bh_base *base);
 
-/** Print a single bh_instruction.
+/* Pretty print an coordinate.
  *
- * @param instr The instruction to print.
+ * @coord  The coordinate in question
+ * @ndims  Number of dimensions
  */
-DLLEXPORT void bh_pprint_instr( bh_instruction *instr );
+DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
 
-/** Print a list of bh_instructions, prefixes with text.
+/* Pretty print an BhIR DAG.
  *
- * @param instruction_list List of instructions to print.
- * @param instruction_count Number of bh_instruction in list.
- * @param txt String to prefix the printed output.
- */
-DLLEXPORT void bh_pprint_instr_list( bh_instruction* instruction_list, bh_intp instruction_count, const char* txt );
-
-/** Print a bundle of bh_instructions.
- *
- * @param instruction_count Number of instruction in list.
- * @param instruction_list Array of instructions.
- */
-DLLEXPORT void bh_pprint_bundle( bh_instruction* instruction_list, bh_intp instruction_count );
-
-/** Print a coordinate.
- *
- * @param coord The coordinate to print
- * @param dims The number of dimensions in the coordinate.
+ * @bhir The BhIR in question
+ * @dag  The DAG in question
  *
  */
-DLLEXPORT void bh_pprint_coord( bh_index* coord, bh_index dims );
+DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
+
+/* Pretty print an BhIR.
+ *
+ * @bhir The BhIR in question
+ *
+ */
+DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
 
 #ifdef __cplusplus
 }
