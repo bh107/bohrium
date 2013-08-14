@@ -64,6 +64,7 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
     for(bh_intp i=0; i<ninstr; ++i)
         dag->node_map[i] = i;//A simple 1:1 map
     dag->nnode = ninstr;
+    dag->tag = 0;
     return bh_adjmat_create_from_instr(&dag->adjmat, ninstr, instr_list);
 }
 
@@ -189,6 +190,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     e = bh_boolmat_create(&sub_dag->adjmat.m, nnodes);
     if(e != BH_SUCCESS)
         return e;
+    sub_dag->tag = 0;
 
     //Just by sorting the nodes we find the topological order
     std::sort(nodes_idx, nodes_idx+nnodes);
@@ -250,6 +252,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), dag->nnode, dag->nnode);
     if(dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
+    dag->tag = 0;
 
 /* We fill the new DAG in three phases:
  *   1) Fill the initial rows in the new DAG with all nodes that do
@@ -362,52 +365,55 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
 
 //Private function to write a DAG in the DOT format
 static void _dag2dot(const bh_ir* bhir, bh_intp dag_idx,
-                       std::ofstream &fs)
+                     std::ofstream &fs)
 {
-        fs << "digraph {" << std::endl;
-        const bh_dag *dag = &bhir->dag_list[dag_idx];
-        for(bh_intp node_idx=0; node_idx<dag->nnode; ++node_idx)
+    const bh_dag *dag = &bhir->dag_list[dag_idx];
+
+    fs << "subgraph clusterDAG" << dag_idx << " {" << std::endl;
+    fs << "label=\"ID: " << dag_idx << " TAG: " << dag->tag << "\";" << std::endl;
+
+    for(bh_intp node_idx=0; node_idx<dag->nnode; ++node_idx)
+    {
+        bh_intp idx = dag->node_map[node_idx];
+        fs << "d" << dag_idx << "_n" << node_idx;
+        if(idx >= 0)    // An instruction
         {
-            bh_intp idx = dag->node_map[node_idx];
-            fs << "d" << dag_idx << "_n" << node_idx;
-            if(idx >= 0)    // An instruction
-            {
-                bh_intp opcode = bhir->instr_list[idx].opcode;
-                const char* style;
-                const char* color;
+            bh_intp opcode = bhir->instr_list[idx].opcode;
+            const char* style;
+            const char* color;
 
-                if (opcode == BH_DISCARD || opcode == BH_FREE) {
-                    style = "dashed,rounded";
-                    color = "#ffffE8";
-                } else {
-                    style = "filled,rounded";
-                    color = "#CBD5E8";
-                }
+            if (opcode == BH_DISCARD || opcode == BH_FREE) {
+                style = "dashed,rounded";
+                color = "#ffffE8";
+            } else {
+                style = "filled,rounded";
+                color = "#CBD5E8";
+            }
 
-                fs << " [shape=box ";
-                fs << "style=\"" << style << "\" ";
-                fs << "fillcolor=\"" << color << "\" ";
-                fs << "label=\"I_" << idx << " - " << bh_opcode_text(opcode) << "\"]";
-            }
-            else            // A subgraph
-            {
-                fs << " [label=\"D" << -1*(idx+1) << "_sub-DAG\"]";
-            }
-            fs << ";" << std::endl;
-
-            bh_intp nparents;
-            const bh_intp *children = bh_adjmat_get_row(&dag->adjmat,
-                                                        node_idx, &nparents);
-            for(bh_intp i=0; i<nparents; ++i)
-            {
-                bh_intp child = children[i];
-                fs << "d" << dag_idx << "_n" << node_idx;
-                fs << " -> ";
-                fs << "d" << dag_idx << "_n" << child;
-                fs << ";" << std::endl;
-            }
+            fs << " [shape=box ";
+            fs << "style=\"" << style << "\" ";
+            fs << "fillcolor=\"" << color << "\" ";
+            fs << "label=\"I_" << idx << " - " << bh_opcode_text(opcode) << "\"]";
         }
-        fs << "}" << std::endl;
+        else            // A subgraph
+        {
+            fs << " [label=\"D" << -1*(idx+1) << "_sub-DAG\"]";
+        }
+        fs << ";" << std::endl;
+
+        bh_intp nparents;
+        const bh_intp *children = bh_adjmat_get_row(&dag->adjmat,
+                                                    node_idx, &nparents);
+        for(bh_intp i=0; i<nparents; ++i)
+        {
+            bh_intp child = children[i];
+            fs << "d" << dag_idx << "_n" << node_idx;
+            fs << " -> ";
+            fs << "d" << dag_idx << "_n" << child;
+            fs << ";" << std::endl;
+        }
+    }
+    fs << "}" << std::endl;
 }
 
 
@@ -419,14 +425,15 @@ static void _dag2dot(const bh_ir* bhir, bh_intp dag_idx,
  */
 void bh_bhir2dot(const bh_ir* bhir, const char* filename)
 {
+    std::ofstream fs(filename);
 
+    fs << "digraph {" << std::endl;
+    fs << "compound=true;" << std::endl;
     for(bh_intp dag_idx=0; dag_idx<bhir->ndag; ++dag_idx)
     {
-        char f[8000];
-        snprintf(f, 8000, "%s-DAG%d.dot", filename, (int) dag_idx);
-        std::ofstream fs(f);
         _dag2dot(bhir, dag_idx, fs);
-        fs.close();
     }
+    fs << "}" << std::endl;
+    fs.close();
 }
 
