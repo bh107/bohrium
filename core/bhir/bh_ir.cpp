@@ -360,21 +360,10 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
 }
 
 
-/* Write the BhIR in the DOT format.
- *
- * @bhir      The graph to print
- * @filename  Name of the written dot file, the DAG number
- *            and ".dot" is appended the file name
- */
-void bh_bhir2dot(const bh_ir* bhir, const char* filename)
+//Private function to write a DAG in the DOT format
+static void _dag2dot(const bh_ir* bhir, bh_intp dag_idx,
+                       std::ofstream &fs)
 {
-
-    for(bh_intp dag_idx=0; dag_idx<bhir->ndag; ++dag_idx)
-    {
-        char f[8000];
-        snprintf(f, 8000, "%s-DAG%d.dot", filename, (int) dag_idx);
-        std::ofstream fs(f);
-
         fs << "digraph {" << std::endl;
         const bh_dag *dag = &bhir->dag_list[dag_idx];
         for(bh_intp node_idx=0; node_idx<dag->nnode; ++node_idx)
@@ -419,6 +408,24 @@ void bh_bhir2dot(const bh_ir* bhir, const char* filename)
             }
         }
         fs << "}" << std::endl;
+}
+
+
+/* Write the BhIR in the DOT format.
+ *
+ * @bhir      The graph to print
+ * @filename  Name of the written dot file, the DAG number
+ *            and ".dot" is appended the file name
+ */
+void bh_bhir2dot(const bh_ir* bhir, const char* filename)
+{
+
+    for(bh_intp dag_idx=0; dag_idx<bhir->ndag; ++dag_idx)
+    {
+        char f[8000];
+        snprintf(f, 8000, "%s-DAG%d.dot", filename, (int) dag_idx);
+        std::ofstream fs(f);
+        _dag2dot(bhir, dag_idx, fs);
         fs.close();
     }
 }
