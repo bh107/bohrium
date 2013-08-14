@@ -381,14 +381,26 @@ void bh_bhir2dot(const bh_ir* bhir, const char* filename)
         {
             bh_intp idx = dag->node_map[node_idx];
             fs << "d" << dag_idx << "_n" << node_idx;
-            if(idx >= 0)
+            if(idx >= 0)    // An instruction
             {
-                const bh_instruction *instr = &bhir->instr_list[idx];
-                fs << " [shape=box label=\"I" << idx << "_";
-                fs << bh_opcode_text(instr->opcode) << "\"]";
+                bh_intp opcode = bhir->instr_list[idx].opcode;
+                const char* style;
+                const char* color;
 
+                if (opcode == BH_DISCARD || opcode == BH_FREE) {
+                    style = "dashed,rounded";
+                    color = "#ffffE8";
+                } else {
+                    style = "filled,rounded";
+                    color = "#CBD5E8";
+                }
+
+                fs << " [shape=box ";
+                fs << "style=\"" << style << "\" ";
+                fs << "fillcolor=\"" << color << "\" ";
+                fs << "label=\"I_" << idx << " - " << bh_opcode_text(opcode) << "\"]";
             }
-            else
+            else            // A subgraph
             {
                 fs << " [label=\"D" << -1*(idx+1) << "_sub-DAG\"]";
             }
