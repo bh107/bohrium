@@ -156,6 +156,7 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
         bh_view tmp_view = chunk;
         tmp_view.base = tmp_get_ary(bh_base_array(&chunk)->type,
                                     bh_nelements_nbcast(&chunk));
+        tmp_view.start = 0;
 
         //Set a contiguous row-major stride while preserving the zero-strided
         //dimensions (i.e. preserving broadcasted dimensions).
