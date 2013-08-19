@@ -170,6 +170,7 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
     {
         bh_instruction *instr = &bhir->instr_list[i];
 
+//        bh_pprint_instr(instr);
         #ifdef BH_TRACE
             bh_component_trace_inst(vem_node_myself, instr);
         #endif
@@ -203,8 +204,6 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
             }
         }
     }
-
-//    bh_pprint_instr_list(inst_list, count, "NODE");
 
     bh_error ret = ve_execute(bhir);
 

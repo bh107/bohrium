@@ -92,6 +92,8 @@ bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
 
 bh_error bh_vem_cluster_execute(bh_ir* bhir)
 {
+//    bh_pprint_instr_list(bhir->instr_list, bhir->ninstr, "BRIDGE" );
+
     //Send the instruction list and operands to the slaves
     dispatch_inst_list(bhir->ninstr, bhir->instr_list);
 

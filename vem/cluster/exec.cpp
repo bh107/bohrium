@@ -420,7 +420,6 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
             ufunc->struct_size = sizeof(bh_random_type);
             ufunc->operand[0]  = chunks[c].ary;
             batch_schedule_inst(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
-            batch_schedule_inst(BH_DISCARD, bh_base_array(&chunks[c].ary));
         }
     }
     return BH_SUCCESS;
