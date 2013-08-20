@@ -191,8 +191,8 @@ bh_error bh_boolmat_transpose(bh_boolmat *out, const bh_boolmat *in)
         out->row_ptr[i] = t[(i-1)%2] + out->row_ptr[i-1];
     }
 
-    //The col_idx equals the number of non-zero values
-    bh_vector_resize(out->col_idx, in->non_zeroes);
+    //The size of col_idx equals the number of non-zero values
+    out->col_idx = (bh_intp*) bh_vector_resize(out->col_idx, in->non_zeroes);
     out->non_zeroes = in->non_zeroes;
 
     //Lets compute the col_idx
