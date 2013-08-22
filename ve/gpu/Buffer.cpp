@@ -21,31 +21,51 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include "Buffer.hpp"
+#include <iostream>
 
-Buffer::Buffer(size_t size, ResourceManager* resourceManager_) 
+Buffer::Buffer(size_t size_, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)
     , dataType(OCL_UNKNOWN)
-    , clBuffer(resourceManager->createBuffer(size))
+    , clBuffer(NULL)
     , writeEvent(resourceManager->completeEvent())
+    , size(size_)
 {}
 
 Buffer::Buffer(size_t elements, OCLtype dataType_, ResourceManager* resourceManager_) 
     : resourceManager(resourceManager_)
     , device(0)
     , dataType(dataType_)
-    , clBuffer(resourceManager->createBuffer(elements * oclSizeOf(dataType)))
+    , clBuffer(NULL)
     , writeEvent(resourceManager->completeEvent())
+    , size(elements * oclSizeOf(dataType))
 {}
+
+Buffer::~Buffer()
+{
+    if (clBuffer != NULL)
+    {
+        cl::Event::waitForEvents(allEvents());
+        delete clBuffer;
+    }
+}
 
 void Buffer::read(void* hostPtr)
 {
-    resourceManager->readBuffer(clBuffer, hostPtr, writeEvent, device);
+    if (clBuffer == NULL)
+    {
+        clBuffer = resourceManager->createBuffer(size);
+    }
+    resourceManager->readBuffer(*clBuffer, hostPtr, writeEvent, device);
 }
 
 void Buffer::write(void* hostPtr)
 {
-    writeEvent = resourceManager->enqueueWriteBuffer(clBuffer, hostPtr, allEvents(), device);
+    if (clBuffer == NULL)
+    {
+        clBuffer = resourceManager->createBuffer(size);
+    }
+    writeEvent = resourceManager->enqueueWriteBuffer(*clBuffer, hostPtr, allEvents(), device);
 }
 
 void Buffer::setWriteEvent(cl::Event event)
@@ -91,9 +111,13 @@ void Buffer::printOn(std::ostream& os) const
 
 void Buffer::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
+    if (clBuffer == NULL)
+    {
+        clBuffer = resourceManager->createBuffer(size);
+    }
     try
     {
-        kernel.setArg(argIndex, clBuffer);
+        kernel.setArg(argIndex, *clBuffer);
     } catch (cl::Error err)
     {
         std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
