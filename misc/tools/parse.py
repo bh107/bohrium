@@ -131,6 +131,7 @@ class Parser(object):
 
     re_instr    = "BH_(?P<OPCODE>\w+)\sOPS=(?P<N_OPS>\d+)"
     re_meta     = "\s+(?P<OPN>\w+)?\s+\[(?:(?:\s+Addr:\s+(?P<ADDR>\w+)\s+Dims:\s+(?P<DIMS>\d+)\s+Start:\s+(?P<START>\d+)\s+Shape:\s+(?P<SHAPE>[\d,]+)\s+Stride:\s+\s+(?P<STRIDE>[\d,]+)\s+Type:\s+(?P<TYPE>\w+)\s+Data:\s(?P<DATA>.*?),\s+Base:\s+(?P<BASE>.*?)\s+)|(?:\s+CONST=(?P<CONST>[\d.,\-~]+)\s+))"
+    re_meta     = "\s+(?P<OPN>\w+)?\s\[(?:(?:\s+Dims:\s+(?P<DIMS>\d+)\sStart:\s+(?P<START>\d+)\s+Shape:\s+(?P<SHAPE>[\d,]+)\s+Stride:\s+\s+(?P<STRIDE>[\d,]+)\sBase=>\[\sAddr:\s(?P<ADDR>.*?)\s+Type:\s+(?P<TYPE>\w+)\s#elem:\s(?P<ELEMN>[\d]+)\sData:\s(?P<DATA>.*?)\s\])|(?:\s+CONST\((?P<CONST_TYPE>BH_.*)\)=(?P<CONST>[\d.,\-~]+)\s+)\])"
 
     def __init__(self, path):
 
@@ -185,22 +186,22 @@ class Parser(object):
                     if not op_m:            # No match -> no more operands
                         break
 
-                    op_n, addr, ndims, start, shape, stride, dtype, data, base, constant = op_m.groups()
+                    op_n, ndims, start, shape, stride, addr, dtype, elemn, data, c_type, c_value= op_m.groups()
                     i += 1
 
-                    if constant:                            # Constant
-                        operands.append( Constant( "%0.2f" % float(constant) ) )
-                    elif "(nil)" in base or "0x0" == base:  # Base
+                    if c_value:                            # Constant
+                        operands.append( Constant( "%0.2f" % float(c_value) ) )
+                    elif "(nil)" in data or "0x0" in data:  # Base
                         operands.append( Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data) )
                     else:                                   # View
-                        view = View(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, base)
+                        view = View(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data)
 
                         base_m = re.match(Parser.re_meta, lines[i], re.DOTALL)
-                        op_n, addr, ndims, start, shape, stride, dtype, data, base, constant = base_m.groups()
+                        op_n, ndims, start, shape, stride, addr, dtype, elemn, data, c_type, c_value= op_m.groups()
                         i += 2
 
                         base = Base(self._symbolize(addr), addr, ndims, start, shape, stride, dtype, data)
-                        view.base = base
+                        view.base = data
 
                         operands.append( view )
 

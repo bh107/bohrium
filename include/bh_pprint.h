@@ -87,6 +87,9 @@ DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
  */
 DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
 
+DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
+
+
 #ifdef __cplusplus
 }
 #endif

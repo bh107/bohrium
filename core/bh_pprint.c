@@ -384,3 +384,19 @@ void bh_pprint_bhir(const bh_ir *bhir)
     bh_sprint_bhir(buf, bhir);
     puts(buf);
 }
+
+/**
+ *  Dump instruction-list to file.
+ */
+void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[])
+{
+    char instr[8000];
+    FILE *file;
+    file = fopen(trace_fn, "w");
+    for(bh_intp i=0; i<bhir->ninstr; ++i) { 
+        bh_sprint_instr(&bhir->instr_list[i], instr);
+        fputs(instr, file);
+        fputs("\n", file);
+    }
+    fclose(file);
+}

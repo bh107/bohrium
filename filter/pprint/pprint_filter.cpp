@@ -18,20 +18,26 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-
+#include <stdio.h>
 
 using namespace std;
 
 static int count=0;
 void pprint_filter(bh_ir *bhir)
 {
-    char filename[8000];
-    snprintf(filename, 8000, "instlist-%d", count++);
+    char graph_fn[8000];
+    char trace_fn[8000];
 
-    printf("pprint-filter writing to \"%s\"\n", filename);
+    ++count;
+    snprintf(graph_fn, 8000, "graph-%d.dot", count);
+    snprintf(trace_fn, 8000, "trace-%d.txt", count);
 
-    bh_bhir2dot(bhir, filename);
+    printf(
+        "pprint-filter: writing graph('%s') and trace('%s').\n",
+        graph_fn, trace_fn
+    );
+
+    bh_bhir2dot(bhir, graph_fn);            // Graph
+    bh_pprint_trace_file(bhir, trace_fn);   // Trace
 }
-
-
 
