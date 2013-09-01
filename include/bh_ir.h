@@ -130,8 +130,7 @@ DLLEXPORT bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[]
 /* Write the BhIR in the DOT format.
  *
  * @bhir      The graph to print
- * @filename  Name of the written dot file, the DAG number
- *            and ".dot" is appended the file name
+ * @filename  Name of the written dot file
  */
 DLLEXPORT void bh_bhir2dot(const bh_ir* bhir, const char* filename);
 
