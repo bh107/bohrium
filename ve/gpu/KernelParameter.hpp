@@ -32,6 +32,7 @@ protected:
 public:
     virtual void addToKernel(cl::Kernel& kernel, unsigned int argIndex) = 0;
     virtual OCLtype type() const = 0;
+    virtual ~KernelParameter() = 0;
     friend std::ostream& operator<< (std::ostream& os, KernelParameter const& kp);
 };
 
