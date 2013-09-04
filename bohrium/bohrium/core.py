@@ -1085,4 +1085,36 @@ def minn(x, n=1, axis=0):
     out_value = empty(out_shape,dtype=x.dtype,bohrium=True)
     return bridge.nselect(out_index, out_value, x, n, axis, numpy.minimum)
 
+def concatenate(arrays, axis=0):
+    """
+    concatenate((a1, a2, ...), axis=0)
 
+    Join a sequence of arrays together.
+
+    Parameters
+    ----------
+    a1, a2, ... : sequence of array_like
+        The arrays must have the same shape, except in the dimension
+        corresponding to `axis` (the first, by default).
+    axis : int, optional
+        The axis along which the arrays will be joined.  Default is 0.
+
+    Returns
+    -------
+    res : ndarray
+        The concatenated array.
+
+    Examples
+    --------
+    >>> a = np.array([[1, 2], [3, 4]])
+    >>> b = np.array([[5, 6]])
+    >>> np.concatenate((a, b), axis=0)
+    array([[1, 2],
+           [3, 4],
+           [5, 6]])
+    >>> np.concatenate((a, b.T), axis=1)
+    array([[1, 2, 5],
+           [3, 4, 6]])
+    """
+    shape = numpy.asarray(arrays[0])
+    
