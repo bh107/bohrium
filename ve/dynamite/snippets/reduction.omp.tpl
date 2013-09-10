@@ -96,12 +96,11 @@ int {{SYMBOL}}(int tool, ...)
     if (1 == a1_ndim) {                         // ** 1D Special Case **
         a0_current = a0_first + a0_start;       // Point to first element in output.
         a1_current = a1_first + a1_start;       // Point to first element in input.
-        {{TYPE_A1}} rvar;                       // Use the first element as temp
+        {{TYPE_A1}} rvar = 0;                   // Use the first element as temp
         int64_t j;
         #pragma omp parallel for reduction(+:rvar) private(j, tmp_current)
         for(j=0; j<a1_shape[axis]; ++j) {
             tmp_current = a1_current + a1_stride[axis]*j;
-            //rvar += *tmp_current;
             {{OPERATOR}};
         }
         *a0_current = rvar;
@@ -133,6 +132,8 @@ int {{SYMBOL}}(int tool, ...)
         --last_e;
 
         last_dim = a0_ndim-1;
+
+        {{TYPE_A1}} rvar;
 
         //#pragma omp parallel for private(a1_i, coord, a0_current, tmp_current) shared(tmp_start)
         for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i) {
@@ -169,7 +170,8 @@ int {{SYMBOL}}(int tool, ...)
                         coord[last_dim]++,              // Coordinates
                         cur_e++
                     ) {
-                        {{OPERATOR}};
+                        //{{OPERATOR}}; TODO: FIX THIS
+                        *a0_current += *tmp_current;
                     }
                 }
 

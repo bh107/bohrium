@@ -163,7 +163,8 @@ int {{SYMBOL}}(int tool, ...)
                         coord[last_dim]++,                  // Coordinates
                         cur_e++
                     ) {
-                        {{OPERATOR}};
+                        //{{OPERATOR}}; // TODO: FIX
+                        *a0_current += *tmp_current;
                     }
                 }
 
