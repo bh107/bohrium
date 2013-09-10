@@ -825,7 +825,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.SetValue("SYMBOL",     symbol);
                         dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
-                        sprintf(snippet_fn, "%s/random.tpl", snippet_path);
+                        //sprintf(snippet_fn, "%s/random.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/random.omp.tpl", snippet_path);
                         ctemplate::ExpandTemplate(
                             snippet_fn,
                             ctemplate::STRIP_BLANK_LINES, 
@@ -886,8 +887,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
                     dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
 
-                    sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
-                    //sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
+                    //sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                    sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -1007,6 +1008,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.ShowSection("a1_dense");
                         dict.ShowSection("a2_dense");
                     }
+                    /*
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
                     } else if (2 == dims) {
@@ -1015,8 +1017,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         sprintf(snippet_fn, "%s/traverse.3d.tpl", snippet_path);
                     } else {
                         sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
-                    }
-                    //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
+                    }*/
+                    sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -1156,6 +1158,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
                         dict.ShowSection("a1_dense");
                     } 
+                    /*
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
                     } else if (2 == dims) {
@@ -1165,6 +1168,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     } else {
                         sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
                     }
+                    */
+                    sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
