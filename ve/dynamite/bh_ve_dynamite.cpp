@@ -59,6 +59,7 @@ char* snippet_path;
 
 process* target;
 
+/*
 typedef struct {
     bh_view* operands[BH_DYNAMITE_KRN_MAX_OPERANDS];
     size_t noperands; // Number of operands the kernel uses
@@ -153,21 +154,15 @@ int hash(bh_instruction *instr)
     poly += (dims << 15);
     poly += (instr->opcode << 20);
 
-    /*
     std::cout << "Opcode {" << instr->opcode << "}" << std::endl;
     std::cout << "Dims {" << dims << "}" << std::endl;
     std::cout << "Type {" << a0_type << ", " << a1_type << ", " << a2_type << "}" << std::endl;
     std::cout << "Struct {" << a0_dense << ", " << a1_dense << ", " << a2_dense << "}" << std::endl;
     std::cout << poly << std::endl;
-    */
     return poly;
 }
 
-/**
- *  Deduce a set of kernels based
- *
- */
-/*
+//  Deduce a set of kernels based
 kernel_storage streaming(bh_intp count, bh_instruction* list)
 {
     std::vector<bh_intp> potentials;
@@ -335,7 +330,104 @@ kernel_storage streaming(bh_intp count, bh_instruction* list)
     }
     return kernels;
 }
-*/
+
+std::string ascend(bh_ir* bhir, bh_node_index idx)
+{
+    std::string expr = "";
+
+    if (idx==INVALID_NODE) {
+        return expr;
+    }
+    bh_node_index left  = NODE_LOOKUP(idx).left_parent;
+    bh_node_index right = NODE_LOOKUP(idx).right_parent;
+
+    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
+    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
+        expr += "!("+ascend(bhir, left)+")";
+    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
+        expr += "!("+ascend(bhir, right)+")";
+    } else {
+        expr += "<END>";
+    }
+
+    return expr;
+}
+
+std::string descend(bh_ir* bhir, bh_node_index idx)
+{
+    std::string expr = "";
+
+    if (idx==INVALID_NODE) {
+        return expr;
+    }
+    bh_node_index left  = NODE_LOOKUP(idx).left_child;
+    bh_node_index right = NODE_LOOKUP(idx).right_child;
+
+    if ((NODE_LOOKUP(idx).type == BH_INSTRUCTION)) {
+        switch((INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction)).opcode) {
+            case BH_FREE:
+            case BH_DISCARD:
+            case BH_SYNC:
+            case BH_NONE:
+                return "";
+            case BH_USERFUNC:
+                return "(UF)";
+        }
+    }
+
+    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, left) +"\n"+ descend(bhir, right); 
+        } else {
+            return "("+descend(bhir, left)+") op ("+descend(bhir, right)+")"; 
+        }
+    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, left);
+        } else {
+            return "("+descend(bhir, left)+")";
+        }
+    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
+        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
+            return "\n"+descend(bhir, right);
+        } else {
+            return "("+descend(bhir, right)+")";
+        }
+    } else {
+        return "<END>";
+    }
+}
+
+struct kern_tree {
+    kern_tree *left;
+    kern_tree *right;
+    bh_instruction instruction;
+} kernel_tree_t;
+
+void bh_pprint_node(bh_ir* bhir, bh_node_index idx)
+{
+    bh_graph_node *node = &(NODE_LOOKUP(idx));
+
+    switch(node->type) {
+        case BH_INSTRUCTION:
+            std::cout << "Instruction";
+            break;
+        case BH_COLLECTION:
+            std::cout << "Collection";
+            break;
+    }
+
+    std::cout << " {" << std::endl;
+    if (node->type == BH_INSTRUCTION) {
+        bh_pprint_instr(&INSTRUCTION_LOOKUP(node->instruction));
+    }
+    std::cout << "  node=" << idx << std::endl;
+    std::cout << "  lp=" << node->left_parent << ",rp=" << node->right_parent << std::endl;
+    std::cout << "  lc=" << node->left_child << ",rc=" << node->right_child << std::endl;
+    std::cout << "}" << std::endl;
+}
+
 
 std::string name_operand(kernel_t& kernel, bh_view* operand)
 {
@@ -446,6 +538,8 @@ std::string fused_expr(bh_instruction* list, bh_intp cur, bh_intp max, bh_view *
     }
 }
 
+*/
+
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
@@ -528,110 +622,6 @@ bh_error bh_ve_dynamite_init(bh_component *self)
 
     return BH_SUCCESS;
 }
-
-
-
-/*
-std::string ascend(bh_ir* bhir, bh_node_index idx)
-{
-    std::string expr = "";
-
-    if (idx==INVALID_NODE) {
-        return expr;
-    }
-    bh_node_index left  = NODE_LOOKUP(idx).left_parent;
-    bh_node_index right = NODE_LOOKUP(idx).right_parent;
-
-    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "("+ascend(bhir, left)+") op ("+ascend(bhir, right)+")"; 
-    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
-        expr += "!("+ascend(bhir, left)+")";
-    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
-        expr += "!("+ascend(bhir, right)+")";
-    } else {
-        expr += "<END>";
-    }
-
-    return expr;
-}
-
-std::string descend(bh_ir* bhir, bh_node_index idx)
-{
-    std::string expr = "";
-
-    if (idx==INVALID_NODE) {
-        return expr;
-    }
-    bh_node_index left  = NODE_LOOKUP(idx).left_child;
-    bh_node_index right = NODE_LOOKUP(idx).right_child;
-
-    if ((NODE_LOOKUP(idx).type == BH_INSTRUCTION)) {
-        switch((INSTRUCTION_LOOKUP(NODE_LOOKUP(idx).instruction)).opcode) {
-            case BH_FREE:
-            case BH_DISCARD:
-            case BH_SYNC:
-            case BH_NONE:
-                return "";
-            case BH_USERFUNC:
-                return "(UF)";
-        }
-    }
-
-    if ((left!=INVALID_NODE) && (right!=INVALID_NODE)) {
-        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
-            return "\n"+descend(bhir, left) +"\n"+ descend(bhir, right); 
-        } else {
-            return "("+descend(bhir, left)+") op ("+descend(bhir, right)+")"; 
-        }
-    } else if ((left!=INVALID_NODE) && (right==INVALID_NODE)) {
-        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
-            return "\n"+descend(bhir, left);
-        } else {
-            return "("+descend(bhir, left)+")";
-        }
-    } else if ((left==INVALID_NODE) && (right!=INVALID_NODE)) {
-        if (NODE_LOOKUP(idx).type == BH_COLLECTION) {
-            return "\n"+descend(bhir, right);
-        } else {
-            return "("+descend(bhir, right)+")";
-        }
-    } else {
-        return "<END>";
-    }
-}
-
-*/
-
-struct kern_tree {
-    kern_tree *left;
-    kern_tree *right;
-    bh_instruction instruction;
-} kernel_tree_t;
-
-/*
-void bh_pprint_node(bh_ir* bhir, bh_node_index idx)
-{
-    bh_graph_node *node = &(NODE_LOOKUP(idx));
-
-    switch(node->type) {
-        case BH_INSTRUCTION:
-            std::cout << "Instruction";
-            break;
-        case BH_COLLECTION:
-            std::cout << "Collection";
-            break;
-    }
-
-    std::cout << " {" << std::endl;
-    if (node->type == BH_INSTRUCTION) {
-        bh_pprint_instr(&INSTRUCTION_LOOKUP(node->instruction));
-    }
-    std::cout << "  node=" << idx << std::endl;
-    std::cout << "  lp=" << node->left_parent << ",rp=" << node->right_parent << std::endl;
-    std::cout << "  lc=" << node->left_child << ",rc=" << node->right_child << std::endl;
-    std::cout << "}" << std::endl;
-}
-*/
 
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
