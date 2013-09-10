@@ -43,13 +43,18 @@ def main():
     
     errors = []
 
+    unaries  = []
+    binaries = []
+
     for bytecode in (bytecode for bytecode in bytecodes if bytecode['opcode'] != 'BH_NONE'):
         pprint.pprint(bytecode)
         nops[bytecode['nop']] += 1;
         if bytecode['elementwise']:
             if bytecode['nop'] == 2:
                 types['unary'] += 1
+                unaries.append((bytecode['opcode'], bytecode['doc']))
             elif bytecode['nop'] == 3:
+                binaries.append((bytecode['opcode'], bytecode['doc']))
                 types['binary'] += 1
                 sigs += len(bytecode['types'])
                 sigs += len(bytecode['types'])
@@ -74,8 +79,10 @@ def main():
     for t in types:
         types_total += types[t]
 
+    #print sigs, types, types_total, errors
+    #pprint.pprint(unaries)
 
-    print sigs, types, types_total, errors
+    for b
 
 if __name__ == "__main__":
     main()

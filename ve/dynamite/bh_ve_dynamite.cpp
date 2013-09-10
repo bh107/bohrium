@@ -34,7 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BH_DYNAMITE_KRN_MAX_OPERANDS 20
 
-
 // Execution Profile
 
 #ifdef PROFILE
@@ -1219,7 +1218,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 break;
 
             default:                            // Shit hit the fan
-                res = bh_compute_apply_naive(instr);
+                //res = bh_compute_apply_naive(instr);
+                printf("Dynamite: Err=[Unsupported ufunc...\n");
+                res = BH_ERROR;
 
         }
 

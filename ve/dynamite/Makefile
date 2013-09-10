@@ -10,7 +10,7 @@ HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o) 
-OBJ=bh_ve_dynamite.o $(ROOT)/ve/shared/compute/bh_compute.o $(ROOT)/ve/shared/compute/bh_compute_helpers.o $(ROOT)/ve/shared/compute/bh_compute_random.o $(ROOT)/ve/shared/compute/bh_compute_reduce.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
+OBJ=bh_ve_dynamite.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
 
 INSTALLDIR?=/opt/bohrium/
 

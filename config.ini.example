@@ -37,9 +37,9 @@ impl = /opt/bohrium/libbh_ve_mcore.so
 
 [dynamite]
 type = ve
-compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+compiler_cmd="gcc -lm -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
-#compiler_cmd="gcc -lm -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="/opt/a64/bin/opencc -lm -O2 -fPIC -std=c99 -x c -shared - -o "
 object_path=/opt/bohrium/dynamite/objects
 kernel_path=/opt/bohrium/dynamite/kernels
