@@ -75,6 +75,7 @@ int {{SYMBOL}}(int tool, ...)
     int64_t *a0_shape   = va_arg(list, int64_t*);
     int64_t  a0_ndim    = va_arg(list, int64_t);
 
+    {{TYPE_A0}} *a1_current;
     {{TYPE_A1}} *a1_first    = va_arg(list, {{TYPE_A1}}*);
     int64_t  a1_start   = va_arg(list, int64_t);    // Input to reduce
     int64_t *a1_stride  = va_arg(list, int64_t*);
@@ -93,14 +94,18 @@ int {{SYMBOL}}(int tool, ...)
     int64_t tmp_stride[DYNAMITE_MAXDIM];    
 
     if (1 == a1_ndim) {                         // ** 1D Special Case **
-        a0_current = a0_first + a0_start;         // Point to first element in output.
-        *a0_current = *(a1_first+a1_start);       // Use the first element as temp
-        for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
-            a1_i < a1_shape[axis];
-            tmp_current += a1_stride[axis], a1_i++) {
-            
+        a0_current = a0_first + a0_start;       // Point to first element in output.
+        a1_current = a1_first + a1_start;       // Point to first element in input.
+        {{TYPE_A1}} rvar;                       // Use the first element as temp
+        int64_t j;
+        #pragma omp parallel for reduction(+:rvar) private(j, tmp_current)
+        for(j=0; j<a1_shape[axis]; ++j) {
+            tmp_current = a1_current + a1_stride[axis]*j;
+            //rvar += *tmp_current;
             {{OPERATOR}};
         }
+        *a0_current = rvar;
+        
         return 1;
     } else {                                    // ** ND General Case **
         int64_t j,                              // Traversal variables
@@ -129,14 +134,14 @@ int {{SYMBOL}}(int tool, ...)
 
         last_dim = a0_ndim-1;
 
-        #pragma omp parallel for private(a1_i, coord, a0_current, tmp_current) shared(tmp_start)
-        for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
+        //#pragma omp parallel for private(a1_i, coord, a0_current, tmp_current) shared(tmp_start)
+        for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i) {
 
             cur_e = 0;                                  // Reset coordinate and element counter
             memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
 
             while (cur_e <= last_e) {
-                a0_current   = a0_first + a0_start;       // Reset offsets
+                a0_current   = a0_first + a0_start;     // Reset offsets
                 tmp_current  = tmp_first + tmp_start;
 
                 for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
@@ -180,6 +185,7 @@ int {{SYMBOL}}(int tool, ...)
                     }
                 }
             }
+			tmp_start += a1_stride[axis];
         }
         return 1;
     }

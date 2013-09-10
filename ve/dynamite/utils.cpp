@@ -222,6 +222,7 @@ const char* cexpr(bh_opcode opcode)
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
+        /*
         case BH_ADD_REDUCE:
             return "*a0_current += *tmp_current";
         case BH_MULTIPLY_REDUCE:
@@ -238,6 +239,29 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "*a0_current = *a0_current || *tmp_current";
         case BH_BITWISE_OR_REDUCE:
             return "*a0_current |= *tmp_current";
+
+        case BH_LOGICAL_XOR_REDUCE:
+            return "*a0_current = !*a0_current != !*tmp_current";
+        case BH_BITWISE_XOR_REDUCE:
+            return "*a0_current = *a0_current ^ *tmp_current";
+        */
+
+        case BH_ADD_REDUCE:
+            return "rvar += *tmp_current";
+        case BH_MULTIPLY_REDUCE:
+            return "rvar *= *tmp_current";
+        case BH_MINIMUM_REDUCE:
+            return "rvar = rvar < *tmp_current ? rvar : *tmp_current";
+        case BH_MAXIMUM_REDUCE:
+            return "rvar = rvar < *tmp_current ? *tmp_current : rvar";
+        case BH_LOGICAL_AND_REDUCE:
+            return "rvar = rvar && *tmp_current";
+        case BH_BITWISE_AND_REDUCE:
+            return "rvar &= *tmp_current";
+        case BH_LOGICAL_OR_REDUCE:
+            return "rvar = rvar || *tmp_current";
+        case BH_BITWISE_OR_REDUCE:
+            return "rvar |= *tmp_current";
 
         case BH_LOGICAL_XOR_REDUCE:
             return "*a0_current = !*a0_current != !*tmp_current";

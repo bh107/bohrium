@@ -209,5 +209,3 @@ void {{SYMBOL}}(int tool, ...)
     }
 }
 
-
-

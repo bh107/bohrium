@@ -91,15 +91,16 @@ int {{SYMBOL}}(int tool, ...)
     int64_t tmp_start;
     int64_t tmp_stride[DYNAMITE_MAXDIM];    
 
-    if (1 == a1_ndim) {                         // ** 1D Special Case **
-        a0_current = a0_first + a0_start;         // Point to first element in output.
-        *a0_current = *(a1_first+a1_start);       // Use the first element as temp
+    if (1 == a1_ndim) {                             // ** 1D Special Case **
+        a0_current = a0_first + a0_start;           // Point to first element in output.
+        {{TYPE_A0}} rvar = *(a1_first+a1_start);    // Use the first element as temp
         for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
             a1_i < a1_shape[axis];
             tmp_current += a1_stride[axis], a1_i++) {
             
             {{OPERATOR}};
         }
+        *a0_current = rvar;
         return 1;
     } else {                                    // ** ND General Case **
         int64_t j,                              // Traversal variables
