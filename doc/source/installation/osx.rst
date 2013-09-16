@@ -15,12 +15,13 @@ If you also want to build the Mono libraries, you also need the Mono package::
 
 Download and extract the source code::
 
-  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
-  tar -xzf bohrium-v0.1.tgz
+  git clone https://bitbucket.org/bohrium/bohrium.git
+  cd bohrium
+  git submodule init
+  git submodule update
 
 When building and install Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
 
-  cd bohrium-v0.1
   make BH_PYTHON=python2.7
   make install BH_PYTHON=python2.7
 
