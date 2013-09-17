@@ -80,8 +80,7 @@ void {{SYMBOL}}(int tool, ...)
     int64_t ndim        = va_arg(list, int64_t);
     va_end(list);
 
-    int64_t i, j,                  // Traversal variables
-            ld  = ndim-1,
+    int64_t ld  = ndim-1,   // Traversal variables
             sld = ndim-2;
 
     int64_t a0_stride_ld    = a0_stride[ld];
@@ -104,8 +103,8 @@ void {{SYMBOL}}(int tool, ...)
     a2_current += a2_start;
     {{/a2_dense}}
 
-    for (j = 0; j < shape[sld]; ++j) {
-        for (i = 0; i < shape[ld]; ++i) {
+    for (int64_t j = 0; j < shape[sld]; ++j) {
+        for (int64_t i = 0; i < shape[ld]; ++i) {
             {{OPERATOR}};
 
             a0_current += a0_stride_ld;
@@ -123,6 +122,5 @@ void {{SYMBOL}}(int tool, ...)
         a2_current += a2_stride_sld;
         {{/a2_dense}}
     }
-
 }
 

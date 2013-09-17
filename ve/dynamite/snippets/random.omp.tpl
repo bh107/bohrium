@@ -191,19 +191,20 @@ void {{SYMBOL}}(int tool, ...)
 
     #pragma omp parallel
     {
-        int64_t nthreads    = omp_get_num_threads();
-        int64_t thread_id   = omp_get_thread_num();
-        int64_t my_elements = nelements / nthreads;
-        int64_t my_offset   = thread_id * my_elements;
-        if ((thread_id == nthreads-1) && (thread_id != 0)) {
-            my_elements += nelements % thread_id;
+        int tid      = omp_get_thread_num();    // Work partitioning
+        int nthreads = omp_get_num_threads();
+
+        int64_t work = nelements / nthreads;
+        int64_t work_offset = work * tid;
+        if (tid==nthreads-1) {
+            work += nelements % nthreads;
         }
+        int64_t work_end = work_offset+work;
 
-        rk_state state;
-        rk_initseed(&state, thread_id);
-
-        int64_t i;
-        for(i=my_offset; i<my_elements+my_offset; ++i) {
+        rk_state state;                         // Init rand
+        rk_initseed(&state, tid);
+                                                // Fill up the array
+        for(int64_t i=work_offset; i<work_end; ++i) {
             a0_data[i] = rk_{{TYPE_A0_SHORTHAND}}(&state);
         }
     }
