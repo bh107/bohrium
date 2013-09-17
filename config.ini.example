@@ -53,6 +53,11 @@ impl = /opt/bohrium/libbh_ve_print.so
 #
 # Filters
 #
+[transitive_reduction]
+type = filter
+impl = /opt/bohrium/libbh_filter_transitive_reduction.so
+children = cpu
+
 [power]
 type = filter
 impl = /opt/bohrium/libbh_filter_power.so
