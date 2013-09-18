@@ -420,8 +420,7 @@ static void _dag2dot(const bh_ir* bhir, bh_intp dag_idx,
 /* Write the BhIR in the DOT format.
  *
  * @bhir      The graph to print
- * @filename  Name of the written dot file, the DAG number
- *            and ".dot" is appended the file name
+ * @filename  Name of the written dot file
  */
 void bh_bhir2dot(const bh_ir* bhir, const char* filename)
 {

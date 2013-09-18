@@ -174,6 +174,7 @@ if __name__ == "__main__":
                   #("FILTER-FUSION", "filter/fusion", False),\
                   #("FILTER-STREAMING", "filter/streaming", False),\
                   ("FILTER-PPRINT", "filter/pprint", True),\
+                  ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\

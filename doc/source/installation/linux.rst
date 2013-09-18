@@ -13,22 +13,22 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev
+  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev git
   sudo pip install breathe numpydoc
 
 Download and extract the source code::
 
-  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
-  tar -xzf bohrium-v0.1.tgz
+  git clone https://bitbucket.org/bohrium/bohrium.git
+  cd bohrium
+  git submodule init
+  git submodule update
 
 Build and install::
 
-  cd bohrium-v0.1
   make
   make install
 
 .. note:: The installation will prompt you for the installation path.
-          The default path is ``/opt/bohrium`` which requires root permissions. Hence, if you do not have root access use a installation path to inside your home directory.
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
 
@@ -72,7 +72,7 @@ Mono / .NET
 
 You need to install some packages used by the build process::
 
-  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev
+  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev git
 
 The Mono libraries require some additional packages::
 
@@ -82,12 +82,13 @@ The Mono libraries require some additional packages::
 
 Download and extract the source code::
 
-  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.1.tgz
-  tar -xzf bohrium-v0.1.tgz
+  git clone https://bitbucket.org/bohrium/bohrium.git
+  cd bohrium
+  git submodule init
+  git submodule update
 
 Build and install::
 
-  cd bohrium-v0.1
   make
   make install
 
