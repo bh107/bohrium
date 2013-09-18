@@ -9,7 +9,7 @@
 using namespace std;
 
 string generate_source(
-    string snippet_fn, string symbol, string cexpr,
+    string template_fn, string symbol, string cexpr,
     string type_out, string type_in1, string type_in2,
     string structure, bool license, bool include
     )
@@ -44,7 +44,7 @@ string generate_source(
         dict.ShowSection("include");
     }
     ctemplate::ExpandTemplate(
-        snippet_fn,
+        template_fn,
         ctemplate::STRIP_BLANK_LINES,
         &dict,
         &sourcecode
@@ -54,7 +54,7 @@ string generate_source(
 
 void precompile(
     const char *cmd,  const char *jsonfile,
-    const char *object_path, const char *kernel_path, const char *snippet_path,
+    const char *object_path, const char *kernel_path, const char *template_path,
     bool scattered)
 {
     //process target(cmd, object_path, kernel_path, false);
@@ -64,7 +64,7 @@ void precompile(
             type_out,
             type_in1,
             type_in2,
-            snippet_fn,
+            template_fn,
             sourcecode;
 
     bool license = true;
@@ -142,13 +142,13 @@ void precompile(
                         symbol += string(signature);
 
                         if (!target.symbol_ready(symbol)) {
-                            snippet_fn = string(snippet_path) + "/traverse."+dimensions[d]+".tpl";
+                            template_fn = string(template_path) + "/traverse."+dimensions[d]+".tpl";
                             
                             if (scattered) {
                                 sourcecode = "";
                             }
                             sourcecode += generate_source(
-                                snippet_fn, symbol, bhopcode_to_cexpr(id),
+                                template_fn, symbol, bhopcode_to_cexpr(id),
                                 type_out, type_in1, type_in2,
                                 string(structure), license, include
                             );
@@ -167,12 +167,12 @@ void precompile(
                 symbol = opcode;
                 symbol += "_DD_" + string(signature);
                 if (!target.symbol_ready(symbol)) {
-                    snippet_fn = string(snippet_path) + "/reduction.tpl";
+                    template_fn = string(template_path) + "/reduction.tpl";
                     if (scattered) {
                         sourcecode = "";
                     }
                     sourcecode += generate_source(
-                        snippet_fn, symbol, bhopcode_to_cexpr(id),
+                        template_fn, symbol, bhopcode_to_cexpr(id),
                         type_out, type_in1, type_in2,
                         string(structure), license, include
                     );
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
         "/home/safl/Desktop/bohrium/core/codegen/opcodes.json",
         "./objects",
         "./kernels",
-        "./snippets",
+        "./templates",
         true
     );*/
 
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
         "/home/safl/Desktop/bohrium/core/codegen/opcodes.json",
         "./objects",
         "./kernels",
-        "./snippets",
+        "./templates",
         false
     );
 

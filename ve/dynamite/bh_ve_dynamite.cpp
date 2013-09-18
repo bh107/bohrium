@@ -55,7 +55,7 @@ static bh_intp do_fuse = 1;
 char* compiler_cmd;   // Dynamite Arguments
 char* kernel_path;
 char* object_path;
-char* snippet_path;
+char* template_path;
 
 process* target;
 
@@ -609,7 +609,7 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     bh_path_option(
         object_path,    "BH_VE_DYNAMITE_OBJECT_PATH",   "object_path");
     bh_path_option(
-        snippet_path,   "BH_VE_DYNAMITE_SNIPPET_PATH",  "snippet_path");
+        template_path,   "BH_VE_DYNAMITE_SNIPPET_PATH",  "template_path");
     bh_string_option(
         compiler_cmd,   "BH_VE_DYNAMITE_TARGET",        "compiler_cmd");
 
@@ -654,7 +654,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
         int64_t dims;
         char dims_str[10];
 
-        char snippet_fn[250];   // NOTE: constants like these are often traumatizing!
+        char template_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
 
         /*
@@ -709,9 +709,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand.base->type));
                 }
 
-                sprintf(snippet_fn, "%s/partial.streaming.tpl", snippet_path);
+                sprintf(template_fn, "%s/partial.streaming.tpl", template_path);
                 ctemplate::ExpandTemplate(
-                    snippet_fn,
+                    template_fn,
                     ctemplate::STRIP_BLANK_LINES, 
                     &dict, 
                     &sourcecode
@@ -825,9 +825,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.SetValue("SYMBOL",     symbol);
                         dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
-                        sprintf(snippet_fn, "%s/random.tpl", snippet_path);
+                        sprintf(template_fn, "%s/random.tpl", template_path);
                         ctemplate::ExpandTemplate(
-                            snippet_fn,
+                            template_fn,
                             ctemplate::STRIP_BLANK_LINES, 
                             &dict, 
                             &sourcecode
@@ -893,14 +893,14 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
     
                     if (1 == dims) {
-                        sprintf(snippet_fn, "%s/reduction.1d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/reduction.1d.tpl", template_path);
                     } else if (2 == dims) {
-                        sprintf(snippet_fn, "%s/reduction.2d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/reduction.2d.tpl", template_path);
                     } else {
-                        sprintf(snippet_fn, "%s/reduction.nd.tpl", snippet_path);
+                        sprintf(template_fn, "%s/reduction.nd.tpl", template_path);
                     }
                     ctemplate::ExpandTemplate(
-                        snippet_fn,
+                        template_fn,
                         ctemplate::STRIP_BLANK_LINES,
                         &dict,
                         &sourcecode
@@ -1019,16 +1019,16 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.ShowSection("a2_dense");
                     }
                     if (1 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.1d.tpl", template_path);
                     } else if (2 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.2d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.2d.tpl", template_path);
                     } else if (3 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.3d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.3d.tpl", template_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.nd.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
                     }
                     ctemplate::ExpandTemplate(
-                        snippet_fn,
+                        template_fn,
                         ctemplate::STRIP_BLANK_LINES,
                         &dict,
                         &sourcecode
@@ -1167,16 +1167,16 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.ShowSection("a1_dense");
                     } 
                     if (1 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.1d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.1d.tpl", template_path);
                     } else if (2 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.2d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.2d.tpl", template_path);
                     } else if (3 == dims) {
-                        sprintf(snippet_fn, "%s/traverse.3d.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.3d.tpl", template_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.nd.tpl", snippet_path);
+                        sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
                     }
                     ctemplate::ExpandTemplate(
-                        snippet_fn,
+                        template_fn,
                         ctemplate::STRIP_BLANK_LINES,
                         &dict,
                         &sourcecode
