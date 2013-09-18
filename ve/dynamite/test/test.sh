@@ -7,7 +7,8 @@ INSTALLDIR="~/.local" DEBUG="" make clean install
 #cd ~/Desktop/benchpress/
 #./press.py --suite dynamite --output /tmp/ --runs 2 ../bohrium/
 cd $WHERE
-
+python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*1 --bohrium=False
+python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*1 --bohrium=True
 python ../../test/numpy/numpytest.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
 #python ../../test/numpy/numpytest.py -f test_matmul.py

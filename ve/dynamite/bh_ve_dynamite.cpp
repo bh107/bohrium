@@ -869,9 +869,15 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             case BH_LOGICAL_XOR_REDUCE:
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
-
-                sprintf(symbol_c, "%s_DD_%s%s%s",
+                dims = instr->operand[1].ndim;
+                if (dims < 2) {
+                    sprintf(dims_str, "%ldd", dims);
+                } else {
+                    sprintf(dims_str, "Nd");
+                }
+                sprintf(symbol_c, "%s_%s_DD_%s%s%s",
                     bh_opcode_text(instr->opcode),
+                    dims_str,
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type)
@@ -886,9 +892,13 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     dict.SetValue("SYMBOL", symbol);
                     dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
                     dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
-
-                    //sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
-                    sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
+    
+                    if (1 == dims) {
+                        sprintf(snippet_fn, "%s/reduction.1d.tpl", snippet_path);
+                    } else {
+                        sprintf(snippet_fn, "%s/reduction.nd.tpl", snippet_path);
+                    }
+                    //sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
