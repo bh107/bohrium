@@ -30,6 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <limits.h>
 
+#include "omp.h"
+
 //
 // We use the same Mersenne Twister implementation as NumPy
 //
@@ -50,7 +52,6 @@ typedef struct {
 unsigned long rk_random(rk_state *state)
 {
     unsigned long y;
-
 
     if (state->pos == RK_STATE_LEN) {
         int i;
@@ -172,11 +173,11 @@ unsigned long rk_hash(unsigned long key)
     return key;
 }
 
-int rk_initseed(rk_state *state)
+int rk_initseed(rk_state *state, int thread_id)
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    rk_seed(rk_hash(getpid()) ^ rk_hash(tv.tv_sec) ^ rk_hash(tv.tv_usec), state);
+    rk_seed(rk_hash(thread_id) ^ rk_hash(getpid()) ^ rk_hash(tv.tv_sec) ^ rk_hash(tv.tv_usec), state);
     return 0;
 }
 
@@ -188,11 +189,24 @@ void {{SYMBOL}}(int tool, ...)
     int64_t nelements = va_arg(list, int64_t);
     va_end(list);
 
-    rk_state state;
-    rk_initseed(&state);
+    #pragma omp parallel
+    {
+        int tid      = omp_get_thread_num();    // Work partitioning
+        int nthreads = omp_get_num_threads();
 
-    for(int64_t i=0; i<nelements; ++i) {
-        a0_data[i] = rk_{{TYPE_A0_SHORTHAND}}(&state);
+        int64_t work = nelements / nthreads;
+        int64_t work_offset = work * tid;
+        if (tid==nthreads-1) {
+            work += nelements % nthreads;
+        }
+        int64_t work_end = work_offset+work;
+
+        rk_state state;                         // Init rand
+        rk_initseed(&state, tid);
+                                                // Fill up the array
+        for(int64_t i=work_offset; i<work_end; ++i) {
+            a0_data[i] = rk_{{TYPE_A0_SHORTHAND}}(&state);
+        }
     }
 }
 

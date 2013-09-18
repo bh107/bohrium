@@ -825,8 +825,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                         dict.SetValue("SYMBOL",     symbol);
                         dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
                         dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
-                        //sprintf(snippet_fn, "%s/random.tpl", snippet_path);
-                        sprintf(snippet_fn, "%s/random.omp.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/random.tpl", snippet_path);
                         ctemplate::ExpandTemplate(
                             snippet_fn,
                             ctemplate::STRIP_BLANK_LINES, 
@@ -898,7 +897,7 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     } else if (2 == dims) {
                         sprintf(snippet_fn, "%s/reduction.2d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/reduction.nd.tpl", snippet_path);
                     }
                     ctemplate::ExpandTemplate(
                         snippet_fn,
@@ -960,9 +959,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
                 dims = instr->operand[0].ndim;
                 if (dims < 4) {
-                    sprintf(dims_str, "%ldd", dims);
+                    sprintf(dims_str, "%ldD", dims);
                 } else {
-                    sprintf(dims_str, "naive");
+                    sprintf(dims_str, "ND");
                 }
                 if (bh_is_constant(&instr->operand[2])) {
                     sprintf(symbol_c, "%s_%s_DDC_%s%s%s",
@@ -1026,9 +1025,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     } else if (3 == dims) {
                         sprintf(snippet_fn, "%s/traverse.3d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/traverse.nd.tpl", snippet_path);
                     }
-                    //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -1130,9 +1128,9 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
                 dims = instr->operand[0].ndim;
                 if (dims < 4) {
-                    sprintf(dims_str, "%ldd", dims);
+                    sprintf(dims_str, "%ldD", dims);
                 } else {
-                    sprintf(dims_str, "naive");
+                    sprintf(dims_str, "ND");
                 }
                 if (bh_is_constant(&instr->operand[1])) {
                     sprintf(symbol_c, "%s_%s_DC_%s%s",
@@ -1175,10 +1173,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                     } else if (3 == dims) {
                         sprintf(snippet_fn, "%s/traverse.3d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/traverse.naive.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/traverse.nd.tpl", snippet_path);
                     }
-                    
-                    //sprintf(snippet_fn, "%s/traverse.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,
@@ -1222,10 +1218,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
                 break;
 
             default:                            // Shit hit the fan
-                //res = bh_compute_apply_naive(instr);
                 printf("Dynamite: Err=[Unsupported ufunc...\n");
                 res = BH_ERROR;
-
         }
 
         if (BH_SUCCESS != res) {    // Instruction failed
