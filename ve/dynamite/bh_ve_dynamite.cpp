@@ -870,10 +870,10 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
                 dims = instr->operand[1].ndim;
-                if (dims < 2) {
-                    sprintf(dims_str, "%ldd", dims);
+                if (dims <= 2) {
+                    sprintf(dims_str, "%ldD", dims);
                 } else {
-                    sprintf(dims_str, "Nd");
+                    sprintf(dims_str, "nD");
                 }
                 sprintf(symbol_c, "%s_%s_DD_%s%s%s",
                     bh_opcode_text(instr->opcode),
@@ -895,10 +895,11 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     
                     if (1 == dims) {
                         sprintf(snippet_fn, "%s/reduction.1d.tpl", snippet_path);
+                    } else if (2 == dims) {
+                        sprintf(snippet_fn, "%s/reduction.2d.tpl", snippet_path);
                     } else {
-                        sprintf(snippet_fn, "%s/reduction.nd.tpl", snippet_path);
+                        sprintf(snippet_fn, "%s/reduction.tpl", snippet_path);
                     }
-                    //sprintf(snippet_fn, "%s/reduction.omp.tpl", snippet_path);
                     ctemplate::ExpandTemplate(
                         snippet_fn,
                         ctemplate::STRIP_BLANK_LINES,

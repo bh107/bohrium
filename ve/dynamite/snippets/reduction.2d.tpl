@@ -84,17 +84,20 @@ int {{SYMBOL}}(int tool, ...)
 
     va_end(list);                                   // **DONE UNPACKING**
 
-    {{TYPE_A0}} *a0_current = a0_first + a0_start;  // Point to first element in output.
-    {{TYPE_A1}} *a1_current = a1_first + a1_start;  // Point to first element in input.
-    {{TYPE_A1}} rvar = 0;                           // Use the first element as temp
+    int64_t other_axis = (axis==0) ? 1 : 0;
 
-    #pragma omp parallel for reduction(+:rvar)
-    for(int64_t j=0; j<a1_shape[axis]; ++j) {
-        {{TYPE_A1}} *tmp_current = a1_current + a1_stride[axis]*j;
-        {{OPERATOR}};
+    #pragma omp parallel for
+    for(int64_t j=0; j<a1_shape[other_axis]; ++j) {
+                                                    // Point to first element in the input
+        {{TYPE_A1}} *a1_current = a1_first + a1_start + a1_stride[other_axis]*j;
+
+        {{TYPE_A1}} rvar = *a1_current;                 // Scalar-temp 
+        for(int64_t i=1; i<a1_shape[axis]; ++i) {       // Reduce
+            a1_current += a1_stride[axis];
+            rvar += *a1_current;
+        }                                           
+        *(a0_first + a0_start + a0_stride[0]*j) = rvar; // Update array/output
     }
-    *a0_current = rvar;
-    
     return 1;
 }
 

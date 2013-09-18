@@ -91,6 +91,8 @@ int {{SYMBOL}}(int tool, ...)
     int64_t tmp_start;
     int64_t tmp_stride[DYNAMITE_MAXDIM];    
 
+    printf("NOOOOOOOOOOOOOO\n");
+
     if (1 == a1_ndim) {                             // ** 1D Special Case **
         a0_current = a0_first + a0_start;           // Point to first element in output.
         {{TYPE_A0}} rvar = *(a1_first+a1_start);    // Use the first element as temp
