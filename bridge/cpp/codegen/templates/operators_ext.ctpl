@@ -13,7 +13,7 @@ directiveStartToken = %
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 %for $ret_type, $op1_type, $op2_type in $typesigs
 
-multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
+inline multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
 {
     multi_array<$ret_type>* result;  
     multi_array<$op1_type>* left    = &lhs;
@@ -47,7 +47,7 @@ multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$o
     return *result;
 }
 
-multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_type& rhs)
+inline multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_type& rhs)
 {
     multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type, $op1_type>(lhs); 
     result->link();
@@ -56,7 +56,7 @@ multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_ty
     return *result;
 }
 
-multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_type>& rhs)
+inline multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_type>& rhs)
 {
     multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type, $op2_type>(rhs);
     result->link();
@@ -78,7 +78,7 @@ multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_typ
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-multi_array<T> & operator$op (multi_array<T>& rhs)
+inline multi_array<T> & operator$op (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();

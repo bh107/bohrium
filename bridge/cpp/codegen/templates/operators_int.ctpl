@@ -9,27 +9,19 @@ directiveStartToken = %
 //
 //  Internally defined operator overloads
 //
-/*
-template <typename T>
-multi_array<T>& multi_array<T>::operator= (const T& rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
-    return *this;
-}
-*/
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 3
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator$op (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)$opcode, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -57,14 +49,14 @@ multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 %if $optype == "operator.int" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator$op (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator$op (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)$opcode, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator$op (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
