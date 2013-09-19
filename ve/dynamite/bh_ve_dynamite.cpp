@@ -96,7 +96,6 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
         }
         throw std::runtime_error(err_msg);
     }
-    printf("HMMM: %s\n", option);
 }
 
 bh_error bh_ve_dynamite_init(bh_component *self)
@@ -125,14 +124,10 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     bh_vcache_init(vcache_size);
 
     // DYNAMITE Arguments
-    bh_path_option(
-        kernel_path,    "BH_VE_DYNAMITE_KERNEL_PATH",   "kernel_path");
-    bh_path_option(
-        object_path,    "BH_VE_DYNAMITE_OBJECT_PATH",   "object_path");
-    bh_path_option(
-        template_path,   "BH_VE_DYNAMITE_TEMPLATE_PATH",  "template_path");
-    bh_string_option(
-        compiler_cmd,   "BH_VE_DYNAMITE_TARGET",        "compiler_cmd");
+    bh_path_option(     kernel_path,    "BH_VE_DYNAMITE_KERNEL_PATH",   "kernel_path");
+    bh_path_option(     object_path,    "BH_VE_DYNAMITE_OBJECT_PATH",   "object_path");
+    bh_path_option(     template_path,  "BH_VE_DYNAMITE_TEMPLATE_PATH", "template_path");
+    bh_string_option(   compiler_cmd,   "BH_VE_DYNAMITE_COMPILER",      "compiler_cmd");
 
     target = new process(compiler_cmd, object_path, kernel_path, true);
 
@@ -157,7 +152,7 @@ std::string symbolize(bh_instruction *instr) {
         case BH_SYNC:
         case BH_FREE:                           // Store data-pointer in malloc-cache
         case BH_USERFUNC:
-            return symbol;
+            return "";
 
         case BH_ADD_REDUCE:                     // Partial Reductions
         case BH_MULTIPLY_REDUCE:
@@ -172,7 +167,7 @@ std::string symbolize(bh_instruction *instr) {
 
             dims = instr->operand[1].ndim;
             if (dims <= 2) {
-                sprintf(symbol_c, "%s_%dD_DD_%s%s",
+                sprintf(symbol_c, "%s_%ldD_DD_%s%s",
                     bh_opcode_text(instr->opcode),
                     dims,
                     bhtype_to_shorthand(instr->operand[0].base->type),
@@ -242,7 +237,7 @@ std::string symbolize(bh_instruction *instr) {
                     bhtype_to_shorthand(instr->operand[2].base->type)
                 );
             }
-            return symbol;
+            return std::string(symbol_c);
 
         case BH_ABSOLUTE:                       // Unary Element-wise
         case BH_LOGICAL_NOT:
@@ -299,7 +294,190 @@ std::string symbolize(bh_instruction *instr) {
             return std::string(symbol_c);
 
         default:
-            return symbol;
+            return "";
+    }
+}
+
+std::string specialize(std::string symbol, bh_instruction *instr) {
+
+    bh_random_type *random_args;
+    
+    char template_fn[500];   // NOTE: constants like these are often traumatizing!
+
+    int64_t dims = instr->operand[0].ndim;  // Reductions overwrite this
+    bool cres = false;
+
+    ctemplate::TemplateDictionary dict("codegen");
+    dict.ShowSection("license");
+    dict.ShowSection("include");
+
+    switch (instr->opcode) {                    // OPCODE_SWITCH
+
+        case BH_USERFUNC:                       // Extensions
+            if (instr->userfunc->id == random_impl_id) {
+                random_args = (bh_random_type*)instr->userfunc;
+                dict.SetValue("SYMBOL",     symbol);
+                dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
+                dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
+                sprintf(template_fn, "%s/random.tpl", template_path);
+
+                cres = true;
+            } 
+            break;
+        
+        case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+            dict.SetValue("SYMBOL", symbol);
+            dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+            dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+
+            dims = instr->operand[1].ndim;
+            if (dims <= 2) {
+                sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, dims);
+            } else {
+                sprintf(template_fn, "%s/reduction.nd.tpl", template_path);
+            }
+
+            cres = true;
+            break;
+
+        case BH_ADD:
+        case BH_SUBTRACT:
+        case BH_MULTIPLY:
+        case BH_DIVIDE:
+        case BH_POWER:
+        case BH_GREATER:
+        case BH_GREATER_EQUAL:
+        case BH_LESS:
+        case BH_LESS_EQUAL:
+        case BH_EQUAL:
+        case BH_NOT_EQUAL:
+        case BH_LOGICAL_AND:
+        case BH_LOGICAL_OR:
+        case BH_LOGICAL_XOR:
+        case BH_MAXIMUM:
+        case BH_MINIMUM:
+        case BH_BITWISE_AND:
+        case BH_BITWISE_OR:
+        case BH_BITWISE_XOR:
+        case BH_LEFT_SHIFT:
+        case BH_RIGHT_SHIFT:
+        case BH_ARCTAN2:
+        case BH_MOD:
+
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+            dict.ShowSection("binary");
+            if (bh_is_constant(&instr->operand[2])) {
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->constant.type));
+                dict.ShowSection("a1_dense");
+                dict.ShowSection("a2_scalar");
+            } else if (bh_is_constant(&instr->operand[1])) {
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
+                dict.ShowSection("a1_scalar");
+                dict.ShowSection("a2_dense");
+            } else {
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
+                dict.ShowSection("a1_dense");
+                dict.ShowSection("a2_dense");
+            }
+            if (dims<=3) {
+                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, dims);
+            } else {
+                sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+            }
+
+            cres = true;
+            break;
+
+        case BH_ABSOLUTE:
+        case BH_LOGICAL_NOT:
+        case BH_INVERT:
+        case BH_COS:
+        case BH_SIN:
+        case BH_TAN:
+        case BH_COSH:
+        case BH_SINH:
+        case BH_TANH:
+        case BH_ARCSIN:
+        case BH_ARCCOS:
+        case BH_ARCTAN:
+        case BH_ARCSINH:
+        case BH_ARCCOSH:
+        case BH_ARCTANH:
+        case BH_EXP:
+        case BH_EXP2:
+        case BH_EXPM1:
+        case BH_LOG:
+        case BH_LOG2:
+        case BH_LOG10:
+        case BH_LOG1P:
+        case BH_SQRT:
+        case BH_CEIL:
+        case BH_TRUNC:
+        case BH_FLOOR:
+        case BH_RINT:
+        case BH_ISNAN:
+        case BH_ISINF:
+        case BH_IDENTITY:
+
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+            dict.ShowSection("unary");
+            if (bh_is_constant(&instr->operand[1])) {
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
+                dict.ShowSection("a1_scalar");
+            } else {
+                dict.SetValue("SYMBOL", symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+                dict.ShowSection("a1_dense");
+            } 
+            if (dims<=3) {
+                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, dims);
+            } else {
+                sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+            }
+
+            cres = true;
+            break;
+
+        default:
+            printf("Dynamite: Err=[Unsupported ufunc...\n");
+    }
+
+    if (!cres) {
+        throw std::runtime_error("Dynamite: Failed specializing code.");
+    }
+
+    std::string sourcecode = "";
+    ctemplate::ExpandTemplate(
+        template_fn,
+        ctemplate::STRIP_BLANK_LINES,
+        &dict,
+        &sourcecode
+    );
+
+    return sourcecode;
 }
 
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
@@ -314,6 +492,8 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
     for(bh_intp i=0; i<bhir->ninstr; ++i) {
         instr = &bhir->instr_list[i];
 
+        bh_random_type *random_args;
+
         #ifdef PROFILE
         t_begin = _bh_timing();
         m_begin = _bh_timing();
@@ -322,23 +502,22 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
         std::string symbol = symbolize(instr);           // Grab the symbol / IR-HASH
 
-        if (do_jit && (!target->symbol_ready(symbol))) { // Compile it
-            // Send to specializer
-            // Send to compiler
-            // Store in cache
+        if (do_jit && (symbol!="") && (!target->symbol_ready(symbol))) {
+            std::string sourcecode = specialize(symbol, instr);             // Send to specializer
+            target->compile(symbol, sourcecode.c_str(), sourcecode.size()); // Send to compiler / cache
         }
 
-        if (!target->load(symbol, symbol)) {            // Load
+        if ((symbol!="") && !target->load(symbol, symbol)) {    // Load
             return BH_ERROR;
         }
-        res = bh_vcache_malloc(instr);                  // Allocate memory for operands
+        res = bh_vcache_malloc(instr);                          // Allocate memory for operands
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_dynamite_execute()\n");
             return res;
         }
 
-        switch (instr->opcode) {                    // Dispatch: setup parameters and execute
+        switch (instr->opcode) {    // OPCODE_SWITCH
 
             case BH_NONE:                           // NOOP.
             case BH_DISCARD:
