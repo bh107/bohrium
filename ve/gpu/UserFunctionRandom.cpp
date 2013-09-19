@@ -88,6 +88,11 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
         kernelMap.insert(std::make_pair(OCL_FLOAT64, kernels[5]));    
 }
 
+UserFunctionRandom::~UserFunctionRandom()
+{
+    delete state;
+}
+
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
 {
     assert(eventStatus == CL_COMPLETE);
