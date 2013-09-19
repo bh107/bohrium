@@ -140,14 +140,11 @@ bh_error bh_ve_dynamite_init(bh_component *self)
     memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
     #endif
 
-    printf("STARTED DYNAMITE [%s]\n", template_path);
-
     return BH_SUCCESS;
 }
 
 bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 {
-    printf("EXECUTE DYNAMITE [%s]\n", template_path);
     #ifdef PROFILE
     bh_uint64 t_begin, t_end, m_begin, m_end;
     #endif
@@ -179,116 +176,6 @@ bh_error bh_ve_dynamite_execute(bh_ir* bhir)
 
         char template_fn[250];   // NOTE: constants like these are often traumatizing!
         char symbol_c[500];
-
-        /*
-
-        if ((!kernels.empty()) && (kernel.begin == kernel.end)) {    // Grab a new kernel
-            kernel = kernels.front();
-            kernels.erase(kernels.begin());
-        }
-
-        // Check if we wanna go into fusion-mode
-        if ((count==kernel.begin) && (kernel.begin != kernel.end)) {
-            count = kernel.end;   // Skip ahead
-
-            #ifdef PROFILE
-            t_begin = _bh_timing();
-            #endif
-
-            for(auto it=kernels.begin(); it!=kernels.end(); ++it) {
-                printf("KERNEL.\n");
-                bh_pprint_kernel(&kernel, instruction_list);
-            }
-
-            symbol_buf << "BH_PFSTREAM";
-            for(bh_int64 i=kernel.begin; i<kernel.end; ++i) {
-                symbol_buf << "_" << instruction_list[i].opcode;
-            }
-            symbol = symbol_buf.str();
-            cres = target->symbol_ready(symbol);
-            std::string cmd_str = fused_expr(   // Create expression
-                instruction_list,
-                kernel.end-1,
-                kernel.begin,
-                instruction_list[kernel.end].operand[1],
-                kernel
-            );
-            cmd_str = "*a0_current += "+ cmd_str;
-
-            if (!cres) {
-                sourcecode = "";                // Generate code
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("OPERATOR", cmd_str);
-                for(size_t it=0; it<kernel.noperands; ++it) {
-                    bh_view *krn_operand = kernel.operands[it];
-                    std::ostringstream buff;
-                    buff << "a" << it << "_dense";
-                    dict.ShowSection(buff.str());
-                    buff.str("");
-                    buff << "TYPE_A" << it;
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand.base->type));
-                    buff.str("");
-                    buff << "TYPE_A" << it << "_SHORTHAND";
-                    dict.SetValue(buff.str(), bhtype_to_ctype(krn_operand.base->type));
-                }
-
-                sprintf(template_fn, "%s/partial.streaming.tpl", template_path);
-                ctemplate::ExpandTemplate(
-                    template_fn,
-                    ctemplate::STRIP_BLANK_LINES, 
-                    &dict, 
-                    &sourcecode
-                );
-                //target->src_to_file(symbol, sourcecode.c_str(), sourcecode.size()); 
-                // Compile it
-                cres = target->compile(symbol, sourcecode.c_str(), sourcecode.size());
-            }
-            cres = cres ? target->load(symbol, symbol) : cres;
-
-            if (!cres) {
-                res = BH_ERROR;
-            } else {
-
-                #ifdef PROFILE
-                m_begin = _bh_timing();
-                #endif
-                res = bh_vcache_malloc_op(kernel.operands[0]);  // malloc output
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr,
-                            "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_dynamite_execute()\n");
-                    free(instruction_list);
-                    return res;
-                }
-                #ifdef PROFILE
-                m_end = _bh_timing();
-                times[BH_NO_OPCODES] += m_end-m_begin;
-                ++calls[BH_NO_OPCODES];
-                #endif
-
-                target->funcs[symbol](  // Execute the kernel
-                    kernel.noperands,
-                    &(kernel.operands)
-                );
-                res = BH_SUCCESS;
-            }
-
-            kernel.begin = 0;
-            kernel.end   = 0;
-
-            #ifdef PROFILE
-            t_end = _bh_timing();
-            times[BH_NO_OPCODES+1] += (t_end-t_begin)+ (m_end-m_begin);
-            ++calls[BH_NO_OPCODES+1];
-            #endif
-
-            continue;
-        }
-
-        */
-
-        // NAIVE MODE
-        //bh_pprint_instr(instr);
 
         #ifdef PROFILE
         t_begin = _bh_timing();
