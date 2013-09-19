@@ -25,13 +25,13 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 // Runtime : Definition
-Runtime& Runtime::instance()
+inline Runtime& Runtime::instance()
 {
     static Runtime instance;
     return instance;
 }
 
-Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
+inline Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
@@ -76,7 +76,7 @@ Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
     }
 }
 
-Runtime::~Runtime()
+inline Runtime::~Runtime()
 {
     flush();
 
@@ -85,7 +85,7 @@ Runtime::~Runtime()
     bh_component_free(bridge);
 }
 
-size_t Runtime::get_queue_size()
+inline size_t Runtime::get_queue_size()
 {
     return queue_size;
 }
@@ -478,7 +478,7 @@ T scalar(multi_array<T>& op)
     return value;
 }
 
-void Runtime::trash(bh_base *base_ptr)
+inline void Runtime::trash(bh_base *base_ptr)
 {
     garbage.push_back(base_ptr);
 }

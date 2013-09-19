@@ -44,7 +44,7 @@ const float  PI   = 3.14159265358979f;
 template <typename T>   // Forward declaration
 class multi_array;
 
-int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
+inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
 {
     shape[index] = arg;
     return 0;

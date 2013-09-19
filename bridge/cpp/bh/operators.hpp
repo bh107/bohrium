@@ -35,25 +35,17 @@ namespace bh {
 //
 //  Internally defined operator overloads
 //
-/*
-template <typename T>
-multi_array<T>& multi_array<T>::operator= (const T& rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
-    return *this;
-}
-*/
 
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator+= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator+= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -76,14 +68,14 @@ multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator-= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator-= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -106,14 +98,14 @@ multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator*= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator*= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -136,14 +128,14 @@ multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator/= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator/= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -166,14 +158,14 @@ multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator%= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator%= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -196,14 +188,14 @@ multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator&= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator&= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -226,14 +218,14 @@ multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator|= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator|= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -256,14 +248,14 @@ multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator^= (const T& rhs)
+inline multi_array<T>& multi_array<T>::operator^= (const T& rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, rhs);
     return *this;
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
+inline multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 {
     multi_array<T>* input = &rhs;
                                             
@@ -292,7 +284,7 @@ multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 //  Mapping "1.0 + a" to BH_ADD(t, 1.0, a)
 //
 
-multi_array<int8_t>& operator+ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator+ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -326,7 +318,7 @@ multi_array<int8_t>& operator+ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator+ (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator+ (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -335,7 +327,7 @@ multi_array<int8_t> & operator+ (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator+ (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator+ (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -344,7 +336,7 @@ multi_array<int8_t> & operator+ (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<double>& operator+ (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<double>& operator+ (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result;  
     multi_array<double>* left    = &lhs;
@@ -378,7 +370,7 @@ multi_array<double>& operator+ (multi_array<double>& lhs, multi_array<double>& r
     return *result;
 }
 
-multi_array<double> & operator+ (multi_array<double>& lhs, const double& rhs)
+inline multi_array<double> & operator+ (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
     result->link();
@@ -387,7 +379,7 @@ multi_array<double> & operator+ (multi_array<double>& lhs, const double& rhs)
     return *result;
 }
 
-multi_array<double> & operator+ (const double& lhs, multi_array<double>& rhs)
+inline multi_array<double> & operator+ (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
     result->link();
@@ -396,7 +388,7 @@ multi_array<double> & operator+ (const double& lhs, multi_array<double>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator+ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator+ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -430,7 +422,7 @@ multi_array<uint16_t>& operator+ (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator+ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator+ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -439,7 +431,7 @@ multi_array<uint16_t> & operator+ (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator+ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator+ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -448,7 +440,7 @@ multi_array<uint16_t> & operator+ (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator+ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator+ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -482,7 +474,7 @@ multi_array<uint64_t>& operator+ (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator+ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator+ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -491,7 +483,7 @@ multi_array<uint64_t> & operator+ (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator+ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator+ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -500,7 +492,7 @@ multi_array<uint64_t> & operator+ (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator+ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator+ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -534,7 +526,7 @@ multi_array<int16_t>& operator+ (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator+ (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator+ (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -543,7 +535,7 @@ multi_array<int16_t> & operator+ (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator+ (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator+ (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -552,7 +544,7 @@ multi_array<int16_t> & operator+ (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<float>& operator+ (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<float>& operator+ (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result;  
     multi_array<float>* left    = &lhs;
@@ -586,7 +578,7 @@ multi_array<float>& operator+ (multi_array<float>& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<float> & operator+ (multi_array<float>& lhs, const float& rhs)
+inline multi_array<float> & operator+ (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
     result->link();
@@ -595,7 +587,7 @@ multi_array<float> & operator+ (multi_array<float>& lhs, const float& rhs)
     return *result;
 }
 
-multi_array<float> & operator+ (const float& lhs, multi_array<float>& rhs)
+inline multi_array<float> & operator+ (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
     result->link();
@@ -604,7 +596,7 @@ multi_array<float> & operator+ (const float& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator+ (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator+ (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -638,7 +630,7 @@ multi_array<unsigned char>& operator+ (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator+ (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator+ (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -647,7 +639,7 @@ multi_array<unsigned char> & operator+ (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator+ (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator+ (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -656,7 +648,7 @@ multi_array<unsigned char> & operator+ (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator+ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator+ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -690,7 +682,7 @@ multi_array<int32_t>& operator+ (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator+ (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator+ (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -699,7 +691,7 @@ multi_array<int32_t> & operator+ (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator+ (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator+ (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -708,7 +700,7 @@ multi_array<int32_t> & operator+ (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator+ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator+ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -742,7 +734,7 @@ multi_array<int64_t>& operator+ (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator+ (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator+ (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -751,7 +743,7 @@ multi_array<int64_t> & operator+ (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator+ (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator+ (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -760,7 +752,7 @@ multi_array<int64_t> & operator+ (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator+ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator+ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -794,7 +786,7 @@ multi_array<uint32_t>& operator+ (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator+ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator+ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -803,7 +795,7 @@ multi_array<uint32_t> & operator+ (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator+ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator+ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -812,7 +804,7 @@ multi_array<uint32_t> & operator+ (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<std::complex<float> >& operator+ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> >& operator+ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -846,7 +838,7 @@ multi_array<std::complex<float> >& operator+ (multi_array<std::complex<float> >&
     return *result;
 }
 
-multi_array<std::complex<float> > & operator+ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<std::complex<float> > & operator+ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
     result->link();
@@ -855,7 +847,7 @@ multi_array<std::complex<float> > & operator+ (multi_array<std::complex<float> >
     return *result;
 }
 
-multi_array<std::complex<float> > & operator+ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> > & operator+ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
     result->link();
@@ -864,7 +856,7 @@ multi_array<std::complex<float> > & operator+ (const std::complex<float> & lhs, 
     return *result;
 }
 
-multi_array<std::complex<double> >& operator+ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> >& operator+ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -898,7 +890,7 @@ multi_array<std::complex<double> >& operator+ (multi_array<std::complex<double> 
     return *result;
 }
 
-multi_array<std::complex<double> > & operator+ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<std::complex<double> > & operator+ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
     result->link();
@@ -907,7 +899,7 @@ multi_array<std::complex<double> > & operator+ (multi_array<std::complex<double>
     return *result;
 }
 
-multi_array<std::complex<double> > & operator+ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> > & operator+ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
     result->link();
@@ -916,7 +908,7 @@ multi_array<std::complex<double> > & operator+ (const std::complex<double> & lhs
     return *result;
 }
 
-multi_array<int8_t>& operator- (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator- (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -950,7 +942,7 @@ multi_array<int8_t>& operator- (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator- (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator- (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -959,7 +951,7 @@ multi_array<int8_t> & operator- (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator- (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator- (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -968,7 +960,7 @@ multi_array<int8_t> & operator- (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<double>& operator- (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<double>& operator- (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result;  
     multi_array<double>* left    = &lhs;
@@ -1002,7 +994,7 @@ multi_array<double>& operator- (multi_array<double>& lhs, multi_array<double>& r
     return *result;
 }
 
-multi_array<double> & operator- (multi_array<double>& lhs, const double& rhs)
+inline multi_array<double> & operator- (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
     result->link();
@@ -1011,7 +1003,7 @@ multi_array<double> & operator- (multi_array<double>& lhs, const double& rhs)
     return *result;
 }
 
-multi_array<double> & operator- (const double& lhs, multi_array<double>& rhs)
+inline multi_array<double> & operator- (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
     result->link();
@@ -1020,7 +1012,7 @@ multi_array<double> & operator- (const double& lhs, multi_array<double>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator- (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator- (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -1054,7 +1046,7 @@ multi_array<uint16_t>& operator- (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator- (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator- (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -1063,7 +1055,7 @@ multi_array<uint16_t> & operator- (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator- (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator- (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -1072,7 +1064,7 @@ multi_array<uint16_t> & operator- (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator- (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator- (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -1106,7 +1098,7 @@ multi_array<uint64_t>& operator- (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator- (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator- (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -1115,7 +1107,7 @@ multi_array<uint64_t> & operator- (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator- (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator- (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -1124,7 +1116,7 @@ multi_array<uint64_t> & operator- (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator- (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator- (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -1158,7 +1150,7 @@ multi_array<int16_t>& operator- (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator- (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator- (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -1167,7 +1159,7 @@ multi_array<int16_t> & operator- (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator- (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator- (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -1176,7 +1168,7 @@ multi_array<int16_t> & operator- (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<float>& operator- (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<float>& operator- (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result;  
     multi_array<float>* left    = &lhs;
@@ -1210,7 +1202,7 @@ multi_array<float>& operator- (multi_array<float>& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<float> & operator- (multi_array<float>& lhs, const float& rhs)
+inline multi_array<float> & operator- (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
     result->link();
@@ -1219,7 +1211,7 @@ multi_array<float> & operator- (multi_array<float>& lhs, const float& rhs)
     return *result;
 }
 
-multi_array<float> & operator- (const float& lhs, multi_array<float>& rhs)
+inline multi_array<float> & operator- (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
     result->link();
@@ -1228,7 +1220,7 @@ multi_array<float> & operator- (const float& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator- (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator- (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -1262,7 +1254,7 @@ multi_array<unsigned char>& operator- (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator- (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator- (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -1271,7 +1263,7 @@ multi_array<unsigned char> & operator- (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator- (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator- (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -1280,7 +1272,7 @@ multi_array<unsigned char> & operator- (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator- (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator- (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -1314,7 +1306,7 @@ multi_array<int32_t>& operator- (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator- (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator- (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -1323,7 +1315,7 @@ multi_array<int32_t> & operator- (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator- (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator- (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -1332,7 +1324,7 @@ multi_array<int32_t> & operator- (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator- (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator- (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -1366,7 +1358,7 @@ multi_array<int64_t>& operator- (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator- (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator- (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -1375,7 +1367,7 @@ multi_array<int64_t> & operator- (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator- (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator- (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -1384,7 +1376,7 @@ multi_array<int64_t> & operator- (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator- (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator- (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -1418,7 +1410,7 @@ multi_array<uint32_t>& operator- (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator- (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator- (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -1427,7 +1419,7 @@ multi_array<uint32_t> & operator- (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator- (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator- (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -1436,7 +1428,7 @@ multi_array<uint32_t> & operator- (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<std::complex<float> >& operator- (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> >& operator- (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -1470,7 +1462,7 @@ multi_array<std::complex<float> >& operator- (multi_array<std::complex<float> >&
     return *result;
 }
 
-multi_array<std::complex<float> > & operator- (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<std::complex<float> > & operator- (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
     result->link();
@@ -1479,7 +1471,7 @@ multi_array<std::complex<float> > & operator- (multi_array<std::complex<float> >
     return *result;
 }
 
-multi_array<std::complex<float> > & operator- (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> > & operator- (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
     result->link();
@@ -1488,7 +1480,7 @@ multi_array<std::complex<float> > & operator- (const std::complex<float> & lhs, 
     return *result;
 }
 
-multi_array<std::complex<double> >& operator- (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> >& operator- (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -1522,7 +1514,7 @@ multi_array<std::complex<double> >& operator- (multi_array<std::complex<double> 
     return *result;
 }
 
-multi_array<std::complex<double> > & operator- (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<std::complex<double> > & operator- (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
     result->link();
@@ -1531,7 +1523,7 @@ multi_array<std::complex<double> > & operator- (multi_array<std::complex<double>
     return *result;
 }
 
-multi_array<std::complex<double> > & operator- (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> > & operator- (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
     result->link();
@@ -1540,7 +1532,7 @@ multi_array<std::complex<double> > & operator- (const std::complex<double> & lhs
     return *result;
 }
 
-multi_array<int8_t>& operator* (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator* (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -1574,7 +1566,7 @@ multi_array<int8_t>& operator* (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator* (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator* (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -1583,7 +1575,7 @@ multi_array<int8_t> & operator* (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator* (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator* (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -1592,7 +1584,7 @@ multi_array<int8_t> & operator* (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<double>& operator* (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<double>& operator* (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result;  
     multi_array<double>* left    = &lhs;
@@ -1626,7 +1618,7 @@ multi_array<double>& operator* (multi_array<double>& lhs, multi_array<double>& r
     return *result;
 }
 
-multi_array<double> & operator* (multi_array<double>& lhs, const double& rhs)
+inline multi_array<double> & operator* (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
     result->link();
@@ -1635,7 +1627,7 @@ multi_array<double> & operator* (multi_array<double>& lhs, const double& rhs)
     return *result;
 }
 
-multi_array<double> & operator* (const double& lhs, multi_array<double>& rhs)
+inline multi_array<double> & operator* (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
     result->link();
@@ -1644,7 +1636,7 @@ multi_array<double> & operator* (const double& lhs, multi_array<double>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator* (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator* (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -1678,7 +1670,7 @@ multi_array<uint16_t>& operator* (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator* (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator* (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -1687,7 +1679,7 @@ multi_array<uint16_t> & operator* (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator* (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator* (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -1696,7 +1688,7 @@ multi_array<uint16_t> & operator* (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator* (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator* (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -1730,7 +1722,7 @@ multi_array<uint64_t>& operator* (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator* (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator* (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -1739,7 +1731,7 @@ multi_array<uint64_t> & operator* (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator* (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator* (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -1748,7 +1740,7 @@ multi_array<uint64_t> & operator* (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator* (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator* (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -1782,7 +1774,7 @@ multi_array<int16_t>& operator* (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator* (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator* (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -1791,7 +1783,7 @@ multi_array<int16_t> & operator* (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator* (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator* (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -1800,7 +1792,7 @@ multi_array<int16_t> & operator* (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<float>& operator* (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<float>& operator* (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result;  
     multi_array<float>* left    = &lhs;
@@ -1834,7 +1826,7 @@ multi_array<float>& operator* (multi_array<float>& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<float> & operator* (multi_array<float>& lhs, const float& rhs)
+inline multi_array<float> & operator* (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
     result->link();
@@ -1843,7 +1835,7 @@ multi_array<float> & operator* (multi_array<float>& lhs, const float& rhs)
     return *result;
 }
 
-multi_array<float> & operator* (const float& lhs, multi_array<float>& rhs)
+inline multi_array<float> & operator* (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
     result->link();
@@ -1852,7 +1844,7 @@ multi_array<float> & operator* (const float& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator* (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator* (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -1886,7 +1878,7 @@ multi_array<unsigned char>& operator* (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator* (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator* (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -1895,7 +1887,7 @@ multi_array<unsigned char> & operator* (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator* (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator* (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -1904,7 +1896,7 @@ multi_array<unsigned char> & operator* (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator* (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator* (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -1938,7 +1930,7 @@ multi_array<int32_t>& operator* (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator* (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator* (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -1947,7 +1939,7 @@ multi_array<int32_t> & operator* (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator* (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator* (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -1956,7 +1948,7 @@ multi_array<int32_t> & operator* (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator* (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator* (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -1990,7 +1982,7 @@ multi_array<int64_t>& operator* (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator* (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator* (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -1999,7 +1991,7 @@ multi_array<int64_t> & operator* (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator* (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator* (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -2008,7 +2000,7 @@ multi_array<int64_t> & operator* (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator* (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator* (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -2042,7 +2034,7 @@ multi_array<uint32_t>& operator* (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator* (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator* (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -2051,7 +2043,7 @@ multi_array<uint32_t> & operator* (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator* (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator* (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -2060,7 +2052,7 @@ multi_array<uint32_t> & operator* (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<std::complex<float> >& operator* (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> >& operator* (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -2094,7 +2086,7 @@ multi_array<std::complex<float> >& operator* (multi_array<std::complex<float> >&
     return *result;
 }
 
-multi_array<std::complex<float> > & operator* (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<std::complex<float> > & operator* (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
     result->link();
@@ -2103,7 +2095,7 @@ multi_array<std::complex<float> > & operator* (multi_array<std::complex<float> >
     return *result;
 }
 
-multi_array<std::complex<float> > & operator* (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> > & operator* (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
     result->link();
@@ -2112,7 +2104,7 @@ multi_array<std::complex<float> > & operator* (const std::complex<float> & lhs, 
     return *result;
 }
 
-multi_array<std::complex<double> >& operator* (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> >& operator* (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -2146,7 +2138,7 @@ multi_array<std::complex<double> >& operator* (multi_array<std::complex<double> 
     return *result;
 }
 
-multi_array<std::complex<double> > & operator* (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<std::complex<double> > & operator* (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
     result->link();
@@ -2155,7 +2147,7 @@ multi_array<std::complex<double> > & operator* (multi_array<std::complex<double>
     return *result;
 }
 
-multi_array<std::complex<double> > & operator* (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> > & operator* (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
     result->link();
@@ -2164,7 +2156,7 @@ multi_array<std::complex<double> > & operator* (const std::complex<double> & lhs
     return *result;
 }
 
-multi_array<int8_t>& operator/ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator/ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -2198,7 +2190,7 @@ multi_array<int8_t>& operator/ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator/ (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator/ (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -2207,7 +2199,7 @@ multi_array<int8_t> & operator/ (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator/ (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator/ (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -2216,7 +2208,7 @@ multi_array<int8_t> & operator/ (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<double>& operator/ (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<double>& operator/ (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result;  
     multi_array<double>* left    = &lhs;
@@ -2250,7 +2242,7 @@ multi_array<double>& operator/ (multi_array<double>& lhs, multi_array<double>& r
     return *result;
 }
 
-multi_array<double> & operator/ (multi_array<double>& lhs, const double& rhs)
+inline multi_array<double> & operator/ (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
     result->link();
@@ -2259,7 +2251,7 @@ multi_array<double> & operator/ (multi_array<double>& lhs, const double& rhs)
     return *result;
 }
 
-multi_array<double> & operator/ (const double& lhs, multi_array<double>& rhs)
+inline multi_array<double> & operator/ (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
     result->link();
@@ -2268,7 +2260,7 @@ multi_array<double> & operator/ (const double& lhs, multi_array<double>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator/ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator/ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -2302,7 +2294,7 @@ multi_array<uint16_t>& operator/ (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator/ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator/ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -2311,7 +2303,7 @@ multi_array<uint16_t> & operator/ (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator/ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator/ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -2320,7 +2312,7 @@ multi_array<uint16_t> & operator/ (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator/ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator/ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -2354,7 +2346,7 @@ multi_array<uint64_t>& operator/ (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator/ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator/ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -2363,7 +2355,7 @@ multi_array<uint64_t> & operator/ (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator/ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator/ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -2372,7 +2364,7 @@ multi_array<uint64_t> & operator/ (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator/ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator/ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -2406,7 +2398,7 @@ multi_array<int16_t>& operator/ (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator/ (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator/ (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -2415,7 +2407,7 @@ multi_array<int16_t> & operator/ (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator/ (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator/ (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -2424,7 +2416,7 @@ multi_array<int16_t> & operator/ (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<float>& operator/ (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<float>& operator/ (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result;  
     multi_array<float>* left    = &lhs;
@@ -2458,7 +2450,7 @@ multi_array<float>& operator/ (multi_array<float>& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<float> & operator/ (multi_array<float>& lhs, const float& rhs)
+inline multi_array<float> & operator/ (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
     result->link();
@@ -2467,7 +2459,7 @@ multi_array<float> & operator/ (multi_array<float>& lhs, const float& rhs)
     return *result;
 }
 
-multi_array<float> & operator/ (const float& lhs, multi_array<float>& rhs)
+inline multi_array<float> & operator/ (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
     result->link();
@@ -2476,7 +2468,7 @@ multi_array<float> & operator/ (const float& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<int32_t>& operator/ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator/ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -2510,7 +2502,7 @@ multi_array<int32_t>& operator/ (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator/ (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator/ (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -2519,7 +2511,7 @@ multi_array<int32_t> & operator/ (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator/ (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator/ (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -2528,7 +2520,7 @@ multi_array<int32_t> & operator/ (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator/ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator/ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -2562,7 +2554,7 @@ multi_array<int64_t>& operator/ (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator/ (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator/ (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -2571,7 +2563,7 @@ multi_array<int64_t> & operator/ (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator/ (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator/ (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -2580,7 +2572,7 @@ multi_array<int64_t> & operator/ (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator/ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator/ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -2614,7 +2606,7 @@ multi_array<uint32_t>& operator/ (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator/ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator/ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -2623,7 +2615,7 @@ multi_array<uint32_t> & operator/ (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator/ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator/ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -2632,7 +2624,7 @@ multi_array<uint32_t> & operator/ (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<std::complex<float> >& operator/ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> >& operator/ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -2666,7 +2658,7 @@ multi_array<std::complex<float> >& operator/ (multi_array<std::complex<float> >&
     return *result;
 }
 
-multi_array<std::complex<float> > & operator/ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<std::complex<float> > & operator/ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
     result->link();
@@ -2675,7 +2667,7 @@ multi_array<std::complex<float> > & operator/ (multi_array<std::complex<float> >
     return *result;
 }
 
-multi_array<std::complex<float> > & operator/ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<std::complex<float> > & operator/ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
     result->link();
@@ -2684,7 +2676,7 @@ multi_array<std::complex<float> > & operator/ (const std::complex<float> & lhs, 
     return *result;
 }
 
-multi_array<std::complex<double> >& operator/ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> >& operator/ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -2718,7 +2710,7 @@ multi_array<std::complex<double> >& operator/ (multi_array<std::complex<double> 
     return *result;
 }
 
-multi_array<std::complex<double> > & operator/ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<std::complex<double> > & operator/ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
     result->link();
@@ -2727,7 +2719,7 @@ multi_array<std::complex<double> > & operator/ (multi_array<std::complex<double>
     return *result;
 }
 
-multi_array<std::complex<double> > & operator/ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<std::complex<double> > & operator/ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
     result->link();
@@ -2736,7 +2728,7 @@ multi_array<std::complex<double> > & operator/ (const std::complex<double> & lhs
     return *result;
 }
 
-multi_array<int8_t>& operator% (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator% (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -2770,7 +2762,7 @@ multi_array<int8_t>& operator% (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator% (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator% (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -2779,7 +2771,7 @@ multi_array<int8_t> & operator% (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator% (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator% (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -2788,7 +2780,7 @@ multi_array<int8_t> & operator% (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<double>& operator% (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<double>& operator% (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result;  
     multi_array<double>* left    = &lhs;
@@ -2822,7 +2814,7 @@ multi_array<double>& operator% (multi_array<double>& lhs, multi_array<double>& r
     return *result;
 }
 
-multi_array<double> & operator% (multi_array<double>& lhs, const double& rhs)
+inline multi_array<double> & operator% (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
     result->link();
@@ -2831,7 +2823,7 @@ multi_array<double> & operator% (multi_array<double>& lhs, const double& rhs)
     return *result;
 }
 
-multi_array<double> & operator% (const double& lhs, multi_array<double>& rhs)
+inline multi_array<double> & operator% (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
     result->link();
@@ -2840,7 +2832,7 @@ multi_array<double> & operator% (const double& lhs, multi_array<double>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator% (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator% (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -2874,7 +2866,7 @@ multi_array<uint16_t>& operator% (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator% (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator% (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -2883,7 +2875,7 @@ multi_array<uint16_t> & operator% (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator% (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator% (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -2892,7 +2884,7 @@ multi_array<uint16_t> & operator% (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator% (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator% (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -2926,7 +2918,7 @@ multi_array<uint64_t>& operator% (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator% (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator% (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -2935,7 +2927,7 @@ multi_array<uint64_t> & operator% (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator% (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator% (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -2944,7 +2936,7 @@ multi_array<uint64_t> & operator% (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator% (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator% (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -2978,7 +2970,7 @@ multi_array<int16_t>& operator% (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator% (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator% (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -2987,7 +2979,7 @@ multi_array<int16_t> & operator% (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator% (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator% (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -2996,7 +2988,7 @@ multi_array<int16_t> & operator% (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<float>& operator% (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<float>& operator% (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result;  
     multi_array<float>* left    = &lhs;
@@ -3030,7 +3022,7 @@ multi_array<float>& operator% (multi_array<float>& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<float> & operator% (multi_array<float>& lhs, const float& rhs)
+inline multi_array<float> & operator% (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
     result->link();
@@ -3039,7 +3031,7 @@ multi_array<float> & operator% (multi_array<float>& lhs, const float& rhs)
     return *result;
 }
 
-multi_array<float> & operator% (const float& lhs, multi_array<float>& rhs)
+inline multi_array<float> & operator% (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
     result->link();
@@ -3048,7 +3040,7 @@ multi_array<float> & operator% (const float& lhs, multi_array<float>& rhs)
     return *result;
 }
 
-multi_array<int32_t>& operator% (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator% (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -3082,7 +3074,7 @@ multi_array<int32_t>& operator% (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator% (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator% (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -3091,7 +3083,7 @@ multi_array<int32_t> & operator% (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator% (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator% (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -3100,7 +3092,7 @@ multi_array<int32_t> & operator% (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator% (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator% (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -3134,7 +3126,7 @@ multi_array<int64_t>& operator% (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator% (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator% (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -3143,7 +3135,7 @@ multi_array<int64_t> & operator% (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator% (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator% (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -3152,7 +3144,7 @@ multi_array<int64_t> & operator% (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator% (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator% (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -3186,7 +3178,7 @@ multi_array<uint32_t>& operator% (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator% (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator% (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -3195,7 +3187,7 @@ multi_array<uint32_t> & operator% (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator% (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator% (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -3204,7 +3196,7 @@ multi_array<uint32_t> & operator% (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -3238,7 +3230,7 @@ multi_array<unsigned char>& operator== (multi_array<int8_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -3247,7 +3239,7 @@ multi_array<unsigned char> & operator== (multi_array<int8_t>& lhs, const int8_t&
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator== (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -3256,7 +3248,7 @@ multi_array<unsigned char> & operator== (const int8_t& lhs, multi_array<int8_t>&
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -3290,7 +3282,7 @@ multi_array<unsigned char>& operator== (multi_array<double>& lhs, multi_array<do
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -3299,7 +3291,7 @@ multi_array<unsigned char> & operator== (multi_array<double>& lhs, const double&
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator== (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -3308,7 +3300,7 @@ multi_array<unsigned char> & operator== (const double& lhs, multi_array<double>&
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -3342,7 +3334,7 @@ multi_array<unsigned char>& operator== (multi_array<uint16_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -3351,7 +3343,7 @@ multi_array<unsigned char> & operator== (multi_array<uint16_t>& lhs, const uint1
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator== (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -3360,7 +3352,7 @@ multi_array<unsigned char> & operator== (const uint16_t& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -3394,7 +3386,7 @@ multi_array<unsigned char>& operator== (multi_array<uint64_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -3403,7 +3395,7 @@ multi_array<unsigned char> & operator== (multi_array<uint64_t>& lhs, const uint6
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator== (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -3412,7 +3404,7 @@ multi_array<unsigned char> & operator== (const uint64_t& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -3446,7 +3438,7 @@ multi_array<unsigned char>& operator== (multi_array<int16_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -3455,7 +3447,7 @@ multi_array<unsigned char> & operator== (multi_array<int16_t>& lhs, const int16_
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator== (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -3464,7 +3456,7 @@ multi_array<unsigned char> & operator== (const int16_t& lhs, multi_array<int16_t
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -3498,7 +3490,7 @@ multi_array<unsigned char>& operator== (multi_array<float>& lhs, multi_array<flo
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -3507,7 +3499,7 @@ multi_array<unsigned char> & operator== (multi_array<float>& lhs, const float& r
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator== (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -3516,7 +3508,7 @@ multi_array<unsigned char> & operator== (const float& lhs, multi_array<float>& r
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -3550,7 +3542,7 @@ multi_array<unsigned char>& operator== (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -3559,7 +3551,7 @@ multi_array<unsigned char> & operator== (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator== (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -3568,7 +3560,7 @@ multi_array<unsigned char> & operator== (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -3602,7 +3594,7 @@ multi_array<unsigned char>& operator== (multi_array<int32_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -3611,7 +3603,7 @@ multi_array<unsigned char> & operator== (multi_array<int32_t>& lhs, const int32_
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator== (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -3620,7 +3612,7 @@ multi_array<unsigned char> & operator== (const int32_t& lhs, multi_array<int32_t
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -3654,7 +3646,7 @@ multi_array<unsigned char>& operator== (multi_array<int64_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -3663,7 +3655,7 @@ multi_array<unsigned char> & operator== (multi_array<int64_t>& lhs, const int64_
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator== (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -3672,7 +3664,7 @@ multi_array<unsigned char> & operator== (const int64_t& lhs, multi_array<int64_t
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -3706,7 +3698,7 @@ multi_array<unsigned char>& operator== (multi_array<uint32_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator== (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -3715,7 +3707,7 @@ multi_array<unsigned char> & operator== (multi_array<uint32_t>& lhs, const uint3
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator== (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -3724,7 +3716,7 @@ multi_array<unsigned char> & operator== (const uint32_t& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -3758,7 +3750,7 @@ multi_array<unsigned char>& operator== (multi_array<std::complex<float> >& lhs, 
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<unsigned char> & operator== (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<float> >(lhs); 
     result->link();
@@ -3767,7 +3759,7 @@ multi_array<unsigned char> & operator== (multi_array<std::complex<float> >& lhs,
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<unsigned char> & operator== (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<float> >(rhs);
     result->link();
@@ -3776,7 +3768,7 @@ multi_array<unsigned char> & operator== (const std::complex<float> & lhs, multi_
     return *result;
 }
 
-multi_array<unsigned char>& operator== (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<unsigned char>& operator== (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -3810,7 +3802,7 @@ multi_array<unsigned char>& operator== (multi_array<std::complex<double> >& lhs,
     return *result;
 }
 
-multi_array<unsigned char> & operator== (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<unsigned char> & operator== (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<double> >(lhs); 
     result->link();
@@ -3819,7 +3811,7 @@ multi_array<unsigned char> & operator== (multi_array<std::complex<double> >& lhs
     return *result;
 }
 
-multi_array<unsigned char> & operator== (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<unsigned char> & operator== (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<double> >(rhs);
     result->link();
@@ -3828,7 +3820,7 @@ multi_array<unsigned char> & operator== (const std::complex<double> & lhs, multi
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -3862,7 +3854,7 @@ multi_array<unsigned char>& operator!= (multi_array<int8_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -3871,7 +3863,7 @@ multi_array<unsigned char> & operator!= (multi_array<int8_t>& lhs, const int8_t&
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -3880,7 +3872,7 @@ multi_array<unsigned char> & operator!= (const int8_t& lhs, multi_array<int8_t>&
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -3914,7 +3906,7 @@ multi_array<unsigned char>& operator!= (multi_array<double>& lhs, multi_array<do
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -3923,7 +3915,7 @@ multi_array<unsigned char> & operator!= (multi_array<double>& lhs, const double&
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator!= (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -3932,7 +3924,7 @@ multi_array<unsigned char> & operator!= (const double& lhs, multi_array<double>&
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -3966,7 +3958,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint16_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -3975,7 +3967,7 @@ multi_array<unsigned char> & operator!= (multi_array<uint16_t>& lhs, const uint1
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -3984,7 +3976,7 @@ multi_array<unsigned char> & operator!= (const uint16_t& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -4018,7 +4010,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint64_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -4027,7 +4019,7 @@ multi_array<unsigned char> & operator!= (multi_array<uint64_t>& lhs, const uint6
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -4036,7 +4028,7 @@ multi_array<unsigned char> & operator!= (const uint64_t& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -4070,7 +4062,7 @@ multi_array<unsigned char>& operator!= (multi_array<int16_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -4079,7 +4071,7 @@ multi_array<unsigned char> & operator!= (multi_array<int16_t>& lhs, const int16_
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -4088,7 +4080,7 @@ multi_array<unsigned char> & operator!= (const int16_t& lhs, multi_array<int16_t
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -4122,7 +4114,7 @@ multi_array<unsigned char>& operator!= (multi_array<float>& lhs, multi_array<flo
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -4131,7 +4123,7 @@ multi_array<unsigned char> & operator!= (multi_array<float>& lhs, const float& r
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator!= (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -4140,7 +4132,7 @@ multi_array<unsigned char> & operator!= (const float& lhs, multi_array<float>& r
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -4174,7 +4166,7 @@ multi_array<unsigned char>& operator!= (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -4183,7 +4175,7 @@ multi_array<unsigned char> & operator!= (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator!= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -4192,7 +4184,7 @@ multi_array<unsigned char> & operator!= (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -4226,7 +4218,7 @@ multi_array<unsigned char>& operator!= (multi_array<int32_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -4235,7 +4227,7 @@ multi_array<unsigned char> & operator!= (multi_array<int32_t>& lhs, const int32_
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -4244,7 +4236,7 @@ multi_array<unsigned char> & operator!= (const int32_t& lhs, multi_array<int32_t
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -4278,7 +4270,7 @@ multi_array<unsigned char>& operator!= (multi_array<int64_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -4287,7 +4279,7 @@ multi_array<unsigned char> & operator!= (multi_array<int64_t>& lhs, const int64_
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -4296,7 +4288,7 @@ multi_array<unsigned char> & operator!= (const int64_t& lhs, multi_array<int64_t
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -4330,7 +4322,7 @@ multi_array<unsigned char>& operator!= (multi_array<uint32_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -4339,7 +4331,7 @@ multi_array<unsigned char> & operator!= (multi_array<uint32_t>& lhs, const uint3
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator!= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -4348,7 +4340,7 @@ multi_array<unsigned char> & operator!= (const uint32_t& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<std::complex<float> >* left    = &lhs;
@@ -4382,7 +4374,7 @@ multi_array<unsigned char>& operator!= (multi_array<std::complex<float> >& lhs, 
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<float> >(lhs); 
     result->link();
@@ -4391,7 +4383,7 @@ multi_array<unsigned char> & operator!= (multi_array<std::complex<float> >& lhs,
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
+inline multi_array<unsigned char> & operator!= (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<float> >(rhs);
     result->link();
@@ -4400,7 +4392,7 @@ multi_array<unsigned char> & operator!= (const std::complex<float> & lhs, multi_
     return *result;
 }
 
-multi_array<unsigned char>& operator!= (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<unsigned char>& operator!= (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<std::complex<double> >* left    = &lhs;
@@ -4434,7 +4426,7 @@ multi_array<unsigned char>& operator!= (multi_array<std::complex<double> >& lhs,
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
+inline multi_array<unsigned char> & operator!= (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<double> >(lhs); 
     result->link();
@@ -4443,7 +4435,7 @@ multi_array<unsigned char> & operator!= (multi_array<std::complex<double> >& lhs
     return *result;
 }
 
-multi_array<unsigned char> & operator!= (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
+inline multi_array<unsigned char> & operator!= (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, std::complex<double> >(rhs);
     result->link();
@@ -4452,7 +4444,7 @@ multi_array<unsigned char> & operator!= (const std::complex<double> & lhs, multi
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -4486,7 +4478,7 @@ multi_array<unsigned char>& operator> (multi_array<int8_t>& lhs, multi_array<int
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -4495,7 +4487,7 @@ multi_array<unsigned char> & operator> (multi_array<int8_t>& lhs, const int8_t& 
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator> (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -4504,7 +4496,7 @@ multi_array<unsigned char> & operator> (const int8_t& lhs, multi_array<int8_t>& 
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -4538,7 +4530,7 @@ multi_array<unsigned char>& operator> (multi_array<double>& lhs, multi_array<dou
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -4547,7 +4539,7 @@ multi_array<unsigned char> & operator> (multi_array<double>& lhs, const double& 
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator> (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -4556,7 +4548,7 @@ multi_array<unsigned char> & operator> (const double& lhs, multi_array<double>& 
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -4590,7 +4582,7 @@ multi_array<unsigned char>& operator> (multi_array<uint16_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -4599,7 +4591,7 @@ multi_array<unsigned char> & operator> (multi_array<uint16_t>& lhs, const uint16
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator> (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -4608,7 +4600,7 @@ multi_array<unsigned char> & operator> (const uint16_t& lhs, multi_array<uint16_
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -4642,7 +4634,7 @@ multi_array<unsigned char>& operator> (multi_array<uint64_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -4651,7 +4643,7 @@ multi_array<unsigned char> & operator> (multi_array<uint64_t>& lhs, const uint64
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator> (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -4660,7 +4652,7 @@ multi_array<unsigned char> & operator> (const uint64_t& lhs, multi_array<uint64_
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -4694,7 +4686,7 @@ multi_array<unsigned char>& operator> (multi_array<int16_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -4703,7 +4695,7 @@ multi_array<unsigned char> & operator> (multi_array<int16_t>& lhs, const int16_t
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator> (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -4712,7 +4704,7 @@ multi_array<unsigned char> & operator> (const int16_t& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -4746,7 +4738,7 @@ multi_array<unsigned char>& operator> (multi_array<float>& lhs, multi_array<floa
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -4755,7 +4747,7 @@ multi_array<unsigned char> & operator> (multi_array<float>& lhs, const float& rh
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator> (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -4764,7 +4756,7 @@ multi_array<unsigned char> & operator> (const float& lhs, multi_array<float>& rh
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -4798,7 +4790,7 @@ multi_array<unsigned char>& operator> (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -4807,7 +4799,7 @@ multi_array<unsigned char> & operator> (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator> (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -4816,7 +4808,7 @@ multi_array<unsigned char> & operator> (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -4850,7 +4842,7 @@ multi_array<unsigned char>& operator> (multi_array<int32_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -4859,7 +4851,7 @@ multi_array<unsigned char> & operator> (multi_array<int32_t>& lhs, const int32_t
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator> (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -4868,7 +4860,7 @@ multi_array<unsigned char> & operator> (const int32_t& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -4902,7 +4894,7 @@ multi_array<unsigned char>& operator> (multi_array<int64_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -4911,7 +4903,7 @@ multi_array<unsigned char> & operator> (multi_array<int64_t>& lhs, const int64_t
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator> (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -4920,7 +4912,7 @@ multi_array<unsigned char> & operator> (const int64_t& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator> (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator> (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -4954,7 +4946,7 @@ multi_array<unsigned char>& operator> (multi_array<uint32_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator> (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator> (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -4963,7 +4955,7 @@ multi_array<unsigned char> & operator> (multi_array<uint32_t>& lhs, const uint32
     return *result;
 }
 
-multi_array<unsigned char> & operator> (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator> (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -4972,7 +4964,7 @@ multi_array<unsigned char> & operator> (const uint32_t& lhs, multi_array<uint32_
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -5006,7 +4998,7 @@ multi_array<unsigned char>& operator>= (multi_array<int8_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -5015,7 +5007,7 @@ multi_array<unsigned char> & operator>= (multi_array<int8_t>& lhs, const int8_t&
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -5024,7 +5016,7 @@ multi_array<unsigned char> & operator>= (const int8_t& lhs, multi_array<int8_t>&
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -5058,7 +5050,7 @@ multi_array<unsigned char>& operator>= (multi_array<double>& lhs, multi_array<do
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -5067,7 +5059,7 @@ multi_array<unsigned char> & operator>= (multi_array<double>& lhs, const double&
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator>= (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -5076,7 +5068,7 @@ multi_array<unsigned char> & operator>= (const double& lhs, multi_array<double>&
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -5110,7 +5102,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint16_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -5119,7 +5111,7 @@ multi_array<unsigned char> & operator>= (multi_array<uint16_t>& lhs, const uint1
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -5128,7 +5120,7 @@ multi_array<unsigned char> & operator>= (const uint16_t& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -5162,7 +5154,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint64_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -5171,7 +5163,7 @@ multi_array<unsigned char> & operator>= (multi_array<uint64_t>& lhs, const uint6
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -5180,7 +5172,7 @@ multi_array<unsigned char> & operator>= (const uint64_t& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -5214,7 +5206,7 @@ multi_array<unsigned char>& operator>= (multi_array<int16_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -5223,7 +5215,7 @@ multi_array<unsigned char> & operator>= (multi_array<int16_t>& lhs, const int16_
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -5232,7 +5224,7 @@ multi_array<unsigned char> & operator>= (const int16_t& lhs, multi_array<int16_t
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -5266,7 +5258,7 @@ multi_array<unsigned char>& operator>= (multi_array<float>& lhs, multi_array<flo
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -5275,7 +5267,7 @@ multi_array<unsigned char> & operator>= (multi_array<float>& lhs, const float& r
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator>= (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -5284,7 +5276,7 @@ multi_array<unsigned char> & operator>= (const float& lhs, multi_array<float>& r
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -5318,7 +5310,7 @@ multi_array<unsigned char>& operator>= (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -5327,7 +5319,7 @@ multi_array<unsigned char> & operator>= (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator>= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -5336,7 +5328,7 @@ multi_array<unsigned char> & operator>= (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -5370,7 +5362,7 @@ multi_array<unsigned char>& operator>= (multi_array<int32_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -5379,7 +5371,7 @@ multi_array<unsigned char> & operator>= (multi_array<int32_t>& lhs, const int32_
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -5388,7 +5380,7 @@ multi_array<unsigned char> & operator>= (const int32_t& lhs, multi_array<int32_t
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -5422,7 +5414,7 @@ multi_array<unsigned char>& operator>= (multi_array<int64_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -5431,7 +5423,7 @@ multi_array<unsigned char> & operator>= (multi_array<int64_t>& lhs, const int64_
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -5440,7 +5432,7 @@ multi_array<unsigned char> & operator>= (const int64_t& lhs, multi_array<int64_t
     return *result;
 }
 
-multi_array<unsigned char>& operator>= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator>= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -5474,7 +5466,7 @@ multi_array<unsigned char>& operator>= (multi_array<uint32_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator>= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -5483,7 +5475,7 @@ multi_array<unsigned char> & operator>= (multi_array<uint32_t>& lhs, const uint3
     return *result;
 }
 
-multi_array<unsigned char> & operator>= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator>= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -5492,7 +5484,7 @@ multi_array<unsigned char> & operator>= (const uint32_t& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -5526,7 +5518,7 @@ multi_array<unsigned char>& operator< (multi_array<int8_t>& lhs, multi_array<int
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -5535,7 +5527,7 @@ multi_array<unsigned char> & operator< (multi_array<int8_t>& lhs, const int8_t& 
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator< (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -5544,7 +5536,7 @@ multi_array<unsigned char> & operator< (const int8_t& lhs, multi_array<int8_t>& 
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -5578,7 +5570,7 @@ multi_array<unsigned char>& operator< (multi_array<double>& lhs, multi_array<dou
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -5587,7 +5579,7 @@ multi_array<unsigned char> & operator< (multi_array<double>& lhs, const double& 
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator< (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -5596,7 +5588,7 @@ multi_array<unsigned char> & operator< (const double& lhs, multi_array<double>& 
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -5630,7 +5622,7 @@ multi_array<unsigned char>& operator< (multi_array<uint16_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -5639,7 +5631,7 @@ multi_array<unsigned char> & operator< (multi_array<uint16_t>& lhs, const uint16
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator< (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -5648,7 +5640,7 @@ multi_array<unsigned char> & operator< (const uint16_t& lhs, multi_array<uint16_
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -5682,7 +5674,7 @@ multi_array<unsigned char>& operator< (multi_array<uint64_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -5691,7 +5683,7 @@ multi_array<unsigned char> & operator< (multi_array<uint64_t>& lhs, const uint64
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator< (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -5700,7 +5692,7 @@ multi_array<unsigned char> & operator< (const uint64_t& lhs, multi_array<uint64_
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -5734,7 +5726,7 @@ multi_array<unsigned char>& operator< (multi_array<int16_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -5743,7 +5735,7 @@ multi_array<unsigned char> & operator< (multi_array<int16_t>& lhs, const int16_t
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator< (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -5752,7 +5744,7 @@ multi_array<unsigned char> & operator< (const int16_t& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -5786,7 +5778,7 @@ multi_array<unsigned char>& operator< (multi_array<float>& lhs, multi_array<floa
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -5795,7 +5787,7 @@ multi_array<unsigned char> & operator< (multi_array<float>& lhs, const float& rh
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator< (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -5804,7 +5796,7 @@ multi_array<unsigned char> & operator< (const float& lhs, multi_array<float>& rh
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -5838,7 +5830,7 @@ multi_array<unsigned char>& operator< (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -5847,7 +5839,7 @@ multi_array<unsigned char> & operator< (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator< (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -5856,7 +5848,7 @@ multi_array<unsigned char> & operator< (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -5890,7 +5882,7 @@ multi_array<unsigned char>& operator< (multi_array<int32_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -5899,7 +5891,7 @@ multi_array<unsigned char> & operator< (multi_array<int32_t>& lhs, const int32_t
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator< (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -5908,7 +5900,7 @@ multi_array<unsigned char> & operator< (const int32_t& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -5942,7 +5934,7 @@ multi_array<unsigned char>& operator< (multi_array<int64_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -5951,7 +5943,7 @@ multi_array<unsigned char> & operator< (multi_array<int64_t>& lhs, const int64_t
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator< (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -5960,7 +5952,7 @@ multi_array<unsigned char> & operator< (const int64_t& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<unsigned char>& operator< (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator< (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -5994,7 +5986,7 @@ multi_array<unsigned char>& operator< (multi_array<uint32_t>& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char> & operator< (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator< (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -6003,7 +5995,7 @@ multi_array<unsigned char> & operator< (multi_array<uint32_t>& lhs, const uint32
     return *result;
 }
 
-multi_array<unsigned char> & operator< (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator< (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -6012,7 +6004,7 @@ multi_array<unsigned char> & operator< (const uint32_t& lhs, multi_array<uint32_
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -6046,7 +6038,7 @@ multi_array<unsigned char>& operator<= (multi_array<int8_t>& lhs, multi_array<in
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(lhs); 
     result->link();
@@ -6055,7 +6047,7 @@ multi_array<unsigned char> & operator<= (multi_array<int8_t>& lhs, const int8_t&
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int8_t>(rhs);
     result->link();
@@ -6064,7 +6056,7 @@ multi_array<unsigned char> & operator<= (const int8_t& lhs, multi_array<int8_t>&
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<double>& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<double>& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<double>* left    = &lhs;
@@ -6098,7 +6090,7 @@ multi_array<unsigned char>& operator<= (multi_array<double>& lhs, multi_array<do
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<double>& lhs, const double& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<double>& lhs, const double& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(lhs); 
     result->link();
@@ -6107,7 +6099,7 @@ multi_array<unsigned char> & operator<= (multi_array<double>& lhs, const double&
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const double& lhs, multi_array<double>& rhs)
+inline multi_array<unsigned char> & operator<= (const double& lhs, multi_array<double>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, double>(rhs);
     result->link();
@@ -6116,7 +6108,7 @@ multi_array<unsigned char> & operator<= (const double& lhs, multi_array<double>&
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -6150,7 +6142,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint16_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(lhs); 
     result->link();
@@ -6159,7 +6151,7 @@ multi_array<unsigned char> & operator<= (multi_array<uint16_t>& lhs, const uint1
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint16_t>(rhs);
     result->link();
@@ -6168,7 +6160,7 @@ multi_array<unsigned char> & operator<= (const uint16_t& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -6202,7 +6194,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint64_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(lhs); 
     result->link();
@@ -6211,7 +6203,7 @@ multi_array<unsigned char> & operator<= (multi_array<uint64_t>& lhs, const uint6
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint64_t>(rhs);
     result->link();
@@ -6220,7 +6212,7 @@ multi_array<unsigned char> & operator<= (const uint64_t& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -6254,7 +6246,7 @@ multi_array<unsigned char>& operator<= (multi_array<int16_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(lhs); 
     result->link();
@@ -6263,7 +6255,7 @@ multi_array<unsigned char> & operator<= (multi_array<int16_t>& lhs, const int16_
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int16_t>(rhs);
     result->link();
@@ -6272,7 +6264,7 @@ multi_array<unsigned char> & operator<= (const int16_t& lhs, multi_array<int16_t
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<float>& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<float>& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<float>* left    = &lhs;
@@ -6306,7 +6298,7 @@ multi_array<unsigned char>& operator<= (multi_array<float>& lhs, multi_array<flo
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<float>& lhs, const float& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<float>& lhs, const float& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(lhs); 
     result->link();
@@ -6315,7 +6307,7 @@ multi_array<unsigned char> & operator<= (multi_array<float>& lhs, const float& r
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const float& lhs, multi_array<float>& rhs)
+inline multi_array<unsigned char> & operator<= (const float& lhs, multi_array<float>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, float>(rhs);
     result->link();
@@ -6324,7 +6316,7 @@ multi_array<unsigned char> & operator<= (const float& lhs, multi_array<float>& r
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -6358,7 +6350,7 @@ multi_array<unsigned char>& operator<= (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -6367,7 +6359,7 @@ multi_array<unsigned char> & operator<= (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator<= (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -6376,7 +6368,7 @@ multi_array<unsigned char> & operator<= (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -6410,7 +6402,7 @@ multi_array<unsigned char>& operator<= (multi_array<int32_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(lhs); 
     result->link();
@@ -6419,7 +6411,7 @@ multi_array<unsigned char> & operator<= (multi_array<int32_t>& lhs, const int32_
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int32_t>(rhs);
     result->link();
@@ -6428,7 +6420,7 @@ multi_array<unsigned char> & operator<= (const int32_t& lhs, multi_array<int32_t
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -6462,7 +6454,7 @@ multi_array<unsigned char>& operator<= (multi_array<int64_t>& lhs, multi_array<i
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(lhs); 
     result->link();
@@ -6471,7 +6463,7 @@ multi_array<unsigned char> & operator<= (multi_array<int64_t>& lhs, const int64_
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, int64_t>(rhs);
     result->link();
@@ -6480,7 +6472,7 @@ multi_array<unsigned char> & operator<= (const int64_t& lhs, multi_array<int64_t
     return *result;
 }
 
-multi_array<unsigned char>& operator<= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char>& operator<= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -6514,7 +6506,7 @@ multi_array<unsigned char>& operator<= (multi_array<uint32_t>& lhs, multi_array<
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<unsigned char> & operator<= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(lhs); 
     result->link();
@@ -6523,7 +6515,7 @@ multi_array<unsigned char> & operator<= (multi_array<uint32_t>& lhs, const uint3
     return *result;
 }
 
-multi_array<unsigned char> & operator<= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<unsigned char> & operator<= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, uint32_t>(rhs);
     result->link();
@@ -6532,7 +6524,7 @@ multi_array<unsigned char> & operator<= (const uint32_t& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<unsigned char>& operator&& (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator&& (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -6566,7 +6558,7 @@ multi_array<unsigned char>& operator&& (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator&& (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator&& (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -6575,7 +6567,7 @@ multi_array<unsigned char> & operator&& (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator&& (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator&& (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -6584,7 +6576,7 @@ multi_array<unsigned char> & operator&& (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<unsigned char>& operator|| (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator|| (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -6618,7 +6610,7 @@ multi_array<unsigned char>& operator|| (multi_array<unsigned char>& lhs, multi_a
     return *result;
 }
 
-multi_array<unsigned char> & operator|| (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator|| (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -6627,7 +6619,7 @@ multi_array<unsigned char> & operator|| (multi_array<unsigned char>& lhs, const 
     return *result;
 }
 
-multi_array<unsigned char> & operator|| (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator|| (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -6636,7 +6628,7 @@ multi_array<unsigned char> & operator|| (const unsigned char& lhs, multi_array<u
     return *result;
 }
 
-multi_array<int8_t>& operator& (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator& (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -6670,7 +6662,7 @@ multi_array<int8_t>& operator& (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator& (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator& (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -6679,7 +6671,7 @@ multi_array<int8_t> & operator& (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator& (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator& (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -6688,7 +6680,7 @@ multi_array<int8_t> & operator& (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator& (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator& (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -6722,7 +6714,7 @@ multi_array<uint16_t>& operator& (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator& (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator& (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -6731,7 +6723,7 @@ multi_array<uint16_t> & operator& (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator& (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator& (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -6740,7 +6732,7 @@ multi_array<uint16_t> & operator& (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator& (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator& (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -6774,7 +6766,7 @@ multi_array<uint64_t>& operator& (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator& (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator& (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -6783,7 +6775,7 @@ multi_array<uint64_t> & operator& (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator& (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator& (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -6792,7 +6784,7 @@ multi_array<uint64_t> & operator& (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator& (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator& (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -6826,7 +6818,7 @@ multi_array<int16_t>& operator& (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator& (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator& (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -6835,7 +6827,7 @@ multi_array<int16_t> & operator& (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator& (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator& (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -6844,7 +6836,7 @@ multi_array<int16_t> & operator& (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator& (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator& (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -6878,7 +6870,7 @@ multi_array<unsigned char>& operator& (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator& (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator& (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -6887,7 +6879,7 @@ multi_array<unsigned char> & operator& (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator& (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator& (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -6896,7 +6888,7 @@ multi_array<unsigned char> & operator& (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator& (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator& (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -6930,7 +6922,7 @@ multi_array<int32_t>& operator& (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator& (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator& (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -6939,7 +6931,7 @@ multi_array<int32_t> & operator& (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator& (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator& (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -6948,7 +6940,7 @@ multi_array<int32_t> & operator& (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator& (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator& (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -6982,7 +6974,7 @@ multi_array<int64_t>& operator& (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator& (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator& (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -6991,7 +6983,7 @@ multi_array<int64_t> & operator& (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator& (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator& (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -7000,7 +6992,7 @@ multi_array<int64_t> & operator& (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator& (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator& (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -7034,7 +7026,7 @@ multi_array<uint32_t>& operator& (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator& (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator& (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -7043,7 +7035,7 @@ multi_array<uint32_t> & operator& (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator& (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator& (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -7052,7 +7044,7 @@ multi_array<uint32_t> & operator& (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<int8_t>& operator| (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator| (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -7086,7 +7078,7 @@ multi_array<int8_t>& operator| (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator| (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator| (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -7095,7 +7087,7 @@ multi_array<int8_t> & operator| (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator| (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator| (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -7104,7 +7096,7 @@ multi_array<int8_t> & operator| (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator| (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator| (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -7138,7 +7130,7 @@ multi_array<uint16_t>& operator| (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator| (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator| (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -7147,7 +7139,7 @@ multi_array<uint16_t> & operator| (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator| (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator| (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -7156,7 +7148,7 @@ multi_array<uint16_t> & operator| (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator| (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator| (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -7190,7 +7182,7 @@ multi_array<uint64_t>& operator| (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator| (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator| (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -7199,7 +7191,7 @@ multi_array<uint64_t> & operator| (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator| (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator| (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -7208,7 +7200,7 @@ multi_array<uint64_t> & operator| (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator| (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator| (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -7242,7 +7234,7 @@ multi_array<int16_t>& operator| (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator| (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator| (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -7251,7 +7243,7 @@ multi_array<int16_t> & operator| (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator| (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator| (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -7260,7 +7252,7 @@ multi_array<int16_t> & operator| (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator| (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator| (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -7294,7 +7286,7 @@ multi_array<unsigned char>& operator| (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator| (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator| (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -7303,7 +7295,7 @@ multi_array<unsigned char> & operator| (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator| (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator| (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -7312,7 +7304,7 @@ multi_array<unsigned char> & operator| (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator| (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator| (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -7346,7 +7338,7 @@ multi_array<int32_t>& operator| (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator| (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator| (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -7355,7 +7347,7 @@ multi_array<int32_t> & operator| (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator| (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator| (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -7364,7 +7356,7 @@ multi_array<int32_t> & operator| (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator| (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator| (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -7398,7 +7390,7 @@ multi_array<int64_t>& operator| (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator| (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator| (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -7407,7 +7399,7 @@ multi_array<int64_t> & operator| (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator| (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator| (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -7416,7 +7408,7 @@ multi_array<int64_t> & operator| (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator| (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator| (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -7450,7 +7442,7 @@ multi_array<uint32_t>& operator| (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator| (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator| (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -7459,7 +7451,7 @@ multi_array<uint32_t> & operator| (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator| (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator| (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -7468,7 +7460,7 @@ multi_array<uint32_t> & operator| (const uint32_t& lhs, multi_array<uint32_t>& r
     return *result;
 }
 
-multi_array<int8_t>& operator^ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t>& operator^ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result;  
     multi_array<int8_t>* left    = &lhs;
@@ -7502,7 +7494,7 @@ multi_array<int8_t>& operator^ (multi_array<int8_t>& lhs, multi_array<int8_t>& r
     return *result;
 }
 
-multi_array<int8_t> & operator^ (multi_array<int8_t>& lhs, const int8_t& rhs)
+inline multi_array<int8_t> & operator^ (multi_array<int8_t>& lhs, const int8_t& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
     result->link();
@@ -7511,7 +7503,7 @@ multi_array<int8_t> & operator^ (multi_array<int8_t>& lhs, const int8_t& rhs)
     return *result;
 }
 
-multi_array<int8_t> & operator^ (const int8_t& lhs, multi_array<int8_t>& rhs)
+inline multi_array<int8_t> & operator^ (const int8_t& lhs, multi_array<int8_t>& rhs)
 {
     multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
     result->link();
@@ -7520,7 +7512,7 @@ multi_array<int8_t> & operator^ (const int8_t& lhs, multi_array<int8_t>& rhs)
     return *result;
 }
 
-multi_array<uint16_t>& operator^ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t>& operator^ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result;  
     multi_array<uint16_t>* left    = &lhs;
@@ -7554,7 +7546,7 @@ multi_array<uint16_t>& operator^ (multi_array<uint16_t>& lhs, multi_array<uint16
     return *result;
 }
 
-multi_array<uint16_t> & operator^ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+inline multi_array<uint16_t> & operator^ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
     result->link();
@@ -7563,7 +7555,7 @@ multi_array<uint16_t> & operator^ (multi_array<uint16_t>& lhs, const uint16_t& r
     return *result;
 }
 
-multi_array<uint16_t> & operator^ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+inline multi_array<uint16_t> & operator^ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
 {
     multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
     result->link();
@@ -7572,7 +7564,7 @@ multi_array<uint16_t> & operator^ (const uint16_t& lhs, multi_array<uint16_t>& r
     return *result;
 }
 
-multi_array<uint64_t>& operator^ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t>& operator^ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result;  
     multi_array<uint64_t>* left    = &lhs;
@@ -7606,7 +7598,7 @@ multi_array<uint64_t>& operator^ (multi_array<uint64_t>& lhs, multi_array<uint64
     return *result;
 }
 
-multi_array<uint64_t> & operator^ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+inline multi_array<uint64_t> & operator^ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
     result->link();
@@ -7615,7 +7607,7 @@ multi_array<uint64_t> & operator^ (multi_array<uint64_t>& lhs, const uint64_t& r
     return *result;
 }
 
-multi_array<uint64_t> & operator^ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+inline multi_array<uint64_t> & operator^ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
 {
     multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
     result->link();
@@ -7624,7 +7616,7 @@ multi_array<uint64_t> & operator^ (const uint64_t& lhs, multi_array<uint64_t>& r
     return *result;
 }
 
-multi_array<int16_t>& operator^ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t>& operator^ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result;  
     multi_array<int16_t>* left    = &lhs;
@@ -7658,7 +7650,7 @@ multi_array<int16_t>& operator^ (multi_array<int16_t>& lhs, multi_array<int16_t>
     return *result;
 }
 
-multi_array<int16_t> & operator^ (multi_array<int16_t>& lhs, const int16_t& rhs)
+inline multi_array<int16_t> & operator^ (multi_array<int16_t>& lhs, const int16_t& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
     result->link();
@@ -7667,7 +7659,7 @@ multi_array<int16_t> & operator^ (multi_array<int16_t>& lhs, const int16_t& rhs)
     return *result;
 }
 
-multi_array<int16_t> & operator^ (const int16_t& lhs, multi_array<int16_t>& rhs)
+inline multi_array<int16_t> & operator^ (const int16_t& lhs, multi_array<int16_t>& rhs)
 {
     multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
     result->link();
@@ -7676,7 +7668,7 @@ multi_array<int16_t> & operator^ (const int16_t& lhs, multi_array<int16_t>& rhs)
     return *result;
 }
 
-multi_array<unsigned char>& operator^ (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char>& operator^ (multi_array<unsigned char>& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result;  
     multi_array<unsigned char>* left    = &lhs;
@@ -7710,7 +7702,7 @@ multi_array<unsigned char>& operator^ (multi_array<unsigned char>& lhs, multi_ar
     return *result;
 }
 
-multi_array<unsigned char> & operator^ (multi_array<unsigned char>& lhs, const unsigned char& rhs)
+inline multi_array<unsigned char> & operator^ (multi_array<unsigned char>& lhs, const unsigned char& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(lhs); 
     result->link();
@@ -7719,7 +7711,7 @@ multi_array<unsigned char> & operator^ (multi_array<unsigned char>& lhs, const u
     return *result;
 }
 
-multi_array<unsigned char> & operator^ (const unsigned char& lhs, multi_array<unsigned char>& rhs)
+inline multi_array<unsigned char> & operator^ (const unsigned char& lhs, multi_array<unsigned char>& rhs)
 {
     multi_array<unsigned char>* result = &Runtime::instance().temp<unsigned char, unsigned char>(rhs);
     result->link();
@@ -7728,7 +7720,7 @@ multi_array<unsigned char> & operator^ (const unsigned char& lhs, multi_array<un
     return *result;
 }
 
-multi_array<int32_t>& operator^ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t>& operator^ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result;  
     multi_array<int32_t>* left    = &lhs;
@@ -7762,7 +7754,7 @@ multi_array<int32_t>& operator^ (multi_array<int32_t>& lhs, multi_array<int32_t>
     return *result;
 }
 
-multi_array<int32_t> & operator^ (multi_array<int32_t>& lhs, const int32_t& rhs)
+inline multi_array<int32_t> & operator^ (multi_array<int32_t>& lhs, const int32_t& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
     result->link();
@@ -7771,7 +7763,7 @@ multi_array<int32_t> & operator^ (multi_array<int32_t>& lhs, const int32_t& rhs)
     return *result;
 }
 
-multi_array<int32_t> & operator^ (const int32_t& lhs, multi_array<int32_t>& rhs)
+inline multi_array<int32_t> & operator^ (const int32_t& lhs, multi_array<int32_t>& rhs)
 {
     multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
     result->link();
@@ -7780,7 +7772,7 @@ multi_array<int32_t> & operator^ (const int32_t& lhs, multi_array<int32_t>& rhs)
     return *result;
 }
 
-multi_array<int64_t>& operator^ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t>& operator^ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result;  
     multi_array<int64_t>* left    = &lhs;
@@ -7814,7 +7806,7 @@ multi_array<int64_t>& operator^ (multi_array<int64_t>& lhs, multi_array<int64_t>
     return *result;
 }
 
-multi_array<int64_t> & operator^ (multi_array<int64_t>& lhs, const int64_t& rhs)
+inline multi_array<int64_t> & operator^ (multi_array<int64_t>& lhs, const int64_t& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
     result->link();
@@ -7823,7 +7815,7 @@ multi_array<int64_t> & operator^ (multi_array<int64_t>& lhs, const int64_t& rhs)
     return *result;
 }
 
-multi_array<int64_t> & operator^ (const int64_t& lhs, multi_array<int64_t>& rhs)
+inline multi_array<int64_t> & operator^ (const int64_t& lhs, multi_array<int64_t>& rhs)
 {
     multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
     result->link();
@@ -7832,7 +7824,7 @@ multi_array<int64_t> & operator^ (const int64_t& lhs, multi_array<int64_t>& rhs)
     return *result;
 }
 
-multi_array<uint32_t>& operator^ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t>& operator^ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result;  
     multi_array<uint32_t>* left    = &lhs;
@@ -7866,7 +7858,7 @@ multi_array<uint32_t>& operator^ (multi_array<uint32_t>& lhs, multi_array<uint32
     return *result;
 }
 
-multi_array<uint32_t> & operator^ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+inline multi_array<uint32_t> & operator^ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
     result->link();
@@ -7875,7 +7867,7 @@ multi_array<uint32_t> & operator^ (multi_array<uint32_t>& lhs, const uint32_t& r
     return *result;
 }
 
-multi_array<uint32_t> & operator^ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+inline multi_array<uint32_t> & operator^ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
 {
     multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
     result->link();
@@ -7890,7 +7882,7 @@ multi_array<uint32_t> & operator^ (const uint32_t& lhs, multi_array<uint32_t>& r
 //
 
 template <typename T>
-multi_array<T> & operator! (multi_array<T>& rhs)
+inline multi_array<T> & operator! (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
@@ -7901,7 +7893,7 @@ multi_array<T> & operator! (multi_array<T>& rhs)
 }
 
 template <typename T>
-multi_array<T> & operator~ (multi_array<T>& rhs)
+inline multi_array<T> & operator~ (multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
