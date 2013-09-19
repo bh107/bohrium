@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-bh_opcode reducible_to_opcode(reducible opcode)
+inline bh_opcode reducible_to_opcode(reducible opcode)
 {
     switch(opcode) {
         case ADD:

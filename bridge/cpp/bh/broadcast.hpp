@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-void bh_pprint_shape(int64_t shape[], int64_t len)
+inline void bh_pprint_shape(int64_t shape[], int64_t len)
 {
     std::cout << "Shape: ";
     for(int64_t k=0; k<len; k++) {
