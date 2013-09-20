@@ -145,13 +145,26 @@ std::string symbolize(bh_instruction *instr) {
     char dims_str[10];
     int64_t dims;
 
+    bh_random_type *random_args;
+
     switch (instr->opcode) {
 
         case BH_NONE:                           // NOOP.
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:                           // Store data-pointer in malloc-cache
+            return "";
         case BH_USERFUNC:
+
+            if (instr->userfunc->id == random_impl_id) {
+                random_args = (bh_random_type*)instr->userfunc;
+                sprintf(
+                    symbol_c,
+                    "BH_RANDOM_D_%s",
+                    bhtype_to_shorthand(random_args->operand[0].base->type)
+                );
+                return std::string(symbol_c);
+            } 
             return "";
 
         case BH_ADD_REDUCE:                     // Partial Reductions
