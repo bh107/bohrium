@@ -62,6 +62,30 @@ void PrintStmt::evaluate() {
 // bind a multi_array object to a variable in "vars"
 void VarStmt::evaluate() {
 	out = exp->evaluate();
+	multi_array<double> *res; 
+
+	if (is_slice) { // support Matlab way of handling views
+
+		if (out->getRank() == 2) { // 2 dimensions	
+			res = new multi_array<double>(out->shape(0), out->shape(1));
+			*res = 0; // we must initialize it
+			(*res)(*out); // copy elements
+
+		} else if (out->getRank() == 1) { // one dimension
+			res = new multi_array<double>(out->shape(0));
+			*res = 0; // we must initialize it
+			(*res)(*out); // copy elements
+
+		} else {
+			cout << "Matrix view assigned to " << name << " has too many dimensions!\n";
+			exit(0);
+		}
+
+	} else {
+		res = out;
+	}
+
+	out = res;
 	out->setTemp(false); // we want to be able to use the variable again
 	if (vars->find(name) != vars->end()) {
 		delete (*vars)[name]; // delete the existing multi_array object
@@ -331,7 +355,7 @@ multi_array<double>* ArrayExp::evaluate() {
 
 	size = tmp.size();
 
-	multi_array<double> *res = new multi_array<double>(1, size);
+	multi_array<double> *res = new multi_array<double>(size);
 	*res = 0; // necessary to initiate the object
 	
 	multi_array<double>::iterator it  = res->begin();
@@ -376,7 +400,7 @@ multi_array<double>* VarSl::evaluate() {
 			return r;
 		} else {
 			multi_array<double> *r = 
-				&((*(*vars)[name])[0][_(sl1->get_start(), sl1->get_end(), 
+				&((*(*vars)[name])[_(sl1->get_start(), sl1->get_end(), 
 					sl1->get_it())]).view();
 			r->setTemp(true);
 			return r;
