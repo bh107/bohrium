@@ -3,7 +3,7 @@ FOL=core
 
 #CXX=clang
 CXX=g++
-CXXFLAGS=-Wall -std=c++0x -Wno-write-strings
+CXXFLAGS=-Wall -std=c++0x -O2 -Wno-write-strings
 FILES=$(FOL)/par.tab.cpp $(FOL)/lex.yy.c $(FOL)/AST.cpp
 
 all:

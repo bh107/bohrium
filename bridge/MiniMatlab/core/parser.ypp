@@ -61,7 +61,7 @@ prog: stmt			{ if ($1 != NULL) $1->evaluate(); }
 | prog stmt			{ if ($2 != NULL) $2->evaluate(); }
 ;
 
-// statements inside loops are stored in a vector to be executed at correct time
+// statements inside loops are stored in a vector to be executed when needed
 loop_stmts: stmt	{ $$ = new AST(); if ($1 != NULL) $$->push($1); }
 | loop_stmts stmt	{ if ($2 != NULL) $1->push($2); } 
 ;
@@ -81,12 +81,18 @@ loop: FOR VARIABLE EQ sfactor COLON sfactor delim loop_stmts ENDER	 			{
 // possible statements
 stmt: exp NL    		{ $$ = new PrintStmt($1); } // simply print expression
 // store expression in variable before printing it
-| VARIABLE EQ exp NL    { $$ = new VarStmt($1, $3, true, &vars); }
+| VARIABLE EQ exp NL    { $$ = new VarStmt($1, $3, true, false, &vars); }
+// support the matlab way of handling matrix slices during initialization
+// provokes shift/reduce conflict
+| VARIABLE EQ var NL    { $$ = new VarStmt($1, $3, true, true, &vars); }
 // store expression in variable slice before printing the variable
 | var EQ exp NL         { $$ = new VarSliceStmt($1, $3, true, &vars); }
 | exp STOP				{ $$ = NULL; } // do nothing
 // store expression in variable, don't print it
-| VARIABLE EQ exp STOP  { $$ = new VarStmt($1, $3, false, &vars); }
+| VARIABLE EQ exp STOP  { $$ = new VarStmt($1, $3, false, false, &vars); }
+// support the matlab way of handling matrix slices during initialization
+// provokes shift/reduce conflict
+| VARIABLE EQ var STOP  { $$ = new VarStmt($1, $3, false, true, &vars); }
 // store expression in variable slice, don't print it
 | var EQ exp STOP       { $$ = new VarSliceStmt($1, $3, false, &vars); }
 | loop					{ $$ = $1; } // loop statement
@@ -236,6 +242,7 @@ int main(int argc, char *argv[]) {
 
 	} else if (argc == 1) { // open command line 
 		cout << "Welcome to MiniMatlab 1.0, leave by typing \"exit\".\n\n"; 
+
 		yyparse();
 		clean_up();
 	} else { // otherwise print error msg

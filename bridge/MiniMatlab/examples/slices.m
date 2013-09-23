@@ -14,10 +14,9 @@ D = B(2:end-1, 2:end-1) + 49 * 2; 	% discard the borders of B
 D(1:end, 1:end)						% print D
 D(1:2:end, 1:2:end)					% print every other value
 
-B = [1, 2, 3, 4, 5];
+B = [1,2,3,4,5];
 E = B(1:4) * 25 + [74, 49, 24, -1] 	% one dimension
 
 % Problems:
 %C(1:2, 3:-1:1)	negative interval not supported
-%D = B(2:end-1, 2:end-1);  
-%D throws "discarding base that still has view" error
+

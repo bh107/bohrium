@@ -435,10 +435,12 @@ private:
   	string name;
 	map<string, multi_array<double>* > *vars;
 	bool to_print;
+	bool is_slice;
 
 public:
-  	VarStmt(string n, Exp *e, bool t_p, map<string, multi_array<double>* > *v) : 
-		Stmt(e), name(n), vars(v), to_print(t_p) { }
+  	VarStmt(string n, Exp *e, bool t_p, bool i_s, 
+		map<string, multi_array<double>* > *v) : 
+		Stmt(e), name(n), vars(v), to_print(t_p), is_slice(i_s) { }
 
 	void evaluate();
 
