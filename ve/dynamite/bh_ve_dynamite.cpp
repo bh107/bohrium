@@ -147,7 +147,7 @@ std::string symbolize(bh_instruction *instr) {
 
     bh_random_type *random_args;
 
-    switch (instr->opcode) {
+    switch (instr->opcode) {    // [OPCODE_SWITCH]
 
         case BH_NONE:                           // NOOP.
         case BH_DISCARD:

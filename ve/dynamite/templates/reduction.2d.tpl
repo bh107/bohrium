@@ -86,6 +86,10 @@ int {{SYMBOL}}(int tool, ...)
 
     int64_t other_axis = (axis==0) ? 1 : 0;
 
+    int64_t nelements = a1_shape[other_axis];
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+
     #pragma omp parallel for
     for(int64_t j=0; j<a1_shape[other_axis]; ++j) {
                                                     // Point to first element in the input

@@ -82,7 +82,8 @@ void {{SYMBOL}}(int tool, ...)
 
     int64_t ld  = ndim-1,   // Traversal variables
             sld = ndim-2,
-            tld = ndim-3;
+            tld = ndim-3,
+            nelements = shape[tld];
 
     int64_t a0_stride_ld    = a0_stride[ld];
     int64_t a0_stride_sld   = a0_stride[sld];
@@ -112,7 +113,10 @@ void {{SYMBOL}}(int tool, ...)
     a2_first += a2_start;
     {{/a2_dense}}
 
-    #pragma omp parallel
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+
+    #pragma omp parallel num_threads(nworkers)
     {
         int tid      = omp_get_thread_num();    // Work partitioning
         int nthreads = omp_get_num_threads();

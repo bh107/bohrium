@@ -189,7 +189,10 @@ void {{SYMBOL}}(int tool, ...)
     int64_t nelements = va_arg(list, int64_t);
     va_end(list);
 
-    #pragma omp parallel
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+
+    #pragma omp parallel num_threads(nworkers)
     {
         int tid      = omp_get_thread_num();    // Work partitioning
         int nthreads = omp_get_num_threads();

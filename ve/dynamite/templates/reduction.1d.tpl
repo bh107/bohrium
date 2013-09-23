@@ -88,7 +88,11 @@ int {{SYMBOL}}(int tool, ...)
     {{TYPE_A1}} *a1_current = a1_first + a1_start;  // Point to first element in input.
     {{TYPE_A1}} rvar = 0;                           // Use the first element as temp
 
-    #pragma omp parallel for reduction(+:rvar)
+    int64_t nelements = a1_shape[axis];
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+
+    #pragma omp parallel for reduction(+:rvar) num_threads(nworkers)
     for(int64_t j=0; j<a1_shape[axis]; ++j) {
         {{TYPE_A1}} *tmp_current = a1_current + a1_stride[axis]*j;
         {{OPERATOR}};

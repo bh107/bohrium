@@ -1,6 +1,7 @@
 ROOT=../..
 LIB=libbh_ve_dynamite.so
 CXX?=g++
+#CXX?=clang
 WARNOPTS=-Wall
 #LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
 EXTRAS+=

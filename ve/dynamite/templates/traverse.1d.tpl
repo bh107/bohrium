@@ -91,7 +91,10 @@ void {{SYMBOL}}(int tool, ...)
     {{#a1_dense}}a1_first += a1_start;{{/a1_dense}}
     {{#a2_dense}}a2_first += a2_start;{{/a2_dense}}
 
-    #pragma omp parallel
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+
+    #pragma omp parallel num_threads(nworkers)
     {
         int tid      = omp_get_thread_num();    // Work partitioning
         int nthreads = omp_get_num_threads();
