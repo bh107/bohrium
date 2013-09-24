@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_vcache.h>
-#include "bh_ve_cpu.h"
+#include "bh_ve_score.h"
 
 static bh_component *myself = NULL;
 static bh_userfunc_impl random_impl = NULL;
@@ -30,13 +30,13 @@ static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
 
 static bh_intp vcache_size = 10;
-static bh_cpu_traverser traverse_method = FRUIT_LOOPS;
+static bh_score_traverser traverse_method = FRUIT_LOOPS;
 
 #ifdef TIMING
 static bh_uint64 times[BH_NO_OPCODES];
 #endif
 
-bh_error bh_ve_cpu_init(bh_component *self)
+bh_error bh_ve_score_init(bh_component *self)
 {
     char *env;
     myself = self;
@@ -52,14 +52,14 @@ bh_error bh_ve_cpu_init(bh_component *self)
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_TRAVERSAL");    // Traversal method
+    env = getenv("BH_VE_SCORE_TRAVERSAL");    // Traversal method
     if (NULL != env) {
         if (strcmp("fruit_loops", env) == 0) {
             traverse_method = FRUIT_LOOPS;
         } else if (strcmp("naive", env) == 0) {
             traverse_method = NAIVE;
         } else {
-            fprintf(stderr, "BH_VE_CPU_TRAVERSAL (%s) is invalid; "
+            fprintf(stderr, "BH_VE_SCORE_TRAVERSAL (%s) is invalid; "
                             "Reverting to default.\n", env);
         }
     }
@@ -73,7 +73,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_execute(bh_ir* bhir)
+bh_error bh_ve_score_execute(bh_ir* bhir)
 {
     bh_instruction* instr;
     bh_error res = BH_SUCCESS;
@@ -121,7 +121,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 if (res != BH_SUCCESS) {
                     fprintf(stderr, "bh_vcache_malloc(): unhandled error "
                                     "bh_error=%lld;"
-                                    " called from bh_ve_cpu_execute()\n",
+                                    " called from bh_ve_score_execute()\n",
                                     (long long)res);
                     break;
                 }
@@ -149,7 +149,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 	return res;
 }
 
-bh_error bh_ve_cpu_shutdown( void )
+bh_error bh_ve_score_shutdown( void )
 {
     if (vcache_size>0) {
         bh_vcache_clear();  // De-allocate vcache
@@ -170,7 +170,7 @@ bh_error bh_ve_cpu_shutdown( void )
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
+bh_error bh_ve_score_reg_func(char *fun, bh_intp *id)
 {
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
