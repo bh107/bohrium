@@ -6,6 +6,7 @@ Here goes::
 
     gpu - GPU vector engine.
     cpu - JIT compiled engine for CPU, the first of its kind ;)
+
     static/score    - CPU vector engine.
     static/mcore    - CPU vector engine with TLP.
     static/tiling   - CPU vector engine with tiling.

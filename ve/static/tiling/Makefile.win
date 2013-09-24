@@ -1,4 +1,4 @@
-ROOT=..\..
+ROOT=..\..\..
 LIBNAME=libbh_ve_tiling.lib
 DLLNAME=libbh_ve_tiling.dll
 CC=cl

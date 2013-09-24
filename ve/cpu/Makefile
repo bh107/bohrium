@@ -1,5 +1,5 @@
 ROOT=../..
-LIB=libbh_ve_dynamite.so
+LIB=libbh_ve_cpu.so
 CXX?=g++
 #CXX?=clang
 WARNOPTS=-Wall
@@ -11,7 +11,7 @@ HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o) 
-OBJ=bh_ve_dynamite.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
+OBJ=bh_ve_cpu.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
 
 INSTALLDIR?=/opt/bohrium/
 
@@ -39,9 +39,9 @@ clean:
 
 install: all
 		cp $(LIB) $(INSTALLDIR)/
-		mkdir -p $(INSTALLDIR)/dynamite/kernels
-		mkdir -p $(INSTALLDIR)/dynamite/objects
-		mkdir -p $(INSTALLDIR)/dynamite/templates
-		cp templates/*.tpl $(INSTALLDIR)/dynamite/templates/
-		#cp objects/symbols_aaaaaa.so $(INSTALLDIR)/dynamite/objects/
-		#cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/dynamite/objects/
+		mkdir -p $(INSTALLDIR)/cpu/kernels
+		mkdir -p $(INSTALLDIR)/cpu/objects
+		mkdir -p $(INSTALLDIR)/cpu/templates
+		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+		#cp objects/symbols_aaaaaa.so $(INSTALLDIR)/cpu/objects/
+		#cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/cpu/objects/

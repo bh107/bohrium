@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../..
 LIB=libbh_ve_tiling.so
 CXX?=g++
 WARNOPTS=-Wall

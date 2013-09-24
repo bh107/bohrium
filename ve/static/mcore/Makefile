@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../..
 LIB=libbh_ve_mcore.so
 CXX?=g++
 WARNOPTS=-Wall

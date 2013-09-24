@@ -162,12 +162,11 @@ if __name__ == "__main__":
                   ("CORE", "core", True),\
                   ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
-                  ("VE-PRINT", "ve/print", False),\
                   #("VE-GPU", "ve/gpu", False),\
-                  ("VE-CPU", "ve/cpu", True),\
-                  ("VE-TILING", "ve/tiling", False),\
-                  ("VE-MCORE", "ve/mcore", False),\
-                  ("VE-DYNAMITE", "ve/dynamite", False),\
+                  ("VE-CPU",    "ve/cpu", True),\
+                  ("VE-SCORE",  "ve/static/cpu", False),\
+                  ("VE-MCORE",  "ve/static/mcore", False),\
+                  ("VE-TILING", "ve/static/tiling", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
                   #("FILTER-POWER", "filter/power", False),\

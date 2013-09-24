@@ -1,4 +1,4 @@
-ROOT=..\..
+ROOT=..\..\..
 LIBNAME=libbh_ve_score.lib
 DLLNAME=libbh_ve_score.dll
 CC=cl
