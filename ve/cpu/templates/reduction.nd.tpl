@@ -37,8 +37,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
-#ifndef DYNAMITE_MISC
-#define DYNAMITE_MAXDIM 16
+#ifndef CPU_MISC
+#define CPU_MAXDIM 16
 #endif
 {{/include}}
 
@@ -89,7 +89,7 @@ int {{SYMBOL}}(int tool, ...)
     {{TYPE_A1}} *tmp_current;    // Intermediate array
     {{TYPE_A1}} *tmp_first;      
     int64_t tmp_start;
-    int64_t tmp_stride[DYNAMITE_MAXDIM];    
+    int64_t tmp_stride[CPU_MAXDIM];    
 
     if (1 == a1_ndim) {                             // ** 1D Special Case **
         a0_current = a0_first + a0_start;           // Point to first element in output.
@@ -107,7 +107,7 @@ int {{SYMBOL}}(int tool, ...)
                 last_dim,
                 last_e,
                 cur_e,
-                coord[DYNAMITE_MAXDIM];
+                coord[CPU_MAXDIM];
 
         tmp_first    = a1_first;                  // Use the temporary as a copy of input
         tmp_start   = a1_start;                 // without the 'axis' dimension
@@ -132,7 +132,7 @@ int {{SYMBOL}}(int tool, ...)
         for(a1_i=0; a1_i<a1_shape[axis]; ++a1_i, tmp_start += a1_stride[axis]) {
 
             cur_e = 0;                                  // Reset coordinate and element counter
-            memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
+            memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
             while (cur_e <= last_e) {
                 a0_current   = a0_first + a0_start;       // Reset offsets

@@ -39,8 +39,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
-#ifndef DYNAMITE_MISC
-#define DYNAMITE_MAXDIM 16
+#ifndef CPU_MISC
+#define CPU_MAXDIM 16
 #endif
 {{/include}}
 
@@ -100,8 +100,8 @@ void {{SYMBOL}}(int tool, ...)
     {{#a1_dense}}int64_t a1_stride_ld = a1_stride[last_dim];{{/a1_dense}}
     {{#a2_dense}}int64_t a2_stride_ld = a2_stride[last_dim];{{/a2_dense}}
 
-    int64_t coord[DYNAMITE_MAXDIM];
-    memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
+    int64_t coord[CPU_MAXDIM];
+    memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
         

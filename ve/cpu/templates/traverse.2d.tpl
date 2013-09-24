@@ -39,8 +39,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
-#ifndef DYNAMITE_MISC
-#define DYNAMITE_MAXDIM 16
+#ifndef CPU_MISC
+#define CPU_MAXDIM 16
 #endif
 {{/include}}
 

@@ -104,7 +104,8 @@ autosummary_generate = True
 # a list of builtin themes.
 #html_theme = 'default'
 #html_theme = 'default'
-html_theme = 'haiku'
+#html_theme = 'haiku'
+html_theme = 'bohrium'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -113,6 +114,7 @@ html_theme = 'haiku'
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
+html_theme_path = ['../themes/']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -235,7 +237,7 @@ man_pages = [
 epub_title      = u'Bohrium'
 epub_author     = u'eScience Group @ NBI'
 epub_publisher  = u'eScience Group @ NBI'
-epub_copyright  = u'2012, eScience Group @ NBI'
+epub_copyright  = u'2012-2013, eScience Group @ NBI'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

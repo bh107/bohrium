@@ -1,5 +1,5 @@
-#ifndef __BH_VE_DYNAMITE_BACKENDS
-#define __BH_VE_DYNAMITE_BACKENDS
+#ifndef __BH_VE_CPU_BACKENDS
+#define __BH_VE_CPU_BACKENDS
 
 #include <iostream>
 #include <cstring>

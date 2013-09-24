@@ -39,8 +39,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
-#ifndef DYNAMITE_MISC
-#define DYNAMITE_MAXDIM 16
+#ifndef CPU_MISC
+#define CPU_MAXDIM 16
 #endif
 {{/include}}
 
@@ -157,8 +157,8 @@ void {{SYMBOL}}(size_t noperands, bh_array **operands)
     {{#a6_dense}}int64_t a6_stride_ld = a6_stride[last_dim];{{/a6_dense}}
     {{#a7_dense}}int64_t a7_stride_ld = a7_stride[last_dim];{{/a7_dense}}
 
-    int64_t coord[DYNAMITE_MAXDIM];
-    memset(coord, 0, DYNAMITE_MAXDIM * sizeof(int64_t));
+    int64_t coord[CPU_MAXDIM];
+    memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
     // Start by assigning the neutral element to the output
     *a0_current = 0;    // probably not the case for all reductions..

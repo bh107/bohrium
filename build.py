@@ -164,7 +164,7 @@ if __name__ == "__main__":
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU",    "ve/cpu", True),\
-                  ("VE-SCORE",  "ve/static/cpu", False),\
+                  ("VE-SCORE",  "ve/static/score", False),\
                   ("VE-MCORE",  "ve/static/mcore", False),\
                   ("VE-TILING", "ve/static/tiling", False),\
                   ("VEM-NODE", "vem/node", True),\

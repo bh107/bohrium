@@ -1,5 +1,5 @@
-#ifndef __BH_VE_DYNAMITE_SPECIALIZER
-#define __BH_VE_DYNAMITE_SPECIALIZER
+#ifndef __BH_VE_CPU_SPECIALIZER
+#define __BH_VE_CPU_SPECIALIZER
 
 #include <ctemplate/template.h>  
 
