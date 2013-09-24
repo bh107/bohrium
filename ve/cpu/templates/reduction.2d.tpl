@@ -90,7 +90,7 @@ int {{SYMBOL}}(int tool, ...)
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(mworkers)
     for(int64_t j=0; j<a1_shape[other_axis]; ++j) {
                                                     // Point to first element in the input
         {{TYPE_A1}} *a1_current = a1_first + a1_start + a1_stride[other_axis]*j;

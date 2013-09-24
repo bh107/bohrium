@@ -5,7 +5,7 @@ def compute_targets(base, target):
 
     base    = base[:,np.newaxis]
     target  = target[:,:,np.newaxis]
-
+    print base.shape, target.shape
     tmp = (base - target)**2
     tmp = np.add.reduce(tmp)
 
