@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Bohrium'
-copyright = u'2012, eScience Group @ NBI'
+copyright = u'2012-2013, eScience Group @ NBI'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -102,9 +102,6 @@ autosummary_generate = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'default'
-#html_theme = 'default'
-#html_theme = 'haiku'
 html_theme = 'bohrium'
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -125,7 +122,7 @@ html_theme_path = ['../themes/']
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = "../themes/bohrium/_static/bohrium_logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
