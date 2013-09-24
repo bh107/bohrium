@@ -3,7 +3,7 @@ LIB=libbh_ve_tiling.so
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O3 -fPIC -I$(ROOT)/include  -I$(ROOT)/core -I$(ROOT)/traverse
-LDFLAGS=-L../../core -lbh -lrt -shared -Wl,-soname
+LDFLAGS=-L$(ROOT)/core -lbh -lrt -shared -Wl,-soname
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
 OBJTMP=$(SRC:.c=.o)

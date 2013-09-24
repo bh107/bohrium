@@ -12,5 +12,5 @@ Here goes::
     static/tiling   - CPU vector engine with tiling.
     shared/         - Objects / tools shared between engines
     shared/bundler  - Instruction bundler mainly for tiling engine.
-    shared/compute  - Mega-switch / dispatch for gpu, and static engines.
+    shared/compute  - Compute/dispatch functions used by gpu and static engines.
 

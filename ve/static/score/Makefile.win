@@ -22,7 +22,6 @@ all: $(DLLNAME)
 bh_ve_score.obj: bh_ve_score.cpp $(HEADER)
 		$(CXX) $(CFLAGS) bh_ve_score.cpp /Fo$@
 
-
 $(LIBNAME): $(OBJ)
 		$(LIBTOOL) $(LIBFLAGS) $(OBJ) $(ROOT)\iniparser\iniparser.lib $(ROOT)\core\libbh.lib
 

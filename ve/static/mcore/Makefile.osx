@@ -4,7 +4,7 @@ CXX?=g++
 WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
-LDFLAGS= $(ARCHOPTS) -L../../core -lbh -shared -Wl,-dylib_install_name,$(LIB)
+LDFLAGS= $(ARCHOPTS) -L$(ROOT)/core -lbh -shared -Wl,-dylib_install_name,$(LIB)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
 OBJ=$(SRC:.c=.o) $(SRC:.cpp=.o)
