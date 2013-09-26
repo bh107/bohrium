@@ -66,12 +66,12 @@ void pgrid_init(void)
     char hostname[1024];
     int hostnamelen;
     MPI_Get_processor_name(hostname,&hostnamelen);
-    int cpuid = sched_getcpu();
     int ncpus = sysconf(_SC_NPROCESSORS_ONLN);
     char *nnodes_env = getenv("BH_CLUSTER_NNODES");
-    int nnodes = -1, node_rank = -1;
+    int nnodes = -1;
 
-    char buf[1024*10];
+    char buf[1024];
+    buf[0] = '\0';
     if(ncpus > 0 && nnodes_env != NULL)
     {
         nnodes = atoi(nnodes_env);
@@ -79,26 +79,27 @@ void pgrid_init(void)
         assert(pgrid_worldsize % nnodes == 0);
 
         int ppn = pgrid_worldsize / nnodes;
-        node_rank = pgrid_myrank / nnodes;
+        int node_rank = pgrid_myrank / nnodes;
         assert(ncpus % ppn == 0);
         int cpu_per_proc = ncpus / ppn;
         assert(cpu_per_proc > 0);
 
-        sprintf(buf+strlen(buf), " (cpu bindings: ");
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         for(int i=0; i<cpu_per_proc; ++i)
-        {
-            int id = i+node_rank*cpu_per_proc;
-            CPU_SET(id, &cpuset);
-            sprintf(buf+strlen(buf), "%d,",id);
-        }
+            CPU_SET(i+node_rank*cpu_per_proc, &cpuset);
         sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
-        sprintf(buf+strlen(buf)-1, ")");
+
+        int start = node_rank*cpu_per_proc;
+        int end = start+cpu_per_proc-1;
+        if(start == end)
+            sprintf(buf+strlen(buf), " (cpu bindings: %d)", start);
+        else
+            sprintf(buf+strlen(buf), " (cpu bindings: %d-%d)", start, end);
     }
 
     printf("[CLUSTER] rank %d running on %s:%d%s\n",
-            pgrid_myrank, hostname, cpuid, buf);
+            pgrid_myrank, hostname, sched_getcpu(), buf);
 
 }/* pgrid_init */
 
