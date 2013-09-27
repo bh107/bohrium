@@ -79,7 +79,7 @@ void pgrid_init(void)
         assert(pgrid_worldsize % nnodes == 0);
 
         int ppn = pgrid_worldsize / nnodes;
-        int node_rank = pgrid_myrank / nnodes;
+        int node_rank = pgrid_myrank % ppn;
         assert(ncpus % ppn == 0);
         int cpu_per_proc = ncpus / ppn;
         assert(cpu_per_proc > 0);
