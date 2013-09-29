@@ -179,7 +179,7 @@ std::string symbolize(bh_instruction *instr) {
         case BH_BITWISE_XOR_REDUCE:
 
             dims = instr->operand[1].ndim;
-            if (dims <= 2) {
+            if (dims <= 3) {
                 sprintf(symbol_c, "%s_%ldD_DD_%s%s",
                     bh_opcode_text(instr->opcode),
                     dims,
@@ -355,7 +355,8 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
             dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
 
             dims = instr->operand[1].ndim;
-            if (dims <= 2) {
+            if (dims <= 3) {
+                //printf("Dims? %ld, %ld\n", instr->operand[0].ndim, instr->operand[1].ndim);
                 sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, dims);
             } else {
                 sprintf(template_fn, "%s/reduction.nd.tpl", template_path);

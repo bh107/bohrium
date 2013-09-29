@@ -3,7 +3,6 @@ LIB=libbh_ve_cpu.so
 CXX?=g++
 #CXX?=clang
 WARNOPTS=-Wall
-#LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse
 EXTRAS+=
 LCFLAGS= $(WARNOPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
 LDFLAGS=-L../../core -lbh -lrt -lctemplate -shared -Wl,-soname
@@ -43,5 +42,3 @@ install: all
 		mkdir -p $(INSTALLDIR)/cpu/objects
 		mkdir -p $(INSTALLDIR)/cpu/templates
 		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
-		#cp objects/symbols_aaaaaa.so $(INSTALLDIR)/cpu/objects/
-		#cp objects/symbols_aaaaaa.ind $(INSTALLDIR)/cpu/objects/

@@ -264,9 +264,9 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "rvar |= *tmp_current";
 
         case BH_LOGICAL_XOR_REDUCE:
-            return "*a0_current = !*a0_current != !*tmp_current";
+            return "rvar = !rvar != !*tmp_current";
         case BH_BITWISE_XOR_REDUCE:
-            return "*a0_current = *a0_current ^ *tmp_current";
+            return "rvar = rvar ^ *tmp_current";
 
         // Binary elementwise: ADD, MULTIPLY...
         case BH_ADD:

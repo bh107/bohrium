@@ -44,6 +44,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 {{/include}}
 
+#define OUTER 1
+#define INNER 0
+
 /*
 int reduction(
     int tool,
@@ -84,24 +87,40 @@ int {{SYMBOL}}(int tool, ...)
 
     va_end(list);                                   // **DONE UNPACKING**
 
-    int64_t other_axis = (axis==0) ? 1 : 0;
-
-    int64_t nelements = a1_shape[other_axis];
+    int64_t outer_axis;
+    int64_t inner_axis;
+    if (axis == 0) {
+        outer_axis = 2;
+        inner_axis = 1;
+    } else if (axis==1) {
+        outer_axis = 2;
+        inner_axis = 0;
+    } else if (axis==2) {
+        outer_axis = 1;
+        inner_axis = 0;
+    }
+    
+    int64_t nelements = a0_shape[OUTER]+a1_shape[INNER];
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
-    #pragma omp parallel for num_threads(nworkers)
-    for(int64_t j=0; j<a1_shape[other_axis]; ++j) {
-                                                    // Point to first element in the input
-        {{TYPE_A1}} *tmp_current = a1_first + a1_start + a1_stride[other_axis]*j;
+    #pragma omp parallel for num_threads(nworkers) collapse(2)
+    for(int64_t i=0; i<a0_shape[OUTER]; ++i) {
+        for(int64_t j=0; j<a0_shape[INNER]; ++j) {
+            {{TYPE_A1}} *tmp_current = a1_first + a1_start + \
+                                       i*a1_stride[outer_axis] + \
+                                       j*a1_stride[inner_axis];
 
-        {{TYPE_A1}} rvar = *tmp_current;                 // Scalar-temp 
-        for(int64_t i=1; i<a1_shape[axis]; ++i) {       // Reduce
-            tmp_current += a1_stride[axis];
-            {{OPERATOR}};
-        }                                           
-        *(a0_first + a0_start + a0_stride[0]*j) = rvar; // Update array/output
+            {{TYPE_A0}} rvar = *tmp_current;
+            for(int64_t k=1; k<a1_shape[axis]; ++k) {
+                tmp_current += a1_stride[axis];
+                {{OPERATOR}};
+            }
+            *(a0_first + a0_start + i*a0_stride[OUTER] + j*a0_stride[INNER]) = rvar;
+            
+        }
     }
+
     return 1;
 }
 
