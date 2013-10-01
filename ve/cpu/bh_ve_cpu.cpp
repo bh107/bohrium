@@ -32,8 +32,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_cpu.h"
 #include "compiler.cpp"
 
-#define BH_CPU_KRN_MAX_OPERANDS 20
-
 // Execution Profile
 
 #ifdef PROFILE
@@ -144,7 +142,6 @@ std::string symbolize(bh_instruction *instr) {
     char symbol_c[500];
     char dims_str[10];
     int64_t dims;
-
     bh_random_type *random_args;
 
     switch (instr->opcode) {    // [OPCODE_SWITCH]
@@ -180,15 +177,17 @@ std::string symbolize(bh_instruction *instr) {
 
             dims = instr->operand[1].ndim;
             if (dims <= 3) {
-                sprintf(symbol_c, "%s_%ldD_DD_%s%s",
+                sprintf(symbol_c, "%s_%ldD_%s_%s%s",
                     bh_opcode_text(instr->opcode),
                     dims,
+                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type)
                 );
             } else {
-                sprintf(symbol_c, "%s_ND_DD_%s%s",
+                sprintf(symbol_c, "%s_ND_%s_%s%s",
                     bh_opcode_text(instr->opcode),
+                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type)
                 );
@@ -225,26 +224,30 @@ std::string symbolize(bh_instruction *instr) {
             } else {
                 sprintf(dims_str, "ND");
             }
+
             if (bh_is_constant(&instr->operand[2])) {
-                sprintf(symbol_c, "%s_%s_DDC_%s%s%s",
+                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
                     bh_opcode_text(instr->opcode),
                     dims_str,
+                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type),
                     bhtype_to_shorthand(instr->constant.type)
                 );
             } else if(bh_is_constant(&instr->operand[1])) {
-                sprintf(symbol_c, "%s_%s_DCD_%s%s%s",
+                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
                     bh_opcode_text(instr->opcode),
                     dims_str,
+                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->constant.type),
                     bhtype_to_shorthand(instr->operand[2].base->type)
                 );
             } else {
-                sprintf(symbol_c, "%s_%s_DDD_%s%s%s",
+                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
                     bh_opcode_text(instr->opcode),
                     dims_str,
+                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                     bhtype_to_shorthand(instr->operand[0].base->type),
                     bhtype_to_shorthand(instr->operand[1].base->type),
                     bhtype_to_shorthand(instr->operand[2].base->type)
@@ -290,16 +293,18 @@ std::string symbolize(bh_instruction *instr) {
                 sprintf(dims_str, "ND");
             }
             if (bh_is_constant(&instr->operand[1])) {
-                sprintf(symbol_c, "%s_%s_DC_%s%s",
+                sprintf(symbol_c, "%s_%s_%s_%s%s",
                         bh_opcode_text(instr->opcode),
                         dims_str,
+                        bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                         bhtype_to_shorthand(instr->operand[0].base->type),
                         bhtype_to_shorthand(instr->constant.type)
                 );
             } else {
-                sprintf(symbol_c, "%s_%s_DD_%s%s",
+                sprintf(symbol_c, "%s_%s_%s_%s%s",
                         bh_opcode_text(instr->opcode),
                         dims_str,
+                        bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
                         bhtype_to_shorthand(instr->operand[0].base->type),
                         bhtype_to_shorthand(instr->operand[1].base->type)
                 );
@@ -323,7 +328,7 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
     ctemplate::TemplateDictionary dict("codegen");
     dict.ShowSection("license");
     dict.ShowSection("include");
-
+    
     switch (instr->opcode) {                    // OPCODE_SWITCH
 
         case BH_USERFUNC:                       // Extensions
@@ -356,7 +361,6 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
 
             dims = instr->operand[1].ndim;
             if (dims <= 3) {
-                //printf("Dims? %ld, %ld\n", instr->operand[0].ndim, instr->operand[1].ndim);
                 sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, dims);
             } else {
                 sprintf(template_fn, "%s/reduction.nd.tpl", template_path);
@@ -412,6 +416,7 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
                 dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_dense");
+
             }
             if (dims<=3) {
                 sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, dims);
@@ -520,7 +525,6 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             std::string sourcecode = specialize(symbol, instr);             // Send to specializer
             target->compile(symbol, sourcecode.c_str(), sourcecode.size()); // Send to compiler / cache
         }
-
         if ((symbol!="") && !target->load(symbol, symbol)) {    // Load
             return BH_ERROR;
         }

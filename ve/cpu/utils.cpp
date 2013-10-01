@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "bh.h"
+#include "bh_ve_cpu.h"
 
 /**
  * Read the entire file provided via filename into memory.
@@ -39,6 +40,211 @@ void assign_string(char*& output, const char* input)
     }
     strncpy(output, input, length);
     output[length] = '\0';
+}
+
+inline
+bool is_dense(bh_view *operand)
+{
+    if ((operand->ndim == 3) && \
+        (operand->stride[0] == 1) && \
+        (operand->stride[1] == operand->shape[0]) && \
+        (operand->stride[2] == operand->shape[1]*operand->shape[0])
+    ) {
+        return true;
+    } else if ((operand->ndim == 2) && \
+               (operand->stride[0] == 1) && \
+               (operand->stride[1] == operand->shape[0])) {
+        return true;
+    } else if ((operand->ndim == 1) && (operand->stride[0] == 1)) {
+        return true;
+    }
+
+    return false;
+}
+
+int bh_layoutmask(bh_instruction *instr)
+{
+    int mask = 0;
+    const int nops = bh_operands(instr->opcode);
+
+    switch(nops) {
+        case 3:
+            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            if (bh_is_constant(&instr->operand[2])) {
+                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+                mask |= A2_CONSTANT;
+            } else if (bh_is_constant(&instr->operand[1])) {
+                mask |= A1_CONSTANT;
+                mask |= (is_dense(&instr->operand[2])) ? A2_DENSE : A2_STRIDED;
+            } else {
+                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+                mask |= (is_dense(&instr->operand[2])) ? A2_DENSE : A2_STRIDED;
+            }
+            break;
+
+        case 2:
+            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            if (bh_is_constant(&instr->operand[1])) {
+                mask |= A1_CONSTANT;
+            } else {
+                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+            }
+            break;
+
+        case 1:
+            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            if (bh_is_constant(&instr->operand[1])) {
+                mask |= A1_CONSTANT;
+            } else {
+                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+            }           
+            break;
+
+        case 0:
+        default:
+            break;
+    }
+    return mask;
+}
+
+const char* bh_layoutmask_to_shorthand(const int mask)
+{
+    switch(mask) {
+        case 1: return "C";
+        case 2: return "D";
+        case 4: return "S";
+        case 8: return "P";
+
+        case 17: return "CC";
+        case 18: return "DC";
+        case 20: return "SC";
+        case 24: return "PC";
+        case 33: return "CD";
+        case 34: return "DD";
+        case 36: return "SD";
+        case 40: return "PD";
+        case 65: return "CS";
+        case 66: return "DS";
+        case 68: return "SS";
+        case 72: return "PS";
+        case 129: return "CP";
+        case 130: return "DP";
+        case 132: return "SP";
+        case 136: return "PP";
+        case 273: return "CCC";
+        case 274: return "DCC";
+        case 276: return "SCC";
+        case 280: return "PCC";
+        case 289: return "CDC";
+        case 290: return "DDC";
+        case 292: return "SDC";
+        case 296: return "PDC";
+        case 321: return "CSC";
+        case 322: return "DSC";
+        case 324: return "SSC";
+        case 328: return "PSC";
+        case 385: return "CPC";
+        case 386: return "DPC";
+        case 388: return "SPC";
+        case 392: return "PPC";
+        case 529: return "CCD";
+        case 530: return "DCD";
+        case 532: return "SCD";
+        case 536: return "PCD";
+        case 545: return "CDD";
+        case 546: return "DDD";
+        case 548: return "SDD";
+        case 552: return "PDD";
+        case 577: return "CSD";
+        case 578: return "DSD";
+        case 580: return "SSD";
+        case 584: return "PSD";
+        case 641: return "CPD";
+        case 642: return "DPD";
+        case 644: return "SPD";
+        case 648: return "PPD";
+        case 1041: return "CCS";
+        case 1042: return "DCS";
+        case 1044: return "SCS";
+        case 1048: return "PCS";
+        case 1057: return "CDS";
+        case 1058: return "DDS";
+        case 1060: return "SDS";
+        case 1064: return "PDS";
+        case 1089: return "CSS";
+        case 1090: return "DSS";
+        case 1092: return "SSS";
+        case 1096: return "PSS";
+        case 1153: return "CPS";
+        case 1154: return "DPS";
+        case 1156: return "SPS";
+        case 1160: return "PPS";
+        case 2065: return "CCP";
+        case 2066: return "DCP";
+        case 2068: return "SCP";
+        case 2072: return "PCP";
+        case 2081: return "CDP";
+        case 2082: return "DDP";
+        case 2084: return "SDP";
+        case 2088: return "PDP";
+        case 2113: return "CSP";
+        case 2114: return "DSP";
+        case 2116: return "SSP";
+        case 2120: return "PSP";
+        case 2177: return "CPP";
+        case 2178: return "DPP";
+        case 2180: return "SPP";
+        case 2184: return "PPP";
+
+        default:
+            return "___";
+    }
+}
+
+int bh_typesig(bh_instruction *instr)
+{
+    int typesig;
+    const int nops = bh_operands(instr->opcode);
+    switch(nops) {
+        case 3:
+            typesig = instr->operand[0].base->type;
+
+            if (bh_is_constant(&instr->operand[1])) {             
+                typesig += ((1+instr->constant.type) << 4) \
+                          +((1+instr->operand[2].base->type) << 8);
+
+            } else if (bh_is_constant(&instr->operand[2])) {      
+                typesig = ((1+instr->operand[1].base->type) << 4) \
+                         +((1+instr->constant.type) << 8);
+
+            } else {                                                
+                typesig = ((1+instr->operand[1].base->type) << 4) \
+                         +((1+instr->operand[2].base->type) << 8);
+            }
+            break;
+        case 2:
+            typesig = instr->operand[0].base->type;
+
+            if (bh_is_constant(&instr->operand[1])) {
+                typesig = ((1+instr->constant.type) << 4);
+            } else {
+                typesig = ((1+instr->operand[1].base->type) << 4);
+            }
+            break;
+        case 1:
+            typesig = (1+instr->operand[0].base->type);
+            break;
+        case 0:
+        default:
+            typesig = 0;
+            break;
+    }
+    return typesig;
+}
+
+const char* bh_typesig_to_shorthand(int typesig)
+{
+    
 }
 
 const char* bhtypestr_to_shorthand(const char* type_str)
@@ -222,29 +428,6 @@ const char* cexpr(bh_opcode opcode)
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
-        /*
-        case BH_ADD_REDUCE:
-            return "*a0_current += *tmp_current";
-        case BH_MULTIPLY_REDUCE:
-            return "*a0_current *= *tmp_current";
-        case BH_MINIMUM_REDUCE:
-            return "*a0_current = *a0_current < *tmp_current ? *a0_current : *tmp_current";
-        case BH_MAXIMUM_REDUCE:
-            return "*a0_current = *a0_current < *tmp_current ? *tmp_current : *a0_current";
-        case BH_LOGICAL_AND_REDUCE:
-            return "*a0_current = *a0_current && *tmp_current";
-        case BH_BITWISE_AND_REDUCE:
-            return "*a0_current &= *tmp_current";
-        case BH_LOGICAL_OR_REDUCE:
-            return "*a0_current = *a0_current || *tmp_current";
-        case BH_BITWISE_OR_REDUCE:
-            return "*a0_current |= *tmp_current";
-
-        case BH_LOGICAL_XOR_REDUCE:
-            return "*a0_current = !*a0_current != !*tmp_current";
-        case BH_BITWISE_XOR_REDUCE:
-            return "*a0_current = *a0_current ^ *tmp_current";
-        */
 
         case BH_ADD_REDUCE:
             return "rvar += *tmp_current";

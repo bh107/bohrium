@@ -2,27 +2,26 @@ import bohrium as np
 import util
 
 def compute_targets(base, target):
+    
+    tmp = (base[:,np.newaxis] - target[:,:,np.newaxis])**2
+    tmp = np.sum(tmp)
+    tmp = np.sqrt(tmp)
+    tmp = np.max(tmp,0)
 
-    base    = base[:,np.newaxis]
-    target  = target[:,:,np.newaxis]
-    print base.shape, target.shape
-    tmp = (base - target)**2
-    tmp = np.add.reduce(tmp)
-
-    np.sqrt(tmp, tmp)
-    r  = np.max(tmp, axis=0)
-    return r
+    return tmp
 
 def main():
     B = util.Benchmark()
     ndims       = B.size[0]
     db_length   = B.size[1]
+    i   = B.size[2]
 
     targets = np.random.random((ndims,db_length), bohrium=B.bohrium)
     base    = np.random.random((ndims,db_length), bohrium=B.bohrium)
 
     B.start()
-    compute_targets(base, targets)
+    for n in range(0, i):
+        compute_targets(base, targets)
     B.stop()
     B.pprint()
 
