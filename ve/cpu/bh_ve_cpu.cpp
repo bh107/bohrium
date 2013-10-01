@@ -51,7 +51,7 @@ static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
 static bh_intp do_jit  = 1;
 
-static char* compiler_cmd;   // Dynamite Arguments
+static char* compiler_cmd;   // cpu Arguments
 static char* kernel_path;
 static char* object_path;
 static char* template_path;
@@ -139,18 +139,24 @@ bh_error bh_ve_cpu_init(bh_component *self)
 
 std::string symbolize(bh_instruction *instr) {
 
+    bh_random_type *random_args;    // Nescesarry evil!
+
     char symbol_c[500];
     char dims_str[10];
-    int64_t dims;
-    bh_random_type *random_args;
+    int64_t dims;   // Number of dimensions
+    int lmask;      // Layout mask
+    int tsig;       // Type signature 
 
-    switch (instr->opcode) {    // [OPCODE_SWITCH]
+    switch (instr->opcode) {                    // [OPCODE_SWITCH]
 
         case BH_NONE:                           // NOOP.
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:                           // Store data-pointer in malloc-cache
+            //printf("Err: Could not symbolize SYSTEM instruction.\n");
+            //return "_UNS_";
             return "";
+
         case BH_USERFUNC:
 
             if (instr->userfunc->id == random_impl_id) {
@@ -162,6 +168,8 @@ std::string symbolize(bh_instruction *instr) {
                 );
                 return std::string(symbol_c);
             } 
+            //printf("Err: Could not symbolize USERFUNC instruction.\n");
+            //return "_UNS_";
             return "";
 
         case BH_ADD_REDUCE:                     // Partial Reductions
@@ -174,25 +182,6 @@ std::string symbolize(bh_instruction *instr) {
         case BH_LOGICAL_XOR_REDUCE:
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
-
-            dims = instr->operand[1].ndim;
-            if (dims <= 3) {
-                sprintf(symbol_c, "%s_%ldD_%s_%s%s",
-                    bh_opcode_text(instr->opcode),
-                    dims,
-                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                    bhtype_to_shorthand(instr->operand[0].base->type),
-                    bhtype_to_shorthand(instr->operand[1].base->type)
-                );
-            } else {
-                sprintf(symbol_c, "%s_ND_%s_%s%s",
-                    bh_opcode_text(instr->opcode),
-                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                    bhtype_to_shorthand(instr->operand[0].base->type),
-                    bhtype_to_shorthand(instr->operand[1].base->type)
-                );
-            }
-            return std::string(symbol_c);
 
         case BH_ADD:                            // Binary Element-wise
         case BH_SUBTRACT:
@@ -217,44 +206,7 @@ std::string symbolize(bh_instruction *instr) {
         case BH_RIGHT_SHIFT:
         case BH_ARCTAN2:
         case BH_MOD:
-
-            dims = instr->operand[0].ndim;
-            if (dims <= 3) {
-                sprintf(dims_str, "%ldD", dims);
-            } else {
-                sprintf(dims_str, "ND");
-            }
-
-            if (bh_is_constant(&instr->operand[2])) {
-                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
-                    bh_opcode_text(instr->opcode),
-                    dims_str,
-                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                    bhtype_to_shorthand(instr->operand[0].base->type),
-                    bhtype_to_shorthand(instr->operand[1].base->type),
-                    bhtype_to_shorthand(instr->constant.type)
-                );
-            } else if(bh_is_constant(&instr->operand[1])) {
-                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
-                    bh_opcode_text(instr->opcode),
-                    dims_str,
-                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                    bhtype_to_shorthand(instr->operand[0].base->type),
-                    bhtype_to_shorthand(instr->constant.type),
-                    bhtype_to_shorthand(instr->operand[2].base->type)
-                );
-            } else {
-                sprintf(symbol_c, "%s_%s_%s_%s%s%s",
-                    bh_opcode_text(instr->opcode),
-                    dims_str,
-                    bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                    bhtype_to_shorthand(instr->operand[0].base->type),
-                    bhtype_to_shorthand(instr->operand[1].base->type),
-                    bhtype_to_shorthand(instr->operand[2].base->type)
-                );
-            }
-            return std::string(symbol_c);
-
+        
         case BH_ABSOLUTE:                       // Unary Element-wise
         case BH_LOGICAL_NOT:
         case BH_INVERT:
@@ -292,23 +244,14 @@ std::string symbolize(bh_instruction *instr) {
             } else {
                 sprintf(dims_str, "ND");
             }
-            if (bh_is_constant(&instr->operand[1])) {
-                sprintf(symbol_c, "%s_%s_%s_%s%s",
-                        bh_opcode_text(instr->opcode),
-                        dims_str,
-                        bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                        bhtype_to_shorthand(instr->operand[0].base->type),
-                        bhtype_to_shorthand(instr->constant.type)
-                );
-            } else {
-                sprintf(symbol_c, "%s_%s_%s_%s%s",
-                        bh_opcode_text(instr->opcode),
-                        dims_str,
-                        bh_layoutmask_to_shorthand(bh_layoutmask(instr)),
-                        bhtype_to_shorthand(instr->operand[0].base->type),
-                        bhtype_to_shorthand(instr->operand[1].base->type)
-                );
-            }
+            lmask   = bh_layoutmask(instr);
+            tsig    = bh_typesig(instr);
+            sprintf(symbol_c, "%s_%s_%s_%s",
+                bh_opcode_text(instr->opcode),
+                dims_str,
+                bh_layoutmask_to_shorthand(lmask),
+                bh_typesig_to_shorthand(tsig)
+            );
             return std::string(symbol_c);
 
         default:
@@ -481,11 +424,11 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
             break;
 
         default:
-            printf("Dynamite: Err=[Unsupported ufunc...\n");
+            printf("cpu: Err=[Unsupported ufunc...]\n");
     }
 
     if (!cres) {
-        throw std::runtime_error("Dynamite: Failed specializing code.");
+        throw std::runtime_error("cpu: Failed specializing code.");
     }
 
     std::string sourcecode = "";
@@ -746,7 +689,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
             default:                            // Shit hit the fan
                 res = BH_ERROR;
-                printf("Dynamite: Err=[Unsupported ufunc...\n");
+                printf("cpu: Err=[Unsupported ufunc...\n");
         }
 
         #ifdef PROFILE

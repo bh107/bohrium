@@ -197,7 +197,8 @@ const char* bh_layoutmask_to_shorthand(const int mask)
         case 2184: return "PPP";
 
         default:
-            return "___";
+            printf("Err: Unsupported layoutmask [%d]\n", mask);
+            return "_UNS_";
     }
 }
 
@@ -207,28 +208,28 @@ int bh_typesig(bh_instruction *instr)
     const int nops = bh_operands(instr->opcode);
     switch(nops) {
         case 3:
-            typesig = instr->operand[0].base->type;
+            typesig = instr->operand[0].base->type+1;
 
             if (bh_is_constant(&instr->operand[1])) {             
                 typesig += ((1+instr->constant.type) << 4) \
                           +((1+instr->operand[2].base->type) << 8);
 
             } else if (bh_is_constant(&instr->operand[2])) {      
-                typesig = ((1+instr->operand[1].base->type) << 4) \
-                         +((1+instr->constant.type) << 8);
+                typesig += ((1+instr->operand[1].base->type) << 4) \
+                          +((1+instr->constant.type) << 8);
 
             } else {                                                
-                typesig = ((1+instr->operand[1].base->type) << 4) \
-                         +((1+instr->operand[2].base->type) << 8);
+                typesig += ((1+instr->operand[1].base->type) << 4) \
+                          +((1+instr->operand[2].base->type) << 8);
             }
             break;
         case 2:
-            typesig = instr->operand[0].base->type;
+            typesig = instr->operand[0].base->type+1;
 
             if (bh_is_constant(&instr->operand[1])) {
-                typesig = ((1+instr->constant.type) << 4);
+                typesig += ((1+instr->constant.type) << 4);
             } else {
-                typesig = ((1+instr->operand[1].base->type) << 4);
+                typesig += ((1+instr->operand[1].base->type) << 4);
             }
             break;
         case 1:
@@ -244,7 +245,185 @@ int bh_typesig(bh_instruction *instr)
 
 const char* bh_typesig_to_shorthand(int typesig)
 {
-    
+    switch(typesig) {
+        // Sig-Length 3
+        case 546: return "bbb"; // BH_INT8 + (BH_INT8 << 4) + (BH_INT8 << 8)
+        case 3276: return "ddd"; // BH_FLOAT64 + (BH_FLOAT64 << 4) + (BH_FLOAT64 << 8)
+        case 1911: return "SSS"; // BH_UINT16 + (BH_UINT16 << 4) + (BH_UINT16 << 8)
+        case 2457: return "LLL"; // BH_UINT64 + (BH_UINT64 << 4) + (BH_UINT64 << 8)
+        case 819: return "sss"; // BH_INT16 + (BH_INT16 << 4) + (BH_INT16 << 8)
+        case 3003: return "fff"; // BH_FLOAT32 + (BH_FLOAT32 << 4) + (BH_FLOAT32 << 8)
+        case 273: return "zzz"; // BH_BOOL + (BH_BOOL << 4) + (BH_BOOL << 8)
+        case 1092: return "iii"; // BH_INT32 + (BH_INT32 << 4) + (BH_INT32 << 8)
+        case 1638: return "BBB"; // BH_UINT8 + (BH_UINT8 << 4) + (BH_UINT8 << 8)
+        case 1365: return "lll"; // BH_INT64 + (BH_INT64 << 4) + (BH_INT64 << 8)
+        case 2184: return "III"; // BH_UINT32 + (BH_UINT32 << 4) + (BH_UINT32 << 8)
+        case 3549: return "ccc"; // BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
+        case 3822: return "CCC"; // BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
+        case 545: return "zbb"; // BH_BOOL + (BH_INT8 << 4) + (BH_INT8 << 8)
+        case 3265: return "zdd"; // BH_BOOL + (BH_FLOAT64 << 4) + (BH_FLOAT64 << 8)
+        case 1905: return "zSS"; // BH_BOOL + (BH_UINT16 << 4) + (BH_UINT16 << 8)
+        case 2449: return "zLL"; // BH_BOOL + (BH_UINT64 << 4) + (BH_UINT64 << 8)
+        case 817: return "zss"; // BH_BOOL + (BH_INT16 << 4) + (BH_INT16 << 8)
+        case 2993: return "zff"; // BH_BOOL + (BH_FLOAT32 << 4) + (BH_FLOAT32 << 8)
+        case 1089: return "zii"; // BH_BOOL + (BH_INT32 << 4) + (BH_INT32 << 8)
+        case 1633: return "zBB"; // BH_BOOL + (BH_UINT8 << 4) + (BH_UINT8 << 8)
+        case 1361: return "zll"; // BH_BOOL + (BH_INT64 << 4) + (BH_INT64 << 8)
+        case 2177: return "zII"; // BH_BOOL + (BH_UINT32 << 4) + (BH_UINT32 << 8)
+        case 3537: return "zcc"; // BH_BOOL + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
+        case 3809: return "zCC"; // BH_BOOL + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
+        // Sig-Length 2
+        case 34: return "bb"; // BH_INT8 + (BH_INT8 << 4)
+        case 204: return "dd"; // BH_FLOAT64 + (BH_FLOAT64 << 4)
+        case 119: return "SS"; // BH_UINT16 + (BH_UINT16 << 4)
+        case 153: return "LL"; // BH_UINT64 + (BH_UINT64 << 4)
+        case 51: return "ss"; // BH_INT16 + (BH_INT16 << 4)
+        case 187: return "ff"; // BH_FLOAT32 + (BH_FLOAT32 << 4)
+        case 17: return "zz"; // BH_BOOL + (BH_BOOL << 4)
+        case 68: return "ii"; // BH_INT32 + (BH_INT32 << 4)
+        case 102: return "BB"; // BH_UINT8 + (BH_UINT8 << 4)
+        case 85: return "ll"; // BH_INT64 + (BH_INT64 << 4)
+        case 136: return "II"; // BH_UINT32 + (BH_UINT32 << 4)
+        case 221: return "cc"; // BH_COMPLEX64 + (BH_COMPLEX64 << 4)
+        case 238: return "CC"; // BH_COMPLEX128 + (BH_COMPLEX128 << 4)
+        case 177: return "zf"; // BH_BOOL + (BH_FLOAT32 << 4)
+        case 193: return "zd"; // BH_BOOL + (BH_FLOAT64 << 4)
+        case 33: return "zb"; // BH_BOOL + (BH_INT8 << 4)
+        case 38: return "Bb"; // BH_UINT8 + (BH_INT8 << 4)
+        case 35: return "sb"; // BH_INT16 + (BH_INT8 << 4)
+        case 39: return "Sb"; // BH_UINT16 + (BH_INT8 << 4)
+        case 36: return "ib"; // BH_INT32 + (BH_INT8 << 4)
+        case 40: return "Ib"; // BH_UINT32 + (BH_INT8 << 4)
+        case 37: return "lb"; // BH_INT64 + (BH_INT8 << 4)
+        case 41: return "Lb"; // BH_UINT64 + (BH_INT8 << 4)
+        case 43: return "fb"; // BH_FLOAT32 + (BH_INT8 << 4)
+        case 44: return "db"; // BH_FLOAT64 + (BH_INT8 << 4)
+        case 194: return "bd"; // BH_INT8 + (BH_FLOAT64 << 4)
+        case 198: return "Bd"; // BH_UINT8 + (BH_FLOAT64 << 4)
+        case 195: return "sd"; // BH_INT16 + (BH_FLOAT64 << 4)
+        case 199: return "Sd"; // BH_UINT16 + (BH_FLOAT64 << 4)
+        case 196: return "id"; // BH_INT32 + (BH_FLOAT64 << 4)
+        case 200: return "Id"; // BH_UINT32 + (BH_FLOAT64 << 4)
+        case 197: return "ld"; // BH_INT64 + (BH_FLOAT64 << 4)
+        case 201: return "Ld"; // BH_UINT64 + (BH_FLOAT64 << 4)
+        case 203: return "fd"; // BH_FLOAT32 + (BH_FLOAT64 << 4)
+        case 113: return "zS"; // BH_BOOL + (BH_UINT16 << 4)
+        case 114: return "bS"; // BH_INT8 + (BH_UINT16 << 4)
+        case 118: return "BS"; // BH_UINT8 + (BH_UINT16 << 4)
+        case 115: return "sS"; // BH_INT16 + (BH_UINT16 << 4)
+        case 116: return "iS"; // BH_INT32 + (BH_UINT16 << 4)
+        case 120: return "IS"; // BH_UINT32 + (BH_UINT16 << 4)
+        case 117: return "lS"; // BH_INT64 + (BH_UINT16 << 4)
+        case 121: return "LS"; // BH_UINT64 + (BH_UINT16 << 4)
+        case 123: return "fS"; // BH_FLOAT32 + (BH_UINT16 << 4)
+        case 124: return "dS"; // BH_FLOAT64 + (BH_UINT16 << 4)
+        case 145: return "zL"; // BH_BOOL + (BH_UINT64 << 4)
+        case 146: return "bL"; // BH_INT8 + (BH_UINT64 << 4)
+        case 150: return "BL"; // BH_UINT8 + (BH_UINT64 << 4)
+        case 147: return "sL"; // BH_INT16 + (BH_UINT64 << 4)
+        case 151: return "SL"; // BH_UINT16 + (BH_UINT64 << 4)
+        case 148: return "iL"; // BH_INT32 + (BH_UINT64 << 4)
+        case 152: return "IL"; // BH_UINT32 + (BH_UINT64 << 4)
+        case 149: return "lL"; // BH_INT64 + (BH_UINT64 << 4)
+        case 155: return "fL"; // BH_FLOAT32 + (BH_UINT64 << 4)
+        case 156: return "dL"; // BH_FLOAT64 + (BH_UINT64 << 4)
+        case 49: return "zs"; // BH_BOOL + (BH_INT16 << 4)
+        case 50: return "bs"; // BH_INT8 + (BH_INT16 << 4)
+        case 54: return "Bs"; // BH_UINT8 + (BH_INT16 << 4)
+        case 55: return "Ss"; // BH_UINT16 + (BH_INT16 << 4)
+        case 52: return "is"; // BH_INT32 + (BH_INT16 << 4)
+        case 56: return "Is"; // BH_UINT32 + (BH_INT16 << 4)
+        case 53: return "ls"; // BH_INT64 + (BH_INT16 << 4)
+        case 57: return "Ls"; // BH_UINT64 + (BH_INT16 << 4)
+        case 59: return "fs"; // BH_FLOAT32 + (BH_INT16 << 4)
+        case 60: return "ds"; // BH_FLOAT64 + (BH_INT16 << 4)
+        case 178: return "bf"; // BH_INT8 + (BH_FLOAT32 << 4)
+        case 182: return "Bf"; // BH_UINT8 + (BH_FLOAT32 << 4)
+        case 179: return "sf"; // BH_INT16 + (BH_FLOAT32 << 4)
+        case 183: return "Sf"; // BH_UINT16 + (BH_FLOAT32 << 4)
+        case 180: return "if"; // BH_INT32 + (BH_FLOAT32 << 4)
+        case 184: return "If"; // BH_UINT32 + (BH_FLOAT32 << 4)
+        case 181: return "lf"; // BH_INT64 + (BH_FLOAT32 << 4)
+        case 185: return "Lf"; // BH_UINT64 + (BH_FLOAT32 << 4)
+        case 188: return "df"; // BH_FLOAT64 + (BH_FLOAT32 << 4)
+        case 18: return "bz"; // BH_INT8 + (BH_BOOL << 4)
+        case 22: return "Bz"; // BH_UINT8 + (BH_BOOL << 4)
+        case 19: return "sz"; // BH_INT16 + (BH_BOOL << 4)
+        case 23: return "Sz"; // BH_UINT16 + (BH_BOOL << 4)
+        case 20: return "iz"; // BH_INT32 + (BH_BOOL << 4)
+        case 24: return "Iz"; // BH_UINT32 + (BH_BOOL << 4)
+        case 21: return "lz"; // BH_INT64 + (BH_BOOL << 4)
+        case 25: return "Lz"; // BH_UINT64 + (BH_BOOL << 4)
+        case 27: return "fz"; // BH_FLOAT32 + (BH_BOOL << 4)
+        case 28: return "dz"; // BH_FLOAT64 + (BH_BOOL << 4)
+        case 65: return "zi"; // BH_BOOL + (BH_INT32 << 4)
+        case 66: return "bi"; // BH_INT8 + (BH_INT32 << 4)
+        case 70: return "Bi"; // BH_UINT8 + (BH_INT32 << 4)
+        case 67: return "si"; // BH_INT16 + (BH_INT32 << 4)
+        case 71: return "Si"; // BH_UINT16 + (BH_INT32 << 4)
+        case 72: return "Ii"; // BH_UINT32 + (BH_INT32 << 4)
+        case 69: return "li"; // BH_INT64 + (BH_INT32 << 4)
+        case 73: return "Li"; // BH_UINT64 + (BH_INT32 << 4)
+        case 75: return "fi"; // BH_FLOAT32 + (BH_INT32 << 4)
+        case 76: return "di"; // BH_FLOAT64 + (BH_INT32 << 4)
+        case 97: return "zB"; // BH_BOOL + (BH_UINT8 << 4)
+        case 98: return "bB"; // BH_INT8 + (BH_UINT8 << 4)
+        case 99: return "sB"; // BH_INT16 + (BH_UINT8 << 4)
+        case 103: return "SB"; // BH_UINT16 + (BH_UINT8 << 4)
+        case 100: return "iB"; // BH_INT32 + (BH_UINT8 << 4)
+        case 104: return "IB"; // BH_UINT32 + (BH_UINT8 << 4)
+        case 101: return "lB"; // BH_INT64 + (BH_UINT8 << 4)
+        case 105: return "LB"; // BH_UINT64 + (BH_UINT8 << 4)
+        case 107: return "fB"; // BH_FLOAT32 + (BH_UINT8 << 4)
+        case 108: return "dB"; // BH_FLOAT64 + (BH_UINT8 << 4)
+        case 81: return "zl"; // BH_BOOL + (BH_INT64 << 4)
+        case 82: return "bl"; // BH_INT8 + (BH_INT64 << 4)
+        case 86: return "Bl"; // BH_UINT8 + (BH_INT64 << 4)
+        case 83: return "sl"; // BH_INT16 + (BH_INT64 << 4)
+        case 87: return "Sl"; // BH_UINT16 + (BH_INT64 << 4)
+        case 84: return "il"; // BH_INT32 + (BH_INT64 << 4)
+        case 88: return "Il"; // BH_UINT32 + (BH_INT64 << 4)
+        case 89: return "Ll"; // BH_UINT64 + (BH_INT64 << 4)
+        case 91: return "fl"; // BH_FLOAT32 + (BH_INT64 << 4)
+        case 92: return "dl"; // BH_FLOAT64 + (BH_INT64 << 4)
+        case 129: return "zI"; // BH_BOOL + (BH_UINT32 << 4)
+        case 130: return "bI"; // BH_INT8 + (BH_UINT32 << 4)
+        case 134: return "BI"; // BH_UINT8 + (BH_UINT32 << 4)
+        case 131: return "sI"; // BH_INT16 + (BH_UINT32 << 4)
+        case 135: return "SI"; // BH_UINT16 + (BH_UINT32 << 4)
+        case 132: return "iI"; // BH_INT32 + (BH_UINT32 << 4)
+        case 133: return "lI"; // BH_INT64 + (BH_UINT32 << 4)
+        case 137: return "LI"; // BH_UINT64 + (BH_UINT32 << 4)
+        case 139: return "fI"; // BH_FLOAT32 + (BH_UINT32 << 4)
+        case 140: return "dI"; // BH_FLOAT64 + (BH_UINT32 << 4)
+        case 29: return "cz"; // BH_COMPLEX64 + (BH_BOOL << 4)
+        case 30: return "Cz"; // BH_COMPLEX128 + (BH_BOOL << 4)
+        case 45: return "cb"; // BH_COMPLEX64 + (BH_INT8 << 4)
+        case 46: return "Cb"; // BH_COMPLEX128 + (BH_INT8 << 4)
+        case 109: return "cB"; // BH_COMPLEX64 + (BH_UINT8 << 4)
+        case 110: return "CB"; // BH_COMPLEX128 + (BH_UINT8 << 4)
+        case 61: return "cs"; // BH_COMPLEX64 + (BH_INT16 << 4)
+        case 62: return "Cs"; // BH_COMPLEX128 + (BH_INT16 << 4)
+        case 125: return "cS"; // BH_COMPLEX64 + (BH_UINT16 << 4)
+        case 126: return "CS"; // BH_COMPLEX128 + (BH_UINT16 << 4)
+        case 77: return "ci"; // BH_COMPLEX64 + (BH_INT32 << 4)
+        case 78: return "Ci"; // BH_COMPLEX128 + (BH_INT32 << 4)
+        case 141: return "cI"; // BH_COMPLEX64 + (BH_UINT32 << 4)
+        case 142: return "CI"; // BH_COMPLEX128 + (BH_UINT32 << 4)
+        case 93: return "cl"; // BH_COMPLEX64 + (BH_INT64 << 4)
+        case 94: return "Cl"; // BH_COMPLEX128 + (BH_INT64 << 4)
+        case 157: return "cL"; // BH_COMPLEX64 + (BH_UINT64 << 4)
+        case 158: return "CL"; // BH_COMPLEX128 + (BH_UINT64 << 4)
+        case 189: return "cf"; // BH_COMPLEX64 + (BH_FLOAT32 << 4)
+        case 190: return "Cf"; // BH_COMPLEX128 + (BH_FLOAT32 << 4)
+        case 205: return "cd"; // BH_COMPLEX64 + (BH_FLOAT64 << 4)
+        case 206: return "Cd"; // BH_COMPLEX128 + (BH_FLOAT64 << 4)
+        case 222: return "Cc"; // BH_COMPLEX128 + (BH_COMPLEX64 << 4)
+        case 237: return "cC"; // BH_COMPLEX64 + (BH_COMPLEX128 << 4)
+        default:
+            printf("Err: Unsupported type signature %d.\n", typesig);
+            return "_UNS_";
+    }
 }
 
 const char* bhtypestr_to_shorthand(const char* type_str)
