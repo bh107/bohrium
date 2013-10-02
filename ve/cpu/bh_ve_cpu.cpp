@@ -50,6 +50,7 @@ static bh_intp nselect_impl_id = 0;
 static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
 static bh_intp do_jit  = 1;
+static bh_intp dump_src = 0;
 
 static char* compiler_cmd;   // cpu Arguments
 static char* kernel_path;
@@ -125,6 +126,15 @@ bh_error bh_ve_cpu_init(bh_component *self)
     }
     if (!((0==do_fuse) || (1==do_fuse))) {
          fprintf(stderr, "BH_VE_CPU_DOFUSE (%ld) should 0 or 1.\n", (long int)vcache_size);
+        return BH_ERROR;   
+    }
+
+    env = getenv("BH_VE_CPU_DUMPSRC");
+    if (NULL != env) {
+        dump_src = atoi(env);
+    }
+    if (!((0==dump_src) || (1==dump_src))) {
+         fprintf(stderr, "BH_VE_CPU_DUMPSRC (%ld) should 0 or 1.\n", (long int)vcache_size);
         return BH_ERROR;   
     }
 
@@ -240,8 +250,9 @@ std::string specialize(bh_sij_t &sij) {
     bool cres = false;
 
     ctemplate::TemplateDictionary dict("codegen");
-    dict.ShowSection("license");
     dict.ShowSection("include");
+
+    //dict.ShowSection("license");
 
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
 
@@ -423,7 +434,6 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     for(bh_intp i=0; i<bhir->ninstr; ++i) {
 
         bh_random_type *random_args;
-        //bh_instruction *instr;
         bh_sij_t        sij;
 
         #ifdef PROFILE
@@ -434,8 +444,11 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         symbolize(&bhir->instr_list[i], sij);           // Grab the symbol / IR-HASH
         if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
-            std::string sourcecode = specialize(sij);             // Send to specializer
-            target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size()); // Send to compiler / cache
+            std::string sourcecode = specialize(sij);   // Specialize sourcecode
+            if (dump_src==1) {                          // Dump sourcecode to file
+                target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
+            }                                           // Send to compiler / cache
+            target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size()); 
         }
         if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {    // Load
             return BH_ERROR;
