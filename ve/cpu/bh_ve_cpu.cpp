@@ -58,6 +58,15 @@ static char* template_path;
 
 process* target;
 
+typedef struct bh_sij {     
+    bh_instruction *instr;  // Pointer to instruction
+    int64_t ndims;          // Number of dimensions
+    int lmask;              // Layout mask
+    int tsig;               // Type signature
+
+    std::string symbol;     // String representation
+} bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
+
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
@@ -137,42 +146,40 @@ bh_error bh_ve_cpu_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-std::string symbolize(bh_instruction *instr) {
+void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 
-    bh_random_type *random_args;    // Nescesarry evil!
-
-    char symbol_c[500];
+    char symbol_c[500];             // String representation buffers
     char dims_str[10];
-    int64_t dims;   // Number of dimensions
-    int lmask;      // Layout mask
-    int tsig;       // Type signature 
 
-    switch (instr->opcode) {                    // [OPCODE_SWITCH]
+    bh_random_type *random_args;    // Nescesarry evil! Until random becomes
+                                    // an opcode and not an extension
 
-        case BH_NONE:                           // NOOP.
+    sij.instr = instr;
+    switch (sij.instr->opcode) {                    // [OPCODE_SWITCH]
+
+        case BH_NONE:                           // System opcodes
         case BH_DISCARD:
         case BH_SYNC:
-        case BH_FREE:                           // Store data-pointer in malloc-cache
-            //printf("Err: Could not symbolize SYSTEM instruction.\n");
-            //return "_UNS_";
-            return "";
+        case BH_FREE:
+            break;
 
-        case BH_USERFUNC:
+        case BH_USERFUNC:                       // Extensions
 
-            if (instr->userfunc->id == random_impl_id) {
-                random_args = (bh_random_type*)instr->userfunc;
+            if (sij.instr->userfunc->id == random_impl_id) {
+                random_args = (bh_random_type*)sij.instr->userfunc;
                 sprintf(
                     symbol_c,
                     "BH_RANDOM_D_%s",
                     bhtype_to_shorthand(random_args->operand[0].base->type)
                 );
-                return std::string(symbol_c);
-            } 
-            //printf("Err: Could not symbolize USERFUNC instruction.\n");
-            //return "_UNS_";
-            return "";
 
-        case BH_ADD_REDUCE:                     // Partial Reductions
+                sij.symbol = std::string(symbol_c);
+                sij.tsig   = random_args->operand[0].base->type+1;
+                sij.ndims  = 1;
+            }
+            break;
+
+        case BH_ADD_REDUCE:                             // Reductions
         case BH_MULTIPLY_REDUCE:
         case BH_MINIMUM_REDUCE:
         case BH_MAXIMUM_REDUCE:
@@ -182,102 +189,66 @@ std::string symbolize(bh_instruction *instr) {
         case BH_LOGICAL_XOR_REDUCE:
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
+            sij.ndims = sij.instr->operand[1].ndim;     // Dimensions
+            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
+            sij.tsig  = bh_typesig(sij.instr);          // Type signature
 
-        case BH_ADD:                            // Binary Element-wise
-        case BH_SUBTRACT:
-        case BH_MULTIPLY:
-        case BH_DIVIDE:
-        case BH_POWER:
-        case BH_GREATER:
-        case BH_GREATER_EQUAL:
-        case BH_LESS:
-        case BH_LESS_EQUAL:
-        case BH_EQUAL:
-        case BH_NOT_EQUAL:
-        case BH_LOGICAL_AND:
-        case BH_LOGICAL_OR:
-        case BH_LOGICAL_XOR:
-        case BH_MAXIMUM:
-        case BH_MINIMUM:
-        case BH_BITWISE_AND:
-        case BH_BITWISE_OR:
-        case BH_BITWISE_XOR:
-        case BH_LEFT_SHIFT:
-        case BH_RIGHT_SHIFT:
-        case BH_ARCTAN2:
-        case BH_MOD:
-        
-        case BH_ABSOLUTE:                       // Unary Element-wise
-        case BH_LOGICAL_NOT:
-        case BH_INVERT:
-        case BH_COS:
-        case BH_SIN:
-        case BH_TAN:
-        case BH_COSH:
-        case BH_SINH:
-        case BH_TANH:
-        case BH_ARCSIN:
-        case BH_ARCCOS:
-        case BH_ARCTAN:
-        case BH_ARCSINH:
-        case BH_ARCCOSH:
-        case BH_ARCTANH:
-        case BH_EXP:
-        case BH_EXP2:
-        case BH_EXPM1:
-        case BH_LOG:
-        case BH_LOG2:
-        case BH_LOG10:
-        case BH_LOG1P:
-        case BH_SQRT:
-        case BH_CEIL:
-        case BH_TRUNC:
-        case BH_FLOOR:
-        case BH_RINT:
-        case BH_ISNAN:
-        case BH_ISINF:
-        case BH_IDENTITY:
-
-            dims = instr->operand[0].ndim;
-            if (dims <= 3) {
-                sprintf(dims_str, "%ldD", dims);
+            if (sij.ndims <= 3) {                       // String representation
+                sprintf(dims_str, "%ldD", sij.ndims);
             } else {
                 sprintf(dims_str, "ND");
             }
-            lmask   = bh_layoutmask(instr);
-            tsig    = bh_typesig(instr);
             sprintf(symbol_c, "%s_%s_%s_%s",
-                bh_opcode_text(instr->opcode),
+                bh_opcode_text(sij.instr->opcode),
                 dims_str,
-                bh_layoutmask_to_shorthand(lmask),
-                bh_typesig_to_shorthand(tsig)
+                bh_layoutmask_to_shorthand(sij.lmask),
+                bh_typesig_to_shorthand(sij.tsig)
             );
-            return std::string(symbol_c);
 
-        default:
-            return "";
+            sij.symbol = std::string(symbol_c);
+            break;
+
+        default:                                        // Built-in
+
+            sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
+            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
+            sij.tsig  = bh_typesig(sij.instr);          // Type signature
+
+            if (sij.ndims <= 3) {                       // String representation
+                sprintf(dims_str, "%ldD", sij.ndims);
+            } else {
+                sprintf(dims_str, "ND");
+            }
+            sprintf(symbol_c, "%s_%s_%s_%s",
+                bh_opcode_text(sij.instr->opcode),
+                dims_str,
+                bh_layoutmask_to_shorthand(sij.lmask),
+                bh_typesig_to_shorthand(sij.tsig)
+            );
+
+            sij.symbol = std::string(symbol_c);
+            break;
     }
 }
 
-std::string specialize(std::string symbol, bh_instruction *instr) {
+std::string specialize(bh_sij_t &sij) {
 
     bh_random_type *random_args;
     
     char template_fn[500];   // NOTE: constants like these are often traumatizing!
 
-    int64_t dims = instr->operand[0].ndim;  // Reductions overwrite this
     bool cres = false;
 
     ctemplate::TemplateDictionary dict("codegen");
     dict.ShowSection("license");
     dict.ShowSection("include");
-    
-    switch (instr->opcode) {                    // OPCODE_SWITCH
+
+    switch (sij.instr->opcode) {                    // OPCODE_SWITCH
 
         case BH_USERFUNC:                       // Extensions
-            if (instr->userfunc->id == random_impl_id) {
-                random_args = (bh_random_type*)instr->userfunc;
-                dict.SetValue("SYMBOL",     symbol);
+            if (sij.instr->userfunc->id == random_impl_id) {
+                random_args = (bh_random_type*)sij.instr->userfunc;
+                dict.SetValue("SYMBOL",     sij.symbol);
                 dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
                 dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
                 sprintf(template_fn, "%s/random.tpl", template_path);
@@ -297,14 +268,13 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
-            dict.SetValue("SYMBOL", symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("SYMBOL", sij.symbol);
+            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
 
-            dims = instr->operand[1].ndim;
-            if (dims <= 3) {
-                sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, dims);
+            if (sij.ndims <= 3) {
+                sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, sij.ndims);
             } else {
                 sprintf(template_fn, "%s/reduction.nd.tpl", template_path);
             }
@@ -336,33 +306,33 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
         case BH_ARCTAN2:
         case BH_MOD:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.ShowSection("binary");
-            if (bh_is_constant(&instr->operand[2])) {
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->constant.type));
+            if (bh_is_constant(&sij.instr->operand[2])) {
+                dict.SetValue("SYMBOL", sij.symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->constant.type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_scalar");
-            } else if (bh_is_constant(&instr->operand[1])) {
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
+            } else if (bh_is_constant(&sij.instr->operand[1])) {
+                dict.SetValue("SYMBOL", sij.symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_scalar");
                 dict.ShowSection("a2_dense");
             } else {
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(instr->operand[2].base->type));
+                dict.SetValue("SYMBOL", sij.symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_dense");
 
             }
-            if (dims<=3) {
-                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, dims);
+            if (sij.ndims<=3) {
+                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
             } else {
                 sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
             }
@@ -401,21 +371,21 @@ std::string specialize(std::string symbol, bh_instruction *instr) {
         case BH_ISINF:
         case BH_IDENTITY:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.ShowSection("unary");
-            if (bh_is_constant(&instr->operand[1])) {
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->constant.type));
+            if (bh_is_constant(&sij.instr->operand[1])) {
+                dict.SetValue("SYMBOL", sij.symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
                 dict.ShowSection("a1_scalar");
             } else {
-                dict.SetValue("SYMBOL", symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(instr->operand[1].base->type));
+                dict.SetValue("SYMBOL", sij.symbol);
+                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
                 dict.ShowSection("a1_dense");
             } 
-            if (dims<=3) {
-                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, dims);
+            if (sij.ndims<=3) {
+                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
             } else {
                 sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
             }
@@ -448,13 +418,13 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     bh_uint64 t_begin, t_end, m_begin, m_end;
     #endif
 
-    bh_instruction *instr;
     bh_error res = BH_SUCCESS;
 
     for(bh_intp i=0; i<bhir->ninstr; ++i) {
-        instr = &bhir->instr_list[i];
 
         bh_random_type *random_args;
+        //bh_instruction *instr;
+        bh_sij_t        sij;
 
         #ifdef PROFILE
         t_begin = _bh_timing();
@@ -462,23 +432,22 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         t_end=0, m_end=0;
         #endif
 
-        std::string symbol = symbolize(instr);           // Grab the symbol / IR-HASH
-
-        if (do_jit && (symbol!="") && (!target->symbol_ready(symbol))) {
-            std::string sourcecode = specialize(symbol, instr);             // Send to specializer
-            target->compile(symbol, sourcecode.c_str(), sourcecode.size()); // Send to compiler / cache
+        symbolize(&bhir->instr_list[i], sij);           // Grab the symbol / IR-HASH
+        if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
+            std::string sourcecode = specialize(sij);             // Send to specializer
+            target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size()); // Send to compiler / cache
         }
-        if ((symbol!="") && !target->load(symbol, symbol)) {    // Load
+        if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {    // Load
             return BH_ERROR;
         }
-        res = bh_vcache_malloc(instr);                          // Allocate memory for operands
+        res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_cpu_execute()\n");
             return res;
         }
 
-        switch (instr->opcode) {    // OPCODE_SWITCH
+        switch (sij.instr->opcode) {    // OPCODE_SWITCH
 
             case BH_NONE:                           // NOOP.
             case BH_DISCARD:
@@ -487,13 +456,13 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 break;
 
             case BH_FREE:                           // Store data-pointer in malloc-cache
-                res = bh_vcache_free(instr);
+                res = bh_vcache_free(sij.instr);
                 break;
 
             case BH_USERFUNC:
-                if (instr->userfunc->id == random_impl_id) { // RANDOM!
+                if (sij.instr->userfunc->id == random_impl_id) { // RANDOM!
 
-                    random_args = (bh_random_type*)instr->userfunc;
+                    random_args = (bh_random_type*)sij.instr->userfunc;
                     #ifdef PROFILE
                     m_begin = _bh_timing();
                     #endif
@@ -507,16 +476,16 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     #endif
 
                     // De-assemble the RANDOM_UFUNC     // CALL
-                    target->funcs[symbol](0,
+                    target->funcs[sij.symbol](0,
                         bh_base_array(&random_args->operand[0])->data,
                         bh_nelements(random_args->operand[0].ndim, random_args->operand[0].shape)
                     );
                     res = BH_SUCCESS;
 
-                } else if(instr->userfunc->id == matmul_impl_id) {
-                    res = matmul_impl(instr->userfunc, NULL);
-                } else if(instr->userfunc->id == nselect_impl_id) {
-                    res = nselect_impl(instr->userfunc, NULL);
+                } else if(sij.instr->userfunc->id == matmul_impl_id) {
+                    res = matmul_impl(sij.instr->userfunc, NULL);
+                } else if(sij.instr->userfunc->id == nselect_impl_id) {
+                    res = nselect_impl(sij.instr->userfunc, NULL);
                 } else {                            // Unsupported userfunc
                     res = BH_USERFUNC_NOT_SUPPORTED;
                 }
@@ -534,20 +503,20 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
 
-                target->funcs[symbol](0,
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&sij.instr->operand[0])->data,
+                    sij.instr->operand[0].start,
+                    sij.instr->operand[0].stride,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
 
-                    bh_base_array(&instr->operand[1])->data,
-                    instr->operand[1].start,
-                    instr->operand[1].stride,
-                    instr->operand[1].shape,
-                    instr->operand[1].ndim,
+                    bh_base_array(&sij.instr->operand[1])->data,
+                    sij.instr->operand[1].start,
+                    sij.instr->operand[1].stride,
+                    sij.instr->operand[1].shape,
+                    sij.instr->operand[1].ndim,
 
-                    instr->constant.value
+                    sij.instr->constant.value
                 );
                 res = BH_SUCCESS;
                 break;
@@ -576,52 +545,52 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             case BH_ARCTAN2:
             case BH_MOD:
 
-                if (bh_is_constant(&instr->operand[2])) {         // DDC
-                    target->funcs[symbol](0,
-                        bh_base_array(&instr->operand[0])->data,
-                        instr->operand[0].start,
-                        instr->operand[0].stride,
+                if (bh_is_constant(&sij.instr->operand[2])) {         // DDC
+                    target->funcs[sij.symbol](0,
+                        bh_base_array(&sij.instr->operand[0])->data,
+                        sij.instr->operand[0].start,
+                        sij.instr->operand[0].stride,
 
-                        bh_base_array(&instr->operand[1])->data,
-                        instr->operand[1].start,
-                        instr->operand[1].stride,
+                        bh_base_array(&sij.instr->operand[1])->data,
+                        sij.instr->operand[1].start,
+                        sij.instr->operand[1].stride,
 
-                        &(instr->constant.value),
+                        &(sij.instr->constant.value),
 
-                        instr->operand[0].shape,
-                        instr->operand[0].ndim
+                        sij.instr->operand[0].shape,
+                        sij.instr->operand[0].ndim
                     );
-                } else if (bh_is_constant(&instr->operand[1])) {  // DCD
-                    target->funcs[symbol](0,
-                        bh_base_array(&instr->operand[0])->data,
-                        instr->operand[0].start,
-                        instr->operand[0].stride,
+                } else if (bh_is_constant(&sij.instr->operand[1])) {  // DCD
+                    target->funcs[sij.symbol](0,
+                        bh_base_array(&sij.instr->operand[0])->data,
+                        sij.instr->operand[0].start,
+                        sij.instr->operand[0].stride,
 
-                        &(instr->constant.value),
+                        &(sij.instr->constant.value),
 
-                        bh_base_array(&instr->operand[2])->data,
-                        instr->operand[2].start,
-                        instr->operand[2].stride,
+                        bh_base_array(&sij.instr->operand[2])->data,
+                        sij.instr->operand[2].start,
+                        sij.instr->operand[2].stride,
 
-                        instr->operand[0].shape,
-                        instr->operand[0].ndim
+                        sij.instr->operand[0].shape,
+                        sij.instr->operand[0].ndim
                     );
                 } else {                                        // DDD
-                    target->funcs[symbol](0,
-                        bh_base_array(&instr->operand[0])->data,
-                        instr->operand[0].start,
-                        instr->operand[0].stride,
+                    target->funcs[sij.symbol](0,
+                        bh_base_array(&sij.instr->operand[0])->data,
+                        sij.instr->operand[0].start,
+                        sij.instr->operand[0].stride,
 
-                        bh_base_array(&instr->operand[1])->data,
-                        instr->operand[1].start,
-                        instr->operand[1].stride,
+                        bh_base_array(&sij.instr->operand[1])->data,
+                        sij.instr->operand[1].start,
+                        sij.instr->operand[1].stride,
 
-                        bh_base_array(&instr->operand[2])->data,
-                        instr->operand[2].start,
-                        instr->operand[2].stride,
+                        bh_base_array(&sij.instr->operand[2])->data,
+                        sij.instr->operand[2].start,
+                        sij.instr->operand[2].stride,
 
-                        instr->operand[0].shape,
-                        instr->operand[0].ndim
+                        sij.instr->operand[0].shape,
+                        sij.instr->operand[0].ndim
                     );
                 }
 
@@ -659,29 +628,29 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             case BH_ISINF:
             case BH_IDENTITY:
             
-                if (bh_is_constant(&instr->operand[1])) {
-                    target->funcs[symbol](0,
-                        bh_base_array(&instr->operand[0])->data,
-                        instr->operand[0].start,
-                        instr->operand[0].stride,
+                if (bh_is_constant(&sij.instr->operand[1])) {
+                    target->funcs[sij.symbol](0,
+                        bh_base_array(&sij.instr->operand[0])->data,
+                        sij.instr->operand[0].start,
+                        sij.instr->operand[0].stride,
 
-                        &(instr->constant.value),
+                        &(sij.instr->constant.value),
 
-                        instr->operand[0].shape,
-                        instr->operand[0].ndim
+                        sij.instr->operand[0].shape,
+                        sij.instr->operand[0].ndim
                     );
                 } else {
-                    target->funcs[symbol](0,
-                        bh_base_array(&instr->operand[0])->data,
-                        instr->operand[0].start,
-                        instr->operand[0].stride,
+                    target->funcs[sij.symbol](0,
+                        bh_base_array(&sij.instr->operand[0])->data,
+                        sij.instr->operand[0].start,
+                        sij.instr->operand[0].stride,
 
-                        bh_base_array(&instr->operand[1])->data,
-                        instr->operand[1].start,
-                        instr->operand[1].stride,
+                        bh_base_array(&sij.instr->operand[1])->data,
+                        sij.instr->operand[1].start,
+                        sij.instr->operand[1].stride,
 
-                        instr->operand[0].shape,
-                        instr->operand[0].ndim
+                        sij.instr->operand[0].shape,
+                        sij.instr->operand[0].ndim
                     );
                 }
                 res = BH_SUCCESS;
@@ -703,8 +672,8 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         }
         #ifdef PROFILE
         t_end = _bh_timing();
-        times[instr->opcode] += (t_end-t_begin)+ (m_end-m_begin);
-        ++calls[instr->opcode];
+        times[sij.instr->opcode] += (t_end-t_begin)+ (m_end-m_begin);
+        ++calls[sij.instr->opcode];
         #endif
     }
 
@@ -718,7 +687,7 @@ bh_error bh_ve_cpu_shutdown(void)
         bh_vcache_delete();
     }
 
-    delete target;
+    delete target;  // De-allocate code-generator
 
     #ifdef PROFILE
     bh_uint64 sum = 0;
