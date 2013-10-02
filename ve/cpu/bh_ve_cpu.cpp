@@ -32,6 +32,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ve_cpu.h"
 #include "compiler.cpp"
 
+using namespace std;
+
 // Execution Profile
 
 #ifdef PROFILE
@@ -65,7 +67,7 @@ typedef struct bh_sij {
     int lmask;              // Layout mask
     int tsig;               // Type signature
 
-    std::string symbol;     // String representation
+    string symbol;     // String representation
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
@@ -78,7 +80,7 @@ void bh_string_option(char *&option, const char *env_name, const char *conf_name
 
     if (!option) {
         sprintf(err_msg, "Err: String is not set; option (%s).\n", conf_name);
-        throw std::runtime_error(err_msg);
+        throw runtime_error(err_msg);
     }
 }
 
@@ -92,7 +94,7 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 
     if (!option) {
         sprintf(err_msg, "Err: Path is not set; option (%s).\n", conf_name);
-        throw std::runtime_error(err_msg);
+        throw runtime_error(err_msg);
     }
     if (0 != access(option, F_OK)) {
         if (ENOENT == errno) {
@@ -102,7 +104,7 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
         } else {
             sprintf(err_msg, "Err: Path is broken somehow; path (%s).\n", option);
         }
-        throw std::runtime_error(err_msg);
+        throw runtime_error(err_msg);
     }
 }
 
@@ -183,7 +185,7 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
                     bhtype_to_shorthand(random_args->operand[0].base->type)
                 );
 
-                sij.symbol = std::string(symbol_c);
+                sij.symbol = string(symbol_c);
                 sij.tsig   = random_args->operand[0].base->type+1;
                 sij.ndims  = 1;
             }
@@ -215,7 +217,7 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
                 bh_typesig_to_shorthand(sij.tsig)
             );
 
-            sij.symbol = std::string(symbol_c);
+            sij.symbol = string(symbol_c);
             break;
 
         default:                                        // Built-in
@@ -236,12 +238,12 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
                 bh_typesig_to_shorthand(sij.tsig)
             );
 
-            sij.symbol = std::string(symbol_c);
+            sij.symbol = string(symbol_c);
             break;
     }
 }
 
-std::string specialize(bh_sij_t &sij) {
+string specialize(bh_sij_t &sij) {
 
     bh_random_type *random_args;
     
@@ -251,7 +253,6 @@ std::string specialize(bh_sij_t &sij) {
 
     ctemplate::TemplateDictionary dict("codegen");
     dict.ShowSection("include");
-
     //dict.ShowSection("license");
 
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
@@ -318,15 +319,14 @@ std::string specialize(bh_sij_t &sij) {
         case BH_MOD:
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            dict.ShowSection("binary");
-            if (bh_is_constant(&sij.instr->operand[2])) {
+            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
                 dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
                 dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
                 dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->constant.type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_scalar");
-            } else if (bh_is_constant(&sij.instr->operand[1])) {
+            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
                 dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
                 dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
@@ -342,10 +342,16 @@ std::string specialize(bh_sij_t &sij) {
                 dict.ShowSection("a2_dense");
 
             }
-            if (sij.ndims<=3) {
-                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
+            if ((sij.lmask == (A0_DENSE + A1_DENSE    + A2_DENSE)) || \
+                (sij.lmask == (A0_DENSE + A1_CONSTANT + A2_DENSE)) || \
+                (sij.lmask == (A0_DENSE + A1_DENSE    + A2_CONSTANT))) {
+                sprintf(template_fn, "%s/traverse.nd.ddd.tpl", template_path);
             } else {
-                sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+                if (sij.ndims<=3) {
+                    sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
+                } else {
+                    sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+                }
             }
 
             cres = true;
@@ -383,8 +389,7 @@ std::string specialize(bh_sij_t &sij) {
         case BH_IDENTITY:
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            dict.ShowSection("unary");
-            if (bh_is_constant(&sij.instr->operand[1])) {
+            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
                 dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
                 dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
@@ -395,10 +400,18 @@ std::string specialize(bh_sij_t &sij) {
                 dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
                 dict.ShowSection("a1_dense");
             } 
-            if (sij.ndims<=3) {
-                sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
+
+            if ((sij.lmask == (A0_DENSE + A1_DENSE)) || \
+                (sij.lmask == (A0_DENSE + A1_CONSTANT))) {
+                sprintf(template_fn, "%s/traverse.nd.ddd.tpl", template_path);
             } else {
-                sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+
+                if (sij.ndims<=3) {
+                    sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
+                } else {
+                    sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
+                }
+
             }
 
             cres = true;
@@ -409,10 +422,10 @@ std::string specialize(bh_sij_t &sij) {
     }
 
     if (!cres) {
-        throw std::runtime_error("cpu: Failed specializing code.");
+        throw runtime_error("cpu: Failed specializing code.");
     }
 
-    std::string sourcecode = "";
+    string sourcecode = "";
     ctemplate::ExpandTemplate(
         template_fn,
         ctemplate::STRIP_BLANK_LINES,
@@ -442,15 +455,17 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         t_end=0, m_end=0;
         #endif
 
-        symbolize(&bhir->instr_list[i], sij);           // Grab the symbol / IR-HASH
+        symbolize(&bhir->instr_list[i], sij);           // Construct symbol
         if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
-            std::string sourcecode = specialize(sij);   // Specialize sourcecode
+
+            string sourcecode = specialize(sij);   // Specialize sourcecode
             if (dump_src==1) {                          // Dump sourcecode to file
                 target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
-            }                                           // Send to compiler / cache
+            }                                           // Send to code generator
             target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size()); 
         }
-        if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {    // Load
+        
+        if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
             return BH_ERROR;
         }
         res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
@@ -462,7 +477,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         switch (sij.instr->opcode) {    // OPCODE_SWITCH
 
-            case BH_NONE:                           // NOOP.
+            case BH_NONE:               // NOOP.
             case BH_DISCARD:
             case BH_SYNC:
                 res = BH_SUCCESS;
@@ -480,7 +495,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     m_begin = _bh_timing();
                     #endif
                     if (BH_SUCCESS != bh_vcache_malloc_op(&random_args->operand[0])) {
-                        std::cout << "SHIT HIT THE FAN" << std::endl;
+                        cout << "SHIT HIT THE FAN" << endl;
                     }
                     #ifdef PROFILE
                     m_end = _bh_timing();
@@ -558,7 +573,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             case BH_ARCTAN2:
             case BH_MOD:
 
-                if (bh_is_constant(&sij.instr->operand[2])) {         // DDC
+                if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
                     target->funcs[sij.symbol](0,
                         bh_base_array(&sij.instr->operand[0])->data,
                         sij.instr->operand[0].start,
@@ -573,7 +588,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                         sij.instr->operand[0].shape,
                         sij.instr->operand[0].ndim
                     );
-                } else if (bh_is_constant(&sij.instr->operand[1])) {  // DCD
+                } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
                     target->funcs[sij.symbol](0,
                         bh_base_array(&sij.instr->operand[0])->data,
                         sij.instr->operand[0].start,
@@ -641,7 +656,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             case BH_ISINF:
             case BH_IDENTITY:
             
-                if (bh_is_constant(&sij.instr->operand[1])) {
+                if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                     target->funcs[sij.symbol](0,
                         bh_base_array(&sij.instr->operand[0])->data,
                         sij.instr->operand[0].start,
