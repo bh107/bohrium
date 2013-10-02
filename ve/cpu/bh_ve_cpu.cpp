@@ -125,7 +125,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
         do_fuse = atoi(env);
     }
     if (!((0==do_fuse) || (1==do_fuse))) {
-         fprintf(stderr, "BH_VE_CPU_DOFUSE (%ld) should 0 or 1.\n", (long int)vcache_size);
+        fprintf(stderr, "BH_VE_CPU_DOFUSE (%ld) should 0 or 1.\n", (long int)do_fuse);
         return BH_ERROR;   
     }
 
@@ -134,7 +134,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
         dump_src = atoi(env);
     }
     if (!((0==dump_src) || (1==dump_src))) {
-         fprintf(stderr, "BH_VE_CPU_DUMPSRC (%ld) should 0 or 1.\n", (long int)vcache_size);
+         fprintf(stderr, "BH_VE_CPU_DUMPSRC (%ld) should 0 or 1.\n", (long int)dump_src);
         return BH_ERROR;   
     }
 
