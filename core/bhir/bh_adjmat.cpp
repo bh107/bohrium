@@ -61,6 +61,9 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         const bh_view *ops = bh_inst_operands((bh_instruction *)inst);
         int nops = bh_operands_in_instruction(inst);
 
+        if(nops == 0)//Instruction does nothing.
+            continue;
+
         //Find the instructions that the i'th instruction depend on and insert them into
         //the sorted set 'deps'.
         std::set<bh_intp> deps;
