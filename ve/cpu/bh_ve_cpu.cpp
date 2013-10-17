@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <unistd.h>
 #include <inttypes.h>
-#include <ctemplate/template.h>  
+#include <ctemplate/template.h>
 #include <bh.h>
 #include <bh_vcache.h>
 #include "bh_ve_cpu.h"
@@ -61,7 +61,7 @@ static char* template_path;
 
 process* target;
 
-typedef struct bh_sij {     
+typedef struct bh_sij {
     bh_instruction *instr;  // Pointer to instruction
     int64_t ndims;          // Number of dimensions
     int lmask;              // Layout mask
@@ -128,7 +128,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
     }
     if (!((0==do_fuse) || (1==do_fuse))) {
         fprintf(stderr, "BH_VE_CPU_DOFUSE (%ld) should 0 or 1.\n", (long int)do_fuse);
-        return BH_ERROR;   
+        return BH_ERROR;
     }
 
     env = getenv("BH_VE_CPU_DUMPSRC");
@@ -137,7 +137,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
     }
     if (!((0==dump_src) || (1==dump_src))) {
          fprintf(stderr, "BH_VE_CPU_DUMPSRC (%ld) should 0 or 1.\n", (long int)dump_src);
-        return BH_ERROR;   
+        return BH_ERROR;
     }
 
     bh_vcache_init(vcache_size);
@@ -246,7 +246,7 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 string specialize(bh_sij_t &sij) {
 
     bh_random_type *random_args;
-    
+
     char template_fn[500];   // NOTE: constants like these are often traumatizing!
 
     bool cres = false;
@@ -266,9 +266,9 @@ string specialize(bh_sij_t &sij) {
                 sprintf(template_fn, "%s/random.tpl", template_path);
 
                 cres = true;
-            } 
+            }
             break;
-        
+
         case BH_ADD_REDUCE:
         case BH_MULTIPLY_REDUCE:
         case BH_MINIMUM_REDUCE:
@@ -399,7 +399,7 @@ string specialize(bh_sij_t &sij) {
                 dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
                 dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
                 dict.ShowSection("a1_dense");
-            } 
+            }
 
             if ((sij.lmask == (A0_DENSE + A1_DENSE)) || \
                 (sij.lmask == (A0_DENSE + A1_CONSTANT))) {
@@ -436,276 +436,267 @@ string specialize(bh_sij_t &sij) {
     return sourcecode;
 }
 
-bh_error bh_ve_cpu_execute(bh_ir* bhir)
+//Executes one instruction
+static bh_error exec(bh_instruction *instr)
 {
-    #ifdef PROFILE
-    bh_uint64 t_begin, t_end, m_begin, m_end;
-    #endif
-
+    bh_random_type *random_args;
+    bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
 
-    for(bh_intp i=0; i<bhir->ninstr; ++i) {
+    symbolize(instr, sij);           // Construct symbol
+    if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
 
-        bh_random_type *random_args;
-        bh_sij_t        sij;
+        string sourcecode = specialize(sij);   // Specialize sourcecode
+        if (dump_src==1) {                          // Dump sourcecode to file
+            target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
+        }                                           // Send to code generator
+        target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
+    }
 
-        #ifdef PROFILE
-        t_begin = _bh_timing();
-        m_begin = _bh_timing();
-        t_end=0, m_end=0;
-        #endif
+    if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
+        return BH_ERROR;
+    }
+    res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
+    if (BH_SUCCESS != res) {
+        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                        "called from bh_ve_cpu_execute()\n");
+        return res;
+    }
 
-        symbolize(&bhir->instr_list[i], sij);           // Construct symbol
-        if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
+    switch (sij.instr->opcode) {    // OPCODE_SWITCH
 
-            string sourcecode = specialize(sij);   // Specialize sourcecode
-            if (dump_src==1) {                          // Dump sourcecode to file
-                target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
-            }                                           // Send to code generator
-            target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size()); 
-        }
-        
-        if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
-            return BH_ERROR;
-        }
-        res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_execute()\n");
-            return res;
-        }
+        case BH_NONE:               // NOOP.
+        case BH_DISCARD:
+        case BH_SYNC:
+            res = BH_SUCCESS;
+            break;
 
-        switch (sij.instr->opcode) {    // OPCODE_SWITCH
+        case BH_FREE:                           // Store data-pointer in malloc-cache
+            res = bh_vcache_free(sij.instr);
+            break;
 
-            case BH_NONE:               // NOOP.
-            case BH_DISCARD:
-            case BH_SYNC:
-                res = BH_SUCCESS;
-                break;
+        case BH_USERFUNC:
+            if (sij.instr->userfunc->id == random_impl_id) { // RANDOM!
 
-            case BH_FREE:                           // Store data-pointer in malloc-cache
-                res = bh_vcache_free(sij.instr);
-                break;
-
-            case BH_USERFUNC:
-                if (sij.instr->userfunc->id == random_impl_id) { // RANDOM!
-
-                    random_args = (bh_random_type*)sij.instr->userfunc;
-                    #ifdef PROFILE
-                    m_begin = _bh_timing();
-                    #endif
-                    if (BH_SUCCESS != bh_vcache_malloc_op(&random_args->operand[0])) {
-                        cout << "SHIT HIT THE FAN" << endl;
-                    }
-                    #ifdef PROFILE
-                    m_end = _bh_timing();
-                    times[BH_NO_OPCODES] += m_end-m_begin;
-                    ++calls[BH_NO_OPCODES];
-                    #endif
-
-                    // De-assemble the RANDOM_UFUNC     // CALL
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&random_args->operand[0])->data,
-                        bh_nelements(random_args->operand[0].ndim, random_args->operand[0].shape)
-                    );
-                    res = BH_SUCCESS;
-
-                } else if(sij.instr->userfunc->id == matmul_impl_id) {
-                    res = matmul_impl(sij.instr->userfunc, NULL);
-                } else if(sij.instr->userfunc->id == nselect_impl_id) {
-                    res = nselect_impl(sij.instr->userfunc, NULL);
-                } else {                            // Unsupported userfunc
-                    res = BH_USERFUNC_NOT_SUPPORTED;
+                random_args = (bh_random_type*)sij.instr->userfunc;
+                if (BH_SUCCESS != bh_vcache_malloc_op(&random_args->operand[0])) {
+                    cout << "SHIT HIT THE FAN" << endl;
                 }
 
-                break;
+                // De-assemble the RANDOM_UFUNC     // CALL
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&random_args->operand[0])->data,
+                    bh_nelements(random_args->operand[0].ndim, random_args->operand[0].shape)
+                );
+                res = BH_SUCCESS;
 
-            case BH_ADD_REDUCE:                     // Partial Reductions
-            case BH_MULTIPLY_REDUCE:
-            case BH_MINIMUM_REDUCE:
-            case BH_MAXIMUM_REDUCE:
-            case BH_LOGICAL_AND_REDUCE:
-            case BH_BITWISE_AND_REDUCE:
-            case BH_LOGICAL_OR_REDUCE:
-            case BH_LOGICAL_XOR_REDUCE:
-            case BH_BITWISE_OR_REDUCE:
-            case BH_BITWISE_XOR_REDUCE:
+            } else if(sij.instr->userfunc->id == matmul_impl_id) {
+                res = matmul_impl(sij.instr->userfunc, NULL);
+            } else if(sij.instr->userfunc->id == nselect_impl_id) {
+                res = nselect_impl(sij.instr->userfunc, NULL);
+            } else {                            // Unsupported userfunc
+                res = BH_USERFUNC_NOT_SUPPORTED;
+            }
 
+            break;
+
+        case BH_ADD_REDUCE:                     // Partial Reductions
+        case BH_MULTIPLY_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+
+            target->funcs[sij.symbol](0,
+                bh_base_array(&sij.instr->operand[0])->data,
+                sij.instr->operand[0].start,
+                sij.instr->operand[0].stride,
+                sij.instr->operand[0].shape,
+                sij.instr->operand[0].ndim,
+
+                bh_base_array(&sij.instr->operand[1])->data,
+                sij.instr->operand[1].start,
+                sij.instr->operand[1].stride,
+                sij.instr->operand[1].shape,
+                sij.instr->operand[1].ndim,
+
+                sij.instr->constant.value
+            );
+            res = BH_SUCCESS;
+            break;
+
+        case BH_ADD:
+        case BH_SUBTRACT:
+        case BH_MULTIPLY:
+        case BH_DIVIDE:
+        case BH_POWER:
+        case BH_GREATER:
+        case BH_GREATER_EQUAL:
+        case BH_LESS:
+        case BH_LESS_EQUAL:
+        case BH_EQUAL:
+        case BH_NOT_EQUAL:
+        case BH_LOGICAL_AND:
+        case BH_LOGICAL_OR:
+        case BH_LOGICAL_XOR:
+        case BH_MAXIMUM:
+        case BH_MINIMUM:
+        case BH_BITWISE_AND:
+        case BH_BITWISE_OR:
+        case BH_BITWISE_XOR:
+        case BH_LEFT_SHIFT:
+        case BH_RIGHT_SHIFT:
+        case BH_ARCTAN2:
+        case BH_MOD:
+
+            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
                 target->funcs[sij.symbol](0,
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
 
                     bh_base_array(&sij.instr->operand[1])->data,
                     sij.instr->operand[1].start,
                     sij.instr->operand[1].stride,
-                    sij.instr->operand[1].shape,
-                    sij.instr->operand[1].ndim,
 
-                    sij.instr->constant.value
+                    &(sij.instr->constant.value),
+
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim
                 );
-                res = BH_SUCCESS;
-                break;
+            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&sij.instr->operand[0])->data,
+                    sij.instr->operand[0].start,
+                    sij.instr->operand[0].stride,
 
-            case BH_ADD:
-            case BH_SUBTRACT:
-            case BH_MULTIPLY:
-            case BH_DIVIDE:
-            case BH_POWER:
-            case BH_GREATER:
-            case BH_GREATER_EQUAL:
-            case BH_LESS:
-            case BH_LESS_EQUAL:
-            case BH_EQUAL:
-            case BH_NOT_EQUAL:
-            case BH_LOGICAL_AND:
-            case BH_LOGICAL_OR:
-            case BH_LOGICAL_XOR:
-            case BH_MAXIMUM:
-            case BH_MINIMUM:
-            case BH_BITWISE_AND:
-            case BH_BITWISE_OR:
-            case BH_BITWISE_XOR:
-            case BH_LEFT_SHIFT:
-            case BH_RIGHT_SHIFT:
-            case BH_ARCTAN2:
-            case BH_MOD:
+                    &(sij.instr->constant.value),
 
-                if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&sij.instr->operand[0])->data,
-                        sij.instr->operand[0].start,
-                        sij.instr->operand[0].stride,
+                    bh_base_array(&sij.instr->operand[2])->data,
+                    sij.instr->operand[2].start,
+                    sij.instr->operand[2].stride,
 
-                        bh_base_array(&sij.instr->operand[1])->data,
-                        sij.instr->operand[1].start,
-                        sij.instr->operand[1].stride,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim
+                );
+            } else {                                        // DDD
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&sij.instr->operand[0])->data,
+                    sij.instr->operand[0].start,
+                    sij.instr->operand[0].stride,
 
-                        &(sij.instr->constant.value),
+                    bh_base_array(&sij.instr->operand[1])->data,
+                    sij.instr->operand[1].start,
+                    sij.instr->operand[1].stride,
 
-                        sij.instr->operand[0].shape,
-                        sij.instr->operand[0].ndim
-                    );
-                } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&sij.instr->operand[0])->data,
-                        sij.instr->operand[0].start,
-                        sij.instr->operand[0].stride,
+                    bh_base_array(&sij.instr->operand[2])->data,
+                    sij.instr->operand[2].start,
+                    sij.instr->operand[2].stride,
 
-                        &(sij.instr->constant.value),
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim
+                );
+            }
 
-                        bh_base_array(&sij.instr->operand[2])->data,
-                        sij.instr->operand[2].start,
-                        sij.instr->operand[2].stride,
-
-                        sij.instr->operand[0].shape,
-                        sij.instr->operand[0].ndim
-                    );
-                } else {                                        // DDD
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&sij.instr->operand[0])->data,
-                        sij.instr->operand[0].start,
-                        sij.instr->operand[0].stride,
-
-                        bh_base_array(&sij.instr->operand[1])->data,
-                        sij.instr->operand[1].start,
-                        sij.instr->operand[1].stride,
-
-                        bh_base_array(&sij.instr->operand[2])->data,
-                        sij.instr->operand[2].start,
-                        sij.instr->operand[2].stride,
-
-                        sij.instr->operand[0].shape,
-                        sij.instr->operand[0].ndim
-                    );
-                }
-
-                res = BH_SUCCESS;
-                break;
-
-            case BH_ABSOLUTE:
-            case BH_LOGICAL_NOT:
-            case BH_INVERT:
-            case BH_COS:
-            case BH_SIN:
-            case BH_TAN:
-            case BH_COSH:
-            case BH_SINH:
-            case BH_TANH:
-            case BH_ARCSIN:
-            case BH_ARCCOS:
-            case BH_ARCTAN:
-            case BH_ARCSINH:
-            case BH_ARCCOSH:
-            case BH_ARCTANH:
-            case BH_EXP:
-            case BH_EXP2:
-            case BH_EXPM1:
-            case BH_LOG:
-            case BH_LOG2:
-            case BH_LOG10:
-            case BH_LOG1P:
-            case BH_SQRT:
-            case BH_CEIL:
-            case BH_TRUNC:
-            case BH_FLOOR:
-            case BH_RINT:
-            case BH_ISNAN:
-            case BH_ISINF:
-            case BH_IDENTITY:
-            
-                if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&sij.instr->operand[0])->data,
-                        sij.instr->operand[0].start,
-                        sij.instr->operand[0].stride,
-
-                        &(sij.instr->constant.value),
-
-                        sij.instr->operand[0].shape,
-                        sij.instr->operand[0].ndim
-                    );
-                } else {
-                    target->funcs[sij.symbol](0,
-                        bh_base_array(&sij.instr->operand[0])->data,
-                        sij.instr->operand[0].start,
-                        sij.instr->operand[0].stride,
-
-                        bh_base_array(&sij.instr->operand[1])->data,
-                        sij.instr->operand[1].start,
-                        sij.instr->operand[1].stride,
-
-                        sij.instr->operand[0].shape,
-                        sij.instr->operand[0].ndim
-                    );
-                }
-                res = BH_SUCCESS;
-                break;
-
-            default:                            // Shit hit the fan
-                res = BH_ERROR;
-                printf("cpu: Err=[Unsupported ufunc...\n");
-        }
-
-        #ifdef PROFILE
-        m_end = _bh_timing();
-        times[BH_NO_OPCODES] += m_end-m_begin;
-        ++calls[BH_NO_OPCODES];
-        #endif
-
-        if (BH_SUCCESS != res) {    // Instruction failed
+            res = BH_SUCCESS;
             break;
-        }
-        #ifdef PROFILE
-        t_end = _bh_timing();
-        times[sij.instr->opcode] += (t_end-t_begin)+ (m_end-m_begin);
-        ++calls[sij.instr->opcode];
-        #endif
-    }
 
-	return res;
+        case BH_ABSOLUTE:
+        case BH_LOGICAL_NOT:
+        case BH_INVERT:
+        case BH_COS:
+        case BH_SIN:
+        case BH_TAN:
+        case BH_COSH:
+        case BH_SINH:
+        case BH_TANH:
+        case BH_ARCSIN:
+        case BH_ARCCOS:
+        case BH_ARCTAN:
+        case BH_ARCSINH:
+        case BH_ARCCOSH:
+        case BH_ARCTANH:
+        case BH_EXP:
+        case BH_EXP2:
+        case BH_EXPM1:
+        case BH_LOG:
+        case BH_LOG2:
+        case BH_LOG10:
+        case BH_LOG1P:
+        case BH_SQRT:
+        case BH_CEIL:
+        case BH_TRUNC:
+        case BH_FLOOR:
+        case BH_RINT:
+        case BH_ISNAN:
+        case BH_ISINF:
+        case BH_IDENTITY:
+
+            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&sij.instr->operand[0])->data,
+                    sij.instr->operand[0].start,
+                    sij.instr->operand[0].stride,
+
+                    &(sij.instr->constant.value),
+
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim
+                );
+            } else {
+                target->funcs[sij.symbol](0,
+                    bh_base_array(&sij.instr->operand[0])->data,
+                    sij.instr->operand[0].start,
+                    sij.instr->operand[0].stride,
+
+                    bh_base_array(&sij.instr->operand[1])->data,
+                    sij.instr->operand[1].start,
+                    sij.instr->operand[1].stride,
+
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim
+                );
+            }
+            res = BH_SUCCESS;
+            break;
+
+        default:                            // Shit hit the fan
+            res = BH_ERROR;
+            printf("cpu: Err=[Unsupported ufunc...\n");
+    }
+    return res;
+}
+
+//Interprets one instruction at a time.
+static bh_error interpret(bh_ir *bhir, bh_dag *dag)
+{
+    for(bh_intp i=0; i<dag->nnode; ++i)
+    {
+        bh_intp id = dag->node_map[i];
+        if(id < 0)
+        {
+            id = -1*id-1;
+            bh_error err = interpret(bhir, &bhir->dag_list[id]);
+            if(err != BH_SUCCESS);
+                return err;
+        }
+        else
+        {
+            bh_error err = exec(&bhir->instr_list[id]);
+            if(err != BH_SUCCESS);
+                return err;
+        }
+    }
+    return BH_SUCCESS;
+}
+
+bh_error bh_ve_cpu_execute(bh_ir* bhir)
+{
+    return interpret(bhir, &bhir->dag_list[0]);
 }
 
 bh_error bh_ve_cpu_shutdown(void)
@@ -748,12 +739,12 @@ bh_error bh_ve_cpu_shutdown(void)
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id) 
+bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
             random_impl_id = *id;
-            return BH_SUCCESS;			
+            return BH_SUCCESS;
         } else {
         	*id = random_impl_id;
         	return BH_SUCCESS;
@@ -764,9 +755,9 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
             if (matmul_impl == NULL) {
                 return BH_USERFUNC_NOT_SUPPORTED;
             }
-            
+
             matmul_impl_id = *id;
-            return BH_SUCCESS;			
+            return BH_SUCCESS;
         } else {
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
@@ -784,7 +775,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
             return BH_SUCCESS;
         }
     }
-        
+
     return BH_USERFUNC_NOT_SUPPORTED;
 }
 
