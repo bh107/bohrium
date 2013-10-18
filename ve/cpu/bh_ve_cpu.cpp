@@ -671,32 +671,10 @@ static bh_error exec(bh_instruction *instr)
     return res;
 }
 
-//Interprets one instruction at a time.
-static bh_error interpret(bh_ir *bhir, bh_dag *dag)
-{
-    for(bh_intp i=0; i<dag->nnode; ++i)
-    {
-        bh_intp id = dag->node_map[i];
-        if(id < 0)
-        {
-            id = -1*id-1;
-            bh_error err = interpret(bhir, &bhir->dag_list[id]);
-            if(err != BH_SUCCESS);
-                return err;
-        }
-        else
-        {
-            bh_error err = exec(&bhir->instr_list[id]);
-            if(err != BH_SUCCESS);
-                return err;
-        }
-    }
-    return BH_SUCCESS;
-}
-
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    return interpret(bhir, &bhir->dag_list[0]);
+    //Execute one instruction at a time starting at the root DAG.
+    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec);
 }
 
 bh_error bh_ve_cpu_shutdown(void)

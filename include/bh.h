@@ -37,6 +37,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_memory.h"
 #include "bh_timing.h"
 #include "bh_ir.h"
+#include "bh_ir_map.h"
 
 #ifdef __cplusplus
 /* C++ includes go here */
