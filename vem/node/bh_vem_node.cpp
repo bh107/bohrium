@@ -171,9 +171,6 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         bh_instruction *instr = &bhir->instr_list[i];
 
 //        bh_pprint_instr(instr);
-        #ifdef BH_TRACE
-            bh_component_trace_inst(vem_node_myself, instr);
-        #endif
 
         int nop = bh_operands_in_instruction(instr);
         bh_view *operands = bh_inst_operands(instr);
