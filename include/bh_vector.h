@@ -32,11 +32,14 @@ extern "C" {
 /* Returns the number of elements in the vector */
 DLLEXPORT bh_intp bh_vector_nelem(const void *vector);
 
-/* Returns the reverved number of elements */
+/* Returns the reserved number of elements */
 DLLEXPORT bh_intp bh_vector_reserved(const void *vector);
 
 /* Returns the size of each element in the vector (in bytes) */
 DLLEXPORT bh_intp bh_vector_elsize(const void *vector);
+
+/* Returns the size of the vector including overhead (in bytes) */
+DLLEXPORT bh_intp bh_vector_totalsize(const void *vector);
 
 /* Creates a new vector
  *

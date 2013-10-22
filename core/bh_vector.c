@@ -47,7 +47,7 @@ bh_intp bh_vector_nelem(const void *vector)
     return v[0];
 }
 
-/* Returns the reverved number of elements */
+/* Returns the reserved number of elements */
 bh_intp bh_vector_reserved(const void *vector)
 {
     bh_intp *v = ((bh_intp *)vector)-3;
@@ -59,6 +59,12 @@ bh_intp bh_vector_elsize(const void *vector)
 {
     bh_intp *v = ((bh_intp *)vector)-3;
     return v[2];
+}
+
+/* Returns the size of the vector including overhead (in bytes) */
+bh_intp bh_vector_totalsize(const void *vector)
+{
+    return 3*sizeof(bh_intp) + bh_vector_reserved(vector)*bh_vector_elsize(vector);
 }
 
 /* Creates a new vector
