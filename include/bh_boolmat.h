@@ -47,6 +47,13 @@ typedef struct
     bh_intp non_zeroes;
 } bh_boolmat;
 
+/* Returns the total size of the boolmat including overhead (in bytes).
+ *
+ * @boolmat  The boolean matrix in question
+ * @return   Total size in bytes
+ */
+DLLEXPORT bh_intp bh_boolmat_totalsize(const bh_boolmat *boolmat);
+
 /* Creates a empty squared boolean matrix.
  *
  * @boolmat  The boolean matrix handle
@@ -60,6 +67,13 @@ DLLEXPORT bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows);
  * @boolmat  The boolean matrix in question
  */
 DLLEXPORT void bh_boolmat_destroy(bh_boolmat *boolmat);
+
+/* Makes a serialized copy of the boolmat
+ *
+ * @boolmat  The boolean matrix in question
+ * @dest     The destination of the serialized bolmat
+ */
+DLLEXPORT void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat);
 
 /* Fills a empty row in the boolean matrix where all
  * the following rows are empty as well.

@@ -32,6 +32,16 @@ If not, see <http://www.gnu.org/licenses/>.
  * typically used in CSR.
 */
 
+/* Returns the total size of the boolmat including overhead (in bytes).
+ *
+ * @boolmat  The boolean matrix in question
+ * @return   Total size in bytes
+ */
+bh_intp bh_boolmat_totalsize(const bh_boolmat *boolmat)
+{
+    return sizeof(bh_boolmat) + sizeof(bh_intp)*(boolmat->nrows+1) +
+           bh_vector_totalsize(boolmat->col_idx);
+}
 
 /* Creates a empty squared boolean matrix.
  *
@@ -74,6 +84,25 @@ void bh_boolmat_destroy(bh_boolmat *boolmat)
     boolmat->non_zeroes = 0;
 }
 
+/* Makes a serialized copy of the boolmat
+ *
+ * @boolmat  The boolean matrix in question
+ * @dest     The destination of the serialized bolmat
+ */
+void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat)
+{
+    bh_boolmat *head = (bh_boolmat*) dest;
+    head->nrows = boolmat->nrows;
+    head->non_zeroes = boolmat->non_zeroes;
+
+    char *body = ((char*)dest) + sizeof(bh_boolmat);
+    memcpy(body, boolmat->row_ptr, sizeof(bh_intp)*(boolmat->nrows+1));
+    head->row_ptr = (bh_intp*) body;
+
+    body += sizeof(bh_intp)*(boolmat->nrows+1);
+    memcpy(body, bh_vector_vector2memblock(boolmat->col_idx), bh_vector_totalsize(boolmat->col_idx));
+    head->col_idx = (bh_intp*) bh_vector_memblock2vector(body);
+}
 
 /* Fills a empty row in the boolean matrix where all
  * the following rows are empty as well.
