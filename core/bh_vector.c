@@ -67,6 +67,22 @@ bh_intp bh_vector_totalsize(const void *vector)
     return 3*sizeof(bh_intp) + bh_vector_reserved(vector)*bh_vector_elsize(vector);
 }
 
+/* Returns a pointer to the memory block this vector lies in. The total size of the
+ * memory block equals bh_vector_totalsize(). */
+void *bh_vector_vector2memblock(void *vector)
+{
+    bh_intp *v = ((bh_intp *)vector);
+    return v-3;
+}
+
+/* Returns a pointer to the vector that lies in this memory block. The total size of the
+ * vector equals bh_vector_reserved() * bh_vector_elsize(). */
+void *bh_vector_memblock2vector(void *memblock)
+{
+    bh_intp *v = ((bh_intp *)memblock);
+    return v+3;
+}
+
 /* Creates a new vector
  *
  * @elsize        The size of each element in the vector (in bytes)

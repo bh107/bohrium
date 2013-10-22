@@ -41,6 +41,14 @@ DLLEXPORT bh_intp bh_vector_elsize(const void *vector);
 /* Returns the size of the vector including overhead (in bytes) */
 DLLEXPORT bh_intp bh_vector_totalsize(const void *vector);
 
+/* Returns a pointer to the memory block this vector lies in. The total size of the
+ * memory block equals bh_vector_totalsize(). */
+DLLEXPORT void *bh_vector_vector2memblock(void *vector);
+
+/* Returns a pointer to the vector that lies in this memory block. The total size of the
+ * vector equals bh_vector_reserved() * bh_vector_elsize(). */
+DLLEXPORT void *bh_vector_memblock2vector(void *memblock);
+
 /* Creates a new vector
  *
  * @elsize        The size of each element in the vector (in bytes)
