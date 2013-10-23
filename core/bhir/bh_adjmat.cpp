@@ -145,6 +145,19 @@ void bh_adjmat_destroy(bh_adjmat *adjmat)
 }
 
 
+/* Makes a serialized copy of the adjmat
+ *
+ * @adjmat   The adjmat matrix in question
+ * @dest     The destination of the serialized adjmat
+ */
+void bh_adjmat_serialize(void *dest, const bh_adjmat *adjmat)
+{
+    bh_adjmat *head = (bh_adjmat*) dest;
+    bh_boolmat_serialize(head->m, adjmat->m);
+    bh_boolmat_serialize(head->mT, adjmat->mT);
+}
+
+
 /* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
  * node indexes that depend on the row'th node.
  *

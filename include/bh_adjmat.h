@@ -77,6 +77,13 @@ DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr
  */
 DLLEXPORT void bh_adjmat_destroy(bh_adjmat *adjmat);
 
+/* Makes a serialized copy of the adjmat
+ *
+ * @adjmat   The adjmat matrix in question
+ * @dest     The destination of the serialized adjmat
+ */
+DLLEXPORT void bh_adjmat_serialize(void *dest, const bh_adjmat *adjmat);
+
 /* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
  * node indexes that depend on the row'th node.
  *
