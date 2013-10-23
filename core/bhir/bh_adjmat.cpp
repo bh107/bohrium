@@ -33,8 +33,8 @@ If not, see <http://www.gnu.org/licenses/>.
  */
 bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat)
 {
-    return sizeof(adjmat) + bh_boolmat_totalsize(&adjmat->m)
-                          + bh_boolmat_totalsize(&adjmat->mT);
+    return sizeof(bh_adjmat) + bh_boolmat_totalsize(adjmat->m)
+                             + bh_boolmat_totalsize(adjmat->mT);
 }
 
 
@@ -50,7 +50,15 @@ bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat)
 bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
                                      const bh_instruction instr_list[])
 {
-    bh_error e = bh_boolmat_create(&adjmat->mT, ninstr);
+    adjmat->m = (bh_boolmat*) malloc(sizeof(bh_boolmat));
+    if(adjmat->m == NULL)
+        return BH_OUT_OF_MEMORY;
+
+    adjmat->mT = (bh_boolmat*) malloc(sizeof(bh_boolmat));
+    if(adjmat->mT == NULL)
+        return BH_OUT_OF_MEMORY;
+
+    bh_error e = bh_boolmat_create(adjmat->mT, ninstr);
     if(e != BH_SUCCESS)
         return e;
 
@@ -103,7 +111,7 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         if(deps.size() > 0)
         {
             std::vector<bh_intp> sorted_vector(deps.begin(), deps.end());
-            e = bh_boolmat_fill_empty_row(&adjmat->mT, i, deps.size(), &sorted_vector[0]);
+            e = bh_boolmat_fill_empty_row(adjmat->mT, i, deps.size(), &sorted_vector[0]);
             if(e != BH_SUCCESS)
                 return e;
         }
@@ -120,7 +128,7 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
         }
     }
     //Lets compute the transposed matrix
-    return bh_boolmat_transpose(&adjmat->m, &adjmat->mT);
+    return bh_boolmat_transpose(adjmat->m, adjmat->mT);
 }
 
 
@@ -130,8 +138,10 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
  */
 void bh_adjmat_destroy(bh_adjmat *adjmat)
 {
-    bh_boolmat_destroy(&adjmat->m);
-    bh_boolmat_destroy(&adjmat->mT);
+    bh_boolmat_destroy(adjmat->m);
+    bh_boolmat_destroy(adjmat->mT);
+    free(adjmat->m);
+    free(adjmat->mT);
 }
 
 
@@ -145,7 +155,7 @@ void bh_adjmat_destroy(bh_adjmat *adjmat)
  */
 const bh_intp *bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row, bh_intp *ncol_idx)
 {
-    return bh_boolmat_get_row(&adjmat->m, row, ncol_idx);
+    return bh_boolmat_get_row(adjmat->m, row, ncol_idx);
 }
 
 
@@ -159,5 +169,5 @@ const bh_intp *bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row, bh_intp *
  */
 const bh_intp *bh_adjmat_get_col(const bh_adjmat *adjmat, bh_intp col, bh_intp *nrow_idx)
 {
-    return bh_boolmat_get_row(&adjmat->mT, col, nrow_idx);
+    return bh_boolmat_get_row(adjmat->mT, col, nrow_idx);
 }

@@ -187,7 +187,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
     if(sub_dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
-    e = bh_boolmat_create(&sub_dag->adjmat.m, nnodes);
+    e = bh_boolmat_create(sub_dag->adjmat.m, nnodes);
     if(e != BH_SUCCESS)
         return e;
     sub_dag->tag = 0;
@@ -232,13 +232,13 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         }
 
         //Now we know the i'th node's children that are within the sub-DAG
-        e = bh_boolmat_fill_empty_row(&sub_dag->adjmat.m, i, children_in_sub_dag.size(),
+        e = bh_boolmat_fill_empty_row(sub_dag->adjmat.m, i, children_in_sub_dag.size(),
                                       &children_in_sub_dag[0]);
         if(e != BH_SUCCESS)
             return e;
     }
     //To finish the sub-DAG we have to save the transposed matrix as well
-    e = bh_boolmat_transpose(&sub_dag->adjmat.mT, &sub_dag->adjmat.m);
+    e = bh_boolmat_transpose(sub_dag->adjmat.mT, sub_dag->adjmat.m);
     if(e != BH_SUCCESS)
         return e;
 
@@ -246,7 +246,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     //Save a copy of the original DAG and create a new DAG
     bh_dag org_dag = *dag;
     dag->nnode = org_dag.nnode - nnodes + 1;
-    e = bh_boolmat_create(&dag->adjmat.mT, dag->nnode);
+    e = bh_boolmat_create(dag->adjmat.mT, dag->nnode);
     if(e != BH_SUCCESS)
         return e;
     dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), dag->nnode, dag->nnode);
@@ -288,7 +288,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
                 if(org2sub.find(parent) == org2sub.end())//The parent is NOT part of the sub-DAG
                     parents_in_new_dag.push_back(org2new[parent]);
             }
-            e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+            e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
                                           &parents_in_new_dag[0]);
             if(e != BH_SUCCESS)
                 return e;
@@ -312,7 +312,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         {
             parents_in_new_dag.push_back(org2new[*it]);
         }
-        e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+        e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
                                       &parents_in_new_dag[0]);
         if(e != BH_SUCCESS)
             return e;
@@ -341,7 +341,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
                     parents_in_new_dag.push_back(org2new[parent]);
             }
             parents_in_new_dag.push_back(sub_dag_location);
-            e = bh_boolmat_fill_empty_row(&dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+            e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
                                           &parents_in_new_dag[0]);
             if(e != BH_SUCCESS)
                 return e;
@@ -352,7 +352,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     }
     assert(dag->nnode == nrows);
     //Finally we need the transposed matrix aswell
-    e = bh_boolmat_transpose(&dag->adjmat.m, &dag->adjmat.mT);
+    e = bh_boolmat_transpose(dag->adjmat.m, dag->adjmat.mT);
     if(e != BH_SUCCESS)
         return e;
 

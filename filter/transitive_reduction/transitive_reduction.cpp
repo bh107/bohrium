@@ -48,8 +48,8 @@ void transitive_reduction_filter(bh_ir *bhir)
         }
 
         //Lets create a new copy of the rows in the adjmat
-        bh_boolmat old_boolmat = adjmat->m;
-        bh_error e = bh_boolmat_create(&adjmat->m, nnode);
+        bh_boolmat old_boolmat = *adjmat->m;
+        bh_error e = bh_boolmat_create(adjmat->m, nnode);
         if(e != BH_SUCCESS)
         {
             printf("The creation of the boolean matrix failed: %s\n", bh_error_text(e));
@@ -68,13 +68,13 @@ void transitive_reduction_filter(bh_ir *bhir)
                 if(redundant[k].erase(row[r]) == 0)
                     new_row[size++] = row[r];
             }
-            e = bh_boolmat_fill_empty_row(&adjmat->m, k, size, new_row);
+            e = bh_boolmat_fill_empty_row(adjmat->m, k, size, new_row);
             if(e != BH_SUCCESS)
             {
                 printf("Filling of row %ld in the boolean matrix failed: %s\n", k, bh_error_text(e));
                 throw std::exception();
             }
-            e = bh_boolmat_transpose(&adjmat->mT, &adjmat->m);
+            e = bh_boolmat_transpose(adjmat->mT, adjmat->m);
             if(e != BH_SUCCESS)
             {
                 printf("Transposing the boolean matrix failed: %s\n", bh_error_text(e));

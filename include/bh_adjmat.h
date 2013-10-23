@@ -46,10 +46,10 @@ typedef struct
 {
     //Adjacency matrix with a top-down direction, i.e. the adjacencies
     //of a row is its dependencies (who it depends on).
-    bh_boolmat m;
+    bh_boolmat *m;
     //Adjacency matrix with a bottom-up direction, i.e. the adjacencies
     //of a row is its dependees (who depends on it).
-    bh_boolmat mT;//Note, it is simply a transposed copy of 'm'.
+    bh_boolmat *mT;//Note, it is simply a transposed copy of 'm'.
 } bh_adjmat;
 
 /* Returns the total size of the adjmat including overhead (in bytes).
