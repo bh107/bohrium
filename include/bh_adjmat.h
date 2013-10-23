@@ -52,6 +52,12 @@ typedef struct
     bh_boolmat mT;//Note, it is simply a transposed copy of 'm'.
 } bh_adjmat;
 
+/* Returns the total size of the adjmat including overhead (in bytes).
+ *
+ * @adjmat  The adjmat matrix in question
+ * @return  Total size in bytes
+ */
+DLLEXPORT bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat);
 
 /* Creates an adjacency matrix based on a instruction list
  * where an index in the instruction list refer to a row or

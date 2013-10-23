@@ -26,6 +26,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 
+/* Returns the total size of the adjmat including overhead (in bytes).
+ *
+ * @adjmat  The adjmat matrix in question
+ * @return  Total size in bytes
+ */
+bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat)
+{
+    return sizeof(adjmat) + bh_boolmat_totalsize(&adjmat->m)
+                          + bh_boolmat_totalsize(&adjmat->mT);
+}
+
 
 /* Creates an adjacency matrix based on a instruction list
  * where an index in the instruction list refer to a row or
