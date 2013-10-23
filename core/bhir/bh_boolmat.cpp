@@ -45,43 +45,49 @@ bh_intp bh_boolmat_totalsize(const bh_boolmat *boolmat)
 
 /* Creates a empty squared boolean matrix.
  *
- * @boolmat  The boolean matrix handle
- * @nrow     Number of rows (and columns) in the matrix
- * @return   Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @nrow   Number of rows (and columns) in the matrix
+ * @return The boolean matrix handle, or NULL when out-of-memory
  */
-bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows)
+bh_boolmat *bh_boolmat_create(bh_intp nrows)
 {
+    bh_boolmat *ret = (bh_boolmat*) malloc(sizeof(bh_boolmat));
+    if(ret == NULL)
+        return ret;
+
     assert(nrows > 0);
-    boolmat->nrows = nrows;
-    boolmat->non_zeroes = 0;
+    ret->nrows = nrows;
+    ret->non_zeroes = 0;
     //We know the final size of row_ptr at creation time
-    boolmat->row_ptr = (bh_intp*) malloc(sizeof(bh_intp)*(nrows+1));
-    if(boolmat->row_ptr == NULL)
-        return BH_OUT_OF_MEMORY;
-    memset(boolmat->row_ptr, 0, sizeof(bh_intp)*(nrows+1));
+    ret->row_ptr = (bh_intp*) malloc(sizeof(bh_intp)*(nrows+1));
+    if(ret->row_ptr == NULL)
+        return NULL;
+    memset(ret->row_ptr, 0, sizeof(bh_intp)*(nrows+1));
     //The size of column index list is equal to the number of True values
     //in the boolean matrix, which is unknown at creation time
-    boolmat->col_idx = (bh_intp *) bh_vector_create(sizeof(bh_intp), 0,
+    ret->col_idx = (bh_intp *) bh_vector_create(sizeof(bh_intp), 0,
                                                     nrows*2);
-    if(boolmat->col_idx == NULL)
-        return BH_OUT_OF_MEMORY;
-    return BH_SUCCESS;
+    if(ret->col_idx == NULL)
+        return NULL;
+    return ret;
 }
 
 /* De-allocate the boolean matrix
  *
  * @boolmat  The boolean matrix in question
  */
-void bh_boolmat_destroy(bh_boolmat *boolmat)
+void bh_boolmat_destroy(bh_boolmat **boolmat)
 {
-    if(boolmat->row_ptr != NULL)
-        free(boolmat->row_ptr);
-    if(boolmat->col_idx != NULL)
-        bh_vector_destroy(boolmat->col_idx);
-    boolmat->row_ptr = NULL;
-    boolmat->col_idx = NULL;
-    boolmat->nrows = 0;
-    boolmat->non_zeroes = 0;
+    bh_boolmat *b = *boolmat;
+    if(b->row_ptr != NULL)
+        free(b->row_ptr);
+    if(b->col_idx != NULL)
+        bh_vector_destroy(b->col_idx);
+    b->row_ptr = NULL;
+    b->col_idx = NULL;
+    b->nrows = 0;
+    b->non_zeroes = 0;
+    free(b);
+    b = NULL;
 }
 
 /* Makes a serialized copy of the boolmat
@@ -196,45 +202,44 @@ const bh_intp *bh_boolmat_get_row(const bh_boolmat *boolmat,
 
 /* Returns a transposed copy
  *
- * @out     The output matrix
  * @in      The input matrix
- * @return  Error code (BH_SUCCESS, BH_ERROR)
+ * @return  The transposed boolmat or NULL on out-of-memory
  */
-bh_error bh_boolmat_transpose(bh_boolmat *out, const bh_boolmat *in)
+bh_boolmat *bh_boolmat_transpose(const bh_boolmat *in)
 {
-    bh_error e = bh_boolmat_create(out, in->nrows);
-    if(e != BH_SUCCESS)
-        return e;
+    bh_boolmat *ret = bh_boolmat_create(in->nrows);
+    if(ret == NULL)
+        return NULL;
 
     //Lets compute the row_ptr by creating a histogram
     for(bh_intp i=0; i<in->non_zeroes; ++i)
-        ++out->row_ptr[in->col_idx[i]];
+        ++ret->row_ptr[in->col_idx[i]];
     //and then scanning it.
     bh_intp t[] = {0,0};
-    t[0] = out->row_ptr[0];
-    out->row_ptr[0] = 0;
-    for(bh_intp i=1; i<= out->nrows; ++i)
+    t[0] = ret->row_ptr[0];
+    ret->row_ptr[0] = 0;
+    for(bh_intp i=1; i<= ret->nrows; ++i)
     {
-        t[i%2] = out->row_ptr[i];
-        out->row_ptr[i] = t[(i-1)%2] + out->row_ptr[i-1];
+        t[i%2] = ret->row_ptr[i];
+        ret->row_ptr[i] = t[(i-1)%2] + ret->row_ptr[i-1];
     }
 
     //The size of col_idx equals the number of non-zero values
-    out->col_idx = (bh_intp*) bh_vector_resize(out->col_idx, in->non_zeroes);
-    out->non_zeroes = in->non_zeroes;
+    ret->col_idx = (bh_intp*) bh_vector_resize(ret->col_idx, in->non_zeroes);
+    ret->non_zeroes = in->non_zeroes;
 
     //Lets compute the col_idx
-    bh_intp counter[out->nrows];
-    memset(counter, 0, sizeof(bh_intp)*out->nrows);
-    for(bh_intp i=0; i < out->nrows; ++i)
+    bh_intp counter[ret->nrows];
+    memset(counter, 0, sizeof(bh_intp)*ret->nrows);
+    for(bh_intp i=0; i < ret->nrows; ++i)
     {
         for(bh_intp j=in->row_ptr[i]; j < in->row_ptr[i+1]; ++j)
         {
             bh_intp in_col_idx = in->col_idx[j];
-            bh_intp pos = out->row_ptr[in_col_idx] + counter[in_col_idx];
-            out->col_idx[pos] = i;
+            bh_intp pos = ret->row_ptr[in_col_idx] + counter[in_col_idx];
+            ret->col_idx[pos] = i;
             ++counter[in_col_idx];
         }
     }
-    return BH_SUCCESS;
+    return ret;
 }

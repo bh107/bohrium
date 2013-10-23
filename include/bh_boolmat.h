@@ -56,17 +56,16 @@ DLLEXPORT bh_intp bh_boolmat_totalsize(const bh_boolmat *boolmat);
 
 /* Creates a empty squared boolean matrix.
  *
- * @boolmat  The boolean matrix handle
- * @nrow     Number of rows (and columns) in the matrix
- * @return   Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @nrow   Number of rows (and columns) in the matrix
+ * @return The boolean matrix handle, or NULL when out-of-memory
  */
-DLLEXPORT bh_error bh_boolmat_create(bh_boolmat *boolmat, bh_intp nrows);
+DLLEXPORT bh_boolmat *bh_boolmat_create(bh_intp nrows);
 
 /* De-allocate the boolean matrix
  *
  * @boolmat  The boolean matrix in question
  */
-DLLEXPORT void bh_boolmat_destroy(bh_boolmat *boolmat);
+DLLEXPORT void bh_boolmat_destroy(bh_boolmat **boolmat);
 
 /* Makes a serialized copy of the boolmat
  *
@@ -106,11 +105,10 @@ DLLEXPORT const bh_intp *bh_boolmat_get_row(const bh_boolmat *boolmat,
 
 /* Returns a transposed copy
  *
- * @out  The output matrix
- * @in   The input matrix
- * @return    Error code (BH_SUCCESS, BH_ERROR)
+ * @in      The input matrix
+ * @return  The transposed boolmat or NULL on out-of-memory
  */
-DLLEXPORT bh_error bh_boolmat_transpose(bh_boolmat *out, const bh_boolmat *in);
+DLLEXPORT bh_boolmat *bh_boolmat_transpose(const bh_boolmat *in);
 
 #ifdef __cplusplus
 }

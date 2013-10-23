@@ -187,9 +187,9 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
     if(sub_dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
-    e = bh_boolmat_create(sub_dag->adjmat.m, nnodes);
-    if(e != BH_SUCCESS)
-        return e;
+    sub_dag->adjmat.m = bh_boolmat_create(nnodes);
+    if(sub_dag->adjmat.m == NULL)
+        return BH_OUT_OF_MEMORY;
     sub_dag->tag = 0;
 
     //Just by sorting the nodes we find the topological order
@@ -238,17 +238,16 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
             return e;
     }
     //To finish the sub-DAG we have to save the transposed matrix as well
-    e = bh_boolmat_transpose(sub_dag->adjmat.mT, sub_dag->adjmat.m);
-    if(e != BH_SUCCESS)
-        return e;
-
+    sub_dag->adjmat.mT = bh_boolmat_transpose(sub_dag->adjmat.m);
+    if(sub_dag->adjmat.mT == NULL)
+        return BH_OUT_OF_MEMORY;
 
     //Save a copy of the original DAG and create a new DAG
     bh_dag org_dag = *dag;
     dag->nnode = org_dag.nnode - nnodes + 1;
-    e = bh_boolmat_create(dag->adjmat.mT, dag->nnode);
-    if(e != BH_SUCCESS)
-        return e;
+    dag->adjmat.mT = bh_boolmat_create(dag->nnode);
+    if(dag->adjmat.mT == NULL)
+        return BH_OUT_OF_MEMORY;
     dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), dag->nnode, dag->nnode);
     if(dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
@@ -352,9 +351,9 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     }
     assert(dag->nnode == nrows);
     //Finally we need the transposed matrix aswell
-    e = bh_boolmat_transpose(dag->adjmat.m, dag->adjmat.mT);
-    if(e != BH_SUCCESS)
-        return e;
+    dag->adjmat.m = bh_boolmat_transpose(dag->adjmat.mT);
+    if(dag->adjmat.m == NULL)
+        return BH_OUT_OF_MEMORY;
 
     //Cleanup the original DAG
     bh_vector_destroy(org_dag.node_map);

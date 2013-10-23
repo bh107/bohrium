@@ -48,11 +48,11 @@ void transitive_reduction_filter(bh_ir *bhir)
         }
 
         //Lets create a new copy of the rows in the adjmat
-        bh_boolmat old_boolmat = *adjmat->m;
-        bh_error e = bh_boolmat_create(adjmat->m, nnode);
-        if(e != BH_SUCCESS)
+        bh_boolmat *old_boolmat = adjmat->m;
+        adjmat->m = bh_boolmat_create(nnode);
+        if(adjmat->m == NULL)
         {
-            printf("The creation of the boolean matrix failed: %s\n", bh_error_text(e));
+            printf("The creation of the boolean matrix failed: OUT-OF-MEMORY\n");
             throw std::exception();
         }
 
@@ -61,26 +61,27 @@ void transitive_reduction_filter(bh_ir *bhir)
         {
             bh_intp row_size;
             //First we remove all redundant dependencies from the row
-            const bh_intp *row = bh_boolmat_get_row(&old_boolmat, k, &row_size);
+            const bh_intp *row = bh_boolmat_get_row(old_boolmat, k, &row_size);
             bh_intp new_row[row_size], size=0;
             for(bh_intp r=0; r<row_size; ++r)
             {
                 if(redundant[k].erase(row[r]) == 0)
                     new_row[size++] = row[r];
             }
-            e = bh_boolmat_fill_empty_row(adjmat->m, k, size, new_row);
+            bh_error e = bh_boolmat_fill_empty_row(adjmat->m, k, size, new_row);
             if(e != BH_SUCCESS)
             {
                 printf("Filling of row %ld in the boolean matrix failed: %s\n", k, bh_error_text(e));
                 throw std::exception();
             }
-            e = bh_boolmat_transpose(adjmat->mT, adjmat->m);
-            if(e != BH_SUCCESS)
+            adjmat->mT = bh_boolmat_transpose(adjmat->m);
+            if(adjmat->mT == NULL)
             {
-                printf("Transposing the boolean matrix failed: %s\n", bh_error_text(e));
+                printf("The creation of the boolean matrix failed: OUT-OF-MEMORY\n");
                 throw std::exception();
             }
         }
+        bh_boolmat_destroy(&old_boolmat);
     }
 }
 
