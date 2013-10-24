@@ -40,7 +40,7 @@ typedef struct
 
     //The Adjacency Matrix where each row or column index
     //represents a node in the DAG.
-    bh_adjmat adjmat;
+    bh_adjmat *adjmat;
 
     //The Node Map that translate DAG nodes into a Bohrium instruction
     //or a sub-DAG. Given a row or column index from the Adjacency Matrix,

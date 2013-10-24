@@ -31,7 +31,7 @@ void transitive_reduction_filter(bh_ir *bhir)
     for(bh_intp d=0; d<bhir->ndag; ++d)
     {
         bh_dag *dag = &bhir->dag_list[d];
-        bh_adjmat *adjmat = &dag->adjmat;
+        bh_adjmat *adjmat = dag->adjmat;
         bh_intp nnode = dag->nnode;
 
         //Find redundant dependencies.

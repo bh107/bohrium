@@ -215,7 +215,7 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
     {
         sprintf(buf+strlen(buf), "%2ld|", (long)i);
         bh_intp ncol_idx, count=0;
-        const bh_intp *col_idx = bh_adjmat_get_row(&dag->adjmat, i, &ncol_idx);
+        const bh_intp *col_idx = bh_adjmat_get_row(dag->adjmat, i, &ncol_idx);
         for(bh_intp j=0; j<dag->nnode; ++j)
         {
             int value = 0;
@@ -247,7 +247,7 @@ static void bh_sprint_dag(char buf[], const bh_ir *bhir, const bh_dag *dag)
     {
         sprintf(buf+strlen(buf), "%2ld|", (long)i);
         bh_intp ncol_idx, count=0;
-        const bh_intp *col_idx = bh_adjmat_get_col(&dag->adjmat, i, &ncol_idx);
+        const bh_intp *col_idx = bh_adjmat_get_col(dag->adjmat, i, &ncol_idx);
         for(bh_intp j=0; j<dag->nnode; ++j)
         {
             int value = 0;
@@ -393,7 +393,7 @@ void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[])
     char instr[8000];
     FILE *file;
     file = fopen(trace_fn, "w");
-    for(bh_intp i=0; i<bhir->ninstr; ++i) { 
+    for(bh_intp i=0; i<bhir->ninstr; ++i) {
         bh_sprint_instr(&bhir->instr_list[i], instr);
         fputs(instr, file);
         fputs("\n", file);

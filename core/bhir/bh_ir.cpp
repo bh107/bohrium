@@ -65,7 +65,10 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
         dag->node_map[i] = i;//A simple 1:1 map
     dag->nnode = ninstr;
     dag->tag = 0;
-    return bh_adjmat_create_from_instr(&dag->adjmat, ninstr, instr_list);
+    dag->adjmat = bh_adjmat_create_from_instr(ninstr, instr_list);
+    if(dag->adjmat == NULL)
+        return BH_OUT_OF_MEMORY;
+    return BH_SUCCESS;
 }
 
 
@@ -187,8 +190,8 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
     if(sub_dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
-    sub_dag->adjmat.m = bh_boolmat_create(nnodes);
-    if(sub_dag->adjmat.m == NULL)
+    sub_dag->adjmat->m = bh_boolmat_create(nnodes);
+    if(sub_dag->adjmat->m == NULL)
         return BH_OUT_OF_MEMORY;
     sub_dag->tag = 0;
 
@@ -212,7 +215,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     {
         bh_intp nchildren, nparents;
         //Check all the i'th nodes's children
-        const bh_intp *children = bh_adjmat_get_row(&dag->adjmat, nodes_idx[i], &nchildren);
+        const bh_intp *children = bh_adjmat_get_row(dag->adjmat, nodes_idx[i], &nchildren);
         std::vector<bh_intp> children_in_sub_dag;
         for(bh_intp j=0; j<nchildren; ++j)
         {
@@ -223,7 +226,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
                 output.insert(child);
         }
         //Check all the i'th nodes's parents
-        const bh_intp *parents = bh_adjmat_get_col(&dag->adjmat, nodes_idx[i], &nparents);
+        const bh_intp *parents = bh_adjmat_get_col(dag->adjmat, nodes_idx[i], &nparents);
         for(bh_intp j=0; j<nparents; ++j)
         {
             bh_intp parent = parents[j];
@@ -232,21 +235,21 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         }
 
         //Now we know the i'th node's children that are within the sub-DAG
-        e = bh_boolmat_fill_empty_row(sub_dag->adjmat.m, i, children_in_sub_dag.size(),
+        e = bh_boolmat_fill_empty_row(sub_dag->adjmat->m, i, children_in_sub_dag.size(),
                                       &children_in_sub_dag[0]);
         if(e != BH_SUCCESS)
             return e;
     }
     //To finish the sub-DAG we have to save the transposed matrix as well
-    sub_dag->adjmat.mT = bh_boolmat_transpose(sub_dag->adjmat.m);
-    if(sub_dag->adjmat.mT == NULL)
+    sub_dag->adjmat->mT = bh_boolmat_transpose(sub_dag->adjmat->m);
+    if(sub_dag->adjmat->mT == NULL)
         return BH_OUT_OF_MEMORY;
 
     //Save a copy of the original DAG and create a new DAG
     bh_dag org_dag = *dag;
     dag->nnode = org_dag.nnode - nnodes + 1;
-    dag->adjmat.mT = bh_boolmat_create(dag->nnode);
-    if(dag->adjmat.mT == NULL)
+    dag->adjmat->mT = bh_boolmat_create(dag->nnode);
+    if(dag->adjmat->mT == NULL)
         return BH_OUT_OF_MEMORY;
     dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), dag->nnode, dag->nnode);
     if(dag->node_map == NULL)
@@ -278,7 +281,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         {
             org2new[org_idx] = nrows;
             bh_intp nparents;
-            const bh_intp *parents = bh_adjmat_get_col(&org_dag.adjmat, org_idx, &nparents);
+            const bh_intp *parents = bh_adjmat_get_col(org_dag.adjmat, org_idx, &nparents);
             std::vector<bh_intp> parents_in_new_dag;
             //Lets save the parents as indexes in the new DAG
             for(bh_intp i=0; i<nparents; ++i)
@@ -287,7 +290,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
                 if(org2sub.find(parent) == org2sub.end())//The parent is NOT part of the sub-DAG
                     parents_in_new_dag.push_back(org2new[parent]);
             }
-            e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+            e = bh_boolmat_fill_empty_row(dag->adjmat->mT, nrows, parents_in_new_dag.size(),
                                           &parents_in_new_dag[0]);
             if(e != BH_SUCCESS)
                 return e;
@@ -311,7 +314,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         {
             parents_in_new_dag.push_back(org2new[*it]);
         }
-        e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+        e = bh_boolmat_fill_empty_row(dag->adjmat->mT, nrows, parents_in_new_dag.size(),
                                       &parents_in_new_dag[0]);
         if(e != BH_SUCCESS)
             return e;
@@ -330,7 +333,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         {
             org2new[org_idx] = nrows;
             bh_intp nparents;
-            const bh_intp *parents = bh_adjmat_get_col(&org_dag.adjmat, org_idx, &nparents);
+            const bh_intp *parents = bh_adjmat_get_col(org_dag.adjmat, org_idx, &nparents);
             std::vector<bh_intp> parents_in_new_dag;
             //Lets save the parents as indexes in the new DAG
             for(bh_intp i=0; i<nparents; ++i)
@@ -340,7 +343,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
                     parents_in_new_dag.push_back(org2new[parent]);
             }
             parents_in_new_dag.push_back(sub_dag_location);
-            e = bh_boolmat_fill_empty_row(dag->adjmat.mT, nrows, parents_in_new_dag.size(),
+            e = bh_boolmat_fill_empty_row(dag->adjmat->mT, nrows, parents_in_new_dag.size(),
                                           &parents_in_new_dag[0]);
             if(e != BH_SUCCESS)
                 return e;
@@ -351,8 +354,8 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     }
     assert(dag->nnode == nrows);
     //Finally we need the transposed matrix aswell
-    dag->adjmat.m = bh_boolmat_transpose(dag->adjmat.mT);
-    if(dag->adjmat.m == NULL)
+    dag->adjmat->m = bh_boolmat_transpose(dag->adjmat->mT);
+    if(dag->adjmat->m == NULL)
         return BH_OUT_OF_MEMORY;
 
     //Cleanup the original DAG
@@ -401,7 +404,7 @@ static void _dag2dot(const bh_ir* bhir, bh_intp dag_idx,
         fs << ";" << std::endl;
 
         bh_intp nparents;
-        const bh_intp *children = bh_adjmat_get_row(&dag->adjmat,
+        const bh_intp *children = bh_adjmat_get_row(dag->adjmat,
                                                     node_idx, &nparents);
         for(bh_intp i=0; i<nparents; ++i)
         {

@@ -42,17 +42,17 @@ bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat)
  * where an index in the instruction list refer to a row or
  * a column index in the adjacency matrix.
  *
- * @adjmat      The adjacency matrix handle
  * @ninstr      Number of instructions
  * @instr_list  The instruction list
- * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @return      The adjmat handle, or NULL when out-of-memory
  */
-bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
-                                     const bh_instruction instr_list[])
+bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
+                                       const bh_instruction instr_list[])
 {
+    bh_adjmat *adjmat = (bh_adjmat *) malloc(sizeof(bh_adjmat));
     adjmat->mT = bh_boolmat_create(ninstr);
     if(adjmat->mT == NULL)
-        return BH_OUT_OF_MEMORY;
+        return NULL;
 
     //Record over which instructions (identified by indexes in the instruction list)
     //are reading to a specific array. We use a std::vector since multiple instructions
@@ -107,7 +107,10 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
                                                    deps.size(),
                                                    &sorted_vector[0]);
             if(e != BH_SUCCESS)
-                return e;
+            {
+                assert(e == BH_OUT_OF_MEMORY);
+                return NULL;
+            }
         }
 
         //The i'th instruction is now the newest write to array 'ops[0]'
@@ -124,9 +127,9 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
     //Lets compute the transposed matrix
     adjmat->m = bh_boolmat_transpose(adjmat->mT);
     if(adjmat->m == NULL)
-        return BH_OUT_OF_MEMORY;
+        return NULL;
 
-    return BH_SUCCESS;
+    return adjmat;
 }
 
 
@@ -134,10 +137,13 @@ bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
  *
  * @adjmat  The adjacency matrix in question
  */
-void bh_adjmat_destroy(bh_adjmat *adjmat)
+void bh_adjmat_destroy(bh_adjmat **adjmat)
 {
-    bh_boolmat_destroy(&adjmat->m);
-    bh_boolmat_destroy(&adjmat->mT);
+    bh_adjmat *a = *adjmat;
+    bh_boolmat_destroy(&a->m);
+    bh_boolmat_destroy(&a->mT);
+    free(a);
+    a = NULL;
 }
 
 

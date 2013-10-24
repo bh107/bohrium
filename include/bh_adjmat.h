@@ -63,19 +63,18 @@ DLLEXPORT bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat);
  * where an index in the instruction list refer to a row or
  * a column index in the adjacency matrix.
  *
- * @adjmat      The adjacency matrix handle
  * @ninstr      Number of instructions
  * @instr_list  The instruction list
- * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @return      The adjmat handle, or NULL when out-of-memory
  */
-DLLEXPORT bh_error bh_adjmat_create_from_instr(bh_adjmat *adjmat, bh_intp ninstr,
-                                               const bh_instruction instr_list[]);
+DLLEXPORT bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
+                                                 const bh_instruction instr_list[]);
 
 /* De-allocate the adjacency matrix
  *
  * @adjmat  The adjacency matrix in question
  */
-DLLEXPORT void bh_adjmat_destroy(bh_adjmat *adjmat);
+DLLEXPORT void bh_adjmat_destroy(bh_adjmat **adjmat);
 
 /* Makes a serialized copy of the adjmat
  *
