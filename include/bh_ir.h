@@ -67,17 +67,6 @@ typedef struct
     bh_intp ndag;
 } bh_ir;
 
-/* The BhIR node, which might refer to a bh_instruction or a bh_dag. */
-typedef struct
-{
-    //The BhIR to iterate
-    const bh_ir *bhir;
-    //The index in the dag list
-    bh_intp      dag_idx;
-    //The index in the node_map
-    bh_intp      node_map_idx;
-} bh_node;
-
 /* Creates a Bohrium Internal Representation (BhIR)
  * based on a instruction list. It will consist of one DAG.
  *
@@ -94,21 +83,6 @@ DLLEXPORT bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
  * @bhir        The BhIR handle
  */
 DLLEXPORT void bh_ir_destroy(bh_ir *bhir);
-
-/* Resets the node to the first node in the BhIR (topologically).
- *
- * @node    The node to reset
- * @bhir    The BhIR handle
-*/
-DLLEXPORT void bh_node_reset(bh_node *node, const bh_ir *bhir);
-
-/* Iterate to the next node in a DAG (topological order)
- * NB: it will not iterate into a sub-DAG.
- *
- * @node     The BhIR node
- * @return   BH_ERROR when at the end, BH_SUCCESS otherwise
- */
-DLLEXPORT bh_error bh_node_next(bh_node *node);
 
 /* Splits the DAG into an updated version of itself and a new sub-DAG that
  * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,

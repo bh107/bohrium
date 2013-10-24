@@ -89,64 +89,6 @@ void bh_ir_destroy(bh_ir *bhir)
 }
 
 
-/* Resets the node to the first node in the BhIR (topologically).
- *
- * @node    The node to reset
- * @bhir    The BhIR handle
-*/
-void bh_node_reset(bh_node *node, const bh_ir *bhir)
-{
-    node->bhir = bhir;
-    node->dag_idx = 0;
-    node->node_map_idx = 0;
-}
-
-
-/* Iterate to the next node in a DAG (topological order)
- * NB: it will not iterate into a sub-DAG.
- *
- * @node     The BhIR node
- * @return   BH_ERROR when at the end, BH_SUCCESS otherwise
- */
-bh_error bh_node_next(bh_node *node)
-{
-    if(node->dag_idx >= node->bhir->ndag)
-        return BH_ERROR;
-
-    bh_dag *dag = &node->bhir->dag_list[node->dag_idx];//Current DAG
-    if(++node->node_map_idx >= dag->nnode)
-    {
-        node->node_map_idx = 0;
-        if(++node->dag_idx >= node->bhir->ndag)
-            return BH_ERROR;
-    }
-    return BH_SUCCESS;
-}
-
-
-/* Go to the root node of a specific DAG.
- *
- * @dag_node  The node that points to the DAG
- * @new_node  The BhIR node (output)
- * @return    BH_ERROR when the 'dag_node' dosn't points
- *            to a DAG in which case the 'new_node' is
- *            untouched, BH_SUCCESS otherwise.
-*/
-bh_error bh_node_goto_dag(const bh_node *dag_node,
-                          bh_node *new_node)
-{
-    bh_dag *dag = &dag_node->bhir->dag_list[dag_node->dag_idx];
-    bh_intp idx = dag->node_map[dag_node->node_map_idx];
-    if(idx > 0)//Positive indexes are instruction list references.
-        return BH_ERROR;
-
-    new_node->bhir = dag_node->bhir;
-    new_node->node_map_idx = 0;//We go to the root of the DAG
-    new_node->dag_idx = -1*idx-1;
-    return BH_SUCCESS;
-}
-
-
 /* Splits the DAG into an updated version of itself and a new sub-DAG that
  * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
  * the updated DAG will have a new node that represents the sub-DAG.
