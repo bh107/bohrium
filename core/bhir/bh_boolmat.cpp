@@ -57,6 +57,7 @@ bh_boolmat *bh_boolmat_create(bh_intp nrows)
     assert(nrows > 0);
     ret->nrows = nrows;
     ret->non_zeroes = 0;
+    ret->self_allocated = true;
     //We know the final size of row_ptr at creation time
     ret->row_ptr = (bh_intp*) malloc(sizeof(bh_intp)*(nrows+1));
     if(ret->row_ptr == NULL)
@@ -78,15 +79,18 @@ bh_boolmat *bh_boolmat_create(bh_intp nrows)
 void bh_boolmat_destroy(bh_boolmat **boolmat)
 {
     bh_boolmat *b = *boolmat;
-    if(b->row_ptr != NULL)
-        free(b->row_ptr);
-    if(b->col_idx != NULL)
-        bh_vector_destroy(b->col_idx);
-    b->row_ptr = NULL;
-    b->col_idx = NULL;
-    b->nrows = 0;
-    b->non_zeroes = 0;
-    free(b);
+    if(b->self_allocated)
+    {
+        if(b->row_ptr != NULL)
+            free(b->row_ptr);
+        if(b->col_idx != NULL)
+            bh_vector_destroy(b->col_idx);
+        b->row_ptr = NULL;
+        b->col_idx = NULL;
+        b->nrows = 0;
+        b->non_zeroes = 0;
+        free(b);
+    }
     b = NULL;
 }
 
@@ -100,14 +104,31 @@ void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat)
     bh_boolmat *head = (bh_boolmat*) dest;
     head->nrows = boolmat->nrows;
     head->non_zeroes = boolmat->non_zeroes;
+    head->self_allocated = false;
 
     char *body = ((char*)dest) + sizeof(bh_boolmat);
     memcpy(body, boolmat->row_ptr, sizeof(bh_intp)*(boolmat->nrows+1));
     head->row_ptr = (bh_intp*) body;
 
     body += sizeof(bh_intp)*(boolmat->nrows+1);
-    memcpy(body, bh_vector_vector2memblock(boolmat->col_idx), bh_vector_totalsize(boolmat->col_idx));
+    memcpy(body, bh_vector_vector2memblock(boolmat->col_idx),
+                 bh_vector_totalsize(boolmat->col_idx));
     head->col_idx = (bh_intp*) bh_vector_memblock2vector(body);
+
+    //Convert to raletive pointer address
+    head->row_ptr = (bh_intp*)(((bh_intp)head->row_ptr)-((bh_intp)(dest)));
+    head->col_idx = (bh_intp*)(((bh_intp)head->col_idx)-((bh_intp)(dest)));
+}
+
+/* De-serialize the boolmat (inplace)
+ *
+ * @boolmat  The boolean matrix in question
+ */
+void bh_boolmat_deserialize(bh_boolmat *boolmat)
+{
+    //Convert to absolut pointer address
+    boolmat->row_ptr = (bh_intp*)(((bh_intp)boolmat->row_ptr)+((bh_intp)(boolmat)));
+    boolmat->col_idx = (bh_intp*)(((bh_intp)boolmat->col_idx)+((bh_intp)(boolmat)));
 }
 
 /* Fills a empty row in the boolean matrix where all

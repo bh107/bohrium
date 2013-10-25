@@ -45,6 +45,8 @@ typedef struct
     bh_intp *col_idx;
     //Number of non-zeroes in the matrix
     bh_intp non_zeroes;
+    //Whether the boolmat did the memory allocation itself or not
+    bool self_allocated;
 } bh_boolmat;
 
 /* Returns the total size of the boolmat including overhead (in bytes).
@@ -73,6 +75,12 @@ DLLEXPORT void bh_boolmat_destroy(bh_boolmat **boolmat);
  * @dest     The destination of the serialized bolmat
  */
 DLLEXPORT void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat);
+
+/* De-serialize the boolmat (inplace)
+ *
+ * @boolmat  The boolean matrix in question
+ */
+DLLEXPORT void bh_boolmat_deserialize(bh_boolmat *boolmat);
 
 /* Fills a empty row in the boolean matrix where all
  * the following rows are empty as well.
