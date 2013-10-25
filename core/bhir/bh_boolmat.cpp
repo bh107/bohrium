@@ -118,6 +118,8 @@ void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat)
     //Convert to raletive pointer address
     head->row_ptr = (bh_intp*)(((bh_intp)head->row_ptr)-((bh_intp)(dest)));
     head->col_idx = (bh_intp*)(((bh_intp)head->col_idx)-((bh_intp)(dest)));
+    assert(head->row_ptr >= 0);
+    assert(head->col_idx >= 0);
 }
 
 /* De-serialize the boolmat (inplace)
