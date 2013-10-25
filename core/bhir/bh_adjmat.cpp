@@ -165,7 +165,7 @@ void bh_adjmat_serialize(void *dest, const bh_adjmat *adjmat)
     bh_boolmat_serialize(mem, adjmat->mT);
     head->mT = (bh_boolmat*) mem;
 
-    //Convert to raletive pointer address
+    //Convert to relative pointer address
     head->m  = (bh_boolmat*)(((bh_intp)head->m)-((bh_intp)(dest)));
     head->mT = (bh_boolmat*)(((bh_intp)head->mT)-((bh_intp)(dest)));
 }
@@ -180,6 +180,9 @@ void bh_adjmat_deserialize(bh_adjmat *adjmat)
     //Convert to absolut pointer address
     adjmat->m  = (bh_boolmat*)(((bh_intp)adjmat->m)+((bh_intp)(adjmat)));
     adjmat->mT = (bh_boolmat*)(((bh_intp)adjmat->mT)+((bh_intp)(adjmat)));
+
+    bh_boolmat_deserialize(adjmat->m);
+    bh_boolmat_deserialize(adjmat->mT);
 }
 
 

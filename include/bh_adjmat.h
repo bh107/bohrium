@@ -50,7 +50,7 @@ typedef struct
     //Adjacency matrix with a bottom-up direction, i.e. the adjacencies
     //of a row is its dependees (who depends on it).
     bh_boolmat *mT;//Note, it is simply a transposed copy of 'm'.
-    //Whether the boolmat did the memory allocation itself or not
+    //Whether the adjmat did the memory allocation itself or not
     bool self_allocated;
 } bh_adjmat;
 

@@ -115,7 +115,7 @@ void bh_boolmat_serialize(void *dest, const bh_boolmat *boolmat)
                  bh_vector_totalsize(boolmat->col_idx));
     head->col_idx = (bh_intp*) bh_vector_memblock2vector(body);
 
-    //Convert to raletive pointer address
+    //Convert to relative pointer address
     head->row_ptr = (bh_intp*)(((bh_intp)head->row_ptr)-((bh_intp)(dest)));
     head->col_idx = (bh_intp*)(((bh_intp)head->col_idx)-((bh_intp)(dest)));
     assert(head->row_ptr >= 0);
