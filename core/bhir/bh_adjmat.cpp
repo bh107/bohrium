@@ -50,6 +50,7 @@ bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
                                        const bh_instruction instr_list[])
 {
     bh_adjmat *adjmat = (bh_adjmat *) malloc(sizeof(bh_adjmat));
+    adjmat->self_allocated = true;
     adjmat->mT = bh_boolmat_create(ninstr);
     if(adjmat->mT == NULL)
         return NULL;
@@ -142,7 +143,8 @@ void bh_adjmat_destroy(bh_adjmat **adjmat)
     bh_adjmat *a = *adjmat;
     bh_boolmat_destroy(&a->m);
     bh_boolmat_destroy(&a->mT);
-    free(a);
+    if(a->self_allocated)
+        free(a);
     a = NULL;
 }
 
@@ -155,8 +157,29 @@ void bh_adjmat_destroy(bh_adjmat **adjmat)
 void bh_adjmat_serialize(void *dest, const bh_adjmat *adjmat)
 {
     bh_adjmat *head = (bh_adjmat*) dest;
-    bh_boolmat_serialize(head->m, adjmat->m);
-    bh_boolmat_serialize(head->mT, adjmat->mT);
+    head->self_allocated = false;
+    char *mem = (char*)(head+1);
+    bh_boolmat_serialize(mem, adjmat->m);
+    head->m = (bh_boolmat*) mem;
+    mem += bh_boolmat_totalsize(adjmat->m);
+    bh_boolmat_serialize(mem, adjmat->mT);
+    head->mT = (bh_boolmat*) mem;
+
+    //Convert to raletive pointer address
+    head->m  = (bh_boolmat*)(((bh_intp)head->m)-((bh_intp)(dest)));
+    head->mT = (bh_boolmat*)(((bh_intp)head->mT)-((bh_intp)(dest)));
+}
+
+
+/* De-serialize the adjmat (inplace)
+ *
+ * @adjmat  The adjmat in question
+ */
+void bh_adjmat_deserialize(bh_adjmat *adjmat)
+{
+    //Convert to absolut pointer address
+    adjmat->m  = (bh_boolmat*)(((bh_intp)adjmat->m)+((bh_intp)(adjmat)));
+    adjmat->mT = (bh_boolmat*)(((bh_intp)adjmat->mT)+((bh_intp)(adjmat)));
 }
 
 

@@ -50,6 +50,8 @@ typedef struct
     //Adjacency matrix with a bottom-up direction, i.e. the adjacencies
     //of a row is its dependees (who depends on it).
     bh_boolmat *mT;//Note, it is simply a transposed copy of 'm'.
+    //Whether the boolmat did the memory allocation itself or not
+    bool self_allocated;
 } bh_adjmat;
 
 /* Returns the total size of the adjmat including overhead (in bytes).
@@ -82,6 +84,12 @@ DLLEXPORT void bh_adjmat_destroy(bh_adjmat **adjmat);
  * @dest     The destination of the serialized adjmat
  */
 DLLEXPORT void bh_adjmat_serialize(void *dest, const bh_adjmat *adjmat);
+
+/* De-serialize the adjmat (inplace)
+ *
+ * @adjmat  The adjmat in question
+ */
+DLLEXPORT void bh_adjmat_deserialize(bh_adjmat *adjmat);
 
 /* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
  * node indexes that depend on the row'th node.
