@@ -29,6 +29,23 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ir.h"
 #include "bh_vector.h"
 
+/* Returns the total size of the BhIR including overhead (in bytes).
+ *
+ * @bhir    The BhIR in question
+ * @return  Total size in bytes
+ */
+bh_intp bh_ir_totalsize(const bh_ir *bhir)
+{
+    bh_intp size = sizeof(bh_ir) + sizeof(bh_instruction)*bhir->ninstr;
+    size += bh_vector_totalsize(bhir->dag_list);
+    for(bh_intp i=0; i<bhir->ndag; ++i)
+    {
+        bh_dag *dag = &bhir->dag_list[i];
+        size += bh_adjmat_totalsize(dag->adjmat);
+        size += bh_vector_totalsize(dag->node_map);
+    }
+    return size;
+}
 
 /* Creates a Bohrium Internal Representation (BhIR)
  * based on a instruction list. It will consist of one DAG.

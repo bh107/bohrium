@@ -67,6 +67,13 @@ typedef struct
     bh_intp ndag;
 } bh_ir;
 
+/* Returns the total size of the BhIR including overhead (in bytes).
+ *
+ * @bhir    The BhIR in question
+ * @return  Total size in bytes
+ */
+DLLEXPORT bh_intp bh_ir_totalsize(const bh_ir *bhir);
+
 /* Creates a Bohrium Internal Representation (BhIR)
  * based on a instruction list. It will consist of one DAG.
  *
