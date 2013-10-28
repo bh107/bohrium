@@ -286,35 +286,32 @@ void dispatch_array_data(std::stack<bh_base*> &arys)
 }
 
 
-/* Dispatch an instruction list to the slaves, which includes new array-structs.
- * @count is the number of instructions in the list
- * @inst_list is the instruction list
+/* Dispatch the BhIR to the slaves, which includes new array-structs.
+ * @bhir  The BhIR in question
  */
-void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
+void dispatch_bhir(const bh_ir *bhir)
 {
     dispatch_reset();
 
     bh_uint64 stime = bh_timing();
 
     /* The execution message has the form:
-     * 1   x bh_intp NOI //number of instructions
-     * NOI x bh_instruction //instruction list
+     * 1   x bh_ir bhir  //serialized BhIR
      * 1   x bh_intp NOA //number of new arrays
      * NOA x dispatch_array //list of new arrays unknown to the slaves
      * 1   x bh_intp NOU //number of user-defined funstions
      * NOU x bh_userfunc //list of user-defined funstions
      */
 
-    //Pack the number of instructions (NOI).
-    dispatch_add2payload(sizeof(bh_intp), &count);
-
-    //Pack the instruction list.
-    dispatch_add2payload(count * sizeof(bh_instruction), inst_list);
+    //Pack the BhIR.
+    void *msg_bhir;
+    dispatch_reserve_payload(bh_ir_totalsize(bhir), &msg_bhir);
+    bh_ir_serialize(msg_bhir, bhir);
 
     //Make reservation for the number of new arrays (NOA).
     bh_intp msg_noa_offset, noa=0;
-    char *msg_noa;
-    dispatch_reserve_payload(sizeof(bh_intp), (void**) &msg_noa);
+    void *msg_noa;
+    dispatch_reserve_payload(sizeof(bh_intp), &msg_noa);
 
     //We need a message offset instead of a pointer since dispatch_reserve_payload() may
     //re-allocate the 'msg_noa' pointer at a later time.
@@ -324,9 +321,9 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
     std::stack<bh_base*> base_darys;
 
     //Pack the array list.
-    for(bh_intp i=0; i<count; ++i)
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
     {
-        const bh_instruction *inst = &inst_list[i];
+        const bh_instruction *inst = &bhir->instr_list[i];
         int nop = bh_operands_in_instruction(inst);
         for(bh_intp j=0; j<nop; ++j)
         {
@@ -353,16 +350,16 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
 
     //Make reservation for the number of new arrays (NOU).
     bh_intp msg_nou_offset, nou=0;
-    char *msg_nou;
-    dispatch_reserve_payload(sizeof(bh_intp), (void**) &msg_nou);
+    void *msg_nou;
+    dispatch_reserve_payload(sizeof(bh_intp), &msg_nou);
 
     //Again we need a message offset.
     msg_nou_offset = msg->size - sizeof(bh_intp);
 
     //Pack the user-defined function list
-    for(bh_intp i=0; i<count; ++i)
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
     {
-        const bh_instruction *inst = &inst_list[i];
+        const bh_instruction *inst = &bhir->instr_list[i];
         if(inst->opcode == BH_USERFUNC)
         {
             dispatch_add2payload(inst->userfunc->struct_size, inst->userfunc);

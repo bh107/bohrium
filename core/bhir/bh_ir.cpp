@@ -66,6 +66,7 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
         return BH_OUT_OF_MEMORY;
     memcpy(bhir->instr_list, instr_list, instr_nbytes);
     bhir->ninstr = ninstr;
+    bhir->self_allocated = true;
 
     //Allocate the DAG list
     bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), 1, 10);
@@ -98,11 +99,103 @@ void bh_ir_destroy(bh_ir *bhir)
     for(bh_intp i=0; i < bhir->ndag; ++i)
     {
         bh_dag *dag = &bhir->dag_list[i];
-        bh_vector_destroy(dag->node_map);
+        if(bhir->self_allocated)
+            bh_vector_destroy(dag->node_map);
         bh_adjmat_destroy(&dag->adjmat);
     }
-    bh_vector_destroy(bhir->instr_list);
-    bh_vector_destroy(bhir->dag_list);
+    if(bhir->self_allocated)
+    {
+        bh_vector_destroy(bhir->instr_list);
+        bh_vector_destroy(bhir->dag_list);
+    }
+}
+
+
+/* Serialize a Bohrium Internal Representation (BhIR).
+ *
+ * @dest    The destination of the serialized BhIR
+ * @bhir    The BhIR to serialize
+ * @return  Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ */
+bh_error bh_ir_serialize(void *dest, const bh_ir *bhir)
+{
+    bh_intp count = 0;
+    //Serialize the static data of bh_ir
+    bh_ir *b = (bh_ir *) (((char*)dest)+count);
+    b->ninstr = bhir->ninstr;
+    b->ndag = bhir->ndag;
+    b->self_allocated = false;
+
+    //Serialize the instr_list
+    b->instr_list = (bh_instruction *) (b+1);
+    memcpy(b->instr_list, bhir->instr_list,
+           bhir->ninstr*sizeof(bh_instruction));
+    count += sizeof(bh_ir) + b->ninstr*sizeof(bh_instruction);
+
+    //Serialize the static data in the dag_list
+    char *mem = ((char*)dest)+count;
+    memcpy(mem,
+           bh_vector_vector2memblock(bhir->dag_list),
+           bh_vector_totalsize(bhir->dag_list));
+    b->dag_list = (bh_dag*) bh_vector_memblock2vector(mem);
+    count += bh_vector_totalsize(bhir->dag_list);
+
+    //Serialize all adjmats in the dag_list
+    for(bh_intp i=0; i<b->ndag; ++i)
+    {
+        bh_adjmat *a = bhir->dag_list[i].adjmat;
+        mem = ((char*)dest)+count;
+        bh_adjmat_serialize(mem, a);
+        b->dag_list[i].adjmat = (bh_adjmat*) mem;
+        count += bh_adjmat_totalsize(a);
+        //Convert to relative pointer address
+        b->dag_list[i].adjmat = (bh_adjmat*)(((bh_intp)b->dag_list[i].adjmat)-((bh_intp)(dest)));
+        assert(b->dag_list[i].adjmat >= 0);
+    }
+
+    //Serialize all node_maps in the dag_list
+    for(bh_intp i=0; i<b->ndag; ++i)
+    {
+        bh_intp *n = bhir->dag_list[i].node_map;
+        mem = ((char*)dest)+count;
+        memcpy(mem,
+               bh_vector_vector2memblock(n),
+               bh_vector_totalsize(n));
+        b->dag_list[i].node_map = (bh_intp*) bh_vector_memblock2vector(mem);
+        count += bh_vector_totalsize(n);
+        //Convert to relative pointer address
+        b->dag_list[i].node_map = (bh_intp*)(((bh_intp)b->dag_list[i].node_map)-((bh_intp)(dest)));
+        assert(b->dag_list[i].node_map >= 0);
+    }
+
+    //Convert to relative pointer address
+    b->instr_list = (bh_instruction*)(((bh_intp)b->instr_list)-((bh_intp)(dest)));
+    b->dag_list   = (bh_dag*)(((bh_intp)b->dag_list)-((bh_intp)(dest)));
+    assert(b->instr_list >= 0);
+    assert(b->dag_list >= 0);
+
+    return BH_SUCCESS;
+}
+
+
+/* De-serialize the BhIR (inplace)
+ *
+ * @bhir The BhIR in question
+ */
+void bh_ir_deserialize(bh_ir *bhir)
+{
+    //Convert to absolut pointer address
+    bhir->instr_list = (bh_instruction*)(((bh_intp)bhir->instr_list)+((bh_intp)(bhir)));
+    bhir->dag_list   = (bh_dag*)(((bh_intp)bhir->dag_list)+((bh_intp)(bhir)));
+
+    for(bh_intp i=0; i<bhir->ndag; ++i)
+    {
+        bh_dag *d = &bhir->dag_list[i];
+        d->adjmat   = (bh_adjmat*)(((bh_intp)d->adjmat)+((bh_intp)(bhir)));
+        d->node_map = (bh_intp*)(((bh_intp)d->node_map)+((bh_intp)(bhir)));
+
+        bh_adjmat_deserialize(d->adjmat);
+    }
 }
 
 

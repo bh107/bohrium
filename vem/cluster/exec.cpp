@@ -292,101 +292,105 @@ static void execute_regular(bh_instruction *inst)
     }
 }
 
-
-
-/* Execute a list of instructions where all operands are global arrays
+/* Execute a single global instruction where all operands are global arrays
  *
- * @instruction A list of instructions to execute
+ * @instr  The instruction in question that
  * @return Error codes
  */
-bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
+static bh_error execute_instr(bh_instruction *inst)
 {
-    if(count <= 0)
-        return BH_SUCCESS;
+    assert(inst->opcode >= 0);
+    switch(inst->opcode)
+    {
+        case BH_USERFUNC:
+        {
+            if (inst->userfunc->id == random_impl_id)
+            {
+                //TODO: the bh_random is hardcoded for now.
+                if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
+                    EXCEPT("[CLUSTER-VEM] The user-defined function bh_random failed.");
+            }
+            else
+            {
+                fallback_exec(inst);
+            }
+            break;
+        }
+        case BH_ADD_REDUCE:
+            ufunc_reduce(inst, BH_ADD);
+            break;
+        case BH_MULTIPLY_REDUCE:
+            ufunc_reduce(inst, BH_MULTIPLY);
+            break;
+        case BH_MINIMUM_REDUCE:
+            ufunc_reduce(inst, BH_MINIMUM);
+            break;
+        case BH_MAXIMUM_REDUCE:
+            ufunc_reduce(inst, BH_MAXIMUM);
+            break;
+        case BH_LOGICAL_AND_REDUCE:
+            ufunc_reduce(inst, BH_LOGICAL_AND);
+            break;
+        case BH_BITWISE_AND_REDUCE:
+            ufunc_reduce(inst, BH_BITWISE_AND);
+            break;
+        case BH_LOGICAL_OR_REDUCE:
+            ufunc_reduce(inst, BH_LOGICAL_OR);
+            break;
+        case BH_BITWISE_OR_REDUCE:
+            ufunc_reduce(inst, BH_BITWISE_OR);
+            break;
+        case BH_DISCARD:
+        {
+            bh_base *g_ary = bh_base_array(&inst->operand[0]);
+            bh_base *l_ary = array_get_existing_local(g_ary);
+            if(l_ary != NULL)
+            {
+                batch_schedule_inst(BH_DISCARD, l_ary);
+            }
+            dispatch_slave_known_remove(g_ary);
+            break;
+        }
+        case BH_FREE:
+        {
+            bh_base *g_ary = bh_base_array(&inst->operand[0]);
+            bh_base *l_ary = array_get_existing_local(g_ary);
+            bh_data_free(g_ary);
+            if(l_ary != NULL)
+                batch_schedule_inst(BH_FREE, l_ary);
+            break;
+        }
+        case BH_SYNC:
+        {
+            bh_base *base = bh_base_array(&inst->operand[0]);
+            comm_slaves2master(base);
+            break;
+        }
+        case BH_NONE:
+        {
+            break;
+        }
+        default:
+        {
+            execute_regular(inst);
+        }
+    }
+    return BH_SUCCESS;
+}
 
+
+/* Execute a BhIR where all operands are global arrays
+ *
+ * @bhir   The BhIR in question
+ * @return Error codes
+ */
+bh_error exec_execute(bh_ir *bhir)
+{
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
     bh_uint64 stime = bh_timing();
 
-    for(bh_intp i=0; i < count; ++i)
-    {
-        bh_instruction* inst = &inst_list[i];
-        assert(inst->opcode >= 0);
-        switch(inst->opcode)
-        {
-            case BH_USERFUNC:
-            {
-                if (inst->userfunc->id == random_impl_id)
-                {
-                    //TODO: the bh_random is hardcoded for now.
-                    if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
-                        EXCEPT("[CLUSTER-VEM] The user-defined function bh_random failed.");
-                }
-                else
-                {
-                    fallback_exec(inst);
-                }
-                break;
-            }
-            case BH_ADD_REDUCE:
-                ufunc_reduce(inst, BH_ADD);
-                break;
-            case BH_MULTIPLY_REDUCE:
-                ufunc_reduce(inst, BH_MULTIPLY);
-                break;
-            case BH_MINIMUM_REDUCE:
-                ufunc_reduce(inst, BH_MINIMUM);
-                break;
-            case BH_MAXIMUM_REDUCE:
-                ufunc_reduce(inst, BH_MAXIMUM);
-                break;
-            case BH_LOGICAL_AND_REDUCE:
-                ufunc_reduce(inst, BH_LOGICAL_AND);
-                break;
-            case BH_BITWISE_AND_REDUCE:
-                ufunc_reduce(inst, BH_BITWISE_AND);
-                break;
-            case BH_LOGICAL_OR_REDUCE:
-                ufunc_reduce(inst, BH_LOGICAL_OR);
-                break;
-            case BH_BITWISE_OR_REDUCE:
-                ufunc_reduce(inst, BH_BITWISE_OR);
-                break;
-            case BH_DISCARD:
-            {
-                bh_base *g_ary = bh_base_array(&inst->operand[0]);
-                bh_base *l_ary = array_get_existing_local(g_ary);
-                if(l_ary != NULL)
-                {
-                    batch_schedule_inst(BH_DISCARD, l_ary);
-                }
-                dispatch_slave_known_remove(g_ary);
-                break;
-            }
-            case BH_FREE:
-            {
-                bh_base *g_ary = bh_base_array(&inst->operand[0]);
-                bh_base *l_ary = array_get_existing_local(g_ary);
-                bh_data_free(g_ary);
-                if(l_ary != NULL)
-                    batch_schedule_inst(BH_FREE, l_ary);
-                break;
-            }
-            case BH_SYNC:
-            {
-                bh_base *base = bh_base_array(&inst->operand[0]);
-                comm_slaves2master(base);
-                break;
-            }
-            case BH_NONE:
-            {
-                break;
-            }
-            default:
-            {
-                execute_regular(inst);
-            }
-        }
-    }
+    //Execute each instruction in the BhIR starting at the root DAG
+    bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute_instr);
 
     //Lets flush all scheduled tasks
     batch_flush();
