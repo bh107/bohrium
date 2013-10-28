@@ -11,8 +11,6 @@
 ["&=",  "BH_BITWISE_AND",   "bitwise_and", true],
 ["|=",  "BH_BITWISE_OR",    "bitwise_or", true],
 ["^=",  "BH_BITWISE_XOR",   "bitwise_xor", true],
-["<<=", "BH_LEFT_SHIFT",    "left_shift", true],
-[">>=", "BH_RIGHT_SHIFT",   "right_shift", true],
 
 ["+", "BH_ADD",      "add", false],
 ["-", "BH_SUBTRACT", "subtract", false],
