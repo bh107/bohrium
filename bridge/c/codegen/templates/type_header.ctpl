@@ -1,0 +1,86 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+// Common slice range
+struct bh_slice_range;
+typedef bh_slice_range* bh_slice_range_p;
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum, $reduce_ops in $data
+
+// Forward definitions
+struct bh_multi_array_${bh_ctype};
+struct bh_slice_${bh_ctype};
+
+// Shorthand pointer defs
+typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
+typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
+
+// Construct a new empty array
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape);
+
+%if bh_atype != "bh_complex64" and bh_atype != "bh_complex128"
+// Construct a new zero-filled array
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t rank, const int64_t* shape);
+
+// Construct a new one-filled array
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const int64_t rank, const int64_t* shape);
+
+// Construct a new array with sequential numbers
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_arange(const int64_t start, const int64_t end, const int64_t skip);
+
+%end if
+// Construct a new random-filled array
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t rank, const int64_t* shape);
+
+// Construct a new array, filled with the specified value
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, const int64_t rank, const int64_t* shape);
+
+// Construct a copy of the array
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_copy(bh_multi_array_${bh_ctype}_p other);
+
+// Destroy the pointer and release resources
+DLLEXPORT void bh_multi_array_${bh_ctype}_destroy(bh_multi_array_${bh_ctype}_p self);
+
+// Gets the number of elements in the array
+DLLEXPORT uint64_t bh_multi_array_${bh_ctype}_get_length(bh_multi_array_${bh_ctype}_p self);
+
+// Gets the number of dimensions in the array
+DLLEXPORT uint64_t bh_multi_array_${bh_ctype}_get_rank(bh_multi_array_${bh_ctype}_p self);
+
+// Gets the number of elements in the dimension
+DLLEXPORT uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype}_p self, const int64_t dimension);
+
+// Update with a scalar
+DLLEXPORT void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${bh_atype} value);
+
+// Update with an array
+DLLEXPORT void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other);
+
+// Flatten view
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self);
+
+// Transpose view
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self);
+
+%for $opname, $enum in $reduce_ops
+// Partial ${opname} reduction 
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis);
+
+%end for
+
+// Sum
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
+
+// Product
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
+
+// Max
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self);
+
+// Min
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
+
+%end for

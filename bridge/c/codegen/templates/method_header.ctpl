@@ -1,0 +1,45 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+
+%slurp
+
+// Copy methods
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode == "BH_IDENTITY"
+%for $op1_type, $op2_type in $typesigs
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_concert(bh_multi_array_${op2_type[2]}_p other);
+%end for
+%end if
+%end for
+
+
+// Binary functions
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 3
+%for $op1_type, $op2_type, $op3_type in $typesigs
+%if $inplace == False
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs);
+%else
+DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs);
+%end if
+%slurp
+%end for
+
+%end if
+%end for
+
+// Unary functions
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
+%for $op1_type, $op2_type in $typesigs
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+%slurp
+%end for
+
+%end if
+%end for
