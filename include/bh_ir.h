@@ -65,6 +65,8 @@ typedef struct
     bh_dag *dag_list;
     //Number of DAGs in the DAG list
     bh_intp ndag;
+    //Whether the BhIR did the memory allocation itself or not
+    bool self_allocated;
 } bh_ir;
 
 /* Returns the total size of the BhIR including overhead (in bytes).
@@ -90,6 +92,20 @@ DLLEXPORT bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
  * @bhir        The BhIR handle
  */
 DLLEXPORT void bh_ir_destroy(bh_ir *bhir);
+
+/* Serialize a Bohrium Internal Representation (BhIR).
+ *
+ * @dest    The destination of the serialized BhIR
+ * @bhir    The BhIR to serialize
+ * @return  Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ */
+DLLEXPORT bh_error bh_ir_serialize(void *dest, const bh_ir *bhir);
+
+/* De-serialize the BhIR (inplace)
+ *
+ * @bhir The BhIR in question
+ */
+DLLEXPORT void bh_ir_deserialize(bh_ir *bhir);
 
 /* Splits the DAG into an updated version of itself and a new sub-DAG that
  * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
