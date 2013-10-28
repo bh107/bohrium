@@ -40,6 +40,21 @@ multi_array<T>::multi_array() : temp(false), base(NULL)
     meta.stride[0]  = 0;
 }
 
+template <typename T>           // Plain shaped constructor
+multi_array<T>::multi_array(const int64_t rank, const int64_t* sizes) : temp(false), base(NULL)
+{
+    meta.base       = NULL;
+    meta.ndim       = rank;
+    meta.start      = 0;
+
+    int64_t stride = 1;                 // Setup strides
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.shape[i] = sizes[i];
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
+    }
+}
+
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(NULL)
 {
