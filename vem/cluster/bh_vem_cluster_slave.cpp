@@ -80,12 +80,12 @@ int main()
             }
             case BH_CLUSTER_DISPATCH_EXEC:
             {
-                //The number of instructions
-                bh_intp *noi = (bh_intp *)msg->payload;
-                //The master-instruction list
-                bh_instruction *master_list = (bh_instruction *)(noi+1);
+                //Deserialize the BhIRi
+                bh_ir *bhir = (bh_ir*) msg->payload;
+                bh_ir_deserialize(bhir);
+
                 //The number of new arrays
-                bh_intp *noa = (bh_intp *)(master_list + *noi);
+                bh_intp *noa = (bh_intp *)(((char*)msg->payload)+bh_ir_totalsize(bhir));
                 //The list of new arrays
                 dispatch_array *darys = (dispatch_array*)(noa+1); //number of new arrays
                 //The number of user-defined functions
@@ -104,17 +104,10 @@ int main()
                 //Receive the dispatched array-data from the master-process
                 dispatch_array_data(base_darys);
 
-                //Allocate the local instruction list that should reference local arrays
-                bh_instruction *local_list = (bh_instruction *)malloc(*noi*sizeof(bh_instruction));
-                if(local_list == NULL)
-                    check_error(BH_OUT_OF_MEMORY,__FILE__,__LINE__);
-
-                memcpy(local_list, master_list, (*noi)*sizeof(bh_instruction));
-
                 //De-serialize all user-defined function pointers.
-                for(bh_intp i=0; i < *noi; ++i)
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     if(inst->opcode == BH_USERFUNC)
                     {
                         inst->userfunc = (bh_userfunc*) malloc(ufunc->struct_size);
@@ -128,9 +121,9 @@ int main()
                 }
 
                 //Update all instruction to reference local arrays
-                for(bh_intp i=0; i < *noi; ++i)
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     int nop = bh_operands_in_instruction(inst);
                     bh_view *ops = bh_inst_operands(inst);
 
@@ -145,19 +138,18 @@ int main()
                     }
                 }
 
-                check_error(exec_execute(*noi, local_list),__FILE__,__LINE__);
+                check_error(exec_execute(bhir),__FILE__,__LINE__);
 
                 //Free all user-defined function structs
-                for(bh_intp i=0; i < *noi; ++i)
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     if(inst->opcode == BH_USERFUNC)
                     {
                         assert(inst->userfunc != NULL);
                         free(inst->userfunc);
                     }
                 }
-                free(local_list);
                 break;
             }
             default:

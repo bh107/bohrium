@@ -95,7 +95,7 @@ bh_error bh_vem_cluster_execute(bh_ir* bhir)
 //    bh_pprint_instr_list(bhir->instr_list, bhir->ninstr, "BRIDGE" );
 
     //Send the instruction list and operands to the slaves
-    dispatch_inst_list(bhir->ninstr, bhir->instr_list);
+    dispatch_bhir(bhir);
 
-    return exec_execute(bhir->ninstr, bhir->instr_list);
+    return exec_execute(bhir);
 }
