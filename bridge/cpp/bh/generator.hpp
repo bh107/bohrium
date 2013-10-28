@@ -93,10 +93,40 @@ multi_array<T>& random(const Dimensions&... shape)
 }
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, size_t skip)
+multi_array<T>& random(const int64_t rank, const int64_t* shape)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
+    bh_random_type* rinstr = (bh_random_type*)malloc(sizeof(bh_random_type));
+    if (rinstr == NULL) {
+        char err_msg[100];
+        sprintf(err_msg, "Failed alllocating memory for extension-call.");
+        throw std::runtime_error(err_msg);
+    }
+
+    multi_array<T>* result = new multi_array<T>(rank, shape);
+    result->setTemp(true);
     result->link();
+
+    rinstr->id          = Runtime::instance().random_id;        //Set the instruction
+    rinstr->nout        = 1;
+    rinstr->nin         = 0;
+    rinstr->struct_size = sizeof(bh_random_type);
+    rinstr->operand[0]  = result->meta;
+
+    Runtime::instance().enqueue<T>((bh_userfunc*)rinstr);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& arange(const int64_t start, const int64_t end, const int64_t skip)
+{
+    const int64_t tmp[] = { end - start };
+    multi_array<T>* result = new multi_array<T>((const int64_t)1, tmp);
+    result->setTemp(true);
+    result->link();
+
+    *result *= skip;
+    *result += start;
 
     std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
 

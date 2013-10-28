@@ -339,7 +339,10 @@ template <typename T>
 multi_array<T>& random(size_t n, ...);
 
 template <typename T>
-multi_array<T>& arange();
+multi_array<T>& random(const int64_t rank, const int64_t* shape);
+
+template <typename T>
+multi_array<T>& arange(const int64_t start, const int64_t end, const int64_t skip);
 
                             // REDUCTIONS
 template <typename T>       // Partial
