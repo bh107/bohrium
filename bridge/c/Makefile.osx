@@ -11,13 +11,13 @@ OBJ=$(SRC:.cpp=.oo) $(ROOT)/core/libbh.dylib
 
 all: $(LIB)
 
-gen:
+gen: codegen/templates/*.ctpl codegen/*.json codegen/*.py
 	./codegen/gen.py
 	mv codegen/output/*.h include/.
 	mv codegen/output/*.hpp .
 	mv codegen/output/*.cpp .
 
-%.oo: %.cpp $(ROOT)/include/* ../cpp/bh
+%.oo: %.cpp $(ROOT)/include/* ../cpp/bh *.hpp *.cpp include/*.h gen
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ) gen
