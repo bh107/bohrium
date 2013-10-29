@@ -272,6 +272,18 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 2177: return "zII"; // BH_BOOL + (BH_UINT32 << 4) + (BH_UINT32 << 8)
         case 3537: return "zcc"; // BH_BOOL + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
         case 3809: return "zCC"; // BH_BOOL + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
+        case 1314: return "bbl"; // BH_INT8 + (BH_INT8 << 4) + (BH_INT64 << 8)
+        case 1484: return "ddl"; // BH_FLOAT64 + (BH_FLOAT64 << 4) + (BH_INT64 << 8)
+        case 1399: return "SSl"; // BH_UINT16 + (BH_UINT16 << 4) + (BH_INT64 << 8)
+        case 1433: return "LLl"; // BH_UINT64 + (BH_UINT64 << 4) + (BH_INT64 << 8)
+        case 1331: return "ssl"; // BH_INT16 + (BH_INT16 << 4) + (BH_INT64 << 8)
+        case 1467: return "ffl"; // BH_FLOAT32 + (BH_FLOAT32 << 4) + (BH_INT64 << 8)
+        case 1297: return "zzl"; // BH_BOOL + (BH_BOOL << 4) + (BH_INT64 << 8)
+        case 1348: return "iil"; // BH_INT32 + (BH_INT32 << 4) + (BH_INT64 << 8)
+        case 1382: return "BBl"; // BH_UINT8 + (BH_UINT8 << 4) + (BH_INT64 << 8)
+        case 1416: return "IIl"; // BH_UINT32 + (BH_UINT32 << 4) + (BH_INT64 << 8)
+        case 1501: return "ccl"; // BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_INT64 << 8)
+        case 1518: return "CCl"; // BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_INT64 << 8)
         // Sig-Length 2
         case 34: return "bb"; // BH_INT8 + (BH_INT8 << 4)
         case 204: return "dd"; // BH_FLOAT64 + (BH_FLOAT64 << 4)
@@ -420,6 +432,7 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 206: return "Cd"; // BH_COMPLEX128 + (BH_FLOAT64 << 4)
         case 222: return "Cc"; // BH_COMPLEX128 + (BH_COMPLEX64 << 4)
         case 237: return "cC"; // BH_COMPLEX64 + (BH_COMPLEX128 << 4)
+
         default:
             printf("Err: Unsupported type signature %d.\n", typesig);
             return "_UNS_";
