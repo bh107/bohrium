@@ -10,7 +10,7 @@ directiveStartToken = %
 %for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_concert(bh_multi_array_${op2_type[2]}_p other);
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert(bh_multi_array_${op2_type[2]}_p other);
 %end for
 %end if
 %end for
