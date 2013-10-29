@@ -96,7 +96,7 @@ typedef struct
     bh_bool      flat;
     bh_bool      cube;
 } bh_visualize_type;
-DLLEXPORT bh_error bh_visualize(bh_userfunc* arg, void* ve_arg);
+DLLEXPORT bh_error bh_visualizer(bh_userfunc* arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

@@ -48,6 +48,8 @@ static bh_userfunc_impl matmul_impl = NULL;
 static bh_intp matmul_impl_id = 0;
 static bh_userfunc_impl nselect_impl = NULL;
 static bh_intp nselect_impl_id = 0;
+static bh_userfunc_impl visualizer_impl = NULL;
+static bh_intp visualizer_impl_id = 0;
 
 static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
@@ -494,6 +496,8 @@ static bh_error exec(bh_instruction *instr)
                 res = matmul_impl(sij.instr->userfunc, NULL);
             } else if(sij.instr->userfunc->id == nselect_impl_id) {
                 res = nselect_impl(sij.instr->userfunc, NULL);
+            } else if(sij.instr->userfunc->id == visualizer_impl_id) {
+                res = visualizer_impl(sij.instr->userfunc, NULL);
             } else {                            // Unsupported userfunc
                 res = BH_USERFUNC_NOT_SUPPORTED;
             }
@@ -719,6 +723,7 @@ bh_error bh_ve_cpu_shutdown(void)
 
 bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
+
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
             random_impl_id = *id;
@@ -740,7 +745,21 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
         }
-    } else if(strcmp("bh_nselect", fun) == 0) {
+    }  else if (strcmp("bh_visualizer", fun) == 0) {
+    	if (visualizer_impl == NULL) {
+            bh_component_get_func(myself, fun, &visualizer_impl);
+            if (visualizer_impl == NULL) {
+                return BH_USERFUNC_NOT_SUPPORTED;
+            }
+
+            visualizer_impl_id = *id;
+            return BH_SUCCESS;
+        } else {
+        	*id = visualizer_impl_id;
+        	return BH_SUCCESS;
+        }
+    }
+    else if(strcmp("bh_nselect", fun) == 0) {
         if (nselect_impl == NULL) {
             bh_component_get_func(myself, fun, &nselect_impl);
             if (nselect_impl == NULL) {
