@@ -21,7 +21,6 @@ typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 // Construct a new empty array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape);
 
-%if bh_atype != "bh_complex64" and bh_atype != "bh_complex128"
 // Construct a new zero-filled array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t rank, const int64_t* shape);
 
@@ -31,7 +30,6 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const
 // Construct a new array with sequential numbers
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_arange(const int64_t start, const int64_t end, const int64_t skip);
 
-%end if
 // Construct a new random-filled array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t rank, const int64_t* shape);
 

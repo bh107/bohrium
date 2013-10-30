@@ -22,7 +22,6 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t 
     return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
 }
 
-%if bh_atype != "bh_complex64" and bh_atype != "bh_complex128"
 // Construct a new zero-filled array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
@@ -48,7 +47,6 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_arange(const int64_t
     return (bh_multi_array_${bh_ctype}_p)&(arange<${ctype}>(start, end, skip));
 }
 
-%end if
 // Construct a new random-filled array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t rank, const int64_t* shape) {
     return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(rank, shape));
