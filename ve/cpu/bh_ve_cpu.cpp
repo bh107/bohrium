@@ -79,7 +79,7 @@ void bh_string_option(char *&option, const char *env_name, const char *conf_name
     char err_msg[100];
 
     if (!option) {
-        sprintf(err_msg, "Err: String is not set; option (%s).\n", conf_name);
+        sprintf(err_msg, "cpu-ve: String is not set; option (%s).\n", conf_name);
         throw runtime_error(err_msg);
     }
 }
@@ -93,16 +93,16 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
     char err_msg[100];
 
     if (!option) {
-        sprintf(err_msg, "Err: Path is not set; option (%s).\n", conf_name);
+        sprintf(err_msg, "cpu-ve: Path is not set; option (%s).\n", conf_name);
         throw runtime_error(err_msg);
     }
     if (0 != access(option, F_OK)) {
         if (ENOENT == errno) {
-            sprintf(err_msg, "Err: Path does not exist; path (%s).\n", option);
+            sprintf(err_msg, "cpu-ve: Path does not exist; path (%s).\n", option);
         } else if (ENOTDIR == errno) {
-            sprintf(err_msg, "Err: Path is not a directory; path (%s).\n", option);
+            sprintf(err_msg, "cpu-ve: Path is not a directory; path (%s).\n", option);
         } else {
-            sprintf(err_msg, "Err: Path is broken somehow; path (%s).\n", option);
+            sprintf(err_msg, "cpu-ve: Path is broken somehow; path (%s).\n", option);
         }
         throw runtime_error(err_msg);
     }
@@ -418,11 +418,11 @@ string specialize(bh_sij_t &sij) {
             break;
 
         default:
-            printf("cpu: Err=[Unsupported ufunc...]\n");
+            printf("cpu-ve: Err=[Unsupported ufunc...]\n");
     }
 
     if (!cres) {
-        throw runtime_error("cpu: Failed specializing code.");
+        throw runtime_error("cpu-ve: Failed specializing code.");
     }
 
     string sourcecode = "";
