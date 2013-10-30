@@ -125,10 +125,14 @@ multi_array<T>& arange(const int64_t start, const int64_t end, const int64_t ski
     result->setTemp(true);
     result->link();
 
+    for(int64_t i = 0; i < (end-start); i++) {
+        (*result)[i] = (T)i;
+    }
+
     *result *= skip;
     *result += start;
 
-    std::cout << "range(" << start << "," << end << "," << skip << ");" << std::endl;
+    std::cout << "arange(" << start << "," << end << "," << skip << ");" << std::endl;
 
     return *result;
 }
