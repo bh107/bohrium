@@ -40,9 +40,9 @@ def main():
     output_dir  = script_dir + "output" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
 
-    reductions       = json.loads(open(script_dir+'reductions.json').read())
+    reductions  = json.loads(open(script_dir+'reductions.json').read())
     opcodes     = json.loads(open(script_dir+'..'+ os.sep+'..'+ os.sep +'..'+ os.sep +'core'+ os.sep +'codegen'+ os.sep +'opcodes.json').read())
-    types       = json.loads(open(script_dir+'element_types.json').read())
+    types       = json.loads(open(script_dir+'..'+ os.sep+'..'+ os.sep + 'cpp' + os.sep + 'codegen' + os.sep +'element_types.json').read())
 
     operators   = json.loads(open(script_dir +'operators.json').read())
 
