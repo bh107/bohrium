@@ -37,8 +37,8 @@ namespace NumCIL
         /// in the CIL/VES. Threads and unsafe methods may still be
         /// used.
         /// </summary>
-        public class FlushMethods
-        {
+        public static class FlushMethods
+        {        
             /// <summary>
             /// Applies a binary operation using the two operands without lazy evaluation.
             /// Assumes that the target array is allocated and shaped for broadcast.
@@ -118,7 +118,7 @@ namespace NumCIL
             }
 
             /// <summary>
-            /// Reduces the input argument on the specified axis without lzy evaluation.
+            /// Reduces the input argument on the specified axis without lazy evaluation.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
             /// <typeparam name="C">The type of operation to reduce with</typeparam>
@@ -126,7 +126,6 @@ namespace NumCIL
             /// <param name="in1">The input argument</param>
             /// <param name="axis">The axis to reduce</param>
             /// <param name="out">The output target</param>
-            /// <returns>The output target</returns>
             public static void Reduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IBinaryOp<T>
             {
@@ -145,7 +144,6 @@ namespace NumCIL
             /// <param name="in1">The left-hand-side argument</param>
             /// <param name="in2">The right-hand-side argument</param>
             /// <param name="out">An optional output argument, use for in-place operations</param>
-            /// <returns>An array with the matrix multiplication result</returns>
             public static void Matmul<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
                 where CADD : struct, IBinaryOp<T>
                 where CMUL : struct, IBinaryOp<T>
