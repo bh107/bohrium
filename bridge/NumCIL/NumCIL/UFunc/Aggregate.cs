@@ -107,7 +107,11 @@ namespace NumCIL
                 return v.Value[0];
             }
             else
-                return FlushMethods.Aggregate<T, C>(op, in1);
+            {
+                T result;
+                ApplyManager.ApplyAggregate<T, C>(op, in1, out result);
+                return result;
+            }
         }
 
         /// <summary>

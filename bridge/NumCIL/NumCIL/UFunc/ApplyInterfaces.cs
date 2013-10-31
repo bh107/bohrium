@@ -1,4 +1,4 @@
-﻿#region Copyright
+#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -28,19 +28,12 @@ using NumCIL.Generic;
 
 namespace NumCIL
 {
-    public static partial class UFunc
+    public partial class UFunc
     {
-        /// <summary>
-        /// This class is the entry point for all methods that
-        /// execute without using the lazy mechanism, meaning that
-        /// they will all request lazy data (if required) and execute
-        /// in the CIL/VES. Threads and unsafe methods may still be
-        /// used.
-        /// </summary>
-        public static class FlushMethods
-        {        
+        public interface IApplyBinaryOp 
+        {
             /// <summary>
-            /// Applies a binary operation using the two operands without lazy evaluation.
+            /// Applies a binary operation using the two operands.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
@@ -49,14 +42,15 @@ namespace NumCIL
             /// <param name="in1">One input operand</param>
             /// <param name="in2">Another input operand</param>
             /// <param name="out">The target operand, must be allocated and shaped for broadcast</param>
-            public static void ApplyBinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out)
-                    where C : struct, IBinaryOp<T>
-            {
-                Threads.BinaryOp<T, C>(op, in1, in2, @out);
-            }
-
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyBinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out) 
+                where C : struct, IBinaryOp<T>;
+        }
+        
+        public interface IApplyBinaryConvOp
+        {
             /// <summary>
-            /// Applies a binary operation using the two operands without lazy evaluation.
+            /// Applies a binary operation using the two operands.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
             /// <typeparam name="Ta">The type of input data to operate on</typeparam>
@@ -66,14 +60,15 @@ namespace NumCIL
             /// <param name="in1">One input operand</param>
             /// <param name="in2">Another input operand</param>
             /// <param name="out">The target operand, must be allocated and shaped for broadcast</param>
-            public static void ApplyBinaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out)
-                    where C : struct, IBinaryConvOp<Ta, Tb>
-            {
-                Threads.BinaryConvOp<Ta, Tb, C>(op, in1, in2, @out);
-            }
-
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyBinaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out) 
+                where C : struct, IBinaryConvOp<Ta, Tb>;
+        }
+        
+        public interface IApplyUnaryOp 
+        {
             /// <summary>
-            /// Applies a unary operation using the input operand without lazy evaluation.
+            /// Applies a unary operation using the input operand.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
@@ -81,14 +76,15 @@ namespace NumCIL
             /// <param name="op">The operation to use</param>
             /// <param name="in1">The input operand</param>
             /// <param name="out">The target operand, must be allocated and shaped for broadcast</param>
-            public static void ApplyUnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out)
-                where C : struct, IUnaryOp<T>
-            {
-                Threads.UnaryOp<T, C>(op, in1, @out);
-            }
-
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyUnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out) 
+                where C : struct, IUnaryOp<T>;
+        }
+        
+        public interface IApplyUnaryConvOp
+        {
             /// <summary>
-            /// Applies a unary conversion operation using the input operand without lazy evaluation.
+            /// Applies a unary conversion operation using the input operand.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
             /// <typeparam name="Ta">The type of data to convert from</typeparam>
@@ -97,28 +93,30 @@ namespace NumCIL
             /// <param name="op">The operation to use</param>
             /// <param name="in1">The input operand</param>
             /// <param name="out">The target operand, must be allocated and shaped for broadcast</param>
-            public static void ApplyUnaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out)
-                where C : struct, IUnaryConvOp<Ta, Tb>
-            {
-                Threads.UnaryConvOp<Ta, Tb, C>(op, in1, @out);
-            }
-
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyUnaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out) 
+                where C : struct, IUnaryConvOp<Ta, Tb>;
+        }
+        
+        public interface IApplyNullaryOp 
+        {
             /// <summary>
-            /// Applies a nullary operation to each element in the output operand without lazy evaluation.
+            /// Applies a nullary operation to each element in the output operand.
             /// Assumes that the target array is allocated.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
             /// <typeparam name="C">The type of operation to perform</typeparam>
             /// <param name="op">The operation to use</param>
             /// <param name="out">The target operand, must be allocated and shaped for broadcast</param>
-            public static void ApplyNullaryOp<T, C>(C op, NdArray<T> @out)
-                where C : struct, INullaryOp<T>
-            {
-                Threads.NullaryOp<T, C>(op, @out);
-            }
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyNullaryOp<T, C>(C op, NdArray<T> @out) 
+                where C : struct, INullaryOp<T>;
+        }
 
+        public interface IApplyReduce 
+        {
             /// <summary>
-            /// Reduces the input argument on the specified axis without lazy evaluation.
+            /// Reduces the input argument on the specified axis.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
             /// <typeparam name="C">The type of operation to reduce with</typeparam>
@@ -126,15 +124,15 @@ namespace NumCIL
             /// <param name="in1">The input argument</param>
             /// <param name="axis">The axis to reduce</param>
             /// <param name="out">The output target</param>
-            public static void Reduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
-                where C : struct, IBinaryOp<T>
-            {
-                Threads.Reduce<T, C>(op, axis, in1, @out);
-            }
-
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyReduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+                where C : struct, IBinaryOp<T>;
+        }
+        
+        public interface IApplyMatmul
+        {
             /// <summary>
-            /// Performs matrix multiplication on the two operands, using the supplied methods,
-            /// without using lazy evaluation.
+            /// Performs matrix multiplication on the two operands, using the supplied methods.
             /// </summary>
             /// <typeparam name="T">The type of data to operate on</typeparam>
             /// <typeparam name="CADD">The typed add operator</typeparam>
@@ -144,13 +142,14 @@ namespace NumCIL
             /// <param name="in1">The left-hand-side argument</param>
             /// <param name="in2">The right-hand-side argument</param>
             /// <param name="out">An optional output argument, use for in-place operations</param>
-            public static void Matmul<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
+            /// <returns>True if the operation was applied, false otherwise</returns>
+            bool ApplyMatmul<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
                 where CADD : struct, IBinaryOp<T>
-                where CMUL : struct, IBinaryOp<T>
-            {
-                UFunc.UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
-            }
-
+                where CMUL : struct, IBinaryOp<T>;
+        }
+        
+        public interface IApplyAggregate
+        {
             /// <summary>
             /// Calculates the scalar result of applying the binary operation to all elements
             /// </summary>
@@ -158,13 +157,11 @@ namespace NumCIL
             /// <typeparam name="C">The operation to perform</typeparam>
             /// <param name="op">The operation to reduce with</param>
             /// <param name="in1">The array to aggregate</param>
-            /// <returns>A scalar value that is the result of aggregating all elements</returns>
-            public static T Aggregate<T, C>(C op, NdArray<T> in1)
-                where C : struct, IBinaryOp<T>
-            {
-                return UFunc.UFunc_Aggregate_Inner_Flush<T, C>(op, in1);
-            }
-
-        }
+            /// <param name="result">A scalar value that is the result of aggregating all elements</param>
+            /// <returns>True if the operation was applied, false otherwise</returns>            
+            bool ApplyAggregate<T, C>(C op, NdArray<T> in1, out T result)
+                where C : struct, IBinaryOp<T>;
+        }        
     }
 }
+

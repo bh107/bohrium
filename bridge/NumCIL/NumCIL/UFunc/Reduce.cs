@@ -140,7 +140,7 @@ namespace NumCIL
             if (v.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)v.DataAccessor).AddOperation(new LazyReduceOperation<T>(new C(), axis), v, in1);
             else
-                FlushMethods.Reduce<T, C>(op, axis, in1, v);
+                ApplyManager.ApplyReduce<T, C>(op, axis, in1, v);
 
             return v;
         }
