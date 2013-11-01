@@ -74,6 +74,7 @@ void transitive_reduction_filter(bh_ir *bhir)
                 printf("Filling of row %ld in the boolean matrix failed: %s\n", k, bh_error_text(e));
                 throw std::exception();
             }
+            bh_boolmat_destroy(&adjmat->mT);
             adjmat->mT = bh_boolmat_transpose(adjmat->m);
             if(adjmat->mT == NULL)
             {
