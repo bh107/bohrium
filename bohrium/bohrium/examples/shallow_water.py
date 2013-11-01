@@ -7,6 +7,7 @@ So what does this code example illustrate?
 Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 """
 import bohrium as np
+import bohriumbridge as bridge
 
 g = 9.80665 # gravitational acceleration
 
@@ -29,7 +30,7 @@ def model(height, width, dtype=np.float32, bohrium=True):
     assert width >= 16
 
     m = np.ones((height, width),dtype=dtype,bohrium=bohrium)
-    D = droplet(8., 8)  # simulate a water drop
+    D = droplet(8, 8)  # simulate a water drop
     droploc = height / 4
     (dropx, dropy) = D.shape
     m[droploc:droploc + dropx, droploc:droploc + dropy] += D
@@ -91,9 +92,13 @@ def step(H, U, V, dt=0.02, dx=1.0, dy=1.0):
 
     return (H, U, V)
 
-def simulate(H, timesteps):
+def simulate(H, timesteps, visualize=False):
     U = np.zeros_like(H)
     V = np.zeros_like(H)
     for i in xrange(timesteps):
         (H, U, V) = step(H, U, V)
+        if visualize:
+            assert H.dtype == np.float32
+            bridge.visualize(H, "3d", 0, 0.0, 5.5)
+
     return H
