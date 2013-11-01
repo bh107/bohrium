@@ -72,6 +72,12 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
                                   bh_index   nelements,
                                   bh_base**  new_base);
 
+/** Destroy the base array.
+ *
+ * @param base  The base array in question
+ */
+DLLEXPORT void bh_destroy_base(bh_base**  base);
+
 #ifdef __cplusplus
 }
 #endif

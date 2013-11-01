@@ -27,9 +27,9 @@ If not, see <http://www.gnu.org/licenses/>.
  * @param new_base The handler for the newly created base
  * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_create_base(bh_type    type,
-                                  bh_index   nelements,
-                                  bh_base**  new_base)
+bh_error bh_create_base(bh_type    type,
+                        bh_index   nelements,
+                        bh_base**  new_base)
 {
 
     bh_base *base = (bh_base *) malloc(sizeof(bh_base));
@@ -43,3 +43,14 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
     return BH_SUCCESS;
 }
 
+
+/** Destroy the base array.
+ *
+ * @param base  The base array in question
+ */
+void bh_destroy_base(bh_base**  base)
+{
+    bh_base *b = *base;
+    free(b);
+    b = NULL;
+}
