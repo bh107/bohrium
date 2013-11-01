@@ -1,11 +1,33 @@
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "visualizer.hpp"
-/* Visualizer Class
- * Holds the arrays containing vertices, indicies, normals and colors
- *
- */
 #define XWIDTH 100.0f
 #define ZWIDTH 100.0f
 #define YWIDTH 100.0f
+
+/*
+ *
+ * Wrapper functions for the freeglut display function.
+ *
+ */
 
 void display3DWrapper()
 {
@@ -31,8 +53,13 @@ void keyHitWrapper(unsigned char key, int x, int y)
 {
     Visualizer::getInstance().keyHit(key, x, y);
 }
+
 /*
- *  Singleton specific member functions
+ *
+ * Implementation of the visualizer user function.
+ * The Visualizer class is a singleton class. This is needed to keep the state
+ * of the visualizer.
+ *
  */
 Visualizer& Visualizer::getInstance()
 {
@@ -55,7 +82,6 @@ void Visualizer::setValues(bh_view* _bh, int w, int h, int d, int _cm, bool f, b
         width = w;
         height = h;
         depth = d;
-        cout << "w:" << width << ", h:" << height << ", depth: " << depth << endl;
         flat = f;
         cubes = c;
         min = _min;
@@ -71,18 +97,6 @@ void Visualizer::setValues(bh_view* _bh, int w, int h, int d, int _cm, bool f, b
         else
             vertices = new float[6*width*height*depth];
 
-        cout << "A->ndim " << A->ndim << endl;
-        cout << "A->shape " << A->shape[0] << ", " <<  A->shape[1] << ", " << A->shape[2] <<endl;
-        cout << "A->stride " << A->stride[0] << ", " <<  A->stride[1] << ", " << A->stride[2] <<endl;
-        cout << "A->start " << A->start << endl;
-        cout << "Array:" << endl;
-        for (int i = 0; i < A->shape[0]; i++){
-            for (int j = 0; j < A->shape[1]; j++)
-            {
-                cout << ((float*)B->data)[A->start + i*A->stride[0]+j*A->stride[1]] << ", ";
-            }
-            cout << endl;
-        }
         showLines = false;
         cm = colormaps[_cm];
         initOpenGL();
@@ -114,6 +128,14 @@ Visualizer::~Visualizer()
   delete[] indices;
   delete[] colors;
 }
+
+/*
+ *
+ * Run function
+ *
+ * This function is the one which refreshed the given scene.
+ *
+ */
 void Visualizer::run(bh_view* array)
 {
     A = array;
@@ -210,9 +232,6 @@ void Visualizer::initOpenGL()
         glutDisplayFunc(&displayCubeWrapper);
     }
     glutKeyboardFunc(&keyHitWrapper);
-    //glutKeyboardFunc(&keyHit);
-    //glutMouseFunc(&mouseClicked);
-    //glutMotionFunc(&mouseMoved);
 
 }
 
@@ -263,25 +282,12 @@ void Visualizer::computeVertices3D()
 }
 void Visualizer::updateArray3D()
 {
-  //int j = 0;
-  ////cout << "vertices[3*i+1] ";
-  //for (int i = 0; i < nbPoints; i++)
-  //{
-  //  vertices[3*i+1] = ((float*)B->data)[j];
-  //  //cout << 3*i+1 << " ";
-
-  //}
-  //cout << endl;
-  //cout << "[i*A->shape[0] + j] ";
   for (int i = 0; i < A->shape[0]; i++){
       for (int j = 0; j < A->shape[1]; j++)
       {
-  //        cout << ((float*)B->data)[A->start + i*A->stride[0]+j*A->stride[1]] << ", ";
           vertices[3*(i * width + j)+1] = ((float*)B->data)[A->start + i*A->stride[0]+j*A->stride[1]];
-  //          cout << (3*(i * width + j)+1) << ", ";
       }
   }
-  //cout << endl;
 
   updateColors();
   updateNormals();
@@ -522,9 +528,9 @@ void Visualizer::displayCube(){
         {
             for (int z = 0; z < depth; z++)
             {
-                if (((float *)B->data)[(x * width + y) * depth + z] > 0.0)
+                if (((float *)B->data)[A->start + x*A->stride[0]+y*A->stride[1] + z*A->stride[2]] > 0.0)
                 {
-                    drawCube(x, y , z, ((float *)B->data)[(x * width + y) * depth + z]);
+                    drawCube(x, y , z, ((float *)B->data)[A->start + x*A->stride[0]+y*A->stride[1] + z*A->stride[2]]);
                 }
             }
         }
