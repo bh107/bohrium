@@ -3,6 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
+%set $ops = $data[0]
+%set $reduce_ops = $data[1]
+
 
 #include <bh.hpp>
 #include "include/bh_c_data_types.h"
@@ -11,8 +14,12 @@ directiveStartToken = %
 
 using namespace bh;
 
+// Common runtime methods
+void bh_runtime_flush() {
+    Runtime::instance().flush();
+}
 
-%for $ctype, $bh_atype, $bh_ctype, $bh_enum, $reductions in $data
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
 
 // $bh_enum
 
@@ -97,4 +104,35 @@ void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, 
     (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
 }
 
+%for $opname, $enum in $reduce_ops
+// Partial ${opname} reduction 
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
+    return (bh_multi_array_${bh_ctype}_p)&reduce(*((multi_array<${ctype}>*)self), ${enum}, axis);
+}
+
+%end for
+%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128"
+
+// Sum
+${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(sum(*((multi_array<${ctype}>*)self)));
+}
+
+// Product
+${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(product(*((multi_array<${ctype}>*)self)));
+}
+
+// Max
+${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(max(*((multi_array<${ctype}>*)self)));
+}
+
+
+// Min
+${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(min(*((multi_array<${ctype}>*)self)));
+}
+
+%end if
 %end for

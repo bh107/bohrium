@@ -16,7 +16,7 @@ struct bh_slice_range {
 };
 
 
-%for $ctype, $bh_atype, $bh_ctype, $bh_enum, $reductions in $data
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 
 // $bh_enum
 

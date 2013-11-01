@@ -4,11 +4,21 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Common runtime methods
+DLLEXPORT void bh_runtime_flush();
+
 // Common slice range
 struct bh_slice_range;
 typedef bh_slice_range* bh_slice_range_p;
 
-%for $ctype, $bh_atype, $bh_ctype, $bh_enum, $reduce_ops in $data
+%set $ops = $data[0]
+%set $reduce_ops = $data[1]
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
 
 // Forward definitions
 struct bh_multi_array_${bh_ctype};
@@ -82,3 +92,7 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
 
 %end for
+
+#ifdef __cplusplus
+}
+#endif

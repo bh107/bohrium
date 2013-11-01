@@ -11,7 +11,18 @@ directiveStartToken = %
 
 using namespace bh;
 
-%slurp
+// Copy methods
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode == "BH_IDENTITY"
+%for $op1_type, $op2_type in $typesigs
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other) {
+    return (bh_multi_array_${op1_type[2]}_p)new multi_array<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
+}
+
+%end for
+%end if
+%end for
 
 // Binary functions
 
@@ -20,7 +31,7 @@ using namespace bh;
 %for $op1_type, $op2_type, $op3_type in $typesigs
 %if $inplace == False
 %if len($op) <= 2
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
     return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
 }
 %else

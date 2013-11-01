@@ -74,13 +74,10 @@ def main():
 
         op_map.append((name, opcode, t, nop, inplace, typesigs))
 
-    for n in types:
-        n.append(reductions)
-
     gens = [
-        ('type_header.ctpl',                'bh_c_data_types.h',                    types),
+        ('type_header.ctpl',                'bh_c_data_types.h',                    (types, reductions)),
         ('type_definitions.ctpl',           'bh_c_type_definitions.hpp',            types),
-        ('implementation_basics.ctpl',      'bh_c_implementation_basics.cpp',       types),
+        ('implementation_basics.ctpl',      'bh_c_implementation_basics.cpp',       (types, reductions)),
         ('method_header.ctpl',              'bh_c_interface.h',                     op_map),
         ('implementation.ctpl',             'bh_c_implementation.cpp',              op_map),
     ]
