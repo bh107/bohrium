@@ -164,9 +164,9 @@ if __name__ == "__main__":
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU",    "ve/cpu", True),\
-                  ("VE-SCORE",  "ve/static/score", False),\
-                  ("VE-MCORE",  "ve/static/mcore", False),\
-                  ("VE-TILING", "ve/static/tiling", False),\
+                  #("VE-SCORE",  "ve/static/score", False),\
+                  #("VE-MCORE",  "ve/static/mcore", False),\
+                  #("VE-TILING", "ve/static/tiling", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
                   #("FILTER-POWER", "filter/power", False),\
@@ -177,6 +177,7 @@ if __name__ == "__main__":
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 

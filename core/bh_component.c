@@ -425,6 +425,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         while(path != NULL)
         {
             void *lib_handle = dlopen(path, RTLD_NOW);
+
             if(lib_handle != NULL)
             {
                 dlerror();//Clear old errors.
@@ -432,6 +433,13 @@ bh_error bh_component_get_func(bh_component *self, char *func,
                 char *err = dlerror();
                 if(err == NULL)
                     return BH_SUCCESS;
+
+    if(err != NULL)
+    {
+        *ret_func = NULL;//Make sure it is NULL on error.
+        fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
+        return BH_USERFUNC_NOT_SUPPORTED;
+    }
             }
             path = strtok(NULL,",");
         }
