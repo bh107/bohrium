@@ -2834,5 +2834,18 @@
             ["BH_INT64",    "BH_INT64",     "BH_INT64"],
             ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
         ]
+    },
+    {
+        "opcode": "BH_RANDOM",
+        "doc": "Random123: The returned result is a deterministic function of the key and counter, i.e. a unique (counter, key) tuple will always produce the same result. The result is highly sensitive to small changes in the inputs, so that the sequence of values produced by simply incrementing the counter (or key) is effectively indistinguishable from a sequence of samples of a uniformly distributed random variable.",
+        "code": "op1 = threefry2x64(op2, op3)",
+        "nop": 3,
+        "id": 69,
+        "system_opcode": false,
+        "elementwise": false,
+        "types": [
+            ["BH_UINT32",   "BH_UINT64",    "BH_UINT64"],
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"],
+        ]
     }
 ]
