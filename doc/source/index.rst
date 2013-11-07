@@ -47,5 +47,6 @@ Get Started!
 
    faq
    bugs
+   publications
    license
 
