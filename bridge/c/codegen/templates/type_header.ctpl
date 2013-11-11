@@ -35,6 +35,9 @@ typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 // Create a base pointer from existing data
 DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem);
 
+// Destroy a base pointer
+DLLEXPORT void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base);
+
 // Construct a new array from bh_base_p and view setup
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 

@@ -33,6 +33,11 @@ bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem
     return base;
 }
 
+void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base)
+{
+    delete base;
+}
+
 // Construct a new array from bh_base_p and bh_view_p
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
 {
