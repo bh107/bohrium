@@ -50,6 +50,7 @@ inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
     return 0;
 }
 
+#ifndef NO_VARIADICS
 template <typename ...Args>
 int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
 {
@@ -58,6 +59,7 @@ int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
 
     return 1;
 }
+#endif
 
 //
 // Extensions
@@ -129,8 +131,10 @@ public:
     template <typename OtherT>
     multi_array(const multi_array<OtherT> &operand);    // Copy
 
+#ifndef NO_VARIADICS
     template <typename ...Dimensions>                   // Variadic constructor
     multi_array(Dimensions... dims);
+#endif
 
     // ** Deconstructor **
     ~multi_array();
@@ -376,9 +380,10 @@ T scalar(multi_array<T>& op);
 template <typename T, typename FromT>     // Typecast; implicit copy
 multi_array<T>& as(multi_array<FromT>& rhs);
 
+#ifndef NO_VARIADICS
 template <typename T, typename ...Dimensions>   // 
 multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
-
+#endif
                             //
                             // What are these called? Transformers??? :)
                             //

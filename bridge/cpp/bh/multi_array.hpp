@@ -70,6 +70,7 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), b
     meta.base = NULL;
 }
 
+#ifndef NO_VARIADICS
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
 multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
@@ -86,6 +87,7 @@ multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
         stride *= meta.shape[i];
     }
 }
+#endif
 
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
@@ -393,6 +395,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     return *this;
 }
 
+#ifndef NO_VARIADICS
 /**
  *  Aliasing through reshaping.
  */
@@ -420,6 +423,7 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
 
     return *result;
 }
+#endif
 
 //
 // Update
