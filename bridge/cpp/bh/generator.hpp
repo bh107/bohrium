@@ -75,8 +75,8 @@ multi_array<T>& random(const Dimensions&... shape)
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
     Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)42, *result);
     
     result->setTemp(true);
@@ -86,12 +86,15 @@ multi_array<T>& random(const Dimensions&... shape)
 template <typename T>
 multi_array<T>& range(size_t start, size_t end, size_t skip)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
+    if (start>=end) {
+        throw std::runtime_error("Error: Invalid range.");
+    }
+    multi_array<T>* result = new multi_array<T>((end-start+1)/skip);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)start);
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)skip);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)start);
 
     result->setTemp(true);
     return *result;

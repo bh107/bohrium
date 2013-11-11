@@ -28,11 +28,11 @@ void compute()
     cout << "Hello World." << endl;
 
     multi_array<double> x, y;
-    //x = ones<double>(3,3);
     x = random<double>(3,3);
-    
-    cout << x << endl;
-    cout << "Leaving compute!" << endl;
+    cout << "RANDOM: " << x << endl;
+
+    x = range<double>(1,10,2);
+    cout << "RANGE: " << x << endl;
 }
 
 int main()
