@@ -77,19 +77,34 @@ multi_array<T>& random(const Dimensions&... shape)
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
     Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)42, *result);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
     
     result->setTemp(true);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, size_t skip)
+multi_array<T>& range(size_t start, size_t end, int64_t skip)
 {
-    if (start>=end) {
-        throw std::runtime_error("Error: Invalid range.");
+    if ((start > end) && (skip>0)) {
+        throw std::runtime_error("Error: Invalid range [start>end when skip>0].");
+    } else if((start < end) && (skip<0)) {
+        throw std::runtime_error("Error: Invalid range [start<end when skip<0].");
+    } else if (skip==0) {
+        throw std::runtime_error("Error: Invalid range [skip=0].");
+    } else if (start==end) {
+        throw std::runtime_error("Error: Invalid range [start=end].");
     }
-    multi_array<T>* result = new multi_array<T>((end-start+1)/skip);
+    
+    uint64_t nelem;
+    if (skip>0) {
+        nelem = (end-start+1)/skip;
+    } else {
+        nelem = (start-end+1)/abs(skip);
+    }
+    //printf("Start=%ld, end=%ld, skip=%ld, Nelem=%ld\n", start, end, skip, nelem);
+
+    multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
