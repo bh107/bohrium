@@ -3,7 +3,7 @@ LIB=libbhc.dylib
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
 ARCHOPTS?=-arch i386 -arch x86_64
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -DNO_VARIADICS -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
 LDFLAGS= $(ARCHOPTS) -shared  -Wl,-dylib_install_name,$(LIB)
 
 SRC=bh_c_implementation_basics.cpp bh_c_implementation.cpp

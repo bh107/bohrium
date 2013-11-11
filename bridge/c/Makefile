@@ -2,7 +2,7 @@ ROOT=../..
 LIB=libbhc.so
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -DNO_VARIADICS  -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
 LDFLAGS= -shared -ldl -Wl,-soname,$(LIB)
 
 SRC=bh_c_implementation_basics.cpp bh_c_implementation.cpp

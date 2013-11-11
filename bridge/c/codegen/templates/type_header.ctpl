@@ -15,6 +15,10 @@ DLLEXPORT void bh_runtime_flush();
 struct bh_slice_range;
 typedef bh_slice_range* bh_slice_range_p;
 
+// Common type forward definition
+typedef bh_base* bh_base_p; 
+typedef bh_view* bh_view_p; 
+
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
@@ -27,6 +31,12 @@ struct bh_slice_${bh_ctype};
 // Shorthand pointer defs
 typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
 typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
+
+// Create a base pointer from existing data
+DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem);
+
+// Construct a new array from bh_base_p and view setup
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 
 // Construct a new empty array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape);

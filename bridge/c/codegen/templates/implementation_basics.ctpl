@@ -23,6 +23,22 @@ void bh_runtime_flush() {
 
 // $bh_enum
 
+bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem)
+{
+    bh_base_p base = new bh_base;
+    assign_array_type<${ctype}>(base);
+    base->nelem = nelem;
+    base->data  = data;
+
+    return base;
+}
+
+// Construct a new array from bh_base_p and bh_view_p
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
+{
+    return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(base, rank, start, shape, stride);    
+}
+
 
 // Construct a new sized array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape) {
