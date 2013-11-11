@@ -2845,7 +2845,30 @@
         "elementwise": false,
         "types": [
             ["BH_UINT32",   "BH_UINT64",    "BH_UINT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"],
+            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"]
+        ]
+    },
+    {
+        "opcode": "BH_RANGE",
+        "doc":    "",
+        "code":   "op1 = op2++",
+        "nop":    1,
+        "id":     70,
+        "system_opcode": false,
+        "elementwise": false,
+        "types": [
+            ["BH_INT8"],
+            ["BH_FLOAT64"],
+            ["BH_UINT16"],
+            ["BH_UINT64"],
+            ["BH_INT16"],
+            ["BH_FLOAT32"],
+            ["BH_INT32"],
+            ["BH_UINT8"],
+            ["BH_INT64"],
+            ["BH_UINT32"],
+            ["BH_COMPLEX64"],
+            ["BH_COMPLEX128"]
         ]
     }
 ]

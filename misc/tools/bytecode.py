@@ -79,10 +79,8 @@ def main():
     for t in types:
         types_total += types[t]
 
-    #print sigs, types, types_total, errors
+    print sigs, types, types_total, errors
     #pprint.pprint(unaries)
-
-    for b
 
 if __name__ == "__main__":
     main()

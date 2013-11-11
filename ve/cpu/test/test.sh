@@ -10,7 +10,8 @@ cd $WHERE
 #python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*2 --bohrium=True
 #python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*2 --bohrium=True
 #python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*2 --bohrium=True
-BH_VE_CPU_DUMPSRC=1 python ../../test/numpy/numpytest.py
+#BH_VE_CPU_DUMPSRC=1 python ../../test/numpy/numpytest.py
+BH_VE_CPU_DUMPSRC=1 ../../bridge/cpp/bin/hello_world
 #python ../../test/numpy/numpytest.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
 #python ../../test/numpy/numpytest.py -f test_matmul.py
