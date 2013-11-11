@@ -28,9 +28,8 @@ void compute()
     cout << "Hello World." << endl;
 
     multi_array<double> x, y;
-    x = ones<double>(3,3);
-
-    x = pow(x, 1.0);
+    //x = ones<double>(3,3);
+    x = random<double>(3,3);
     
     cout << x << endl;
     cout << "Leaving compute!" << endl;

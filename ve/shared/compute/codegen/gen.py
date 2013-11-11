@@ -7,20 +7,20 @@ from Cheetah.Template import Template
 def main():
 
     script_dir  = "."+os.sep
-    #output_dir  = script_dir + "./output/" + os.sep
-    output_dir  = script_dir + "../" + os.sep
+    output_dir  = script_dir + "./output/" + os.sep
+    #output_dir  = script_dir + "../" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
     
     gens = [
-        ('traverser',   'traverser.ctpl',       'traverser.hpp'),
-        ('functors',    'functors.ctpl',        'functors.hpp'),
-        ('compute',     'bh_compute.ctpl',      'bh_compute.cpp'),
-        ('reduce',      'bh_reduce.ctpl',       'bh_compute_reduce.cpp'),
+        #('traverser',   'traverser.ctpl',       'traverser.hpp'),
+        #('functors',    'functors.ctpl',        'functors.hpp'),
+        #('compute',     'bh_compute.ctpl',      'bh_compute.cpp'),
+        #('reduce',      'bh_reduce.ctpl',       'bh_compute_reduce.cpp'),
         ('typeutil',    'bh_typeutil.ctpl',     'bh_typeutil.cpp'),
     ]
 
     ignore  = json.load(open(script_dir+'ignore.json'))
-    opcodes = json.loads(open(script_dir+'../../../core/codegen/opcodes.json').read())
+    opcodes = json.loads(open(script_dir+'../../../../core/codegen/opcodes.json').read())
 
     for mod_name, tmpl_fn, output_fn in gens:
 

@@ -165,9 +165,6 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
     char symbol_c[500];             // String representation buffers
     char dims_str[10];
 
-    bh_random_type *random_args;    // Nescesarry evil! Until random becomes
-                                    // an opcode and not an extension
-
     sij.instr = instr;
     switch (sij.instr->opcode) {                    // [OPCODE_SWITCH]
 
@@ -175,22 +172,7 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:
-            break;
-
         case BH_USERFUNC:                       // Extensions
-
-            if (sij.instr->userfunc->id == random_impl_id) {
-                random_args = (bh_random_type*)sij.instr->userfunc;
-                sprintf(
-                    symbol_c,
-                    "BH_RANDOM_D_%s",
-                    bhtype_to_shorthand(random_args->operand[0].base->type)
-                );
-
-                sij.symbol = string(symbol_c);
-                sij.tsig   = random_args->operand[0].base->type+1;
-                sij.ndims  = 1;
-            }
             break;
 
         case BH_ADD_REDUCE:                             // Reductions
@@ -222,8 +204,24 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
             sij.symbol = string(symbol_c);
             break;
 
-        default:                                        // Built-in
+        case BH_RANGE:
 
+            sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
+            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
+            sij.tsig  = bh_typesig(sij.instr);          // Type signature
+
+            sprintf(symbol_c, "%s_ND_%s_%s",
+                bh_opcode_text(sij.instr->opcode),
+                bh_layoutmask_to_shorthand(sij.lmask),
+                bh_typesig_to_shorthand(sij.tsig)
+            );
+
+            sij.symbol = string(symbol_c);
+
+            break;
+
+        default:                                        // Built-in
+            
             sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
             sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
             sij.tsig  = bh_typesig(sij.instr);          // Type signature
@@ -247,8 +245,6 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 
 string specialize(bh_sij_t &sij) {
 
-    bh_random_type *random_args;
-
     char template_fn[500];   // NOTE: constants like these are often traumatizing!
 
     bool cres = false;
@@ -259,16 +255,13 @@ string specialize(bh_sij_t &sij) {
 
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
 
-        case BH_USERFUNC:                       // Extensions
-            if (sij.instr->userfunc->id == random_impl_id) {
-                random_args = (bh_random_type*)sij.instr->userfunc;
-                dict.SetValue("SYMBOL",     sij.symbol);
-                dict.SetValue("TYPE_A0",    bhtype_to_ctype(random_args->operand[0].base->type));
-                dict.SetValue("TYPE_A0_SHORTHAND", bhtype_to_shorthand(random_args->operand[0].base->type));
-                sprintf(template_fn, "%s/random.tpl", template_path);
+        case BH_RANGE:
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("SYMBOL", sij.symbol);
+            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+            sprintf(template_fn, "%s/range.tpl", template_path);
 
-                cres = true;
-            }
+            cres = true;
             break;
 
         case BH_ADD_REDUCE:
@@ -319,6 +312,7 @@ string specialize(bh_sij_t &sij) {
         case BH_RIGHT_SHIFT:
         case BH_ARCTAN2:
         case BH_MOD:
+        case BH_RANDOM:
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
@@ -438,10 +432,9 @@ string specialize(bh_sij_t &sij) {
     return sourcecode;
 }
 
-//Executes one instruction
+// Executes a single instruction
 static bh_error exec(bh_instruction *instr)
 {
-    bh_random_type *random_args;
     bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
 
@@ -478,30 +471,26 @@ static bh_error exec(bh_instruction *instr)
             break;
 
         case BH_USERFUNC:
-            if (sij.instr->userfunc->id == random_impl_id) { // RANDOM!
-
-                random_args = (bh_random_type*)sij.instr->userfunc;
-                if (BH_SUCCESS != bh_vcache_malloc_op(&random_args->operand[0])) {
-                    cout << "SHIT HIT THE FAN" << endl;
-                }
-
-                // De-assemble the RANDOM_UFUNC     // CALL
-                target->funcs[sij.symbol](0,
-                    bh_base_array(&random_args->operand[0])->data,
-                    bh_nelements(random_args->operand[0].ndim, random_args->operand[0].shape)
-                );
-                res = BH_SUCCESS;
-
-            } else if(sij.instr->userfunc->id == matmul_impl_id) {
+            if (sij.instr->userfunc->id == matmul_impl_id) {
                 res = matmul_impl(sij.instr->userfunc, NULL);
-            } else if(sij.instr->userfunc->id == nselect_impl_id) {
+            } else if (sij.instr->userfunc->id == nselect_impl_id) {
                 res = nselect_impl(sij.instr->userfunc, NULL);
-            } else if(sij.instr->userfunc->id == visualizer_impl_id) {
+            } else if (sij.instr->userfunc->id == visualizer_impl_id) {
                 res = visualizer_impl(sij.instr->userfunc, NULL);
             } else {                            // Unsupported userfunc
                 res = BH_USERFUNC_NOT_SUPPORTED;
             }
+            break;
 
+        case BH_RANGE:
+            target->funcs[sij.symbol](0,
+                bh_base_array(&sij.instr->operand[0])->data,
+                sij.instr->operand[0].start,
+                sij.instr->operand[0].stride,
+                sij.instr->operand[0].shape,
+                sij.instr->operand[0].ndim
+            );
+            res = BH_SUCCESS;
             break;
 
         case BH_ADD_REDUCE:                     // Partial Reductions
@@ -556,6 +545,7 @@ static bh_error exec(bh_instruction *instr)
         case BH_RIGHT_SHIFT:
         case BH_ARCTAN2:
         case BH_MOD:
+        case BH_RANDOM:
 
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
                 target->funcs[sij.symbol](0,

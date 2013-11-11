@@ -284,6 +284,7 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 1416: return "IIl"; // BH_UINT32 + (BH_UINT32 << 4) + (BH_INT64 << 8)
         case 1501: return "ccl"; // BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_INT64 << 8)
         case 1518: return "CCl"; // BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_INT64 << 8)
+        case 2456: return "ILL"; // BH_UINT32 + (BH_UINT64 << 4) + (BH_UINT64 << 8)
         // Sig-Length 2
         case 34: return "bb"; // BH_INT8 + (BH_INT8 << 4)
         case 204: return "dd"; // BH_FLOAT64 + (BH_FLOAT64 << 4)
@@ -432,6 +433,19 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 206: return "Cd"; // BH_COMPLEX128 + (BH_FLOAT64 << 4)
         case 222: return "Cc"; // BH_COMPLEX128 + (BH_COMPLEX64 << 4)
         case 237: return "cC"; // BH_COMPLEX64 + (BH_COMPLEX128 << 4)
+        // Sig-Length 1
+        case 2: return "b"; // BH_INT8
+        case 12: return "d"; // BH_FLOAT64
+        case 7: return "S"; // BH_UINT16
+        case 9: return "L"; // BH_UINT64
+        case 3: return "s"; // BH_INT16
+        case 11: return "f"; // BH_FLOAT32
+        case 4: return "i"; // BH_INT32
+        case 6: return "B"; // BH_UINT8
+        case 5: return "l"; // BH_INT64
+        case 8: return "I"; // BH_UINT32
+        case 13: return "c"; // BH_COMPLEX64
+        case 14: return "C"; // BH_COMPLEX128
 
         default:
             printf("Err: Unsupported type signature %d.\n", typesig);
@@ -585,38 +599,6 @@ const char* bhtype_to_shorthand(bh_type type)
     }
 }
 
-const char* cexpr(bh_opcode opcode)
-{
-     switch(opcode) {
-        case BH_ADD_REDUCE:
-            return "%s += %s";
-
-        // Binary elementwise: ADD, MULTIPLY...
-        case BH_ADD:
-            return "%s + %s";
-        case BH_SUBTRACT:
-            return "%s - %s";
-        case BH_MULTIPLY:
-            return "%s * %s";
-        case BH_DIVIDE:
-            return "%s / %s";
-        case BH_POWER:
-            return "pow(%s, %s)";
-        case BH_LESS_EQUAL:
-            return "%s <= %s";
-        case BH_EQUAL:
-            return "%s == %s";
-
-        case BH_SQRT:
-            return "sqrt(%s)";
-        case BH_IDENTITY:
-            return "%s";
-
-        default:
-            return "__UNKNOWN__";
-    }   
-}
-
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
@@ -690,6 +672,8 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "*a0_current = atan2( *a1_current, *a2_current )";
         case BH_MOD:
             return "*a0_current = *a1_current - floor(*a1_current / *a2_current) * *a2_current";
+        case BH_RANDOM:
+            return "*a0_current = rand()";
 
         // Unary elementwise: SQRT, SIN...
         case BH_ABSOLUTE:

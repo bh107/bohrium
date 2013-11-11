@@ -10,7 +10,7 @@ I = B.size[2]
 m = sw.model(H,W,dtype=B.dtype,bohrium=B.bohrium)
 
 B.start()
-m = sw.simulate(m,I)
+m = sw.simulate(m,I,visualize=B.visualize)
 r = np.add.reduce(np.add.reduce(m))
 B.stop()
 B.pprint()
