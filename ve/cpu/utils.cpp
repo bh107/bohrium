@@ -673,7 +673,10 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
         case BH_MOD:
             return "*a0_current = *a1_current - floor(*a1_current / *a2_current) * *a2_current";
         case BH_RANDOM:
-            return "*a0_current = rand()";
+            return  "threefry2x64_ctr_t ctr = {{*a2_current, 0}};            //index\n" \
+                    "threefry2x64_key_t key = {{*a1_current, 0xdeadbeef}};  //seed\n"  \
+                    "threefry2x64_ctr_t   c = threefry2x64(ctr, key);\n"       \
+                    "*a0_current = c.v[0];\n";
 
         // Unary elementwise: SQRT, SIN...
         case BH_ABSOLUTE:

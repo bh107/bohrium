@@ -69,29 +69,78 @@ multi_array<T>& zeros(const Dimensions&... shape)
 }
 
 template <typename T, typename ...Dimensions>
-multi_array<T>& random(const Dimensions&... shape)
+multi_array<T>& rand(const Dimensions&... shape)
 {
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)42, *result);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& randu(const Dimensions&... shape)
+{
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& randn(const Dimensions&... shape)
+{
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
     
     result->setTemp(true);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, size_t skip)
+multi_array<T>& range(size_t start, size_t end, int64_t skip)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
+    if ((start > end) && (skip>0)) {
+        throw std::runtime_error("Error: Invalid range [start>end when skip>0].");
+    } else if((start < end) && (skip<0)) {
+        throw std::runtime_error("Error: Invalid range [start<end when skip<0].");
+    } else if (skip==0) {
+        throw std::runtime_error("Error: Invalid range [skip=0].");
+    } else if (start==end) {
+        throw std::runtime_error("Error: Invalid range [start=end].");
+    }
+    
+    uint64_t nelem;
+    if (skip>0) {
+        nelem = (end-start+1)/skip;
+    } else {
+        nelem = (start-end+1)/abs(skip);
+    }
+
+    multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)start);
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)skip);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)start);
 
     result->setTemp(true);
     return *result;
