@@ -242,6 +242,10 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
     if(sub_dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
+    sub_dag->adjmat = (bh_adjmat*) malloc(sizeof(bh_adjmat));
+    if(sub_dag->adjmat == NULL)
+        return BH_OUT_OF_MEMORY;
+    sub_dag->adjmat->self_allocated = true;
     sub_dag->adjmat->m = bh_boolmat_create(nnodes);
     if(sub_dag->adjmat->m == NULL)
         return BH_OUT_OF_MEMORY;
