@@ -69,7 +69,7 @@ multi_array<T>& zeros(const Dimensions&... shape)
 }
 
 template <typename T, typename ...Dimensions>
-multi_array<T>& random(const Dimensions&... shape)
+multi_array<T>& rand(const Dimensions&... shape)
 {
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
@@ -78,6 +78,38 @@ multi_array<T>& random(const Dimensions&... shape)
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
     Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
     Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& randu(const Dimensions&... shape)
+{
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T, typename ...Dimensions>
+multi_array<T>& randn(const Dimensions&... shape)
+{
+    multi_array<T>* result = new multi_array<T>(shape...);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
     
     result->setTemp(true);
     return *result;
@@ -102,7 +134,6 @@ multi_array<T>& range(size_t start, size_t end, int64_t skip)
     } else {
         nelem = (start-end+1)/abs(skip);
     }
-    //printf("Start=%ld, end=%ld, skip=%ld, Nelem=%ld\n", start, end, skip, nelem);
 
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();

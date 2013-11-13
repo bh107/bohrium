@@ -28,7 +28,11 @@ void compute()
     cout << "Hello World." << endl;
 
     multi_array<double> x, y;
+
     x = random<double>(3,3);
+    cout << "RANDOM: " << x << endl;
+
+    x = random_n<double>(3,3);
     cout << "RANDOM: " << x << endl;
 
     //x = range<double>(1,10,2);
