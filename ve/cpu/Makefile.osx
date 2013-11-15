@@ -4,8 +4,8 @@ CXX?=g++
 
 WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
-LDFLAGS= $(ARCHOPTS) -L../../core -lbh -lrt -shared -Wl,-dylib_install_name,$(LIB)
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse -I$(ROOT)/thirdparty/ctemplate/include -I$(ROOT)/thirdparty/jansson/include $(EXTRAS)
+LDFLAGS= $(ARCHOPTS) -L$(ROOT)/core -lbh -shared -Wl,-dylib_install_name,$(LIB)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
@@ -26,7 +26,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 precompiler: precompiler.cpp
-	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -L$(ROOT)/thirdparty/jansson/osx-lib -L$(ROOT)/thirdparty/ctemplate/osx-lib -lbh -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
 
 clean:
 		rm -rf *.o *~ *.so kernels/* objects/* core
