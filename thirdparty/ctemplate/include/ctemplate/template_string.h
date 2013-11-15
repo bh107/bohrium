@@ -34,7 +34,7 @@
 #define TEMPLATE_TEMPLATE_STRING_H_
 
 #include <string.h>      // for memcmp() and size_t
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -137,7 +137,7 @@ struct  StaticTemplateString {
   } do_not_use_directly_;
 
   // This class is a good hash functor to pass in as the third
-  // argument to std::tr1::unordered_map<>, when creating a map whose keys are
+  // argument to std::unordered_map<>, when creating a map whose keys are
   // StaticTemplateString.  NOTE: This class isn't that safe to use,
   // because it requires that StaticTemplateStringInitializer has done
   // its job.  Unfortunately, even when you use the STS_INIT macro

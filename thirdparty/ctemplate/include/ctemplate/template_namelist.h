@@ -40,7 +40,7 @@
 #define TEMPLATE_TEMPLATE_NAMELIST_H_
 
 #include <time.h>    // for time_t
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <string>
 #include <vector>
 #include <ctemplate/template_enums.h>    // for Strip
@@ -82,7 +82,7 @@ class  TemplateNamelist {
   // thing you should do with them is call size() and/or iterate
   // between begin() and end(), and the only operations we promise
   // the iterators will support are operator* and operator++.
-  typedef std::tr1::unordered_set<std::string, StringHash> NameListType;
+  typedef std::unordered_set<std::string, StringHash> NameListType;
   typedef std::vector<std::string> MissingListType;
   typedef std::vector<std::string> SyntaxListType;
 

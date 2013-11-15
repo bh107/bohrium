@@ -34,7 +34,7 @@
 #ifndef TEMPLATE_TEMPLATE_CACHE_H_
 #define TEMPLATE_TEMPLATE_CACHE_H_
 
-#include <tr1/unordered_map>      // for std::tr1::unordered_map<>
+#include <unordered_map>      // for std::unordered_map<>
 #include <string>        // for string
 #include <utility>       // for pair
 #include <vector>        // for vector<>
@@ -278,9 +278,9 @@ class  TemplateCache {
  public:
   typedef std::pair<TemplateId, int> TemplateCacheKey;
  private:
-  typedef std::tr1::unordered_map<TemplateCacheKey, CachedTemplate, TemplateCacheHash>
+  typedef std::unordered_map<TemplateCacheKey, CachedTemplate, TemplateCacheHash>
     TemplateMap;
-  typedef std::tr1::unordered_map<RefcountedTemplate*, int, RefTplPtrHash> TemplateCallMap;
+  typedef std::unordered_map<RefcountedTemplate*, int, RefTplPtrHash> TemplateCallMap;
   // Where to search for files.
   typedef std::vector<std::string> TemplateSearchPath;
 
