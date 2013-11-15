@@ -154,9 +154,15 @@ int64_t multi_array<T>::shape(int64_t dim)
 }
 
 template <typename T>
-typename multi_array<T>::iterator multi_array<T>::begin()
+void multi_array<T>::sync()
 {
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
+}
+
+template <typename T>
+typename multi_array<T>::iterator multi_array<T>::begin()
+{
+    this->sync();
     Runtime::instance().flush();
 
     return multi_array<T>::iterator(meta);

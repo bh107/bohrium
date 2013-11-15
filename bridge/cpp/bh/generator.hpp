@@ -68,6 +68,7 @@ multi_array<T>& zeros(const Dimensions&... shape)
     return *result;
 }
 
+#ifndef NO_VARIADICS
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
@@ -82,9 +83,25 @@ multi_array<T>& random(const Dimensions&... shape)
     result->setTemp(true);
     return *result;
 }
+#endif
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, size_t skip)
+multi_array<T>& random(const int64_t length)
+{
+    multi_array<T>* result = new multi_array<T>(1, &length);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)42, *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(end-start);
     result->link();

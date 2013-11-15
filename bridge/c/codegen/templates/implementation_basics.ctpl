@@ -38,6 +38,25 @@ void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base)
     delete base;
 }
 
+bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
+{
+    return ((multi_array<${ctype}>*)self)->getBase();
+}
+
+void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self)
+{
+    ((multi_array<${ctype}>*)self)->sync();
+}
+
+// Construct a new array from bh_base_p and view setup
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_base_p base)
+{
+    const int64_t stride = 1;
+    const int64_t shape = base->nelem;
+    return bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);
+}
+
+
 // Construct a new array from bh_base_p and bh_view_p
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
 {
@@ -71,13 +90,13 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const int64_t r
 }
 
 // Construct a new array with sequential numbers
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_arange(const int64_t start, const int64_t end, const int64_t skip) {
-    return (bh_multi_array_${bh_ctype}_p)&(arange<${ctype}>(start, end, skip));
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip) {
+    return (bh_multi_array_${bh_ctype}_p)&(range<${ctype}>(start, end, skip));
 }
 
 // Construct a new random-filled array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t rank, const int64_t* shape) {
-    return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(rank, shape));
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
+    return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(length));
 }
 
 // Construct a new array, filled with the specified value

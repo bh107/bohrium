@@ -32,11 +32,20 @@ struct bh_slice_${bh_ctype};
 typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
 typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 
+// Sync the current base
+void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self);
+
 // Create a base pointer from existing data
 DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem);
 
 // Destroy a base pointer
 DLLEXPORT void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base);
+
+// Get the base from an existing array
+DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self);
+
+// Construct a new array from bh_base_p and view setup
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_base_p base);
 
 // Construct a new array from bh_base_p and view setup
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
@@ -51,10 +60,10 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(con
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const int64_t rank, const int64_t* shape);
 
 // Construct a new array with sequential numbers
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_arange(const int64_t start, const int64_t end, const int64_t skip);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip);
 
 // Construct a new random-filled array
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t rank, const int64_t* shape);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length);
 
 // Construct a new array, filled with the specified value
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, const int64_t rank, const int64_t* shape);

@@ -221,6 +221,7 @@ public:
     void setTemp(bool temp);
     bool linked() const;
     bool initialized() const;
+    void sync();
 
 protected:
     bool temp;
@@ -290,6 +291,9 @@ public:
     template <typename T>
     multi_array<T>& temp();
 
+    template <typename T>
+    multi_array<T>& temp(const int64_t size);
+
     template <typename T, typename OtherT>
     multi_array<T>& temp(multi_array<OtherT>& input);
 
@@ -341,14 +345,16 @@ multi_array<T>& zeros(size_t n, ...);
 template <typename T>
 multi_array<T>& ones(size_t n, ...);
 
-template <typename T>
-multi_array<T>& random(size_t n, ...);
+#ifndef NO_VARIADICS
+template <typename T, typename ...Dimensions>
+multi_array<T>& random(const Dimensions&... shape);
+#endif
 
 template <typename T>
-multi_array<T>& random(const int64_t rank, const int64_t* shape);
+multi_array<T>& random(const int64_t length);
 
 template <typename T>
-multi_array<T>& arange(const int64_t start, const int64_t end, const int64_t skip);
+multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip);
 
                             // REDUCTIONS
 template <typename T>       // Partial
