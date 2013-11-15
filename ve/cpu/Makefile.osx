@@ -1,10 +1,11 @@
 ROOT=../..
 LIB=libbh_ve_cpu.dylib
 CXX?=g++
+
 WARNOPTS=-Wall
 ARCHOPTS?=-arch i386 -arch x86_64
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include
-LDFLAGS= $(ARCHOPTS) -L../../core -lbh -shared -Wl,-dylib_install_name,$(LIB)
+LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
+LDFLAGS= $(ARCHOPTS) -L../../core -lbh -lrt -shared -Wl,-dylib_install_name,$(LIB)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(shell find . -iname '*.cpp') $(shell find . -iname '*.c')
 OBJTMP=$(SRC:.c=.o)
@@ -13,7 +14,7 @@ OBJ=bh_ve_cpu.o
 
 INSTALLDIR?=/opt/bohrium/
 
-all: $(LIB)
+all: $(LIB) precompiler
 
 %.o: %.c $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
@@ -23,6 +24,9 @@ all: $(LIB)
 
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
+
+precompiler: precompiler.cpp
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
 
 clean:
 		rm -rf *.o *~ *.so kernels/* objects/* core

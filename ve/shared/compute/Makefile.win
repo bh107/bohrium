@@ -1,4 +1,4 @@
-ROOT=..\..
+ROOT=..\..\..
 LIBNAME=bh_compute.lib
 CC=cl
 LIBTOOL=lib.exe
