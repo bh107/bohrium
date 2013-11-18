@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <set>
+#include <vector>;
 
 #include "transitive_reduction.h"
 
@@ -35,8 +36,8 @@ void transitive_reduction_filter(bh_ir *bhir)
         bh_intp nnode = dag->nnode;
 
         //Find redundant dependencies.
-        //NB: will include dependencies that dosn't exist.
-        std::set<bh_intp> redundant[nnode];
+        //NB: will include dependencies that doesn't exist.
+        std::vector<std::set<bh_intp> > redundant(nnode);
         for(bh_intp k=0; k<nnode; ++k)
         {
             bh_intp row_size, col_size;
