@@ -1,12 +1,13 @@
 ROOT=../..
-LIB=libbh_visualizer.so
+include $(ROOT)/platform.mk
+LIB=libbh_visualizer.$(LIB_SUFFIX)
 VISDIR?=/usr/local
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(VISDIR)/include -lGL -lglut -lGLU
-LDFLAGS= -L$(ROOT)/core -lbh -lrt -lGL -lglut -lGLU -shared -L$(VISDIR)/lib -lm -Wl,-soname
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(VISDIR)/include -lGL -lglut -lGLU
+LDFLAGS= $(ARCH_OPTS) -L$(ROOT)/core -lbh $(EXTRA_LIBS) -lGL -lglut -lGLU -shared -L$(VISDIR)/lib -lm -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.hpp $(ROOT)/include/*
-SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
+SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/bh
@@ -23,7 +24,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ *.so
+		rm -rf *.o *~ *.$(LIB_SUFFIX)
 
 install: all
 		cp $(LIB) $(INSTALLDIR)

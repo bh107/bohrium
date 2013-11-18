@@ -1,5 +1,5 @@
-INSTALLDIR?=/opt/bohrium/
-XBUILD?=xbuild
+ROOT=../../..
+include $(ROOT)/platform.mk
 XBUILD_CONF=/property:Configuration=Release /verbosity:minimal /nologo
 
 

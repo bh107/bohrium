@@ -1,3 +1,5 @@
+ROOT=..
+include $(ROOT)/platform.mk
 BH_PYTHON?=python
 INSTALLDIR?=/opt/bohrium/
 
