@@ -1,12 +1,13 @@
 ROOT=../..
-LIB=libbhc.so
+include $(ROOT)/platform.mk
+LIB=libbhc.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
 LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -DNO_VARIADICS  -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
-LDFLAGS= -shared -ldl -Wl,-soname,$(LIB)
+LDFLAGS= $(ARCHOPTS) -shared -ldl -Wl,$(LD_LIB_COMMAND),$(LIB)
 
-SRC=bh_c_implementation_basics.cpp bh_c_implementation.cpp
-OBJ=$(SRC:.cpp=.oo) $(ROOT)/core/libbh.so
+SRC=$(ALL_CPP_FILES)
+OBJ=$(SRC:.cpp=.oo) $(ROOT)/core/libbh.$(LIB_SUFFIX)
 
 all: $(LIB)
 
