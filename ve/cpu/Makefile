@@ -1,13 +1,19 @@
 ROOT=../..
-LIB=libbh_ve_cpu.so
+include $(ROOT)/platform.mk
+LIB=libbh_ve_cpu.$(LIB_SUFFIX)
 CXX?=g++
 #CXX?=clang
 WARNOPTS=-Wall
 EXTRAS+=
-LCFLAGS= $(WARNOPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
-LDFLAGS=-L../../core -lbh -lrt -lctemplate -shared -Wl,-soname
+ifeq ($(PLATFORM_OS),OSX)
+	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include -I$(ROOT)/thirdparty/jansson/include
+	EXTRA_LIBS+=-L$(ROOT)/thirdparty/jansson/osx-lib -L$(ROOT)/thirdparty/ctemplate/osx-lib 
+endif
+
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
+LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
-SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
+SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o) 
 OBJ=bh_ve_cpu.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
@@ -26,13 +32,13 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 precompiler: precompiler.cpp
-	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh -lrt -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
+	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh $(EXTRA_LIBS) -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
 
 precompile:
 		/usr/bin/time ./precompiler
 
 clean:
-		rm -rf *.o *~ *.so kernels/* objects/* core precompiler
+		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core precompiler
 		touch kernels/empty
 		touch objects/empty
 
@@ -42,3 +48,4 @@ install: all
 		mkdir -p $(INSTALLDIR)/cpu/objects
 		mkdir -p $(INSTALLDIR)/cpu/templates
 		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+		cp -r include $(INSTALLDIR)/cpu/include

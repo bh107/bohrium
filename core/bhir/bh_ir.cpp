@@ -242,6 +242,10 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     sub_dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nnodes, nnodes);
     if(sub_dag->node_map == NULL)
         return BH_OUT_OF_MEMORY;
+    sub_dag->adjmat = (bh_adjmat*) malloc(sizeof(bh_adjmat));
+    if(sub_dag->adjmat == NULL)
+        return BH_OUT_OF_MEMORY;
+    sub_dag->adjmat->self_allocated = true;
     sub_dag->adjmat->m = bh_boolmat_create(nnodes);
     if(sub_dag->adjmat->m == NULL)
         return BH_OUT_OF_MEMORY;
@@ -300,6 +304,10 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
     //Save a copy of the original DAG and create a new DAG
     bh_dag org_dag = *dag;
     dag->nnode = org_dag.nnode - nnodes + 1;
+    dag->adjmat = (bh_adjmat*) malloc(sizeof(bh_adjmat));
+    if(dag->adjmat == NULL)
+        return BH_OUT_OF_MEMORY;
+    dag->adjmat->self_allocated = true;
     dag->adjmat->mT = bh_boolmat_create(dag->nnode);
     if(dag->adjmat->mT == NULL)
         return BH_OUT_OF_MEMORY;
@@ -321,7 +329,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
  * dependency indexes to match their new location.
  */
 
-    //Phases 1)
+    //Phase 1)
     std::map<bh_intp, bh_intp> org2new;
     bh_intp nrows=0;//Current number of filled rows in the new DAG
     for(bh_intp org_idx=0; org_idx < org_dag.nnode; ++org_idx)
@@ -356,7 +364,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         }
     }
 
-    //Phases 2)
+    //Phase 2)
     //Insert the new sub-DAG and at the nrows
     bh_intp sub_dag_location = nrows;
     {
@@ -375,7 +383,7 @@ bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
         ++nrows;
     }
 
-    //Phases 3)
+    //Phase 3)
     for(bh_intp org_idx=0; org_idx < org_dag.nnode; ++org_idx)
     {
         if(org2sub.find(org_idx) != org2sub.end())//The original node is part of the sub-DAG

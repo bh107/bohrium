@@ -1,13 +1,14 @@
 ROOT=../..
-LIB=libbh_filter_fusion.so
+include $(ROOT)/platform.mk
+LIB=libbh_filter_fusion.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall
 EXTRAS+=
 TIMING+=
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
-LDFLAGS=-L../../core -lbh -lrt -shared -Wl,-soname
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
+LDFLAGS= $(ARCH_OPTS) -L$(ROOT)/core -lbh $(EXTRA_LIBS) -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
-SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
+SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/bohrium/

@@ -217,7 +217,6 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
             );
 
             sij.symbol = string(symbol_c);
-
             break;
 
         default:                                        // Built-in
@@ -485,10 +484,7 @@ static bh_error exec(bh_instruction *instr)
         case BH_RANGE:
             target->funcs[sij.symbol](0,
                 bh_base_array(&sij.instr->operand[0])->data,
-                sij.instr->operand[0].start,
-                sij.instr->operand[0].stride,
-                sij.instr->operand[0].shape,
-                sij.instr->operand[0].ndim
+                bh_base_array(&sij.instr->operand[0])->nelem
             );
             res = BH_SUCCESS;
             break;

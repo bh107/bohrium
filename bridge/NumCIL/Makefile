@@ -1,6 +1,7 @@
+ROOT=../..
+include $(ROOT)/platform.mk
 INSTALLDIR?=/opt/bohrium/
 
-XBUILD?=xbuild
 TT?=mono buildsupport/TextTransform.exe
 
 DLL_MAIN=NumCIL/bin/Release/NumCIL.dll
@@ -24,7 +25,7 @@ AUTOGEN_FILES=$(T4_FILES:.tt=.cs)
 	$(TT) $< -o $@ $(TT_OPTS)
 
 NumCIL.Bohrium/OpCodes_fix.tt: NumCIL.Bohrium/OpCodes.tt
-	sed 's|$$(ProjectDir)..\\buildsupport\\|$(MAKEDIR)/buildsupport/|g' NumCIL.Bohrium/OpCodes.tt > NumCIL.Bohrium/OpCodes_fix.tt
+	sed 's|$$(ProjectDir)..\\buildsupport\\|$(ROOT)/bridge/NumCIL/buildsupport/|g' NumCIL.Bohrium/OpCodes.tt > NumCIL.Bohrium/OpCodes_fix.tt
 
 NumCIL.Bohrium/OpCodes.cs: NumCIL.Bohrium/OpCodes_fix.tt
 	$(TT) NumCIL.Bohrium/OpCodes_fix.tt -o $@ $(TT_OPTS)

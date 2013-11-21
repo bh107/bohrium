@@ -34,8 +34,13 @@ makefilename = "Makefile"
 def build(components,interpreter):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
+        mkfile = makefilename
+
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -51,8 +56,13 @@ def build(components,interpreter):
 def clean(components):
     for (name, dir, fatal) in components:
         print "***Cleaning %s***"%name
+        mkfile = makefilename
+
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "clean"], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile, "clean"], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -62,8 +72,13 @@ def install(components,prefix,interpreter):
         os.mkdir(join(prefix,"lib"))
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
+        mkfile = makefilename
+        
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
