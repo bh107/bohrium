@@ -191,6 +191,7 @@ if __name__ == "__main__":
                   ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
+                  ("BRIDGE-C", "bridge/c", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
                   ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
                   ("BHNUMPY", "bohrium", True)
