@@ -145,14 +145,14 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
         throw std::runtime_error("Error: Invalid range [start=end].");
     }
     
-    uint64_t nelem;
+    int64_t nelem;
     if (skip>0) {
         nelem = (end-start+1)/skip;
     } else {
         nelem = (start-end+1)/abs(skip);
     }
 
-    multi_array<T>* result = new multi_array<T>(nelem);
+    multi_array<T>* result = new multi_array<T>(1, &nelem);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
