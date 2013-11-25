@@ -66,7 +66,7 @@ bh_error bh_filter_range_init(bh_component *self)
 
 bh_error bh_filter_range_execute(bh_ir* bhir)
 {
-    range_filter(bhir);                 // Run the filter
+    range_filter(bhir);                     // Run the filter
     return child_execute(bhir);             // Execute the filtered bhir
 }
 

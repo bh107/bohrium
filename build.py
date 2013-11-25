@@ -193,6 +193,8 @@ if __name__ == "__main__":
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
                   ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
+                  ("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
+                  ("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 
