@@ -29,17 +29,16 @@ void compute()
 
     multi_array<double> x, y;
 
-    x = random<double>(3,3);
+    x = randu<double>(3,3);
     cout << "RANDOM: " << x << endl;
 
-    x = random_n<double>(3,3);
+    x = randn<double>(3,3);
     cout << "RANDOM: " << x << endl;
 
-    //x = range<double>(1,10,2);
     x = range<double>(1,10,2);
     cout << "RANGE: " << x << endl;
 
-    x = range<double>(10,1,(int64_t)(1-3));
+    x = range<double>(10,1,(int64_t)(-2));
     cout << "RANGE: " << x << endl;
 }
 

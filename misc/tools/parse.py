@@ -181,7 +181,8 @@ class Parser(object):
                 operands = []
                 op_line = i
                 while(True):                # Parse instruction operands
-
+                    print opcode
+                    print lines[i]
                     op_m = re.match(Parser.re_meta, lines[i], re.DOTALL)
                     if not op_m:            # No match -> no more operands
                         break
