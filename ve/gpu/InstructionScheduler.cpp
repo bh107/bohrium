@@ -274,7 +274,7 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
         bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
-        if (it == arrayMap.end())
+        if (it == arrayMap.end() && bh_nelements(base->ndim, base->shape) > 1)
         {
             // Then create it
             BaseArray* ba =  new BaseArray(base, resourceManager);
