@@ -24,7 +24,7 @@ template<typename LeftIter, typename RightIter>
                    ::testing::AssertionFailure() << message.str();
 }
 
-::testing::AssertionResult VerifySlicing(bh_array* view, int* shape, int* stride, int ndim, int start)
+::testing::AssertionResult VerifySlicing(bh_view* view, int* shape, int* stride, int ndim, int start)
 {
     std::stringstream message;
     bool equal(true), equal_shape(true), equal_stride(true);

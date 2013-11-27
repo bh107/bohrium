@@ -2,25 +2,20 @@ import bohrium as np
 import util
 
 B = util.Benchmark()
-I = B.size.pop()
-N = np.multiply.reduce(B.size)
+N, I = B.size
 
 B.start()
-sum=0.0
+acc=0.0
 for i in xrange(I):
+    x = np.random.random(N, dtype=B.dtype, bohrium=B.bohrium)
+    y = np.random.random(N, dtype=B.dtype, bohrium=B.bohrium)
 
-    x = np.random.random(B.size, dtype=B.dtype, bohrium=B.bohrium)
-    y = np.random.random(B.size, dtype=B.dtype, bohrium=B.bohrium)
+    z = np.sqrt(x*x+y*y)<=1.0
+    acc += np.sum(z)*4.0/N
 
-    np.square(x,x)
-    np.square(y,y)
-    np.add(x,y,x)
-    z = np.less_equal(x, 1.0)
-    while z.ndim > 1:
-        z = np.add.reduce(z)
-    sum += np.add.reduce(z)*4.0/N
-
-sum /= I
+acc /= I
 B.stop()
 B.pprint()
 
+
+print acc

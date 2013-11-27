@@ -15,7 +15,7 @@ CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseA
 		InstructionScheduler Kernel GenerateSourceCode Reduce UserFunctionRandom \
 		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
  
-OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o)
+OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o) $(ROOT)/ve/shared/compute/bh_compute_reduce.o 
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)

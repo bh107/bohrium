@@ -18,20 +18,22 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include <armadillo>
+#include <Eigen/Dense>
 #include "util/timing.hpp"
 #include "util/argparse.hpp"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 using namespace argparse;
 
 template <typename T>
-vec cnd(vec& x)
+Array<T, Dynamic, 1>& cnd(const Array<T, Dynamic, 1>& x)
 {
-    size_t samples = x.n_elem();
-    vec l(samples), k(samples), w(samples);
-    vec mask(samples);
+    size_t samples = x.size();
+    Array<T, Dynamic, 1> l(samples), k(samples), w(samples);
+    Array<T, Dynamic, 1> mask(samples);
+    Array<bool, Dynamic, 1> mask_bool(samples);
+
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
@@ -40,16 +42,20 @@ vec cnd(vec& x)
       pp = 2.5066282746310002; // sqrt(2.0*PI)
 
     l = abs(x);
-    k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / pp * exp(-1.0*l*l/2.0) * \
-        (a1*k + \
-         a2*(pow(k,(T)2)) + \
-         a3*(pow(k,(T)3)) + \
-         a4*(pow(k,(T)4)) + \
-         a5*(pow(k,(T)5)));
+    //k = (T)1.0 / ((T)1.0 + (T)0.2316419 * l);
+    //k = (T)0.5 / l / (T)0.5;
+    k = l / (T)0.5;
+    w = (T)1.0 - (T)1.0 / (T)pp * exp((T)-(T)1.0*l*l/(T)2.0) * \
+        ((T)a1*k + \
+         (T)a2*(pow(k,(T)2)) + \
+         (T)a3*(pow(k,(T)3)) + \
+         (T)a4*(pow(k,(T)4)) + \
+         (T)a5*(pow(k,(T)5)));
 
-    mask = x < 0.0;
-    return w * (!mask) + (1.0-w)* mask;
+    mask_bool= (x < (T)0.0);
+    mask = mask_bool.cast<T>();
+    return w * (mask) + ((T)1.0-w)* mask;
+    //return w * (!mask) + (1.0-w)* mask;
 }
 
 template <typename T>
@@ -58,21 +64,27 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
     T* p    = (T*)malloc(sizeof(T)*samples);    // Intermediate results
     T t     = d_t;                              // Initial delta
 
-    vec d1(samples), d2(samples), res(samples);
-    vec s = randu<vec>(samples)*4.0 +58.0;      // Model between 58-62
+    Array<T, Dynamic, 1> d1(samples), d2(samples), res(samples);
+    Array<T, Dynamic, 1> s = Array<T, Dynamic, 1>::Random(samples)*4.0 +58.0;      // Model between 58-62
 
     for(size_t i=0; i<iterations; i++) {
         d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
         d2 = d1-v*sqrt(t);
 
         if (flag == 'c') {
-            res = s * cnd<T>(d1) -x * exp(-r*t) * cnd<T>(d2);
+            cnd<T>(d1);
+            //res = s * cnd<T>(d1) -x * exp(-r*t) * cnd<T>(d2);
         } else {
-            res = x * exp(-r*t) * cnd<T>(-1.0*d2) - s*cnd<T>(-1.0*d1);
+/*
+            Array<T, Dynamic, 1> tmp1(samples), tmp2(samples);
+            tmp1 = -1.0*d2;
+            tmp2 = -1.0*d1;
+            res = x * exp(-r*t) * cnd<T>(tmp1) - s*cnd<T>(tmp2);
+    */
         }
 
         t += d_t;                               // Increment delta
-        p[i] = sum(res) / (T)samples;           // Result from timestep
+        p[i] = res.sum() / (T)samples;           // Result from timestep
     }
 
     return p;

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -44,7 +44,7 @@ int main()
     dispatch_msg *msg;
 
     timing_init();
- 
+
     //Initiate the process grid
     pgrid_init();
 
@@ -55,7 +55,7 @@ int main()
         dispatch_recv(&msg);
 
         //Handle the message
-        switch(msg->type) 
+        switch(msg->type)
         {
             case BH_CLUSTER_DISPATCH_INIT:
             {
@@ -80,54 +80,36 @@ int main()
             }
             case BH_CLUSTER_DISPATCH_EXEC:
             {
-                //The number of instructions
-                bh_intp *noi = (bh_intp *)msg->payload;                 
-                //The master-instruction list
-                bh_instruction *master_list = (bh_instruction *)(noi+1);
+                //Deserialize the BhIRi
+                bh_ir *bhir = (bh_ir*) msg->payload;
+                bh_ir_deserialize(bhir);
+
                 //The number of new arrays
-                bh_intp *noa = (bh_intp *)(master_list + *noi);
+                bh_intp *noa = (bh_intp *)(((char*)msg->payload)+bh_ir_totalsize(bhir));
                 //The list of new arrays
                 dispatch_array *darys = (dispatch_array*)(noa+1); //number of new arrays
                 //The number of user-defined functions
                 bh_intp *nou = (bh_intp *)(darys + *noa);
                 //The list of user-defined functions
                 bh_userfunc *ufunc = (bh_userfunc*)(nou+1); //number of new arrays
-               
+
                 //Insert the new array into the array store and the array maps
-                std::stack<bh_array*> base_darys;
+                std::stack<bh_base*> base_darys;
                 for(bh_intp i=0; i < *noa; ++i)
                 {
-                    bh_array *ary = dispatch_new_slave_array(&darys[i].ary, darys[i].id);
-                    if(ary->base == NULL)//This is a base array.
-                        base_darys.push(ary);
-                } 
-                //Update the base-array-pointers
-                for(bh_intp i=0; i < *noa; ++i)
-                {
-                    bh_array *ary = dispatch_master2slave(darys[i].id);
-                    if(ary->base != NULL)//This is NOT a base array
-                    {
-                        assert(dispatch_slave_exist(((bh_intp)ary->base)));
-                        ary->base = dispatch_master2slave((bh_intp)ary->base);
-                    }
+                    bh_base *ary = dispatch_new_slave_array(&darys[i].ary, darys[i].id);
+                    base_darys.push(ary);
                 }
 
                 //Receive the dispatched array-data from the master-process
                 dispatch_array_data(base_darys);
-                    
-                //Allocate the local instruction list that should reference local arrays
-                bh_instruction *local_list = (bh_instruction *)malloc(*noi*sizeof(bh_instruction));
-                if(local_list == NULL)
-                    check_error(BH_OUT_OF_MEMORY,__FILE__,__LINE__);
-        
-                memcpy(local_list, master_list, (*noi)*sizeof(bh_instruction));
-            
+
                 //De-serialize all user-defined function pointers.
-                for(bh_intp i=0; i < *noi; ++i)
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     if(inst->opcode == BH_USERFUNC)
-                    {   
+                    {
                         inst->userfunc = (bh_userfunc*) malloc(ufunc->struct_size);
                         if(inst->userfunc == NULL)
                             check_error(BH_OUT_OF_MEMORY,__FILE__,__LINE__);
@@ -138,40 +120,36 @@ int main()
                     }
                 }
 
-                //Update all instruction to reference local arrays 
-                for(bh_intp i=0; i < *noi; ++i)
+                //Update all instruction to reference local arrays
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     int nop = bh_operands_in_instruction(inst);
-                    bh_array **ops;
-                    if(inst->opcode == BH_USERFUNC)
-                        ops = inst->userfunc->operand;
-                    else
-                        ops = inst->operand;
+                    bh_view *ops = bh_inst_operands(inst);
 
                     //Convert all instructon operands
                     for(bh_intp j=0; j<nop; ++j)
-                    { 
-                        if(bh_is_constant(ops[j]))
+                    {
+                        if(bh_is_constant(&ops[j]))
                             continue;
-                        assert(dispatch_slave_exist((bh_intp)ops[j]));
-                        ops[j] = dispatch_master2slave((bh_intp)ops[j]);
+                        bh_base *base = bh_base_array(&ops[j]);
+                        assert(dispatch_slave_exist((bh_intp)base));
+                        bh_base_array(&ops[j]) = dispatch_master2slave((bh_intp)base);
                     }
                 }
 
-                check_error(exec_execute(*noi, local_list),__FILE__,__LINE__);
+                check_error(exec_execute(bhir),__FILE__,__LINE__);
 
                 //Free all user-defined function structs
-                for(bh_intp i=0; i < *noi; ++i)
+                for(bh_intp i=0; i < bhir->ninstr; ++i)
                 {
-                    bh_instruction *inst = &local_list[i];
+                    bh_instruction *inst = &bhir->instr_list[i];
                     if(inst->opcode == BH_USERFUNC)
                     {
                         assert(inst->userfunc != NULL);
                         free(inst->userfunc);
                     }
                 }
-                free(local_list);
                 break;
             }
             default:
@@ -180,5 +158,5 @@ int main()
                 MPI_Abort(MPI_COMM_WORLD,BH_ERROR);
         }
     }
-    return BH_SUCCESS; 
+    return BH_SUCCESS;
 }

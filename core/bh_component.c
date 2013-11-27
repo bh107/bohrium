@@ -72,6 +72,8 @@ static bh_component_type get_type(dictionary *dict, const char *name)
             return BH_VEM;
         if(!strcasecmp(s, "ve"))
             return BH_VE;
+        if(!strcasecmp(s, "filter"))
+            return BH_FILTER;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
             name, s);
@@ -90,6 +92,8 @@ static void *get_dlsym(void *handle, const char *name,
         stype = "vem";
     else if(type == BH_VE)
         stype = "ve";
+    else if(type == BH_FILTER)
+        stype = "filter";
     else
     {
         fprintf(stderr, "get_dlsym - unknown component type.\n");
@@ -110,19 +114,14 @@ static void *get_dlsym(void *handle, const char *name,
 
 /* Setup the root component, which normally is the bridge.
  *
- * @name The name of the root component. If NULL "bridge"
-         will be used.
+ * @component_name The name of the root component.
+ *                  If NULL "bridge" will be used.
  * @return The root component in the configuration.
  */
 bh_component *bh_component_setup(const char* component_name)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
-    const char *name;
-    if(component_name == NULL)
-        name = "bridge";
-    else
-        name = component_name;
 
     bh_component *com = (bh_component*)malloc(sizeof(bh_component));
     const char *env;
@@ -135,12 +134,18 @@ bh_component *bh_component_setup(const char* component_name)
     //Clear memory so we do not have any random pointers
     memset(com, 0, sizeof(bh_component));
 
-    if(name == NULL)
-        strcpy(com->name, "bridge"); //The default config root keyword.
-    else
-        strcpy(com->name, name);
+    //Assign component name, default to "bridge"
+    if(component_name == NULL) {
+        strcpy(com->name, "bridge");
+    } else {
+        strcpy(com->name, component_name);
+    }
 
-    //The environment variable has precedence.
+    //
+    // Find the configuration file
+    //
+
+    // Start by looking a path set via environment variable.
     env = getenv("BH_CONFIG");
     if (env != NULL)
     {
@@ -151,7 +156,7 @@ bh_component *bh_component_setup(const char* component_name)
             env = NULL;//Did not exist.
     }
 
-    //Then the home directory.
+    // Then the home directory.
     if(env == NULL)
     {
 
@@ -194,19 +199,21 @@ bh_component *bh_component_setup(const char* component_name)
             MAX_PATH-1
         );
 
-        if (result != 0)
+        if(result != 0)
         {
             syspath = _expand_buffer2;
         }
 #endif
 
         FILE *fp = fopen(syspath,"r");
-        if( fp ) {
+        if(fp)
+        {
             env = syspath;
             fclose(fp);
         }
     }
 
+    // We could not find the configuration file anywhere
     if(env == NULL)
     {
         fprintf(stderr, "Error: Bohrium could not find the config file.\n"
@@ -218,6 +225,7 @@ bh_component *bh_component_setup(const char* component_name)
         return NULL;
     }
 
+    // Load the bohrium configuration file
     com->config = iniparser_load(env);
     if(com->config == NULL)
     {
@@ -226,27 +234,30 @@ bh_component *bh_component_setup(const char* component_name)
         return NULL;
     }
 
+    // Assign the type of the component
     com->type = get_type(com->config, com->name);
 
-    if(strcmp("bridge", name) != 0)//This is not the bridge
-    {
+    // Load the .so associated with the component
+    if (BH_BRIDGE == com->type) {
+        com->lib_handle = NULL;   // Bridges does not have one
+    }
+    else
+    {                             // All other component types does
         char tmp[BH_COMPONENT_NAME_SIZE];
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl",name);
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", com->name);
         char *impl = iniparser_getstring(com->config, tmp, NULL);
         if(impl == NULL)
         {
-            fprintf(stderr,"In section \"%s\" impl is not set.\n",name);
+            fprintf(stderr,"In section \"%s\" impl is not set.\n", com->name);
             return NULL;
         }
         com->lib_handle = dlopen(impl, RTLD_NOW);
         if(com->lib_handle == NULL)
         {
-            fprintf(stderr, "Error in [%s:impl]: %s\n", name, dlerror());
+            fprintf(stderr, "Error in [%s:impl]: %s\n", com->name, dlerror());
             return NULL;
         }
     }
-    else
-        com->lib_handle = NULL;//The bridge do not have a .so file
     return com;
 }
 
@@ -397,7 +408,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
  * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_component_get_func(bh_component *self, char *func,
-                                     bh_userfunc_impl *ret_func)
+                               bh_userfunc_impl *ret_func)
 {
     //First we search the libs in the config file to find the user-defined function.
     //Secondly we search the component's library.
@@ -414,6 +425,7 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         while(path != NULL)
         {
             void *lib_handle = dlopen(path, RTLD_NOW);
+
             if(lib_handle != NULL)
             {
                 dlerror();//Clear old errors.

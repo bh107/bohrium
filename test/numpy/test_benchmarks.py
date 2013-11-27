@@ -54,7 +54,7 @@ class test_shallow_water(numpytest):
     def init(self):
         for t in ['np.float32','np.float64']:
             a = {}
-            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(10,t)
+            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(16,t)
             exec cmd
             yield (a,cmd)
 

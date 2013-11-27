@@ -1,6 +1,7 @@
-INSTALLDIR?=/opt/bohrium/
-XBUILD?=xbuild
-XBUILD_CONF=/property:Configuration=Release
+ROOT=../../..
+include $(ROOT)/platform.mk
+XBUILD_CONF=/property:Configuration=Release /verbosity:minimal /nologo
+
 
 SUBDIRS=nbody shallow_water jacobi blackscholes
  

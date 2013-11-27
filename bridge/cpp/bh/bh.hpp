@@ -19,14 +19,15 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP
 #define __BOHRIUM_BRIDGE_CPP
-#include "bh.h"
-#include <complex>
-#include <list>
-#include <boost/ptr_container/ptr_map.hpp>
 
 #define BH_CPP_QUEUE_MAX 1000
-#include "iterator.hpp"
+
 #include <stdexcept>
+#include <complex>
+#include <list>
+
+#include "bh.h"
+#include "iterator.hpp"
 
 #ifdef DEBUG
 #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
@@ -36,8 +37,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bh {
 
-typedef boost::ptr_map<size_t, bh_array> storage_type;
-
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
 const float  PI   = 3.14159265358979f;
@@ -45,7 +44,7 @@ const float  PI   = 3.14159265358979f;
 template <typename T>   // Forward declaration
 class multi_array;
 
-int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
+inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
 {
     shape[index] = arg;
     return 0;
@@ -75,8 +74,10 @@ enum reducible {
     MAX         = BH_MAXIMUM,
     LOGICAL_AND = BH_LOGICAL_AND,
     LOGICAL_OR  = BH_LOGICAL_OR,
+    LOGICAL_XOR = BH_LOGICAL_XOR,
     BITWISE_AND = BH_BITWISE_AND,
-    BITWISE_OR  = BH_BITWISE_OR
+    BITWISE_OR  = BH_BITWISE_OR,
+    BITWISE_XOR  = BH_BITWISE_XOR
 };
 
 //
@@ -118,13 +119,17 @@ private:
 template <typename T>
 class multi_array {
 public:
+    bh_view meta;
+
     // ** Constructors **
     multi_array();                              // Empty
+    multi_array(const multi_array<T> &operand); // Copy
 
-    template <typename ...Dimensions>           // Variadic constructor
-    multi_array(Dimensions... shape);
+    template <typename OtherT>
+    multi_array(const multi_array<OtherT> &operand);    // Copy
 
-    multi_array(multi_array<T> const& operand); // Copy
+    template <typename ...Dimensions>                   // Variadic constructor
+    multi_array(Dimensions... dims);
 
     // ** Deconstructor **
     ~multi_array();
@@ -132,11 +137,9 @@ public:
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    // Getter / Setter:
-    size_t getKey() const;
+    size_t len();
+    int64_t shape(int64_t dim);             // Probe for the shape of the given dimension
     unsigned long getRank() const;
-    bool getTemp() const;
-    void setTemp(bool temp);
 
     // Iterator
     iterator begin();
@@ -203,18 +206,21 @@ public:
     multi_array& operator--();              // Decrement all elements in container
     multi_array& operator--(int);
 
-    size_t len();
-    int64_t shape(int64_t dim);             // Probe for the shape of a dimension
+    void link();                            // Bohrium Runtime Specifics
+    void link(bh_base *base_ptr);     // Bohrium Runtime Specifics
+    bh_base* unlink();
 
-    void link(size_t);
-    size_t unlink();
+    bh_base* getBase() const;
+    bool getTemp() const;
+    void setTemp(bool temp);
+    bool linked() const;
+    bool initialized() const;
 
 protected:
-    size_t key;
     bool temp;
+    bh_base *base;
 
 private:
-    void init();
 
 };
 
@@ -226,10 +232,6 @@ private:
  */
 class Runtime {
 public:
-
-    storage_type storage;   // TODO: make it private
-    size_t keys;            // TODO: make it private
-
     static Runtime& instance(); // Singleton method
     ~Runtime();                 // Deconstructor
 
@@ -282,11 +284,8 @@ public:
     template <typename T>
     multi_array<T>& temp();
 
-    template <typename T, typename ...Dimensions>
-    multi_array<T>& temp(Dimensions... shape);
-
-    template <typename T>
-    multi_array<T>& temp(multi_array<T>& input);
+    template <typename T, typename OtherT>
+    multi_array<T>& temp(multi_array<OtherT>& input);
 
     template <typename T>
     multi_array<T>& view(multi_array<T>& base);
@@ -296,34 +295,27 @@ public:
 
     int64_t random_id;                          // Extension IDs
 
-    void trash(size_t key);
+    void trash(bh_base *base_ptr);
 
 private:
+                                                // Bohrium
+    bh_component    *bridge;
+    bh_component    *runtime;
+
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
     size_t          ext_in_queue;
     size_t          queue_size;
-
-    bh_init         vem_init;                   // Bohrium interface
-    bh_execute      vem_execute;
-    bh_shutdown     vem_shutdown;
-    bh_reg_func     vem_reg_func;
-
-    bh_component    **components,               // Bohrium component setup
-                    *self_component,
-                    *vem_component;
-
-    int64_t children_count;
-                                                
-    std::list<size_t> garbage;                  // DSEL stuff
-                                                // Collection of bh_arrays which will
+                                                // DSEL stuff
+    std::list<bh_base*> garbage;                // NOTE: This is probably deprecated with bh_base...
+                                                // Collection of bh_base which will
                                                 // be deleted when the current batch is flushed.
 
     Runtime();                                  // Ensure no external instantiation.
     Runtime(Runtime const&);
     void operator=(Runtime const&);
 
-    size_t deallocate_meta(size_t count);       // De-allocate bh_arrays
+    size_t deallocate_meta(size_t count);       // De-allocate bh_base
     size_t deallocate_ext();                    // De-allocate userdefined functions structs
 
     size_t execute();                           // Send instructions to Bohrium

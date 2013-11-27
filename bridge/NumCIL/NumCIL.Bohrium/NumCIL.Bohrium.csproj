@@ -50,6 +50,7 @@
     <Compile Include="Utility.cs" />
     <Compile Include="VEM.cs" />
     <Compile Include="ViewPtrKeeper.cs" />
+    <Compile Include="IR.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NumCIL\NumCIL.csproj">

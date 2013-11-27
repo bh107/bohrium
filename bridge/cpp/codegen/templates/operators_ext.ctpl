@@ -13,15 +13,15 @@ directiveStartToken = %
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 3
 %for $ret_type, $op1_type, $op2_type in $typesigs
 
-multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
+inline multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
 {
-    multi_array<$ret_type>* result  = &Runtime::instance().temp<$ret_type>(); 
+    multi_array<$ret_type>* result;  
     multi_array<$op1_type>* left    = &lhs;
     multi_array<$op2_type>* right   = &rhs;
 
     if (same_shape(lhs, rhs)) {
-        equiv<$ret_type, $op1_type>(*result, lhs);
-    } else {
+        result = &Runtime::instance().temp<$ret_type, $op1_type>(lhs);
+    } else {                                    // Broadcasting
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
             left    = &Runtime::instance().temp_view(lhs);
@@ -29,7 +29,7 @@ multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$o
             if (!broadcast(lhs, rhs, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<$ret_type, $op1_type>(*result, *left);
+            result = &Runtime::instance().temp<$ret_type, $op1_type>(*left);
 
         } else {                                // Right-handside has lowest rank
             left    = &lhs;
@@ -37,28 +37,29 @@ multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$o
             if (!broadcast(rhs, lhs, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            equiv<$ret_type, $op1_type>(*result, *right);
+            result = &Runtime::instance().temp<$ret_type, $op2_type>(*right);
         }
     }
+
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
+
     return *result;
 }
 
-multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_type& rhs)
+inline multi_array<$ret_type> & operator$op (multi_array<$op1_type>& lhs, const $op2_type& rhs)
 {
-    multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type>(); 
-    equiv<$ret_type, $op1_type>(*result, lhs);
-
+    multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type, $op1_type>(lhs); 
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;
 }
 
-multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_type>& rhs)
+inline multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_type>& rhs)
 {
-    multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type>(); 
-    equiv<$ret_type, $op1_type>(*result, rhs);
-
+    multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type, $op2_type>(rhs);
+    result->link();
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;
@@ -77,9 +78,10 @@ multi_array<$ret_type> & operator$op (const $op1_type& lhs, multi_array<$op2_typ
 %if $optype == "operator.ext" and $opcode != "CUSTOM" and $opcount == 2
 
 template <typename T>
-multi_array<T> & operator$op (multi_array<T>& rhs)
+inline multi_array<T> & operator$op (multi_array<T>& rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
 

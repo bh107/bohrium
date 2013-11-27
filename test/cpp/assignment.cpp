@@ -46,8 +46,8 @@ TEST_F(BohriumTest,vector_eq_const)
 
 TEST_F(BohriumTest,vector_eq_vector)
 {
-    multi_array<double> x(9);
-    multi_array<double> y(9);
+    multi_array<double> x(CONTAINER_SIZE);
+    multi_array<double> y(CONTAINER_SIZE);
     y = 3.5;
 
     x = y;      // The thing being tested...
@@ -57,7 +57,7 @@ TEST_F(BohriumTest,vector_eq_vector)
 TEST_F(BohriumTest,matrix_eq_vector)
 {
     multi_array<double> x(3,3);
-    multi_array<double> y(9);
+    multi_array<double> y(CONTAINER_SIZE);
     y = 3.5;
 
     x = y;      // The thing being tested...

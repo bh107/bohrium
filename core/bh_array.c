@@ -20,48 +20,37 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-/* Create a new array.
+/** Create a new base array.
  *
- * @base Pointer to the base array. If NULL this is a base array
- * @type The type of data in the array
- * @ndim Number of dimensions
- * @start Index of the start element (always 0 for base-array)
- * @shape[BH_MAXDIM] Number of elements in each dimention
- * @stride[BH_MAXDIM] The stride for each dimention
- * @new_array The handler for the newly created array
+ * @param type The type of data in the array
+ * @param nelements The number of elements
+ * @param new_base The handler for the newly created base
  * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-bh_error bh_create_array(bh_array*   base,
-                               bh_type     type,
-                               bh_intp     ndim,
-                               bh_index    start,
-                               bh_index    shape[BH_MAXDIM],
-                               bh_index    stride[BH_MAXDIM],
-                               bh_array**  new_array)
+bh_error bh_create_base(bh_type    type,
+                        bh_index   nelements,
+                        bh_base**  new_base)
 {
-    bh_array *ary = (bh_array *) malloc(sizeof(bh_array));
-    if(ary == NULL)
+
+    bh_base *base = (bh_base *) malloc(sizeof(bh_base));
+    if(base == NULL)
         return BH_OUT_OF_MEMORY;
+    base->type = type;
+    base->nelem = nelements;
+    base->data = NULL;
+    *new_base = base;
 
-    ary->base  = base;
-    ary->type  = type;
-    ary->ndim  = ndim;
-    ary->start = start;
-    ary->data  = NULL;
-    memcpy(ary->shape, shape, ndim * sizeof(bh_index));
-    memcpy(ary->stride, stride, ndim * sizeof(bh_index));
-
-    *new_array = ary;
     return BH_SUCCESS;
 }
 
-/* Destroy array.
+
+/** Destroy the base array.
  *
- * @array The array to destroy
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ * @param base  The base array in question
  */
-bh_error bh_destroy_array(bh_array* array)
+void bh_destroy_base(bh_base**  base)
 {
-    free(array);
-    return BH_SUCCESS;
+    bh_base *b = *base;
+    free(b);
+    b = NULL;
 }

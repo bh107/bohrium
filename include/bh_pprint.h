@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,45 +23,72 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_opcode.h"
 #include "bh_array.h"
 #include "bh_error.h"
+#include "bh_ir.h"
+#include "bh_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** Print a bh_array.
+/* Pretty print an array.
  *
- * @param array The array to print.
+ * @view  The array view in question
  */
-DLLEXPORT void bh_pprint_array( bh_array *array );
+DLLEXPORT void bh_pprint_array(const bh_view *view);
 
-/** Print a single bh_instruction.
+
+/* Pretty print an instruction.
  *
- * @param instr The instruction to print.
+ * @instr  The instruction in question
  */
-DLLEXPORT void bh_pprint_instr( bh_instruction *instr );
+DLLEXPORT void bh_pprint_instr(const bh_instruction *instr);
 
-/** Print a list of bh_instructions, prefixes with text.
- * 
- * @param instruction_list List of instructions to print.
- * @param instruction_count Number of bh_instruction in list.
- * @param txt String to prefix the printed output.
- */
-DLLEXPORT void bh_pprint_instr_list( bh_instruction* instruction_list, bh_intp instruction_count, const char* txt );
-
-/** Print a bundle of bh_instructions.
- * 
- * @param instruction_count Number of instruction in list.
- * @param instruction_list Array of instructions.
- */
-DLLEXPORT void bh_pprint_bundle( bh_instruction* instruction_list, bh_intp instruction_count );
-
-/** Print a coordinate.
+/* Pretty print an instruction list.
  *
- * @param coord The coordinate to print
- * @param dims The number of dimensions in the coordinate.
+ * @instr_list  The instruction list in question
+ * @ninstr      Number of instructions
+ * @txt         Text prepended the instruction list,
+ *              ignored when NULL
+ */
+DLLEXPORT void bh_pprint_instr_list(const bh_instruction instr_list[],
+                                    bh_intp ninstr, const char* txt);
+
+/* Pretty print an array view.
+ *
+ * @view  The array view in question
+ */
+DLLEXPORT void bh_pprint_array(const bh_view *view);
+
+/* Pretty print an array base.
+ *
+ * @base  The array base in question
+ */
+DLLEXPORT void bh_pprint_base(const bh_base *base);
+
+/* Pretty print an coordinate.
+ *
+ * @coord  The coordinate in question
+ * @ndims  Number of dimensions
+ */
+DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
+
+/* Pretty print an BhIR DAG.
+ *
+ * @bhir The BhIR in question
+ * @dag  The DAG in question
  *
  */
-DLLEXPORT void bh_pprint_coord( bh_index* coord, bh_index dims );
+DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
+
+/* Pretty print an BhIR.
+ *
+ * @bhir The BhIR in question
+ *
+ */
+DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
+
+DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
+
 
 #ifdef __cplusplus
 }

@@ -5,17 +5,17 @@ directiveStartToken = %
 %slurp
 template <typename T>
 inline
-void assign_array_type( bh_array* array ) {
+void assign_array_type(bh_base* base) {
     // TODO: The general case should result in a meaning-ful compile-time error.
-    std::cout << "Unsupported type!" << array << std::cout;
+    std::cout << "Unsupported type!" << base << std::cout;
 }
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 template <>
 inline
-void assign_array_type<$bh_atype>( bh_array* array )
+void assign_array_type<$bh_atype>(bh_base* base)
 {
-    array->type = $bh_enum;
+    base->type = $bh_enum;
 }
 
 %end for

@@ -2,45 +2,75 @@
 type = bridge
 children = node
 
+#
+# Managers
+#
 [cluster]
-impl = /opt/bohrium/libbh_vem_cluster.so
-children = node
 type = vem
+children = node
+impl = /opt/bohrium/libbh_vem_cluster.so
 
 [node]
-impl = /opt/bohrium/libbh_vem_node.so
-children = cpu
 type = vem
+children = cpu
+impl = /opt/bohrium/libbh_vem_node.so
 
-[print]
-impl = /opt/bohrium/libbh_ve_print.so
-type = ve
-
-[cpu]
-impl = /opt/bohrium/libbh_ve_cpu.so
-type = ve
-
-[tiling]
-impl = /opt/bohrium/libbh_ve_tiling.so
-type = ve
-
-[mcore]
-impl = /opt/bohrium/libbh_ve_mcore.so
-type = ve
-
-[dynamite]
-impl = /opt/bohrium/libbh_ve_dynamite.so
-type = ve
-compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
-#compiler_cmd="gcc -lm -O2 -march=native -fPIC -std=c99 -x c -shared - -o "
-#compiler_cmd="gcc -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
-#compiler_cmd="/opt/a64/bin/opencc -lm -O2 -fPIC -std=c99 -x c -shared - -o "
-object_path=/opt/bohrium/dynamite/objects
-kernel_path=/opt/bohrium/dynamite/kernels
-snippet_path=/opt/bohrium/dynamite/snippets
-
+#
+# Engines
+#
 [gpu]
-impl = /opt/bohrium/libbh_ve_gpu.so
 type = ve
 ocldir = /opt/bohrium/lib/ocl_source
+impl = /opt/bohrium/libbh_ve_gpu.so
 
+[cpu]
+type = ve
+compiler_cmd="gcc -I/opt/bohrium/cpu/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="gcc -lm -O2 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
+#compiler_cmd="/opt/a64/bin/opencc -lm -O2 -fPIC -std=c99 -x c -shared - -o "
+object_path=/opt/bohrium/cpu/objects
+kernel_path=/opt/bohrium/cpu/kernels
+template_path=/opt/bohrium/cpu/templates
+impl = /opt/bohrium/libbh_ve_cpu.so
+libs = /home/safl/.local/libbh_visualizer.so,/home/safl/.local/libbh_matmul.so,/home/safl/.local/libbh_nselect.so
+
+[score]
+type = ve
+impl = /opt/bohrium/libbh_ve_score.so
+
+[mcore]
+type = ve
+impl = /opt/bohrium/libbh_ve_mcore.so
+
+[tiling]
+type = ve
+impl = /opt/bohrium/libbh_ve_tiling.so
+
+#
+# Filters
+#
+[transitive_reduction]
+type = filter
+impl = /opt/bohrium/libbh_filter_transitive_reduction.so
+children = cpu
+
+[power]
+type = filter
+impl = /opt/bohrium/libbh_filter_power.so
+children = cpu
+
+[fusion]
+type = filter
+impl = /opt/bohrium/libbh_filter_fusion.so
+children = cpu
+
+[streaming]
+type = filter
+impl = /opt/bohrium/libbh_filter_streaming.so
+children = cpu
+
+[pprint]
+type = filter
+impl = /opt/bohrium/libbh_filter_pprint.so
+children = cpu

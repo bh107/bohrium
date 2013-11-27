@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -37,10 +37,10 @@ static dispatch_msg *msg=NULL;
 
 //Maps for translating between arrays addressing the master process
 //and arrays addressing a slave process.
-static std::map<bh_intp, bh_array*> map_master2slave;
-static std::map<bh_array*,bh_intp> map_slave2master;
-static StaticStore<bh_array> slave_ary_store(512);
-static std::set<bh_array*> slave_known_arrays;
+static std::map<bh_intp, bh_base*> map_master2slave;
+static std::map<bh_base*,bh_intp> map_slave2master;
+static StaticStore<bh_base> slave_ary_store(512);
+static std::set<bh_base*> slave_known_arrays;
 
 
 /* Initiate the dispatch system. */
@@ -58,7 +58,7 @@ void dispatch_reset(void)
     msg->size = 0;
 }
 
-    
+
 /* Finalize the dispatch system. */
 void dispatch_finalize(void)
 {
@@ -68,16 +68,16 @@ void dispatch_finalize(void)
 
 /* Insert the new array into the array store and the array maps.
  * Note that this function is only used by the slaves
- * 
- * @master_ary The master array to register locally
- * @return Pointer to the registered array.
+ *
+ * @master_ary  The master array to register locally
+ * @return      Pointer to the registered array.
  */
-bh_array* dispatch_new_slave_array(const bh_array *master_ary, bh_intp master_id)
+bh_base* dispatch_new_slave_array(const bh_base *master_ary, bh_intp master_id)
 {
     assert(pgrid_myrank > 0);
-    bh_array *ary = slave_ary_store.c_next();
+    bh_base *ary = slave_ary_store.c_next();
     *ary = *master_ary;
-    
+
     assert(map_master2slave.count(master_id) == 0);
     assert(map_slave2master.count(ary) == 0);
 
@@ -90,11 +90,11 @@ bh_array* dispatch_new_slave_array(const bh_array *master_ary, bh_intp master_id
 /* Get the slave array.
  * Note that this function is only used by the slaves
  *
- * @master_array_id The master array id, which is the data pointer 
+ * @master_array_id The master array id, which is the data pointer
  *                  in the address space of the master-process.
- * @return Pointer to the registered array.
+ * @return          Pointer to the registered array.
  */
-bh_array* dispatch_master2slave(bh_intp master_array_id)
+bh_base* dispatch_master2slave(bh_intp master_array_id)
 {
     assert(pgrid_myrank > 0);
     return map_master2slave[master_array_id];
@@ -104,9 +104,9 @@ bh_array* dispatch_master2slave(bh_intp master_array_id)
 /* Check if the slave array exist.
  * Note that this function is only used by the slaves
  *
- * @master_array_id The master array id, which is the data pointer 
+ * @master_array_id The master array id, which is the data pointer
  *                  in the address space of the master-process.
- * @return True when the slave array exist locally.
+ * @return          True when the slave array exist locally.
  */
 bool dispatch_slave_exist(bh_intp master_array_id)
 {
@@ -120,7 +120,7 @@ bool dispatch_slave_exist(bh_intp master_array_id)
  *
  * @ary The array that now is known.
  */
-void dispatch_slave_known_insert(bh_array *ary)
+void dispatch_slave_known_insert(bh_base *ary)
 {
     assert(pgrid_myrank == 0);
     slave_known_arrays.insert(ary);
@@ -133,7 +133,7 @@ void dispatch_slave_known_insert(bh_array *ary)
  * @ary The array that should be checked.
  * @return True if the array is known by all slave-processes
  */
-bool dispatch_slave_known_check(bh_array *ary)
+bool dispatch_slave_known_check(bh_base *ary)
 {
     assert(pgrid_myrank == 0);
     return slave_known_arrays.count(ary) > 0;
@@ -145,7 +145,7 @@ bool dispatch_slave_known_check(bh_array *ary)
  *
  * @ary The array that now is unknown.
  */
-void dispatch_slave_known_remove(bh_array *ary)
+void dispatch_slave_known_remove(bh_base *ary)
 {
     if(pgrid_myrank == 0)
     {
@@ -161,7 +161,7 @@ void dispatch_slave_known_remove(bh_array *ary)
         map_master2slave.erase(master_id);
         slave_ary_store.erase(ary);
     }
-}    
+}
 
 
 /* Reserve memory on the send message payload.
@@ -193,7 +193,7 @@ void dispatch_add2payload(bh_intp size, const void *data)
     void *payload;
     //Reserve memory on the send message
     dispatch_reserve_payload(size, &payload);
-    
+
     //Copy 'data' to the send message
     memcpy(payload, data, size);
 }
@@ -209,14 +209,14 @@ void dispatch_send(int type)
 
     //Create message
     msg->type = type;
-        
+
     if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
         EXCEPT_MPI(e);
-       
+
     int size_left = sizeof(dispatch_msg) + msg->size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, 
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0,
             MPI_COMM_WORLD)) != MPI_SUCCESS)
             EXCEPT_MPI(e);
     }
@@ -232,15 +232,15 @@ void dispatch_recv(dispatch_msg **message)
     const int dms = BH_CLUSTER_DISPATCH_DEFAULT_MSG_SIZE;
 
     bh_uint64 stime = bh_timing();
-    
+
     //Get header of the message
     if((e = MPI_Bcast(msg, dms, MPI_BYTE, 0, MPI_COMM_WORLD)) != MPI_SUCCESS)
         EXCEPT_MPI(e);
 
     //Read total message size
     int size = sizeof(dispatch_msg) + msg->size;
- 
-    //Expand the read buffer if need  
+
+    //Expand the read buffer if need
     if(buf_size < size)
     {
         buf_size = size;
@@ -248,12 +248,12 @@ void dispatch_recv(dispatch_msg **message)
         if(msg == NULL)
            EXCEPT_OUT_OF_MEMORY();
     }
- 
+
     //Get rest of the message
     int size_left = size - dms;
     if(size_left > 0)
     {
-        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0, 
+        if((e = MPI_Bcast(((char*)msg) + dms, size_left, MPI_BYTE, 0,
             MPI_COMM_WORLD)) != MPI_SUCCESS)
             EXCEPT_MPI(e);
     }
@@ -267,19 +267,17 @@ void dispatch_recv(dispatch_msg **message)
  *
  * @arys the base-arrays in question.
 */
-void dispatch_array_data(std::stack<bh_array*> &arys)
+void dispatch_array_data(std::stack<bh_base*> &arys)
 {
     bh_uint64 stime = bh_timing();
 
     while (!arys.empty())
     {
-        bh_array *ary = arys.top();
-        assert(ary->base == NULL);
+        bh_base *ary = arys.top();
         if(ary->data != NULL)
         {
             if(pgrid_myrank != 0)
                 ary->data = NULL;//The data-pointer was referencing memory on the master-process.
-            
             comm_master2slaves(ary);
         }
         arys.pop();
@@ -288,82 +286,62 @@ void dispatch_array_data(std::stack<bh_array*> &arys)
 }
 
 
-/* Dispatch an instruction list to the slaves, which includes new array-structs.
- * @count is the number of instructions in the list
- * @inst_list is the instruction list
+/* Dispatch the BhIR to the slaves, which includes new array-structs.
+ * @bhir  The BhIR in question
  */
-void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
+void dispatch_bhir(const bh_ir *bhir)
 {
     dispatch_reset();
 
     bh_uint64 stime = bh_timing();
 
     /* The execution message has the form:
-     * 1   x bh_intp NOI //number of instructions
-     * NOI x bh_instruction //instruction list
+     * 1   x bh_ir bhir  //serialized BhIR
      * 1   x bh_intp NOA //number of new arrays
      * NOA x dispatch_array //list of new arrays unknown to the slaves
      * 1   x bh_intp NOU //number of user-defined funstions
      * NOU x bh_userfunc //list of user-defined funstions
      */
 
-    //Pack the number of instructions (NOI).
-    dispatch_add2payload(sizeof(bh_intp), &count);
-    
-    //Pack the instruction list.
-    dispatch_add2payload(count * sizeof(bh_instruction), inst_list);
+    //Pack the BhIR.
+    void *msg_bhir;
+    dispatch_reserve_payload(bh_ir_totalsize(bhir), &msg_bhir);
+    bh_ir_serialize(msg_bhir, bhir);
 
     //Make reservation for the number of new arrays (NOA).
     bh_intp msg_noa_offset, noa=0;
-    char *msg_noa;
-    dispatch_reserve_payload(sizeof(bh_intp), (void**) &msg_noa);
+    void *msg_noa;
+    dispatch_reserve_payload(sizeof(bh_intp), &msg_noa);
 
-    //We need a message offset instead of a pointer since dispatch_reserve_payload() may 
+    //We need a message offset instead of a pointer since dispatch_reserve_payload() may
     //re-allocate the 'msg_noa' pointer at a later time.
     msg_noa_offset = msg->size - sizeof(bh_intp);
 
     //Stack of new base arrays
-    std::stack<bh_array*> base_darys;
+    std::stack<bh_base*> base_darys;
 
     //Pack the array list.
-    for(bh_intp i=0; i<count; ++i)
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
     {
-        const bh_instruction *inst = &inst_list[i];
+        const bh_instruction *inst = &bhir->instr_list[i];
         int nop = bh_operands_in_instruction(inst);
         for(bh_intp j=0; j<nop; ++j)
         {
-            bh_array *op;
-            if(inst->opcode == BH_USERFUNC)
-                op = inst->userfunc->operand[j];
-            else
-                op = inst->operand[j];
- 
-            if(bh_is_constant(op))
+            bh_view *operand = &bh_inst_operands((bh_instruction*)inst)[j];
+            if(bh_is_constant(operand))
                 continue;//No need to dispatch constants
 
-            if(!dispatch_slave_known_check(op))//The array is unknown to the slaves.
-            {   
+            bh_base *base = bh_base_array(operand);
+            if(!dispatch_slave_known_check(base))//The array is unknown to the slaves.
+            {
                 dispatch_array *dary;
                 dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary);
-                dispatch_slave_known_insert(op);
+                dispatch_slave_known_insert(base);
                 //The master-process's memory pointer is the id of the array.
-                dary->id = (bh_intp) op;
-                dary->ary = *op;
+                dary->id = (bh_intp) base;
+                dary->ary = *base;
                 ++noa;
-                if(op->base == NULL)
-                {
-                    base_darys.push(op);
-                }
-                else if(!dispatch_slave_known_check(op->base))//Also check the base-array.
-                {
-                    dispatch_reserve_payload(sizeof(dispatch_array),(void**) &dary);
-                    dispatch_slave_known_insert(op->base);
-                    dary->id = (bh_intp) op->base;
-                    dary->ary = *op->base;
-                    ++noa;
-                    assert(dary->ary.base == NULL);
-                    base_darys.push(op->base);
-                }
+                base_darys.push(base);
             }
         }
     }
@@ -372,23 +350,23 @@ void dispatch_inst_list(bh_intp count, const bh_instruction inst_list[])
 
     //Make reservation for the number of new arrays (NOU).
     bh_intp msg_nou_offset, nou=0;
-    char *msg_nou;
-    dispatch_reserve_payload(sizeof(bh_intp), (void**) &msg_nou);
+    void *msg_nou;
+    dispatch_reserve_payload(sizeof(bh_intp), &msg_nou);
 
-    //Again we need a message offset. 
+    //Again we need a message offset.
     msg_nou_offset = msg->size - sizeof(bh_intp);
 
     //Pack the user-defined function list
-    for(bh_intp i=0; i<count; ++i)
+    for(bh_intp i=0; i<bhir->ninstr; ++i)
     {
-        const bh_instruction *inst = &inst_list[i];
+        const bh_instruction *inst = &bhir->instr_list[i];
         if(inst->opcode == BH_USERFUNC)
         {
             dispatch_add2payload(inst->userfunc->struct_size, inst->userfunc);
             ++nou;
         }
     }
-    //Save the number of user-defined functions 
+    //Save the number of user-defined functions
     *((bh_intp*)(msg->payload+msg_nou_offset)) = nou;
 
     //Dispath the execution message

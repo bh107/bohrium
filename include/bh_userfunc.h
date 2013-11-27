@@ -87,6 +87,17 @@ typedef struct
 
 DLLEXPORT bh_error bh_nselect(bh_userfunc* arg, void* ve_arg);
 
+typedef struct
+{
+    BH_USER_FUNC_HEADER(2)
+    bh_int32     cm;
+    bh_float32   min;
+    bh_float32   max;
+    bh_bool      flat;
+    bh_bool      cube;
+} bh_visualize_type;
+DLLEXPORT bh_error bh_visualizer(bh_userfunc* arg, void* ve_arg);
+
 #ifdef __cplusplus
 }
 #endif

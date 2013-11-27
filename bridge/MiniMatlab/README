@@ -1,0 +1,13 @@
+Flex and Bison are required in order to compile and execute the MiniMatlab interpreter. 
+
+These tools can be installed in Ubuntu by typing:
+
+	"sudo apt-get install flex bison"
+
+The MiniMatlab interpreter is compiled by typing "make", the command line
+enviroment is started by typing "make run". A number of tests exists in the 
+examples folder which can be executed by typing "make matrices", "make arrays"
+etc. see the Makefile for more commands.
+
+Executing a matlab file is done by typing bin/./MiniMatlab "filename", if you wish 
+to time the execution type bin/./MiniMatlab "filename" "time" (with or without "'s).

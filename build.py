@@ -34,8 +34,13 @@ makefilename = "Makefile"
 def build(components,interpreter):
     for (name, dir, fatal) in components:
         print "***Building %s***"%name
+        mkfile = makefilename
+
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile,"BH_PYTHON=%s"%interpreter], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -51,8 +56,13 @@ def build(components,interpreter):
 def clean(components):
     for (name, dir, fatal) in components:
         print "***Cleaning %s***"%name
+        mkfile = makefilename
+
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename, "clean"], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile, "clean"], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -62,8 +72,13 @@ def install(components,prefix,interpreter):
         os.mkdir(join(prefix,"lib"))
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
+        mkfile = makefilename
+        
+        if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
+            mkfile = "Makefile"
+
         try:
-            p = subprocess.Popen([makecommand, "-f", makefilename,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
+            p = subprocess.Popen([makecommand, "-f", mkfile,"install","BH_PYTHON=%s"%interpreter,"INSTALLDIR=%s"%prefix], cwd=join(install_dir, dir))
             err = p.wait()
         except KeyboardInterrupt:
             p.terminate()
@@ -158,20 +173,28 @@ if __name__ == "__main__":
     components = [\
                   ("OPCODES","core/codegen",True),\
                   ("INIPARSER","iniparser",True),\
-                  ("CORE-BUNDLER", "core/bundler", True),\
-                  ("CORE-COMPUTE", "core/compute", True),\
+                  ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
-                  ("VE-PRINT", "ve/print", False),\
-                  ("VE-GPU", "ve/gpu", False),\
-                  ("VE-CPU", "ve/cpu", True),\
-                  ("VE-TILING", "ve/tiling", False),\
-                  ("VE-MCORE", "ve/mcore", False),\
-                  ("VE-DYNAMITE", "ve/dynamite", False),\
+                  ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
+                  ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
+                  #("VE-GPU", "ve/gpu", False),\
+                  ("VE-CPU",    "ve/cpu", True),\
+                  ("VE-SCORE",  "ve/static/score", False),\
+                  ("VE-MCORE",  "ve/static/mcore", False),\
+                  ("VE-TILING", "ve/static/tiling", False),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
-                  ("NumCIL", "bridge/NumCIL", False),\
+                  #("FILTER-POWER", "filter/power", False),\
+                  #("FILTER-FUSION", "filter/fusion", False),\
+                  #("FILTER-STREAMING", "filter/streaming", False),\
+                  ("FILTER-PPRINT", "filter/pprint", True),\
+                  ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
+                  #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
-                  ("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
+                  ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
+                  ("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
+                  ("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 

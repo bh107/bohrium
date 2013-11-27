@@ -25,60 +25,43 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 // Runtime : Definition
-/*
-Runtime* Runtime::pInstance = 0;
-
-Runtime* Runtime::instance()
-{
-    if (pInstance == 0) {
-        pInstance = new Runtime;
-    }
-    return pInstance;
-}
-*/
-Runtime& Runtime::instance()
+inline Runtime& Runtime::instance()
 {
     static Runtime instance;
     return instance;
 }
 
-void stop()
-{
-    //delete Runtime::instance();
-}
-
-Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
+inline Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
 
-    self_component = bh_component_setup(NULL);
-    bh_component_children(self_component, &children_count, &components);
+    int64_t        component_count; // Bohrium Runtime / Bridge setup
+    bh_component **components;          
 
-    if(children_count != 1 || components[0]->type != BH_VEM) {
-        fprintf(stderr, "Error in the configuration: the bridge must "
-                        "have exactly one child of type VEM\n");
-        exit(-1);
+    bridge = bh_component_setup(NULL);
+    bh_component_children(bridge, &component_count, &components);
+
+    if (component_count != 1 || (!((components[0]->type == BH_VEM) || \
+                                   (components[0]->type != BH_VEM)))) {
+        sprintf(err_msg, "Error in the runtime configuration: the bridge must "
+                         "have exactly one child of type VEM or FILTER.\n");
+        free(components);
+        throw std::runtime_error(err_msg);
     }
-    vem_component   = components[0];
-
-    vem_init        = vem_component->init;
-    vem_execute     = vem_component->execute;
-    vem_shutdown    = vem_component->shutdown;
-
-    vem_reg_func    = vem_component->reg_func;
+    runtime = components[0];
     free(components);
 
-    err = vem_init(vem_component);
+    err = runtime->init(runtime);   // Initialize child
     if (err) {
-        fprintf(stderr, "Error in vem_init()\n");
+        fprintf(stderr, "Error in runtime->init(runtime)\n");
         exit(-1);
     }
 
     //
     // Register extensions
     //
-    err = vem_reg_func("bh_random", &random_id);
+    err = runtime->reg_func("bh_random", &random_id);
     if (err != BH_SUCCESS) {
         sprintf(err_msg, "Fatal error in the initialization of the user"
                         "-defined random operation: %s.\n",
@@ -93,33 +76,25 @@ Runtime::Runtime() : keys(1), random_id(0), ext_in_queue(0), queue_size(0)
     }
 }
 
-Runtime::~Runtime()
+inline Runtime::~Runtime()
 {
-    std::cout << "TEARING DOWN!" << std::endl;
-    // Deconstructor is not called in a timely fashion.
     flush();
 
-    // De-allocate / reset storage
-    // erase all entries in storage
-    // send discards for whatever might be hanging around
-    keys = 0;
-
-    vem_shutdown();
-    bh_component_free(self_component);
-    bh_component_free(vem_component);
-    //pInstance = 0;
+    runtime->shutdown();
+    bh_component_free(runtime);
+    bh_component_free(bridge);
 }
 
-size_t Runtime::get_queue_size()
+inline size_t Runtime::get_queue_size()
 {
     return queue_size;
 }
 
 /**
- * De-allocate all bh_arrays associated with BH_DISCARD instruction in the queue.
+ * De-allocate all bh_base associated with BH_DISCARD instruction in the queue.
  *
  * @param count The max number of instructions to look at.
- * @return The number of bh_arrays that got de-allocated.
+ * @return The number of bh_base that got de-allocated.
  */
 inline
 size_t Runtime::deallocate_meta(size_t count)
@@ -129,7 +104,8 @@ size_t Runtime::deallocate_meta(size_t count)
         throw std::runtime_error("Trying to de-allocate more than physically possible.");
     }
     while(!garbage.empty()) {
-        storage.erase(garbage.front());
+        delete garbage.front();
+        ++deallocated;
         garbage.pop_front();
     }
     return deallocated;
@@ -168,12 +144,18 @@ inline
 size_t Runtime::execute()
 {
     size_t cur_size = queue_size;
-    bh_error status = vem_execute(queue_size, queue);   // Send instructions to Bohrium
-    queue_size = 0;                                     // Reset size of the queue
+    
+    bh_ir bhir;
+    bh_error status = bh_ir_create(&bhir, queue_size, queue);
+    if (status == BH_SUCCESS) {
+        status = runtime->execute(&bhir);   // Send instructions to Bohrium
+        queue_size = 0;                     // Reset size of the queue
+    }
+    bh_ir_destroy(&bhir);
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;
-        err_msg << "Runtime::execute() -> vem_execute() failed: " << bh_error_text(status) << std::endl;
+        err_msg << "Err: Runtime::execute() child->execute() failed: " << bh_error_text(status) << std::endl;
 
         throw std::runtime_error(err_msg.str());
     }
@@ -217,49 +199,25 @@ size_t Runtime::flush()
     return 0;
 }
 
-template <typename T>
-inline
-multi_array<T>& Runtime::op()
-{
-    multi_array<T>* operand = new multi_array<T>();
-
-    return *operand;
-}
-
 /**
- * Create an intermediate operand.
+ * Create an unitialized intermediate operand.
  */
 template <typename T>
 inline
 multi_array<T>& Runtime::temp()
 {
-    size_t key = keys++;
-
     multi_array<T>* operand = new multi_array<T>();
     operand->setTemp(true);
-    operand->link(key);
 
-    storage.insert(key, new bh_array);
-    assign_array_type<T>(&storage[key]);
-
-    return *operand;
-}
-
-template <typename T, typename ...Dimensions>
-inline
-multi_array<T>& Runtime::temp(Dimensions... shape)
-{
-    multi_array<T>* operand = new multi_array<T>(shape...);
-    operand->setTemp(true);
     return *operand;
 }
 
 /**
- * Create an intermediate operand based on another operand.
+ * Create an intermediate operand based on another operands meta-data.
  */
-template <typename T>
+template <typename T, typename OtherT>
 inline
-multi_array<T>& Runtime::temp(multi_array<T>& input)
+multi_array<T>& Runtime::temp(multi_array<OtherT>& input)
 {
     multi_array<T>* operand = new multi_array<T>(input);
     operand->setTemp(true);
@@ -275,7 +233,7 @@ inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    storage[operand->getKey()].base = &storage[base.getKey()];
+    operand->meta.base = base.meta.base;
 
     return *operand;
 }
@@ -288,7 +246,7 @@ inline
 multi_array<T>& Runtime::temp_view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    storage[operand->getKey()].base = &storage[base.getKey()];
+    operand->meta.base = base.meta.base;
     operand->setTemp(true);
 
     return *operand;
@@ -304,9 +262,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = &storage[op2.getKey()];
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2] = op2.meta;
 
     if (op1.getTemp()) { delete &op1; }
     if (op2.getTemp()) { delete &op2; }
@@ -322,10 +280,10 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = NULL;
-    assign_const_type( &instr->constant, op2 );
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2].base = NULL;
+    assign_const_type(&instr->constant, op2);
 
     if (op1.getTemp()) { delete &op1; }
 }
@@ -340,9 +298,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = NULL;
-    instr->operand[2] = &storage[op2.getKey()];
+    instr->operand[0] = op0.meta;
+    instr->operand[1].base = NULL;
+    instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
     if (op2.getTemp()) { delete &op2; }
@@ -358,9 +316,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = NULL;
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2].base = NULL;
 
     if (op1.getTemp()) { delete &op1; }
 }
@@ -375,10 +333,10 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = NULL;
-    instr->operand[2] = NULL;
-    assign_const_type( &instr->constant, op1 );
+    instr->operand[0] = op0.meta;
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
+    assign_const_type(&instr->constant, op1);
 }
 
 template <typename T>
@@ -391,9 +349,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = NULL;
-    instr->operand[2] = NULL;
+    instr->operand[0] = op0.meta;
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
 }
 
 template <typename Ret, typename In>    // x = y
@@ -406,9 +364,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = NULL;
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2].base = NULL;
 
     if (op1.getTemp()) { delete &op1; }
 }
@@ -423,9 +381,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = &storage[op2.getKey()];
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
@@ -441,9 +399,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     guard();
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = NULL;
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2].base = NULL;
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
@@ -459,9 +417,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>&
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = &storage[op1.getKey()];
-    instr->operand[2] = NULL;
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2].base = NULL;
     assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
@@ -477,9 +435,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0] = &storage[op0.getKey()];
-    instr->operand[1] = NULL;
-    instr->operand[2] = &storage[op2.getKey()];
+    instr->operand[0] = op0.meta;
+    instr->operand[1].base = NULL;
+    instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
     if (op2.getTemp()) { delete &op2; }
@@ -500,40 +458,15 @@ void Runtime::enqueue(bh_userfunc* rinstr)
     ext_queue[ext_in_queue++] = instr->userfunc;
 }
 
-//
-//  Copy... properties
-//
-template <typename Ret, typename In>
-void equiv(multi_array<Ret>& ret, multi_array<In>& in)
-{
-    bh_array *ret_a, *in_a;
-
-    ret_a   = &Runtime::instance().storage[ret.getKey()];
-    in_a    = &Runtime::instance().storage[in.getKey()];
-
-    ret_a->base        = NULL;
-    ret_a->ndim        = in_a->ndim;
-    ret_a->start       = in_a->start;
-    for(int64_t i=0; i< in_a->ndim; i++) {
-        ret_a->shape[i] = in_a->shape[i];
-    }
-    for(int64_t i=0; i< in_a->ndim; i++) {
-        ret_a->stride[i] = in_a->stride[i];
-    }
-    ret_a->data        = NULL;
-
-    assign_array_type<Ret>(ret_a);
-}
-
 template <typename T>
 T scalar(multi_array<T>& op)
 {
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
     Runtime::instance().flush();
 
-    bh_array* op_a = &Runtime::instance().storage[op.getKey()];
-    T* data = (T*)(bh_base_array( op_a )->data);
-    data += op_a->start;
+    bh_base *op_a = op.getBase();
+    T* data = (T*)(op_a->data);
+    data += op.meta.start;
 
     T value = *data;
 
@@ -545,9 +478,9 @@ T scalar(multi_array<T>& op)
     return value;
 }
 
-void Runtime::trash(size_t key)
+inline void Runtime::trash(bh_base *base_ptr)
 {
-    garbage.push_back(key);
+    garbage.push_back(base_ptr);
 }
 
 }

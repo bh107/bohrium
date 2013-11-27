@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -36,7 +36,7 @@ bh_error bh_vem_cluster_init(bh_component *self)
     bh_error e;
 
     timing_init();
-    
+
     //Initiate the process grid
     pgrid_init();
 
@@ -56,7 +56,7 @@ bh_error bh_vem_cluster_init(bh_component *self)
     if((e = exec_init(self->name)) != BH_SUCCESS)
         return e;
 
-    return BH_SUCCESS; 
+    return BH_SUCCESS;
 }
 
 
@@ -65,12 +65,12 @@ bh_error bh_vem_cluster_shutdown(void)
     //Send the component name
     dispatch_reset();
     dispatch_send(BH_CLUSTER_DISPATCH_SHUTDOWN);
-    
+
     //Execute our self
     return exec_shutdown();
-} 
+}
 
-    
+
 bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
 {
     bh_error e;
@@ -90,11 +90,12 @@ bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
 }
 
 
-bh_error bh_vem_cluster_execute(bh_intp count,
-                                      bh_instruction inst_list[])
+bh_error bh_vem_cluster_execute(bh_ir* bhir)
 {
+//    bh_pprint_instr_list(bhir->instr_list, bhir->ninstr, "BRIDGE" );
+
     //Send the instruction list and operands to the slaves
-    dispatch_inst_list(count, inst_list);
-    
-    return exec_execute(count,inst_list);
+    dispatch_bhir(bhir);
+
+    return exec_execute(bhir);
 }

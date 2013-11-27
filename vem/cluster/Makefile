@@ -1,12 +1,13 @@
 ROOT=../..
-LIB=libbh_vem_cluster.so
+include $(ROOT)/platform.mk
+LIB=libbh_vem_cluster.$(LIB_SUFFIX)
 SLAVE=bh_vem_cluster_slave
 CXX=mpic++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O2 -fPIC -std=gnu++0x -fno-strict-aliasing -I$(ROOT)/include -I$(ROOT)/iniparser/src
-LDFLAGS=-L../../core -lbh -ldl -o
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++0x -fno-strict-aliasing -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LDFLAGS= $(ARCH_OPTS) -L../../core -lbh -ldl -o
 HEADER=./*.h $(ROOT)/include/*
-SRC= $(shell find -iname '*.cpp') $(shell find -iname '*.c')
+SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/bohrium/
 

@@ -32,16 +32,19 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     , batch(0)
 {}
 
-bh_error InstructionScheduler::schedule(bh_intp instructionCount,
-                                    bh_instruction* instructionList)
+bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
 #ifdef DEBUG
     std::cout << "[VE GPU] InstructionScheduler: recieved batch with " << 
-        instructionCount << " instructions." << std::endl;
+        bhir->instructions->count << " instructions." << std::endl;
 #endif
-    for (bh_intp i = 0; i < instructionCount; ++i)
+    bh_graph_iterator* it;
+    bh_instruction* inst;
+    if (bh_graph_iterator_create(bhir, &it) != BH_SUCCESS)
+        return BH_ERROR;
+
+    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
     {
-        bh_instruction* inst = instructionList++;
         if (inst->opcode != BH_NONE)
         {
 #ifdef DEBUG
@@ -90,6 +93,8 @@ bh_error InstructionScheduler::schedule(bh_intp instructionCount,
             }
         }
     }
+
+    bh_graph_iterator_destroy(it);
     
     /* End of batch cleanup */
     executeBatch();

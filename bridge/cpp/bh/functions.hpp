@@ -31,207 +31,232 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
-multi_array<T>& pow (multi_array<T>&lhs, multi_array<T>& rhs)
+multi_array<T>& pow (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& pow (multi_array<T>&lhs, const T& rhs)
+multi_array<T>& pow (multi_array<T> &lhs, const T &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& abs (multi_array<T>& rhs)
+multi_array<T>& abs (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& max (multi_array<T>&lhs, multi_array<T>& rhs)
+multi_array<T>& max (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& max (multi_array<T>&lhs, const T& rhs)
+multi_array<T>& max (multi_array<T> &lhs, const T &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& min (multi_array<T>&lhs, multi_array<T>& rhs)
+multi_array<T>& min (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& min (multi_array<T>&lhs, const T& rhs)
+multi_array<T>& min (multi_array<T> &lhs, const T &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
     return *result;
 }
 
 template <typename T>
-multi_array<T>& sin (multi_array<T>& rhs)
+multi_array<T>& sin (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& cos (multi_array<T>& rhs)
+multi_array<T>& cos (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& tan (multi_array<T>& rhs)
+multi_array<T>& tan (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& sinh (multi_array<T>& rhs)
+multi_array<T>& sinh (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& cosh (multi_array<T>& rhs)
+multi_array<T>& cosh (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& tanh (multi_array<T>& rhs)
+multi_array<T>& tanh (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& exp (multi_array<T>& rhs)
+multi_array<T>& exp (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& exp2 (multi_array<T>& rhs)
+multi_array<T>& exp2 (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& expm1 (multi_array<T>& rhs)
+multi_array<T>& expm1 (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& log (multi_array<T>& rhs)
+multi_array<T>& log (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& log2 (multi_array<T>& rhs)
+multi_array<T>& log2 (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& log10 (multi_array<T>& rhs)
+multi_array<T>& log10 (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& log1p (multi_array<T>& rhs)
+multi_array<T>& log1p (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& sqrt (multi_array<T>& rhs)
+multi_array<T>& sqrt (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& ceil (multi_array<T>& rhs)
+multi_array<T>& ceil (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& trunc (multi_array<T>& rhs)
+multi_array<T>& trunc (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& floor (multi_array<T>& rhs)
+multi_array<T>& floor (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
     return *result;
 }
 template <typename T>
-multi_array<T>& rint (multi_array<T>& rhs)
+multi_array<T>& rint (multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
     return *result;

@@ -1,0 +1,253 @@
+/********************************************************
+ * parser.ypp                                           *
+ * Recieves tokens from the lexical analyser lexer.l.   *
+ * Tokens are matched by the grammar defined below.     *
+ ********************************************************/
+%{
+#include "AST.hpp"
+#include <stdio.h>
+#include <string>
+#include <cmath>
+#include <sstream>
+#include "../../cpp/util/timing.hpp"
+
+extern "C" FILE *yyin;
+
+int yylex(); 
+int yyerror(char *p);
+
+map<string, multi_array<double>* > vars; // used to store variables as arrays/matrices
+%}
+
+%code requires { #include "AST.hpp" } // necessary to avoid errors
+
+// defines the types used by the grammar, located in AST.hpp
+%union {
+  AST *t_ast;
+  Stmt *t_stmt;
+  Exp *t_exp;
+  Variable *t_var;
+  ArrayExp *t_array; 
+  Slice *t_slice;
+  Index *t_index;
+  VarSl *t_varSl;
+  double num; 
+  char *name;
+};
+
+// specifying tokens to be used
+%token <num> NUM
+%token <name> VARIABLE
+%token NL PLUS MINUS MULT DIVIDE LP RP LS RS FOR ENDER EQ COMMA COLON STOP 
+%token RAND ZEROS ONES EXIT
+
+// setting up the types for each grammar rule
+%type  <t_ast> prog loop_stmts;
+%type  <t_stmt> stmt loop NL;
+%type  <t_array> array_exp
+%type  <t_exp> exp exp_slice exp_index term term_slice term_index sfactor sfactor_slice sfactor_index factor factor_slice factor_index
+%type  <t_varSl> var
+%type  <t_slice> slice
+%type  <t_index> index
+
+// specify right-hand associativity necessary to avoid shift/reduce warning
+%right VARIABLE LP
+
+//-- GRAMMAR RULES -----------------------------------------------------------------
+%%
+
+// root of the grammar, statements are executed to support a matlab-like enviroment
+prog: stmt			{ if ($1 != NULL) $1->evaluate(); }
+| prog stmt			{ if ($2 != NULL) $2->evaluate(); }
+;
+
+// statements inside loops are stored in a vector to be executed when needed
+loop_stmts: stmt	{ $$ = new AST(); if ($1 != NULL) $$->push($1); }
+| loop_stmts stmt	{ if ($2 != NULL) $1->push($2); } 
+;
+
+// helper rule
+delim: COMMA
+|
+;
+
+// specifying loop rules
+loop: FOR VARIABLE EQ sfactor COLON sfactor delim loop_stmts ENDER	 			{ 
+	$$ = new LoopStmt($2, $4, new Number(1), $6, $8, &vars); }
+| FOR VARIABLE EQ sfactor COLON sfactor COLON sfactor delim loop_stmts ENDER 	{ 
+	$$ = new LoopStmt($2, $4, $6, $8, $10, &vars); }
+;
+
+// possible statements
+stmt: exp NL    		{ $$ = new PrintStmt($1); } // simply print expression
+// store expression in variable before printing it
+| VARIABLE EQ exp NL    { $$ = new VarStmt($1, $3, true, false, &vars); }
+// support the matlab way of handling matrix slices during initialization
+// provokes shift/reduce conflict
+| VARIABLE EQ var NL    { $$ = new VarStmt($1, $3, true, true, &vars); }
+// store expression in variable slice before printing the variable
+| var EQ exp NL         { $$ = new VarSliceStmt($1, $3, true, &vars); }
+| exp STOP				{ $$ = NULL; } // do nothing
+// store expression in variable, don't print it
+| VARIABLE EQ exp STOP  { $$ = new VarStmt($1, $3, false, false, &vars); }
+// support the matlab way of handling matrix slices during initialization
+// provokes shift/reduce conflict
+| VARIABLE EQ var STOP  { $$ = new VarStmt($1, $3, false, true, &vars); }
+// store expression in variable slice, don't print it
+| var EQ exp STOP       { $$ = new VarSliceStmt($1, $3, false, &vars); }
+| loop					{ $$ = $1; } // loop statement
+| NL					{ $$ = NULL; }
+| EXIT 					{ return 0; }
+;
+
+// support for arrays defined as [1,2,3]
+array_exp: exp 			{ $$ = new ArrayExp(); $$->add($1); }
+| array_exp COMMA exp 	{ $1->add($3); }
+;
+
+// support addition and subtraction
+exp: exp PLUS term   	{ $$ = new PlusExp($1, $3); }
+| exp MINUS term     	{ $$ = new MinusExp($1, $3); }
+| term					{ $$ = $1; }
+;
+
+// support multiplication and division
+term: term MULT sfactor	{ $$ = new MultExp($1, $3); }
+| term DIVIDE sfactor 	{ $$ = new DivExp($1, $3); }
+| sfactor             	{ $$ = $1; }
+;
+
+// support signs, e.g. "a = +4" or "b = -a"
+sfactor: PLUS factor   	{ $$ = $2; }
+| MINUS factor   		{ $$ = new UnaryMinusExp($2); }
+| factor              	{ $$ = $1; }
+;
+
+// slices, e.g. A(:), A(3), A(a:b) and A(a:2:b)
+slice: COLON			{ $$ = new Slice(new Number(1), new Number(1), new Number(0)); }
+| exp_slice									{ $$ = new Slice($1, new Number(1), $1); }
+| exp_slice COLON exp_slice					{ $$ = new Slice($1, new Number(1), $3); }
+| exp_slice COLON exp_slice COLON exp_slice	{ $$ = new Slice($1, $3, $5); }
+;
+
+// support addition and subtraction for slice indexes
+exp_slice: exp_slice PLUS term_slice   		{ $$ = new PlusExp($1, $3); }
+| exp_slice MINUS term_slice     			{ $$ = new MinusExp($1, $3); }
+| term_slice								{ $$ = $1; }
+;
+
+// support multiplication and division for slice indexes
+term_slice: term_slice MULT sfactor_slice	{ $$ = new MultExp($1, $3); }
+| term_slice DIVIDE sfactor_slice 			{ $$ = new DivExp($1, $3); }
+| sfactor_slice             				{ $$ = $1; }
+;
+
+// support signs, e.g. "+4" or "-a" for slice indexes
+sfactor_slice : PLUS factor_slice    		{ $$ = $2; }
+| MINUS factor_slice   						{ $$ = new UnaryMinusExp($2); }
+| factor_slice               				{ $$ = $1; }
+;
+
+// slice indexes can consist of numbers, variables and "end"
+factor_slice: NUM           				{ $$ = new Number($1); }
+| VARIABLE									{ $$ = new Variable($1, &vars); }
+| LP exp_slice RP           				{ $$ = $2; }
+| ENDER										{ $$ = new Number(0); }
+;
+
+// defines variable slices
+var: VARIABLE LP slice RP					{ $$ = new VarSl($1, $3, &vars); }
+| VARIABLE LP slice COMMA slice RP			{ $$ = new VarSl($1, $3, $5, &vars); }
+;
+
+// defines array/matrix indexes
+index: exp_index							{ $$ = new Index($1, $1); }
+| exp_index COMMA exp_index					{ $$ = new Index($1, $3); }
+;
+
+// support addition and subtraction for array/matrix indexes
+exp_index: exp_index PLUS term_index   		{ $$ = new PlusExp($1, $3); }
+| exp_index MINUS term_index     			{ $$ = new MinusExp($1, $3); }
+| term_index								{ $$ = $1; }
+;
+
+// support multiplication and division for array/matrix indexes
+term_index: term_index MULT sfactor_index	{ $$ = new MultExp($1, $3); }
+| term_index DIVIDE sfactor_index 			{ $$ = new DivExp($1, $3); }
+| sfactor_index             				{ $$ = $1; }
+;
+
+// support signs, e.g. "+4" or "-a" for array/matrix indexes
+sfactor_index : PLUS factor_index    		{ $$ = $2; }
+| MINUS factor_index   						{ $$ = new UnaryMinusExp($2); }
+| factor_index               				{ $$ = $1; }
+;
+
+// array/matrix indexes can consist of numbers and variables
+factor_index: NUM           				{ $$ = new Number($1); }
+| VARIABLE									{ $$ = new Variable($1, &vars); }
+| LP exp_index RP           				{ $$ = $2; }
+;
+
+// expressions can consist of numbers, variables, variable slices, arrays and matrices
+factor: NUM           						{ $$ = new Number($1); }
+| VARIABLE									{ $$ = new Variable($1, &vars); }
+| var										{ $$ = $1; }
+| LS array_exp RS							{ $$ = $2; }
+| LP exp RP           						{ $$ = $2; }
+| RAND LP index RP      					{ $$ = new Random($3); }
+| ZEROS LP index RP      					{ $$ = new Zeros($3); }
+| ONES LP index RP      					{ $$ = new Ones($3); }
+;
+
+%%
+//-- FUNCTION DEFINITIONS ---------------------------------
+
+// delete arrays/matrices stored in variables
+void clean_up() {
+	map<string, multi_array<double>* >::iterator it;
+	for (it = vars.begin(); it != vars.end(); ++it) {
+  		delete it->second;
+	}
+}
+
+int main(int argc, char *argv[]) {
+  	if (argc == 2) { // execute the file specified in argv[1]
+		FILE *myfile = fopen(argv[1], "r");
+		if (!(yyin = myfile)) {
+			cout << "Error occured when attempting to open: " << argv[1] << "\n";
+			return -1;
+		}
+
+		yyparse();
+		fclose(yyin);
+		clean_up();
+
+	// execute the file specified in argv[1] and time it
+	} else if (argc == 3 && strcmp(argv[2], "time") == 0) { 
+		size_t start = sample_time(); // start timer
+
+		FILE *myfile = fopen(argv[1], "r");
+		if (!(yyin = myfile)) {
+			cout << "Error occured when attempting to open: " << argv[1] << "\n";
+			return -1;
+		}
+
+		yyparse();
+		fclose(yyin);
+		clean_up();
+
+		size_t end = sample_time(); // end timer
+		cout << "elapsed-time: "<< (end-start)/1000000.0 << "\n";
+
+	} else if (argc == 1) { // open command line 
+		cout << "Welcome to MiniMatlab 1.0, leave by typing \"exit\".\n\n"; 
+
+		yyparse();
+		clean_up();
+	} else { // otherwise print error msg
+		cout << "Usage: ./MiniMatlab, or ./MiniMatlab \"filename\"\n";
+	}
+
+	return 0;
+}

@@ -52,10 +52,7 @@ bh_error bh_compute_reduce_naive( bh_instruction *instr );
 bh_computeloop bh_compute_get( bh_instruction *instr );
 bh_error bh_compute_apply( bh_instruction *instr );
 bh_error bh_compute_reduce( bh_instruction *instr );
-
 bh_error bh_compute_random(bh_userfunc *arg, void* ve_arg);
-bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg);
-bh_error bh_compute_nselect(bh_userfunc *arg, void* ve_arg);
 
 #ifdef __cplusplus
 }

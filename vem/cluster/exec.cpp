@@ -183,21 +183,21 @@ bh_error exec_reg_func(char *fun, bh_intp *id)
 static void fallback_exec(bh_instruction *inst)
 {
     int nop = bh_operands_in_instruction(inst);
-    std::set<bh_array*> arys2discard;
+    std::set<bh_base*> arys2discard;
 
     batch_flush();
 
     ++fallback_count;
 
     //Gather all data at the master-process
-    bh_array **oprands = bh_inst_operands(inst);
+    bh_view *oprands = bh_inst_operands(inst);
     for(bh_intp o=0; o < nop; ++o)
     {
-        bh_array *op = oprands[o];
+        bh_view *op = &oprands[o];
         if(bh_is_constant(op))
             continue;
 
-        bh_array *base = bh_base_array(op);
+        bh_base *base = bh_base_array(op);
         comm_slaves2master(base);
     }
 
@@ -206,14 +206,15 @@ static void fallback_exec(bh_instruction *inst)
     {
         batch_schedule_inst(*inst);
     }
+    batch_flush();
 
     //Scatter all data back to all processes
     for(bh_intp o=0; o < nop; ++o)
     {
-        bh_array *op = oprands[o];
+        bh_view *op = &oprands[o];
         if(bh_is_constant(op))
             continue;
-        bh_array *base = bh_base_array(op);
+        bh_base *base = bh_base_array(op);
 
         //We have to make sure that the master-process has allocated memory
         //because the slaves cannot determine it.
@@ -223,27 +224,14 @@ static void fallback_exec(bh_instruction *inst)
         comm_master2slaves(base);
 
         //All local arrays should be discarded
-        arys2discard.insert(op);
         arys2discard.insert(base);
     }
-    //Discard all local views
-    for(std::set<bh_array*>::iterator it=arys2discard.begin();
-        it != arys2discard.end(); ++it)
-    {
-        if((*it)->base != NULL)
-        {
-            batch_schedule_inst(BH_DISCARD, *it);
-        }
-    }
     //Free and discard all local base arrays
-    for(std::set<bh_array*>::iterator it=arys2discard.begin();
+    for(std::set<bh_base*>::iterator it=arys2discard.begin();
         it != arys2discard.end(); ++it)
     {
-        if((*it)->base == NULL)
-        {
-            batch_schedule_inst(BH_FREE, *it);
-            batch_schedule_inst(BH_DISCARD, *it);
-        }
+        batch_schedule_inst(BH_FREE, *it);
+        batch_schedule_inst(BH_DISCARD, *it);
     }
 }
 
@@ -256,7 +244,7 @@ static void execute_regular(bh_instruction *inst)
 {
     std::vector<ary_chunk> chunks;
     int nop = bh_operands_in_instruction(inst);
-    bh_array **operands = bh_inst_operands(inst);
+    bh_view *operands = bh_inst_operands(inst);
 
     mapping_chunks(nop, operands, chunks);
     assert(chunks.size() > 0);
@@ -264,7 +252,7 @@ static void execute_regular(bh_instruction *inst)
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
     {
-        assert(bh_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
+        assert(bh_nelements(chunks[0].ary.ndim, chunks[0].ary.shape) > 0);
 
         //The process where the output chunk is located will do the computation.
         int owner_rank = chunks[0+c].rank;
@@ -273,11 +261,11 @@ static void execute_regular(bh_instruction *inst)
         bh_instruction local_inst = *inst;
         for(bh_intp k=0; k < nop; ++k)
         {
-            if(!bh_is_constant(inst->operand[k]))
+            if(!bh_is_constant(&inst->operand[k]))
             {
                 ary_chunk *chunk = &chunks[k+c];
                 local_inst.operand[k] = chunk->ary;
-                comm_array_data(chunk, owner_rank);
+                comm_array_data(*chunk, owner_rank);
             }
         }
 
@@ -291,115 +279,118 @@ static void execute_regular(bh_instruction *inst)
         //Free and discard all local chunk arrays
         for(bh_intp k=0; k < nop; ++k)
         {
-            if(bh_is_constant(inst->operand[k]))
+            if(bh_is_constant(&inst->operand[k]))
                 continue;
 
-            bh_array *ary = chunks[k+c].ary;
-            if(ary->base == NULL)
-                batch_schedule_inst(BH_FREE, ary);
-            batch_schedule_inst(BH_DISCARD, ary);
+            ary_chunk *chunk = &chunks[k+c];
+            if(chunk->temporary)
+            {
+                batch_schedule_inst(BH_FREE, chunk->ary.base);
+                batch_schedule_inst(BH_DISCARD, chunk->ary.base);
+            }
         }
     }
 }
 
-
-
-/* Execute a list of instructions where all operands are global arrays
+/* Execute a single global instruction where all operands are global arrays
  *
- * @instruction A list of instructions to execute
+ * @instr  The instruction in question that
  * @return Error codes
  */
-bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
+static bh_error execute_instr(bh_instruction *inst)
 {
-    if(count <= 0)
-        return BH_SUCCESS;
+    assert(inst->opcode >= 0);
+    switch(inst->opcode)
+    {
+        case BH_USERFUNC:
+        {
+            if (inst->userfunc->id == random_impl_id)
+            {
+                //TODO: the bh_random is hardcoded for now.
+                if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
+                    EXCEPT("[CLUSTER-VEM] The user-defined function bh_random failed.");
+            }
+            else
+            {
+                fallback_exec(inst);
+            }
+            break;
+        }
+        case BH_ADD_REDUCE:
+            ufunc_reduce(inst, BH_ADD);
+            break;
+        case BH_MULTIPLY_REDUCE:
+            ufunc_reduce(inst, BH_MULTIPLY);
+            break;
+        case BH_MINIMUM_REDUCE:
+            ufunc_reduce(inst, BH_MINIMUM);
+            break;
+        case BH_MAXIMUM_REDUCE:
+            ufunc_reduce(inst, BH_MAXIMUM);
+            break;
+        case BH_LOGICAL_AND_REDUCE:
+            ufunc_reduce(inst, BH_LOGICAL_AND);
+            break;
+        case BH_BITWISE_AND_REDUCE:
+            ufunc_reduce(inst, BH_BITWISE_AND);
+            break;
+        case BH_LOGICAL_OR_REDUCE:
+            ufunc_reduce(inst, BH_LOGICAL_OR);
+            break;
+        case BH_BITWISE_OR_REDUCE:
+            ufunc_reduce(inst, BH_BITWISE_OR);
+            break;
+        case BH_DISCARD:
+        {
+            bh_base *g_ary = bh_base_array(&inst->operand[0]);
+            bh_base *l_ary = array_get_existing_local(g_ary);
+            if(l_ary != NULL)
+            {
+                batch_schedule_inst(BH_DISCARD, l_ary);
+            }
+            dispatch_slave_known_remove(g_ary);
+            break;
+        }
+        case BH_FREE:
+        {
+            bh_base *g_ary = bh_base_array(&inst->operand[0]);
+            bh_base *l_ary = array_get_existing_local(g_ary);
+            bh_data_free(g_ary);
+            if(l_ary != NULL)
+                batch_schedule_inst(BH_FREE, l_ary);
+            break;
+        }
+        case BH_SYNC:
+        {
+            bh_base *base = bh_base_array(&inst->operand[0]);
+            comm_slaves2master(base);
+            break;
+        }
+        case BH_NONE:
+        {
+            break;
+        }
+        default:
+        {
+            execute_regular(inst);
+        }
+    }
+    return BH_SUCCESS;
+}
 
+
+/* Execute a BhIR where all operands are global arrays
+ *
+ * @bhir   The BhIR in question
+ * @return Error codes
+ */
+bh_error exec_execute(bh_ir *bhir)
+{
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
     bh_uint64 stime = bh_timing();
 
-    for(bh_intp i=0; i < count; ++i)
-    {
-        bh_instruction* inst = &inst_list[i];
-        assert(inst->opcode >= 0);
-        switch(inst->opcode)
-        {
-            case BH_USERFUNC:
-            {
-                if (inst->userfunc->id == random_impl_id)
-                {
-                    //TODO: the bh_random is hardcoded for now.
-                    if(bh_random(inst->userfunc, NULL) != BH_SUCCESS)
-                        EXCEPT("[CLUSTER-VEM] The user-defined function bh_random failed.");
-                }
-                else
-                {
-                    fallback_exec(inst);
-                }
-                break;
-            }
-            case BH_ADD_REDUCE:
-                ufunc_reduce(inst, BH_ADD);
-                break;
-            case BH_MULTIPLY_REDUCE:
-                ufunc_reduce(inst, BH_MULTIPLY);
-                break;
-            case BH_MINIMUM_REDUCE:
-                ufunc_reduce(inst, BH_MINIMUM);
-                break;
-            case BH_MAXIMUM_REDUCE:
-                ufunc_reduce(inst, BH_MAXIMUM);
-                break;
-            case BH_LOGICAL_AND_REDUCE:
-                ufunc_reduce(inst, BH_LOGICAL_AND);
-                break;
-            case BH_BITWISE_AND_REDUCE:
-                ufunc_reduce(inst, BH_BITWISE_AND);
-                break;
-            case BH_LOGICAL_OR_REDUCE:
-                ufunc_reduce(inst, BH_LOGICAL_OR);
-                break;
-            case BH_BITWISE_OR_REDUCE:
-                ufunc_reduce(inst, BH_BITWISE_OR);
-                break;
-            case BH_DISCARD:
-            {
-                bh_array *g_ary = inst->operand[0];
-                if(g_ary->base == NULL)
-                {
-                    bh_array *l_ary = array_get_existing_local(g_ary);
-                    if(l_ary != NULL)
-                    {
-                        batch_schedule_inst(BH_DISCARD, l_ary);
-                    }
-                }
-                dispatch_slave_known_remove(g_ary);
-                break;
-            }
-            case BH_FREE:
-            {
-                bh_array *g_ary = bh_base_array(inst->operand[0]);
-                bh_array *l_ary = array_get_existing_local(g_ary);
-                bh_data_free(g_ary);
-                if(l_ary != NULL)
-                    batch_schedule_inst(BH_FREE, l_ary);
-                break;
-            }
-            case BH_SYNC:
-            {
-                bh_array *base = bh_base_array(inst->operand[0]);
-                comm_slaves2master(base);
-                break;
-            }
-            case BH_NONE:
-            {
-                break;
-            }
-            default:
-            {
-                execute_regular(inst);
-            }
-        }
-    }
+    //Execute each instruction in the BhIR starting at the root DAG
+    bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute_instr);
 
     //Lets flush all scheduled tasks
     batch_flush();
@@ -413,16 +404,16 @@ bh_error exec_execute(bh_intp count, bh_instruction inst_list[])
 
 bh_error bh_random( bh_userfunc *arg, void* ve_arg)
 {
-    bh_array *op = arg->operand[0];
+    bh_view *op = &arg->operand[0];
 
     std::vector<ary_chunk> chunks;
-    mapping_chunks(1, &op, chunks);
+    mapping_chunks(1, op, chunks);
     assert(chunks.size() > 0);
 
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size(); ++c)
     {
-        assert(bh_nelements(chunks[0].ary->ndim, chunks[0].ary->shape) > 0);
+        assert(bh_nelements(chunks[0].ary.ndim, chunks[0].ary.shape) > 0);
         //The process where the output chunk is located will do the computation.
         if(pgrid_myrank == chunks[c].rank)
         {
@@ -433,7 +424,6 @@ bh_error bh_random( bh_userfunc *arg, void* ve_arg)
             ufunc->struct_size = sizeof(bh_random_type);
             ufunc->operand[0]  = chunks[c].ary;
             batch_schedule_inst(BH_USERFUNC, NULL, (bh_userfunc*)(ufunc));
-            batch_schedule_inst(BH_DISCARD, chunks[c].ary);
         }
     }
     return BH_SUCCESS;

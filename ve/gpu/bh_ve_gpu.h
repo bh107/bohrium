@@ -36,8 +36,7 @@ static ResourceManager* resourceManager;
 
 DLLEXPORT bh_error bh_ve_gpu_init(bh_component* _component);
     
-DLLEXPORT bh_error bh_ve_gpu_execute(bh_intp instruction_count,
-                                           bh_instruction* instruction_list);
+DLLEXPORT bh_error bh_ve_gpu_execute(bh_ir* bhir);
 
 DLLEXPORT bh_error bh_ve_gpu_shutdown(void);
 

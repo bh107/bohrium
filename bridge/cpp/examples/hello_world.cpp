@@ -27,17 +27,19 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<float> x, y;
-    x = random<float>(27);
-    
-    y = view_as(x, 3,3,3);
+    multi_array<double> x, y;
 
-    bh_pprint_array(&Runtime::instance().storage[y.getKey()]);
+    x = randu<double>(3,3);
+    cout << "RANDOM: " << x << endl;
 
-    cout << x << endl;
-    cout << y << endl;
+    x = randn<double>(3,3);
+    cout << "RANDOM: " << x << endl;
 
-    std::cout << "Leaving compute!" << std::endl;
+    x = range<double>(1,10,2);
+    cout << "RANGE: " << x << endl;
+
+    x = range<double>(10,1,(int64_t)(-2));
+    cout << "RANGE: " << x << endl;
 }
 
 int main()
