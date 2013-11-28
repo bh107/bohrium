@@ -3,8 +3,8 @@ include $(ROOT)/platform.mk
 LIB=libbhc.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
-LCFLAGS= $(WARNOPTS) $(ARCHOPTS) -DNO_VARIADICS  -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
-LDFLAGS= $(ARCHOPTS) -shared -ldl -Wl,$(LD_LIB_COMMAND),$(LIB)
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -DNO_VARIADICS  -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
+LDFLAGS= $(ARCH_OPTS) -shared -ldl -Wl,$(LD_LIB_COMMAND),$(LIB)
 
 SRC=$(ALL_CPP_FILES)
 OBJ=$(SRC:.cpp=.oo) $(ROOT)/core/libbh.$(LIB_SUFFIX)
