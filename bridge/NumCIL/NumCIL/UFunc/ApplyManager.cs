@@ -87,6 +87,47 @@ namespace NumCIL
             private static readonly List<Tuple<Type, int, IApplyMatmul>> _matmulOps = new List<Tuple<Type, int, IApplyMatmul>>();
         
             /// <summary>
+            /// Helper class to sort lists based on priority
+            /// </summary>
+            private class TupleComparer<T> : IComparer<Tuple<Type, int, T>> 
+            {
+                public int Compare(Tuple<Type, int, T> x, Tuple<Type, int, T> y)
+                {
+                    return x.Item2 - y.Item2;
+                }
+            }
+            
+            /// <summary>
+            /// Registers binary operators
+            /// </summary>
+            /// <param name="type">The type to match</param>
+            /// <param name="ops">The operators to add</param>
+            public static void RegisterBinaryOps(Type type, params IApplyBinaryOp[] ops)
+            {
+                foreach(var op in ops)
+                    _binaryOps.Add(new Tuple<Type, int, IApplyBinaryOp>(type, 0, op));
+                    
+                _binaryOps.Sort(new TupleComparer<IApplyBinaryOp>());
+            }
+                    
+            /// <summary>
+            /// Unregisters all operands for a given typ.
+            /// </summary>
+            /// <param name="type">The type to unregister for</param>
+            public static void UnregisterOps(Type type)
+            {
+                _binaryOps.RemoveAll(x => x.Item1 == type);
+                _binaryConvOps.RemoveAll(x => x.Item1 == type);
+                _unaryOps.RemoveAll(x => x.Item1 == type);
+                _unaryConvOps.RemoveAll(x => x.Item1 == type);
+                _nullaryOps.RemoveAll(x => x.Item1 == type);
+                _reduceOps.RemoveAll(x => x.Item1 == type);
+                _aggregateOps.RemoveAll(x => x.Item1 == type);
+                _matmulOps.RemoveAll(x => x.Item1 == type);
+                
+            }
+        
+            /// <summary>
             /// Applies a binary operation using the two operands.
             /// Assumes that the target array is allocated and shaped for broadcast.
             /// </summary>
