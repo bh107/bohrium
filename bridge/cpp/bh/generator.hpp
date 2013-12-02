@@ -70,7 +70,7 @@ multi_array<T>& zeros(const Dimensions&... shape)
 
 #ifndef NO_VARIADICS
 template <typename T, typename ...Dimensions>
-multi_array<T>& rand(const Dimensions&... shape)
+multi_array<T>& random(const Dimensions&... shape)
 {
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();

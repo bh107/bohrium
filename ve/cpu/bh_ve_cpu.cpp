@@ -709,7 +709,6 @@ bh_error bh_ve_cpu_shutdown(void)
 
 bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
-
     if (strcmp("bh_random", fun) == 0) {
     	if (random_impl == NULL) {
             random_impl_id = *id;
@@ -744,8 +743,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
         	*id = visualizer_impl_id;
         	return BH_SUCCESS;
         }
-    }
-    else if(strcmp("bh_nselect", fun) == 0) {
+    } else if(strcmp("bh_nselect", fun) == 0) {
         if (nselect_impl == NULL) {
             bh_component_get_func(myself, fun, &nselect_impl);
             if (nselect_impl == NULL) {
@@ -760,15 +758,5 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
     }
 
     return BH_USERFUNC_NOT_SUPPORTED;
-}
-
-bh_error bh_matmul( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_matmul( arg, ve_arg );
-}
-
-bh_error bh_nselect( bh_userfunc *arg, void* ve_arg)
-{
-    return bh_compute_nselect( arg, ve_arg );
 }
 

@@ -135,7 +135,7 @@ bh_component *bh_component_setup(const char* component_name)
     memset(com, 0, sizeof(bh_component));
 
     //Assign component name, default to "bridge"
-    if(component_name == NULL) {  
+    if(component_name == NULL) {
         strcpy(com->name, "bridge");
     } else {
         strcpy(com->name, component_name);
@@ -226,7 +226,7 @@ bh_component *bh_component_setup(const char* component_name)
     }
 
     // Load the bohrium configuration file
-    com->config = iniparser_load(env);  
+    com->config = iniparser_load(env);
     if(com->config == NULL)
     {
         fprintf(stderr, "Error: Bohrium could not read the config file.\n");
@@ -238,7 +238,7 @@ bh_component *bh_component_setup(const char* component_name)
     com->type = get_type(com->config, com->name);
 
     // Load the .so associated with the component
-    if (BH_BRIDGE == com->type) { 
+    if (BH_BRIDGE == com->type) {
         com->lib_handle = NULL;   // Bridges does not have one
     }
     else
@@ -408,7 +408,7 @@ bh_error bh_component_children(bh_component *parent, bh_intp *count,
  * @return Error codes (BH_SUCCESS)
  */
 bh_error bh_component_get_func(bh_component *self, char *func,
-                                     bh_userfunc_impl *ret_func)
+                               bh_userfunc_impl *ret_func)
 {
     //First we search the libs in the config file to find the user-defined function.
     //Secondly we search the component's library.
@@ -433,13 +433,6 @@ bh_error bh_component_get_func(bh_component *self, char *func,
                 char *err = dlerror();
                 if(err == NULL)
                     return BH_SUCCESS;
-
-    if(err != NULL)
-    {
-        *ret_func = NULL;//Make sure it is NULL on error.
-        fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
-        return BH_USERFUNC_NOT_SUPPORTED;
-    }
             }
             path = strtok(NULL,",");
         }

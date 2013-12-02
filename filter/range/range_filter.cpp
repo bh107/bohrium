@@ -1,6 +1,6 @@
 /*
-This file is part of Bohrium and Copyright (c) 2012 the Bohrium team:
-http://bohrium.bitbucket.org
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
@@ -13,38 +13,24 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the 
-GNU Lesser General Public License along with bohrium. 
+GNU Lesser General Public License along with Bohrium. 
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <sstream>
 #include <iostream>
-#include "bh/bh.hpp"
+#include <string>
+#include <vector>
+#include <set>
+#include <bh.h>
 
 using namespace std;
-using namespace bh;
 
-void compute()
+void range_filter(bh_ir* bhir)
 {
-    cout << "Hello World." << endl;
-
-    multi_array<double> x, y;
-
-    x = randu<double>(3,3);
-    cout << "RANDOM: " << x << endl;
-
-    x = randn<double>(3,3);
-    cout << "RANDOM: " << x << endl;
-
-    x = range<double>(1,10,2);
-    cout << "RANGE: " << x << endl;
-
-    x = range<double>(10,1,(int64_t)(-2));
-    cout << "RANGE: " << x << endl;
-}
-
-int main()
-{
-    compute();
-    return 0;
+    bh_intp nodes[] = {0};
+    cout << "### Range-filter searching through. ndag="<< bhir->ndag  << "." << endl;
+    bh_dag_split(bhir, 1, nodes, 0, -1);  
+    cout << "###" << endl;
 }
 

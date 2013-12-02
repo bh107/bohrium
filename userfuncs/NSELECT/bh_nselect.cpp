@@ -18,9 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-#include <bh_compute.h>
 #include <assert.h>
-
 
 template <typename T> bh_error do_nselect(bh_view  *out_index,
                                              bh_view  *out_value,
@@ -44,15 +42,13 @@ template <typename T> bh_error do_nselect(bh_view  *out_index,
     return BH_SUCCESS;
 }
 
-
-
 /**
  *
  * Implementation of the user-defined funtion "nselect".
  * Note that we follow the function signature defined by bh_userfunc_impl.
  *
  */
-bh_error bh_compute_nselect(bh_userfunc *arg, void* ve_arg)
+bh_error bh_nselect(bh_userfunc *arg, void* ve_arg)
 {
     bh_nselect_type *m_arg = (bh_nselect_type *) arg;
     assert(m_arg->nout == 2);
@@ -98,5 +94,4 @@ bh_error bh_compute_nselect(bh_userfunc *arg, void* ve_arg)
             return BH_TYPE_NOT_SUPPORTED;
     }
 }
-
 

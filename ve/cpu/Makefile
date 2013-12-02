@@ -10,13 +10,13 @@ ifeq ($(PLATFORM_OS),OSX)
 	EXTRA_LIBS+=-L$(ROOT)/thirdparty/jansson/osx-lib -L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o) 
-OBJ=bh_ve_cpu.o $(ROOT)/ve/shared/compute/bh_compute_matmul.o $(ROOT)/ve/shared/compute/bh_compute_nselect.o 
+OBJ=bh_ve_cpu.o 
 
 INSTALLDIR?=/opt/bohrium/
 

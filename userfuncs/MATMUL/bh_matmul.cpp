@@ -18,8 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-#include <bh_compute.h>
-
 
 template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
 
@@ -52,16 +50,14 @@ template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
     return BH_SUCCESS;
 }
 
-
-
 /**
- * bh_compute_matmul
+ * bh_matmul
  *
  * Implementation of the user-defined funtion "matmul".
  * Note that we follow the function signature defined by bh_userfunc_impl.
  *
  */
-bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg)
+bh_error bh_matmul(bh_userfunc *arg, void* ve_arg)
 {
     bh_matmul_type *m_arg = (bh_matmul_type *) arg;
     bh_view *C = &m_arg->operand[0];
@@ -104,6 +100,4 @@ bh_error bh_compute_matmul(bh_userfunc *arg, void* ve_arg)
 	}
 
 }
-
-
 
