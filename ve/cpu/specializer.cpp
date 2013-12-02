@@ -117,7 +117,7 @@ string specialize(bh_sij_t &sij) {
         case BH_RANGE:
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "range.tpl");
 
             cres = true;
@@ -136,8 +136,8 @@ string specialize(bh_sij_t &sij) {
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
 
             if (sij.ndims <= 3) {
                 sprintf(template_fn, "reduction.%ldd.tpl", sij.ndims);
@@ -176,23 +176,23 @@ string specialize(bh_sij_t &sij) {
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->constant.type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->constant.type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_scalar");
             } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_scalar");
                 dict.ShowSection("a2_dense");
             } else {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_dense");
 
@@ -246,13 +246,13 @@ string specialize(bh_sij_t &sij) {
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
                 dict.ShowSection("a1_scalar");
             } else {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
                 dict.ShowSection("a1_dense");
             }
 

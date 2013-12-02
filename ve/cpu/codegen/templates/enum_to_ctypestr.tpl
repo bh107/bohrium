@@ -2,7 +2,7 @@
 directiveStartToken= %
 #end compiler-settings
 %slurp
-const char* bhtype_to_ctype(bh_type type)
+const char* enum_to_ctypestr(bh_type type)
 {
     switch(type) {
         %for $bhtype, $cpp in $types
