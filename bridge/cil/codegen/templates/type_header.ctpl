@@ -63,19 +63,77 @@ using bh_complex128 = System.Numerics.Complex;
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
-namespace Bohrium 
+namespace NumCIL.Bohrium2
 {
     %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-    internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>
+    internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable
     {
-        internal Bohrium.PInvoke.bh_base_${bh_ctype}_p Pointer;
+
+        internal class bh_base_${bh_ctype}_handle : IDisposable
+        {
+            private DataAccessor_${bh_ctype} m_parent;
+            private PInvoke.bh_base_${bh_ctype}_p m_base;
+            private bool m_isDisposed = false;
+
+            public bh_base_${bh_ctype}_handle(DataAccessor_${bh_ctype} parent)
+            {
+                m_parent = parent;
+                m_base = m_parent.IncrementRefCount();                                
+            }
+
+            /// <summary>
+            /// Releases the memory reserved by the pointer
+            /// </summary>
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+
+            /// <summary>
+            /// Releases the memory reserved by the pointer
+            /// </summary>
+            ~bh_base_${bh_ctype}_handle()
+            {
+                Dispose(false);
+            }
+
+            /// <summary>
+            /// Releases the memory reserved by the pointer
+            /// </summary>
+            protected void Dispose(bool disposing)
+            {
+                if (m_isDisposed)
+                    return;
+
+                if (disposing)
+                    GC.SuppressFinalize(this);
+
+                m_isDisposed = true;
+                m_parent.DecrementRefCount();
+            }
+
+            public static implicit operator PInvoke.bh_base_${bh_ctype}_p(bh_base_${bh_ctype}_handle self)
+            {
+                if (self.m_isDisposed)
+                    throw new ObjectDisposedException(typeof(bh_base_${bh_ctype}_handle).FullName);
+
+                return self.m_base;
+            }
+        }
+
+        internal PInvoke.bh_base_${bh_ctype}_p Pointer;
         protected ${bh_atype}[] m_data;
         protected readonly long m_size;
+
+        protected object m_lock = new object();
+        protected GCHandle m_handle;
+        protected long m_refcount;
+
     
         public DataAccessor_${bh_ctype}(long size)
         {
             m_size = size;
-            Pointer = Bohrium.PInvoke.bh_multi_array_${bh_ctype}_create_base(IntPtr.Zero, size);
+            Pointer = new PInvoke.bh_base_${bh_ctype}_p(size);
         }
         
         public DataAccessor_${bh_ctype}(${bh_atype}[] data)
@@ -86,7 +144,40 @@ namespace Bohrium
             m_data = data;
             m_size = data.Length;
         }
-    
+
+        internal PInvoke.bh_base_${bh_ctype}_p IncrementRefCount()
+        {
+            lock (m_lock)
+            {
+                m_refcount++;
+                if (!m_handle.IsAllocated && !Pointer.IsAllocated)
+                {
+                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
+                    Pointer = new PInvoke.bh_base_${bh_ctype}_p(m_handle.AddrOfPinnedObject(), m_data.Length);
+                }
+                
+                return Pointer;
+            }
+        }
+
+        internal bh_base_${bh_ctype}_handle GetPointerHandle()
+        {
+            return new bh_base_${bh_ctype}_handle(this);
+        }
+
+        internal void DecrementRefCount()
+        {
+            lock (m_lock)
+            {
+                m_refcount--;
+                if (m_refcount <= 0 && m_handle.IsAllocated)
+                {
+                    m_refcount = 0;
+                    m_handle.Free();
+                    Pointer.Dispose();
+                }
+            }
+        }    
         #region IDataAccessor implementation
 
         public ${bh_atype}[] AsArray()
@@ -99,8 +190,18 @@ namespace Bohrium
 
         public void Allocate()
         {
-            using(var v = new Bohrium.PInvoke.bh_multi_array_${bh_ctype}_p(Pointer))
+            using(var v = new PInvoke.bh_multi_array_${bh_ctype}_p(Pointer))
                 v.Sync();
+
+            IntPtr data = Pointer.Data;
+
+            if (m_data == null)
+                m_data = new ${bh_atype}[m_size];
+
+            if (data != IntPtr.Zero)
+                Utility.WritePointerToArray(data, m_data);
+
+            Pointer.Dispose();
         }
 
         public long Length
@@ -143,11 +244,38 @@ namespace Bohrium
 
         public object Tag { get; set; }
 
+
         #endregion
 
+        /// <summary>
+        /// Releases the memory reserved by the pointer
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases the memory reserved by the pointer
+        /// </summary>
+        ~DataAccessor_${bh_ctype}()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Releases the memory reserved by the pointer
+        /// </summary>
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+                GC.SuppressFinalize(this);
+
+            if (Pointer.IsAllocated) 
+                Pointer.Dispose();
+        }
     }    
     %end for
-
 
     internal static partial class PInvoke 
     {
@@ -215,12 +343,29 @@ namespace Bohrium
             }
 
             /// <summary>
+            /// Gets the data pointer from the base
+            /// </summary>
+            public IntPtr Data 
+            { 
+                get { return IsAllocated ? PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this) : IntPtr.Zero; } 
+                set { PInvoke.bh_multi_array_${bh_ctype}_set_base_data(this, value); } 
+            }
+            
+            /// <summary>
+            /// Gets the data pointer from the base
+            /// </summary>
+            public long Size { get { return PInvoke.bh_multi_array_${bh_ctype}_get_base_nelem(this); } }
+
+            /// <summary>
             /// Releases the memory reserved by the pointer
             /// </summary>
             public void Dispose()
             {
-                try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy_base(this); }
+                /*try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy_base(this); }
                 finally { pointer = IntPtr.Zero; }
+                */
+
+                pointer = IntPtr.Zero;
             }
         }
 
@@ -248,12 +393,24 @@ namespace Bohrium
             public bool IsAllocated { get { return pointer != IntPtr.Zero; } }
 
             /// <summary>
+            /// Gets or sets the array temp status
+            /// </summary>
+            public bool Temp
+            {
+                get { return IsAllocated ? bh_multi_array_${bh_ctype}_get_temp(this) : false; }
+                set { bh_multi_array_${bh_ctype}_set_temp(this, value); }
+            }
+
+            /// <summary>
             /// Creates a new view
             /// </summary>
             public bh_multi_array_${bh_ctype}_p (NumCIL.Generic.NdArray<${bh_atype}> a)
             {
+                var ac = (DataAccessor_${bh_ctype})a.DataAccessor;
+                var acp = ac.GetPointerHandle();
+
                 this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
-                    ((Bohrium.DataAccessor_${bh_ctype})a.DataAccessor).Pointer, 
+                    acp, 
                     a.Shape.Dimensions.Length, 
                     a.Shape.Offset, 
                     a.Shape.Dimensions.Select(x => x.Length).ToArray(),
@@ -283,7 +440,7 @@ namespace Bohrium
             /// </summary>
             public bh_base_${bh_ctype}_p Base
             {
-                get { return bh_multi_array_float32_get_base(this); }
+                get { return bh_multi_array_${bh_ctype}_get_base(this); }
             }
 
             /// <summary>
@@ -291,7 +448,7 @@ namespace Bohrium
             /// </summary>
             public void Sync()
             {
-                bh_multi_array_float32_sync(this);
+                bh_multi_array_${bh_ctype}_sync(this);
             }
         }
 
@@ -329,6 +486,35 @@ namespace Bohrium
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static void bh_multi_array_${bh_ctype}_destroy_base(bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Gets the data pointer from a base
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static IntPtr bh_multi_array_${bh_ctype}_get_base_data([In] bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Gets the number of elements in a base
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static int64_t bh_multi_array_${bh_ctype}_get_base_nelem([In] bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Sets the data pointer for a base
+        /// </summary>
+        public extern static void bh_multi_array_${bh_ctype}_set_base_data(bh_base_${bh_ctype}_p @base, IntPtr data);
+
+        /// <summary>
+        /// Sets the temp status of an array
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_set_temp([In] bh_multi_array_${bh_ctype}_p self, bh_bool temp);
+
+        /// <summary>
+        /// Sets the temp status of an array
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_bool bh_multi_array_${bh_ctype}_get_temp([In] bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Construct a new array from bh_base_${bh_ctype}_p and view setup
@@ -382,13 +568,13 @@ namespace Bohrium
         /// Synchronizes the current base
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_base_${bh_ctype}_p bh_multi_array_float32_sync([In] bh_multi_array_${bh_ctype}_p self);
+        public extern static bh_base_${bh_ctype}_p bh_multi_array_${bh_ctype}_sync([In] bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Gets the base from an existing array
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_base_${bh_ctype}_p bh_multi_array_float32_get_base([In] bh_multi_array_${bh_ctype}_p self);
+        public extern static bh_base_${bh_ctype}_p bh_multi_array_${bh_ctype}_get_base([In] bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Construct a copy of the array

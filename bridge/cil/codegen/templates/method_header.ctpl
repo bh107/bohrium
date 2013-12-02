@@ -37,7 +37,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Bohrium 
+namespace NumCIL.Bohrium2
 {
     internal static partial class PInvoke 
     {

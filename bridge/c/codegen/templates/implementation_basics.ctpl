@@ -88,12 +88,16 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_b
 {
     const int64_t stride = 1;
     const int64_t shape = base->nelem;
+    bh_multi_array_${bh_ctype}_p tmp = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);
+    return tmp;
 }
 
 
 // Construct a new array from bh_base_p and bh_view_p
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
 {
+    bh_multi_array_${bh_ctype}_p tmp = (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(base, rank, start, shape, stride);
+    return tmp;
 }
 
 

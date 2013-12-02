@@ -50,10 +50,13 @@ namespace UnitTest
 				RunSomeTests("Lazy");
 			}
 			
-            try { NumCIL.Bohrium.Utility.Activate(); }
-            catch { } 
+            try { NumCIL.Bohrium2.Utility.Activate(); }
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            } 
 
-            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium.BohriumAccessorFactory<float>))
+            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium2.BohriumAccessorFactory<float>))
                 RunSomeTests("Bohrium");
             else
                 Console.WriteLine("Bohrium code is not supported, skipping tests for Bohrium code");

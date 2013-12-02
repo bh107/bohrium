@@ -130,6 +130,8 @@ namespace NumCIL.Bohrium2
 			Activate<bool>();
 			Activate<NumCIL.Complex64.DataType>();
 			Activate<System.Numerics.Complex>();
+            
+            NumCIL.UFunc.ApplyManager.RegisterBinaryOps(typeof(DataAccessor_float32), new NumCIL.Bohrium2.ApplyImplementor());
         }
 
         /// <summary>
@@ -175,7 +177,18 @@ namespace NumCIL.Bohrium2
         /// </summary>
         public static void Flush()
         {
-            Bohrium.PInvoke.bh_runtime_flush();
+            PInvoke.bh_runtime_flush();
+        }
+
+        /// <summary>
+        /// Helper function that performs a memcpy from unmanaged data to managed data
+        /// </summary>
+        /// <param name="source">The data source</param>
+        /// <param name="target">The data target</param>
+        /// <typeparam name="T">The type of data to copy</typeparam>
+        public static void WritePointerToArray<T>(IntPtr source, T[] target)
+        {
+            UnsafeAPI.CopyFromIntPtr(source, target, target.Length);
         }
     }
 }
