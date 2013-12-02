@@ -12,7 +12,7 @@ import os
 import bohriumbridge as bridge
 
 
-def random123(shape, key, start_idx=0, bohrium=True):
+def random123(shape, key, start_idx=0, dtype=np.uint64, bohrium=True):
     """
     New array of uniform pseudo numbers based on the random123 algorithm.
 
@@ -22,14 +22,17 @@ def random123(shape, key, start_idx=0, bohrium=True):
                 Defines the shape of the returned array of random floats.
     key       : The key or seed for the random123 algorithm
     start_idx : The start index (must be positive)
+    dtype     : The data type of the output array (uint32 or uint64)
 
     Returns
     -------
     out : Array of uniform pseudo numbers
     """
     assert start_idx >= 0
+    assert dtype is np.uint32 or dtype is np.uint64
+
     totalsize = reduce(operator.mul, shape, 1)
-    out = np.empty(totalsize, bohrium=bohrium, dtype=np.uint64)
+    out = np.empty(totalsize, bohrium=bohrium, dtype=dtype)
     arange = start_idx + np.arange(totalsize, bohrium=bohrium, dtype=np.uint64)
     bridge.random123(out, key, arange)
     return out.reshape(shape)
@@ -97,7 +100,13 @@ class Random:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-        assert dtype is np.float32 or dtype is np.float64
+        if dtype is np.float32:
+            dtype_uint = np.uint32
+        elif dtype is np.float64:
+            dtype_uint = np.uint64
+        else:
+            raise ValueError("dtype must be float32 or float64")
+
         if shape is None:
             s = (1,) #default is a scalar
         else:
@@ -106,10 +115,13 @@ class Random:
             except TypeError:
                 s = shape #It might be a tuble already
 
-        r = random123(s, self.seed, start_idx=self.idx, bohrium=bohrium)
+        #Generate random numbers as uint
+        r = random123(s, self.seed, start_idx=self.idx, dtype=dtype_uint, bohrium=bohrium)
+        #Convert random numbers to float in the interval [0.0, 1.0).
         r = np.asarray(r, dtype=dtype)
-        r /= float(np.iinfo(np.uint64).max)
+        r /= float(np.iinfo(dtype_uint).max)
 
+        #Update the index offset for the next random call
         self.idx += reduce(operator.mul, s, 1)
 
         if shape is None:
