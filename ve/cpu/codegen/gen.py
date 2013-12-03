@@ -17,25 +17,23 @@ def main(self):
     for fn in glob.glob('templates/*.tpl'):
         fn, _ = os.path.basename(fn).split('.tpl')
         if fn in self.__dict__:
-            func    = self.__dict__[fn]
-            mapping = func(opcodes, types)
             template = Template(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList = [mapping]
+                searchList = self.__dict__[fn](opcodes, types)
             )
             print template
 
 def enum_to_ctypestr(opcodes, types):
-    return {"types": [(t["enum"], t["cpp"]) for t in types]}
+    return [{"types": [(t["enum"], t["cpp"]) for t in types]}]
 
 def enum_to_shorthand(opcodes, types):
-    return {"types": [(t["enum"], t["shorthand"]) for t in types]}
+    return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
 
 def enumstr_to_ctypestr(opcodes,types):
-    return {"types": [(t["enum"], t["c"]) for t in types]}
+    return [{"types": [(t["enum"], t["c"]) for t in types]}]
 
 def enumstr_to_shorthand(opcodes, types):
-    return {"types": [(t["enum"], t["shorthand"]) for t in types]}
+    return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
 
 def layoutmask_to_shorthand(opcodes, types):
     A0_CONSTANT = 1 << 0;
@@ -177,7 +175,97 @@ def layoutmask_to_shorthand(opcodes, types):
             mask += "P"
         masks.append((bitmask, mask))
 
-    return {'masks': masks}
+    return [{'masks': masks}]
+
+def cexpr_todo(opcodes, types):
+
+    def expr(opcode):
+        opcode["code"] = opcode["code"].replace("op1", "*a0_current")
+        opcode["code"] = opcode["code"].replace("op2", "*a1_current")
+        opcode["code"] = opcode["code"].replace("op3", "*a2_current")
+        return opcode
+
+    opcodes = [expr(opcode) for opcode in opcodes]
+    
+    data = {                    # Group the opcodes
+        'system': [
+            opcode for opcode in opcodes \
+            if opcode['system_opcode'] \
+            and 'USERFUNC' not in \
+            opcode['opcode']
+        ],
+        'extensions': [
+            opcode for opcode in opcodes \
+            if 'USERFUNC' in opcode['opcode']
+        ],
+        'reductions': [
+            opcode for opcode in opcodes \
+            if 'REDUCE' in opcode['opcode']
+        ],
+        'binary': [
+            opcode for opcode in opcodes \
+            if opcode['nop']==3 \
+            and opcode['elementwise']
+        ],
+        'unary': [
+            opcode for opcode in opcodes \
+            if opcode['nop']==2 \
+            and opcode['elementwise']
+        ]
+    }
+
+    return [data, {'opcodes': opcodes}]
+
+def typesig_to_shorthand(opcodes, types):
+
+    etu = dict([(t["enum"], t["id"]+1) for t in types])
+    ets = dict([(t["enum"], t["shorthand"]) for t in types])
+
+    typesigs = {
+        3: [],
+        2: [],
+        1: [],
+        0: []
+    }
+
+    for opcode in opcodes:
+        for typesig in opcode['types']:
+            slen = len(typesig)
+            if typesig not in typesigs[slen]:
+                typesigs[slen].append(typesig)
+
+    nsigs = []
+    tsigs = []
+    hsigs = []
+    cases = []
+    p_slen = -1
+    for slen, typesig in ((slen, typesig) for slen in xrange(3,-1,-1) for typesig in typesigs[slen]):
+
+        if slen == 3:
+            tsig = "%s + (%s << 4) + (%s << 8)" % tuple(typesig)
+            nsig = etu[typesig[0]] + (etu[typesig[1]]<<4) + (etu[typesig[2]]<<8)
+            hsig = ets[typesig[0]] + (ets[typesig[1]]) + (ets[typesig[2]])
+        elif slen == 2:
+            tsig = "%s + (%s << 4)" % tuple(typesig)
+            nsig = etu[typesig[0]] + (etu[typesig[1]]<<4)
+            hsig = ets[typesig[0]] + (ets[typesig[1]])
+        elif slen == 1:
+            tsig = "%s" % tuple(typesig)
+            nsig = etu[typesig[0]]
+            hsig = ets[typesig[0]]
+        elif slen == 0:
+            tsig = "0"
+            nsig = 0
+            hsig = "_"
+        tsigs.append(tsig)
+        nsigs.append(nsig)
+        hsigs.append(hsig)
+
+        if slen != p_slen:
+            p_slen = slen
+        cases.append((nsig, hsig, tsig))
+
+    return [{"cases": cases}]
 
 if __name__ == "__main__":
     main(sys.modules[__name__])
