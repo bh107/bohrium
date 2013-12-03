@@ -6,6 +6,7 @@ Random functions
 
 """
 import bohrium as np
+import numpy
 import operator
 import datetime
 import os
@@ -28,6 +29,7 @@ def random123(shape, key, start_idx=0, dtype=np.uint64, bohrium=True):
     -------
     out : Array of uniform pseudo numbers
     """
+    assert bohrium is True
     assert start_idx >= 0
     assert dtype is np.uint32 or dtype is np.uint64
 
@@ -106,6 +108,8 @@ class Random:
             dtype_uint = np.uint64
         else:
             raise ValueError("dtype must be float32 or float64")
+        if not bohrium:
+            return numpy.random.random(size=shape, dtype=dtype, bohrium=False)
 
         if shape is None:
             s = (1,) #default is a scalar
