@@ -5,8 +5,8 @@ directiveStartToken= %
 const char* enum_to_ctypestr(bh_type type)
 {
     switch(type) {
-        %for $bhtype, $cpp in $types
-        case $bhtype: return "$cpp";
+        %for $bhtype, $c in $types
+        case $bhtype: return "$c";
         %end for
 
         default:

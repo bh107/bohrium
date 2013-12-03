@@ -24,7 +24,7 @@ def main(self):
             print template
 
 def enum_to_ctypestr(opcodes, types):
-    return [{"types": [(t["enum"], t["cpp"]) for t in types]}]
+    return [{"types": [(t["enum"], t["c"]) for t in types]}]
 
 def enum_to_shorthand(opcodes, types):
     return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]

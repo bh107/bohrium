@@ -385,8 +385,8 @@ const char* enum_to_ctypestr(bh_type type)
         case BH_FLOAT16: return "uint16_t";
         case BH_FLOAT32: return "float";
         case BH_FLOAT64: return "double";
-        case BH_COMPLEX64: return "complex<float>";
-        case BH_COMPLEX128: return "complex<double>";
+        case BH_COMPLEX64: return "struct { float real, imag; }";
+        case BH_COMPLEX128: return "struct { double real, imag; }";
         case BH_UNKNOWN: return "<UNKNOWN>";
 
         default:
