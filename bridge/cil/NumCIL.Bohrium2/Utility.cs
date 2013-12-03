@@ -1,4 +1,4 @@
-﻿#region Copyright
+﻿﻿#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -189,6 +189,17 @@ namespace NumCIL.Bohrium2
         public static void WritePointerToArray<T>(IntPtr source, T[] target)
         {
             UnsafeAPI.CopyFromIntPtr(source, target, target.Length);
+        }
+        
+        /// <summary>
+        /// Helper function that performs a memcpy from unmanaged data to managed data
+        /// </summary>
+        /// <param name="source">The data source</param>
+        /// <param name="target">The data target</param>
+        /// <typeparam name="T">The type of data to copy</typeparam>
+        public static void WriteArrayToPointer<T>(T[] source, IntPtr target)
+        {
+            UnsafeAPI.CopyToIntPtr(source, target, source.Length);
         }
     }
 }

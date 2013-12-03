@@ -68,72 +68,17 @@ namespace NumCIL.Bohrium2
     %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
     internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable
     {
-
-        internal class bh_base_${bh_ctype}_handle : IDisposable
-        {
-            private DataAccessor_${bh_ctype} m_parent;
-            private PInvoke.bh_base_${bh_ctype}_p m_base;
-            private bool m_isDisposed = false;
-
-            public bh_base_${bh_ctype}_handle(DataAccessor_${bh_ctype} parent)
-            {
-                m_parent = parent;
-                m_base = m_parent.IncrementRefCount();                                
-            }
-
-            /// <summary>
-            /// Releases the memory reserved by the pointer
-            /// </summary>
-            public void Dispose()
-            {
-                Dispose(true);
-            }
-
-            /// <summary>
-            /// Releases the memory reserved by the pointer
-            /// </summary>
-            ~bh_base_${bh_ctype}_handle()
-            {
-                Dispose(false);
-            }
-
-            /// <summary>
-            /// Releases the memory reserved by the pointer
-            /// </summary>
-            protected void Dispose(bool disposing)
-            {
-                if (m_isDisposed)
-                    return;
-
-                if (disposing)
-                    GC.SuppressFinalize(this);
-
-                m_isDisposed = true;
-                m_parent.DecrementRefCount();
-            }
-
-            public static implicit operator PInvoke.bh_base_${bh_ctype}_p(bh_base_${bh_ctype}_handle self)
-            {
-                if (self.m_isDisposed)
-                    throw new ObjectDisposedException(typeof(bh_base_${bh_ctype}_handle).FullName);
-
-                return self.m_base;
-            }
-        }
-
-        internal PInvoke.bh_base_${bh_ctype}_p Pointer;
+        protected PInvoke.bh_multi_array_${bh_ctype}_p m_array;
         protected ${bh_atype}[] m_data;
         protected readonly long m_size;
-
-        protected object m_lock = new object();
         protected GCHandle m_handle;
-        protected long m_refcount;
+        protected bool m_dirty;
 
     
         public DataAccessor_${bh_ctype}(long size)
         {
             m_size = size;
-            Pointer = new PInvoke.bh_base_${bh_ctype}_p(size);
+            //Special case, we do not allocate until the first usage
         }
         
         public DataAccessor_${bh_ctype}(${bh_atype}[] data)
@@ -143,65 +88,120 @@ namespace NumCIL.Bohrium2
         
             m_data = data;
             m_size = data.Length;
+
+            //The array and handle are not allocated unless needed
         }
 
-        internal PInvoke.bh_base_${bh_ctype}_p IncrementRefCount()
+        public PInvoke.bh_multi_array_${bh_ctype}_p MultiArray
         {
-            lock (m_lock)
+            get { return m_array; }
+            set
             {
-                m_refcount++;
-                if (!m_handle.IsAllocated && !Pointer.IsAllocated)
-                {
-                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                    Pointer = new PInvoke.bh_base_${bh_ctype}_p(m_handle.AddrOfPinnedObject(), m_data.Length);
-                }
-                
-                return Pointer;
+                if (m_data == null && !m_array.IsAllocated)
+                    m_array = value;
+                else
+                    throw new InvalidOperationException("Cannot set array on allocated instance");
             }
         }
 
-        internal bh_base_${bh_ctype}_handle GetPointerHandle()
-        {
-            return new bh_base_${bh_ctype}_handle(this);
-        }
-
-        internal void DecrementRefCount()
-        {
-            lock (m_lock)
-            {
-                m_refcount--;
-                if (m_refcount <= 0 && m_handle.IsAllocated)
-                {
-                    m_refcount = 0;
-                    m_handle.Free();
-                    Pointer.Dispose();
-                }
-            }
-        }    
         #region IDataAccessor implementation
 
         public ${bh_atype}[] AsArray()
         {
-            if (m_data == null)
-                Allocate();
+            Allocate();
             
             return m_data;
         }
 
+        public void SetDirty()
+        {
+            m_dirty = true;
+        }
+
+        internal PInvoke.bh_multi_array_${bh_ctype}_p GetArrayPointer()
+        {
+            if (!m_array.IsAllocated)
+            {
+                if (m_data == null)
+                {
+                    Console.WriteLine("Creating data in C land");
+
+                    // No CIL allocation, create a new multi-array
+                    m_array = PInvoke.bh_multi_array_${bh_ctype}_new_from_base(
+                        PInvoke.bh_multi_array_${bh_ctype}_create_base(
+                            IntPtr.Zero, m_size
+                        )
+                    );
+                }
+                else
+                {
+                    Console.WriteLine("Wraping CIL data");
+
+                    // Existing CIL allocation, wrap it
+                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
+                    m_array = PInvoke.bh_multi_array_${bh_ctype}_new_from_base(
+                        PInvoke.bh_multi_array_${bh_ctype}_create_base(
+                            m_handle.AddrOfPinnedObject(), m_size
+                        )
+                    );
+                }
+            }
+
+            return m_array;
+        }
+
+        private void Sync()
+        {
+            if (m_dirty)
+            {
+                Console.WriteLine("Calling sync");
+                if (!m_array.IsAllocated)
+                    throw new InvalidOperationException("Array cannot be dirty and not allocated");
+
+                m_array.Sync();
+                m_dirty = false;
+            }
+        }
+
         public void Allocate()
         {
-            using(var v = new PInvoke.bh_multi_array_${bh_ctype}_p(Pointer))
-                v.Sync();
+            Sync();
 
-            IntPtr data = Pointer.Data;
+            if (m_array.IsAllocated)
+            {
+                if (m_data == null)
+                {
+                    Console.WriteLine("Copy data from C land");
 
-            if (m_data == null)
-                m_data = new ${bh_atype}[m_size];
+                    //In this case, data resides in C land, 
+                    // so we copy it back to CIL and free it in C land
+                    m_data = new ${bh_atype}[m_size];
+                    var ptr = m_array.Data;
+                    
+                    if (ptr != IntPtr.Zero) 
+                        Utility.WritePointerToArray(ptr, m_data);
+                    else
+                        Console.WriteLine("Array appears to be uninitialized ....");
 
-            if (data != IntPtr.Zero)
-                Utility.WritePointerToArray(data, m_data);
+                    m_array.Dispose();
+                }
+                else
+                {
+                    //Data resides in CIL so we detach the data pointer and
+                    // release the array and unpin it
+                    Console.WriteLine("Releae data in C land");
 
-            Pointer.Dispose();
+                    m_array.Data = IntPtr.Zero;
+                    m_handle.Free();
+                    m_array.Dispose();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Accessed array that was never in any operation");
+                if (m_data == null)
+                    m_data = new ${bh_atype}[m_size];
+            }
         }
 
         public long Length
@@ -224,20 +224,36 @@ namespace NumCIL.Bohrium2
         {
             get
             {
-                //TODO: Can work on pointer...
-            
-                if (!IsAllocated)
+                Sync();
+
+                Console.WriteLine("In get");
+
+                if (m_data == null && m_array.IsAllocated)
+                {
+                    var tmp = new ${bh_atype}[1];
+                    Utility.WritePointerToArray(m_array.Data, tmp);
+                    return tmp[0];
+                }
+
+                if (m_data == null)
                     Allocate();
-                    
+                                
                 return m_data[index];
             }
             set
             {
-                //TODO: Can work on pointer...
-                
-                if (!IsAllocated)
-                    Allocate();
+                Sync();
+
+                if (m_data == null && m_array.IsAllocated)
+                {
+                    var tmp = new ${bh_atype}[] { value };
+                    Utility.WriteArrayToPointer(tmp, m_array.Data);
+                    return;
+                }
                     
+                if (m_data == null)
+                    Allocate();
+
                 m_data[index] = value;
             }
         }
@@ -271,13 +287,17 @@ namespace NumCIL.Bohrium2
             if (disposing)
                 GC.SuppressFinalize(this);
 
-            if (Pointer.IsAllocated)
+            if (m_array.IsAllocated)
             {
+                // If the data is in CIL, make sure C land does not free it
                 if (m_data != null)
-                    Pointer.Data = IntPtr.Zero;
-                    
-                Pointer.Dispose();
+                    m_array.Data = IntPtr.Zero;
+
+                m_array.Dispose();
             }
+
+            if (m_handle.IsAllocated)
+                m_handle.Free();
         }
     }    
     %end for
@@ -412,15 +432,17 @@ namespace NumCIL.Bohrium2
             public bh_multi_array_${bh_ctype}_p (NumCIL.Generic.NdArray<${bh_atype}> a)
             {
                 var ac = (DataAccessor_${bh_ctype})a.DataAccessor;
-                var acp = ac.GetPointerHandle();
+                var acp = ac.GetArrayPointer();
 
                 this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
-                    acp, 
+                    acp.Base, 
                     a.Shape.Dimensions.Length, 
                     a.Shape.Offset, 
                     a.Shape.Dimensions.Select(x => x.Length).ToArray(),
                     a.Shape.Dimensions.Select(x => x.Stride).ToArray()
                 ).pointer;
+
+                Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
             }
 
             /// <summary>
@@ -429,6 +451,7 @@ namespace NumCIL.Bohrium2
             public bh_multi_array_${bh_ctype}_p (bh_base_${bh_ctype}_p @base)
             {
                 this.pointer = bh_multi_array_${bh_ctype}_new_from_base(@base).pointer;
+                Console.WriteLine("Created multi_array {0} from a base", this.pointer.ToInt64());
             }
 
             /// <summary>
@@ -436,6 +459,7 @@ namespace NumCIL.Bohrium2
             /// </summary>
             public void Dispose()
             {
+                Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
                 try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy(this); }
                 finally { pointer = IntPtr.Zero; }
             }
@@ -446,6 +470,20 @@ namespace NumCIL.Bohrium2
             public bh_base_${bh_ctype}_p Base
             {
                 get { return bh_multi_array_${bh_ctype}_get_base(this); }
+            }
+
+
+            /// <summary>
+            /// Gets or sets the pointer to data
+            /// </summary>
+            public IntPtr Data
+            {
+                get { return this.Base.Data; }
+                set 
+                { 
+                    var b = this.Base;
+                    b.Data = value; 
+                }
             }
 
             /// <summary>
@@ -507,6 +545,7 @@ namespace NumCIL.Bohrium2
         /// <summary>
         /// Sets the data pointer for a base
         /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static void bh_multi_array_${bh_ctype}_set_base_data(bh_base_${bh_ctype}_p @base, IntPtr data);
 
         /// <summary>
