@@ -73,7 +73,7 @@ def install(components,prefix,interpreter):
     for (name, dir, fatal) in components:
         print "***Installing %s***"%name
         mkfile = makefilename
-        
+
         if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
             mkfile = "Makefile"
 
@@ -179,22 +179,22 @@ if __name__ == "__main__":
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
                   #("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU",    "ve/cpu", True),\
-                  ("VE-SCORE",  "ve/static/score", False),\
-                  ("VE-MCORE",  "ve/static/mcore", False),\
-                  ("VE-TILING", "ve/static/tiling", False),\
+ #                 ("VE-SCORE",  "ve/static/score", False),\
+ #                 ("VE-MCORE",  "ve/static/mcore", False),\
+ #                 ("VE-TILING", "ve/static/tiling", False),\
                   ("VEM-NODE", "vem/node", True),\
-                  ("VEM-CLUSTER", "vem/cluster", False),\
+ #                 ("VEM-CLUSTER", "vem/cluster", False),\
                   #("FILTER-POWER", "filter/power", False),\
                   #("FILTER-FUSION", "filter/fusion", False),\
                   #("FILTER-STREAMING", "filter/streaming", False),\
-                  ("FILTER-PPRINT", "filter/pprint", True),\
-                  ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
+ #                 ("FILTER-PPRINT", "filter/pprint", True),\
+ #                 ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
-                  ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
-                  ("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
-                  ("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
+ #                 ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
+ #                 ("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
+ #                 ("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 
