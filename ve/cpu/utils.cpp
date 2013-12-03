@@ -6,7 +6,7 @@
 #include "bh.h"
 #include "bh_ve_cpu.h"
 
-#include "auto.cpp"
+#include "utils.auto.cpp"
 
 /**
  * Read the entire file provided via filename into memory.
