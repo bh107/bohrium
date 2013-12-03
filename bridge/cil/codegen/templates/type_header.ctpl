@@ -271,8 +271,13 @@ namespace NumCIL.Bohrium2
             if (disposing)
                 GC.SuppressFinalize(this);
 
-            if (Pointer.IsAllocated) 
+            if (Pointer.IsAllocated)
+            {
+                if (m_data != null)
+                    Pointer.Data = IntPtr.Zero;
+                    
                 Pointer.Dispose();
+            }
         }
     }    
     %end for
