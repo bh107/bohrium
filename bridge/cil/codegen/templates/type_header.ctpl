@@ -73,6 +73,8 @@ namespace NumCIL.Bohrium2
         protected readonly long m_size;
         protected GCHandle m_handle;
         protected bool m_dirty;
+        private static readonly int ELSIZE = System.Runtime.InteropServices.Marshal.SizeOf(typeof(${bh_atype}));
+        private static long MAX_INDEX = int.MaxValue / ELSIZE;
 
     
         public DataAccessor_${bh_ctype}(long size)
@@ -132,6 +134,8 @@ namespace NumCIL.Bohrium2
                             IntPtr.Zero, m_size
                         )
                     );
+
+                    m_dirty = true;
                 }
                 else
                 {
@@ -169,6 +173,7 @@ namespace NumCIL.Bohrium2
 
             if (m_array.IsAllocated)
             {
+                var bs = m_array.Base;
                 if (m_data == null)
                 {
                     Console.WriteLine("Copy data from C land");
@@ -176,7 +181,7 @@ namespace NumCIL.Bohrium2
                     //In this case, data resides in C land, 
                     // so we copy it back to CIL and free it in C land
                     m_data = new ${bh_atype}[m_size];
-                    var ptr = m_array.Data;
+                    var ptr = bs.Data;
                     
                     if (ptr != IntPtr.Zero) 
                         Utility.WritePointerToArray(ptr, m_data);
@@ -189,9 +194,9 @@ namespace NumCIL.Bohrium2
                 {
                     //Data resides in CIL so we detach the data pointer and
                     // release the array and unpin it
-                    Console.WriteLine("Releae data in C land");
+                    Console.WriteLine("Release data in C land");
 
-                    m_array.Data = IntPtr.Zero;
+                    bs.Data = IntPtr.Zero;
                     m_handle.Free();
                     m_array.Dispose();
                 }
@@ -224,30 +229,62 @@ namespace NumCIL.Bohrium2
         {
             get
             {
-                Sync();
-
                 Console.WriteLine("In get");
+                Sync();
+                Console.WriteLine("In get, after sync");
 
-                if (m_data == null && m_array.IsAllocated)
+
+                if (m_data == null && m_array.IsAllocated && index < MAX_INDEX)
                 {
+                    if (index < 0 || index >= m_size)
+                        throw new ArgumentOutOfRangeException("index");
+
+                    Console.WriteLine("In get, using pointer");
+
+                    Console.WriteLine("array is {0}", m_array.AsString());
+
+                    var bs = m_array.Base;
+                    var ptr = bs.Data;
+                    if (ptr == IntPtr.Zero)
+                        throw new InvalidOperationException("The data pointer was null");
+
                     var tmp = new ${bh_atype}[1];
-                    Utility.WritePointerToArray(m_array.Data, tmp);
+
+                    if (tmp == null)
+                        throw new Exception("Bad stuff dude");
+
+                    Utility.WritePointerToArray(ptr + (int)(index * ELSIZE), tmp);
                     return tmp[0];
                 }
 
                 if (m_data == null)
+                {
+                    Console.WriteLine("In get, allocating data");
                     Allocate();
+                }
                                 
+                Console.WriteLine("In get, using local data");
                 return m_data[index];
             }
             set
             {
                 Sync();
 
-                if (m_data == null && m_array.IsAllocated)
+                if (m_data == null && m_array.IsAllocated && index < MAX_INDEX)
                 {
+                    if (index < 0 || index >= m_size)
+                        throw new ArgumentOutOfRangeException("index");
+
+                    var bs = m_array.Base;
+                    var ptr = bs.Data;
+                    if (ptr == IntPtr.Zero)
+                        throw new InvalidOperationException("The data pointer was null");
+
                     var tmp = new ${bh_atype}[] { value };
-                    Utility.WriteArrayToPointer(tmp, m_array.Data);
+                    if (tmp == null)
+                        throw new Exception("Bad stuff dude");
+
+                    Utility.WriteArrayToPointer(tmp, ptr + (int)(index * ELSIZE));
                     return;
                 }
                     
@@ -290,8 +327,11 @@ namespace NumCIL.Bohrium2
             if (m_array.IsAllocated)
             {
                 // If the data is in CIL, make sure C land does not free it
-                if (m_data != null)
-                    m_array.Data = IntPtr.Zero;
+                if (m_data != null) 
+                {
+                    var bs = m_array.Base;
+                    bs.Data = IntPtr.Zero;
+                }
 
                 m_array.Dispose();
             }
@@ -372,7 +412,11 @@ namespace NumCIL.Bohrium2
             /// </summary>
             public IntPtr Data 
             { 
-                get { return IsAllocated ? PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this) : IntPtr.Zero; } 
+                get 
+                { 
+                    Console.WriteLine("In base {0} getting data: {1}", this.pointer.ToInt64(), PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this));
+                    return IsAllocated ? PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this) : IntPtr.Zero; 
+                } 
                 set { PInvoke.bh_multi_array_${bh_ctype}_set_base_data(this, value); } 
             }
             
@@ -391,6 +435,11 @@ namespace NumCIL.Bohrium2
                 */
 
                 pointer = IntPtr.Zero;
+            }
+
+            public string AsString()
+            {
+                return string.Format("self: {0}, data: {1}", pointer.ToInt64(), this.Data);
             }
         }
 
@@ -435,7 +484,7 @@ namespace NumCIL.Bohrium2
                 var acp = ac.GetArrayPointer();
 
                 this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
-                    acp.Base, 
+                    acp.Base,
                     a.Shape.Dimensions.Length, 
                     a.Shape.Offset, 
                     a.Shape.Dimensions.Select(x => x.Length).ToArray(),
@@ -472,26 +521,19 @@ namespace NumCIL.Bohrium2
                 get { return bh_multi_array_${bh_ctype}_get_base(this); }
             }
 
-
-            /// <summary>
-            /// Gets or sets the pointer to data
-            /// </summary>
-            public IntPtr Data
-            {
-                get { return this.Base.Data; }
-                set 
-                { 
-                    var b = this.Base;
-                    b.Data = value; 
-                }
-            }
-
             /// <summary>
             /// Gets the base for a multi-array
             /// </summary>
             public void Sync()
             {
                 bh_multi_array_${bh_ctype}_sync(this);
+            }
+
+            public string AsString()
+            {
+                var s = pointer.ToInt64();
+                var b = pointer == IntPtr.Zero ? "null" : this.Base.AsString();
+                return string.Format("self: {0} (d: {2}), base: {1}", s, b, this.Base.Data.ToInt64());
             }
         }
 

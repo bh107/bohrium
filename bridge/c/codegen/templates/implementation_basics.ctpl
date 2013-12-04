@@ -88,8 +88,10 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_b
 {
     const int64_t stride = 1;
     const int64_t shape = base->nelem;
-    bh_multi_array_${bh_ctype}_p tmp = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);
-    return tmp;
+    bh_multi_array_${bh_ctype}_p self = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);    
+    ((multi_array<${ctype}>*)self)->link(base);
+
+    return self;
 }
 
 

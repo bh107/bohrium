@@ -56,12 +56,11 @@ multi_array<T>::multi_array(const int64_t rank, const int64_t* sizes) : temp(fal
 }
 
 template <typename T>           // base/view constructor
-multi_array<T>::multi_array(const bh_base* _base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
+multi_array<T>::multi_array(bh_base* _base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
 {
-    base        = (bh_base*)_base;
     meta.ndim   = rank;
     meta.start  = start;
-    meta.base   = base;
+    meta.base   = _base;
 
     for(int64_t i=0; i < rank; i++) {
         meta.shape[i] = shape[i];

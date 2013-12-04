@@ -127,7 +127,7 @@ public:
     multi_array();                              // Empty
     multi_array(const multi_array<T> &operand); // Copy
     multi_array(const int64_t rank, const int64_t* shapes);
-    multi_array(const bh_base* base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
+    multi_array(bh_base* base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 
     template <typename OtherT>
     multi_array(const multi_array<OtherT> &operand);    // Copy
