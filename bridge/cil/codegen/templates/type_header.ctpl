@@ -203,7 +203,7 @@ namespace NumCIL.Bohrium2
             }
             else
             {
-                Console.WriteLine("Accessed array that was never in any operation");
+                //Console.WriteLine("Accessed array that was never in any operation");
                 if (m_data == null)
                     m_data = new ${bh_atype}[m_size];
             }
@@ -229,19 +229,16 @@ namespace NumCIL.Bohrium2
         {
             get
             {
-                Console.WriteLine("In get");
                 Sync();
-                Console.WriteLine("In get, after sync");
-
 
                 if (m_data == null && m_array.IsAllocated && index < MAX_INDEX)
                 {
                     if (index < 0 || index >= m_size)
                         throw new ArgumentOutOfRangeException("index");
 
-                    Console.WriteLine("In get, using pointer");
+                    //Console.WriteLine("In get, using pointer");
 
-                    Console.WriteLine("array is {0}", m_array.AsString());
+                    //Console.WriteLine("array is {0}", m_array.AsString());
 
                     var bs = m_array.Base;
                     var ptr = bs.Data;
@@ -249,21 +246,14 @@ namespace NumCIL.Bohrium2
                         throw new InvalidOperationException("The data pointer was null");
 
                     var tmp = new ${bh_atype}[1];
-
-                    if (tmp == null)
-                        throw new Exception("Bad stuff dude");
-
                     Utility.WritePointerToArray(ptr + (int)(index * ELSIZE), tmp);
                     return tmp[0];
                 }
 
                 if (m_data == null)
-                {
-                    Console.WriteLine("In get, allocating data");
                     Allocate();
-                }
                                 
-                Console.WriteLine("In get, using local data");
+                //Console.WriteLine("In get, using local data");
                 return m_data[index];
             }
             set
@@ -281,9 +271,6 @@ namespace NumCIL.Bohrium2
                         throw new InvalidOperationException("The data pointer was null");
 
                     var tmp = new ${bh_atype}[] { value };
-                    if (tmp == null)
-                        throw new Exception("Bad stuff dude");
-
                     Utility.WriteArrayToPointer(tmp, ptr + (int)(index * ELSIZE));
                     return;
                 }
@@ -414,7 +401,7 @@ namespace NumCIL.Bohrium2
             { 
                 get 
                 { 
-                    Console.WriteLine("In base {0} getting data: {1}", this.pointer.ToInt64(), PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this));
+                    //Console.WriteLine("In base {0} getting data: {1}", this.pointer.ToInt64(), PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this));
                     return IsAllocated ? PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this) : IntPtr.Zero; 
                 } 
                 set { PInvoke.bh_multi_array_${bh_ctype}_set_base_data(this, value); } 
@@ -491,7 +478,7 @@ namespace NumCIL.Bohrium2
                     a.Shape.Dimensions.Select(x => x.Stride).ToArray()
                 ).pointer;
 
-                Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
+                //Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
             }
 
             /// <summary>
@@ -500,7 +487,7 @@ namespace NumCIL.Bohrium2
             public bh_multi_array_${bh_ctype}_p (bh_base_${bh_ctype}_p @base)
             {
                 this.pointer = bh_multi_array_${bh_ctype}_new_from_base(@base).pointer;
-                Console.WriteLine("Created multi_array {0} from a base", this.pointer.ToInt64());
+                //Console.WriteLine("Created multi_array {0} from a base", this.pointer.ToInt64());
             }
 
             /// <summary>
@@ -508,7 +495,7 @@ namespace NumCIL.Bohrium2
             /// </summary>
             public void Dispose()
             {
-                Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
+                //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
                 try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy(this); }
                 finally { pointer = IntPtr.Zero; }
             }
