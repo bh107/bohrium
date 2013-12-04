@@ -31,15 +31,15 @@ If not, see <http://www.gnu.org/licenses/>.
 class InstructionScheduler
 {
 private:
-    typedef std::map<bh_array*, BaseArray*> ArrayMap;
+    typedef std::map<bh_base*, BaseArray*> ArrayMap;
     typedef std::map<bh_intp, bh_userfunc_impl> FunctionMap;
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
     std::set<BaseArray*> discardSet;
-    void sync(bh_array* base);
-    void discard(bh_array* base);
+    void sync(bh_base* base);
+    void discard(bh_base* base);
     void executeBatch();
     bh_error ufunc(bh_instruction* inst);
     bh_error reduce(bh_instruction* inst);
@@ -47,7 +47,7 @@ private:
 public:
     InstructionScheduler(ResourceManager* resourceManager);
     void registerFunction(bh_intp id, bh_userfunc_impl userfunc);
-    bh_error schedule(bh_ir* bhir);
+    bh_error schedule(std::vector<bh_instruction*> inst_list);
 };
 
 #endif

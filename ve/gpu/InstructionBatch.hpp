@@ -32,28 +32,32 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifdef STATS
 #include "timing.h"
 #endif
+
+#define SCALAR_OFFSET (1<<16)
 class InstructionBatch
 {
     typedef std::map<KernelParameter*, std::string> ParameterMap;
-    typedef std::map<void*, std::string> VariableMap;
-    typedef std::multimap<BaseArray*, bh_array*> ArrayMap;
+    typedef std::map<unsigned int, std::string> VariableMap;
+    typedef std::multimap<BaseArray*, unsigned int> ArrayMap;
     typedef std::pair<ArrayMap::iterator, ArrayMap::iterator> ArrayRange;
     typedef std::map<size_t, Kernel> KernelMap;
-    typedef std::list<KernelParameter*> ParameterList;
-    typedef std::list<std::pair<BaseArray*, bh_array*> > ArrayList;
+    typedef std::list<std::pair<bh_instruction*, std::vector<int>>> InstructionList;
+    //typedef std::list<KernelParameter*> ParameterList;
+    //typedef std::list<std::pair<BaseArray*, bh_base*> > ArrayList;
 private:
     std::vector<bh_index> shape;
-    std::vector<bh_instruction*> instructions;
+    InstructionList instructions;
+    std::vector<bh_view> views;
     ArrayMap output;
     ArrayMap input;
     ParameterMap parameters;
-    ParameterList parameterList;
-    ArrayList outputList;
-    ArrayList inputList;
+    //ParameterList parameterList;
+    //ArrayList outputList;
+    //ArrayList inputList;
     VariableMap kernelVariables;
     int arraynum;
     int scalarnum;
-    int variablenum;
+    //int variablenum;
     bool float16;
     bool float64;
     static KernelMap kernelMap;
@@ -61,8 +65,8 @@ private:
     timeval createTime;
 #endif
     bool shapeMatch(bh_intp ndim, const bh_index dims[]);
-    bool sameView(const bh_array* a, const bh_array* b);
-    bool disjointView(const bh_array* a, const bh_array* b);
+    bool sameView(const bh_view& a, const bh_view& b);
+    bool disjointView(const bh_view& a, const bh_view& b);
     std::string generateCode();
 public:
     InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands);

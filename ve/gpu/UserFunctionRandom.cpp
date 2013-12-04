@@ -38,7 +38,6 @@ bh_error bh_random(bh_userfunc *arg, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert (randomDef->nout == 1);
     assert (randomDef->nin == 0);
-    assert (randomDef->operand[0]->base == NULL);
     assert (userFuncArg->operands.size() == 1);
     if (userFunctionRandom == NULL)
     {

@@ -40,19 +40,19 @@ void generateGIDSource(std::vector<bh_index> shape, std::ostream& source)
     source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
 }
 
-void generateOffsetSource(const bh_array* operand, std::ostream& source)
+void generateOffsetSource(const bh_view& operand, std::ostream& source)
 {
-    bh_index ndim = operand->ndim;
+    bh_index ndim = operand.ndim;
     assert(ndim > 0);
     if (ndim > 2)
     {
-        source << "gidz*" << operand->stride[ndim-3] << " + ";
+        source << "gidz*" << operand.stride[ndim-3] << " + ";
     }
     if (ndim > 1)
     {
-        source << "gidy*" << operand->stride[ndim-2] << " + ";
+        source << "gidy*" << operand.stride[ndim-2] << " + ";
     }
-    source << "gidx*" << operand->stride[ndim-1] << " + " << operand->start;
+    source << "gidx*" << operand.stride[ndim-1] << " + " << operand.start;
 }
 
 void generateInstructionSource(bh_opcode opcode,

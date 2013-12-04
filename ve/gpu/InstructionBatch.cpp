@@ -32,16 +32,16 @@ InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::Kern
 InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
     , scalarnum(0)
-    , variablenum(0)
+//    , variablenum(0)
     , float16(false)
     , float64(false)
 {
 #ifdef STATS
     gettimeofday(&createTime,NULL);
 #endif
-    if (inst->operand[0]->ndim > 3)
+    if (inst->operand[0].ndim > 3)
         throw std::runtime_error("More than 3 dimensions not supported.");        
-    shape = std::vector<bh_index>(inst->operand[0]->shape, inst->operand[0]->shape + inst->operand[0]->ndim);
+    shape = std::vector<bh_index>(inst->operand[0].shape, inst->operand[0].shape + inst->operand[0].ndim);
     add(inst, operands);
 }
 
@@ -60,16 +60,14 @@ bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
     return false;
 }
 
-bool InstructionBatch::sameView(const bh_array* a, const bh_array* b)
+bool InstructionBatch::sameView(const bh_view& a, const bh_view& b)
 {
     //assumes the the views shape are the same and they have the same base
-    if (a == b)
-        return true;
-    if (a->start != b->start)
+    if (a.start != b.start)
         return false;
     for (size_t i = 0; i < shape.size(); ++i)
     {
-        if (a->stride[i] != b->stride[i])
+        if (a.stride[i] != b.stride[i])
             return false;
     }
     return true;
@@ -87,25 +85,25 @@ inline int gcd(int a, int b)
     return b;
 }
 
-bool InstructionBatch::disjointView(const bh_array* a, const bh_array* b)
+bool InstructionBatch::disjointView(const bh_view& a, const bh_view& b)
 {
     //assumes the the views shape are the same and they have the same base
-    int astart = a->start;
-    int bstart = b->start;
+    int astart = a.start;
+    int bstart = b.start;
     int stride = 1;
-    for (int i = 0; i < a->ndim; ++i)
+    for (int i = 0; i < a.ndim; ++i)
     {
-        stride = gcd(a->stride[i], b->stride[i]);
+        stride = gcd(a.stride[i], b.stride[i]);
         int as = astart / stride;
         int bs = bstart / stride;
-        int ae = as + a->shape[i] * (a->stride[i]/stride);
-        int be = bs + b->shape[i] * (b->stride[i]/stride);
+        int ae = as + a.shape[i] * (a.stride[i]/stride);
+        int be = bs + b.shape[i] * (b.stride[i]/stride);
         if (ae <= bs || be <= as)
             return true;
         astart %= stride;
         bstart %= stride;
     }
-    if (stride > 1 && a->start % stride != b->start % stride)
+    if (stride > 1 && a.start % stride != b.start % stride)
         return true;
     return false;
 }
@@ -115,10 +113,10 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     assert(!isScalar(operands[0]));
 
     // Check that the shape matches
-    if (!shapeMatch(inst->operand[0]->ndim, inst->operand[0]->shape))
+    if (!shapeMatch(inst->operand[0].ndim, inst->operand[0].shape))
         throw BatchException(0);
 
-    std::vector<bool> known(operands.size(),false);
+    std::vector<int> opids(operands.size(),-1);
     for (size_t op = 0; op < operands.size(); ++op)
     {
         BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
@@ -128,13 +126,12 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange orange = output.equal_range(ba);
             for (ArrayMap::iterator oit = orange.first ; oit != orange.second; ++oit)
             {
-                if (sameView(oit->second, inst->operand[op]))
+                if (sameView(views[oit->second], inst->operand[op]))
                 {
                     // Same view so we use the same bh_array* for it
-                    inst->operand[op] = oit->second;
-                    known[op] = true;
+                    opids[op] = oit->second;
                 } 
-                else if (!disjointView(oit->second, inst->operand[op])) 
+                else if (!disjointView(views[oit->second], inst->operand[op])) 
                 { 
                     throw BatchException(0);
                 }
@@ -143,12 +140,12 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange irange = input.equal_range(ba);
             for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
-                if (sameView(iit->second, inst->operand[op]))
+                if (sameView(views[iit->second], inst->operand[op]))
                 {
                     // Same view so we use the same bh_array* for it
-                    inst->operand[op] = iit->second;
+                    opids[op] =  iit->second;
                 } 
-                else if (op == 0 && !disjointView(iit->second, inst->operand[0]))
+                else if (op == 0 && !disjointView(views[iit->second], inst->operand[0]))
                 {
                     throw BatchException(0);
                 }
@@ -158,50 +155,49 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
 
 
     // OK so we can accept the instruction
-    instructions.push_back(inst);
     // Register unknow parameters
-    //catch when same input is used twice
-    if (operands.size() == 3 && !bh_is_constant(inst->operand[1]) && !bh_is_constant(inst->operand[2]) 
-	&& bh_base_array(inst->operand[1]) == bh_base_array(inst->operand[2]))
-    {
-        if(sameView(inst->operand[1], inst->operand[2]))
-        {
-            inst->operand[2] = inst->operand[1];
-            known[2] = true;
-        }
-    }
     for (size_t op = 0; op < operands.size(); ++op)
     {
-        if (!known[op])
+        if (opids[op]<0)
         {
-            std::stringstream ss;
             KernelParameter* kp = operands[op];
             BaseArray* ba = dynamic_cast<BaseArray*>(kp);
             if (ba)
             {
+                if (op == 2 && sameView(inst->operand[1], inst->operand[2]))
+                {    //catch when same input is used twice and don't allready have en id
+                    opids[2] = opids[1];
+                    continue;
+                } else {
+                    opids[op] = views.size();
+                    views.push_back(inst->operand[op]);
+                }
                 if (op == 0)
                 {
-                    output.insert(std::make_pair(ba, inst->operand[op]));
-                    outputList.push_back(std::make_pair(ba, inst->operand[op]));
+                    output.insert(std::make_pair(ba, opids[op]));
+//                    outputList.push_back(std::make_pair(ba, opids[op]));
                 }
                 else
                 {
-                    input.insert(std::make_pair(ba, inst->operand[op]));
-                    inputList.push_back(std::make_pair(ba, inst->operand[op]));
+                    input.insert(std::make_pair(ba, opids[op]));
+//                    inputList.push_back(std::make_pair(ba, opids[op]));
                 }
                 if (parameters.find(kp) == parameters.end())
                 {
+                    std::stringstream ss;
                     ss << "a" << arraynum++;
                     parameters[kp] = ss.str();
-                    parameterList.push_back(kp);
+                    //parameterList.push_back(kp);
                 }
             }
             else //scalar
             {
+                std::stringstream ss;
                 ss << "s" << scalarnum++;
-                kernelVariables[&(inst->operand[op])] = ss.str();
+                opids[op] = SCALAR_OFFSET+scalarnum;
+                kernelVariables[opids[op]] = ss.str();
                 parameters[kp] = ss.str();
-                parameterList.push_back(kp);
+                //parameterList.push_back(kp);
             }
             if (kp->type() == OCL_FLOAT64)
             {
@@ -213,6 +209,8 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             }
         }
     }
+    instructions.push_back(make_pair(inst, opids));
+
 }
 
 Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
@@ -262,12 +260,12 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     {
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
-        for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
+        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
         {
-            if (output.find(static_cast<BaseArray*>(*pit)) == output.end())
-                kernelParameters.push_back(std::make_pair(*pit, false));
+            if (output.find(static_cast<BaseArray*>(pit->first)) == output.end())
+                kernelParameters.push_back(std::make_pair(pit->first, false));
             else
-                kernelParameters.push_back(std::make_pair(*pit, true));
+                kernelParameters.push_back(std::make_pair(pit->first, true));
         }
         std::vector<size_t> globalShape;
         for (int i = shape.size()-1; i>=0; --i)
@@ -281,11 +279,11 @@ std::string InstructionBatch::generateCode()
     std::stringstream source;
     source << "( ";
     // Add Array kernel parameters
-    ParameterList::iterator pit = parameterList.begin();
-    source << **pit << " " << parameters[*pit];
-    for (++pit; pit != parameterList.end(); ++pit)
+    ParameterMap::iterator pit = parameters.begin();
+    source << *(pit->first) << " " << pit->second;
+    for (++pit; pit != parameters.end(); ++pit)
     {
-        source << "\n                     , " << **pit << " " << parameters[*pit];
+        source << "\n                     , " << *(pit->first) << " " << pit->second;
     }
 
     source << ")\n{\n";
@@ -293,53 +291,51 @@ std::string InstructionBatch::generateCode()
     generateGIDSource(shape, source);
     
     // Load input parameters
-    for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
+    for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
     {
         std::stringstream ss;
-        ss << "v" << variablenum++;
+        ss << "v" << iit->second;
         kernelVariables[iit->second] = ss.str();
         source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
             parameters[iit->first] << "[";
-        generateOffsetSource(iit->second, source);
+        generateOffsetSource(views[iit->second], source);
         source << "];\n";
     }
 
     // Generate code for instructions
-    for (std::vector<bh_instruction*>::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
+    for (InstructionList::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
     {
         std::vector<std::string> operands;
         // Has the output operand been assigned a variable name?
-        VariableMap::iterator kvit = kernelVariables.find((*iit)->operand[0]);
+        VariableMap::iterator kvit = kernelVariables.find(iit->second[0]);
         if (kvit == kernelVariables.end())
         {
             std::stringstream ss;
-            ss << "v" << variablenum++;
-            kernelVariables[(*iit)->operand[0]] = ss.str();
+            ss << "v" << iit->second[0];
+            kernelVariables[(iit->second)[0]] = ss.str();
+            ss << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str();
             operands.push_back(ss.str());
-            source << "\t" << oclTypeStr(oclType((*iit)->operand[0]->type)) << " " << ss.str() << ";\n";
         }
         else
         {
             operands.push_back(kvit->second);
         }
         // find variable names for input operands
-        for (int op = 1; op < bh_operands((*iit)->opcode); ++op)
+        for (int op = 1; op < bh_operands(iit->first->opcode); ++op)
         {
-            if (bh_is_constant((*iit)->operand[op]))
-                operands.push_back(kernelVariables[&((*iit)->operand[op])]);  
-            else
-                operands.push_back(kernelVariables[(*iit)->operand[op]]);  
+            operands.push_back(kernelVariables[iit->second[op]]);  
         }
 
         // generate source code for the instruction
-        generateInstructionSource((*iit)->opcode, oclType((*iit)->operand[0]->type), operands, source);
+        generateInstructionSource(iit->first->opcode, oclType(iit->first->operand[0].base->type), 
+                                  operands, source);
     }
 
     // Save output parameters
-    for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
+    for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
     {
         source << "\t" << parameters[oit->first] << "[";
-        generateOffsetSource(oit->second, source);
+        generateOffsetSource(views[oit->second], source);
         source << "] = " <<  kernelVariables[oit->second] << ";\n";
     }
 
@@ -366,21 +362,21 @@ bool InstructionBatch::access(BaseArray* array)
     return (read(array) || write(array));
 }
 
-struct Compare : public std::binary_function<std::pair<BaseArray*,bh_array*>,BaseArray*,bool>
-{
-	bool operator() (const std::pair<BaseArray*,bh_array*> p, const BaseArray* k) const 
-	{return (p.first==k);}
-};
+// struct Compare : public std::binary_function<std::pair<BaseArray*,bh_array*>,BaseArray*,bool>
+// {
+// 	bool operator() (const std::pair<BaseArray*,bh_array*> p, const BaseArray* k) const 
+// 	{return (p.first==k);}
+// };
 
 bool InstructionBatch::discard(BaseArray* array)
 {
     output.erase(array);
-    outputList.remove_if(std::binder2nd<Compare>(Compare(),array));
+//    outputList.remove_if(std::binder2nd<Compare>(Compare(),array));
     bool r =  read(array);
     if (!r)
     {
         parameters.erase(static_cast<KernelParameter*>(array));
-        parameterList.remove(static_cast<KernelParameter*>(array));
+//        parameterList.remove(static_cast<KernelParameter*>(array));
     }
     return !r;
 }

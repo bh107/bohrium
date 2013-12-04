@@ -28,9 +28,9 @@ If not, see <http://www.gnu.org/licenses/>.
 class BaseArray : public Buffer
 {
 private:
-    bh_array* spec;
+    bh_base* spec;
 public:
-    BaseArray(bh_array* spec, ResourceManager* resourceManager);
+    BaseArray(bh_base* spec, ResourceManager* resourceManager);
     void sync();
     void update();
     size_t size();

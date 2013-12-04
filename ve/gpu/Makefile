@@ -7,15 +7,15 @@ CC=gcc
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS)  #-DDEBUG #-DSTATS
 CCFLAGS = $(LCFLAGS) -std=gnu99
-CXXFLAGS = $(LCFLAGS) -std=gnu++0x -D__CL_ENABLE_EXCEPTIONS
+CXXFLAGS = $(LCFLAGS) -std=gnu++11 -D__CL_ENABLE_EXCEPTIONS
 
 LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -shared -Wl,-soname,$(LIB)
 CSRC = OCLtype
 CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode Reduce UserFunctionRandom \
-		UserFunctionMatmul UserFunctionLu UserFunctionFft StringHasher
+		InstructionScheduler Kernel GenerateSourceCode Reduce UserFunctionRandom  StringHasher \
+#		UserFunctionMatmul UserFunctionLu UserFunctionFft
  
-OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o) $(ROOT)/ve/shared/compute/bh_compute_reduce.o 
+OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o) $(BH_BASE)/ve/shared/compute/bh_compute_reduce.o 
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
