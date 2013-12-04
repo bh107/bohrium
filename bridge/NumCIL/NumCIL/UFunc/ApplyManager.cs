@@ -32,6 +32,8 @@ namespace NumCIL
     {        
         public static class ApplyManager
         {
+            public static Action<Type, Type[]> DEBUG_FALLBACK;
+        
             /// <summary>
             /// Helper method to avoid ambiguity in IsAssignableFrom
             /// </summary>
@@ -149,6 +151,8 @@ namespace NumCIL
                         return;
                 
                 //Fallback
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType(), in1.DataAccessor.GetType(), in2.DataAccessor.GetType() });
                 Threads.BinaryOp<T, C>(op, in1, in2, @out);
             }
 
@@ -175,6 +179,8 @@ namespace NumCIL
                         return;
                         
                 //Fallback
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType(), in1.DataAccessor.GetType(), in2.DataAccessor.GetType() });
                 Threads.BinaryConvOp<Ta, Tb, C>(op, in1, in2, @out);
             }
 
@@ -196,7 +202,10 @@ namespace NumCIL
                         CanBeTreatedAsType(in1.DataAccessor.GetType(), n.Item1) && 
                         n.Item3.ApplyUnaryOp<T, C>(op, in1, @out))
                         return;
-                        
+                       
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType(), in1.DataAccessor.GetType() });
                 Threads.UnaryOp<T, C>(op, in1, @out);
             }
 
@@ -220,6 +229,9 @@ namespace NumCIL
                         n.Item4.ApplyUnaryConvOp<Ta, Tb, C>(op, in1, @out))
                         return;
                         
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType(), in1.DataAccessor.GetType() });
                 Threads.UnaryConvOp<Ta, Tb, C>(op, in1, @out);
             }
 
@@ -240,6 +252,9 @@ namespace NumCIL
                         n.Item3.ApplyNullaryOp<T, C>(op, @out))
                         return;
                         
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType() });
                 Threads.NullaryOp<T, C>(op, @out);
             }
 
@@ -262,6 +277,9 @@ namespace NumCIL
                         n.Item3.ApplyReduce<T, C>(op, axis, in1, @out))
                         return;
                         
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { @out.DataAccessor.GetType(), in1.DataAccessor.GetType() });
                 Threads.Reduce<T, C>(op, axis, in1, @out);
             }
 
@@ -289,6 +307,9 @@ namespace NumCIL
                         n.Item3.ApplyMatmul<T, CADD, CMUL>(addop, mulop, in1, in2, @out))
                         return;
                         
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(CADD), new Type[] { typeof(CMUL), @out.DataAccessor.GetType(), in1.DataAccessor.GetType(), in2.DataAccessor.GetType() });
                 UFunc.UFunc_Matmul_Inner_Flush<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
             }
 
@@ -309,6 +330,9 @@ namespace NumCIL
                         n.Item3.ApplyAggregate<T, C>(op, in1, out result))
                         return;
                         
+                //Fallback 
+                if (DEBUG_FALLBACK != null)
+                    DEBUG_FALLBACK(typeof(C), new Type[] { in1.DataAccessor.GetType(), typeof(T) });
                 result = UFunc.UFunc_Aggregate_Inner_Flush<T, C>(op, in1);
             }        
         }
