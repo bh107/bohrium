@@ -30,20 +30,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <bh_vcache.h>
 #include "bh_ve_cpu.h"
-#include "compiler.cpp"
-
-using namespace std;
 
 // Execution Profile
-
 #ifdef PROFILE
 static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
 static bh_uint64 calls[BH_NO_OPCODES+2];
 #endif
 
 static bh_component *myself = NULL;
-static bh_userfunc_impl random_impl = NULL;
-static bh_intp random_impl_id = 0;
 static bh_userfunc_impl matmul_impl = NULL;
 static bh_intp matmul_impl_id = 0;
 static bh_userfunc_impl nselect_impl = NULL;
@@ -61,7 +55,7 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
-process* target;
+using namespace std;
 
 typedef struct bh_sij {
     bh_instruction *instr;  // Pointer to instruction
@@ -71,6 +65,11 @@ typedef struct bh_sij {
 
     string symbol;     // String representation
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
+
+#include "compiler.cpp"
+#include "specializer.cpp"
+
+process* target;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -150,7 +149,9 @@ bh_error bh_ve_cpu_init(bh_component *self)
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
     bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
 
+    // JIT machinery
     target = new process(compiler_cmd, object_path, kernel_path, true);
+    specializer_init();     // Code templates / snippets
 
     #ifdef PROFILE
     memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
@@ -160,288 +161,18 @@ bh_error bh_ve_cpu_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-void symbolize(bh_instruction *instr, bh_sij_t &sij) {
-
-    char symbol_c[500];             // String representation buffers
-    char dims_str[10];
-
-    sij.instr = instr;
-    switch (sij.instr->opcode) {                    // [OPCODE_SWITCH]
-
-        case BH_NONE:                           // System opcodes
-        case BH_DISCARD:
-        case BH_SYNC:
-        case BH_FREE:
-        case BH_USERFUNC:                       // Extensions
-            break;
-
-        case BH_ADD_REDUCE:                             // Reductions
-        case BH_MULTIPLY_REDUCE:
-        case BH_MINIMUM_REDUCE:
-        case BH_MAXIMUM_REDUCE:
-        case BH_LOGICAL_AND_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_LOGICAL_OR_REDUCE:
-        case BH_LOGICAL_XOR_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            sij.ndims = sij.instr->operand[1].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
-
-            if (sij.ndims <= 3) {                       // String representation
-                sprintf(dims_str, "%ldD", sij.ndims);
-            } else {
-                sprintf(dims_str, "ND");
-            }
-            sprintf(symbol_c, "%s_%s_%s_%s",
-                bh_opcode_text(sij.instr->opcode),
-                dims_str,
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
-            );
-
-            sij.symbol = string(symbol_c);
-            break;
-
-        case BH_RANGE:
-
-            sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
-
-            sprintf(symbol_c, "%s_ND_%s_%s",
-                bh_opcode_text(sij.instr->opcode),
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
-            );
-
-            sij.symbol = string(symbol_c);
-            break;
-
-        default:                                        // Built-in
-            
-            sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
-
-            if (sij.ndims <= 3) {                       // String representation
-                sprintf(dims_str, "%ldD", sij.ndims);
-            } else {
-                sprintf(dims_str, "ND");
-            }
-            sprintf(symbol_c, "%s_%s_%s_%s",
-                bh_opcode_text(sij.instr->opcode),
-                dims_str,
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
-            );
-
-            sij.symbol = string(symbol_c);
-            break;
-    }
-}
-
-string specialize(bh_sij_t &sij) {
-
-    char template_fn[500];   // NOTE: constants like these are often traumatizing!
-
-    bool cres = false;
-
-    ctemplate::TemplateDictionary dict("codegen");
-    dict.ShowSection("include");
-    //dict.ShowSection("license");
-
-    switch (sij.instr->opcode) {                    // OPCODE_SWITCH
-
-        case BH_RANGE:
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-            sprintf(template_fn, "%s/range.tpl", template_path);
-
-            cres = true;
-            break;
-
-        case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
-        case BH_MINIMUM_REDUCE:
-        case BH_MAXIMUM_REDUCE:
-        case BH_LOGICAL_AND_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_LOGICAL_OR_REDUCE:
-        case BH_LOGICAL_XOR_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-
-            if (sij.ndims <= 3) {
-                sprintf(template_fn, "%s/reduction.%ldd.tpl", template_path, sij.ndims);
-            } else {
-                sprintf(template_fn, "%s/reduction.nd.tpl", template_path);
-            }
-
-            cres = true;
-            break;
-
-        case BH_ADD:
-        case BH_SUBTRACT:
-        case BH_MULTIPLY:
-        case BH_DIVIDE:
-        case BH_POWER:
-        case BH_GREATER:
-        case BH_GREATER_EQUAL:
-        case BH_LESS:
-        case BH_LESS_EQUAL:
-        case BH_EQUAL:
-        case BH_NOT_EQUAL:
-        case BH_LOGICAL_AND:
-        case BH_LOGICAL_OR:
-        case BH_LOGICAL_XOR:
-        case BH_MAXIMUM:
-        case BH_MINIMUM:
-        case BH_BITWISE_AND:
-        case BH_BITWISE_OR:
-        case BH_BITWISE_XOR:
-        case BH_LEFT_SHIFT:
-        case BH_RIGHT_SHIFT:
-        case BH_ARCTAN2:
-        case BH_MOD:
-        case BH_RANDOM:
-
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->constant.type));
-                dict.ShowSection("a1_dense");
-                dict.ShowSection("a2_scalar");
-            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
-                dict.ShowSection("a1_scalar");
-                dict.ShowSection("a2_dense");
-            } else {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
-                dict.ShowSection("a1_dense");
-                dict.ShowSection("a2_dense");
-
-            }
-            if ((sij.lmask == (A0_DENSE + A1_DENSE    + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_DENSE    + A2_CONSTANT))) {
-                sprintf(template_fn, "%s/traverse.nd.ddd.tpl", template_path);
-            } else {
-                if (sij.ndims<=3) {
-                    sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
-                } else {
-                    sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
-                }
-            }
-
-            cres = true;
-            break;
-
-        case BH_ABSOLUTE:
-        case BH_LOGICAL_NOT:
-        case BH_INVERT:
-        case BH_COS:
-        case BH_SIN:
-        case BH_TAN:
-        case BH_COSH:
-        case BH_SINH:
-        case BH_TANH:
-        case BH_ARCSIN:
-        case BH_ARCCOS:
-        case BH_ARCTAN:
-        case BH_ARCSINH:
-        case BH_ARCCOSH:
-        case BH_ARCTANH:
-        case BH_EXP:
-        case BH_EXP2:
-        case BH_EXPM1:
-        case BH_LOG:
-        case BH_LOG2:
-        case BH_LOG10:
-        case BH_LOG1P:
-        case BH_SQRT:
-        case BH_CEIL:
-        case BH_TRUNC:
-        case BH_FLOOR:
-        case BH_RINT:
-        case BH_ISNAN:
-        case BH_ISINF:
-        case BH_IDENTITY:
-
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
-            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
-                dict.ShowSection("a1_scalar");
-            } else {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.ShowSection("a1_dense");
-            }
-
-            if ((sij.lmask == (A0_DENSE + A1_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT))) {
-                sprintf(template_fn, "%s/traverse.nd.ddd.tpl", template_path);
-            } else {
-
-                if (sij.ndims<=3) {
-                    sprintf(template_fn, "%s/traverse.%ldd.tpl", template_path, sij.ndims);
-                } else {
-                    sprintf(template_fn, "%s/traverse.nd.tpl", template_path);
-                }
-
-            }
-
-            cres = true;
-            break;
-
-        default:
-            printf("cpu-ve: Err=[Unsupported ufunc...]\n");
-    }
-
-    if (!cres) {
-        throw runtime_error("cpu-ve: Failed specializing code.");
-    }
-
-    string sourcecode = "";
-    ctemplate::ExpandTemplate(
-        template_fn,
-        ctemplate::STRIP_BLANK_LINES,
-        &dict,
-        &sourcecode
-    );
-
-    return sourcecode;
-}
-
-// Executes a single instruction
+// Execute a single instruction
 static bh_error exec(bh_instruction *instr)
 {
     bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
 
-    symbolize(instr, sij);           // Construct symbol
+    symbolize(instr, sij);                          // Construct symbol
     if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
 
-        string sourcecode = specialize(sij);   // Specialize sourcecode
+        string sourcecode = specialize(sij);        // Specialize sourcecode
         if (dump_src==1) {                          // Dump sourcecode to file
+            std::cout << "DUMPING " << sij.symbol << " to file." << std::endl;
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
@@ -450,7 +181,7 @@ static bh_error exec(bh_instruction *instr)
     if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
         return BH_ERROR;
     }
-    res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
+    res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
     if (BH_SUCCESS != res) {
         fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                         "called from bh_ve_cpu_execute()\n");
@@ -674,7 +405,7 @@ bh_error bh_ve_cpu_shutdown(void)
         bh_vcache_delete();
     }
 
-    delete target;  // De-allocate code-generator
+    delete target;          // De-allocate code-generator
 
     #ifdef PROFILE
     bh_uint64 sum = 0;
@@ -709,15 +440,7 @@ bh_error bh_ve_cpu_shutdown(void)
 
 bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
-    if (strcmp("bh_random", fun) == 0) {
-    	if (random_impl == NULL) {
-            random_impl_id = *id;
-            return BH_SUCCESS;
-        } else {
-        	*id = random_impl_id;
-        	return BH_SUCCESS;
-        }
-    } else if (strcmp("bh_matmul", fun) == 0) {
+    if (strcmp("bh_matmul", fun) == 0) {
     	if (matmul_impl == NULL) {
             bh_component_get_func(myself, fun, &matmul_impl);
             if (matmul_impl == NULL) {
@@ -730,7 +453,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
         }
-    }  else if (strcmp("bh_visualizer", fun) == 0) {
+    } else if (strcmp("bh_visualizer", fun) == 0) {
     	if (visualizer_impl == NULL) {
             bh_component_get_func(myself, fun, &visualizer_impl);
             if (visualizer_impl == NULL) {

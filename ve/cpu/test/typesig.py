@@ -85,8 +85,6 @@ for slen, typesig in ((slen, typesig) for slen in xrange(3,-1,-1) for typesig in
         cases.append('      // Sig-Length %d' % slen)
     cases.append('      case %d: return "%s"; // %s' %(nsig, hsig, tsig))
 
-# Sig-length 1 is missing.. will come around later on..
-
 pprint(tsigs)
 pprint(nsigs)
 pprint(zip(tsigs, nsigs))

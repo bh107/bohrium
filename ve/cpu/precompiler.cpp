@@ -112,16 +112,16 @@ void precompile(
             for(size_t s=0; s<json_array_size(signature_j); ++s) {
                 if (s==0) {
                     type_out = json_string_value(json_array_get(signature_j, s));
-                    signature += std::string(bhtypestr_to_shorthand(type_out));
-                    type_out = typestr_to_ctype(type_out);
+                    signature += std::string(enumstr_to_shorthand(type_out));
+                    type_out = enumstr_to_ctypestr(type_out);
                 } else if (s==1) {
                     type_in1 = json_string_value(json_array_get(signature_j, s));
-                    signature += std::string(bhtypestr_to_shorthand(type_in1));
-                    type_in1 = typestr_to_ctype(type_in1);
+                    signature += std::string(enumstr_to_shorthand(type_in1));
+                    type_in1 = enumstr_to_ctypestr(type_in1);
                 } else if (s==2) {
                     type_in2 = json_string_value(json_array_get(signature_j, s));
-                    signature += std::string(bhtypestr_to_shorthand(type_in2));
-                    type_in2 = typestr_to_ctype(type_in2);
+                    signature += std::string(enumstr_to_shorthand(type_in2));
+                    type_in2 = enumstr_to_ctypestr(type_in2);
                 }
             }
             if (json_array_size(signature_j) < 3) {
