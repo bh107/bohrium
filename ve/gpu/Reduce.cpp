@@ -35,8 +35,6 @@ bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
         if (err != BH_SUCCESS)
             return err;		  
         err = bh_compute_reduce(inst);
-        if (err == BH_SUCCESS)
-            static_cast<BaseArray*>(userFuncArg->operands[0])->update();
         return err;
     }
     else {
