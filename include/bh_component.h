@@ -73,7 +73,8 @@ typedef bh_error (*bh_reg_func)(const char *fun, bh_opcode opcode);
  *
  * @instr  The extension method instruction to handle
  * @arg    Additional component specific argument
- * @return Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
+ * @return Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
+ *                      BH_TYPE_NOT_SUPPORTED)
  */
 typedef bh_error (*bh_extmethod_impl)(bh_instruction *instr, void* arg);
 

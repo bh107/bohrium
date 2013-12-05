@@ -331,10 +331,11 @@ bh_error bh_component_get_func(const bh_component *self,
             void *lib_handle = dlopen(path, RTLD_NOW);
             if(lib_handle != NULL)
             {
+                char tname[BH_COMPONENT_NAME_SIZE];
+                sprintf(tname, "bh_%s", name);
                 dlerror();//Clear old errors.
-                *extmethod = (bh_extmethod_impl)dlsym(lib_handle, name);
-                char *err = dlerror();
-                if(err == NULL)
+                *extmethod = (bh_extmethod_impl)dlsym(lib_handle, tname);
+                if(dlerror() == NULL)//No errors, we found the function
                     return BH_SUCCESS;
             }
             path = strtok(NULL,",");
