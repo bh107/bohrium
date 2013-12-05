@@ -1,41 +1,32 @@
-BH_BASE=../../
-BH_INCLUDE=$(BH_BASE)include/
-INCLUDE=-I$(BH_BASE)include
-LIB=libbh_ve_gpu.so
-CXX=g++
-CC=gcc
+ROOT=../..
+include $(ROOT)/platform.mk
+LIB=libbh_ve_gpu.$(LIB_SUFFIX)
+CC?=gcc
+CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) -g -O3 -fPIC $(INCLUDE) $(CFLAGS)  #-DDEBUG #-DSTATS
-CCFLAGS = $(LCFLAGS) -std=gnu99
-CXXFLAGS = $(LCFLAGS) -std=gnu++11 -D__CL_ENABLE_EXCEPTIONS
-
-LDFLAGS = -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -shared -Wl,-soname,$(LIB)
-CSRC = OCLtype
-CPPSRC = ResourceManager bh_ve_gpu InstructionBatch Buffer KernelParameter BaseArray Scalar \
-		InstructionScheduler Kernel GenerateSourceCode Reduce UserFunctionRandom  StringHasher \
-#		UserFunctionMatmul UserFunctionLu UserFunctionFft
- 
-OBJECTS=$(CPPSRC:=.oo) $(CSRC:=.o) $(BH_BASE)/ve/shared/compute/bh_compute_reduce.o 
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++11 -I$(ROOT)/include -I$(ROOT)/iniparser/src \
+          -D__CL_ENABLE_EXCEPTIONS #-DDEBUG #-DSTATS
+LDFLAGS= $(ARCH_OPTS) -shared -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -Wl,$(LD_LIB_COMMAND),$(LIB)
+SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
+HEADER=$(ALL_H_FILES) $(ALL_HPP_FILES)
+OBJC = $(SRC:.c=.o)
+OBJ=$(OBJC:.cpp=.o) $(ROOT)/ve/shared/compute/*.o
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
 
-%.o: %.c %.h Makefile
-		$(CC) -c $< -o $@ $(CCFLAGS)
+%.o: %.cpp $(HEADER) Makefile
+		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
-bh_ve_gpu.oo: bh_ve_gpu.cpp bh_ve_gpu.h Makefile
-		$(CXX) -c $< -o $@ $(CXXFLAGS)
+%.o: %.c $(HEADER)  Makefile
+	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
-%.oo: %.cpp %.hpp Makefile
-		$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB): $(OBJECTS)
-		$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
+$(LIB): $(OBJ)
+		$(CXX) $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
-		rm -rf *.o  *.oo *~ *.gch *.orig $(LIB)
+		rm -rf *.o *~ $(LIB)
 
 install: all
 		cp $(LIB) $(INSTALLDIR)
-		cp -r ocl_source $(INSTALLDIR)/lib/
-

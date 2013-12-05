@@ -177,7 +177,7 @@ if __name__ == "__main__":
                   ("CORE", "core", True),\
                   ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
-                  #("VE-GPU", "ve/gpu", False),\
+                  ("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU",    "ve/cpu", True),\
                   ("VE-SCORE",  "ve/static/score", False),\
                   ("VE-MCORE",  "ve/static/mcore", False),\
@@ -192,9 +192,9 @@ if __name__ == "__main__":
                   #("NumCIL", "bridge/NumCIL", False),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   #("USERFUNCS-ATLAS", "userfuncs/ATLAS", False),\
-                  ("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
-                  ("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
-                  ("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
+                  #("USERFUNCS-VISUALIZER", "userfuncs/VISUALIZER", False),\
+                  #("USERFUNCS-MATMUL", "userfuncs/MATMUL", False),\
+                  #("USERFUNCS-NSELECT", "userfuncs/NSELECT", False),\
                   ("BHNUMPY", "bohrium", True)
                  ]
 
