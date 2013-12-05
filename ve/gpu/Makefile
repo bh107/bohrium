@@ -4,7 +4,7 @@ LIB=libbh_ve_gpu.$(LIB_SUFFIX)
 CC?=gcc
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++11 -I$(ROOT)/include -I$(ROOT)/iniparser/src \
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include -I$(ROOT)/iniparser/src \
           -D__CL_ENABLE_EXCEPTIONS #-DDEBUG #-DSTATS
 LDFLAGS= $(ARCH_OPTS) -shared -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -Wl,$(LD_LIB_COMMAND),$(LIB)
 SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)

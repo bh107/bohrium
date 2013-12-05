@@ -32,7 +32,6 @@ InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::Kern
 InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
     , scalarnum(0)
-//    , variablenum(0)
     , float16(false)
     , float64(false)
 {
@@ -175,19 +174,16 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 if (op == 0)
                 {
                     output.insert(std::make_pair(ba, opids[op]));
-//                    outputList.push_back(std::make_pair(ba, opids[op]));
                 }
                 else
                 {
                     input.insert(std::make_pair(ba, opids[op]));
-//                    inputList.push_back(std::make_pair(ba, opids[op]));
                 }
                 if (parameters.find(kp) == parameters.end())
                 {
                     std::stringstream ss;
                     ss << "a" << arraynum++;
                     parameters[kp] = ss.str();
-                    //parameterList.push_back(kp);
                 }
             }
             else //scalar
@@ -197,7 +193,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 opids[op] = SCALAR_OFFSET+scalarnum;
                 kernelVariables[opids[op]] = ss.str();
                 parameters[kp] = ss.str();
-                //parameterList.push_back(kp);
             }
             if (kp->type() == OCL_FLOAT64)
             {
@@ -258,14 +253,20 @@ void InstructionBatch::run(ResourceManager* resourceManager)
 
     if (output.begin() != output.end())
     {
+        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+            parameterList.insert(std::make_pair(pit->second, pit->first));
+        for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+            inputList.insert(std::make_pair(iit->second, iit->first));
+        for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+            outputList.insert(std::make_pair(oit->second, oit->first));
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
-        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
         {
-            if (output.find(static_cast<BaseArray*>(pit->first)) == output.end())
-                kernelParameters.push_back(std::make_pair(pit->first, false));
+            if (output.find(static_cast<BaseArray*>(pit->second)) == output.end())
+                kernelParameters.push_back(std::make_pair(pit->second, false));
             else
-                kernelParameters.push_back(std::make_pair(pit->first, true));
+                kernelParameters.push_back(std::make_pair(pit->second, true));
         }
         std::vector<size_t> globalShape;
         for (int i = shape.size()-1; i>=0; --i)
@@ -279,11 +280,11 @@ std::string InstructionBatch::generateCode()
     std::stringstream source;
     source << "( ";
     // Add Array kernel parameters
-    ParameterMap::iterator pit = parameters.begin();
-    source << *(pit->first) << " " << pit->second;
-    for (++pit; pit != parameters.end(); ++pit)
+    ParameterList::iterator pit = parameterList.begin();
+    source << *(pit->second) << " " << pit->first;
+    for (++pit; pit != parameterList.end(); ++pit)
     {
-        source << "\n                     , " << *(pit->first) << " " << pit->second;
+        source << "\n                     , " << *(pit->second) << " " << pit->first;
     }
 
     source << ")\n{\n";
@@ -291,14 +292,14 @@ std::string InstructionBatch::generateCode()
     generateGIDSource(shape, source);
     
     // Load input parameters
-    for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+    for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
         std::stringstream ss;
-        ss << "v" << iit->second;
-        kernelVariables[iit->second] = ss.str();
-        source << "\t" << oclTypeStr(iit->first->type()) << " " << ss.str() << " = " <<
-            parameters[iit->first] << "[";
-        generateOffsetSource(views[iit->second], source);
+        ss << "v" << iit->first;
+        kernelVariables[iit->first] = ss.str();
+        source << "\t" << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
+            parameters[iit->second] << "[";
+        generateOffsetSource(views[iit->first], source);
         source << "];\n";
     }
 
@@ -313,7 +314,9 @@ std::string InstructionBatch::generateCode()
             std::stringstream ss;
             ss << "v" << iit->second[0];
             kernelVariables[(iit->second)[0]] = ss.str();
-            ss << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str();
+            ss.str(std::string());
+            ss << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << 
+                kernelVariables[(iit->second)[0]];
             operands.push_back(ss.str());
         }
         else
@@ -332,11 +335,11 @@ std::string InstructionBatch::generateCode()
     }
 
     // Save output parameters
-    for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+    for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
-        source << "\t" << parameters[oit->first] << "[";
-        generateOffsetSource(views[oit->second], source);
-        source << "] = " <<  kernelVariables[oit->second] << ";\n";
+        source << "\t" << parameters[oit->second] << "[";
+        generateOffsetSource(views[oit->first], source);
+        source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
 
     source << "}\n";
@@ -352,8 +355,8 @@ bool InstructionBatch::read(BaseArray* array)
 
 bool InstructionBatch::write(BaseArray* array)
 {
-//    if (output.find(array) == output.end())
-//        return false;
+    if (output.find(array) == output.end())
+        return false;
     return true;
 }
 
@@ -362,21 +365,13 @@ bool InstructionBatch::access(BaseArray* array)
     return (read(array) || write(array));
 }
 
-// struct Compare : public std::binary_function<std::pair<BaseArray*,bh_array*>,BaseArray*,bool>
-// {
-// 	bool operator() (const std::pair<BaseArray*,bh_array*> p, const BaseArray* k) const 
-// 	{return (p.first==k);}
-// };
-
 bool InstructionBatch::discard(BaseArray* array)
 {
     output.erase(array);
-//    outputList.remove_if(std::binder2nd<Compare>(Compare(),array));
     bool r =  read(array);
     if (!r)
     {
         parameters.erase(static_cast<KernelParameter*>(array));
-//        parameterList.remove(static_cast<KernelParameter*>(array));
     }
     return !r;
 }
