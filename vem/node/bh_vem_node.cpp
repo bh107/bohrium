@@ -26,20 +26,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_vem_node.h"
 
-//Function pointers to the VE.
-static bh_init ve_init;
-static bh_execute ve_execute;
-static bh_shutdown ve_shutdown;
-static bh_reg_func ve_reg_func;
-
-//The VE components
-static bh_component **vem_node_components;
+//Function pointers to our child.
+static bh_component_iface *child;
 
 //Our self
-static bh_component *vem_node_myself;
-
-//Number of user-defined functions registered.
-static bh_intp userfunc_count = 0;
+static bh_component vem_node_myself;
 
 //Allocated base arrays
 static std::set<bh_base*> allocated_bases;
@@ -52,33 +43,24 @@ static bh_intp exec_timing;
     static bh_intp total_execution_size = 0;
 #endif
 
-/* Initialize the VEM
- *
- * @return Error codes (BH_SUCCESS)
- */
-bh_error bh_vem_node_init(bh_component *self)
+/* Component interface: init (see bh_component.h) */
+bh_error bh_vem_node_init(const char* name)
 {
-    bh_intp children_count;
     bh_error err;
-    vem_node_myself = self;
 
-    err = bh_component_children(self, &children_count, &vem_node_components);
-    if (children_count != 1)
+    if((err = bh_component_init(&vem_node_myself, name)) != BH_SUCCESS)
+        return err;
+
+    //For now, we have one child exactly
+    if(vem_node_myself.nchildren != 1)
     {
-		std::cerr << "Unexpected number of child nodes for VEM, must be 1" << std::endl;
-		return BH_ERROR;
+        std::cerr << "[NODE-VEM] Unexpected number of children, must be 1" << std::endl;
+        return BH_ERROR;
     }
 
-    if (err != BH_SUCCESS)
-	    return err;
-
-    ve_init = vem_node_components[0]->init;
-    ve_execute = vem_node_components[0]->execute;
-    ve_shutdown = vem_node_components[0]->shutdown;
-    ve_reg_func = vem_node_components[0]->reg_func;
-
-    //Let us initiate the simple VE and register what it supports.
-    if((err = ve_init(vem_node_components[0])) != 0)
+    //Let us initiate the child.
+    child = &vem_node_myself.children[0];
+    if((err = child->init(child->name)) != 0)
         return err;
 
     exec_timing = bh_timing_new("node-execution");
@@ -86,22 +68,11 @@ bh_error bh_vem_node_init(bh_component *self)
     return BH_SUCCESS;
 }
 
-
-/* Shutdown the VEM, which include a instruction flush
- *
- * @return Error codes (BH_SUCCESS)
- */
+/* Component interface: shutdown (see bh_component.h) */
 bh_error bh_vem_node_shutdown(void)
 {
-    bh_error err;
-    err = ve_shutdown();
-    bh_component_free(vem_node_components[0]);//Only got one child.
-    ve_init     = NULL;
-    ve_execute  = NULL;
-    ve_shutdown = NULL;
-    ve_reg_func = NULL;
-    bh_component_free_ptr(vem_node_components);
-    vem_node_components = NULL;
+    bh_error err = child->shutdown();
+    bh_component_destroy(&vem_node_myself);
 
     if(allocated_bases.size() > 0)
     {
@@ -130,29 +101,10 @@ bh_error bh_vem_node_shutdown(void)
     return err;
 }
 
-
-/* Register a new user-defined function.
- *
- * @lib Name of the shared library e.g. libmyfunc.so
- *      When NULL the default library is used.
- * @fun Name of the function e.g. myfunc
- * @id Identifier for the new function. The bridge should set the
- *     initial value to Zero. (in/out-put)
- * @return Error codes (BH_SUCCESS)
- */
-bh_error bh_vem_node_reg_func(const char *fun, bh_intp *id)
+/* Component interface: reg_func (see bh_component.h) */
+bh_error bh_vem_node_reg_func(const char *fun, bh_opcode opcode)
 {
-	bh_error e;
-
-    if(*id == 0)//Only if parent didn't set the ID.
-        *id = ++userfunc_count;
-
-    if((e = ve_reg_func(fun, id)) != BH_SUCCESS)
-    {
-        *id = 0;
-        return e;
-    }
-    return e;
+    return child->reg_func(fun, opcode);
 }
 
 //Inspect one instruction
@@ -189,13 +141,7 @@ static bh_error inspect(bh_instruction *instr)
     return BH_SUCCESS;
 }
 
-
-/* Execute a list of instructions (blocking, for the time being).
- * It is required that the VEM supports all instructions in the list.
- *
- * @instruction A list of instructions to execute
- * @return Error codes (BH_SUCCESS)
- */
+/* Component interface: execute (see bh_component.h) */
 bh_error bh_vem_node_execute(bh_ir* bhir)
 {
     bh_uint64 start = bh_timing();
@@ -203,7 +149,7 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
     //Inspect the BhIR for new base arrays starting at the root DAG
     bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
 
-    bh_error ret = ve_execute(bhir);
+    bh_error ret = child->execute(bhir);
 
     bh_timing_save(exec_timing, start, bh_timing());
 

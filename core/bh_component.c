@@ -52,7 +52,7 @@ char _expand_buffer[PATH_MAX];
 
 #endif
 
-
+//Return the component type of the component named 'name'
 static bh_component_type get_type(dictionary *dict, const char *name)
 {
     char tmp[BH_COMPONENT_NAME_SIZE];
@@ -61,7 +61,7 @@ static bh_component_type get_type(dictionary *dict, const char *name)
     if(s == NULL)
     {
         fprintf(stderr,"In section \"%s\" type is not set. "\
-                       "Should be bridge, vem or ve.\n",name);
+                       "Should be bridge, filter, vem or ve.\n",name);
         return BH_COMPONENT_ERROR;
     }
     else
@@ -75,8 +75,7 @@ static bh_component_type get_type(dictionary *dict, const char *name)
         if(!strcasecmp(s, "filter"))
             return BH_FILTER;
     }
-    fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n",
-            name, s);
+    fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n", name, s);
     return BH_COMPONENT_ERROR;
 }
 
@@ -96,7 +95,7 @@ static void *get_dlsym(void *handle, const char *name,
         stype = "filter";
     else
     {
-        fprintf(stderr, "get_dlsym - unknown component type.\n");
+        fprintf(stderr, "Internal error get_dlsym() got unknown type\n");
         return NULL;
     }
 
@@ -106,39 +105,34 @@ static void *get_dlsym(void *handle, const char *name,
     char *err = dlerror();
     if(err != NULL)
     {
-        fprintf(stderr, "[%s:type]%s\n", name, err);
+        fprintf(stderr, "Failed to load %s() from %s (%s).\n"
+                        "Make sure to define all four interface functions, eg. the NODE-VEM "
+                        "must define: bh_vem_node_init(), bh_vem_node_shutdown(), "
+                        "bh_vem_node_reg_func(), and bh_vem_node_execute().\n", fun, name, err);
         return NULL;
     }
     return ret;
 }
 
-/* Setup the root component, which normally is the bridge.
+/* Initilize the component object
  *
- * @component_name The name of the root component.
- *                  If NULL "bridge" will be used.
- * @return The root component in the configuration.
+ * @self   The component object to initilize
+ * @name   The name of the component. If NULL "bridge" will be used.
+ * @return Error codes (BH_SUCCESS, BH_ERROR)
  */
-bh_component *bh_component_setup(const char* component_name)
+bh_error bh_component_init(bh_component *self, const char* name)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath = SYSTEM_INI_PATH;
 
-    bh_component *com = (bh_component*)malloc(sizeof(bh_component));
-    const char *env;
-    if(com == NULL)
-    {
-        fprintf(stderr, "bh_component_setup(): out of memory.\n");
-        return NULL;
-    }
-
     //Clear memory so we do not have any random pointers
-    memset(com, 0, sizeof(bh_component));
+    memset(self, 0, sizeof(bh_component));
 
     //Assign component name, default to "bridge"
-    if(component_name == NULL) {
-        strcpy(com->name, "bridge");
+    if(name == NULL) {
+        strcpy(self->name, "bridge");
     } else {
-        strcpy(com->name, component_name);
+        strcpy(self->name, name);
     }
 
     //
@@ -146,7 +140,7 @@ bh_component *bh_component_setup(const char* component_name)
     //
 
     // Start by looking a path set via environment variable.
-    env = getenv("BH_CONFIG");
+    const char *env = getenv("BH_CONFIG");
     if (env != NULL)
     {
         FILE *fp = fopen(env,"r");
@@ -159,7 +153,6 @@ bh_component *bh_component_setup(const char* component_name)
     // Then the home directory.
     if(env == NULL)
     {
-
 #if _WIN32
         DWORD result = ExpandEnvironmentStrings(
             homepath,
@@ -172,7 +165,6 @@ bh_component *bh_component_setup(const char* component_name)
             homepath = _expand_buffer1;
         }
 #else
-
         char* h = getenv("HOME");
         if (h != NULL)
         {
@@ -180,13 +172,11 @@ bh_component *bh_component_setup(const char* component_name)
             homepath = _expand_buffer;
         }
 #endif
-
         FILE *fp = fopen(homepath,"r");
         if( fp ) {
             env = homepath;
             fclose(fp);
         }
-
     }
 
     //And finally system-wide.
@@ -204,7 +194,6 @@ bh_component *bh_component_setup(const char* component_name)
             syspath = _expand_buffer2;
         }
 #endif
-
         FILE *fp = fopen(syspath,"r");
         if(fp)
         {
@@ -212,7 +201,6 @@ bh_component *bh_component_setup(const char* component_name)
             fclose(fp);
         }
     }
-
     // We could not find the configuration file anywhere
     if(env == NULL)
     {
@@ -221,197 +209,113 @@ bh_component *bh_component_setup(const char* component_name)
             "\t* The environment variable BH_CONFIG.\n"
             "\t* The home directory \"%s\".\n"
             "\t* And system-wide \"%s\".\n", homepath, syspath);
-        free(com);
-        return NULL;
+        return BH_ERROR;
     }
 
     // Load the bohrium configuration file
-    com->config = iniparser_load(env);
-    if(com->config == NULL)
+    self->config = iniparser_load(env);
+    if(self->config == NULL)
     {
         fprintf(stderr, "Error: Bohrium could not read the config file.\n");
-        free(com);
-        return NULL;
+        return BH_ERROR;
     }
 
     // Assign the type of the component
-    com->type = get_type(com->config, com->name);
+    if((self->type = get_type(self->config, self->name)) == BH_COMPONENT_ERROR)
+        return BH_ERROR;
 
-    // Load the .so associated with the component
-    if (BH_BRIDGE == com->type) {
-        com->lib_handle = NULL;   // Bridges does not have one
-    }
-    else
-    {                             // All other component types does
-        char tmp[BH_COMPONENT_NAME_SIZE];
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", com->name);
-        char *impl = iniparser_getstring(com->config, tmp, NULL);
-        if(impl == NULL)
-        {
-            fprintf(stderr,"In section \"%s\" impl is not set.\n", com->name);
-            return NULL;
-        }
-        com->lib_handle = dlopen(impl, RTLD_NOW);
-        if(com->lib_handle == NULL)
-        {
-            fprintf(stderr, "Error in [%s:impl]: %s\n", com->name, dlerror());
-            return NULL;
-        }
-    }
-    return com;
-}
+    //
+    //  Retrieves the interface for each child
+    //
 
-/* Retrieves the children components of the parent.
- *
- * @parent The parent component (input).
- * @count Number of children components(output).
- * @children Array of children components (output).
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_children(bh_component *parent, bh_intp *count,
-                                     bh_component **children[])
-{
     char tmp[BH_COMPONENT_NAME_SIZE];
-    bh_error result;
-    char *child;
-    size_t c;
-    *count = 0;
-    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",parent->name);
-    char *tchildren = iniparser_getstring(parent->config, tmp, NULL);
-    if(tchildren == NULL)
-    {
-        fprintf(stderr, "bh_component_setup(): children missing from config.\n");
-		return BH_ERROR;
-	}
-
-    *children = (bh_component**)malloc(BH_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
-    if(*children == NULL)
-    {
-        fprintf(stderr, "bh_component_setup(): out of memory.\n");
-        return BH_OUT_OF_MEMORY;
-    }
-    //Since we do not use all the data here, it is good for debugging if the rest is null pointers
-    memset(*children, 0, BH_COMPONENT_MAX_CHILDS * sizeof(bh_component *));
-
-	//Assume all goes well
-	result = BH_SUCCESS;
+    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",self->name);
+    char *children_str = iniparser_getstring(self->config, tmp, NULL);
+    if(children_str == NULL)
+        return BH_SUCCESS;//No children -- we are finished
 
     //Handle one child at a time.
-    child = strtok(tchildren,",");
-    while(child != NULL && *count < BH_COMPONENT_MAX_CHILDS)
+    char *child_str = strtok(children_str,",");
+    self->nchildren = 0;
+    while(child_str != NULL)
     {
-        (*children)[*count] = (bh_component*)malloc(sizeof(bh_component));
-        bh_component *com = (*children)[*count];
+        bh_component_iface *child = &self->children[self->nchildren];
+        bh_component_type child_type = get_type(self->config,child_str);
+        if(child_type == BH_COMPONENT_ERROR)
+            return BH_ERROR;
 
-        //Save component name.
-        strncpy(com->name, child, BH_COMPONENT_NAME_SIZE);
-        //Save configuration dictionary.
-        com->config = parent->config;
-        //Save component type.
-        com->type = get_type(parent->config,child);
-        if(com->type == BH_COMPONENT_ERROR)
+        //Save the child name.
+        strncpy(child->name, child_str, BH_COMPONENT_NAME_SIZE);
+
+        if(!iniparser_find_entry(self->config,child_str))
         {
-	        fprintf(stderr, "bh_component_setup(): invalid component type: %s.\n", child);
-	        result = BH_ERROR;
-	        break;
+            fprintf(stderr,"Reference \"%s\" is not declared.\n",child_str);
+            return BH_ERROR;
         }
-
-        if(!iniparser_find_entry(com->config,child))
-        {
-            fprintf(stderr,"Reference \"%s\" is not declared.\n",child);
-	        result = BH_ERROR;
-	        break;
-        }
-
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child);
-        char *impl = iniparser_getstring(com->config, tmp, NULL);
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child_str);
+        char *impl = iniparser_getstring(self->config, tmp, NULL);
         if(impl == NULL)
         {
-            fprintf(stderr,"In section \"%s\" impl is not set.\n",child);
-	        result = BH_ERROR;
-	        break;
+            fprintf(stderr,"in section \"%s\" impl is not set.\n",child_str);
+	    return BH_ERROR;
         }
-
-        com->lib_handle = dlopen(impl, RTLD_NOW);
-        if(com->lib_handle == NULL)
+        void *lib_handle = dlopen(impl, RTLD_NOW);
+        if(lib_handle == NULL)
         {
-            fprintf(stderr, "Error in [%s:impl]: %s\n", child, dlerror());
-	        result = BH_ERROR;
-	        break;
+            fprintf(stderr, "Error in [%s:impl]: %s\n", child_str, dlerror());
+	    return BH_ERROR;
         }
 
-        com->init = (bh_init)get_dlsym(com->lib_handle, child, com->type, "init");
-        if(com->init == NULL)
+        child->init = (bh_init)get_dlsym(lib_handle, child_str, child_type, "init");
+        if(child->init == NULL)
+            return BH_ERROR;
+
+        child->shutdown = (bh_shutdown)get_dlsym(lib_handle, child_str, child_type, "shutdown");
+        if(child->shutdown == NULL)
+            return BH_ERROR;
+
+        child->execute = (bh_execute)get_dlsym(lib_handle, child_str, child_type, "execute");
+        if(child->execute == NULL)
+            return BH_ERROR;
+
+        child->reg_func = (bh_reg_func)get_dlsym(lib_handle, child_str, child_type, "reg_func");
+        if(child->reg_func == NULL)
+            return BH_ERROR;
+
+        if(++self->nchildren > BH_COMPONENT_MAX_CHILDS)
         {
-			fprintf(stderr, "Failed to load init function from child %s\n", child);
-	        result = BH_ERROR;
-	        break;
+            fprintf(stderr,"Number of children of %s is greater "
+                           "than BH_COMPONENT_MAX_CHILDS.\n",self->name);
+            return BH_ERROR;
         }
-
-        com->shutdown = (bh_shutdown)get_dlsym(com->lib_handle, child, com->type,
-                                  "shutdown");
-        if(com->shutdown == NULL)
-        {
-			fprintf(stderr, "Failed to load shutdown function from child %s\n", child);
-	        result = BH_ERROR;
-	        break;
-        }
-
-        com->execute = (bh_execute)get_dlsym(com->lib_handle, child, com->type,
-                                 "execute");
-        if(com->execute == NULL)
-        {
-			fprintf(stderr, "Failed to load execute function from child %s\n", child);
-	        result = BH_ERROR;
-	        break;
-        }
-
-        com->reg_func = (bh_reg_func)get_dlsym(com->lib_handle, child, com->type,
-                                  "reg_func");
-        if(com->reg_func == NULL)
-        {
-			fprintf(stderr, "Failed to load reg_func function from child %s\n", child);
-	        result = BH_ERROR;
-	        break;
-        }
-
-        child = strtok(NULL,",");
-        ++(*count);
+        //Go to next child
+        child_str = strtok(NULL,",");
     }
-
-	if (result != BH_SUCCESS)
-	{
-		for(c = 0; c < BH_COMPONENT_MAX_CHILDS; c++)
-			if ((*children)[c] != NULL)
-			{
-				free((*children)[c]);
-				(*children)[c] = NULL;
-			}
-		free(*children);
-		*children = NULL;
-	}
-	else if(*count == 0)//No children.
-    {
-        free(*children);
-        *children = NULL;
-    }
-
-    return result;
+    return BH_SUCCESS;
 }
 
-/* Retrieves an user-defined function.
+/* Destroyes the component object.
  *
- * @self     The component.
- * @fun      Name of the function e.g. myfunc
- * @ret_func Pointer to the function (output)
- *           Is NULL if the function doesn't exist
- * @return Error codes (BH_SUCCESS)
+ * @self   The component object to destroy
  */
-bh_error bh_component_get_func(bh_component *self, char *func,
-                               bh_userfunc_impl *ret_func)
+void bh_component_destroy(bh_component *self)
 {
-    //First we search the libs in the config file to find the user-defined function.
-    //Secondly we search the component's library.
+    iniparser_freedict(self->config);
+}
+
+/* Retrieves an extension method implementation.
+ *
+ * @self      The component object.
+ * @name      Name of the extension method e.g. matmul
+ * @extmethod Pointer to the method (output)
+ * @return    Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
+ *                         BH_EXTMETHOD_NOT_SUPPORTED)
+ */
+bh_error bh_component_get_func(const bh_component *self,
+                               const char *name,
+                               bh_extmethod_impl *extmethod)
+{
+    //We search the libs in the config file to find the user-defined function.
     char *lib_paths = bh_component_config_lookup(self,"libs");
     if(lib_paths != NULL)
     {
@@ -425,11 +329,10 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         while(path != NULL)
         {
             void *lib_handle = dlopen(path, RTLD_NOW);
-
             if(lib_handle != NULL)
             {
                 dlerror();//Clear old errors.
-                *ret_func = (bh_userfunc_impl)dlsym(lib_handle, func);
+                *extmethod = (bh_extmethod_impl)dlsym(lib_handle, name);
                 char *err = dlerror();
                 if(err == NULL)
                     return BH_SUCCESS;
@@ -438,40 +341,8 @@ bh_error bh_component_get_func(bh_component *self, char *func,
         }
         free(lib_paths);
     }
-    dlerror();//Clear old errors.
-    *ret_func = (bh_userfunc_impl)dlsym(self->lib_handle, func);
-    char *err = dlerror();
-    if(err != NULL)
-    {
-        *ret_func = NULL;//Make sure it is NULL on error.
-        fprintf(stderr, "Error when trying to load %s: %s\n", func, err);
-        return BH_USERFUNC_NOT_SUPPORTED;
-    }
-    return BH_SUCCESS;
-}
-
-/* Frees the component.
- *
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_free(bh_component *component)
-{
-    if(component->type == BH_BRIDGE)
-        iniparser_freedict(component->config);
-    else
-        dlclose(component->lib_handle);
-    free(component);
-    return BH_SUCCESS;
-}
-
-/* Frees allocated data.
- *
- * @return Error code (BH_SUCCESS).
- */
-bh_error bh_component_free_ptr(void* data)
-{
-    free(data);
-    return BH_SUCCESS;
+    *extmethod = NULL;//Make sure it is NULL on error.
+    return BH_EXTMETHOD_NOT_SUPPORTED;
 }
 
 /* Look up a key in the config file
@@ -480,7 +351,7 @@ bh_error bh_component_free_ptr(void* data)
  * @key       The key to lookup in the config file
  * @return    The value if found, otherwise NULL
  */
-char* bh_component_config_lookup(bh_component *component, const char* key)
+char* bh_component_config_lookup(const bh_component *component, const char* key)
 {
     char dictkey[BH_COMPONENT_NAME_SIZE];
     snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);

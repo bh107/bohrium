@@ -38,54 +38,59 @@ extern "C" {
 #define BH_COMPONENT_NAME_SIZE (1024)
 
 //Maximum number of support childs for a component
-#define BH_COMPONENT_MAX_CHILDS (10)
-
-//Prototype of the bh_component datatype.
-typedef struct bh_component_struct bh_component;
+#define BH_COMPONENT_MAX_CHILDS (6)
 
 /* Initialize the component
  *
- * @return Error codes (BH_SUCCESS)
+ * @name    The name of the component e.g. node
+ * @return  Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-typedef bh_error (*bh_init)(bh_component *self);
-
+typedef bh_error (*bh_init)(const char *name);
 
 /* Shutdown the component, which include a instruction flush
  *
- * @return Error codes (BH_SUCCESS)
+ * @return Error codes (BH_SUCCESS, BH_ERROR)
  */
 typedef bh_error (*bh_shutdown)(void);
 
-
-/* Execute a list of instructions (blocking, for the time being).
- * It is required that the component supports all instructions in the list.
+/* Execute a BhIR (graph of instructions)
  *
- * @instruction A list of instructions to execute
- * @return Error codes (BH_SUCCESS, BH_PARTIAL_SUCCESS)
+ * @bhir    The BhIR to execute
+ * @return  Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
 typedef bh_error (*bh_execute)(bh_ir* bhir);
 
-/* Register a new user-defined function.
+/* Register a new extension method.
  *
- * @lib Name of the shared library e.g. libmyfunc.so
- *      When NULL the default library is used.
- * @fun Name of the function e.g. myfunc
- * @id Identifier for the new function. The bridge should set the
- *     initial value to Zero. (in/out-put)
- * @return Error codes (BH_SUCCESS)
+ * @fun    Name of the function e.g. matmul
+ * @opcode Opcode for the new function.
+ * @return Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
+ *                      BH_EXTMETHOD_NOT_SUPPORTED)
  */
-typedef bh_error (*bh_reg_func)(const char *fun,
-                                      bh_intp *id);
+typedef bh_error (*bh_reg_func)(const char *fun, bh_opcode opcode);
+
+/* Extension method prototype implementation.
+ *
+ * @instr  The extension method instruction to handle
+ * @arg    Additional component specific argument
+ * @return Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
+ */
+typedef bh_error (*bh_extmethod_impl)(bh_instruction *instr, void* arg);
 
 
-/* User-defined function implementation.
- *
- * @arg Argument for the user-defined function implementation
- * @ve_arg Additional argument that can be added by the VE to accomidate
- *         the specific implementation
- * @return Error codes (BH_SUCCESS)
- */
-typedef bh_error (*bh_userfunc_impl)(bh_userfunc *arg, void* ve_arg);
+/* The interface functions of a component */
+typedef struct
+{
+    //Name of the component
+    char name[BH_COMPONENT_NAME_SIZE];
+    //Handle for the dynamic linked library.
+    void *lib_handle;
+    //The interface function pointers
+    bh_init     init;
+    bh_shutdown shutdown;
+    bh_execute  execute;
+    bh_reg_func reg_func;
+}bh_component_iface;
 
 
 /* Codes for known component types */
@@ -99,64 +104,46 @@ typedef enum
 }bh_component_type;
 
 
-/* Data struct for the bh_component data type */
-struct bh_component_struct
+/* The component object */
+typedef struct
 {
+    //Name of the component
     char name[BH_COMPONENT_NAME_SIZE];
+    //The ini-config dictionary
     dictionary *config;
-    void *lib_handle;//Handle for the dynamic linked library.
+    //The component type
     bh_component_type type;
-    bh_init init;
-    bh_shutdown shutdown;
-    bh_execute execute;
-    bh_reg_func reg_func;
-};
+    //Number of children
+    bh_intp nchildren;
+    //The interface of the children of this component
+    bh_component_iface children[BH_COMPONENT_MAX_CHILDS];
+}bh_component;
 
-
-/* Setup the root component, which normally is the bridge.
+/* Initilize the component object
  *
- * @name The name of the root component. If NULL "bridge"
-         will be used.
- * @return The root component in the configuration.
+ * @self   The component object to initilize
+ * @name   The name of the component. If NULL "bridge" will be used.
+ * @return Error codes (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_component *bh_component_setup(const char* name);
+DLLEXPORT bh_error bh_component_init(bh_component *self, const char* name);
 
-
-
-/* Retrieves the children components of the parent.
+/* Destroyes the component object.
  *
- * @parent The parent component (input).
- * @count Number of children components(output).
- * @children Array of children components (output).
- * NB: the array and all the children should be free'd by the caller.
- * @return Error code (BH_SUCCESS).
+ * @self   The component object to destroy
  */
-DLLEXPORT bh_error bh_component_children(bh_component *parent, bh_intp *count,
-                                               bh_component **children[]);
+DLLEXPORT void bh_component_destroy(bh_component *self);
 
-
-/* Frees the component.
+/* Retrieves an extension method implementation.
  *
- * @return Error code (BH_SUCCESS).
+ * @self      The component object.
+ * @name      Name of the extension method e.g. matmul
+ * @extmethod Pointer to the method (output)
+ * @return    Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
+ *                         BH_EXTMETHOD_NOT_SUPPORTED)
  */
-DLLEXPORT bh_error bh_component_free(bh_component *component);
-
-/* Frees allocated data.
- *
- * @return Error code (BH_SUCCESS).
- */
-DLLEXPORT bh_error bh_component_free_ptr(void* data);
-
-/* Retrieves an user-defined function.
- *
- * @self The component.
- * @fun Name of the function e.g. myfunc
- * @ret_func Pointer to the function (output)
- *           Is NULL if the function doesn't exist
- * @return Error codes (BH_SUCCESS)
- */
-DLLEXPORT bh_error bh_component_get_func(bh_component *self, char *func,
-                                               bh_userfunc_impl *ret_func);
+DLLEXPORT bh_error bh_component_get_func(const bh_component *self,
+                                         const char *name,
+                                         bh_extmethod_impl *extmethod);
 
 /* Look up a key in the config file
  *
@@ -164,7 +151,8 @@ DLLEXPORT bh_error bh_component_get_func(bh_component *self, char *func,
  * @key       The key to lookup in the config file
  * @return    The value if found, otherwise NULL
  */
-DLLEXPORT char* bh_component_config_lookup(bh_component *component, const char* key);
+DLLEXPORT char* bh_component_config_lookup(const bh_component *component,
+                                           const char* key);
 
 #ifdef __cplusplus
 }
