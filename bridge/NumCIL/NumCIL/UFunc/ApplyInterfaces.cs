@@ -30,7 +30,7 @@ namespace NumCIL
 {
     public partial class UFunc
     {
-        public interface IApplyBinaryOp 
+        public interface IApplyHandler
         {
             /// <summary>
             /// Applies a binary operation using the two operands.
@@ -45,10 +45,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyBinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out) 
                 where C : struct, IBinaryOp<T>;
-        }
-        
-        public interface IApplyBinaryConvOp
-        {
+            
             /// <summary>
             /// Applies a binary operation using the two operands.
             /// Assumes that the target array is allocated and shaped for broadcast.
@@ -63,10 +60,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyBinaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out) 
                 where C : struct, IBinaryConvOp<Ta, Tb>;
-        }
-        
-        public interface IApplyUnaryOp 
-        {
+
             /// <summary>
             /// Applies a unary operation using the input operand.
             /// Assumes that the target array is allocated and shaped for broadcast.
@@ -79,10 +73,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyUnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out) 
                 where C : struct, IUnaryOp<T>;
-        }
-        
-        public interface IApplyUnaryConvOp
-        {
+            
             /// <summary>
             /// Applies a unary conversion operation using the input operand.
             /// Assumes that the target array is allocated and shaped for broadcast.
@@ -96,10 +87,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyUnaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out) 
                 where C : struct, IUnaryConvOp<Ta, Tb>;
-        }
-        
-        public interface IApplyNullaryOp 
-        {
+            
             /// <summary>
             /// Applies a nullary operation to each element in the output operand.
             /// Assumes that the target array is allocated.
@@ -111,10 +99,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyNullaryOp<T, C>(C op, NdArray<T> @out) 
                 where C : struct, INullaryOp<T>;
-        }
-
-        public interface IApplyReduce 
-        {
+            
             /// <summary>
             /// Reduces the input argument on the specified axis.
             /// </summary>
@@ -127,10 +112,7 @@ namespace NumCIL
             /// <returns>True if the operation was applied, false otherwise</returns>
             bool ApplyReduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
                 where C : struct, IBinaryOp<T>;
-        }
-        
-        public interface IApplyMatmul
-        {
+            
             /// <summary>
             /// Performs matrix multiplication on the two operands, using the supplied methods.
             /// </summary>
@@ -146,10 +128,7 @@ namespace NumCIL
             bool ApplyMatmul<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null)
                 where CADD : struct, IBinaryOp<T>
                 where CMUL : struct, IBinaryOp<T>;
-        }
-        
-        public interface IApplyAggregate
-        {
+            
             /// <summary>
             /// Calculates the scalar result of applying the binary operation to all elements
             /// </summary>

@@ -131,7 +131,7 @@ namespace NumCIL.Bohrium2
 			Activate<NumCIL.Complex64.DataType>();
 			Activate<System.Numerics.Complex>();
             
-            NumCIL.UFunc.ApplyManager.RegisterBinaryOps(typeof(DataAccessor_float32), new NumCIL.Bohrium2.ApplyImplementor());
+            NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium2.ApplyImplementor());
         }
 
         /// <summary>
@@ -201,5 +201,6 @@ namespace NumCIL.Bohrium2
         {
             UnsafeAPI.CopyToIntPtr(source, target, source.Length);
         }
+        
     }
 }

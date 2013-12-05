@@ -43,13 +43,10 @@ namespace NumCIL.Bohrium2
         }
     }
 
-    public class ApplyImplementor : UFunc.IApplyBinaryOp, UFunc.IApplyUnaryOp
+    public class ApplyImplementor : UFunc.IApplyHandler
     {
-        public ApplyImplementor()
-        {
-            NumCIL.UFunc.ApplyManager.DEBUG_FALLBACK = (a, b) => Console.WriteLine("*** Unhandled op {0} for types [ {1} ]", a.FullName,string.Join(",", b.Select(n => n.ToString())));
-        }
-
+        public static Action<Type, Type[]> DEBUG_FALLBACK = (a, b) => Console.WriteLine("*** Unhandled op {0} for types [ {1} ]", a.FullName,string.Join(",", b.Select(n => n.ToString())));
+    
         private Tuple<Type, Func<multi32, multi32>>[] m_unOps = 
         {
             new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute),
@@ -69,32 +66,76 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_maximum),
             new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_minimin),
         };
+        
+        private Dictionary<Type, Func<multi32, multi32, multi32>> m_binOpLookup = new Dictionary<Type, Func<multi32, multi32, multi32>>();
+        private Dictionary<Type, Func<multi32, multi32>> m_unOpLookup = new Dictionary<Type, Func<multi32, multi32>>();
     
-        #region IApplyBinaryOp implementation
+        #region IApplyHandler implementation
         public bool ApplyBinaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out) 
             where C : struct, IBinaryOp<T>
         {
             if (typeof(T) == typeof(float))
-                return ApplyBinaryOp_float32(typeof(C), (NdArray<float>)(object)in1, (NdArray<float>)(object)in2, (NdArray<float>)(object)@out);
+                return ApplyBinaryOp_float32(op.GetType(), (NdArray<float>)(object)in1, (NdArray<float>)(object)in2, (NdArray<float>)(object)@out);
 
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
             return false;
         }
-        #endregion
-
-        #region IApplyUnaryOp implementation
 
         public bool ApplyUnaryOp<T, C>(C op, NdArray<T> in1, NdArray<T> @out) where C : struct, IUnaryOp<T>
         {
             if (typeof(T) == typeof(float))
-                return ApplyUnaryOp_float32(typeof(C), (NdArray<float>)(object)in1, (NdArray<float>)(object)@out);
+                return ApplyUnaryOp_float32(op.GetType(), (NdArray<float>)(object)in1, (NdArray<float>)(object)@out);
             
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
             return false;
         }
 
+        public bool ApplyBinaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<Tb> @out) where C : struct, IBinaryConvOp<Ta, Tb>
+        {
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
+            return false;
+        }
+
+        public bool ApplyUnaryConvOp<Ta, Tb, C>(C op, NdArray<Ta> in1, NdArray<Tb> @out) where C : struct, IUnaryConvOp<Ta, Tb>
+        {
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
+            return false;
+        }
+
+        public bool ApplyNullaryOp<T, C>(C op, NdArray<T> @out) where C : struct, INullaryOp<T>
+        {
+            DEBUG_FALLBACK(op.GetType(), new Type[] { @out.DataAccessor.GetType() });
+            return false;
+        }
+
+        public bool ApplyReduce<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out) where C : struct, IBinaryOp<T>
+        {
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
+            return false;
+        }
+
+        public bool ApplyMatmul<T, CADD, CMUL>(CADD addop, CMUL mulop, NdArray<T> in1, NdArray<T> in2, NdArray<T> @out = null) where CADD : struct, IBinaryOp<T> where CMUL : struct, IBinaryOp<T>
+        {
+            DEBUG_FALLBACK(addop.GetType(), new Type[] { mulop.GetType(), in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
+            return false;
+        }
+
+        public bool ApplyAggregate<T, C>(C op, NdArray<T> in1, out T result) where C : struct, IBinaryOp<T>
+        {
+            DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), typeof(T) });
+            result = default(T);
+            return false;
+        }
         #endregion
         
         public bool ApplyUnaryOp_float32(Type c, NdArray<float> in1, NdArray<float> @out)
         {
+            if (
+                (@out.DataAccessor is DataAccessor_float32) ||
+                (@in1.DataAccessor is DataAccessor_float32)
+            )
+                return false;
+                
             // Special handling of the copy operator as it happens "in-place" (kind-of)
             if (typeof(NumCIL.Generic.Operators.ICopyOperation).IsAssignableFrom(c))
             {
@@ -104,10 +145,18 @@ namespace NumCIL.Bohrium2
                 
                 return true;
             }
+        
+            Func<multi32, multi32> m;
             
-            var m = (from n in m_unOps
-                              where n.Item1.IsAssignableFrom(c)
-                              select n.Item2).FirstOrDefault();
+            // This lookup prevents a linear scan of the supported operands
+            if (!m_unOpLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_unOps
+                     where n.Item1.IsAssignableFrom(c)
+                     select n.Item2).FirstOrDefault();
+                 m_unOpLookup[c] = m;
+            }
+            
             if (m == null)
             {
                 Console.WriteLine("No registered match for: {0}", c.FullName);
@@ -148,15 +197,30 @@ namespace NumCIL.Bohrium2
         
         public bool ApplyBinaryOp_float32(Type c, NdArray<float> in1, NdArray<float> in2, NdArray<float> @out)
         {
-            var m = (from n in m_binOps
-                              where n.Item1.IsAssignableFrom(c)
-                              select n.Item2).FirstOrDefault();
+            Func<multi32, multi32, multi32> m;
+            
+            // This lookup prevents a linear scan of the supported operands
+            if (!m_binOpLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_binOps
+                     where n.Item1.IsAssignableFrom(c)
+                     select n.Item2).FirstOrDefault();
+                 m_binOpLookup[c] = m;
+            }
             
             if (m == null)
             {
                 Console.WriteLine("No registered match for: {0}", c.FullName);
                 return false;
             }
+            
+            if (
+                (@out.DataAccessor is DataAccessor_float32) ||
+                (@in1.DataAccessor is DataAccessor_float32) ||
+                (@in2.DataAccessor is DataAccessor_float32)
+            )
+                return false;
+                
         
             var d0 = (DataAccessor_float32)@out.DataAccessor;
             using (var v1 = new PInvoke.bh_multi_array_float32_p(@in1))
