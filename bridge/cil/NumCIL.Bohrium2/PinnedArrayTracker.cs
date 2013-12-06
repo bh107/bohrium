@@ -2,6 +2,20 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
+using bh_bool = System.Boolean;
+using bh_int8 = System.SByte;
+using bh_uint8 = System.Byte;
+using bh_int16 = System.Int16;
+using bh_uint16 = System.UInt16;
+using bh_int32 = System.Int32;
+using bh_uint32 = System.UInt32;
+using bh_int64 = System.Int64;
+using bh_uint64 = System.UInt64;
+using bh_float32 = System.Single;
+using bh_float64 = System.Double;
+using bh_complex64 = NumCIL.Complex64.DataType;
+using bh_complex128 = System.Numerics.Complex;
+
 namespace NumCIL.Bohrium2
 {
     /// <summary>
@@ -34,9 +48,108 @@ namespace NumCIL.Bohrium2
                     return r.Item1;
 
                 var handle = GCHandle.Alloc(item, GCHandleType.Pinned);
-                if (typeof(T) == typeof(float))
+                if (typeof(T) == typeof(bh_bool))
+                {
+                    var p = new PInvoke.bh_base_bool8_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_int8))
+                {
+                    var p = new PInvoke.bh_base_int8_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_int16))
+                {
+                    var p = new PInvoke.bh_base_int16_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_uint16))
+                {
+                    var p = new PInvoke.bh_base_uint16_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_int32))
+                {
+                    var p = new PInvoke.bh_base_int32_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_uint32))
+                {
+                    var p = new PInvoke.bh_base_uint32_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_int64))
+                {
+                    var p = new PInvoke.bh_base_int64_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_uint64))
+                {
+                    var p = new PInvoke.bh_base_uint64_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_float32))
                 {
                     var p = new PInvoke.bh_base_float32_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_float64))
+                {
+                    var p = new PInvoke.bh_base_float64_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_complex64))
+                {
+                    var p = new PInvoke.bh_base_complex64_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
+                else if (typeof(T) == typeof(bh_complex128))
+                {
+                    var p = new PInvoke.bh_base_complex128_p(handle.AddrOfPinnedObject(), item.Length);
                     r = new Tuple<IntPtr, GCHandle, IDisposable>(
                         p.ToPointer(),
                         handle,

@@ -3,6 +3,20 @@ using System.Linq;
 using System.Collections.Generic;
 using NumCIL.Generic;
 
+using bh_bool = System.Boolean;
+using bh_int8 = System.SByte;
+using bh_uint8 = System.Byte;
+using bh_int16 = System.Int16;
+using bh_uint16 = System.UInt16;
+using bh_int32 = System.Int32;
+using bh_uint32 = System.UInt32;
+using bh_int64 = System.Int64;
+using bh_uint64 = System.UInt64;
+using bh_float32 = System.Single;
+using bh_float64 = System.Double;
+using bh_complex64 = NumCIL.Complex64.DataType;
+using bh_complex128 = System.Numerics.Complex;
+
 namespace NumCIL.Bohrium2
 {    
     public class ApplyImplementor : UFunc.IApplyHandler
@@ -13,7 +27,18 @@ namespace NumCIL.Bohrium2
         
         static ApplyImplementor()
         {
-            _implementors[typeof(float)] = new ApplyImplementor_float32();
+            _implementors[typeof(bh_bool)] = new ApplyImplementor_bool8();
+            _implementors[typeof(bh_int8)] = new ApplyImplementor_int8();
+            _implementors[typeof(bh_int16)] = new ApplyImplementor_int16();
+            _implementors[typeof(bh_uint16)] = new ApplyImplementor_uint16();
+            _implementors[typeof(bh_int32)] = new ApplyImplementor_int32();
+            _implementors[typeof(bh_uint32)] = new ApplyImplementor_uint32();
+            _implementors[typeof(bh_int64)] = new ApplyImplementor_int64();
+            _implementors[typeof(bh_uint64)] = new ApplyImplementor_uint64();
+            _implementors[typeof(bh_float32)] = new ApplyImplementor_float32();
+            _implementors[typeof(bh_float64)] = new ApplyImplementor_float64();
+            _implementors[typeof(bh_complex64)] = new ApplyImplementor_complex64();
+            _implementors[typeof(bh_complex128)] = new ApplyImplementor_complex128();
         }
         
         #region IApplyHandler implementation

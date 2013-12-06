@@ -264,8 +264,8 @@ namespace NumCIL.Bohrium2
                 if (!m_unOpLookup.TryGetValue(c, out m))
                 {
                     m = (from n in m_unOps
-                                        where n.Item1.IsAssignableFrom(c)
-                                        select n.Item2).FirstOrDefault();
+                            where n.Item1.IsAssignableFrom(c)
+                            select n.Item2).FirstOrDefault();
                     m_unOpLookup[c] = m;
                 }
                 

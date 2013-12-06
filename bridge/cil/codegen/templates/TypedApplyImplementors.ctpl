@@ -1,0 +1,389 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include "codegen/templates/warn.txt"
+%include "codegen/templates/license.txt"
+
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using NumCIL.Generic;
+
+%include "codegen/templates/typemap.cs"
+
+%set $ops = $data[0]
+%set $reduce_ops = $data[1]
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
+%end for
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+%if $bh_ctype != "float32"
+
+namespace NumCIL.Bohrium2
+{
+    public class ApplyImplementor_${bh_ctype} : ITypedApplyImplementor<${bh_atype}>
+    {
+        private Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_unOps = 
+        {
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_${bh_ctype}_absolute),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "int8" and $bh_ctype != "int16" and $bh_ctype != "int32"  and $bh_ctype != "int64"  and $bh_ctype != "uint16" and $bh_ctype != "uint32" and $bh_ctype != "uint64" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IFloor), PInvoke.bh_multi_array_${bh_ctype}_floor),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICeiling), PInvoke.bh_multi_array_${bh_ctype}_ceil),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IRound), PInvoke.bh_multi_array_${bh_ctype}_rint),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "int8" and $bh_ctype != "int16" and $bh_ctype != "int32"  and $bh_ctype != "int64"  and $bh_ctype != "uint16" and $bh_ctype != "uint32"  and $bh_ctype != "uint64"            
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_${bh_ctype}_sqrt),
+%end if
+        };
+        
+        private Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOps = 
+        {
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo),
+%end if
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin),
+%end if
+        };
+
+        private Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOpsScalarLhs = 
+        {
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add_scalar_lhs),
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract_scalar_lhs),
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply_scalar_lhs),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide_scalar_lhs),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo_scalar_lhs),
+%end if
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum_scalar_lhs),
+            new Tuple<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin_scalar_lhs),
+%end if
+        };
+
+        private Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>[] m_binOpsScalarRhs = 
+        {
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add_scalar_rhs),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract_scalar_rhs),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply_scalar_rhs),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide_scalar_rhs),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo_scalar_rhs),
+%end if
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum_scalar_rhs),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin_scalar_rhs),
+%end if
+        };
+        
+        private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOpsInPlace = 
+        {
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add_in_place),
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract_in_place),
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply_in_place),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide_in_place),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo_in_place),
+%end if
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            //new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum_in_place),
+            //new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin_in_place),
+%end if
+        };
+        
+        private Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>[] m_binOpsInPlaceScalarRhs = 
+        {
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add_in_place_scalar_rhs),
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract_in_place_scalar_rhs),
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply_in_place_scalar_rhs),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide_in_place_scalar_rhs),
+%end if
+%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo_in_place_scalar_rhs),
+%end if
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            //new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum_in_place_scalar_rhs),
+            //new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin_in_place_scalar_rhs),
+%end if
+        };
+        
+        private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpScalarLhsLookup = new Dictionary<Type, Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>> m_binOpScalarRhsLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Action<ma_${bh_ctype}, ${bh_atype}>> m_binOpInPlaceScalarRhsLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ${bh_atype}>>();
+        private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpInPlaceLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>();
+
+        #region ITypedApplyImplementor implementation
+
+        public bool ApplyBinaryOp(Type c, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out)
+        {
+            var isScalarIn1 = @in1.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in1.DataAccessor.Length == 1;
+            var isScalarIn2 = @in2.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in2.DataAccessor.Length == 1;
+            
+            Action<NdArray<${bh_atype}>, NdArray<${bh_atype}>, NdArray<${bh_atype}>> exec = null;
+            
+            if (exec == null && isScalarIn2 && in1.DataAccessor == @out.DataAccessor && @out.DataAccessor is Bohrium2.DataAccessor_${bh_ctype})
+            {
+                Action<ma_${bh_ctype}, ${bh_atype}> minplacerhs;
+                
+                if (!m_binOpInPlaceScalarRhsLookup.TryGetValue(c, out minplacerhs))
+                {
+                    minplacerhs = (from n in m_binOpsInPlaceScalarRhs
+                                                  where n.Item1.IsAssignableFrom(c)
+                                                  select n.Item2).FirstOrDefault();
+                     
+                    m_binOpInPlaceScalarRhsLookup[c] = minplacerhs;
+                }
+                
+                if (minplacerhs != null)
+                    exec = (_in1, _in2, _out) => {
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            minplacerhs(v0, in2.DataAccessor[0]);
+                    };
+            }
+
+            if (exec == null && in1.DataAccessor == @out.DataAccessor && @out.DataAccessor is Bohrium2.DataAccessor_${bh_ctype})
+            {
+                Action<ma_${bh_ctype}, ma_${bh_ctype}> minplace;
+                
+                if (!m_binOpInPlaceLookup.TryGetValue(c, out minplace))
+                {
+                    minplace = (from n in m_binOpsInPlace
+                                                  where n.Item1.IsAssignableFrom(c)
+                                                  select n.Item2).FirstOrDefault();
+                     
+                    m_binOpInPlaceLookup[c] = minplace;
+                }
+                
+                if (minplace != null)
+                    exec = (_in1, _in2, _out) => {
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in2))
+                            minplace(v0, v2);
+                    };
+            }
+            
+
+            // Not sure this extra code is worth the trouble for dealing with scalars
+            if (exec == null && isScalarIn1)
+            {
+                Func<${bh_atype}, ma_${bh_ctype}, ma_${bh_ctype}> mlhs;
+                
+                if (!m_binOpScalarLhsLookup.TryGetValue(c, out mlhs))
+                {
+                    mlhs = (from n in m_binOpsScalarLhs
+                                           where n.Item1.IsAssignableFrom(c)
+                                           select n.Item2).FirstOrDefault();
+                     
+                    m_binOpScalarLhsLookup[c] = mlhs;
+                }
+                
+                if (mlhs != null)
+                {
+                    exec = (_in1, _in2, _out) =>
+                    {
+                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in2))
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, mlhs(_in1.DataAccessor[0], v2));
+                    };
+                }
+            }
+
+            if (isScalarIn2 && exec == null)
+            {
+                Func<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}> mrhs;
+                
+                if (!m_binOpScalarRhsLookup.TryGetValue(c, out mrhs))
+                {
+                    mrhs = (from n in m_binOpsScalarRhs
+                                           where n.Item1.IsAssignableFrom(c)
+                                           select n.Item2).FirstOrDefault();
+                     
+                    m_binOpScalarRhsLookup[c] = mrhs;
+                }
+                
+                if (mrhs != null)
+                {
+                    exec = (_in1, _in2, _out) =>
+                    {
+                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in1))
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, mrhs(v1, _in2.DataAccessor[0]));
+                    };
+
+                }
+            }
+            
+            if (exec == null)
+            {
+                Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}> m;
+                // This lookup prevents a linear scan of the supported operands
+                if (!m_binOpLookup.TryGetValue(c, out m))
+                {
+                    m = (from n in m_binOps
+                                        where n.Item1.IsAssignableFrom(c)
+                                        select n.Item2).FirstOrDefault();
+                    m_binOpLookup[c] = m;
+                }
+            
+                if (m != null)
+                {                
+                    exec = (_in1, _in2, _out) =>
+                    {
+                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
+                    };  
+                }              
+            }
+
+            if (exec == null)
+            {
+                Console.WriteLine("No registered match for: {0}", c.FullName);
+                return false;
+            }
+                
+            // If the accessor is CIL-managed, we register a GC handle for the array
+            // If the input is used, no special action is performed until 
+            // a sync is executed, then all the BH queue is flushed and 
+            // the GC handles released
+            
+            // If the output is CIL-managed, we must sync immediately
+            
+            exec(@in1, @in2, @out);            
+            if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+            else
+            {
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+            
+            return true;
+        }
+
+        public bool ApplyBinaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<${bh_atype}> @out)
+        {
+            return false;
+        }
+
+        public bool ApplyUnaryOp(Type c, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
+        {
+            var isScalarIn1 = @in1.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in1.DataAccessor.Length == 1;
+            
+            Action<NdArray<${bh_atype}>, NdArray<${bh_atype}>> exec = null;
+            
+            // Special handling of the copy operator as it happens "in-place" (kind-of)
+            if (typeof(NumCIL.Generic.Operators.ICopyOperation).IsAssignableFrom(c))
+            {
+                exec = (_in, _out) =>
+                {
+                    if (isScalarIn1)
+                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_scalar(v2, _in.DataAccessor[0]);
+                    else
+                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
+                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_array(v2, v1);
+                };
+            }
+                    
+            if (exec != null)
+            {
+                Func<ma_${bh_ctype}, ma_${bh_ctype}> m;
+            
+                // This lookup prevents a linear scan of the supported operands
+                if (!m_unOpLookup.TryGetValue(c, out m))
+                {
+                    m = (from n in m_unOps
+                            where n.Item1.IsAssignableFrom(c)
+                            select n.Item2).FirstOrDefault();
+                    m_unOpLookup[c] = m;
+                }
+                
+                if (m != null)
+                {
+                    exec = (_in, _out) =>
+                    {
+                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
+                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1));
+                    };
+                }
+            }
+            
+            if (exec == null)
+            {
+                Console.WriteLine("No registered match for: {0}", c.FullName);
+                return false;
+            }
+            
+            exec(@in1, @out);
+            
+            if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+            else
+            {
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+            
+            return true;
+        }
+
+        public bool ApplyUnaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<${bh_atype}> @out)
+        {
+            return false;
+        }
+
+        public bool ApplyNullaryOp(Type c, NdArray<${bh_atype}> @out)
+        {
+            return false;
+        }
+
+        public bool ApplyReduce(Type c, long axis, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
+        {
+            return false;
+        }
+
+        public bool ApplyMatmul(Type cadd, Type cmul, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out = null)
+        {
+            return false;
+        }
+
+        public bool ApplyAggregate(Type c, NdArray<${bh_atype}> in1, out ${bh_atype} result)
+        {
+            result = default(${bh_atype});
+            return false;
+        }
+
+        #endregion
+    }       
+}
+
+%end if
+%end for
