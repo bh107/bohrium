@@ -43,13 +43,10 @@ multi_array<T>::multi_array() : temp(false), base(NULL)
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(NULL)
 {
-    meta.base   = NULL;
-    meta.ndim   = operand.meta.ndim;
-    meta.start  = 0;
+    meta = operand.meta;
+    meta.base = NULL;
 
-    memcpy(meta.shape, operand.meta.shape, sizeof(bh_index)*BH_MAXDIM);
-
-    int64_t stride = 1;                         // Setup strides
+    int64_t stride = 1;                 // Reset strides
     for(int64_t i=meta.ndim-1; 0 <= i; --i) {
         meta.stride[i] = stride;
         stride *= meta.shape[i];
@@ -60,6 +57,7 @@ template <typename T>           // Copy constructor
 template <typename OtherT>
 multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), base(NULL)
 {
+<<<<<<< HEAD
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
@@ -71,6 +69,16 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), b
         meta.stride[i] = stride;
         stride *= meta.shape[i];
     }
+=======
+    meta = operand.meta;
+    meta.base = NULL;
+    
+    int64_t stride = 1;                 // Reset strides
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
+    }    
+>>>>>>> 18bf123e85dc7f25d9eb7e71888a1908b1a3071c
 }
 
 template <typename T>
