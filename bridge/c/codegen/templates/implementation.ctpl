@@ -34,14 +34,26 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
     return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
 }
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[0]} lhs, bh_multi_array_${op3_type[2]}_p rhs) {
+    return (bh_multi_array_${op1_type[2]}_p)&(lhs ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
+}
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[0]} rhs) {
+    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} rhs);
+}
 %else
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
     return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), (*((multi_array<${op3_type[0]}>*)rhs))));
+}
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[0]} rhs) {
+    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), rhs));
 }
 %end if
 %else
 void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs) {
     (*((multi_array<${op1_type[0]}>*)self)) ${op} (*((multi_array<${op3_type[0]}>*)rhs));
+}
+void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_${op2_type[2]}_p self, ${op3_type[0]} rhs) {
+    (*((multi_array<${op1_type[0]}>*)self)) ${op} (rhs);
 }
 %end if
 %slurp

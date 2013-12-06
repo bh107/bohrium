@@ -26,8 +26,11 @@ DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_
 %for $op1_type, $op2_type, $op3_type in $typesigs
 %if $inplace == False
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs);
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[0]} lhs, bh_multi_array_${op3_type[2]}_p rhs);
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[0]} rhs);
 %else
 DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs);
+DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_${op2_type[2]}_p self, ${op3_type[0]} rhs);
 %end if
 %slurp
 %end for
@@ -41,6 +44,7 @@ DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_$
 %if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
 %for $op1_type, $op2_type in $typesigs
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_rhs(${op2_type[0]} rhs);
 %slurp
 %end for
 
