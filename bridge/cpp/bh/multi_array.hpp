@@ -73,6 +73,12 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(N
 {
     meta = operand.meta;
     meta.base = NULL;
+
+    int64_t stride = 1;                 // Reset strides
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
+    }    
 }
 
 template <typename T>           // Copy constructor
@@ -81,6 +87,12 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), b
 {
     meta = operand.meta;
     meta.base = NULL;
+    
+    int64_t stride = 1;                 // Reset strides
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
+    }    
 }
 
 #ifndef NO_VARIADICS
