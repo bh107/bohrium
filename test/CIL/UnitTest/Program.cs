@@ -1,4 +1,4 @@
-﻿#region Copyright
+﻿﻿#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -31,7 +31,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
 		{
-			NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
+			NumCIL.Bohrium2.Utility.SetupDebugEnvironmentVariables();
 
 			if (!args.Contains<string>("--bohrium-only", StringComparer.InvariantCultureIgnoreCase))
 			{

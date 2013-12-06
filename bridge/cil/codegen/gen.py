@@ -75,8 +75,9 @@ def main():
         op_map.append((name, opcode, t, nop, inplace, typesigs))
 
     gens = [
-        ('type_header.ctpl',    'PInvoke.basics.cs',        (types, reductions)),
-        ('method_header.ctpl',  'PInvoke.operations.cs',    op_map)
+        ('PInvoke.basics.ctpl',       'PInvoke.basics.cs',        (types, reductions)),
+        ('BohriumDataAccessor.ctpl',  'BohriumDataAccessor.cs',   (types, reductions)),
+        ('PInvoke.operations.ctpl',   'PInvoke.operations.cs',    op_map)
     ]
 
     render( gens, tmpl_dir, output_dir )
