@@ -303,8 +303,6 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    int64_t random_id;                          // Extension IDs
-
     void trash(bh_base *base_ptr);
 
 private:
