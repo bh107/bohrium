@@ -38,8 +38,6 @@ static bh_uint64 calls[BH_NO_OPCODES+2];
 #endif
 
 static bh_component *myself = NULL;
-static bh_userfunc_impl random_impl = NULL;
-static bh_intp random_impl_id = 0;
 static bh_userfunc_impl matmul_impl = NULL;
 static bh_intp matmul_impl_id = 0;
 static bh_userfunc_impl nselect_impl = NULL;
@@ -153,22 +151,7 @@ bh_error bh_ve_cpu_init(bh_component *self)
 
     // JIT machinery
     target = new process(compiler_cmd, object_path, kernel_path, true);
-
-    // Templates
-    ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
-    ctemplate::LoadTemplate("license.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("include.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("range.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.nd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.ddd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::mutable_default_template_cache()->Freeze();
+    specializer_init();     // Code templates / snippets
 
     #ifdef PROFILE
     memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
@@ -184,11 +167,12 @@ static bh_error exec(bh_instruction *instr)
     bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
 
-    symbolize(instr, sij);           // Construct symbol
+    symbolize(instr, sij);                          // Construct symbol
     if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
 
-        string sourcecode = specialize(sij);   // Specialize sourcecode
+        string sourcecode = specialize(sij);        // Specialize sourcecode
         if (dump_src==1) {                          // Dump sourcecode to file
+            std::cout << "DUMPING " << sij.symbol << " to file." << std::endl;
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
@@ -197,7 +181,7 @@ static bh_error exec(bh_instruction *instr)
     if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
         return BH_ERROR;
     }
-    res = bh_vcache_malloc(sij.instr);                          // Allocate memory for operands
+    res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
     if (BH_SUCCESS != res) {
         fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                         "called from bh_ve_cpu_execute()\n");
@@ -421,7 +405,7 @@ bh_error bh_ve_cpu_shutdown(void)
         bh_vcache_delete();
     }
 
-    delete target;  // De-allocate code-generator
+    delete target;          // De-allocate code-generator
 
     #ifdef PROFILE
     bh_uint64 sum = 0;
@@ -456,15 +440,7 @@ bh_error bh_ve_cpu_shutdown(void)
 
 bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
 {
-    if (strcmp("bh_random", fun) == 0) {
-    	if (random_impl == NULL) {
-            random_impl_id = *id;
-            return BH_SUCCESS;
-        } else {
-        	*id = random_impl_id;
-        	return BH_SUCCESS;
-        }
-    } else if (strcmp("bh_matmul", fun) == 0) {
+    if (strcmp("bh_matmul", fun) == 0) {
     	if (matmul_impl == NULL) {
             bh_component_get_func(myself, fun, &matmul_impl);
             if (matmul_impl == NULL) {
@@ -477,7 +453,7 @@ bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
         	*id = matmul_impl_id;
         	return BH_SUCCESS;
         }
-    }  else if (strcmp("bh_visualizer", fun) == 0) {
+    } else if (strcmp("bh_visualizer", fun) == 0) {
     	if (visualizer_impl == NULL) {
             bh_component_get_func(myself, fun, &visualizer_impl);
             if (visualizer_impl == NULL) {
