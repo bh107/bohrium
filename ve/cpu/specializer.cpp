@@ -6,34 +6,36 @@
 void specializer_init()
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
-    ctemplate::LoadTemplate("license.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("include.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("range.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("license.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
+    
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.3d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.nd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.ddd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.tpl", ctemplate::STRIP_BLANK_LINES);
+
+    ctemplate::LoadTemplate("traverse.1d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.2d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.3d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.ddd.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.tpl",      ctemplate::STRIP_BLANK_LINES);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
 void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 
-    char symbol_c[500];             // String representation buffers
+    char symbol_c[500]; // String representation buffers
     char dims_str[10];
 
     sij.instr = instr;
-    switch (sij.instr->opcode) {                    // [OPCODE_SWITCH]
+    switch (sij.instr->opcode) {    // [OPCODE_SWITCH]
 
-        case BH_NONE:                           // System opcodes
+        case BH_NONE:                                   // System opcodes
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:
-        case BH_USERFUNC:                       // Extensions
+        case BH_USERFUNC:                               // Extensions
             break;
 
         case BH_ADD_REDUCE:                             // Reductions

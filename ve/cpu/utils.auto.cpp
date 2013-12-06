@@ -130,8 +130,8 @@ const char* enumstr_to_ctypestr(const char* enumstr)
     else if (strcmp("BH_FLOAT16", enumstr)==0) { return "uint16_t"; }
     else if (strcmp("BH_FLOAT32", enumstr)==0) { return "float"; }
     else if (strcmp("BH_FLOAT64", enumstr)==0) { return "double"; }
-    else if (strcmp("BH_COMPLEX64", enumstr)==0) { return "struct { float real, imag; }"; }
-    else if (strcmp("BH_COMPLEX128", enumstr)==0) { return "struct { double real, imag; }"; }
+    else if (strcmp("BH_COMPLEX64", enumstr)==0) { return "float complex"; }
+    else if (strcmp("BH_COMPLEX128", enumstr)==0) { return "double complex"; }
     else if (strcmp("BH_UNKNOWN", enumstr)==0) { return "<UNKNOWN>"; }
     else { return "{{UNKNOWN}}"; }
 }
@@ -385,8 +385,8 @@ const char* enum_to_ctypestr(bh_type type)
         case BH_FLOAT16: return "uint16_t";
         case BH_FLOAT32: return "float";
         case BH_FLOAT64: return "double";
-        case BH_COMPLEX64: return "struct { float real, imag; }";
-        case BH_COMPLEX128: return "struct { double real, imag; }";
+        case BH_COMPLEX64: return "float complex";
+        case BH_COMPLEX128: return "double complex";
         case BH_UNKNOWN: return "<UNKNOWN>";
 
         default:

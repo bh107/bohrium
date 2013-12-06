@@ -1,3 +1,5 @@
+#ifndef BH_CPU_LIBS
+#define BH_CPU_LIBS
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
@@ -7,6 +9,14 @@
 #include <complex.h>
 #include <math.h>
 #include <Random123/threefry.h>
+#if defined(_OPENMP)
+#include <omp.h>
+#else
+inline int omp_get_max_threads() { return 1; }
+inline int omp_get_thread_num() { return 0; }
+inline int omp_get_num_threads() { return 1; }
+#endif
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -18,13 +28,5 @@
 
 #ifndef CPU_MISC
 #define CPU_MAXDIM 16
-#endif
-
-#if defined(_OPENMP)
-#include <omp.h>
-#else
-inline int omp_get_max_threads() { return 1; }
-inline int omp_get_thread_num() { return 0; }
-inline int omp_get_num_threads() { return 1; }
 #endif
 
