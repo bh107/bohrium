@@ -49,6 +49,8 @@
     <Compile Include="..\codegen\output\BohriumDataAccessor.cs">
       <Link>BohriumDataAccessor.cs</Link>
     </Compile>
+    <Compile Include="ITypedApplyImplementor.cs" />
+    <Compile Include="TypedApplyImplementors.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
