@@ -265,6 +265,9 @@ void generateInstructionSource(bh_opcode opcode,
         case BH_ISINF:
             source << "\t" << parameters[0] << " = isinf(" << parameters[1] << ");\n";
             break;
+        case BH_RANGE:
+            source << "\t" << parameters[0] << " = gidx;\n";
+            break;
         default:
 #ifdef DEBUG
             std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
