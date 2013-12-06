@@ -1,6 +1,7 @@
+#region Copyright
 /*
-This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
-http://bohrium.bitbucket.org
+This file is part of Bohrium and copyright (c) 2013 the Bohrium
+team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
@@ -17,3 +18,4 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#endregion
