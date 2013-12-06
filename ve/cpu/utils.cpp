@@ -6,6 +6,8 @@
 #include "bh.h"
 #include "bh_ve_cpu.h"
 
+#include "auto.cpp"
+
 /**
  * Read the entire file provided via filename into memory.
  *
@@ -62,6 +64,10 @@ bool is_dense(bh_view *operand)
     return false;
 }
 
+/**
+ * Compute the layoutmask of the instruction.
+ *
+ */
 int bh_layoutmask(bh_instruction *instr)
 {
     int mask = 0;
@@ -453,152 +459,6 @@ const char* bh_typesig_to_shorthand(int typesig)
     }
 }
 
-const char* bhtypestr_to_shorthand(const char* type_str)
-{
-    if (strcmp("BH_BOOL", type_str)==0) {
-        return "z";
-    } else if (strcmp("BH_INT8", type_str)==0) {
-        return "b";
-    } else if (strcmp("BH_INT16", type_str)==0) {
-        return "s";
-    } else if (strcmp(type_str, "BH_INT32")==0) {
-        return "i";
-    } else if (strcmp(type_str, "BH_INT64")==0) {
-        return "l";
-    } else if (strcmp(type_str, "BH_UINT8")==0) {
-        return "B";
-    } else if (strcmp(type_str, "BH_UINT16")==0) {
-        return "S";
-    } else if (strcmp(type_str, "BH_UINT32")==0) {
-        return "I";
-    } else if (strcmp(type_str, "BH_UINT64")==0) {
-        return "L";
-    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
-        return "h";
-    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
-        return "f";
-    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
-        return "d";
-    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
-        return "c";
-    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
-        return "C";
-    } else {
-        return "UNKNOWN";
-    }
-}
-
-const char* typestr_to_ctype(const char* type_str)
-{
-    if (strcmp("BH_BOOL", type_str)==0) {
-        return "unsigned char";
-    } else if (strcmp("BH_INT8", type_str)==0) {
-        return "int8_t";
-    } else if (strcmp("BH_INT16", type_str)==0) {
-        return "int16_t";
-    } else if (strcmp(type_str, "BH_INT32")==0) {
-        return "int32_t";
-    } else if (strcmp(type_str, "BH_INT64")==0) {
-        return "int64_t";
-    } else if (strcmp(type_str, "BH_UINT8")==0) {
-        return "uint8_t";
-    } else if (strcmp(type_str, "BH_UINT16")==0) {
-        return "uint16_t";
-    } else if (strcmp(type_str, "BH_UINT32")==0) {
-        return "uint32_t";
-    } else if (strcmp(type_str, "BH_UINT64")==0) {
-        return "uint64_t";
-    } else if (strcmp(type_str, "BH_FLOAT16")==0) {
-        return "uint16_t";
-    } else if (strcmp(type_str, "BH_FLOAT32")==0) {
-        return "float";
-    } else if (strcmp(type_str, "BH_FLOAT64")==0) {
-        return "double";
-    } else if (strcmp(type_str, "BH_COMPLEX64")==0) {
-        return "complex float";
-    } else if (strcmp(type_str, "BH_COMPLEX128")==0) {
-        return "complex double";
-    } else {
-        return "UNKNOWN";
-    }
-}
-
-const char* bhtype_to_ctype(bh_type type)
-{
-    switch(type) {
-        case BH_BOOL:
-            return "unsigned char";
-        case BH_INT8:
-            return "int8_t";
-        case BH_INT16:
-            return "int16_t";
-        case BH_INT32:
-            return "int32_t";
-        case BH_INT64:
-            return "int64_t";
-        case BH_UINT8:
-            return "uint8_t";
-        case BH_UINT16:
-            return "uint16_t";
-        case BH_UINT32:
-            return "uint32_t";
-        case BH_UINT64:
-            return "uint64_t";
-        case BH_FLOAT16:
-            return "uint16_t";
-        case BH_FLOAT32:
-            return "float";
-        case BH_FLOAT64:
-            return "double";
-        case BH_COMPLEX64:
-            return "complex float";
-        case BH_COMPLEX128:
-            return "complex double";
-        case BH_UNKNOWN:
-            return "BH_UNKNOWN";
-        default:
-            return "Unknown type";
-    }
-}
-
-const char* bhtype_to_shorthand(bh_type type)
-{
-    switch(type) {
-        case BH_BOOL:
-            return "z";
-        case BH_INT8:
-            return "b";
-        case BH_INT16:
-            return "s";
-        case BH_INT32:
-            return "i";
-        case BH_INT64:
-            return "l";
-        case BH_UINT8:
-            return "B";
-        case BH_UINT16:
-            return "S";
-        case BH_UINT32:
-            return "I";
-        case BH_UINT64:
-            return "L";
-        case BH_FLOAT16:
-            return "h";
-        case BH_FLOAT32:
-            return "f";
-        case BH_FLOAT64:
-            return "d";
-        case BH_COMPLEX64:
-            return "c";
-        case BH_COMPLEX128:
-            return "C";
-        case BH_UNKNOWN:
-            return "BH_UNKNOWN";
-        default:
-            return "Unknown type";
-    }
-}
-
 const char* bhopcode_to_cexpr(bh_opcode opcode)
 {
     switch(opcode) {
@@ -744,61 +604,4 @@ const char* bhopcode_to_cexpr(bh_opcode opcode)
             return "__UNKNOWN__";
     }
 }
-
-
-std::string const_as_string(bh_constant constant)
-{
-    std::ostringstream buff;
-    switch(constant.type) {
-        case BH_BOOL:
-            buff << constant.value.bool8;
-            break;
-        case BH_INT8:
-            buff << constant.value.int8;
-            break;
-        case BH_INT16:
-            buff << constant.value.int16;
-            break;
-        case BH_INT32:
-            buff << constant.value.int32;
-            break;
-        case BH_INT64:
-            buff << constant.value.int64;
-            break;
-        case BH_UINT8:
-            buff << constant.value.uint8;
-            break;
-        case BH_UINT16:
-            buff << constant.value.uint16;
-            break;
-        case BH_UINT32:
-            buff << constant.value.uint32;
-            break;
-        case BH_UINT64:
-            buff << constant.value.uint64;
-            break;
-        case BH_FLOAT16:
-            buff << constant.value.float16;
-            break;
-        case BH_FLOAT32:
-            buff << constant.value.float32;
-            break;
-        case BH_FLOAT64:
-            buff << constant.value.float64;
-            break;
-        case BH_COMPLEX64:
-            buff << constant.value.complex64.real << constant.value.complex64.imag;
-            break;
-        case BH_COMPLEX128:
-            buff << constant.value.complex128.real << constant.value.complex128.imag;
-            break;
-
-        case BH_UNKNOWN:
-        default:
-            buff << "__ERROR__";
-    }
-
-    return buff.str();
-}
-
 

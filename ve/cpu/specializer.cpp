@@ -1,7 +1,26 @@
 #ifndef __BH_VE_CPU_SPECIALIZER
 #define __BH_VE_CPU_SPECIALIZER
 
-#include <ctemplate/template.h>  
+#include <ctemplate/template.h>
+
+void specializer_init()
+{
+    ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
+    ctemplate::LoadTemplate("license.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("include.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("range.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduction.3d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduction.nd.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.1d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.2d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.3d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.ddd.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::mutable_default_template_cache()->Freeze();
+}
+
 void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 
     char symbol_c[500];             // String representation buffers
