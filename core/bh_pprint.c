@@ -135,11 +135,14 @@ static void bh_sprint_instr(const bh_instruction *instr, char buf[])
     char tmp[PPRINT_BUF_OPSTR_SIZE];
     int op_count = bh_operands(instr->opcode);
     int i;
-    sprintf(buf, "%s OPS=%d{\n", bh_opcode_text( instr->opcode), op_count );
+    if(instr->opcode > BH_NO_OPCODES)//It is a extension method
+        sprintf(buf, "Extension Method (%d) OPS=%d{\n", (int)instr->opcode, op_count);
+    else
+        sprintf(buf, "%s OPS=%d{\n", bh_opcode_text(instr->opcode), op_count);
     for(i=0; i < op_count; i++) {
 
         if (!bh_is_constant(&instr->operand[i]))
-            bh_sprint_view( &instr->operand[i], op_str );
+            bh_sprint_view(&instr->operand[i], op_str );
         else
             //sprintf(op_str, "CONSTANT");
             bh_sprint_const( instr, op_str );
@@ -358,7 +361,6 @@ void bh_pprint_coord(bh_index coord[], bh_index ndims)
     strcat(buf, " )");
     puts(buf);
 }
-
 
 /* Pretty print an BhIR DAG.
  *

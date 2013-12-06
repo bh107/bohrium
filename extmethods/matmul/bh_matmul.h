@@ -17,23 +17,20 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_FILTER_PPRINT_H
-#define __BH_FILTER_PPRINT_H
+#ifndef __BH_MATMUL_H
+#define __BH_MATMUL_H
 
 #include <bh.h>
-#include "pprint_filter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT bh_error bh_filter_pprint_init(const char* name);
-DLLEXPORT bh_error bh_filter_pprint_execute(bh_ir* bhir);
-DLLEXPORT bh_error bh_filter_pprint_shutdown(void);
-DLLEXPORT bh_error bh_filter_pprint_reg_func(const char *fun, bh_opcode opcode);
+bh_error bh_matmul(bh_instruction *instr, void* arg);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

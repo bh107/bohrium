@@ -37,7 +37,10 @@ static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
 static bh_uint64 calls[BH_NO_OPCODES+2];
 #endif
 
+using namespace std;
+
 static bh_component myself;
+static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
 static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
@@ -48,8 +51,6 @@ static char* compiler_cmd;   // cpu Arguments
 static char* kernel_path;
 static char* object_path;
 static char* template_path;
-
-using namespace std;
 
 typedef struct bh_sij {
     bh_instruction *instr;  // Pointer to instruction
@@ -169,6 +170,17 @@ static bh_error exec(bh_instruction *instr)
 {
     bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
+
+    //Lets check if it is a known extension method
+    {
+        map<bh_opcode,bh_extmethod_impl>::iterator ext;
+        ext = extmethod_op2impl.find(instr->opcode);
+        if(ext != extmethod_op2impl.end())
+        {
+            bh_extmethod_impl extmethod = ext->second;
+            return extmethod(instr, NULL);
+        }
+    }
 
     symbolize(instr, sij);                          // Construct symbol
     if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
@@ -449,7 +461,17 @@ bh_error bh_ve_cpu_shutdown(void)
 /* Component interface: reg_func (see bh_component.h) */
 bh_error bh_ve_cpu_reg_func(const char *fun, bh_opcode opcode)
 {
+    bh_extmethod_impl extmethod;
+    bh_error err = bh_component_get_func(&myself, fun, &extmethod);
+    if(err != BH_SUCCESS)
+        return err;
 
-    return BH_EXTMETHOD_NOT_SUPPORTED;
+    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end())
+    {
+        printf("[CPU-VE] Warning, multiple registrations of the same"
+               "extension method '%s' (opcode: %d)\n", fun, (int)opcode);
+    }
+    extmethod_op2impl[opcode] = extmethod;
+    return BH_SUCCESS;
 }
 
