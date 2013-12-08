@@ -30,8 +30,6 @@ import sys
 import re
 import os
 
-import bohrium as np
-
 numpy_map = {
     "BH_ADD":    "np.add",
     "BH_SUBTRACT":    "np.subtract",
@@ -174,21 +172,27 @@ def create_library(config):
 
     return (out, err)
 
-def genesis(config):
+def genesis(config, opcodes, types):
+    """
+    Generate c-source-code for all bytecodes by
+    running Bohrium-cpu engine in dump-source mode and
+    call all possible functions based on the bytecode definition.
+    """
+
+    # Load Bohrium with source-dumping enabled.
+    os.environ['BH_VE_CPU_DUMPSRC'] = "1"
+    import bohrium as np
 
     # Grab the bytecode definition
-    root_path = '/home/safl/Desktop/bohrium/core/codegen/'
-    opcodes = json.load(open(root_path + 'opcodes.json'))
-    types   = json.load(open(root_path + 'types.json'))
     typemap = dict([(t['enum'], t['numpy']) for t in types
                     if 'UNKNOWN' not in t['c']])
 
     exclude_type    = ['BH_UNKNOWN', 'BH_FLOAT16']
     exclude_opc     = [
         'BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY',
-        'BH_ISINF',  'BH_ISNAN',  'BH_DIVIDE',    'BH_MOD'
+        'BH_LOGICAL_XOR_REDUCE',  
+        'BH_BITWISE_XOR_REDUCE'
     ]  \
-    + [opcode['opcode'] for opcode in opcodes if 'REDUCE' in opcode['opcode']] \
     + [opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
 
     operands = {}                                       # Create operands
@@ -209,7 +213,7 @@ def genesis(config):
     # Call all element-wise opcodes
     for opcode in (opcode for opcode in opcodes
                     if opcode['opcode'] not in exclude_opc):
-        nop = opcode['nop']
+        nop  = opcode['nop']
         func = eval(numpy_map[opcode['opcode']])    # Get a function-pointer
 
         for typesig in opcode['types']:
@@ -218,28 +222,32 @@ def genesis(config):
                 for t in typesig:
                     if t in exclude_type:
                         break
-                
-                if nop == 3:
+
+                if 'REDUCE' in opcode['opcode']:
                     op_setup = [
-                        operands[typesig[1]][dim][1],
-                        operands[typesig[2]][dim][2],
-                        operands[typesig[0]][dim][0]
-                    ]
-                elif nop == 2:
-                    op_setup = [
-                        operands[typesig[1]][dim][1],
-                        operands[typesig[0]][dim][0]
-                    ]
-                elif nop == 1:
-                    op_setup = [
-                        operands[typesig[0]][dim][0]
+                        operands[typesig[1]][dim][1]
                     ]
                 else:
-                    print "WHAT!", typesig
+                    if nop == 3:
+                        op_setup = [
+                            operands[typesig[1]][dim][1],
+                            operands[typesig[2]][dim][2],
+                            operands[typesig[0]][dim][0]
+                        ]
+                    elif nop == 2:
+                        op_setup = [
+                            operands[typesig[1]][dim][1],
+                            operands[typesig[0]][dim][0]
+                        ]
+                    elif nop == 1:
+                        op_setup = [
+                            operands[typesig[0]][dim][0]
+                        ]
+                    else:
+                        raise Exception("Unsupported number of operands.")
 
                 if op_setup:
                     func(*op_setup)                   # Call it
-                    np.sum(op_setup[-1])
 
     # Call random
     for ndim in xrange(1,5):
@@ -266,16 +274,32 @@ def genesis(config):
 
 if __name__ == "__main__":
 
-    config = get_config('/home/safl/.bohrium/config.ini')
+    p = argparse.ArgumentParser(description='Compile bh_libsij.so')
+    p.add_argument(
+        'config',
+        help='Path to Bohrium config-file.'
+    )
+    p.add_argument(
+        'bohrium',
+        help='Path to Bohrium source-code.'
+    )
+    args = p.parse_args()
+
+    config  = get_config(args.config)
+    opcodes = json.load(open(os.sep.join([
+        args.bohrium, 'core', 'codegen', 'opcodes.json'
+    ])))
+    types   = json.load(open(os.sep.join([
+        args.bohrium, 'core', 'codegen', 'types.json'
+    ])))
 
     try:
-        out, err = genesis(config)
-        #out, err = create_library(config)
+        out, err = genesis(config, opcodes, types)
+        out, err = create_library(config)
     except Exception as e:
         out = "Check the error message."
         err = str(e)
 
-    out, err = genesis(config)
     if err:
         print "Error: %s" % err
     if out:
