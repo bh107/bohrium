@@ -18,11 +18,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
-#include "array.h"
-
 #ifndef __BH_VEM_CLUSTER_COMM_H
 #define __BH_VEM_CLUSTER_COMM_H
+
+#include <bh.h>
+#include "array.h"
 
 
 /* Distribute the global base array data to all slave processes.

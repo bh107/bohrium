@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include <vector>
 
-
 /* Creates a list of local array chunks that enables local
  * execution of the instruction
  *

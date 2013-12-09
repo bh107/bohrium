@@ -33,7 +33,7 @@ object_path=/opt/bohrium/cpu/objects
 kernel_path=/opt/bohrium/cpu/kernels
 template_path=/opt/bohrium/cpu/templates
 impl = /opt/bohrium/libbh_ve_cpu.so
-libs = /home/safl/.local/libbh_visualizer.so,/home/safl/.local/libbh_matmul.so,/home/safl/.local/libbh_nselect.so
+libs = /opt/bohrium/libbh_matmul.so
 
 [score]
 type = ve

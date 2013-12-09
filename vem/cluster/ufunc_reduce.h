@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef __BH_VEM_CLUSTER_UFUNC_REDUCE_H
+#define __BH_VEM_CLUSTER_UFUNC_REDUCE_H
 
 #include <bh.h>
 

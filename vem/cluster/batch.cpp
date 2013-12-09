@@ -135,7 +135,7 @@ void batch_flush()
                 if((e = bh_ir_create(&bhir, 1, inst)) != BH_SUCCESS)
                     EXCEPT("bh_ir_create() failed");
 
-                if((e = exec_vem_execute(&bhir)) != BH_SUCCESS)
+                if((e = mychild->execute(&bhir)) != BH_SUCCESS)
                     EXCEPT_INST(inst->opcode, e);
                 bh_ir_destroy(&bhir);
 

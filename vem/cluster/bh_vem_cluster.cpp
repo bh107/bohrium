@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"
 
 
-bh_error bh_vem_cluster_init(bh_component *self)
+bh_error bh_vem_cluster_init(const char* name)
 {
     bh_error e;
 
@@ -49,11 +49,11 @@ bh_error bh_vem_cluster_init(bh_component *self)
 
     //Send the component name
     dispatch_reset();
-    dispatch_add2payload(strlen(self->name)+1, self->name);
+    dispatch_add2payload(strlen(name)+1, name);
     dispatch_send(BH_CLUSTER_DISPATCH_INIT);
 
     //Execute our self
-    if((e = exec_init(self->name)) != BH_SUCCESS)
+    if((e = exec_init(name)) != BH_SUCCESS)
         return e;
 
     return BH_SUCCESS;
@@ -71,20 +71,20 @@ bh_error bh_vem_cluster_shutdown(void)
 }
 
 
-bh_error bh_vem_cluster_reg_func(char *fun, bh_intp *id)
+bh_error bh_vem_cluster_extmethod(const char *name, bh_opcode opcode)
 {
     bh_error e;
-    assert(fun != NULL);
+    assert(name != NULL);
 
     //The Master will find the new 'id' if required.
-    if((e = exec_reg_func(fun, id)) != BH_SUCCESS)
+    if((e = exec_extmethod(name, opcode)) != BH_SUCCESS)
         return e;
 
     //Send the component name
     dispatch_reset();
-    dispatch_add2payload(sizeof(bh_intp), id);
-    dispatch_add2payload(strlen(fun)+1, fun);
-    dispatch_send(BH_CLUSTER_DISPATCH_UFUNC);
+    dispatch_add2payload(sizeof(bh_opcode), (void*)opcode);
+    dispatch_add2payload(strlen(name)+1, name);
+    dispatch_send(BH_CLUSTER_DISPATCH_EXTMETHOD);
 
     return BH_SUCCESS;
 }

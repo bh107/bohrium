@@ -18,13 +18,12 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
-#include "task.h"
 
 #ifndef __BH_VEM_CLUSTER_BATCH_H
 #define __BH_VEM_CLUSTER_BATCH_H
 
-
+#include <bh.h>
+#include "task.h"
 
 /* Schedule an task.
  * @t  The task to schedule
