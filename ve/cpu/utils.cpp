@@ -45,7 +45,7 @@ void assign_string(char*& output, const char* input)
 }
 
 inline
-bool is_dense(bh_view *operand)
+bool is_contiguous(bh_view *operand)
 {
     if ((operand->ndim == 3) && \
         (operand->stride[0] == 1) && \
@@ -75,34 +75,34 @@ int bh_layoutmask(bh_instruction *instr)
 
     switch(nops) {
         case 3:
-            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
             if (bh_is_constant(&instr->operand[2])) {
-                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
                 mask |= A2_CONSTANT;
             } else if (bh_is_constant(&instr->operand[1])) {
                 mask |= A1_CONSTANT;
-                mask |= (is_dense(&instr->operand[2])) ? A2_DENSE : A2_STRIDED;
+                mask |= (is_contiguous(&instr->operand[2])) ? A2_CONTIGUOUS : A2_STRIDED;
             } else {
-                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
-                mask |= (is_dense(&instr->operand[2])) ? A2_DENSE : A2_STRIDED;
+                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
+                mask |= (is_contiguous(&instr->operand[2])) ? A2_CONTIGUOUS : A2_STRIDED;
             }
             break;
 
         case 2:
-            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
             if (bh_is_constant(&instr->operand[1])) {
                 mask |= A1_CONSTANT;
             } else {
-                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
             }
             break;
 
         case 1:
-            mask |= (is_dense(&instr->operand[0])) ? A0_DENSE : A0_STRIDED;
+            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
             if (bh_is_constant(&instr->operand[1])) {
                 mask |= A1_CONSTANT;
             } else {
-                mask |= (is_dense(&instr->operand[1])) ? A1_DENSE : A1_STRIDED;
+                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
             }           
             break;
 

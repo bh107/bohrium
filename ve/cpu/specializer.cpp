@@ -199,9 +199,9 @@ string specialize(bh_sij_t &sij) {
                 dict.ShowSection("a2_dense");
 
             }
-            if ((sij.lmask == (A0_DENSE + A1_DENSE    + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_DENSE    + A2_CONSTANT))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
                 if (sij.ndims<=3) {
@@ -258,8 +258,8 @@ string specialize(bh_sij_t &sij) {
                 dict.ShowSection("a1_dense");
             }
 
-            if ((sij.lmask == (A0_DENSE + A1_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
 

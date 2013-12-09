@@ -195,6 +195,8 @@ def genesis(config, opcodes, types):
     ]  \
     + [opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
 
+    dimensions = [1,2,3,4]
+
     operands = {}                                       # Create operands
     for t in (t for t in types if t['enum'] not in exclude_type):
         tn = t['enum']
@@ -218,7 +220,7 @@ def genesis(config, opcodes, types):
 
         for typesig in opcode['types']:
 
-            for dim in xrange(1,5):
+            for dim in dimensions:
                 for t in typesig:
                     if t in exclude_type:
                         break
@@ -247,12 +249,14 @@ def genesis(config, opcodes, types):
                         raise Exception("Unsupported number of operands.")
 
                 if op_setup:
-                    func(*op_setup)                   # Call it
+                    np.sum(func(*op_setup))                   # Call it
 
     # Call random
-    for ndim in xrange(1,5):
-        a = np.random.random(tuple([3]*ndim), dtype = np.float32, bohrium=True)
-        a = np.random.random(tuple([3]*ndim), dtype = np.float64, bohrium=True)
+    for ndim in dimensions:
+        a = np.sum(np.random.random(tuple([3]*ndim), dtype = np.float32,
+                                    bohrium=True))
+        a = np.sum(np.random.random(tuple([3]*ndim), dtype = np.float64,
+                                    bohrium=True))
 
     # Call range generator
     for typesigs in (opcode['types'] for opcode in opcodes
@@ -269,7 +273,8 @@ def genesis(config, opcodes, types):
             rtype = typesig[1]
 
             operands[otype][1][1][:] = operands[rtype][1][1][:]
-
+            np.sum(operands[otype][1][1])
+    
     return (None, None)
 
 if __name__ == "__main__":

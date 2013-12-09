@@ -37,17 +37,17 @@ def enumstr_to_shorthand(opcodes, types):
 
 def layoutmask_to_shorthand(opcodes, types):
     A0_CONSTANT = 1 << 0;
-    A0_DENSE    = 1 << 1;
+    A0_CONTIGUOUS    = 1 << 1;
     A0_STRIDED  = 1 << 2;
     A0_SPARSE   = 1 << 3;
 
     A1_CONSTANT = 1 << 4;
-    A1_DENSE    = 1 << 5;
+    A1_CONTIGUOUS    = 1 << 5;
     A1_STRIDED  = 1 << 6;
     A1_SPARSE   = 1 << 7;
 
     A2_CONSTANT = 1 << 8;
-    A2_DENSE    = 1 << 9;
+    A2_CONTIGUOUS    = 1 << 9;
     A2_STRIDED  = 1 << 10;
     A2_SPARSE   = 1 << 11;
 
@@ -55,90 +55,90 @@ def layoutmask_to_shorthand(opcodes, types):
 
     # Binary instructions
     hej.append(A0_CONSTANT | A1_CONSTANT | A2_CONSTANT)
-    hej.append(A0_CONSTANT | A1_CONSTANT | A2_DENSE)
+    hej.append(A0_CONSTANT | A1_CONSTANT | A2_CONTIGUOUS)
     hej.append(A0_CONSTANT | A1_CONSTANT | A2_STRIDED)
     hej.append(A0_CONSTANT | A1_CONSTANT | A2_SPARSE)
-    hej.append(A0_CONSTANT | A1_DENSE | A2_CONSTANT)
-    hej.append(A0_CONSTANT | A1_DENSE | A2_DENSE)
-    hej.append(A0_CONSTANT | A1_DENSE | A2_STRIDED)
-    hej.append(A0_CONSTANT | A1_DENSE | A2_SPARSE)
+    hej.append(A0_CONSTANT | A1_CONTIGUOUS | A2_CONSTANT)
+    hej.append(A0_CONSTANT | A1_CONTIGUOUS | A2_CONTIGUOUS)
+    hej.append(A0_CONSTANT | A1_CONTIGUOUS | A2_STRIDED)
+    hej.append(A0_CONSTANT | A1_CONTIGUOUS | A2_SPARSE)
     hej.append(A0_CONSTANT | A1_STRIDED | A2_CONSTANT)
-    hej.append(A0_CONSTANT | A1_STRIDED | A2_DENSE)
+    hej.append(A0_CONSTANT | A1_STRIDED | A2_CONTIGUOUS)
     hej.append(A0_CONSTANT | A1_STRIDED | A2_STRIDED)
     hej.append(A0_CONSTANT | A1_STRIDED | A2_SPARSE)
     hej.append(A0_CONSTANT | A1_SPARSE | A2_CONSTANT)
-    hej.append(A0_CONSTANT | A1_SPARSE | A2_DENSE)
+    hej.append(A0_CONSTANT | A1_SPARSE | A2_CONTIGUOUS)
     hej.append(A0_CONSTANT | A1_SPARSE | A2_STRIDED)
     hej.append(A0_CONSTANT | A1_SPARSE | A2_SPARSE)
-    hej.append(A0_DENSE | A1_CONSTANT | A2_CONSTANT)
-    hej.append(A0_DENSE | A1_CONSTANT | A2_DENSE)
-    hej.append(A0_DENSE | A1_CONSTANT | A2_STRIDED)
-    hej.append(A0_DENSE | A1_CONSTANT | A2_SPARSE)
-    hej.append(A0_DENSE | A1_DENSE | A2_CONSTANT)
-    hej.append(A0_DENSE | A1_DENSE | A2_DENSE)
-    hej.append(A0_DENSE | A1_DENSE | A2_STRIDED)
-    hej.append(A0_DENSE | A1_DENSE | A2_SPARSE)
-    hej.append(A0_DENSE | A1_STRIDED | A2_CONSTANT)
-    hej.append(A0_DENSE | A1_STRIDED | A2_DENSE)
-    hej.append(A0_DENSE | A1_STRIDED | A2_STRIDED)
-    hej.append(A0_DENSE | A1_STRIDED | A2_SPARSE)
-    hej.append(A0_DENSE | A1_SPARSE | A2_CONSTANT)
-    hej.append(A0_DENSE | A1_SPARSE | A2_DENSE)
-    hej.append(A0_DENSE | A1_SPARSE | A2_STRIDED)
-    hej.append(A0_DENSE | A1_SPARSE | A2_SPARSE)
+    hej.append(A0_CONTIGUOUS | A1_CONSTANT | A2_CONSTANT)
+    hej.append(A0_CONTIGUOUS | A1_CONSTANT | A2_CONTIGUOUS)
+    hej.append(A0_CONTIGUOUS | A1_CONSTANT | A2_STRIDED)
+    hej.append(A0_CONTIGUOUS | A1_CONSTANT | A2_SPARSE)
+    hej.append(A0_CONTIGUOUS | A1_CONTIGUOUS | A2_CONSTANT)
+    hej.append(A0_CONTIGUOUS | A1_CONTIGUOUS | A2_CONTIGUOUS)
+    hej.append(A0_CONTIGUOUS | A1_CONTIGUOUS | A2_STRIDED)
+    hej.append(A0_CONTIGUOUS | A1_CONTIGUOUS | A2_SPARSE)
+    hej.append(A0_CONTIGUOUS | A1_STRIDED | A2_CONSTANT)
+    hej.append(A0_CONTIGUOUS | A1_STRIDED | A2_CONTIGUOUS)
+    hej.append(A0_CONTIGUOUS | A1_STRIDED | A2_STRIDED)
+    hej.append(A0_CONTIGUOUS | A1_STRIDED | A2_SPARSE)
+    hej.append(A0_CONTIGUOUS | A1_SPARSE | A2_CONSTANT)
+    hej.append(A0_CONTIGUOUS | A1_SPARSE | A2_CONTIGUOUS)
+    hej.append(A0_CONTIGUOUS | A1_SPARSE | A2_STRIDED)
+    hej.append(A0_CONTIGUOUS | A1_SPARSE | A2_SPARSE)
     hej.append(A0_STRIDED | A1_CONSTANT | A2_CONSTANT)
-    hej.append(A0_STRIDED | A1_CONSTANT | A2_DENSE)
+    hej.append(A0_STRIDED | A1_CONSTANT | A2_CONTIGUOUS)
     hej.append(A0_STRIDED | A1_CONSTANT | A2_STRIDED)
     hej.append(A0_STRIDED | A1_CONSTANT | A2_SPARSE)
-    hej.append(A0_STRIDED | A1_DENSE | A2_CONSTANT)
-    hej.append(A0_STRIDED | A1_DENSE | A2_DENSE)
-    hej.append(A0_STRIDED | A1_DENSE | A2_STRIDED)
-    hej.append(A0_STRIDED | A1_DENSE | A2_SPARSE)
+    hej.append(A0_STRIDED | A1_CONTIGUOUS | A2_CONSTANT)
+    hej.append(A0_STRIDED | A1_CONTIGUOUS | A2_CONTIGUOUS)
+    hej.append(A0_STRIDED | A1_CONTIGUOUS | A2_STRIDED)
+    hej.append(A0_STRIDED | A1_CONTIGUOUS | A2_SPARSE)
     hej.append(A0_STRIDED | A1_STRIDED | A2_CONSTANT)
-    hej.append(A0_STRIDED | A1_STRIDED | A2_DENSE)
+    hej.append(A0_STRIDED | A1_STRIDED | A2_CONTIGUOUS)
     hej.append(A0_STRIDED | A1_STRIDED | A2_STRIDED)
     hej.append(A0_STRIDED | A1_STRIDED | A2_SPARSE)
     hej.append(A0_STRIDED | A1_SPARSE | A2_CONSTANT)
-    hej.append(A0_STRIDED | A1_SPARSE | A2_DENSE)
+    hej.append(A0_STRIDED | A1_SPARSE | A2_CONTIGUOUS)
     hej.append(A0_STRIDED | A1_SPARSE | A2_STRIDED)
     hej.append(A0_STRIDED | A1_SPARSE | A2_SPARSE)
     hej.append(A0_SPARSE | A1_CONSTANT | A2_CONSTANT)
-    hej.append(A0_SPARSE | A1_CONSTANT | A2_DENSE)
+    hej.append(A0_SPARSE | A1_CONSTANT | A2_CONTIGUOUS)
     hej.append(A0_SPARSE | A1_CONSTANT | A2_STRIDED)
     hej.append(A0_SPARSE | A1_CONSTANT | A2_SPARSE)
-    hej.append(A0_SPARSE | A1_DENSE | A2_CONSTANT)
-    hej.append(A0_SPARSE | A1_DENSE | A2_DENSE)
-    hej.append(A0_SPARSE | A1_DENSE | A2_STRIDED)
-    hej.append(A0_SPARSE | A1_DENSE | A2_SPARSE)
+    hej.append(A0_SPARSE | A1_CONTIGUOUS | A2_CONSTANT)
+    hej.append(A0_SPARSE | A1_CONTIGUOUS | A2_CONTIGUOUS)
+    hej.append(A0_SPARSE | A1_CONTIGUOUS | A2_STRIDED)
+    hej.append(A0_SPARSE | A1_CONTIGUOUS | A2_SPARSE)
     hej.append(A0_SPARSE | A1_STRIDED | A2_CONSTANT)
-    hej.append(A0_SPARSE | A1_STRIDED | A2_DENSE)
+    hej.append(A0_SPARSE | A1_STRIDED | A2_CONTIGUOUS)
     hej.append(A0_SPARSE | A1_STRIDED | A2_STRIDED)
     hej.append(A0_SPARSE | A1_STRIDED | A2_SPARSE)
     hej.append(A0_SPARSE | A1_SPARSE | A2_CONSTANT)
-    hej.append(A0_SPARSE | A1_SPARSE | A2_DENSE)
+    hej.append(A0_SPARSE | A1_SPARSE | A2_CONTIGUOUS)
     hej.append(A0_SPARSE | A1_SPARSE | A2_STRIDED)
     hej.append(A0_SPARSE | A1_SPARSE | A2_SPARSE)
 
     # Unary
     hej.append(A0_CONSTANT | A1_CONSTANT)
-    hej.append(A0_CONSTANT | A1_DENSE)
+    hej.append(A0_CONSTANT | A1_CONTIGUOUS)
     hej.append(A0_CONSTANT | A1_STRIDED)
     hej.append(A0_CONSTANT | A1_SPARSE)
-    hej.append(A0_DENSE | A1_CONSTANT)
-    hej.append(A0_DENSE | A1_DENSE)
-    hej.append(A0_DENSE | A1_STRIDED)
-    hej.append(A0_DENSE | A1_SPARSE)
+    hej.append(A0_CONTIGUOUS | A1_CONSTANT)
+    hej.append(A0_CONTIGUOUS | A1_CONTIGUOUS)
+    hej.append(A0_CONTIGUOUS | A1_STRIDED)
+    hej.append(A0_CONTIGUOUS | A1_SPARSE)
     hej.append(A0_STRIDED | A1_CONSTANT)
-    hej.append(A0_STRIDED | A1_DENSE)
+    hej.append(A0_STRIDED | A1_CONTIGUOUS)
     hej.append(A0_STRIDED | A1_STRIDED)
     hej.append(A0_STRIDED | A1_SPARSE)
     hej.append(A0_SPARSE | A1_CONSTANT)
-    hej.append(A0_SPARSE | A1_DENSE)
+    hej.append(A0_SPARSE | A1_CONTIGUOUS)
     hej.append(A0_SPARSE | A1_STRIDED)
     hej.append(A0_SPARSE | A1_SPARSE)
 
     hej.append(A0_CONSTANT)
-    hej.append(A0_DENSE)
+    hej.append(A0_CONTIGUOUS)
     hej.append(A0_STRIDED)
     hej.append(A0_SPARSE)
 
@@ -148,27 +148,27 @@ def layoutmask_to_shorthand(opcodes, types):
     for bitmask in hej:
         mask = ""
         if ((bitmask & A0_CONSTANT) != 0):
+            mask += "K"
+        if ((bitmask & A0_CONTIGUOUS) != 0):
             mask += "C"
-        if ((bitmask & A0_DENSE) != 0):
-            mask += "D"
         if ((bitmask & A0_STRIDED) != 0):
             mask += "S"
         if ((bitmask & A0_SPARSE) != 0):
             mask += "P"
 
         if ((bitmask & A1_CONSTANT) != 0):
+            mask += "K"
+        if ((bitmask & A1_CONTIGUOUS) != 0):
             mask += "C"
-        if ((bitmask & A1_DENSE) != 0):
-            mask += "D"
         if ((bitmask & A1_STRIDED) != 0):
             mask += "S"
         if ((bitmask & A1_SPARSE) != 0):
             mask += "P"
 
         if ((bitmask & A2_CONSTANT) != 0):
+            mask += "K"
+        if ((bitmask & A2_CONTIGUOUS) != 0):
             mask += "C"
-        if ((bitmask & A2_DENSE) != 0):
-            mask += "D"
         if ((bitmask & A2_STRIDED) != 0):
             mask += "S"
         if ((bitmask & A2_SPARSE) != 0):
