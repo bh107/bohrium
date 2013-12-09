@@ -11,12 +11,11 @@
 {"id": 7,   "enum": "BH_UINT32",        "size": "4",    "shorthand": "I",   "bhtype": "bh_uint32",      "numpy": "uint32",        "union": "uint32",      "c": "uint32_t",        "cpp": "uint32_t"       },
 {"id": 8,   "enum": "BH_UINT64",        "size": "8",    "shorthand": "L",   "bhtype": "bh_uint64",      "numpy": "uint64",        "union": "uint64",      "c": "uint64_t",        "cpp": "uint64_t"       },
                                 
-{"id": 9,   "enum": "BH_FLOAT16",       "size": "2",    "shorthand": "h",   "bhtype": "bh_float16",     "numpy": "float16",       "union": "uint16",      "c": "uint16_t",        "cpp": "uint16_t"       },
-{"id": 10,  "enum": "BH_FLOAT32",       "size": "4",    "shorthand": "f",   "bhtype": "bh_float32",     "numpy": "float32",       "union": "float32",     "c": "float",           "cpp": "float"          },
-{"id": 11,  "enum": "BH_FLOAT64",       "size": "8",    "shorthand": "d",   "bhtype": "bh_float64",     "numpy": "float64",       "union": "float64",     "c": "double",          "cpp": "double"         },
+{"id": 9,  "enum": "BH_FLOAT32",       "size": "4",    "shorthand": "f",   "bhtype": "bh_float32",     "numpy": "float32",       "union": "float32",     "c": "float",           "cpp": "float"          },
+{"id": 10,  "enum": "BH_FLOAT64",       "size": "8",    "shorthand": "d",   "bhtype": "bh_float64",     "numpy": "float64",       "union": "float64",     "c": "double",          "cpp": "double"         },
                             
-{"id": 12,  "enum": "BH_COMPLEX64",     "size": "8",    "shorthand": "c",   "bhtype": "bh_complex64",   "numpy": "complex64",     "union": "complex64",   "c": "float complex",   "cpp": "complex<float>" },
-{"id": 13,  "enum": "BH_COMPLEX128",    "size": "16",   "shorthand": "C",   "bhtype": "bh_complex128",  "numpy": "complex128",    "union": "complex128",  "c": "double complex",  "cpp": "complex<double>"},
+{"id": 11,  "enum": "BH_COMPLEX64",     "size": "8",    "shorthand": "c",   "bhtype": "bh_complex64",   "numpy": "complex64",     "union": "complex64",   "c": "float complex",   "cpp": "complex<float>" },
+{"id": 12,  "enum": "BH_COMPLEX128",    "size": "16",   "shorthand": "C",   "bhtype": "bh_complex128",  "numpy": "complex128",    "union": "complex128",  "c": "double complex",  "cpp": "complex<double>"},
         
-{"id": 14,  "enum": "BH_UNKNOWN",       "size": "1",    "shorthand": "U",   "bhtype":  "bh_unknown",    "numpy": "bh_unknown",    "union": "unknown",     "c": "<UNKNOWN>",       "cpp": "<UNKNOWN>"      }
+{"id": 13,  "enum": "BH_UNKNOWN",       "size": "1",    "shorthand": "U",   "bhtype":  "bh_unknown",    "numpy": "bh_unknown",    "union": "unknown",     "c": "<UNKNOWN>",       "cpp": "<UNKNOWN>"      }
 ]
