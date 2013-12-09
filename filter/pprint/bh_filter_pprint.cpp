@@ -68,8 +68,8 @@ bh_error bh_filter_pprint_execute(bh_ir* bhir)
     return child->execute(bhir); // Execute the filtered bhir
 }
 
-bh_error bh_filter_pprint_reg_func(const char *fun, bh_opcode opcode)
+bh_error bh_filter_pprint_extmethod(const char *name, bh_opcode opcode)
 {
-    return child->reg_func(fun, opcode);
+    return child->extmethod(name, opcode);
 }
 

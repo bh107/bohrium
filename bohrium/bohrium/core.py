@@ -660,7 +660,7 @@ def matmul(a,b):
         a.bohrium=True
         b.bohrium=True
         c = empty((a.shape[0],b.shape[1]),dtype=a.dtype)
-        bridge.matmul(a,b,c)
+        bridge.extmethod_exec("matmul",c,a,b)
         return c
     else:
     	return numpy.dot(a,b)

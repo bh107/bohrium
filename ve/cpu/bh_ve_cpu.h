@@ -99,8 +99,8 @@ DLLEXPORT bh_error bh_ve_cpu_execute(bh_ir* bhir);
 /* Component interface: shutdown (see bh_component.h) */
 DLLEXPORT bh_error bh_ve_cpu_shutdown(void);
 
-/* Component interface: reg_func (see bh_component.h) */
-DLLEXPORT bh_error bh_ve_cpu_reg_func(const char *fun, bh_opcode opcode);
+/* Component interface: extmethod (see bh_component.h) */
+DLLEXPORT bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode);
 
 #ifdef __cplusplus
 }

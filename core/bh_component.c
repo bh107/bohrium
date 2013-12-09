@@ -278,8 +278,8 @@ bh_error bh_component_init(bh_component *self, const char* name)
         if(child->execute == NULL)
             return BH_ERROR;
 
-        child->reg_func = (bh_reg_func)get_dlsym(lib_handle, child_str, child_type, "reg_func");
-        if(child->reg_func == NULL)
+        child->extmethod = (bh_extmethod)get_dlsym(lib_handle, child_str, child_type, "extmethod");
+        if(child->extmethod == NULL)
             return BH_ERROR;
 
         if(++self->nchildren > BH_COMPONENT_MAX_CHILDS)
@@ -311,9 +311,9 @@ void bh_component_destroy(bh_component *self)
  * @return    Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
  *                         BH_EXTMETHOD_NOT_SUPPORTED)
  */
-bh_error bh_component_get_func(const bh_component *self,
-                               const char *name,
-                               bh_extmethod_impl *extmethod)
+bh_error bh_component_extmethod(const bh_component *self,
+                                const char *name,
+                                bh_extmethod_impl *extmethod)
 {
     //We search the libs in the config file to find the user-defined function.
     char *lib_paths = bh_component_config_lookup(self,"libs");

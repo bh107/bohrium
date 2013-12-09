@@ -62,12 +62,12 @@ typedef bh_error (*bh_execute)(bh_ir* bhir);
 
 /* Register a new extension method.
  *
- * @fun    Name of the function e.g. matmul
+ * @name   Name of the function e.g. matmul
  * @opcode Opcode for the new function.
  * @return Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
  *                      BH_EXTMETHOD_NOT_SUPPORTED)
  */
-typedef bh_error (*bh_reg_func)(const char *fun, bh_opcode opcode);
+typedef bh_error (*bh_extmethod)(const char *name, bh_opcode opcode);
 
 /* Extension method prototype implementation.
  *
@@ -87,10 +87,10 @@ typedef struct
     //Handle for the dynamic linked library.
     void *lib_handle;
     //The interface function pointers
-    bh_init     init;
-    bh_shutdown shutdown;
-    bh_execute  execute;
-    bh_reg_func reg_func;
+    bh_init       init;
+    bh_shutdown   shutdown;
+    bh_execute    execute;
+    bh_extmethod  extmethod;
 }bh_component_iface;
 
 
@@ -142,9 +142,9 @@ DLLEXPORT void bh_component_destroy(bh_component *self);
  * @return    Error codes (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY,
  *                         BH_EXTMETHOD_NOT_SUPPORTED)
  */
-DLLEXPORT bh_error bh_component_get_func(const bh_component *self,
-                                         const char *name,
-                                         bh_extmethod_impl *extmethod);
+DLLEXPORT bh_error bh_component_extmethod(const bh_component *self,
+                                          const char *name,
+                                          bh_extmethod_impl *extmethod);
 
 /* Look up a key in the config file
  *

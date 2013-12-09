@@ -33,8 +33,8 @@ DLLEXPORT bh_error bh_vem_node_init(const char* name);
 /* Component interface: shutdown (see bh_component.h) */
 DLLEXPORT bh_error bh_vem_node_shutdown(void);
 
-/* Component interface: reg_func (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_node_reg_func(const char *fun, bh_opcode opcode);
+/* Component interface: extmethod (see bh_component.h) */
+DLLEXPORT bh_error bh_vem_node_extmethod(const char *name, bh_opcode opcode);
 
 /* Component interface: execute (see bh_component.h) */
 DLLEXPORT bh_error bh_vem_node_execute(bh_ir* bhir);

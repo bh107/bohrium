@@ -101,10 +101,10 @@ bh_error bh_vem_node_shutdown(void)
     return err;
 }
 
-/* Component interface: reg_func (see bh_component.h) */
-bh_error bh_vem_node_reg_func(const char *fun, bh_opcode opcode)
+/* Component interface: extmethod (see bh_component.h) */
+bh_error bh_vem_node_extmethod(const char *name, bh_opcode opcode)
 {
-    return child->reg_func(fun, opcode);
+    return child->extmethod(name, opcode);
 }
 
 //Inspect one instruction

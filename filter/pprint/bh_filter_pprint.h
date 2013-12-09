@@ -30,7 +30,7 @@ extern "C" {
 DLLEXPORT bh_error bh_filter_pprint_init(const char* name);
 DLLEXPORT bh_error bh_filter_pprint_execute(bh_ir* bhir);
 DLLEXPORT bh_error bh_filter_pprint_shutdown(void);
-DLLEXPORT bh_error bh_filter_pprint_reg_func(const char *fun, bh_opcode opcode);
+DLLEXPORT bh_error bh_filter_pprint_extmethod(const char *name, bh_opcode opcode);
 
 #ifdef __cplusplus
 }

@@ -458,18 +458,18 @@ bh_error bh_ve_cpu_shutdown(void)
     return BH_SUCCESS;
 }
 
-/* Component interface: reg_func (see bh_component.h) */
-bh_error bh_ve_cpu_reg_func(const char *fun, bh_opcode opcode)
+/* Component interface: extmethod (see bh_component.h) */
+bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
     bh_extmethod_impl extmethod;
-    bh_error err = bh_component_get_func(&myself, fun, &extmethod);
+    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
     if(err != BH_SUCCESS)
         return err;
 
     if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end())
     {
         printf("[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", fun, (int)opcode);
+               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
     }
     extmethod_op2impl[opcode] = extmethod;
     return BH_SUCCESS;
