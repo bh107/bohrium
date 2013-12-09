@@ -68,50 +68,39 @@ multi_array<T>& zeros(const Dimensions&... shape)
     return *result;
 }
 
+/** Random number generators. **/
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
+    multi_array<uint64_t>* rand_input = new multi_array<uint64_t>(shape...);
+    rand_input->link();
+
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
-    
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *rand_input);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *rand_input, *rand_input, (uint64_t)1);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *rand_input, *rand_input, (uint64_t)0);
+    rand_input->setTemp(true);
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)time(NULL), *rand_input);
     result->setTemp(true);
+
     return *result;
 }
 
 template <typename T, typename ...Dimensions>
 multi_array<T>& randu(const Dimensions&... shape)
 {
+    multi_array<uint64_t>* rand_result = &random<uint64_t>(shape...);
+
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
-    
+    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, *rand_result);
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *result, (T)sizeof(T));
     result->setTemp(true);
-    return *result;
-}
 
-template <typename T, typename ...Dimensions>
-multi_array<T>& randn(const Dimensions&... shape)
-{
-    multi_array<T>* result = new multi_array<T>(shape...);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)time(NULL), *result);
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE,   *result, (T)1, *result);
-    
-    result->setTemp(true);
     return *result;
 }
 

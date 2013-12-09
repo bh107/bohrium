@@ -2,13 +2,17 @@
 #compiler-settings
 directiveStartToken= %
 #end compiler-settings
-%
-const char* bh_layoutmask_to_shorthand(const int mask)                                                               
+%slurp
+const char* bh_layoutmask_to_shorthand(const int mask)
 {
     switch(mask) {
+        %for $mask_n, $mask_c in $masks
+        case $mask_n: return "$mask_c"; 
+        %end for
+
         default:
             printf("Err: Unsupported layoutmask [%d]\n", mask);
-            return "_UNS_";
+            return "{{UNKNOWN}}";
     }
 }
 

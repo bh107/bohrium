@@ -32,19 +32,15 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     , batch(0)
 {}
 
-bh_error InstructionScheduler::schedule(bh_ir* bhir)
+bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
 {
 #ifdef DEBUG
     std::cout << "[VE GPU] InstructionScheduler: recieved batch with " << 
         bhir->instructions->count << " instructions." << std::endl;
 #endif
-    bh_graph_iterator* it;
-    bh_instruction* inst;
-    if (bh_graph_iterator_create(bhir, &it) != BH_SUCCESS)
-        return BH_ERROR;
-
-    while (bh_graph_iterator_next_instruction(it, &inst) == BH_SUCCESS)
+    for (std::vector<bh_instruction*>::iterator it = inst_list.begin(); it != inst_list.end(); ++it)
     {
+        bh_instruction* inst = *it;
         if (inst->opcode != BH_NONE)
         {
 #ifdef DEBUG
@@ -55,16 +51,15 @@ bh_error InstructionScheduler::schedule(bh_ir* bhir)
             switch (inst->opcode)
             {
             case BH_SYNC:
-                sync(inst->operand[0]);
+                sync(inst->operand[0].base);
                 res = BH_SUCCESS;
                 break;
             case BH_DISCARD:
-                if (inst->operand[0]->base == NULL)
-                    discard(inst->operand[0]);
+                discard(inst->operand[0].base);
                 res = BH_SUCCESS;
                 break;
             case BH_FREE:
-                bh_data_free(inst->operand[0]);
+                bh_data_free(inst->operand[0].base);
                 res = BH_SUCCESS;
                 break;                
             case BH_USERFUNC:
@@ -94,8 +89,6 @@ bh_error InstructionScheduler::schedule(bh_ir* bhir)
         }
     }
 
-    bh_graph_iterator_destroy(it);
-    
     /* End of batch cleanup */
     executeBatch();
     return BH_SUCCESS;
@@ -116,10 +109,9 @@ void InstructionScheduler::executeBatch()
     }
 }
 
-void InstructionScheduler::sync(bh_array* base)
+void InstructionScheduler::sync(bh_base* base)
 {
     //TODO postpone sync
-    assert(base->base == NULL);
     // We may recieve sync for arrays I don't own
     ArrayMap::iterator it = arrayMap.find(base);
     if  (it == arrayMap.end())
@@ -133,9 +125,8 @@ void InstructionScheduler::sync(bh_array* base)
     it->second->sync();
 }
 
-void InstructionScheduler::discard(bh_array* base)
+void InstructionScheduler::discard(bh_base* base)
 {
-    assert(base->base == NULL);
     // We may recieve discard for arrays I don't own
     ArrayMap::iterator it = arrayMap.find(base);
     if  (it == arrayMap.end())
@@ -165,13 +156,12 @@ bh_error InstructionScheduler::userdeffunc(bh_userfunc* userfunc)
     userFuncArg.resourceManager = resourceManager;
     for (int i = 0; i < nops; ++i)
     {
-        bh_array* operand = userfunc->operand[i];
-        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
-            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
+        bh_base* base = userfunc->operand[i].base;
+        if ((!resourceManager->float64support() && base->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && base->type == BH_FLOAT16))
         {
             return BH_TYPE_NOT_SUPPORTED;
         }
-        bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
@@ -217,18 +207,17 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
     std::vector<KernelParameter*> operands(nops);
     for (int i = 0; i < nops; ++i)
     {
-        bh_array* operand = inst->operand[i];
-        if (bh_is_constant(operand))
+        if (bh_is_constant(&(inst->operand[i])))
         {
             operands[i] = new Scalar(inst->constant);
             continue;
         }
-        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
-            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
+        bh_base* base = inst->operand[i].base;
+        if ((!resourceManager->float64support() && base->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && base->type == BH_FLOAT16))
         {
             return BH_TYPE_NOT_SUPPORTED;
         }
-        bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
         if (it == arrayMap.end())
@@ -270,16 +259,15 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
     std::vector<KernelParameter*> operands(nops);
     for (int i = 0; i < nops; ++i)
     {
-        bh_array* operand = inst->operand[i];
-        if ((!resourceManager->float64support() && operand->type == BH_FLOAT64)
-            || (!resourceManager->float16support() && operand->type == BH_FLOAT16))
+        bh_base* base = inst->operand[i].base;
+        if ((!resourceManager->float64support() && base->type == BH_FLOAT64)
+            || (!resourceManager->float16support() && base->type == BH_FLOAT16))
         {
             return BH_TYPE_NOT_SUPPORTED;
         }
-        bh_array* base = bh_base_array(operand);
         // Is it a new base array we haven't heard of before?
         ArrayMap::iterator it = arrayMap.find(base);
-        if (it == arrayMap.end())
+        if (it == arrayMap.end() && base->nelem > 1)
         {
             // Then create it
             BaseArray* ba =  new BaseArray(base, resourceManager);

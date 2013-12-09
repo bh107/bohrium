@@ -38,7 +38,6 @@ bh_error bh_random(bh_userfunc *arg, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     assert (randomDef->nout == 1);
     assert (randomDef->nin == 0);
-    assert (randomDef->operand[0]->base == NULL);
     assert (userFuncArg->operands.size() == 1);
     if (userFunctionRandom == NULL)
     {
@@ -86,6 +85,11 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
     kernelMap.insert(std::make_pair(OCL_UINT64, kernels[4]));
     if (resourceManager->float64support()) 
         kernelMap.insert(std::make_pair(OCL_FLOAT64, kernels[5]));    
+}
+
+UserFunctionRandom::~UserFunctionRandom()
+{
+    delete state;
 }
 
 void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)

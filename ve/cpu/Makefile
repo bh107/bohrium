@@ -20,7 +20,7 @@ OBJ=bh_ve_cpu.o
 
 INSTALLDIR?=/opt/bohrium/
 
-all: $(LIB) precompiler
+all: $(LIB)
 
 %.o: %.c $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
@@ -30,9 +30,6 @@ all: $(LIB) precompiler
 
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
-
-precompiler: precompiler.cpp
-	$(CXX)  $< -o $@ $(LIB) -I$(ROOT)/include -L../../core -lbh $(EXTRA_LIBS) -ldl -ljansson -lctemplate $(LCFLAGS) $(CFLAGS)
 
 precompile:
 		/usr/bin/time ./precompiler

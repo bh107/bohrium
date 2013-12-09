@@ -28,6 +28,11 @@ import shutil
 import getopt
 import subprocess
 
+OK   = '\033[92m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+
+
 makecommand = "make"
 makefilename = "Makefile"
 
@@ -45,13 +50,14 @@ def build(components,interpreter):
         except KeyboardInterrupt:
             p.terminate()
 
-        if fatal:
-            if err != 0:
-                print "A build error in %s is fatal. Exiting."%name
-                sys.exit(-1)
+        if err == 0:
+            print OK, "Build %s successfully."%name, ENDC
         else:
-            if err != 0:
-                print "A build error in %s is not fatal. Continuing."%name
+            if fatal:
+                print FAIL, "A build error in %s is fatal. Exiting."%name, ENDC
+                sys.exit(-1)
+            else:
+                print FAIL, "A build error in %s is not fatal. Continuing."%name, ENDC
 
 def clean(components):
     for (name, dir, fatal) in components:
@@ -83,13 +89,15 @@ def install(components,prefix,interpreter):
         except KeyboardInterrupt:
             p.terminate()
 
-        if fatal:
-            if err != 0:
-                print "A build error in %s is fatal. Exiting."%name
-                sys.exit(-1)
+        if err == 0:
+            print OK, "Build %s successfully."%name, ENDC
         else:
-            if err != 0:
-                print "A build error in %s is not fatal. Continuing."%name
+            if fatal:
+                print FAIL, "A build error in %s is fatal. Exiting."%name, ENDC
+                sys.exit(-1)
+            else:
+                print FAIL, "A build error in %s is not fatal. Continuing."%name, ENDC
+
 
 def install_config(prefix):
     if os.geteuid() == 0:#Root user
@@ -177,23 +185,24 @@ if __name__ == "__main__":
                   ("CORE", "core", True),\
                   ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
                   ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
-                  #("VE-GPU", "ve/gpu", False),\
-                  ("VE-CPU",    "ve/cpu", True),\
- #                 ("VE-SCORE",  "ve/static/score", False),\
- #                 ("VE-MCORE",  "ve/static/mcore", False),\
- #                 ("VE-TILING", "ve/static/tiling", False),\
+                  ("VE-GPU", "ve/gpu", False),\
+                  ("VE-CPU", "ve/cpu", True),\
                   ("VEM-NODE", "vem/node", True),\
- #                 ("VEM-CLUSTER", "vem/cluster", False),\
-                  #("FILTER-POWER", "filter/power", False),\
-                  #("FILTER-FUSION", "filter/fusion", False),\
-                  #("FILTER-STREAMING", "filter/streaming", False),\
-                   ("FILTER-PPRINT", "filter/pprint", True),\
- #                 ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
-                  #("NumCIL", "bridge/NumCIL", False),\
-                  ("BRIDGE-NUMPY", "bridge/numpy", True),\
+                  ("VEM-CLUSTER", "vem/cluster", False),\
+                  ("FILTER-PPRINT", "filter/pprint", True),\
+                  ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   ("EXT-METHOD-MATMUL", "extmethods/matmul", True),\
-                  ("BHNUMPY", "bohrium", True)
-                 ]
+                  ("BRIDGE-NUMPY", "bridge/numpy", True),\
+                  ("BHNUMPY", "bohrium", True),\
+
+#                  ("VE-SCORE",  "ve/static/score", False),\
+#                  ("VE-MCORE",  "ve/static/mcore", False),\
+#                  ("VE-TILING", "ve/static/tiling", False),\
+#                  ("FILTER-POWER", "filter/power", False),\
+#                  ("FILTER-FUSION", "filter/fusion", False),\
+#                  ("FILTER-STREAMING", "filter/streaming", False),\
+#                  ("NumCIL", "bridge/NumCIL", False)\
+                  ]
 
     if cmd == "rebuild":
         clean(components)
