@@ -192,6 +192,7 @@ if __name__ == "__main__":
                   ("FILTER-PPRINT", "filter/pprint", True),\
                   ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   ("EXT-METHOD-MATMUL", "extmethods/matmul", True),\
+                  ("BRIDGE-C++", "bridge/cpp", True),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("BHNUMPY", "bohrium", True),\
 

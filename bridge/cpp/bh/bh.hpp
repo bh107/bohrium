@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -146,7 +146,7 @@ public:
     iterator end();
 
     //
-    // Operators: 
+    // Operators:
     //
     // =, [], (), -> must be "internal" (nonstatic member functions) and thus declared here.
     //
@@ -162,7 +162,7 @@ public:
 
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);
-   
+
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
 
@@ -236,12 +236,12 @@ public:
     ~Runtime();                 // Deconstructor
 
                             // Input and output are of the same type
-                            
+
     template <typename T>   // SYS: FREE, SYNC, DISCARD;
     void enqueue(bh_opcode opcode, multi_array<T>& op0);
 
     template <typename T>   // x = y + z
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2); 
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2);
 
     template <typename T>   // x = y + 1;
     void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);
@@ -250,7 +250,7 @@ public:
     void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
 
     template <typename T>   // x = y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);                  
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);
 
     template <typename T>   // x = 1.0;
     void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1);
@@ -260,13 +260,13 @@ public:
     void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1);
 
     template <typename Ret, typename In>    // x = y < z
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2); 
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2);
 
     template <typename Ret, typename In>    // x = y < 1;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2);    
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2);
 
     template <typename Ret, typename In>    // x = 1 < y;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);    
+    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);
 
                                             // Mixed input, ret is same as first operand
     template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
@@ -297,8 +297,8 @@ public:
 
 private:
                                                 // Bohrium
-    bh_component    *bridge;
-    bh_component    *runtime;
+    bh_component        bridge;
+    bh_component_iface  *runtime;
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
@@ -324,7 +324,7 @@ private:
 template <typename T>       // Generators / Initializers
 multi_array<T>& value(T val, size_t n, ...);
 
-template <typename T>       
+template <typename T>
 multi_array<T>& empty(size_t n, ...);
 
 template <typename T>
@@ -346,8 +346,8 @@ multi_array<T>& arange();
 template <typename T>       // Partial
 multi_array<T>& reduce(multi_array<T>& op, reducible opc, size_t axis);
                             // FULL
-template <typename T>       // Numeric 
-multi_array<T>& sum(multi_array<T>& op);      
+template <typename T>       // Numeric
+multi_array<T>& sum(multi_array<T>& op);
 
 template <typename T>
 multi_array<T>& product(multi_array<T>& op);
@@ -373,7 +373,7 @@ T scalar(multi_array<T>& op);
 template <typename T, typename FromT>     // Typecast; implicit copy
 multi_array<T>& as(multi_array<FromT>& rhs);
 
-template <typename T, typename ...Dimensions>   // 
+template <typename T, typename ...Dimensions>   //
 multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
 
                             //
@@ -401,6 +401,6 @@ void pprint(multi_array<T>& op);
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "functions.hpp"    // DSEL Operations via functions.
-#include "sugar.hpp"        // DSEL Additional sugar... 
+#include "sugar.hpp"        // DSEL Additional sugar...
 
 #endif

@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -57,28 +57,17 @@ template <typename T>           // Copy constructor
 template <typename OtherT>
 multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), base(NULL)
 {
-<<<<<<< HEAD
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
 
     memcpy(meta.shape, operand.meta.shape, sizeof(bh_index)*BH_MAXDIM);
 
-    int64_t stride = 1;                         // Setup strides
-    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
-        meta.stride[i] = stride;
-        stride *= meta.shape[i];
-    }
-=======
-    meta = operand.meta;
-    meta.base = NULL;
-    
     int64_t stride = 1;                 // Reset strides
     for(int64_t i=meta.ndim-1; 0 <= i; --i) {
         meta.stride[i] = stride;
         stride *= meta.shape[i];
-    }    
->>>>>>> 18bf123e85dc7f25d9eb7e71888a1908b1a3071c
+    }
 }
 
 template <typename T>
@@ -231,7 +220,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
             first = false;
         }
         stream << *it;
-    } 
+    }
     stream << " ]" << std::endl;
 
     if (rhs.getTemp()) {    // Cleanup temporary
@@ -251,7 +240,7 @@ slice<T>& multi_array<T>::operator[](int rhs) {
     }
     return (*(new slice<T>(*this)))[rhs];
 }
-                                                        
+
 template <typename T>
 slice<T>& multi_array<T>::operator[](slice_range& rhs) {
     if (!initialized()) {
@@ -359,7 +348,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (base == rhs.getBase()) {  // Self-aliasing is a NOOP
         return *this;
     }
-        
+
     if (base) {
         Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
         Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
@@ -370,7 +359,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     meta = rhs.meta;            // Inherit all meta
 
     if (rhs.getTemp()) {        // Take over temporary reference
-        if (rhs.linked()) { 
+        if (rhs.linked()) {
             link(rhs.unlink());
         }
         delete &rhs;            // Cleanup
