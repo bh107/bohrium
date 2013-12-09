@@ -27,11 +27,13 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    multi_array<double> x, y;
-
+    /*
+    cout << random<uint64_t>(3,3) << endl;
     x = randu<double>(3,3);
-    cout << "RANDOM: " << x << endl;
-
+    */
+    cout << randu<uint64_t>(3,3)  << endl;
+    
+    /*
     x = randn<double>(3,3);
     cout << "RANDOM: " << x << endl;
 
@@ -40,6 +42,7 @@ void compute()
 
     x = range<double>(10,1,(int64_t)(-2));
     cout << "RANGE: " << x << endl;
+    */
 }
 
 int main()

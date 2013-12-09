@@ -2,11 +2,11 @@
 directiveStartToken= %
 #end compiler-settings
 %slurp
-const char* bhtype_to_shorthand(bh_type type)
+const char* enum_to_ctypestr(bh_type type)
 {
     switch(type) {
-        %for $bhtype, $shorthand in $types
-        case $bhtype: return "$shorthand";
+        %for $bhtype, $c in $types
+        case $bhtype: return "$c";
         %end for
 
         default:

@@ -31,7 +31,7 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
+inline Runtime::Runtime() : ext_in_queue(0), queue_size(0)
 {
     bh_error err;
     char err_msg[100];
@@ -56,23 +56,6 @@ inline Runtime::Runtime() : random_id(0), ext_in_queue(0), queue_size(0)
     if (err) {
         fprintf(stderr, "Error in runtime->init(runtime)\n");
         exit(-1);
-    }
-
-    //
-    // Register extensions
-    //
-    err = runtime->reg_func("bh_random", &random_id);
-    if (err != BH_SUCCESS) {
-        sprintf(err_msg, "Fatal error in the initialization of the user"
-                        "-defined random operation: %s.\n",
-                        bh_error_text(err));
-        throw std::runtime_error(err_msg);
-    }
-    if (random_id <= 0) {
-        sprintf(err_msg, "Fatal error in the initialization of the user"
-                        "-defined random operation: invalid ID returned"
-                        " (%ld).\n", (long)random_id);
-        throw std::runtime_error(err_msg);
     }
 }
 
@@ -123,12 +106,7 @@ size_t Runtime::deallocate_ext()
 
     if (ext_in_queue>0) {
         for(size_t i=0; i<ext_in_queue; i++) {
-            if (ext_queue[i]->id == random_id) {
-                free((bh_random_type*)ext_queue[i]);
-                deallocated++;
-            } else {
-                throw std::runtime_error("Cannot de-allocate extension...");
-            }
+            throw std::runtime_error("Cannot de-allocate extension...");
         }
         ext_in_queue = 0;
     }
