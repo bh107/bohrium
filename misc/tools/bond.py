@@ -112,7 +112,7 @@ binary  = "%s(%s, %s, %s)"
 unary   = "%s(%s, %s)"
 gen     = "%s(%s)"
 
-def create_library(config):
+def merge_kernels(config):
     """
     Creates a shared library named 'bh_libsij.so' containing
     all the functions defined in the 'kernel_path'.
@@ -284,7 +284,7 @@ if __name__ == "__main__":
 
     try:
         out, err = genesis(config, opcodes, types)
-        out, err = create_library(config)
+        out, err = merge_kernels(config)
     except Exception as e:
         out = "Check the error message."
         err = str(e)
