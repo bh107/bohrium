@@ -2,11 +2,30 @@
 import ConfigParser
 import subprocess
 import argparse
+import json
 import os
 
-def read_config(path=None):
+def load_bytecode(path):
     """
-    Read the Bohrium config file and return it as a ConfigParser object.
+    Load/Read the Bohrium bytecode definition from the Bohrium-sourcecode.
+
+    Raises an exception if 'opcodes.json' and 'types.json' cannot be found or
+    are invalid.
+
+    Returns (opcodes, types)
+    """
+    opcodes = json.load(open(os.sep.join([
+        path, 'core', 'codegen', 'opcodes.json'
+    ])))
+    types   = json.load(open(os.sep.join([
+        path, 'core', 'codegen', 'types.json'
+    ])))
+
+    return (opcodes, types)
+
+def load_config(path=None):
+    """
+    Load/Read the Bohrium config file and return it as a ConfigParser object.
     If no path is given the following paths are searched::
         
         /etc/bohrium/config.ini
@@ -14,6 +33,8 @@ def read_config(path=None):
         ${CWD}/config.ini
 
     Raises an exception if config-file cannot be found or is invalid.
+
+    Returns config as a ConfigParser object.
     """
 
     if path and not os.path.exists(path):   # Check the provided path
@@ -42,8 +63,6 @@ def read_config(path=None):
     return p
 
 if __name__ == "__main__":
-
-    read_config()
 
     """
     p = argparse.ArgumentParser(description='Bohrium Tool')

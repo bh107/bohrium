@@ -30,6 +30,8 @@ import sys
 import re
 import os
 
+import bhutils
+
 numpy_map = {
     "BH_ADD":    "np.add",
     "BH_SUBTRACT":    "np.subtract",
@@ -109,19 +111,6 @@ numpy_map = {
 binary  = "%s(%s, %s, %s)"
 unary   = "%s(%s, %s)"
 gen     = "%s(%s)"
-
-def get_config(path=None):
-
-    if not path:                        # determine the path
-        print ">.."
-        
-    if path and not os.path.exists(path):
-        raise e("Invalid path [%s]" % path)
-
-    p = ConfigParser.ConfigParser()     # Return the config object
-    p.read(path)
-
-    return p
 
 def create_library(config):
     """
@@ -290,13 +279,8 @@ if __name__ == "__main__":
     )
     args = p.parse_args()
 
-    config  = get_config(args.config)
-    opcodes = json.load(open(os.sep.join([
-        args.bohrium, 'core', 'codegen', 'opcodes.json'
-    ])))
-    types   = json.load(open(os.sep.join([
-        args.bohrium, 'core', 'codegen', 'types.json'
-    ])))
+    config = bhutils.load_config(args.config)
+    opcodes, types = bhutils.load_bytecode(args.bohrium)
 
     try:
         out, err = genesis(config, opcodes, types)
