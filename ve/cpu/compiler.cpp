@@ -235,7 +235,7 @@ public:
         FILE *kernel_fp = NULL;     // Handle for kernel-file
         const char *mode = "w";
         int err;
-        std::string kernel_fn = krn_path(symbol.c_str(), ".c");
+        std::string kernel_fn = krn_path(symbol.c_str(), "c");
         kernel_fd = open(kernel_fn.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
         if ((!kernel_fd) || (kernel_fd<1)) {
             err = errno;

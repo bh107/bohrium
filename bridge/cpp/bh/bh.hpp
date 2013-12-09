@@ -352,7 +352,10 @@ template <typename T>
 multi_array<T>& random(const int64_t length);
 
 template <typename T>
-multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip);
+multi_array<T>& randu(size_t n, ...);
+
+template <typename T>
+multi_array<T>& arange();
 
                             // REDUCTIONS
 template <typename T>       // Partial

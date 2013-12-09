@@ -6,34 +6,36 @@
 void specializer_init()
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
-    ctemplate::LoadTemplate("license.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("include.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("range.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("license.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
+    
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.3d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.nd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.ddd.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.tpl", ctemplate::STRIP_BLANK_LINES);
+
+    ctemplate::LoadTemplate("traverse.1d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.2d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.3d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.ddd.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("traverse.nd.tpl",      ctemplate::STRIP_BLANK_LINES);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
 void symbolize(bh_instruction *instr, bh_sij_t &sij) {
 
-    char symbol_c[500];             // String representation buffers
+    char symbol_c[500]; // String representation buffers
     char dims_str[10];
 
     sij.instr = instr;
-    switch (sij.instr->opcode) {                    // [OPCODE_SWITCH]
+    switch (sij.instr->opcode) {    // [OPCODE_SWITCH]
 
-        case BH_NONE:                           // System opcodes
+        case BH_NONE:                                   // System opcodes
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:
-        case BH_USERFUNC:                       // Extensions
+        case BH_USERFUNC:                               // Extensions
             break;
 
         case BH_ADD_REDUCE:                             // Reductions
@@ -117,7 +119,7 @@ string specialize(bh_sij_t &sij) {
         case BH_RANGE:
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "range.tpl");
 
             cres = true;
@@ -136,8 +138,8 @@ string specialize(bh_sij_t &sij) {
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
 
             if (sij.ndims <= 3) {
                 sprintf(template_fn, "reduction.%ldd.tpl", sij.ndims);
@@ -176,30 +178,30 @@ string specialize(bh_sij_t &sij) {
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->constant.type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->constant.type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_scalar");
             } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_scalar");
                 dict.ShowSection("a2_dense");
             } else {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", bhtype_to_ctype(sij.instr->operand[2].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_dense");
 
             }
-            if ((sij.lmask == (A0_DENSE + A1_DENSE    + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT + A2_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_DENSE    + A2_CONSTANT))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
                 if (sij.ndims<=3) {
@@ -246,18 +248,18 @@ string specialize(bh_sij_t &sij) {
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->constant.type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
                 dict.ShowSection("a1_scalar");
             } else {
                 dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", bhtype_to_ctype(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", bhtype_to_ctype(sij.instr->operand[1].base->type));
+                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
+                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
                 dict.ShowSection("a1_dense");
             }
 
-            if ((sij.lmask == (A0_DENSE + A1_DENSE)) || \
-                (sij.lmask == (A0_DENSE + A1_CONSTANT))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
 
