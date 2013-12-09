@@ -23,7 +23,7 @@ install: gen
 
 clean:
 	rm -rf *.o *~ codegen/output/*.hpp
-	find bin/ -type f -name "*" -exec rm  {} \;
+	rm -rf bin/
 
 gen:
 	./codegen/gen.py
@@ -33,6 +33,7 @@ gen:
 # Examples
 #
 hello_world: examples/hello_world.cpp $(HEADER)
+	mkdir -p bin
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 #slicing: examples/slicing.cpp $(HEADER)
