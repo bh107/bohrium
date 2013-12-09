@@ -187,7 +187,7 @@ def genesis(config, opcodes, types):
     typemap = dict([(t['enum'], t['numpy']) for t in types
                     if 'UNKNOWN' not in t['c']])
 
-    exclude_type    = ['BH_UNKNOWN', 'BH_FLOAT16']
+    exclude_type    = ['BH_UNKNOWN']
     exclude_opc     = [
         'BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY',
         'BH_LOGICAL_XOR_REDUCE',  

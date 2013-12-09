@@ -53,8 +53,6 @@ int bh_type_size(bh_type type)
         return 4;
     case BH_UINT64:
         return 8;
-    case BH_FLOAT16:
-        return 2;
     case BH_FLOAT32:
         return 4;
     case BH_FLOAT64:
@@ -97,8 +95,6 @@ const char* bh_type_text(bh_type type)
         return "BH_UINT32";
     case BH_UINT64:
         return "BH_UINT64";
-    case BH_FLOAT16:
-        return "BH_FLOAT16";
     case BH_FLOAT32:
         return "BH_FLOAT32";
     case BH_FLOAT64:

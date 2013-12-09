@@ -66,10 +66,6 @@ static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
             sprintf(buf, "[ CONST(%s)=%llu ]", bh_type_text(instr->constant.type),
                         (unsigned long long) instr->constant.value.uint64);
             break;
-        case BH_FLOAT16:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.float16);
-            break;
         case BH_FLOAT32:
             sprintf(buf, "[ CONST(%s)=%f ]", bh_type_text(instr->constant.type),
                                              instr->constant.value.float32);

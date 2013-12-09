@@ -37,7 +37,6 @@ typedef uint8_t       bh_uint8;
 typedef uint16_t      bh_uint16;
 typedef uint32_t      bh_uint32;
 typedef uint64_t      bh_uint64;
-typedef uint16_t      bh_float16;
 typedef float         bh_float32;
 typedef double        bh_float64;
 typedef struct { float real, imag; } bh_complex64;
@@ -56,7 +55,6 @@ enum /* bh_type */
     BH_UINT16,
     BH_UINT32,
     BH_UINT64,
-    BH_FLOAT16,
     BH_FLOAT32,
     BH_FLOAT64,
     BH_COMPLEX64,
@@ -82,7 +80,6 @@ typedef union /* bh_constant_value */
     bh_uint16     uint16;
     bh_uint32     uint32;
     bh_uint64     uint64;
-    bh_float16    float16;
     bh_float32    float32;
     bh_float64    float64;
     bh_complex64  complex64;
