@@ -167,7 +167,7 @@ public:
                 nloaded += res;
             }
         }
-
+        std::cout << "Preloaded " << nloaded << " functions." << std::endl;
         return nloaded;
     }
 

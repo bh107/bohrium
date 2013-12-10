@@ -175,15 +175,17 @@ static bh_error exec(bh_instruction *instr)
     {
         map<bh_opcode,bh_extmethod_impl>::iterator ext;
         ext = extmethod_op2impl.find(instr->opcode);
-        if(ext != extmethod_op2impl.end())
-        {
+        if (ext != extmethod_op2impl.end()) {
             bh_extmethod_impl extmethod = ext->second;
             return extmethod(instr, NULL);
         }
     }
 
     symbolize(instr, sij);                          // Construct symbol
-    if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
+
+    if (do_jit && \
+        (sij.symbol!="") && \
+        (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
 
         string sourcecode = specialize(sij);        // Specialize sourcecode
         if (dump_src==1) {                          // Dump sourcecode to file
@@ -192,9 +194,12 @@ static bh_error exec(bh_instruction *instr)
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
     }
 
-    if ((sij.symbol!="") && !target->load(sij.symbol, sij.symbol)) {// Load
+    if ((sij.symbol!="") && \
+        (!target->symbol_ready(sij.symbol)) && \
+        (!target->load(sij.symbol, sij.symbol))) {  // Need but cannot load
         return BH_ERROR;
     }
+
     res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
     if (BH_SUCCESS != res) {
         fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
