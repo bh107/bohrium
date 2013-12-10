@@ -43,6 +43,7 @@ static void reduce_chunk(bh_opcode opcode, bh_intp axis,
     inst.opcode = opcode;
     inst.operand[0] = out;
     inst.operand[1] = in;
+    bh_flag_constant(&inst.operand[2]);
     inst.constant.value.int64 = axis;
     inst.constant.type = BH_INT64;
     batch_schedule_inst(inst);
