@@ -155,7 +155,7 @@ bh_error bh_ve_cpu_init(const char *name)
 
     // JIT machinery
     target = new process(compiler_cmd, object_path, kernel_path, true);
-    specializer_init();     // Code templates / snippets
+    specializer_init();     // Code templates and opcode-specialization.
 
     #ifdef PROFILE
     memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
@@ -187,7 +187,6 @@ static bh_error exec(bh_instruction *instr)
 
         string sourcecode = specialize(sij);        // Specialize sourcecode
         if (dump_src==1) {                          // Dump sourcecode to file
-            std::cout << "DUMPING " << sij.symbol << " to file." << std::endl;
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
@@ -214,19 +213,6 @@ static bh_error exec(bh_instruction *instr)
         case BH_FREE:                           // Store data-pointer in malloc-cache
             res = bh_vcache_free(sij.instr);
             break;
-/*
-        case BH_USERFUNC:
-            if (sij.instr->userfunc->id == matmul_impl_id) {
-                res = matmul_impl(sij.instr->userfunc, NULL);
-            } else if (sij.instr->userfunc->id == nselect_impl_id) {
-                res = nselect_impl(sij.instr->userfunc, NULL);
-            } else if (sij.instr->userfunc->id == visualizer_impl_id) {
-                res = visualizer_impl(sij.instr->userfunc, NULL);
-            } else {                            // Unsupported userfunc
-                res = BH_USERFUNC_NOT_SUPPORTED;
-            }
-            break;
-*/
 
         case BH_RANGE:
             target->funcs[sij.symbol](0,
@@ -411,7 +397,7 @@ static bh_error exec(bh_instruction *instr)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    //Execute one instruction at a time starting at the root DAG.
+    // Execute one instruction at a time starting at the root DAG.
     return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec);
 }
 
@@ -423,7 +409,7 @@ bh_error bh_ve_cpu_shutdown(void)
         bh_vcache_delete();
     }
 
-//    delete target;          // De-allocate code-generator
+    delete target;          // De-allocate code-generator
 
     #ifdef PROFILE
     bh_uint64 sum = 0;

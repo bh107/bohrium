@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 WHERE=`pwd`
-rm -r ~/.local/cpu
+#rm -r ~/.local/cpu
 INSTALLDIR="~/.local" DEBUG="" make clean install
 cd $WHERE
 #python ./test/3d_reduction.py]
@@ -11,7 +11,8 @@ cd $WHERE
 #python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*2 --bohrium=True
 #python ~/Desktop/bohrium/benchmark/Python/shallow_water.py --size=3000*3000*2 --bohrium=True
 #BH_VE_CPU_DUMPSRC=1 python ../../test/numpy/numpytest.py
-BH_VE_CPU_DUMPSRC=1 ../../bridge/cpp/bin/hello_world
+../../bridge/cpp/bin/hello_world
+#BH_VE_CPU_DUMPSRC=1 ../../bridge/cpp/bin/hello_world
 #python ../../test/numpy/numpytest.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
 #python ../../test/numpy/numpytest.py -f test_matmul.py

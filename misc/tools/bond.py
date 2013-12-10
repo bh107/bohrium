@@ -122,8 +122,8 @@ def merge_kernels(config):
 
     krn_path = config.get('cpu', 'kernel_path')
     obj_path = config.get('cpu', 'object_path')
-    idx_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij.idx")
-    lib_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij.so")
+    idx_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij_aaaaaa.idx")
+    lib_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij_aaaaaa.so")
 
     if not os.path.exists(krn_path):
         return (None, "kernel_path(%s) does not exist." % krn_path)
@@ -210,9 +210,6 @@ def genesis(config, opcodes, types):
         for typesig in opcode['types']:
 
             for dim in dimensions:
-                for t in typesig:
-                    if t in exclude_type:
-                        break
 
                 if 'REDUCE' in opcode['opcode']:
                     op_setup = [
@@ -237,22 +234,23 @@ def genesis(config, opcodes, types):
                     else:
                         raise Exception("Unsupported number of operands.")
 
-                if op_setup:
-                    np.sum(func(*op_setup))                   # Call it
+                a = np.sum(func(*op_setup))         # Call it
+                a == 1
 
     # Call random
     for ndim in dimensions:
-        a = np.sum(np.random.random(tuple([3]*ndim), dtype = np.float32,
+        for t in [np.float32, np.float64]:
+            a = np.sum(np.random.random(tuple([3]*ndim), dtype = np.float32,
                                     bohrium=True))
-        a = np.sum(np.random.random(tuple([3]*ndim), dtype = np.float64,
-                                    bohrium=True))
+            a == 1
 
     # Call range generator
     for typesigs in (opcode['types'] for opcode in opcodes
                      if 'BH_RANGE' in opcode['opcode']):
         for typesig in typesigs:
             tn = typemap[typesig[0]]
-            np.sum(np.arange(1,10, bohrium=True, dtype=tn))
+            a = np.sum(np.arange(1,10, bohrium=True, dtype=tn))
+            a == 1
 
     # Call identity
     for typesigs in (opcode['types'] for opcode in opcodes
@@ -262,7 +260,8 @@ def genesis(config, opcodes, types):
             rtype = typesig[1]
 
             operands[otype][1][1][:] = operands[rtype][1][1][:]
-            np.sum(operands[otype][1][1])
+            a = np.sum(operands[otype][1][1])
+            a == 1
     
     return (None, None)
 
@@ -270,8 +269,18 @@ if __name__ == "__main__":
 
     p = argparse.ArgumentParser(description='Compile bh_libsij.so')
     p.add_argument(
-        'config',
+        '--config',
         help='Path to Bohrium config-file.'
+    )
+    p.add_argument(
+        '--genesis',
+        help='Run the bytecode genesis-program.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--merge_kernels',
+        help='Compile all kernels in kernel-path into a shared library.',
+        action='store_true'
     )
     p.add_argument(
         'bohrium',
@@ -283,8 +292,11 @@ if __name__ == "__main__":
     opcodes, types = bhutils.load_bytecode(args.bohrium)
 
     try:
-        out, err = genesis(config, opcodes, types)
-        out, err = merge_kernels(config)
+        out, err = (None, None)
+        if args.genesis:
+            out, err = genesis(config, opcodes, types)
+        if args.merge_kernels:
+            out, err = merge_kernels(config)
     except Exception as e:
         out = "Check the error message."
         err = str(e)
