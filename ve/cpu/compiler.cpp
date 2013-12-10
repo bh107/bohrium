@@ -203,7 +203,6 @@ public:
                 library_fn.c_str(),
                 symbol.c_str()
             );
-            free(error_msg);
             return false;
         }
         return true;
