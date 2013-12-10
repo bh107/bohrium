@@ -27,7 +27,7 @@ void bh_runtime_flush() {
 bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem)
 {
     bh_base_p base = new bh_base;
-    assign_array_type<${ctype}>(base);
+    assign_array_type<${bh_atype}>(base);
     base->nelem = nelem;
     base->data  = data;
 
