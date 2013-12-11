@@ -10,7 +10,7 @@ OBJ=$(SRC:.c=.o) $(ROOT)/core/bhir/*.o $(ROOT)/iniparser/libiniparser.a
 
 all: $(LIB)
 
-%.o: %.c $(ROOT)/include/* ../ve/shared/compute/*.hpp
+%.o: %.c $(ROOT)/include/*
 	$(CC) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)

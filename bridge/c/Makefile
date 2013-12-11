@@ -3,7 +3,7 @@ include $(ROOT)/platform.mk
 LIB=libbhc.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++11 -I$(ROOT)/include -I../cpp/bh
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++0x -I$(ROOT)/include -I../cpp/bh
 LDFLAGS= $(ARCH_OPTS) -shared -ldl -Wl,$(LD_LIB_COMMAND),$(LIB)
 
 SRC=$(ALL_CPP_FILES)

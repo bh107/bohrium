@@ -35,24 +35,17 @@ template_path=/opt/bohrium/cpu/templates
 impl = /opt/bohrium/libbh_ve_cpu.so
 libs = /opt/bohrium/libbh_matmul.so
 
-[score]
-type = ve
-impl = /opt/bohrium/libbh_ve_score.so
-
-[mcore]
-type = ve
-impl = /opt/bohrium/libbh_ve_mcore.so
-
-[tiling]
-type = ve
-impl = /opt/bohrium/libbh_ve_tiling.so
-
 #
 # Filters
 #
 [transitive_reduction]
 type = filter
 impl = /opt/bohrium/libbh_filter_transitive_reduction.so
+children = cpu
+
+[pprint]
+type = filter
+impl = /opt/bohrium/libbh_filter_pprint.so
 children = cpu
 
 [power]
@@ -70,7 +63,3 @@ type = filter
 impl = /opt/bohrium/libbh_filter_streaming.so
 children = cpu
 
-[pprint]
-type = filter
-impl = /opt/bohrium/libbh_filter_pprint.so
-children = cpu

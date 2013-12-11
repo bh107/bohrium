@@ -183,8 +183,6 @@ if __name__ == "__main__":
                   ("INIPARSER","iniparser",True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
-                  ("VE-SHARED-COMPUTE", "ve/shared/compute", True),\
-                  ("VE-SHARED-BUNDLER", "ve/shared/bundler", False),\
                   ("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
                   ("VEM-NODE", "vem/node", True),\
@@ -196,9 +194,6 @@ if __name__ == "__main__":
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("BRIDGE-C", "bridge/c", True),\
                   ("BHNUMPY", "bohrium", True),\
-#                  ("VE-SCORE",  "ve/static/score", False),\
-#                  ("VE-MCORE",  "ve/static/mcore", False),\
-#                  ("VE-TILING", "ve/static/tiling", False),\
 #                  ("FILTER-POWER", "filter/power", False),\
 #                  ("FILTER-FUSION", "filter/fusion", False),\
 #                  ("FILTER-STREAMING", "filter/streaming", False),\
