@@ -3,16 +3,18 @@ include $(ROOT)/platform.mk
 LIB=libbhc.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall -Wno-c++11-extensions
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include -I../cpp/bh
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++11 -I$(ROOT)/include -I../cpp/bh
 LDFLAGS= $(ARCH_OPTS) -shared -ldl -Wl,$(LD_LIB_COMMAND),$(LIB)
 
 SRC=$(ALL_CPP_FILES)
 OBJ=$(SRC:.cpp=.oo) $(ROOT)/core/libbh.$(LIB_SUFFIX)
 
-all: $(LIB)
+all: gen $(LIB)
 
 gen: codegen/templates/*.ctpl codegen/*.json codegen/*.py
 	./codegen/gen.py
+	mkdir -p include
+	mkdir -p output
 	mv codegen/output/*.h include/.
 	mv codegen/output/*.hpp .
 	mv codegen/output/*.cpp .
@@ -24,9 +26,9 @@ $(LIB): $(OBJ) gen
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
-	rm -rf *.o *~ $(LIB)
-	rm -rf *.o *~ codegen/output/*
-	find lib/ -type f -name "*" -exec rm  {} \;
+	rm -rf *.o *.oo *~ $(LIB)
+	rm -rf include output
+	rm -rf codegen/output/*
 
 install: all
 	cp $(LIB) $(INSTALLDIR)
