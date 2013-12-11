@@ -17,9 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_VEM_NODE_H
-#define __BH_VEM_NODE_H
+#ifndef __BH_MATMUL_H
+#define __BH_MATMUL_H
 
 #include <bh.h>
 
@@ -27,20 +26,11 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-/* Component interface: init (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_node_init(const char* name);
-
-/* Component interface: shutdown (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_node_shutdown(void);
-
-/* Component interface: extmethod (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_node_extmethod(const char *name, bh_opcode opcode);
-
-/* Component interface: execute (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_node_execute(bh_ir* bhir);
+bh_error bh_matmul(bh_instruction *instr, void* arg);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <set>
-#include <vector>;
+#include <vector>
 
 #include "transitive_reduction.h"
 

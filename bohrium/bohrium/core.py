@@ -660,7 +660,7 @@ def matmul(a,b):
         a.bohrium=True
         b.bohrium=True
         c = empty((a.shape[0],b.shape[1]),dtype=a.dtype)
-        bridge.matmul(a,b,c)
+        bridge.extmethod_exec("matmul",c,a,b)
         return c
     else:
     	return numpy.dot(a,b)
@@ -1068,21 +1068,4 @@ def hypot(x1, x2, out=None):
 
     """
     return sqrt(add(multiply(x1,x1),multiply(x2,bx2),out),out)
-
-def minn(x, n=1, axis=0):
-    """
-    Info here.
-    """
-    assert x.shape[axis] > n
-    assert x.bohrium == True
-
-    if len(x.shape) == 1:
-        out_shape = (n,)
-    else:
-        out_shape = x.shape[:axis] + (n,) + x.shape[axis+1:]
-
-    out_index = empty(out_shape,dtype=int64,bohrium=True)
-    out_value = empty(out_shape,dtype=x.dtype,bohrium=True)
-    return bridge.nselect(out_index, out_value, x, n, axis, numpy.minimum)
-
 

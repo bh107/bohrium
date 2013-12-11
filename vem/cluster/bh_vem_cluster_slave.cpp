@@ -70,12 +70,12 @@ int main()
                 check_error(exec_shutdown(),__FILE__,__LINE__);
                 return 0;
             }
-            case BH_CLUSTER_DISPATCH_UFUNC:
+            case BH_CLUSTER_DISPATCH_EXTMETHOD:
             {
-                bh_intp *id = (bh_intp *)msg->payload;
-                char *fun = msg->payload+sizeof(bh_intp);
-                printf("Slave (rank %d) received UFUNC. fun: %s, id: %ld\n",pgrid_myrank, fun, *id);
-                check_error(exec_reg_func(fun, id),__FILE__,__LINE__);
+                bh_opcode opcode = *((bh_opcode *)msg->payload);
+                char *name = msg->payload+sizeof(bh_opcode);
+                printf("Slave (rank %d) received UFUNC. fun: %s, id: %ld\n",pgrid_myrank, name, opcode);
+                check_error(exec_extmethod(name, opcode),__FILE__,__LINE__);
                 break;
             }
             case BH_CLUSTER_DISPATCH_EXEC:

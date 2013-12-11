@@ -37,13 +37,10 @@ static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
 static bh_uint64 calls[BH_NO_OPCODES+2];
 #endif
 
-static bh_component *myself = NULL;
-static bh_userfunc_impl matmul_impl = NULL;
-static bh_intp matmul_impl_id = 0;
-static bh_userfunc_impl nselect_impl = NULL;
-static bh_intp nselect_impl_id = 0;
-static bh_userfunc_impl visualizer_impl = NULL;
-static bh_intp visualizer_impl_id = 0;
+using namespace std;
+
+static bh_component myself;
+static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
 static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
@@ -54,8 +51,6 @@ static char* compiler_cmd;   // cpu Arguments
 static char* kernel_path;
 static char* object_path;
 static char* template_path;
-
-using namespace std;
 
 typedef struct bh_sij {
     bh_instruction *instr;  // Pointer to instruction
@@ -75,7 +70,7 @@ void bh_string_option(char *&option, const char *env_name, const char *conf_name
 {
     option = getenv(env_name);           // For the compiler
     if (NULL==option) {
-        option = bh_component_config_lookup(myself, conf_name);
+        option = bh_component_config_lookup(&myself, conf_name);
     }
     char err_msg[100];
 
@@ -89,7 +84,7 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 {
     option = getenv(env_name);           // For the compiler
     if (NULL==option) {
-        option = bh_component_config_lookup(myself, conf_name);
+        option = bh_component_config_lookup(&myself, conf_name);
     }
     char err_msg[100];
 
@@ -109,10 +104,19 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
     }
 }
 
-bh_error bh_ve_cpu_init(bh_component *self)
+/* Component interface: init (see bh_component.h) */
+bh_error bh_ve_cpu_init(const char *name)
 {
-    myself = self;
     char *env;
+    bh_error err;
+
+    if((err = bh_component_init(&myself, name)) != BH_SUCCESS)
+        return err;
+    if(myself.nchildren != 0)
+    {
+        std::cerr << "[CPU-VE] Unexpected number of children, must be 0" << std::endl;
+        return BH_ERROR;
+    }
 
     env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
     if (NULL != env) {
@@ -167,6 +171,17 @@ static bh_error exec(bh_instruction *instr)
     bh_sij_t        sij;
     bh_error res = BH_SUCCESS;
 
+    //Lets check if it is a known extension method
+    {
+        map<bh_opcode,bh_extmethod_impl>::iterator ext;
+        ext = extmethod_op2impl.find(instr->opcode);
+        if(ext != extmethod_op2impl.end())
+        {
+            bh_extmethod_impl extmethod = ext->second;
+            return extmethod(instr, NULL);
+        }
+    }
+
     symbolize(instr, sij);                          // Construct symbol
     if (do_jit && (sij.symbol!="") && (!target->symbol_ready(sij.symbol))) {
 
@@ -199,7 +214,7 @@ static bh_error exec(bh_instruction *instr)
         case BH_FREE:                           // Store data-pointer in malloc-cache
             res = bh_vcache_free(sij.instr);
             break;
-
+/*
         case BH_USERFUNC:
             if (sij.instr->userfunc->id == matmul_impl_id) {
                 res = matmul_impl(sij.instr->userfunc, NULL);
@@ -211,6 +226,7 @@ static bh_error exec(bh_instruction *instr)
                 res = BH_USERFUNC_NOT_SUPPORTED;
             }
             break;
+*/
 
         case BH_RANGE:
             target->funcs[sij.symbol](0,
@@ -392,12 +408,14 @@ static bh_error exec(bh_instruction *instr)
     return res;
 }
 
+/* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     //Execute one instruction at a time starting at the root DAG.
     return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec);
 }
 
+/* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
     if (vcache_size>0) {
@@ -405,7 +423,7 @@ bh_error bh_ve_cpu_shutdown(void)
         bh_vcache_delete();
     }
 
-    delete target;          // De-allocate code-generator
+//    delete target;          // De-allocate code-generator
 
     #ifdef PROFILE
     bh_uint64 sum = 0;
@@ -435,51 +453,25 @@ bh_error bh_ve_cpu_shutdown(void)
     printf("TOTAL, %f\n", sum/1000000.0);
     #endif
 
+    bh_component_destroy(&myself);
+
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_cpu_reg_func(char *fun, bh_intp *id)
+/* Component interface: extmethod (see bh_component.h) */
+bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    if (strcmp("bh_matmul", fun) == 0) {
-    	if (matmul_impl == NULL) {
-            bh_component_get_func(myself, fun, &matmul_impl);
-            if (matmul_impl == NULL) {
-                return BH_USERFUNC_NOT_SUPPORTED;
-            }
+    bh_extmethod_impl extmethod;
+    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
+    if(err != BH_SUCCESS)
+        return err;
 
-            matmul_impl_id = *id;
-            return BH_SUCCESS;
-        } else {
-        	*id = matmul_impl_id;
-        	return BH_SUCCESS;
-        }
-    } else if (strcmp("bh_visualizer", fun) == 0) {
-    	if (visualizer_impl == NULL) {
-            bh_component_get_func(myself, fun, &visualizer_impl);
-            if (visualizer_impl == NULL) {
-                return BH_USERFUNC_NOT_SUPPORTED;
-            }
-
-            visualizer_impl_id = *id;
-            return BH_SUCCESS;
-        } else {
-        	*id = visualizer_impl_id;
-        	return BH_SUCCESS;
-        }
-    } else if(strcmp("bh_nselect", fun) == 0) {
-        if (nselect_impl == NULL) {
-            bh_component_get_func(myself, fun, &nselect_impl);
-            if (nselect_impl == NULL) {
-                return BH_USERFUNC_NOT_SUPPORTED;
-            }
-            nselect_impl_id = *id;
-            return BH_SUCCESS;
-        } else {
-            *id = nselect_impl_id;
-            return BH_SUCCESS;
-        }
+    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end())
+    {
+        printf("[CPU-VE] Warning, multiple registrations of the same"
+               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
     }
-
-    return BH_USERFUNC_NOT_SUPPORTED;
+    extmethod_op2impl[opcode] = extmethod;
+    return BH_SUCCESS;
 }
 

@@ -28,16 +28,17 @@ If not, see <http://www.gnu.org/licenses/>.
 bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
     assert(userFuncArg->operands.size() == 2);
-    if (bh_is_scalar(inst->operand[0]))
+    if (bh_is_scalar(&inst->operand[0]))
     {
         static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        bh_error err = bh_compute_reduce(inst);
-        if (err == BH_SUCCESS)
-            static_cast<BaseArray*>(userFuncArg->operands[0])->update();
+        bh_error err = bh_data_malloc(inst->operand[0].base);
+        if (err != BH_SUCCESS)
+            return err;		  
+        err = bh_compute_reduce(inst);
         return err;
     }
     else {
-        bh_array* out = inst->operand[0];
+        bh_view* out = &inst->operand[0];
         std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
         Kernel kernel = getKernel(inst, userFuncArg, shape);
         Kernel::Parameters kernelParameters;
@@ -83,7 +84,7 @@ Kernel Reduce::getKernel(bh_instruction* inst,
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, inst->operand[0]->ndim, source.str(), kname.str());
+        Kernel kernel(userFuncArg->resourceManager, inst->operand[0].ndim, source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -132,8 +133,8 @@ std::string Reduce::generateCode(bh_instruction* inst,
     default:
         assert(false);
     }
-    bh_array* out = inst->operand[0];
-    bh_array* in = inst->operand[1];
+    bh_view* out = &inst->operand[0];
+    bh_view* in = &inst->operand[1];
     std::stringstream source;
     std::vector<std::string> operands(3);
     operands[0] = "accu";
@@ -141,7 +142,7 @@ std::string Reduce::generateCode(bh_instruction* inst,
     operands[2] = "in[element]";
     source << "( __global " << oclTypeStr(outType) << "* out\n" 
         "                     , __global " << oclTypeStr(inType) << "* in)\n{\n";
-    bh_array inn(*in);
+    bh_view inn(inst->operand[1]);
     inn.ndim = in->ndim - 1;
     int i = 0;
     bh_int64 axis = inst->constant.value.int64;
@@ -155,14 +156,14 @@ std::string Reduce::generateCode(bh_instruction* inst,
     }
     generateGIDSource(shape, source);
     source << "\tsize_t element = ";
-    generateOffsetSource(&inn, source);
+    generateOffsetSource(inn, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
     source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[axis] << ";\n\t";
     generateInstructionSource(opcode, outType, operands, source);
     source << "\t}\n\tout[";
-    generateOffsetSource(out, source);
+    generateOffsetSource(*out, source);
     source << "] = accu;\n}\n";
     return source.str();
 }

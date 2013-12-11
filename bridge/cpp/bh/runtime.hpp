@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -34,38 +34,29 @@ inline Runtime& Runtime::instance()
 inline Runtime::Runtime() : ext_in_queue(0), queue_size(0)
 {
     bh_error err;
-    char err_msg[100];
+    char err_msg[1000];
 
-    int64_t        component_count; // Bohrium Runtime / Bridge setup
-    bh_component **components;          
-
-    bridge = bh_component_setup(NULL);
-    bh_component_children(bridge, &component_count, &components);
-
-    if (component_count != 1 || (!((components[0]->type == BH_VEM) || \
-                                   (components[0]->type != BH_VEM)))) {
+    if((err = bh_component_init(&bridge, NULL)) != BH_SUCCESS)
+        exit(-1);
+    if(bridge.nchildren != 1)
+    {
         sprintf(err_msg, "Error in the runtime configuration: the bridge must "
                          "have exactly one child of type VEM or FILTER.\n");
-        free(components);
         throw std::runtime_error(err_msg);
     }
-    runtime = components[0];
-    free(components);
-
-    err = runtime->init(runtime);   // Initialize child
-    if (err) {
-        fprintf(stderr, "Error in runtime->init(runtime)\n");
-        exit(-1);
+    runtime = &bridge.children[0];
+    if((err = runtime->init(runtime->name)) != BH_SUCCESS)
+    {
+        sprintf(err_msg, "Error in the initialization of the VEM.\n");
+        throw std::runtime_error(err_msg);
     }
 }
 
 inline Runtime::~Runtime()
 {
     flush();
-
     runtime->shutdown();
-    bh_component_free(runtime);
-    bh_component_free(bridge);
+    bh_component_destroy(&bridge);
 }
 
 inline size_t Runtime::get_queue_size()
@@ -122,7 +113,7 @@ inline
 size_t Runtime::execute()
 {
     size_t cur_size = queue_size;
-    
+
     bh_ir bhir;
     bh_error status = bh_ir_create(&bhir, queue_size, queue);
     if (status == BH_SUCCESS) {
@@ -250,7 +241,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1
     bh_instruction* instr;
 
     guard();
-    
+
     instr = &queue[queue_size++];
     instr->opcode = opcode;
     instr->operand[0] = op0.meta;
@@ -440,7 +431,7 @@ void Runtime::enqueue(bh_userfunc* rinstr)
 {
     bh_instruction* instr;
 
-    guard();   
+    guard();
 
     instr = &queue[queue_size++];
     instr->opcode        = BH_USERFUNC;

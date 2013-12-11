@@ -69,10 +69,10 @@ Scalar::Scalar(bh_constant constant)
     }
 }
 
-Scalar::Scalar(bh_array* spec)
+Scalar::Scalar(bh_base* spec)
     : mytype(oclType(spec->type))
 {
-    assert (bh_is_scalar(spec));
+    assert (spec->nelem == 1);
     assert (spec->data != NULL);
     switch (spec->type)
     {

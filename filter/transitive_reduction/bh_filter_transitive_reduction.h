@@ -26,10 +26,10 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-DLLEXPORT bh_error bh_filter_transitive_reduction_init(bh_component *self);
+DLLEXPORT bh_error bh_filter_transitive_reduction_init(const char* name);
 DLLEXPORT bh_error bh_filter_transitive_reduction_execute(bh_ir* bhir);
 DLLEXPORT bh_error bh_filter_transitive_reduction_shutdown(void);
-DLLEXPORT bh_error bh_filter_transitive_reduction_reg_func(const char *fun, bh_intp *id);
+DLLEXPORT bh_error bh_filter_transitive_reduction_extmethod(const char *name, bh_opcode opcode);
 
 #ifdef __cplusplus
 }

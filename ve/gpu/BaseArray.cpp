@@ -22,11 +22,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "BaseArray.hpp"
 
-BaseArray::BaseArray(bh_array* spec_, ResourceManager* resourceManager) 
-    : Buffer(bh_nelements(spec_->ndim, spec_->shape), oclType(spec_->type), resourceManager)
+BaseArray::BaseArray(bh_base* spec_, ResourceManager* resourceManager) 
+    : Buffer(spec_->nelem, oclType(spec_->type), resourceManager)
     , spec(spec_)
 {
-    assert(spec->base == NULL);
     if (spec->data != NULL)
     {
         write(spec->data);
@@ -53,5 +52,5 @@ void BaseArray::update()
 
 size_t BaseArray::size()
 {
-    return bh_nelements(spec->ndim, spec->shape);
+    return spec->nelem;
 }

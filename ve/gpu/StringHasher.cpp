@@ -18,8 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
  
-#include <bh.h>
-#include <iostream>
+#include "StringHasher.hpp"
 
 #ifdef _WIN64
 #define HAS_CPP_HASH 0
@@ -35,7 +34,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #if HAS_CPP_HASH > 0
 #include <functional>
-std::hash<std::string> string_hasher;
+std::hash<std::string> hash_fn; 
+size_t string_hasher(std::string str)
+{
+    return hash_fn(str);
+}
 #else
 size_t string_hasher(std::string str)
 {

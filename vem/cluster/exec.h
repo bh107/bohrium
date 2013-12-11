@@ -20,35 +20,20 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-//Public function pointer to the Node VEM
-extern bh_execute exec_vem_execute;
+#ifndef __BH_VEM_CLUSTER_EXEC_H
+#define __BH_VEM_CLUSTER_EXEC_H
 
+//Function pointers to our child.
+extern bh_component_iface *mychild;
 
-/* Initialize the VEM
- *
- * @return Error codes (BH_SUCCESS)
- */
+/* Component interface: init (see bh_component.h) */
 bh_error exec_init(const char *component_name);
 
-
-/* Shutdown the VEM, which include a instruction flush
- *
- * @return Error codes (BH_SUCCESS)
- */
+/* Component interface: shutdown (see bh_component.h) */
 bh_error exec_shutdown(void);
 
-
-/* Register a new user-defined function.
- *
- * @lib Name of the shared library e.g. libmyfunc.so
- *      When NULL the default library is used.
- * @fun Name of the function e.g. myfunc
- * @id Identifier for the new function. The bridge should set the
- *     initial value to Zero. (in/out-put)
- * @return Error codes (BH_SUCCESS)
- */
-bh_error exec_reg_func(char *fun, bh_intp *id);
-
+/* Component interface: extmethod (see bh_component.h) */
+bh_error exec_extmethod(const char *name, bh_opcode opcode);
 
 /* Execute a BhIR where all operands are global arrays
  *
@@ -57,4 +42,4 @@ bh_error exec_reg_func(char *fun, bh_intp *id);
  */
 bh_error exec_execute(bh_ir *bhir);
 
-
+#endif

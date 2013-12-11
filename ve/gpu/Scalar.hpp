@@ -44,7 +44,7 @@ private:
 protected:
     void printOn(std::ostream& os) const;
 public:
-    Scalar(bh_array* spec);
+    Scalar(bh_base* spec);
     Scalar(bh_constant constant);
     Scalar(cl_long);
     OCLtype type() const;

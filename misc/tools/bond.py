@@ -30,6 +30,8 @@ import sys
 import re
 import os
 
+import bhutils
+
 numpy_map = {
     "BH_ADD":    "np.add",
     "BH_SUBTRACT":    "np.subtract",
@@ -110,20 +112,7 @@ binary  = "%s(%s, %s, %s)"
 unary   = "%s(%s, %s)"
 gen     = "%s(%s)"
 
-def get_config(path=None):
-
-    if not path:                        # determine the path
-        print ">.."
-        
-    if path and not os.path.exists(path):
-        raise e("Invalid path [%s]" % path)
-
-    p = ConfigParser.ConfigParser()     # Return the config object
-    p.read(path)
-
-    return p
-
-def create_library(config):
+def merge_kernels(config):
     """
     Creates a shared library named 'bh_libsij.so' containing
     all the functions defined in the 'kernel_path'.
@@ -187,7 +176,7 @@ def genesis(config, opcodes, types):
     typemap = dict([(t['enum'], t['numpy']) for t in types
                     if 'UNKNOWN' not in t['c']])
 
-    exclude_type    = ['BH_UNKNOWN', 'BH_FLOAT16']
+    exclude_type    = ['BH_UNKNOWN']
     exclude_opc     = [
         'BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY',
         'BH_LOGICAL_XOR_REDUCE',  
@@ -290,17 +279,12 @@ if __name__ == "__main__":
     )
     args = p.parse_args()
 
-    config  = get_config(args.config)
-    opcodes = json.load(open(os.sep.join([
-        args.bohrium, 'core', 'codegen', 'opcodes.json'
-    ])))
-    types   = json.load(open(os.sep.join([
-        args.bohrium, 'core', 'codegen', 'types.json'
-    ])))
+    config = bhutils.load_config(args.config)
+    opcodes, types = bhutils.load_bytecode(args.bohrium)
 
     try:
         out, err = genesis(config, opcodes, types)
-        out, err = create_library(config)
+        out, err = merge_kernels(config)
     except Exception as e:
         out = "Check the error message."
         err = str(e)

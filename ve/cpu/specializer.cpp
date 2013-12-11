@@ -59,9 +59,9 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
             }
             sprintf(symbol_c, "%s_%s_%s_%s",
                 bh_opcode_text(sij.instr->opcode),
+                bh_typesig_to_shorthand(sij.tsig),
                 dims_str,
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
+                bh_layoutmask_to_shorthand(sij.lmask)
             );
 
             sij.symbol = string(symbol_c);
@@ -73,10 +73,10 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
             sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
             sij.tsig  = bh_typesig(sij.instr);          // Type signature
 
-            sprintf(symbol_c, "%s_ND_%s_%s",
+            sprintf(symbol_c, "%s_%s_ND_%s",
                 bh_opcode_text(sij.instr->opcode),
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
+                bh_typesig_to_shorthand(sij.tsig),
+                bh_layoutmask_to_shorthand(sij.lmask)
             );
 
             sij.symbol = string(symbol_c);
@@ -95,9 +95,9 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
             }
             sprintf(symbol_c, "%s_%s_%s_%s",
                 bh_opcode_text(sij.instr->opcode),
+                bh_typesig_to_shorthand(sij.tsig),
                 dims_str,
-                bh_layoutmask_to_shorthand(sij.lmask),
-                bh_typesig_to_shorthand(sij.tsig)
+                bh_layoutmask_to_shorthand(sij.lmask)
             );
 
             sij.symbol = string(symbol_c);

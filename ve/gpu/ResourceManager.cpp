@@ -190,9 +190,9 @@ void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 #endif
 }
 
-cl::Buffer ResourceManager::createBuffer(size_t size)
+cl::Buffer* ResourceManager::createBuffer(size_t size)
 {
-    return cl::Buffer(context, CL_MEM_READ_WRITE, size);
+    return new cl::Buffer(context, CL_MEM_READ_WRITE, size);
 }
 
 void ResourceManager::readBuffer(const cl::Buffer& buffer,
@@ -280,12 +280,12 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     gettimeofday(&start,NULL);
 #endif
 
-#ifdef DEBUG
+//#ifdef DEBUG
     std::cout << "Program build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
-#endif
+//#endif
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
@@ -331,6 +331,7 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
 #ifdef STATS
     event.setCallback(CL_COMPLETE, &eventProfiler, &resourceKernelExecute);
 #endif
+    //commandQueues[device].finish();
     return event;
 }
 

@@ -4,9 +4,8 @@ HEADER=$(ROOT)/include/*
 EXAMPLE_SRC	= $(wildcard examples/*.cpp)
 EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
 
-CXX=clang
-#CXX=g++
-EXTRAS+=
+#CXX=clang
+CXX=g++
 #CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++0x -Wno-variadic-macros $(EXTRAS)
 
@@ -18,12 +17,12 @@ testing: $(TESTS)
 print:
 	echo $(TESTS)
 
-install: gen
+install: all
 	@-(echo 'Done.')
 
 clean:
 	rm -rf *.o *~ codegen/output/*.hpp
-	find bin/ -type f -name "*" -exec rm  {} \;
+	rm -rf bin/
 
 gen:
 	./codegen/gen.py
@@ -33,6 +32,7 @@ gen:
 # Examples
 #
 hello_world: examples/hello_world.cpp $(HEADER)
+	mkdir -p bin
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
 
 #slicing: examples/slicing.cpp $(HEADER)

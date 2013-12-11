@@ -38,17 +38,30 @@ bh_error bh_ve_gpu_init(bh_component* _component)
     return BH_SUCCESS;
 }
 
+std::vector<bh_instruction*> inst_list;
+
+static bh_error create_inst_list(bh_instruction* inst)
+{
+    inst_list.push_back(inst);
+    return BH_SUCCESS;
+}
+
 bh_error bh_ve_gpu_execute(bh_ir* bhir)
 {
-    try 
-    {
-        return instructionScheduler->schedule(bhir);
+    
+    bh_ir_map_instr(bhir, &bhir->dag_list[0], &create_inst_list);
+    
+    bh_error ret_val = BH_ERROR;
+    try
+    { 
+        ret_val =  instructionScheduler->schedule(inst_list);
     }
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
-        return BH_ERROR;
     }
+    inst_list.clear();
+    return ret_val;
 }
 
 bh_error bh_ve_gpu_shutdown()
@@ -59,7 +72,7 @@ bh_error bh_ve_gpu_shutdown()
 }
 
 bh_error bh_ve_gpu_reg_func(char *fun, 
-                                  bh_intp *id)
+                            bh_intp *id)
 {
     bh_userfunc_impl userfunc;
     bh_component_get_func(component, fun, &userfunc);

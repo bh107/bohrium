@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef __BH_VEM_CLUSTER_DISPATCH_H
+#define __BH_VEM_CLUSTER_DISPATCH_H
 
 #include <bh.h>
 #include <stack>
@@ -29,7 +30,7 @@ enum /* int */
     BH_CLUSTER_DISPATCH_INIT,
     BH_CLUSTER_DISPATCH_SHUTDOWN,
     BH_CLUSTER_DISPATCH_EXEC,
-    BH_CLUSTER_DISPATCH_UFUNC
+    BH_CLUSTER_DISPATCH_EXTMETHOD
 };
 
 
