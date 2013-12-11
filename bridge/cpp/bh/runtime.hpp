@@ -31,7 +31,7 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : ext_in_queue(0), queue_size(0)
+inline Runtime::Runtime() : queue_size(0)
 {
     bh_error err;
     char err_msg[1000];
@@ -86,25 +86,6 @@ size_t Runtime::deallocate_meta(size_t count)
 }
 
 /**
- * De-allocate all meta-data associated with any USERFUNCs in the instruction queue.
- *
- * @return The number of USERFUNCs that got de-allocated.
- */
-inline
-size_t Runtime::deallocate_ext()
-{
-    size_t deallocated = 0;
-
-    if (ext_in_queue>0) {
-        for(size_t i=0; i<ext_in_queue; i++) {
-            throw std::runtime_error("Cannot de-allocate extension...");
-        }
-        ext_in_queue = 0;
-    }
-    return deallocated;
-}
-
-/**
  * Sends the instruction-list to the bohrium runtime.
  *
  * NOTE: Assumes that the list is non-empty.
@@ -129,7 +110,6 @@ size_t Runtime::execute()
         throw std::runtime_error(err_msg.str());
     }
 
-    deallocate_ext();
     deallocate_meta(cur_size);
 
     return cur_size;
@@ -409,21 +389,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
     assign_const_type( &instr->constant, op1 );
 
     if (op2.getTemp()) { delete &op2; }
-}
-
-template <typename T>           // Userfunc / extensions
-inline
-void Runtime::enqueue(bh_userfunc* rinstr)
-{
-    bh_instruction* instr;
-
-    guard();
-
-    instr = &queue[queue_size++];
-    instr->opcode        = BH_USERFUNC;
-    instr->userfunc      = (bh_userfunc *) rinstr;
-
-    ext_queue[ext_in_queue++] = instr->userfunc;
 }
 
 template <typename T>
