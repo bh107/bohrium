@@ -35,7 +35,6 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij) {
         case BH_DISCARD:
         case BH_SYNC:
         case BH_FREE:
-        case BH_USERFUNC:                               // Extensions
             break;
 
         case BH_ADD_REDUCE:                             // Reductions
