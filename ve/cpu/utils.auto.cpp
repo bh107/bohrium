@@ -108,8 +108,8 @@ const char* bh_layoutmask_to_shorthand(const int mask)
         case 2184: return "PPP"; 
 
         default:
-            printf("Err: Unsupported layoutmask [%d]\n", mask);
-            return "{{UNKNOWN}}";
+            printf("cpu(bh_layoutmask_to_shorthand): Unsupported layoutmask [%d]\n", mask);
+            return "{{UNSUPPORTED}}";
     }
 }
 
@@ -361,8 +361,9 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 13: return "C"; // BH_COMPLEX128
 
         default:
-            printf("Err: Unsupported type signature %d.\n", typesig);
-            return "_UNS_";
+            printf( "cpu(bh_typesig_to_shorthand): "
+                    "Unsupported type signature %d.\n", typesig);
+            return "{{UNSUPPORTED}}";
     }
 }
 

@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import argparse
+import bhutils
+
+if __name__ == "__main__":
+
+    p = argparse.ArgumentParser(description='A bunch of Bohrium related stuff...')
+    p.add_argument(
+        '--config',
+        help='Path to Bohrium config-file.'
+    )
+    p.add_argument(
+        '--genesis',
+        help='Run the bytecode genesis-program.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--merge_kernels',
+        help='Compile all kernels in cpu(kernel-path) into a shared library.',
+        action='store_true'
+    )
+    p.add_argument(
+        'bohrium',
+        help='Path to Bohrium source-code.'
+    )
+    args = p.parse_args()
+
+    config = bhutils.load_config(args.config)
+    opcodes, types = bhutils.load_bytecode(args.bohrium)
+
+    try:
+        out, err = (None, None)
+        if args.genesis:
+            out, err = bhutils.genesis(config, opcodes, types)
+        if args.merge_kernels:
+            out, err = cpu.merge_kernels(config)
+    except Exception as e:
+        out = "Check the error message."
+        err = str(e)
+
+    if err:
+        print "Error: %s" % err
+    if out:
+        print "Info: %s" % out
+
