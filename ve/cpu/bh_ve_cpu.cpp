@@ -45,7 +45,7 @@ static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 static bh_intp vcache_size  = 10;
 static bh_intp jit_enabled  = 1;
 static bh_intp jit_preload  = 1;
-static bh_intp jit_fusion   = 1;
+static bh_intp jit_fusion   = 0;
 static bh_intp jit_optimize = 1;
 static bh_intp jit_dumpsrc  = 0;
 
@@ -174,9 +174,10 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
+    // Victim cache
     bh_vcache_init(vcache_size);
 
-    // CPU Arguments
+    // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
