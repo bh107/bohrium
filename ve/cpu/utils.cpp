@@ -48,14 +48,14 @@ inline
 bool is_contiguous(bh_view *operand)
 {
     if ((operand->ndim == 3) && \
-        (operand->stride[0] == 1) && \
-        (operand->stride[1] == operand->shape[0]) && \
-        (operand->stride[2] == operand->shape[1]*operand->shape[0])
+        (operand->stride[2] == 1) && \
+        (operand->stride[1] == operand->shape[2]) && \
+        (operand->stride[0] == operand->shape[2]*operand->shape[1])
     ) {
         return true;
     } else if ((operand->ndim == 2) && \
-               (operand->stride[0] == 1) && \
-               (operand->stride[1] == operand->shape[0])) {
+               (operand->stride[1] == 1) && \
+               (operand->stride[0] == operand->shape[1])) {
         return true;
     } else if ((operand->ndim == 1) && (operand->stride[0] == 1)) {
         return true;
