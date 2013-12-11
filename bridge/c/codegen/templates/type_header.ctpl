@@ -63,16 +63,16 @@ DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${b
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_base_p base);
 
 // Construct a new array from bh_base_p and view setup
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 
 // Construct a new empty array
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape);
 
 // Construct a new zero-filled array
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t rank, const int64_t* shape);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, const int64_t* shape);
 
 // Construct a new one-filled array
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const int64_t rank, const int64_t* shape);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, const int64_t* shape);
 
 // Construct a new array with sequential numbers
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip);
@@ -81,7 +81,7 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(cons
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length);
 
 // Construct a new array, filled with the specified value
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, const int64_t rank, const int64_t* shape);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, uint64_t rank, const int64_t* shape);
 
 // Construct a copy of the array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_copy(bh_multi_array_${bh_ctype}_p other);

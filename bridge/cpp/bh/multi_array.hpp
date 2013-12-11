@@ -41,7 +41,7 @@ multi_array<T>::multi_array() : temp(false), base(NULL)
 }
 
 template <typename T>           // Plain shaped constructor
-multi_array<T>::multi_array(const int64_t rank, const int64_t* sizes) : temp(false), base(NULL)
+multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp(false), base(NULL)
 {
     meta.base       = NULL;
     meta.ndim       = rank;
@@ -56,7 +56,7 @@ multi_array<T>::multi_array(const int64_t rank, const int64_t* sizes) : temp(fal
 }
 
 template <typename T>           // base/view constructor
-multi_array<T>::multi_array(bh_base* _base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
+multi_array<T>::multi_array(bh_base* _base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
 {
     meta.ndim   = rank;
     meta.start  = start;
@@ -98,7 +98,6 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), b
     }
 }
 
-#ifndef NO_VARIADICS
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
 multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
@@ -115,7 +114,6 @@ multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
         stride *= meta.shape[i];
     }
 }
-#endif
 
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
@@ -171,14 +169,13 @@ template <typename T>
 void multi_array<T>::sync()
 {
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
+    Runtime::instance().flush();
 }
 
 template <typename T>
 typename multi_array<T>::iterator multi_array<T>::begin()
 {
     this->sync();
-    Runtime::instance().flush();
-
     return multi_array<T>::iterator(meta);
 }
 

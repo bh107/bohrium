@@ -298,7 +298,7 @@ namespace NumCIL.Bohrium2
         /// Construct a new array from bh_base_${bh_ctype}_p and view setup
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view([In] bh_base_${bh_ctype}_p @base, [In] int64_t rank, [In] int64_t start, [In] int64_t[] shape, [In] int64_t[] stride);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view([In] bh_base_${bh_ctype}_p @base, uint64_t rank, [In] int64_t start, [In] int64_t[] shape, [In] int64_t[] stride);
 
         /// <summary>
         /// Construct a new array from bh_base_${bh_ctype}_p and view setup
@@ -310,19 +310,19 @@ namespace NumCIL.Bohrium2
         /// Construct a new empty array
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty([In] int64_t rank, [In] int64_t[] shape);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, [In] int64_t[] shape);
 
         /// <summary>
         /// Construct a new zero-filled array
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes([In] int64_t rank, [In] int64_t[] shape);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, [In] int64_t[] shape);
 
         /// <summary>
         /// Construct a new one-filled array
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones([In] int64_t rank, [In] int64_t[] shape);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, [In] int64_t[] shape);
 
         /// <summary>
         /// Construct a new array with sequential numbers
@@ -340,7 +340,7 @@ namespace NumCIL.Bohrium2
         /// Construct a new array, filled with the specified value
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value([In] ${bh_atype} value, [In] int64_t rank, [In] int64_t[] shape);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value([In] ${bh_atype} value, uint64_t rank, [In] int64_t[] shape);
 
         /// <summary>
         /// Synchronizes the current base

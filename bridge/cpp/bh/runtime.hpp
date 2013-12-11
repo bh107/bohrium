@@ -182,19 +182,6 @@ multi_array<T>& Runtime::temp()
 }
 
 /**
- * Create an unitialized intermediate operand of a certain size.
- */
-template <typename T>
-inline
-multi_array<T>& Runtime::temp(const int64_t length)
-{
-    multi_array<T>* operand = new multi_array<T>(1, &length);
-    operand->setTemp(true);
-
-    return *operand;
-}
-
-/**
  * Create an intermediate operand based on another operands meta-data.
  */
 template <typename T, typename OtherT>

@@ -96,7 +96,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_b
 
 
 // Construct a new array from bh_base_p and bh_view_p
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
 {
     bh_multi_array_${bh_ctype}_p tmp = (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(base, rank, start, shape, stride);
     return tmp;
@@ -104,12 +104,12 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_b
 
 
 // Construct a new sized array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(const int64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape) {
     return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
 }
 
 // Construct a new zero-filled array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
     result->setTemp(true);
     result->link();
@@ -119,7 +119,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(const int64_t
 }
 
 // Construct a new one-filled array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(const int64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
     result->setTemp(true);
     result->link();
@@ -134,12 +134,12 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t 
 }
 
 // Construct a new random-filled array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
+/*bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
     return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(length));
-}
+}*/
 
 // Construct a new array, filled with the specified value
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, const int64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
     result->setTemp(true);
     result->link();
