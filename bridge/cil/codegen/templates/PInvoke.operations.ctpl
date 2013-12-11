@@ -1,0 +1,72 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include "codegen/templates/warn.txt"
+%include "codegen/templates/license.txt"
+
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
+%include "codegen/templates/typemap.cs"
+
+namespace NumCIL.Bohrium2
+{
+    internal static partial class PInvoke 
+    {
+
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_runtime_flush();
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode == "BH_IDENTITY"
+%for $op1_type, $op2_type in $typesigs
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other);
+%end for
+%end if
+%end for
+
+
+// Binary functions
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 3
+%for $op1_type, $op2_type, $op3_type in $typesigs
+%if $inplace == False
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs);
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[1]} lhs, bh_multi_array_${op3_type[2]}_p rhs);
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[1]} rhs);
+%else
+[DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs);
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_${op2_type[2]}_p self, ${op3_type[1]} rhs);
+%end if
+%slurp
+%end for
+
+%end if
+%end for
+
+// Unary functions
+
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
+%for $op1_type, $op2_type in $typesigs
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+%slurp
+%end for
+
+%end if
+%end for
+    }
+}

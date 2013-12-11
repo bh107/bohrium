@@ -133,7 +133,7 @@ namespace NumCIL
             if (@out.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(new LazyMatmulOperation<T>(addop, mulop), @out, in1, in2);
             else
-                FlushMethods.Matmul<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
+                ApplyManager.ApplyMatmul<T, CADD, CMUL>(addop, mulop, in1, in2, @out);
 
             return @out;
         }

@@ -1,0 +1,446 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include "codegen/templates/warn.txt"
+%include "codegen/templates/license.txt"
+
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
+%include "codegen/templates/typemap.cs"
+
+%set $ops = $data[0]
+%set $reduce_ops = $data[1]
+
+namespace NumCIL.Bohrium2
+{
+    internal static partial class PInvoke 
+    {
+        /// <summary>
+        /// Common slice range
+        /// </summary>
+        public struct bh_slice_range_p
+        {
+            /// <summary>
+            /// The internal pointer instance
+            /// </summary>
+            #pragma warning disable 0414
+            private IntPtr pointer;
+            #pragma warning restore 0414
+
+            /// <summary>
+            /// Constructs a slice from an IntPtr
+            /// </summary>
+            public bh_slice_range_p(IntPtr value) { pointer = value; }
+            
+            /// <summary>
+            /// Checks if the array is allocated, i.e. not null
+            /// </summary>
+            public bool IsAllocated { get { return pointer != IntPtr.Zero; } }
+        }
+
+        %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+
+        /// <summary>
+        /// Common base pointer
+        /// </summary>
+        public struct bh_base_${bh_ctype}_p : IDisposable
+        {
+            /// <summary>
+            /// The internal pointer instance
+            /// </summary>
+            #pragma warning disable 0414
+            private IntPtr pointer;
+            #pragma warning restore 0414
+
+            /// <summary>
+            /// Constructs a bh_base_${bh_ctype}_p from an IntPtr
+            /// </summary>
+            public bh_base_${bh_ctype}_p(IntPtr value) { pointer = value; }
+            
+            /// <summary>
+            /// Checks if the array is allocated, i.e. not null
+            /// </summary>
+            public bool IsAllocated { get { return pointer != IntPtr.Zero; } }
+
+            /// <summary>
+            /// Creates a new un-allocated base
+            /// </summary>
+            public bh_base_${bh_ctype}_p(long size)
+            {
+                this.pointer = bh_multi_array_${bh_ctype}_create_base(IntPtr.Zero, size).pointer;
+            }
+
+            /// <summary>
+            /// Creates a new allocated base
+            /// </summary>
+            public bh_base_${bh_ctype}_p(IntPtr data, long size)
+            {
+                 this.pointer = bh_multi_array_${bh_ctype}_create_base(data, size).pointer;
+            }
+
+            /// <summary>
+            /// Gets the data pointer from the base
+            /// </summary>
+            public IntPtr Data 
+            { 
+                get 
+                { 
+                    //Console.WriteLine("In base {0} getting data: {1}", this.pointer.ToInt64(), PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this));
+                    return IsAllocated ? PInvoke.bh_multi_array_${bh_ctype}_get_base_data(this) : IntPtr.Zero; 
+                } 
+                set { PInvoke.bh_multi_array_${bh_ctype}_set_base_data(this, value); } 
+            }
+
+            /// <summary>
+            /// Gets this instance as a pointer
+            /// </summary>
+            public IntPtr ToPointer() { return pointer; }
+            
+            /// <summary>
+            /// Gets the data pointer from the base
+            /// </summary>
+            public long Size { get { return PInvoke.bh_multi_array_${bh_ctype}_get_base_nelem(this); } }
+
+            /// <summary>
+            /// Releases the memory reserved by the pointer
+            /// </summary>
+            public void Dispose()
+            {
+                /*try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy_base(this); }
+                finally { pointer = IntPtr.Zero; }
+                */
+
+                pointer = IntPtr.Zero;
+            }
+
+            public string AsString()
+            {
+                return string.Format("self: {0}, data: {1}", pointer.ToInt64(), this.Data);
+            }
+        }
+
+
+        /// <summary>
+        /// The multi-array instance
+        /// </summary>
+        public struct bh_multi_array_${bh_ctype}_p : IDisposable
+        {
+            /// <summary>
+            /// The internal pointer instance
+            /// </summary>
+            #pragma warning disable 0414
+            private IntPtr pointer;
+            #pragma warning restore 0414
+
+            /// <summary>
+            /// Constructs a slice from an IntPtr
+            /// </summary>
+            public bh_multi_array_${bh_ctype}_p(IntPtr value) { pointer = value; }
+
+            /// <summary>
+            /// Checks if the array is allocated, i.e. not null
+            /// </summary>
+            public bool IsAllocated { get { return pointer != IntPtr.Zero; } }
+
+            /// <summary>
+            /// Gets or sets the array temp status
+            /// </summary>
+            public bool Temp
+            {
+                get { return IsAllocated ? bh_multi_array_${bh_ctype}_get_temp(this) : false; }
+                set { bh_multi_array_${bh_ctype}_set_temp(this, value); }
+            }
+
+            /// <summary>
+            /// Creates a new view
+            /// </summary>
+            public bh_multi_array_${bh_ctype}_p (NumCIL.Generic.NdArray<${bh_atype}> a)
+            {
+                var ac = a.DataAccessor;
+                if (ac is DataAccessor_${bh_ctype}) {
+                    var acp = ((DataAccessor_${bh_ctype})a.DataAccessor).GetArrayPointer();
+    
+                    this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
+                        acp.Base,
+                        a.Shape.Dimensions.Length, 
+                        a.Shape.Offset, 
+                        a.Shape.Dimensions.Select(x => x.Length).ToArray(),
+                        a.Shape.Dimensions.Select(x => x.Stride).ToArray()
+                    ).pointer;
+                } else {
+                    this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
+                        new bh_base_${bh_ctype}_p(PinnedArrayTracker.PinArray(a.DataAccessor.AsArray())),
+                        a.Shape.Dimensions.Length, 
+                        a.Shape.Offset, 
+                        a.Shape.Dimensions.Select(x => x.Length).ToArray(),
+                        a.Shape.Dimensions.Select(x => x.Stride).ToArray()
+                    ).pointer;
+                }
+
+                //Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
+            }
+
+            /// <summary>
+            /// Creates a new view from base
+            /// </summary>
+            public bh_multi_array_${bh_ctype}_p (bh_base_${bh_ctype}_p @base)
+            {
+                this.pointer = bh_multi_array_${bh_ctype}_new_from_base(@base).pointer;
+                //Console.WriteLine("Created multi_array {0} from a base", this.pointer.ToInt64());
+            }
+
+            /// <summary>
+            /// Releases the memory reserved by the pointer
+            /// </summary>
+            public void Dispose()
+            {
+                //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
+                try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy(this); }
+                finally { pointer = IntPtr.Zero; }
+            }
+
+            /// <summary>
+            /// Gets the base for a multi-array
+            /// </summary>
+            public bh_base_${bh_ctype}_p Base
+            {
+                get { return bh_multi_array_${bh_ctype}_get_base(this); }
+            }
+
+            /// <summary>
+            /// Gets the base for a multi-array
+            /// </summary>
+            public void Sync()
+            {
+                bh_multi_array_${bh_ctype}_sync(this);
+            }
+
+            public string AsString()
+            {
+                var s = pointer.ToInt64();
+                var b = pointer == IntPtr.Zero ? "null" : this.Base.AsString();
+                return string.Format("self: {0} (d: {2}), base: {1}", s, b, this.Base.Data.ToInt64());
+            }
+        }
+
+        /// <summary>
+        /// Common slice range
+        /// </summary>
+        public struct bh_slice_range_${bh_ctype}_p 
+        {
+            /// <summary>
+            /// The internal pointer instance
+            /// </summary>
+            #pragma warning disable 0414
+            private IntPtr pointer;
+            #pragma warning restore 0414
+
+            /// <summary>
+            /// Constructs a slice from an IntPtr
+            /// </summary>
+            public bh_slice_range_${bh_ctype}_p(IntPtr value) { pointer = value; }
+            
+            /// <summary>
+            /// Checks if the array is allocated, i.e. not null
+            /// </summary>
+            public bool IsAllocated { get { return pointer != IntPtr.Zero; } }
+        }
+
+        /// <summary>
+        /// Create a base pointer from existing data
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_base_${bh_ctype}_p bh_multi_array_${bh_ctype}_create_base(IntPtr data, int64_t nelem);
+
+        /// <summary>
+        /// Destroy a base pointer
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_destroy_base(bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Gets the data pointer from a base
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static IntPtr bh_multi_array_${bh_ctype}_get_base_data([In] bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Gets the number of elements in a base
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static int64_t bh_multi_array_${bh_ctype}_get_base_nelem([In] bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Sets the data pointer for a base
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_set_base_data(bh_base_${bh_ctype}_p @base, IntPtr data);
+
+        /// <summary>
+        /// Sets the temp status of an array
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_set_temp([In] bh_multi_array_${bh_ctype}_p self, bh_bool temp);
+
+        /// <summary>
+        /// Sets the temp status of an array
+        /// </summary>        
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_bool bh_multi_array_${bh_ctype}_get_temp([In] bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Construct a new array from bh_base_${bh_ctype}_p and view setup
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view([In] bh_base_${bh_ctype}_p @base, [In] int64_t rank, [In] int64_t start, [In] int64_t[] shape, [In] int64_t[] stride);
+
+        /// <summary>
+        /// Construct a new array from bh_base_${bh_ctype}_p and view setup
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base([In] bh_base_${bh_ctype}_p @base);
+
+        /// <summary>
+        /// Construct a new empty array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty([In] int64_t rank, [In] int64_t[] shape);
+
+        /// <summary>
+        /// Construct a new zero-filled array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes([In] int64_t rank, [In] int64_t[] shape);
+
+        /// <summary>
+        /// Construct a new one-filled array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones([In] int64_t rank, [In] int64_t[] shape);
+
+        /// <summary>
+        /// Construct a new array with sequential numbers
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range([In] int64_t start, [In] int64_t end, [In] int64_t skip);
+
+        /// <summary>
+        /// Construct a new random-filled array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random([In] int64_t length);
+
+        /// <summary>
+        /// Construct a new array, filled with the specified value
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value([In] ${bh_atype} value, [In] int64_t rank, [In] int64_t[] shape);
+
+        /// <summary>
+        /// Synchronizes the current base
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_base_${bh_ctype}_p bh_multi_array_${bh_ctype}_sync([In] bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Gets the base from an existing array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_base_${bh_ctype}_p bh_multi_array_${bh_ctype}_get_base([In] bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Construct a copy of the array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_copy(bh_multi_array_${bh_ctype}_p other);
+
+        /// <summary>
+        /// Destroy the pointer and release resources
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_destroy(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Gets the number of elements in the array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static uint64_t bh_multi_array_${bh_ctype}_get_length(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Gets the number of dimensions in the array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static uint64_t bh_multi_array_${bh_ctype}_get_rank(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Gets the number of elements in the dimension
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype}_p self, [In] int64_t dimension);
+
+        /// <summary>
+        /// Update with a scalar
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, [In] ${bh_atype} value);
+
+        /// <summary>
+        /// Update with an array
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other);
+
+        /// <summary>
+        /// Flatten view
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Transpose view
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self);
+
+        %for $opname, $enum in $reduce_ops
+        /// <summary>
+        /// Partial ${opname} reduction 
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, [In] int64_t axis);
+
+        %end for
+
+        /// <summary>
+        /// Sum
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Product
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Max
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Min
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
+
+        %end for
+    }
+}

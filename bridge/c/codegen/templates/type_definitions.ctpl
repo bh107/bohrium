@@ -1,0 +1,30 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+#include <bh.hpp>
+#include "include/bh_c_data_types.h"
+#include "include/bh_c_interface.h"
+
+using namespace bh;
+
+// Common slice range
+struct bh_slice_range {
+    slice_range me;
+};
+
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
+
+// $bh_enum
+
+struct bh_multi_array_${bh_ctype} {
+    multi_array<${bh_atype}> me;
+};
+struct bh_slice_range_${bh_ctype} {
+    slice<${bh_atype}> me;
+};
+
+%end for

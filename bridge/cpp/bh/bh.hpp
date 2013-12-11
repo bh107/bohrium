@@ -50,6 +50,7 @@ inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
     return 0;
 }
 
+#ifndef NO_VARIADICS
 template <typename ...Args>
 int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
 {
@@ -58,6 +59,7 @@ int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
 
     return 1;
 }
+#endif
 
 //
 // Extensions
@@ -124,12 +126,16 @@ public:
     // ** Constructors **
     multi_array();                              // Empty
     multi_array(const multi_array<T> &operand); // Copy
+    multi_array(const int64_t rank, const int64_t* shapes);
+    multi_array(bh_base* base, const int64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 
     template <typename OtherT>
     multi_array(const multi_array<OtherT> &operand);    // Copy
 
+#ifndef NO_VARIADICS
     template <typename ...Dimensions>                   // Variadic constructor
     multi_array(Dimensions... dims);
+#endif
 
     // ** Deconstructor **
     ~multi_array();
@@ -215,6 +221,7 @@ public:
     void setTemp(bool temp);
     bool linked() const;
     bool initialized() const;
+    void sync();
 
 protected:
     bool temp;
@@ -284,6 +291,9 @@ public:
     template <typename T>
     multi_array<T>& temp();
 
+    template <typename T>
+    multi_array<T>& temp(const int64_t size);
+
     template <typename T, typename OtherT>
     multi_array<T>& temp(multi_array<OtherT>& input);
 
@@ -333,8 +343,13 @@ multi_array<T>& zeros(size_t n, ...);
 template <typename T>
 multi_array<T>& ones(size_t n, ...);
 
+#ifndef NO_VARIADICS
+template <typename T, typename ...Dimensions>
+multi_array<T>& random(const Dimensions&... shape);
+#endif
+
 template <typename T>
-multi_array<T>& random(size_t n, ...);
+multi_array<T>& random(const int64_t length);
 
 template <typename T>
 multi_array<T>& randu(size_t n, ...);
@@ -373,9 +388,10 @@ T scalar(multi_array<T>& op);
 template <typename T, typename FromT>     // Typecast; implicit copy
 multi_array<T>& as(multi_array<FromT>& rhs);
 
+#ifndef NO_VARIADICS
 template <typename T, typename ...Dimensions>   //
 multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
-
+#endif
                             //
                             // What are these called? Transformers??? :)
                             //

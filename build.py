@@ -194,8 +194,8 @@ if __name__ == "__main__":
                   ("EXT-METHOD-MATMUL", "extmethods/matmul", True),\
                   ("BRIDGE-C++", "bridge/cpp", True),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
+                  ("BRIDGE-C", "bridge/c", True),\
                   ("BHNUMPY", "bohrium", True),\
-
 #                  ("VE-SCORE",  "ve/static/score", False),\
 #                  ("VE-MCORE",  "ve/static/mcore", False),\
 #                  ("VE-TILING", "ve/static/tiling", False),\

@@ -68,6 +68,7 @@ multi_array<T>& zeros(const Dimensions&... shape)
     return *result;
 }
 
+#ifndef NO_VARIADICS
 /** Random number generators. **/
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
@@ -103,9 +104,25 @@ multi_array<T>& randu(const Dimensions&... shape)
 
     return *result;
 }
+#endif
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, int64_t skip)
+multi_array<T>& random(const int64_t length)
+{
+    multi_array<T>* result = new multi_array<T>(1, &length);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
+    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)0);
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)1);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM,   *result, (T)42, *result);
+    
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip)
 {
     if ((start > end) && (skip>0)) {
         throw std::runtime_error("Error: Invalid range [start>end when skip>0].");
@@ -117,14 +134,14 @@ multi_array<T>& range(size_t start, size_t end, int64_t skip)
         throw std::runtime_error("Error: Invalid range [start=end].");
     }
     
-    uint64_t nelem;
+    int64_t nelem;
     if (skip>0) {
         nelem = (end-start+1)/skip;
     } else {
         nelem = (start-end+1)/abs(skip);
     }
 
-    multi_array<T>* result = new multi_array<T>(nelem);
+    multi_array<T>* result = new multi_array<T>(1, &nelem);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
