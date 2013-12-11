@@ -6,8 +6,8 @@ CXX?=g++
 WARNOPTS=-Wall
 EXTRAS+=
 ifeq ($(PLATFORM_OS),OSX)
-	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include -I$(ROOT)/thirdparty/jansson/include
-	EXTRA_LIBS+=-L$(ROOT)/thirdparty/jansson/osx-lib -L$(ROOT)/thirdparty/ctemplate/osx-lib 
+	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include 
+	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
 LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
