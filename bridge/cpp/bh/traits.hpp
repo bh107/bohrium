@@ -156,7 +156,7 @@ template <typename T>
 inline
 void assign_array_type(bh_base* base) {
     // TODO: The general case should result in a meaning-ful compile-time error.
-    std::cout << "Unsupported type!" << base << std::cout;
+    std::cout << "Unsupported type!" << base << std::endl;
 }
 
 template <>
