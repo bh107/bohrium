@@ -124,6 +124,8 @@ public:
     // ** Constructors **
     multi_array();                              // Empty
     multi_array(const multi_array<T> &operand); // Copy
+    multi_array(const uint64_t rank, const int64_t* shapes);
+    multi_array(bh_base* base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride);
 
     template <typename OtherT>
     multi_array(const multi_array<OtherT> &operand);    // Copy
@@ -215,6 +217,7 @@ public:
     void setTemp(bool temp);
     bool linked() const;
     bool initialized() const;
+    void sync();
 
 protected:
     bool temp;
@@ -333,8 +336,8 @@ multi_array<T>& zeros(size_t n, ...);
 template <typename T>
 multi_array<T>& ones(size_t n, ...);
 
-template <typename T>
-multi_array<T>& random(size_t n, ...);
+template <typename T, typename ...Dimensions>
+multi_array<T>& random(const Dimensions&... shape);
 
 template <typename T>
 multi_array<T>& randu(size_t n, ...);
@@ -375,7 +378,6 @@ multi_array<T>& as(multi_array<FromT>& rhs);
 
 template <typename T, typename ...Dimensions>   //
 multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
-
                             //
                             // What are these called? Transformers??? :)
                             //

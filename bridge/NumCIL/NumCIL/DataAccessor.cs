@@ -317,35 +317,35 @@ namespace NumCIL.Generic
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo binaryBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyBinaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo binaryBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyBinaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo unaryBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyUnaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo unaryBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyUnaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo nullaryBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyNullaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo nullaryBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyNullaryOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Reduce", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo reduceBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyReduce", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Matmul", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo matmulBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyMatmul", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo aggregateBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("Aggregate", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo aggregateBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyAggregate", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
 		/// Cache of the generic template method
 		/// </summary>
-		protected static readonly System.Reflection.MethodInfo unaryConversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyUnaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+		protected static readonly System.Reflection.MethodInfo unaryConversionBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyUnaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of the generic template method
         /// </summary>
-        protected static readonly System.Reflection.MethodInfo binaryConversionBaseMethodType = typeof(UFunc.FlushMethods).GetMethod("ApplyBinaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        protected static readonly System.Reflection.MethodInfo binaryConversionBaseMethodType = typeof(UFunc.ApplyManager).GetMethod("ApplyBinaryConvOp", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         /// <summary>
         /// Cache of instantiated template methods
         /// </summary>

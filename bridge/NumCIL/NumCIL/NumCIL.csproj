@@ -20,8 +20,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -60,7 +58,6 @@
       <DependentUpon>TypedArrays.tt</DependentUpon>
     </Compile>
     <Compile Include="UFunc\Aggregate.cs" />
-    <Compile Include="UFunc\FlushMethods.cs" />
     <Compile Include="UFunc\Matmul.cs" />
     <Compile Include="UFunc\Reduce.cs" />
     <Compile Include="UFunc\Apply.cs" />
@@ -68,6 +65,8 @@
     <Compile Include="UFunc\Threads.cs" />
     <Compile Include="UnsafeAPI.cs" />
     <Compile Include="Utility.cs" />
+    <Compile Include="UFunc\ApplyManager.cs" />
+    <Compile Include="UFunc\ApplyInterfaces.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TypedArrays.tt">

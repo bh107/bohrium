@@ -147,20 +147,6 @@ static void bh_sprint_instr(const bh_instruction *instr, char buf[])
         strcat(buf, tmp);
     }
 
-    if (instr->opcode == BH_USERFUNC)
-    {
-        bh_userfunc* userfunc = instr->userfunc;
-        for(i=0; i < userfunc->nout; i++) {
-            bh_sprint_view( &userfunc->operand[i], op_str );
-            sprintf(tmp, "  OUT%d %s\n", i, op_str);
-            strcat(buf, tmp);
-        }
-        for(i=userfunc->nout; i < userfunc->nout + userfunc->nin; i++) {
-            bh_sprint_view( &userfunc->operand[i], op_str );
-            sprintf(tmp, "  IN%d %s\n", i, op_str);
-            strcat(buf, tmp);
-        }
-    }
     strcat(buf, "}");
 
 }

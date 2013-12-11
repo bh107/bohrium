@@ -2638,16 +2638,6 @@
         "types": []
     },
     {
-        "opcode": "BH_USERFUNC",
-        "doc": "System instruction that represents a user-defined function registered by the Bridge.",
-        "code": "USER DEFINED BEHAVIOR",
-        "nop": 0,
-        "id": 58,
-        "system_opcode": true,
-        "elementwise": false,
-        "types": []
-    },
-    {
         "opcode": "BH_ADD_REDUCE",
         "doc": "Sums all elements in the specified dimension.",
         "code": "sum(a, axis)",

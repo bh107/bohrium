@@ -105,7 +105,7 @@ multi_array<T>& randu(const Dimensions&... shape)
 }
 
 template <typename T>
-multi_array<T>& range(size_t start, size_t end, int64_t skip)
+multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip)
 {
     if ((start > end) && (skip>0)) {
         throw std::runtime_error("Error: Invalid range [start>end when skip>0].");

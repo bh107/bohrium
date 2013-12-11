@@ -1,0 +1,12 @@
+[
+    ["add", "ADD"],
+    ["multiply", "MULTIPLY"],
+    ["min", "MIN"],
+    ["max", "MAX"],
+    ["logical_and", "LOGICAL_AND"],
+    ["logical_or", "LOGICAL_OR"],
+    ["logical_xor", "LOGICAL_XOR"],
+    ["bitwsie_and", "BITWISE_AND"],
+    ["bitwise_or", "BITWISE_OR"],
+    ["bitwsie_xor", "BITWISE_XOR"]
+]

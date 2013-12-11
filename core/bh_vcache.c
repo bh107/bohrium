@@ -221,7 +221,6 @@ bh_error bh_vcache_malloc(bh_instruction* inst)
         case BH_NONE:                           // No memory operations for these
         case BH_DISCARD:
         case BH_SYNC:
-        case BH_USERFUNC:
         case BH_FREE:
             break;
         default:

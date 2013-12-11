@@ -1,0 +1,217 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%set $ops = $data[0]
+%set $reduce_ops = $data[1]
+
+
+#include <bh.hpp>
+#include "include/bh_c_data_types.h"
+#include "include/bh_c_interface.h"
+#include "bh_c_type_definitions.hpp"
+
+using namespace bh;
+
+// Common runtime methods
+void bh_runtime_flush() {
+    Runtime::instance().flush();
+}
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+
+// $bh_enum
+
+// Create a base pointer from existing data
+bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem)
+{
+    bh_base_p base = new bh_base;
+    assign_array_type<${bh_atype}>(base);
+    base->nelem = nelem;
+    base->data  = data;
+
+    return base;
+}
+
+// Destroy a base pointer
+void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base)
+{
+    delete base;
+}
+
+// Gets the data pointer from a base
+bh_data_ptr bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
+{
+    return base->data;
+}
+
+// Gets the number of elements in a base
+int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base)
+{
+    return base->nelem;
+}
+
+// Sets the data pointer for a base
+void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, bh_data_ptr data)
+{
+    base->data = data;
+}
+
+
+// Get the base from an existing array
+bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
+{
+    return ((multi_array<${ctype}>*)self)->getBase();
+}
+
+// Sync the current base
+void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self)
+{
+    ((multi_array<${ctype}>*)self)->sync();
+}
+
+// Sets the temp status of an array
+void bh_multi_array_${bh_ctype}_set_temp(const bh_multi_array_${bh_ctype}_p self, bh_bool temp)
+{
+    ((multi_array<${ctype}>*)self)->setTemp(temp);
+}
+
+// Gets the temp status of an array
+bh_bool bh_multi_array_${bh_ctype}_get_temp(const bh_multi_array_${bh_ctype}_p self)
+{
+    return ((multi_array<${ctype}>*)self)->getTemp();
+}
+
+// Construct a new array from bh_base_p and view setup
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_base_p base)
+{
+    const int64_t stride = 1;
+    const int64_t shape = base->nelem;
+    bh_multi_array_${bh_ctype}_p self = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);    
+    ((multi_array<${ctype}>*)self)->link(base);
+
+    return self;
+}
+
+
+// Construct a new array from bh_base_p and bh_view_p
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
+{
+    bh_multi_array_${bh_ctype}_p tmp = (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(base, rank, start, shape, stride);
+    return tmp;
+}
+
+
+// Construct a new sized array
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape) {
+    return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
+}
+
+// Construct a new zero-filled array
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, const int64_t* shape) {
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
+    result->setTemp(true);
+    result->link();
+    *result = (${ctype})0;
+
+    return (bh_multi_array_${bh_ctype}_p)result;
+}
+
+// Construct a new one-filled array
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, const int64_t* shape) {
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
+    result->setTemp(true);
+    result->link();
+    *result = (${ctype})1;
+
+    return (bh_multi_array_${bh_ctype}_p)result;
+}
+
+// Construct a new array with sequential numbers
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip) {
+    return (bh_multi_array_${bh_ctype}_p)&(range<${ctype}>(start, end, skip));
+}
+
+// Construct a new random-filled array
+/*bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
+    return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(length));
+}*/
+
+// Construct a new array, filled with the specified value
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, uint64_t rank, const int64_t* shape) {
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
+    result->setTemp(true);
+    result->link();
+    *result = value;
+
+    return (bh_multi_array_${bh_ctype}_p)result;
+}
+
+// Construct a copy of the array
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_copy(bh_multi_array_${bh_ctype}_p other) {
+    return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(*((multi_array<${ctype}>*)other));
+}
+
+// Destroy the pointer and release resources
+void bh_multi_array_${bh_ctype}_destroy(bh_multi_array_${bh_ctype}_p self) {
+    delete ((multi_array<${ctype}>*)self);
+}
+
+// Gets the number of elements in the array
+uint64_t bh_multi_array_${bh_ctype}_get_length(bh_multi_array_${bh_ctype}_p self) {
+    return ((multi_array<${ctype}>*)self)->len();
+}
+
+// Gets the number of dimensions in the array
+uint64_t bh_multi_array_${bh_ctype}_get_rank(bh_multi_array_${bh_ctype}_p self) {
+    return ((multi_array<${ctype}>*)self)->getRank();
+}
+
+// Gets the number of elements in the dimension
+uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype}_p self, const int64_t size) {
+    return ((multi_array<${ctype}>*)self)->shape(size);
+}
+
+// Update with a scalar
+void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${ctype} value) {
+    (*((multi_array<${ctype}>*)self))(value);
+}
+
+// Update with an array
+void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other) {
+    (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
+}
+
+%for $opname, $enum in $reduce_ops
+// Partial ${opname} reduction 
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
+    return (bh_multi_array_${bh_ctype}_p)&reduce(*((multi_array<${ctype}>*)self), ${enum}, axis);
+}
+
+%end for
+%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128"
+
+// Sum
+${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(sum(*((multi_array<${ctype}>*)self)));
+}
+
+// Product
+${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(product(*((multi_array<${ctype}>*)self)));
+}
+
+// Max
+${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(max(*((multi_array<${ctype}>*)self)));
+}
+
+
+// Min
+${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(min(*((multi_array<${ctype}>*)self)));
+}
+
+%end if
+%end for

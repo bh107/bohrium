@@ -115,7 +115,7 @@ namespace NumCIL
             if (@out.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out, v.Item1, v.Item2);
             else
-                FlushMethods.ApplyBinaryOp<T, C>(op, v.Item1, v.Item2, @out);
+                ApplyManager.ApplyBinaryOp<T, C>(op, v.Item1, v.Item2, @out);
 
             return @out;
         }
@@ -143,7 +143,7 @@ namespace NumCIL
             if (@out.DataAccessor is ILazyAccessor<Tb>)
                 ((ILazyAccessor<Tb>)@out.DataAccessor).AddConversionOperation(op, @out, v.Item1, v.Item2);
             else
-                FlushMethods.ApplyBinaryConvOp<Ta, Tb, C>(op, v.Item1, v.Item2, @out);
+                ApplyManager.ApplyBinaryConvOp<Ta, Tb, C>(op, v.Item1, v.Item2, @out);
 
             return @out;
         }
@@ -243,7 +243,7 @@ namespace NumCIL
             if (v.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)v.DataAccessor).AddOperation(op, v, in1);
             else
-                FlushMethods.ApplyUnaryOp<T, C>(op, in1, v);
+                ApplyManager.ApplyUnaryOp<T, C>(op, in1, v);
 
             return v;
         }
@@ -323,7 +323,7 @@ namespace NumCIL
             if (v.DataAccessor is ILazyAccessor<Tb>)
                 ((ILazyAccessor<Tb>)v.DataAccessor).AddConversionOperation<Ta>(op, v, in1);
             else
-                FlushMethods.ApplyUnaryConvOp<Ta, Tb, C>(op, in1, v);
+                ApplyManager.ApplyUnaryConvOp<Ta, Tb, C>(op, in1, v);
 
             return v;
         }
@@ -369,7 +369,7 @@ namespace NumCIL
             if (@out.DataAccessor is ILazyAccessor<T>)
                 ((ILazyAccessor<T>)@out.DataAccessor).AddOperation(op, @out);
             else
-                FlushMethods.ApplyNullaryOp<T, C>(op, @out);
+                ApplyManager.ApplyNullaryOp<T, C>(op, @out);
         }
 
         /// <summary>

@@ -133,11 +133,30 @@ void assign_const_type( bh_constant* constant, bh_complex128 value )
     constant->type = BH_COMPLEX128;
 }
 
+
+template <>
+inline
+void assign_const_type( bh_constant* constant, std::complex<float> value )
+{
+    constant->value.complex64.real = value.real();
+    constant->value.complex64.imag = value.imag();
+    constant->type = BH_COMPLEX64;
+}
+
+template <>
+inline
+void assign_const_type( bh_constant* constant, std::complex<double> value )
+{
+    constant->value.complex128.real = value.real();
+    constant->value.complex128.imag = value.imag();
+    constant->type = BH_COMPLEX128;
+}
+
 template <typename T>
 inline
 void assign_array_type(bh_base* base) {
     // TODO: The general case should result in a meaning-ful compile-time error.
-    std::cout << "Unsupported type!" << base << std::cout;
+    std::cout << "Unsupported type!" << base << std::endl;
 }
 
 template <>
@@ -220,6 +239,21 @@ void assign_array_type<bh_complex64>(bh_base* base)
 template <>
 inline
 void assign_array_type<bh_complex128>(bh_base* base)
+{
+    base->type = BH_COMPLEX128;
+}
+
+
+template <>
+inline
+void assign_array_type<std::complex<float> >(bh_base* base)
+{
+    base->type = BH_COMPLEX64;
+}
+
+template <>
+inline
+void assign_array_type<std::complex<double> >(bh_base* base)
 {
     base->type = BH_COMPLEX128;
 }

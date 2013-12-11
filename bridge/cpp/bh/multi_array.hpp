@@ -40,6 +40,34 @@ multi_array<T>::multi_array() : temp(false), base(NULL)
     meta.stride[0]  = 0;
 }
 
+template <typename T>           // Plain shaped constructor
+multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp(false), base(NULL)
+{
+    meta.base       = NULL;
+    meta.ndim       = rank;
+    meta.start      = 0;
+
+    int64_t stride = 1;                 // Setup strides
+    for(int64_t i=meta.ndim-1; 0 <= i; --i) {
+        meta.shape[i] = sizes[i];
+        meta.stride[i] = stride;
+        stride *= meta.shape[i];
+    }
+}
+
+template <typename T>           // base/view constructor
+multi_array<T>::multi_array(bh_base* _base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
+{
+    meta.ndim   = rank;
+    meta.start  = start;
+    meta.base   = _base;
+
+    for(int64_t i=0; i < rank; i++) {
+        meta.shape[i] = shape[i];
+        meta.stride[i] = stride[i];
+    }
+}
+
 template <typename T>           // Copy constructor
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(NULL)
 {
@@ -138,11 +166,16 @@ int64_t multi_array<T>::shape(int64_t dim)
 }
 
 template <typename T>
-typename multi_array<T>::iterator multi_array<T>::begin()
+void multi_array<T>::sync()
 {
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
     Runtime::instance().flush();
+}
 
+template <typename T>
+typename multi_array<T>::iterator multi_array<T>::begin()
+{
+    this->sync();
     return multi_array<T>::iterator(meta);
 }
 
@@ -393,6 +426,7 @@ multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
     return *this;
 }
 
+#ifndef NO_VARIADICS
 /**
  *  Aliasing through reshaping.
  */
@@ -420,6 +454,7 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
 
     return *result;
 }
+#endif
 
 //
 // Update
