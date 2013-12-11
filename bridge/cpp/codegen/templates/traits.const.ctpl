@@ -20,3 +20,22 @@ void assign_const_type( bh_constant* constant, $bh_atype value )
 }
 
 %end for
+
+template <>
+inline
+void assign_const_type( bh_constant* constant, std::complex<float> value )
+{
+    constant->value.complex64.real = value.real();
+    constant->value.complex64.imag = value.imag();
+    constant->type = BH_COMPLEX64;
+}
+
+template <>
+inline
+void assign_const_type( bh_constant* constant, std::complex<double> value )
+{
+    constant->value.complex128.real = value.real();
+    constant->value.complex128.imag = value.imag();
+    constant->type = BH_COMPLEX128;
+}
+
