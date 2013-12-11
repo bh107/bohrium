@@ -169,7 +169,10 @@ def genesis(config, opcodes, types):
     """
 
     # Load Bohrium with source-dumping enabled.
-    os.environ['BH_VE_CPU_DUMPSRC'] = "1"
+    os.environ['BH_VE_CPU_JIT_ENABLED']     = "1"
+    os.environ['BH_VE_CPU_JIT_OPTIMIZE']    = "0"
+    os.environ['BH_VE_CPU_JIT_FUSION']      = "0"
+    os.environ['BH_VE_CPU_JIT_DUMPSRC']     = "1"
     import bohrium as np
 
     # Grab the bytecode definition

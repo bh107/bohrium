@@ -31,13 +31,8 @@ all: $(LIB)
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
-precompile:
-		/usr/bin/time ./precompiler
-
 clean:
-		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core precompiler
-		touch kernels/empty
-		touch objects/empty
+		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core
 
 install: all
 		cp $(LIB) $(INSTALLDIR)/
@@ -45,4 +40,4 @@ install: all
 		mkdir -p $(INSTALLDIR)/cpu/objects
 		mkdir -p $(INSTALLDIR)/cpu/templates
 		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
-		cp -r include $(INSTALLDIR)/cpu/include
+		cp -r include $(INSTALLDIR)/cpu/
