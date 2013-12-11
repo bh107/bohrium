@@ -143,6 +143,7 @@ public:
         }
 
         res = true;     // Load multiple functions from shared library
+        size_t prev = nloaded;
         for(std::vector<std::string>::iterator lib_fn=multiples.begin();
             (lib_fn != multiples.end()) && res;
             ++lib_fn) {
@@ -157,8 +158,10 @@ public:
             }
             symbol_file.close();
         }
+        std::cout << nloaded-prev << " from a single shared library." << std::endl;
 
         res = true;     // Load a single function from shared library
+        prev = nloaded;
         for(std::vector<std::string>::iterator lib_fn=singles.begin();
             (lib_fn != singles.end()) && res;
             ++lib_fn) {
@@ -167,7 +170,7 @@ public:
                 nloaded += res;
             }
         }
-        std::cout << "Preloaded " << nloaded << " functions." << std::endl;
+        std::cout << nloaded-prev << " from multiple shared libraries." << std::endl;
         return nloaded;
     }
 
