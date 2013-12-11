@@ -89,10 +89,7 @@ __NOPS__
  */
 int bh_operands_in_instruction(const bh_instruction *inst)
 {
-    if (inst->opcode == BH_USERFUNC)
-        return inst->userfunc->nin + inst->userfunc->nout;
-    else
-        return bh_operands(inst->opcode);
+    return bh_operands(inst->opcode);
 }
 
 /* Text descriptions for a given operation */

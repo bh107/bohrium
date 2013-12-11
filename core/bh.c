@@ -224,10 +224,7 @@ bh_error bh_data_free(bh_base* base)
  */
 bh_view *bh_inst_operands(bh_instruction *instruction)
 {
-    if (instruction->opcode == BH_USERFUNC)
-        return (bh_view *) instruction->userfunc->operand;
-    else
-        return (bh_view *) &instruction->operand;
+    return (bh_view *) &instruction->operand;
 }
 
 /* Determines whether the base array is a scalar.
