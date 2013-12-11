@@ -196,10 +196,11 @@ def genesis(config, opcodes, types):
             if ndim not in operands[tn]:
                 operands[tn][ndim] = {}
             for op in [0,1,2]:
-                operands[tn][ndim][op] = np.ones(
-                    [3]*ndim,
-                    dtype = typemap[tn]
-                )
+                operands[tn][ndim][op] = {
+                    'c': np.ones( [3]*ndim, dtype = typemap[tn] ),
+                    's': np.ones( [3]*ndim, dtype = typemap[tn] ),
+                    'k': 3
+                }
     
     # Call all element-wise opcodes
     for opcode in (opcode for opcode in opcodes
@@ -213,29 +214,51 @@ def genesis(config, opcodes, types):
 
                 if 'REDUCE' in opcode['opcode']:
                     op_setup = [
-                        operands[typesig[1]][dim][1]
+                        operands[typesig[1]][dim][1]['c']
                     ]
                 else:
                     if nop == 3:
                         op_setup = [
-                            operands[typesig[1]][dim][1],
-                            operands[typesig[2]][dim][2],
-                            operands[typesig[0]][dim][0]
+                            operands[typesig[1]][dim][1]['c'],
+                            operands[typesig[2]][dim][2]['c'],
+                            operands[typesig[0]][dim][0]['c']
                         ]
+                        a = np.sum(func(*op_setup))         # Call it
+                        a == 1
+
+                        op_setup = [
+                            operands[typesig[1]][dim][1]['c'],
+                            operands[typesig[2]][dim][2]['k'],
+                            operands[typesig[0]][dim][0]['c']
+                        ]
+                        a = np.sum(func(*op_setup))         # Call it
+                        a == 1
+
+                        op_setup = [
+                            operands[typesig[1]][dim][1]['k'],
+                            operands[typesig[2]][dim][2]['c'],
+                            operands[typesig[0]][dim][0]['c']
+                        ]
+                        a = np.sum(func(*op_setup))         # Call it
+                        a == 1
+
                     elif nop == 2:
                         op_setup = [
-                            operands[typesig[1]][dim][1],
-                            operands[typesig[0]][dim][0]
+                            operands[typesig[1]][dim][1]['c'],
+                            operands[typesig[0]][dim][0]['c']
                         ]
+                        a = np.sum(func(*op_setup))         # Call it
+                        a == 1
+
                     elif nop == 1:
                         op_setup = [
-                            operands[typesig[0]][dim][0]
+                            operands[typesig[0]][dim][0]['c']
                         ]
+                        a = np.sum(func(*op_setup))         # Call it
+                        a == 1
+
                     else:
                         raise Exception("Unsupported number of operands.")
-
-                a = np.sum(func(*op_setup))         # Call it
-                a == 1
 
     # Call random
     for ndim in dimensions:
@@ -259,8 +282,10 @@ def genesis(config, opcodes, types):
             otype = typesig[0]
             rtype = typesig[1]
 
-            operands[otype][1][1][:] = operands[rtype][1][1][:]
-            a = np.sum(operands[otype][1][1])
+            operands[otype][1][0]['c'][:] = operands[rtype][1][1]['c'][:]
+            operands[otype][1][0]['c'][:] = operands[rtype][1][1]['s'][:]
+            operands[otype][1][0]['c'][:] = operands[rtype][1][1]['k']
+            a = np.sum(operands[otype][1][1]['c'])
             a == 1
     
     return (None, None)
