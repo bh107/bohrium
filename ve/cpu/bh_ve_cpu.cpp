@@ -42,12 +42,12 @@ using namespace std;
 static bh_component myself;
 static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
-static bh_intp vcache_size   = 10;
-static bh_intp do_fuse = 1;
-static bh_intp do_jit  = 1;
-//static bh_intp do_optimize  = 1;
-static bh_intp do_optimize  = 0;
-static bh_intp dump_src = 0;
+static bh_intp vcache_size  = 10;
+static bh_intp jit_enabled  = 1;
+static bh_intp jit_preload  = 1;
+static bh_intp jit_fusion   = 1;
+static bh_intp jit_optimize = 1;
+static bh_intp jit_dumpsrc  = 0;
 
 static char* compiler_cmd;   // cpu Arguments
 static char* kernel_path;
@@ -60,7 +60,7 @@ typedef struct bh_sij {
     int lmask;              // Layout mask
     int tsig;               // Type signature
 
-    string symbol;     // String representation
+    string symbol;          // String representation
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
 
 #include "compiler.cpp"
@@ -129,30 +129,48 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_DOFUSE");
+    env = getenv("BH_VE_CPU_JIT_ENABLED");
     if (NULL != env) {
-        do_fuse = atoi(env);
+        jit_enabled = atoi(env);
     }
-    if (!((0==do_fuse) || (1==do_fuse))) {
-        fprintf(stderr, "BH_VE_CPU_DOFUSE (%ld) should 0 or 1.\n", (long int)do_fuse);
+    if (!((0==jit_enabled) || (1==jit_enabled))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_ENABLED (%ld) should 0 or 1.\n", (long int)jit_enabled);
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_DOOPTIMIZE");
+    env = getenv("BH_VE_CPU_JIT_PRELOAD");
     if (NULL != env) {
-        do_optimize = atoi(env);
+        jit_preload = atoi(env);
     }
-    if (!((0==do_optimize) || (1==do_optimize))) {
-        fprintf(stderr, "BH_VE_CPU_DOOPTIMIZE (%ld) should 0 or 1.\n", (long int)do_optimize);
+    if (!((0==jit_preload) || (1==jit_preload))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_PRELOAD (%ld) should 0 or 1.\n", (long int)jit_preload);
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_DUMPSRC");
+    env = getenv("BH_VE_CPU_JIT_FUSION");
     if (NULL != env) {
-        dump_src = atoi(env);
+        jit_fusion = atoi(env);
     }
-    if (!((0==dump_src) || (1==dump_src))) {
-         fprintf(stderr, "BH_VE_CPU_DUMPSRC (%ld) should 0 or 1.\n", (long int)dump_src);
+    if (!((0==jit_fusion) || (1==jit_fusion))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_FUSION (%ld) should 0 or 1.\n", (long int)jit_fusion);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_OPTIMIZE");
+    if (NULL != env) {
+        jit_optimize = atoi(env);
+    }
+    if (!((0==jit_optimize) || (1==jit_optimize))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_OPTIMIZE (%ld) should 0 or 1.\n", (long int)jit_optimize);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_DUMPSRC");
+    if (NULL != env) {
+        jit_dumpsrc = atoi(env);
+    }
+    if (!((0==jit_dumpsrc) || (1==jit_dumpsrc))) {
+         fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
         return BH_ERROR;
     }
 
@@ -164,8 +182,19 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
     bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
 
+    if (false) {
+        std::cout << "ENVIRONMENT {" << std::endl;
+        std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_ENABLED="   << jit_enabled  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_PRELOAD="   << jit_preload  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_FUSION="    << jit_fusion   << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_OPTIMIZE="  << jit_optimize << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_DUMPSRC="   << jit_dumpsrc  << std::endl;
+        std::cout << "}" << std::endl;
+    }
+
     // JIT machinery
-    target = new process(compiler_cmd, object_path, kernel_path, true);
+    target = new process(compiler_cmd, object_path, kernel_path, jit_preload);
     specializer_init();     // Code templates and opcode-specialization.
 
     #ifdef PROFILE
@@ -179,10 +208,10 @@ bh_error bh_ve_cpu_init(const char *name)
 // Execute a single instruction
 static bh_error exec(bh_instruction *instr)
 {
-    bh_sij_t        sij;
+    bh_sij_t sij;
     bh_error res = BH_SUCCESS;
 
-    //Lets check if it is a known extension method
+    // Lets check if it is a known extension method
     {
         map<bh_opcode,bh_extmethod_impl>::iterator ext;
         ext = extmethod_op2impl.find(instr->opcode);
@@ -192,14 +221,14 @@ static bh_error exec(bh_instruction *instr)
         }
     }
 
-    symbolize(instr, sij, do_optimize);             // Construct symbol
+    symbolize(instr, sij, jit_optimize);             // Construct symbol
 
-    if (do_jit && \
+    if (jit_enabled && \
         (sij.symbol!="") && \
         (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
 
-        string sourcecode = specialize(sij, do_optimize);   // Specialize sourcecode
-        if (dump_src==1) {                          // Dump sourcecode to file
+        string sourcecode = specialize(sij, jit_optimize);   // Specialize sourcecode
+        if (jit_dumpsrc==1) {                          // Dump sourcecode to file
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
