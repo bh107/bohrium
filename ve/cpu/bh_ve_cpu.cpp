@@ -45,6 +45,8 @@ static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 static bh_intp vcache_size   = 10;
 static bh_intp do_fuse = 1;
 static bh_intp do_jit  = 1;
+//static bh_intp do_optimize  = 1;
+static bh_intp do_optimize  = 0;
 static bh_intp dump_src = 0;
 
 static char* compiler_cmd;   // cpu Arguments
@@ -136,6 +138,15 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
+    env = getenv("BH_VE_CPU_DOOPTIMIZE");
+    if (NULL != env) {
+        do_optimize = atoi(env);
+    }
+    if (!((0==do_optimize) || (1==do_optimize))) {
+        fprintf(stderr, "BH_VE_CPU_DOOPTIMIZE (%ld) should 0 or 1.\n", (long int)do_optimize);
+        return BH_ERROR;
+    }
+
     env = getenv("BH_VE_CPU_DUMPSRC");
     if (NULL != env) {
         dump_src = atoi(env);
@@ -181,13 +192,13 @@ static bh_error exec(bh_instruction *instr)
         }
     }
 
-    symbolize(instr, sij);                          // Construct symbol
+    symbolize(instr, sij, do_optimize);             // Construct symbol
 
     if (do_jit && \
         (sij.symbol!="") && \
         (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
 
-        string sourcecode = specialize(sij);        // Specialize sourcecode
+        string sourcecode = specialize(sij, do_optimize);   // Specialize sourcecode
         if (dump_src==1) {                          // Dump sourcecode to file
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
