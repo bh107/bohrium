@@ -366,7 +366,6 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& 
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
     instr->operand[2] = op2.meta;
-    assign_const_type( &instr->constant, op2 );
 
     if (op1.getTemp()) { delete &op1; }
     if (op2.getTemp()) { delete &op2; }
