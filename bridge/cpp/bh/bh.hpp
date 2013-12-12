@@ -275,9 +275,6 @@ public:
     template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
     void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
 
-    template <typename T>                   // Userfunc / extensions
-    void enqueue(bh_userfunc* rinstr);
-
     size_t flush();
     size_t get_queue_size();
 
@@ -304,7 +301,6 @@ private:
     bh_component_iface  *runtime;
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
-    bh_userfunc     *ext_queue[BH_CPP_QUEUE_MAX];
     size_t          ext_in_queue;
     size_t          queue_size;
                                                 // DSEL stuff

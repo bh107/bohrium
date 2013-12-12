@@ -62,9 +62,9 @@ multi_array<T>::multi_array(bh_base* _base, uint64_t rank, const int64_t start, 
     meta.start  = start;
     meta.base   = _base;
 
-    for(int64_t i=0; i < rank; i++) {
-        meta.shape[i] = shape[i];
-        meta.stride[i] = stride[i];
+    for(uint64_t i=0; i < rank; i++) {
+        meta.shape[i]   = shape[i];
+        meta.stride[i]  = stride[i];
     }
 }
 

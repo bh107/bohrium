@@ -11,8 +11,9 @@ const char* bh_typesig_to_shorthand(int typesig)
         %end for
 
         default:
-            printf("Err: Unsupported type signature %d.\n", typesig);
-            return "_UNS_";
+            printf( "cpu(bh_typesig_to_shorthand): "
+                    "Unsupported type signature %d.\n", typesig);
+            return "{{UNSUPPORTED}}";
     }
 }
 

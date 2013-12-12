@@ -43,16 +43,9 @@ int error(const char *err_msg, const char *fmt, ...) {
 }
 
 typedef void (*func)(int tool, ...);
-//typedef std::map<std::string, func> func_storage;
-//typedef std::map<std::string, void*> handle_storage;
 
 typedef std::unordered_map<std::string, func> func_storage;
 typedef std::unordered_map<std::string, void*> handle_storage;
-
-/**
- *  TODO: Load existing objects at startup.
- *          Then pre-compilation and warmup rounds will be possible.
- */
 
 /**
  * The compiler interface.
@@ -106,7 +99,7 @@ public:
         uid[6] = 0;
 
         if (do_preload) {     // Now load all objects...
-            preload();      
+            preload();
         }
     }
 
@@ -114,51 +107,71 @@ public:
         return funcs.count(symbol) > 0;
     }
 
+    /**
+     *  Load all symbols in object-path.
+     */
     size_t preload()
     {
         DIR *dir;
         struct dirent *ent;
         size_t nloaded = 0;
+        bool res;
+
+        std::vector<std::string> singles;
+        std::vector<std::string> multiples;
+                                                        // Find objects to load
         if ((dir = opendir (object_path.c_str())) != NULL) {
             while ((ent = readdir (dir)) != NULL) {
                 size_t fn_len = strlen(ent->d_name);
-
-                if (14>fn_len) {              // Not what we want
-                    continue;
-                }
-
                 std::string fn(ent->d_name),
                             lib_fn;
-
+                if (14>fn_len) {                        // Not what we want
+                    continue;
+                }
                 if (0==fn.compare(0,3, "BH_")) {        // Single
                     lib_fn.assign(fn, 0, fn_len-10);    // Remove "_xxxxxx.so"
-                    if (load(lib_fn, lib_fn)) {
-                        ++nloaded;
-                    };                                  // Multiple
-                } else if (0==fn.compare(fn_len-4, 4, ".ind")) {
+                    singles.push_back(lib_fn);
+                                                        // Multiple
+                } else if (0==fn.compare(fn_len-4, 4, ".idx")) {
                     lib_fn.assign(fn, 0, fn_len-11);    // Remove "_xxxxxx.ind"
-                    std::string index_fn = lib_path(lib_fn.c_str(), "ind");
-
-                    std::vector<std::string> symbols;
-                    std::ifstream symbol_file(index_fn);
-                    for(std::string symbol; getline(symbol_file, symbol);) {
-                        symbols.push_back(symbol);
-                    }
-                    symbol_file.close();
-
-                    nloaded += load(symbols, lib_fn);
-
-                } else {                                        // Ignore
-                    std::cout << "Ignorning non-loadable file: ";
-                    std::cout << "[" << fn << "] ";
-                    std::cout << "found in object-path." << std::endl;
+                    multiples.push_back(lib_fn);
                 }
             }
             closedir (dir);
-            return nloaded;
         } else {
-            throw std::runtime_error("Failed opening bla bla lba.");
+            throw std::runtime_error("Failed opening object-path.");
         }
+
+        res = true;     // Load multiple functions from shared library
+        size_t prev = nloaded;
+        for(std::vector<std::string>::iterator lib_fn=multiples.begin();
+            (lib_fn != multiples.end()) && res;
+            ++lib_fn) {
+
+            std::string index_fn = lib_path((*lib_fn).c_str(), "idx");
+            std::ifstream symbol_file(index_fn);// Open symbol-file
+            for(std::string symbol; getline(symbol_file, symbol) && res;) {
+                if (!symbol_ready(symbol)) {    // Skip already-loaded
+                    res = load(symbol, *lib_fn);
+                    nloaded += res;
+                }
+            }
+            symbol_file.close();
+        }
+        std::cout << nloaded-prev << " from a single shared library." << std::endl;
+
+        res = true;     // Load a single function from shared library
+        prev = nloaded;
+        for(std::vector<std::string>::iterator lib_fn=singles.begin();
+            (lib_fn != singles.end()) && res;
+            ++lib_fn) {
+            if (!symbol_ready(*lib_fn)) {
+                res = load(*lib_fn, *lib_fn);
+                nloaded += res;
+            }
+        }
+        std::cout << nloaded-prev << " from multiple shared libraries." << std::endl;
+        return nloaded;
     }
 
     /**
@@ -169,7 +182,7 @@ public:
         char *error_msg = NULL;             // Buffer for dlopen errors
         int errnum = 0;
 
-        std::string library_fn = lib_path(  // "./objects/<symbol>_XXXXXX"
+        std::string library_fn = lib_path(  // "./objects/<library>_XXXXXX"
                 library.c_str(),
                 "so"
         );
@@ -203,24 +216,10 @@ public:
                 library_fn.c_str(),
                 symbol.c_str()
             );
+            //free(error_msg); TODO: This should not be freed!?
             return false;
         }
         return true;
-    }
-
-    /**
-     *  Load multiple symbols from library into func-storage.
-     */
-    bool load(std::vector<std::string> symbols, std::string library)
-    {
-        bool res = true;
-        for(std::vector<std::string>::iterator symbol=symbols.begin();
-            (symbol != symbols.end()) && res;
-            ++symbol
-        ) {
-            res *= load(*symbol, library);
-        }
-        return res;
     }
 
     /**
@@ -258,8 +257,8 @@ public:
     bool compile(std::string library, const char* sourcecode, size_t source_len)
     {
         std::string cmd = command(library.c_str(), "so");
-        FILE *cmd_stdin     = NULL;                     // Handle for library-file
-        cmd_stdin = popen(cmd.c_str(), "w");            // Execute the command
+        FILE *cmd_stdin = NULL;                     // Handle for library-file
+        cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
         if (!cmd_stdin) {
             std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
             return false;

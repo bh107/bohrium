@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_instruction.h"
 #include "bh_bundler.h"
 #include "bh_component.h"
-#include "bh_compute.h"
 #include "bh_pprint.h"
 #include "bh_osx.h"
 #include "bh_win.h"

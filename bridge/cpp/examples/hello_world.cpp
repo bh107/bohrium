@@ -27,11 +27,9 @@ void compute()
 {
     cout << "Hello World." << endl;
 
-    /*
-    cout << random<uint64_t>(3,3) << endl;
-    x = randu<double>(3,3);
-    */
-    cout << randu<uint64_t>(3,3)  << endl;
+    multi_array<double> x;
+    x = ones<double>(3,3);
+    cout << x << endl;
     
     /*
     x = randn<double>(3,3);

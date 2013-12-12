@@ -102,25 +102,26 @@ int {{SYMBOL}}(int tool, ...)
                 if (0==a1_i) {                         // First off, copy the intermediate value
                     for(;
                         (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
-                        a0_current   += a0_stride[last_dim], // Increment element indexes
-                        tmp_current  += tmp_stride[last_dim],
-
                         coord[last_dim]++,                  // Increment coordinates
                         cur_e++
                     ) {
                         *a0_current = *tmp_current;
+
+                        a0_current   += a0_stride[last_dim]; // Increment element indexes
+                        tmp_current  += tmp_stride[last_dim];
                     }
                 } else {                                // Then do the actual reduction
                     for(;
                         (coord[last_dim] < a0_shape[last_dim]) && (cur_e <= last_e);
-
-                        a0_current   += a0_stride[last_dim], // Offsets
-                        tmp_current  += tmp_stride[last_dim],
-                        coord[last_dim]++,                  // Coordinates
+                        coord[last_dim]++,              // Coordinates
                         cur_e++
                     ) {
-                        //{{OPERATOR}}; // TODO: FIX
-                        *a0_current += *tmp_current;
+                        {{TYPE_A1}} rvar = *a0_current; // Scalar-temp
+                        {{OPERATOR}};
+                        *a0_current = rvar;
+
+                        a0_current   += a0_stride[last_dim]; // Offsets
+                        tmp_current  += tmp_stride[last_dim];
                     }
                 }
 

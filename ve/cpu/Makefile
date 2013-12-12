@@ -6,8 +6,8 @@ CXX?=g++
 WARNOPTS=-Wall
 EXTRAS+=
 ifeq ($(PLATFORM_OS),OSX)
-	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include -I$(ROOT)/thirdparty/jansson/include
-	EXTRA_LIBS+=-L$(ROOT)/thirdparty/jansson/osx-lib -L$(ROOT)/thirdparty/ctemplate/osx-lib 
+	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include 
+	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
 LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core -I$(ROOT)/traverse $(EXTRAS)
@@ -31,13 +31,8 @@ all: $(LIB)
 $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
-precompile:
-		/usr/bin/time ./precompiler
-
 clean:
-		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core precompiler
-		touch kernels/empty
-		touch objects/empty
+		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core
 
 install: all
 		cp $(LIB) $(INSTALLDIR)/
@@ -45,4 +40,4 @@ install: all
 		mkdir -p $(INSTALLDIR)/cpu/objects
 		mkdir -p $(INSTALLDIR)/cpu/templates
 		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
-		cp -r include $(INSTALLDIR)/cpu/include
+		cp -r include $(INSTALLDIR)/cpu/
