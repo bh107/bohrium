@@ -172,14 +172,14 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
 
         //Tell the VEM to do the data copy.
         bh_view ops[] = {tmp_view, chunk};
-        batch_schedule_inst(BH_IDENTITY, ops, NULL);
+        batch_schedule_inst(BH_IDENTITY, ops);
 
         //Schedule the send message
         batch_schedule_comm(1, receiving_rank, tmp_view);
 
         //Cleanup the local arrays
-        batch_schedule_inst(BH_FREE, bh_base_array(&tmp_view));
-        batch_schedule_inst(BH_DISCARD, bh_base_array(&tmp_view));
+        batch_schedule_inst_on_base(BH_FREE, bh_base_array(&tmp_view));
+        batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&tmp_view));
     }
 }
 
