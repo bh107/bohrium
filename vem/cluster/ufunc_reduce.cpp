@@ -235,7 +235,7 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             {
                 //Finally, we have to "reduce" the local chunks together
                 bh_view ops[] = {*out, tmp};
-                batch_schedule_inst(BH_IDENTITY, ops, NULL);
+                batch_schedule_inst(BH_IDENTITY, ops);
             }
 
             //Cleanup
@@ -290,7 +290,7 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
             {
                 //Finally, we have to "reduce" the local chunks together
                 bh_view ops[] = {*out, *out, tmp};
-                batch_schedule_inst(opcode, ops, NULL);
+                batch_schedule_inst(opcode, ops);
             }
 
             //Cleanup

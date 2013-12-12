@@ -49,10 +49,8 @@ void batch_schedule_inst_on_base(bh_opcode opcode, bh_base *base);
  *
  * @opcode   The opcode of the instruction
  * @operands The local operands in the instruction
- * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
-void batch_schedule_inst(bh_opcode opcode, bh_view *operands,
-                         bh_userfunc *ufunc);
+void batch_schedule_inst(bh_opcode opcode, bh_view *operands);
 
 
 /* Schedule an send/receive instruction.
