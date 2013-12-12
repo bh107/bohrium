@@ -32,13 +32,13 @@ If not, see <http://www.gnu.org/licenses/>.
 class ResourceManager
 {
 private:
+    bh_component* component;
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
     std::vector<size_t> maxWorkItemSizes;
-    bh_component* component;
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;

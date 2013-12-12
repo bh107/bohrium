@@ -50,8 +50,8 @@ OCLtype oclType(bh_type vbtype)
         return OCL_UINT32;
     case BH_UINT64:
         return OCL_UINT64;
-    case BH_FLOAT16:
-        return OCL_FLOAT16;
+//    case BH_FLOAT16:
+//        return OCL_FLOAT16;
     case BH_FLOAT32:
         return OCL_FLOAT32;
     case BH_FLOAT64:

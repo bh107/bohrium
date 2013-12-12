@@ -168,7 +168,7 @@ namespace NumCIL.Bohrium2
     
                     this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
                         acp.Base,
-                        a.Shape.Dimensions.Length, 
+                        (ulong)a.Shape.Dimensions.Length, 
                         a.Shape.Offset, 
                         a.Shape.Dimensions.Select(x => x.Length).ToArray(),
                         a.Shape.Dimensions.Select(x => x.Stride).ToArray()
@@ -176,7 +176,7 @@ namespace NumCIL.Bohrium2
                 } else {
                     this.pointer = bh_multi_array_${bh_ctype}_new_from_view(
                         new bh_base_${bh_ctype}_p(PinnedArrayTracker.PinArray(a.DataAccessor.AsArray())),
-                        a.Shape.Dimensions.Length, 
+                        (ulong)a.Shape.Dimensions.Length, 
                         a.Shape.Offset, 
                         a.Shape.Dimensions.Select(x => x.Length).ToArray(),
                         a.Shape.Dimensions.Select(x => x.Stride).ToArray()

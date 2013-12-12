@@ -32,12 +32,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 UserFunctionRandom* userFunctionRandom = NULL;
 
-bh_error bh_random(bh_userfunc *arg, void* ve_arg)
+bh_error bh_random(bh_instruction *inst, void* ve_arg)
 {
-    bh_random_type* randomDef = (bh_random_type*)arg;
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
-    assert (randomDef->nout == 1);
-    assert (randomDef->nin == 0);
     assert (userFuncArg->operands.size() == 1);
     if (userFunctionRandom == NULL)
     {
