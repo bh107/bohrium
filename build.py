@@ -31,14 +31,14 @@ import subprocess
 OK   = '\033[92m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
-
+HEAD = '\033[93m'
 
 makecommand = "make"
 makefilename = "Makefile"
 
 def build(components,interpreter):
     for (name, dir, fatal) in components:
-        print "***Building %s***"%name
+        print HEAD,"***Building %s***"%name, ENDC
         mkfile = makefilename
 
         if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
@@ -61,7 +61,7 @@ def build(components,interpreter):
 
 def clean(components):
     for (name, dir, fatal) in components:
-        print "***Cleaning %s***"%name
+        print HEAD,"***Cleaning %s***"%name, ENDC
         mkfile = makefilename
 
         if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
@@ -77,7 +77,7 @@ def install(components,prefix,interpreter):
     if not exists(join(prefix,"lib")):
         os.mkdir(join(prefix,"lib"))
     for (name, dir, fatal) in components:
-        print "***Installing %s***"%name
+        print HEAD,"***Installing %s***"%name, ENDC
         mkfile = makefilename
 
         if not exists(join(install_dir, dir, makefilename)) and exists(join(install_dir, dir, "Makefile")):
