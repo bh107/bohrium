@@ -27,7 +27,7 @@ def load_config(path=None):
     """
     Load/Read the Bohrium config file and return it as a ConfigParser object.
     If no path is given the following paths are searched::
-        
+
         /etc/bohrium/config.ini
         ${HOME}/.bohrium/config.ini
         ${CWD}/config.ini
@@ -141,8 +141,6 @@ def genesis(config, opcodes, types):
         "BH_FREE":      "np.free",
         "BH_SYNC":      "np.sync",
         "BH_NONE":      "np.none",
-
-        "BH_USERFUNC":  "np.userfunc",
     }
 
     binary  = "%s(%s, %s, %s)"
@@ -182,7 +180,7 @@ def genesis(config, opcodes, types):
                     's': np.ones( [3]*ndim, dtype = typemap[tn] ),
                     'k': 3
                 }
-    
+
     # Call all element-wise opcodes
     for opcode in (opcode for opcode in opcodes
                     if opcode['opcode'] not in exclude_opc):
@@ -289,6 +287,6 @@ def genesis(config, opcodes, types):
             operands[otype][1][0]['c'][:] = operands[rtype][1][1]['k']
             a = np.sum(operands[otype][1][1]['c'])
             a == 1
-    
+
     return (None, None)
 

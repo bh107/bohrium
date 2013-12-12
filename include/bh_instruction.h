@@ -31,37 +31,6 @@ extern "C" {
 // Maximum number of operands in a instruction.
 #define BH_MAX_NO_OPERANDS (3)
 
-// Datatype header for user-defined functions
-/*
-    The identifier for the function.
-    bh_intp     id;
-
-    Number of output operands
-    bh_intp     nout;
-
-    Number of input operands
-    bh_intp     nin;
-
-    Total size of the data struct
-    bh_intp     struct_size;
-
-    Array of operands (outputs before inputs)
-    The macro argument 'nop' specifies the total number of operands
-    bh_view*   operand[nop];
-*/
-#define BH_USER_FUNC_HEADER(nop) \
-    bh_intp     id;              \
-    bh_intp     nout;            \
-    bh_intp     nin;             \
-    bh_intp     struct_size;     \
-    bh_view     operand[nop];    \
-
-//The base type for user-defined functions.
-typedef struct
-{
-    BH_USER_FUNC_HEADER(1)
-} bh_userfunc;
-
 //Memory layout of the Bohrium instruction
 typedef struct
 {
@@ -71,8 +40,6 @@ typedef struct
     bh_view  operand[BH_MAX_NO_OPERANDS];
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
-    //Points to the user-defined function when the opcode is BH_USERFUNC.
-    bh_userfunc *userfunc;
 } bh_instruction;
 
 #ifdef __cplusplus
