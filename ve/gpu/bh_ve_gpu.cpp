@@ -37,6 +37,18 @@ bh_error bh_ve_gpu_init(const char *name)
         std::cerr << e.what() << std::endl;
         return BH_ERROR;
     }
+    
+    if (component.nchildren < 1)
+    {
+        std::cerr << "[GPU-VE] Warning: No children given. Some operations may nop be supported." << std::endl;
+    }
+    for (int i = 0; i < component.nchildren; ++i)
+    {
+        bh_component_iface* child = &component.children[i];
+        err = child->init(child->name);
+        if (err != BH_SUCCESS)
+            return err;
+    }
     return BH_SUCCESS;
 }
 
@@ -70,6 +82,11 @@ bh_error bh_ve_gpu_shutdown()
 {
     delete instructionScheduler;
     delete resourceManager;
+    for (int i = 0; i < component.nchildren; ++i)
+    {
+        bh_component_iface* child = &component.children[i];
+        child->shutdown();
+    }
     bh_component_destroy(&component);
     return BH_SUCCESS;
 }

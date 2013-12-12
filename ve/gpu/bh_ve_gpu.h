@@ -33,18 +33,17 @@ static bh_component component;
 static InstructionScheduler* instructionScheduler;
 static ResourceManager* resourceManager;
 
-
 /* Component interface: init (see bh_component.h) */
-    DLLEXPORT bh_error bh_ve_gpu_init(const char *name);
+DLLEXPORT bh_error bh_ve_gpu_init(const char *name);
 
 /* Component interface: execute (see bh_component.h) */
-    DLLEXPORT bh_error bh_ve_gpu_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_ve_gpu_execute(bh_ir* bhir);
 
 /* Component interface: shutdown (see bh_component.h) */
-    DLLEXPORT bh_error bh_ve_gpu_shutdown(void);
+DLLEXPORT bh_error bh_ve_gpu_shutdown(void);
 
 /* Component interface: extmethod (see bh_component.h) */
-    DLLEXPORT bh_error bh_ve_gpu_extmethod(const char *name, bh_opcode opcode);
+DLLEXPORT bh_error bh_ve_gpu_extmethod(const char *name, bh_opcode opcode);
 
 
 #ifdef __cplusplus

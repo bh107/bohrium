@@ -88,6 +88,7 @@ public:
     std::string getKernelPath();
     bool float16support();
     bool float64support();
+    bh_error childExecute(bh_ir* bhir);
 };
 
 #endif

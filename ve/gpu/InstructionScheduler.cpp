@@ -207,6 +207,14 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
 
 bh_error InstructionScheduler::reduce(bh_instruction* inst)
 {
+    if(inst->operand[0].base->nelem < 2)
+    {
+        bh_ir bhir;
+        bh_error err = bh_ir_create(&bhir, 1, inst);
+        if(err != BH_SUCCESS)
+            return err;
+        return resourceManager->childExecute(&bhir);
+    }
     try {
         UserFuncArg userFuncArg;
         userFuncArg.resourceManager = resourceManager;
