@@ -1,6 +1,12 @@
 #!/usr/bin/env python
+import traceback
 import argparse
+import genesis
+import pprint
+import sys
+
 import bhutils
+import layout
 
 if __name__ == "__main__":
 
@@ -12,6 +18,11 @@ if __name__ == "__main__":
     p.add_argument(
         '--genesis',
         help='Run the bytecode genesis-program.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--mangle',
+        help='Modify the bytecode in some way...',
         action='store_true'
     )
     p.add_argument(
@@ -28,18 +39,11 @@ if __name__ == "__main__":
     config = bhutils.load_config(args.config)
     opcodes, types = bhutils.load_bytecode(args.bohrium)
 
-    try:
-        out, err = (None, None)
-        if args.genesis:
-            out, err = bhutils.genesis(config, opcodes, types)
-        if args.merge_kernels:
-            out, err = cpu.merge_kernels(config)
-    except Exception as e:
-        out = "Check the error message."
-        err = str(e)
-
-    if err:
-        print "Error: %s" % err
-    if out:
-        print "Info: %s" % out
+    out, err = (None, None)
+    if args.genesis:
+        out, err = genesis.genesis(*genesis.creation(config, opcodes, types))
+    if args.merge_kernels:
+        out, err = cpu.merge_kernels(config)
+    if args.mangle:
+        out, err = layout.mangle(opcodes, types)
 

@@ -1,2864 +1,2091 @@
 [
-    {
-        "opcode": "BH_ADD",
-        "doc": "Add arguments element-wise.",
-        "code": "op1 = op2 + op3",
-        "nop": 3,
-        "id": 1,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_SUBTRACT",
-        "doc": "Subtract arguments, element-wise.",
-        "code": "op1 = op2 - op3",
-        "nop": 3,
-        "id": 2,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_MULTIPLY",
-        "doc": "Multiply arguments element-wise.",
-        "code": "op1 = op2 * op3",
-        "nop": 3,
-        "id": 3,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_DIVIDE",
-        "doc": "Divide arguments element-wise.",
-        "code": "op1 = op2 / op3",
-        "nop": 3,
-        "id": 4,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_POWER",
-        "doc": "First array elements raised to powers from second array, element-wise.",
-        "code": "op1 = pow( op2, op3 )",
-        "nop": 3,
-        "id": 5,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ABSOLUTE",
-        "doc": "Calculate the absolute value element-wise.",
-        "code": "op1 = op2 < 0.0 ? -op2: op2",
-        "nop": 2,
-        "id": 6,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_GREATER",
-        "doc": "Return the truth value of (x1 > x2) element-wise.",
-        "code": "op1 = op2 > op3",
-        "nop": 3,
-        "id": 7,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_GREATER_EQUAL",
-        "doc": "Return the truth value of (x1 >= x2) element-wise.",
-        "code": "op1 = op2 >= op3",
-        "nop": 3,
-        "id": 8,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LESS",
-        "doc": "Return the truth value of (x1 < x2) element-wise.",
-        "code": "op1 = op2 < op3",
-        "nop": 3,
-        "id": 9,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LESS_EQUAL",
-        "doc": "Return the truth value of (x1 =< x2) element-wise.",
-        "code": "op1 = op2 <= op3",
-        "nop": 3,
-        "id": 10,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_EQUAL",
-        "doc": "Return (x1 == x2) element-wise.",
-        "code": "op1 = op2 == op3",
-        "nop": 3,
-        "id": 11,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_NOT_EQUAL",
-        "doc": "Return (x1 != x2) element-wise.",
-        "code": "op1 = op2 != op3",
-        "nop": 3,
-        "id": 12,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_AND",
-        "doc": "Compute the truth value of x1 AND x2 elementwise.",
-        "code": "op1 = op2 && op3",
-        "nop": 3,
-        "id": 13,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_OR",
-        "doc": "Compute the truth value of x1 OR x2 elementwise.",
-        "code": "op1 = op2 || op3",
-        "nop": 3,
-        "id": 14,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_XOR",
-        "doc": "Compute the truth value of x1 XOR x2, element-wise.",
-        "code": "op1 = (!op2 != !op3)",
-        "nop": 3,
-        "id": 15,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_NOT",
-        "doc": "Compute the truth value of NOT x elementwise.",
-        "code": "op1 = !op2",
-        "nop": 2,
-        "id": 16,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_BOOL"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_MAXIMUM",
-        "doc": "Element-wise maximum of array elements.",
-        "code": "op1 = op2 < op3 ? op3 : op2",
-        "nop": 3,
-        "id": 17,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_MINIMUM",
-        "doc": "Element-wise minimum of array elements.",
-        "code": "op1 = op2 < op3 ? op2 : op3",
-        "nop": 3,
-        "id": 18,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_AND",
-        "doc": "Compute the bit-wise AND of two arrays element-wise.",
-        "code": "op1 = op2 & op3",
-        "nop": 3,
-        "id": 19,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_OR",
-        "doc": "Compute the bit-wise OR of two arrays element-wise.",
-        "code": "op1 = op2 | op3",
-        "nop": 3,
-        "id": 20,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_XOR",
-        "doc": "Compute the bit-wise XOR of two arrays element-wise.",
-        "code": "op1 = op2 ^ op3",
-        "nop": 3,
-        "id": 21,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_INVERT",
-        "doc": "Compute bit-wise inversion, or bit-wise NOT, element-wise.",
-        "code": "op1 = ~op2",
-        "nop": 2,
-        "id": 22,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LEFT_SHIFT",
-        "doc": "Shift the bits of an integer to the left.",
-        "code": "op1 = (op2) << (op3)",
-        "nop": 3,
-        "id": 23,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_RIGHT_SHIFT",
-        "doc": "Shift the bits of an integer to the right.",
-        "code": "op1 = (op2) >> (op3)",
-        "nop": 3,
-        "id": 24,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_COS",
-        "doc": "Cosine elementwise.",
-        "code": "op1 = cos( op2 )",
-        "nop": 2,
-        "id": 25,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_SIN",
-        "doc": "Trigonometric sine, element-wise.",
-        "code": "op1 = sin( op2 )",
-        "nop": 2,
-        "id": 26,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_TAN",
-        "doc": "Compute tangent element-wise.",
-        "code": "op1 = tan( op2 )",
-        "nop": 2,
-        "id": 27,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_COSH",
-        "doc": "Hyperbolic cosine, element-wise.",
-        "code": "op1 = cosh( op2 )",
-        "nop": 2,
-        "id": 28,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_SINH",
-        "doc": "Hyperbolic sine, element-wise.",
-        "code": "op1 = sinh( op2 )",
-        "nop": 2,
-        "id": 29,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_TANH",
-        "doc": "Compute hyperbolic tangent element-wise.",
-        "code": "op1 = tanh( op2 )",
-        "nop": 2,
-        "id": 30,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCSIN",
-        "doc": "Inverse sine, element-wise.",
-        "code": "op1 = asin( op2 )",
-        "nop": 2,
-        "id": 31,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCCOS",
-        "doc": "Trigonometric inverse cosine, element-wise.",
-        "code": "op1 = acos( op2 )",
-        "nop": 2,
-        "id": 32,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCTAN",
-        "doc": "Trigonometric inverse tangent, element-wise.",
-        "code": "op1 = atan( op2 )",
-        "nop": 2,
-        "id": 33,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCSINH",
-        "doc": "Inverse hyperbolic sine elementwise.",
-        "code": "op1 = asinh( op2 )",
-        "nop": 2,
-        "id": 34,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCCOSH",
-        "doc": "Inverse hyperbolic cosine, elementwise.",
-        "code": "op1 = acosh( op2 )",
-        "nop": 2,
-        "id": 35,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCTANH",
-        "doc": "Inverse hyperbolic tangent elementwise.",
-        "code": "op1 = atanh( op2 )",
-        "nop": 2,
-        "id": 36,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ARCTAN2",
-        "doc": "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.",
-        "code": "op1 = atan2( op2, op3 )",
-        "nop": 3,
-        "id": 37,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_EXP",
-        "doc": "Calculate the exponential of all elements in the input array.",
-        "code": "op1 = exp( op2 )",
-        "nop": 2,
-        "id": 38,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_EXP2",
-        "doc": "Calculate `2**p` for all `p` in the input array.",
-        "code": "op1 = pow( 2, op2 )",
-        "nop": 2,
-        "id": 39,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_EXPM1",
-        "doc": "Calculate ``exp(x) - 1`` for all elements in the array.",
-        "code": "op1 = expm1( op2 )",
-        "nop": 2,
-        "id": 40,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOG",
-        "doc": "Natural logarithm, element-wise.",
-        "code": "op1 = log( op2 )",
-        "nop": 2,
-        "id": 41,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOG2",
-        "doc": "Base-2 logarithm of `x`.",
-        "code": "op1 = log2( op2 )",
-        "nop": 2,
-        "id": 42,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOG10",
-        "doc": "Return the base 10 logarithm of the input array, element-wise.",
-        "code": "op1 = log10( op2 )",
-        "nop": 2,
-        "id": 43,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_LOG1P",
-        "doc": "Return the natural logarithm of one plus the input array, element-wise.",
-        "code": "op1 = log1p( op2 )",
-        "nop": 2,
-        "id": 44,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_SQRT",
-        "doc": "Return the positive square-root of an array, element-wise.",
-        "code": "op1 = sqrt( op2 )",
-        "nop": 2,
-        "id": 45,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_CEIL",
-        "doc": "Return the ceiling of the input, element-wise.",
-        "code": "op1 = ceil( op2 )",
-        "nop": 2,
-        "id": 46,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_TRUNC",
-        "doc": "Return the truncated value of the input, element-wise.",
-        "code": "op1 = trunc( op2 )",
-        "nop": 2,
-        "id": 47,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_FLOOR",
-        "doc": "Return the floor of the input, element-wise.",
-        "code": "op1 = floor( op2 )",
-        "nop": 2,
-        "id": 48,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_RINT",
-        "doc": "Round elements of the array to the nearest integer.",
-        "code": "op1 = (op2 > 0.0) ? floor(op2 + 0.5) : ceil(op2 - 0.5)",
-        "nop": 2,
-        "id": 49,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_MOD",
-        "doc": "Return the element-wise remainder of division.",
-        "code": "op1 = op2 - floor(op2 / op3) * op3",
-        "nop": 3,
-        "id": 50,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_INT8",
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32",
-                "BH_UINT32"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ISNAN",
-        "doc": "Test for NaN values.",
-        "code": "op1 = bh_isnan(op2)",
-        "nop": 2,
-        "id": 51,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_ISINF",
-        "doc": "Test for infinity values.",
-        "code": "op1 = bh_isinf(op2)",
-        "nop": 2,
-        "id": 52,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_IDENTITY",
-        "doc": "The identity function that returns the input value converted to the output data type.",
-        "code": "op1 = op2",
-        "nop": 2,
-        "id": 53,
-        "system_opcode": false,
-        "elementwise": true,
-        "types": [
-            [
-                "BH_BOOL",
-                "BH_INT8"
-            ],
-            [
-                "BH_INT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT8",
-                "BH_INT8"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_INT8"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT32",
-                "BH_INT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT8"
-            ],
-            [
-                "BH_UINT64",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_INT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_INT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_INT8",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT8",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_INT32",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_INT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_UINT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT16"
-            ],
-            [
-                "BH_INT8",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT16"
-            ],
-            [
-                "BH_INT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT16"
-            ],
-            [
-                "BH_INT32",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT16"
-            ],
-            [
-                "BH_INT64",
-                "BH_UINT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_UINT16"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_UINT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT8",
-                "BH_UINT64"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_UINT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT32",
-                "BH_UINT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT64"
-            ],
-            [
-                "BH_INT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_UINT64"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT16"
-            ],
-            [
-                "BH_INT8",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT8",
-                "BH_INT16"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT16",
-                "BH_INT16"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT32",
-                "BH_INT16"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT16"
-            ],
-            [
-                "BH_UINT64",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_INT16"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_INT16"
-            ],
-            [
-                "BH_BOOL",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT8",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT16",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_UINT16",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_UINT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_INT64",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_UINT64",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT8",
-                "BH_BOOL"
-            ],
-            [
-                "BH_UINT8",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT16",
-                "BH_BOOL"
-            ],
-            [
-                "BH_UINT16",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT32",
-                "BH_BOOL"
-            ],
-            [
-                "BH_UINT32",
-                "BH_BOOL"
-            ],
-            [
-                "BH_INT64",
-                "BH_BOOL"
-            ],
-            [
-                "BH_UINT64",
-                "BH_BOOL"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_BOOL"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_BOOL"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT32"
-            ],
-            [
-                "BH_INT8",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_INT32"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT16",
-                "BH_INT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT32"
-            ],
-            [
-                "BH_UINT64",
-                "BH_INT32"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_INT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_INT32"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT16",
-                "BH_UINT8"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT32",
-                "BH_UINT8"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT8"
-            ],
-            [
-                "BH_INT64",
-                "BH_UINT8"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT8"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_UINT8"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_UINT8"
-            ],
-            [
-                "BH_BOOL",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT8",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT8",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT16",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT16",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT32",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT32",
-                "BH_INT64"
-            ],
-            [
-                "BH_INT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_UINT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_INT64"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_INT64"
-            ],
-            [
-                "BH_BOOL",
-                "BH_UINT32"
-            ],
-            [
-                "BH_INT8",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT8",
-                "BH_UINT32"
-            ],
-            [
-                "BH_INT16",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT16",
-                "BH_UINT32"
-            ],
-            [
-                "BH_INT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_INT64",
-                "BH_UINT32"
-            ],
-            [
-                "BH_UINT64",
-                "BH_UINT32"
-            ],
-            [
-                "BH_FLOAT32",
-                "BH_UINT32"
-            ],
-            [
-                "BH_FLOAT64",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX128"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_BOOL"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_BOOL"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_INT8"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_INT8"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_UINT8"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_UINT8"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_INT16"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_INT16"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_UINT16"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_UINT16"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_INT32"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_INT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_UINT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_INT64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_INT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_UINT64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_UINT64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_FLOAT32"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_FLOAT64"
-            ],
-            [
-                "BH_COMPLEX128",
-                "BH_COMPLEX64"
-            ],
-            [
-                "BH_COMPLEX64",
-                "BH_COMPLEX128"
-            ]
-        ]
-    },
-    {
-        "opcode": "BH_DISCARD",
-        "doc": "System instruction that informs the child component to forget the array and release any metadata allocated.",
-        "code": "forget(op1)",
-        "nop": 1,
-        "id": 54,
-        "system_opcode": true,
-        "elementwise": false,
-        "types": []
-    },
-    {
-        "opcode": "BH_FREE",
-        "doc": "System instruction that informs the child component to deallocate the data storage associated with the array.",
-        "code": "free(op1)",
-        "nop": 1,
-        "id": 55,
-        "system_opcode": true,
-        "elementwise": false,
-        "types": []
-    },
-    {
-        "opcode": "BH_SYNC",
-        "doc": "System instruction that informs the child component to make data synchronized and available.",
-        "code": "SYNC",
-        "nop": 1,
-        "id": 56,
-        "system_opcode": true,
-        "elementwise": false,
-        "types": []
-    },
-    {
-        "opcode": "BH_NONE",
-        "doc": "A opcode that should be ignored.",
-        "code": "No operation.",
-        "nop": 0,
-        "id": 57,
-        "system_opcode": true,
-        "elementwise": true,
-        "types": []
-    },
-    {
-        "opcode": "BH_ADD_REDUCE",
-        "doc": "Sums all elements in the specified dimension.",
-        "code": "sum(a, axis)",
-        "nop": 3,
-        "id": 59,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",         "BH_INT8",       "BH_INT64"],
-            ["BH_FLOAT64",      "BH_FLOAT64",    "BH_INT64"],
-            ["BH_UINT16",       "BH_UINT16",     "BH_INT64"],
-            ["BH_UINT64",       "BH_UINT64",     "BH_INT64"],
-            ["BH_INT16",        "BH_INT16",      "BH_INT64"],
-            ["BH_FLOAT32",      "BH_FLOAT32",    "BH_INT64"],
-            ["BH_BOOL",         "BH_BOOL",       "BH_INT64"],
-            ["BH_INT32",        "BH_INT32",      "BH_INT64"],
-            ["BH_UINT8",        "BH_UINT8",      "BH_INT64"],
-            ["BH_INT64",        "BH_INT64",      "BH_INT64"],
-            ["BH_UINT32",       "BH_UINT32",     "BH_INT64"],
-            ["BH_COMPLEX64",    "BH_COMPLEX64",  "BH_INT64"],
-            ["BH_COMPLEX128",   "BH_COMPLEX128", "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_MULTIPLY_REDUCE",
-        "doc": "Multiplies all elements in the specified dimension.",
-        "code": "product(a, axis)",
-        "nop": 3,
-        "id": 60,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",           "BH_INT64"],
-            ["BH_FLOAT64",  "BH_FLOAT64",        "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",         "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",         "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",          "BH_INT64"],
-            ["BH_FLOAT32",  "BH_FLOAT32",        "BH_INT64"],
-            ["BH_BOOL",     "BH_BOOL",           "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",          "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",          "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",          "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",         "BH_INT64"],
-            ["BH_COMPLEX64",    "BH_COMPLEX64",  "BH_INT64"],
-            ["BH_COMPLEX128",   "BH_COMPLEX128", "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_MINIMUM_REDUCE",
-        "doc": "Finds the smallest elements in the specified dimension.",
-        "code": "min(a, axis)",
-        "nop": 3,
-        "id": 61,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",      "BH_INT64"],
-            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",    "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",     "BH_INT64"],
-            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_INT64"],
-            ["BH_BOOL",     "BH_BOOL",      "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",     "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",     "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",     "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_MAXIMUM_REDUCE",
-        "doc": "Finds the largest elements in the specified dimension.",
-        "code": "max(a, axis)",
-        "nop": 3,
-        "id": 62,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",      "BH_INT64"],
-            ["BH_FLOAT64",  "BH_FLOAT64",   "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",    "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",     "BH_INT64"],
-            ["BH_FLOAT32",  "BH_FLOAT32",   "BH_INT64"],
-            ["BH_BOOL",     "BH_BOOL",      "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",     "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",     "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",     "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_AND_REDUCE",
-        "doc": "Logical AND of all elements in the specified dimension.",
-        "code": "all(a, axis)",
-        "nop": 3,
-        "id": 63,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_BOOL", "BH_BOOL",      "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_AND_REDUCE",
-        "doc": "Bitwise AND of all elements in the specified dimension.",
-        "code": "all(a, axis)",
-        "nop": 3,
-        "id": 64,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",      "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",    "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",     "BH_INT64"],
-            ["BH_BOOL",     "BH_BOOL",      "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",     "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",     "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",     "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_OR_REDUCE",
-        "doc": "Logical OR of all elements in the specified dimension.",
-        "code": "any(a, axis)",
-        "nop": 3,
-        "id": 65,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_BOOL", "BH_BOOL",      "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_OR_REDUCE",
-        "doc": "Bitwise OR of all elements in the specified dimension.",
-        "code": "any(a, axis)",
-        "nop": 3,
-        "id": 66,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",      "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",    "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",     "BH_INT16"],
-            ["BH_BOOL",     "BH_BOOL",      "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",     "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",     "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",     "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_LOGICAL_XOR_REDUCE",
-        "doc": "Logical XOR of all elements in the specified dimension.",
-        "code": "any(a, axis)",
-        "nop": 3,
-        "id": 67,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_BOOL", "BH_BOOL",      "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_BITWISE_XOR_REDUCE",
-        "doc": "Bitwise XOR of all elements in the specified dimension.",
-        "code": "any(a, axis)",
-        "nop": 3,
-        "id": 68,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8",     "BH_INT8",      "BH_INT64"],
-            ["BH_UINT16",   "BH_UINT16",    "BH_INT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_INT64"],
-            ["BH_INT16",    "BH_INT16",     "BH_INT64"],
-            ["BH_BOOL",     "BH_BOOL",      "BH_INT64"],
-            ["BH_INT32",    "BH_INT32",     "BH_INT64"],
-            ["BH_UINT8",    "BH_UINT8",     "BH_INT64"],
-            ["BH_INT64",    "BH_INT64",     "BH_INT64"],
-            ["BH_UINT32",   "BH_UINT32",    "BH_INT64"]
-        ]
-    },
-    {
-        "opcode": "BH_RANDOM",
-        "doc": "Random123: The returned result is a deterministic function of the key and counter, i.e. a unique (seed, indexes) tuple will always produce the same result. The result is highly sensitive to small changes in the inputs, so that the sequence of values produced by simply incrementing the counter (or key) is effectively indistinguishable from a sequence of samples of a uniformly distributed random variable.",
-        "code": "op1 = threefry2x64(op2, op3)",
-        "nop": 3,
-        "id": 69,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_UINT32",   "BH_UINT64",    "BH_UINT64"],
-            ["BH_UINT64",   "BH_UINT64",    "BH_UINT64"]
-        ]
-    },
-    {
-        "opcode": "BH_RANGE",
-        "doc":    "",
-        "code":   "op1 = op2++",
-        "nop":    1,
-        "id":     70,
-        "system_opcode": false,
-        "elementwise": false,
-        "types": [
-            ["BH_INT8"],
-            ["BH_FLOAT64"],
-            ["BH_UINT16"],
-            ["BH_UINT64"],
-            ["BH_INT16"],
-            ["BH_FLOAT32"],
-            ["BH_INT32"],
-            ["BH_UINT8"],
-            ["BH_INT64"],
-            ["BH_UINT32"],
-            ["BH_COMPLEX64"],
-            ["BH_COMPLEX128"]
-        ]
-    }
+{
+    "opcode": "BH_ADD",
+    "doc":  "Add arguments element-wise.",
+    "code": "op1 = op2 + op3",
+    "id":   "1",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SUBTRACT",
+    "doc":  "Subtract arguments, element-wise.",
+    "code": "op1 = op2 - op3",
+    "id":   "2",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MULTIPLY",
+    "doc":  "Multiply arguments element-wise.",
+    "code": "op1 = op2 * op3",
+    "id":   "3",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_DIVIDE",
+    "doc":  "Divide arguments element-wise.",
+    "code": "op1 = op2 / op3",
+    "id":   "4",
+    "nop":   3,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_POWER",
+    "doc":  "First array elements raised to powers from second array, element-wise.",
+    "code": "op1 = pow( op2, op3 )",
+    "id":   "5",
+    "nop":   3,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ABSOLUTE",
+    "doc":  "Calculate the absolute value element-wise.",
+    "code": "op1 = op2 < 0.0 ? -op2: op2",
+    "id":   "6",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_GREATER",
+    "doc":  "Return the truth value of (x1 > x2) element-wise.",
+    "code": "op1 = op2 > op3",
+    "id":   "7",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_GREATER_EQUAL",
+    "doc":  "Return the truth value of (x1 >= x2) element-wise.",
+    "code": "op1 = op2 >= op3",
+    "id":   "8",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LESS",
+    "doc":  "Return the truth value of (x1 < x2) element-wise.",
+    "code": "op1 = op2 < op3",
+    "id":   "9",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LESS_EQUAL",
+    "doc":  "Return the truth value of (x1 =< x2) element-wise.",
+    "code": "op1 = op2 <= op3",
+    "id":   "10",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_EQUAL",
+    "doc":  "Return (x1 == x2) element-wise.",
+    "code": "op1 = op2 == op3",
+    "id":   "11",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_BOOL", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_NOT_EQUAL",
+    "doc":  "Return (x1 != x2) element-wise.",
+    "code": "op1 = op2 != op3",
+    "id":   "12",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_BOOL", "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_BOOL", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_AND",
+    "doc":  "Compute the truth value of x1 AND x2 elementwise.",
+    "code": "op1 = op2 && op3",
+    "id":   "13",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_OR",
+    "doc":  "Compute the truth value of x1 OR x2 elementwise.",
+    "code": "op1 = op2 || op3",
+    "id":   "14",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_XOR",
+    "doc":  "Compute the truth value of x1 XOR x2, element-wise.",
+    "code": "op1 = (!op2 != !op3)",
+    "id":   "15",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_NOT",
+    "doc":  "Compute the truth value of NOT x elementwise.",
+    "code": "op1 = !op2",
+    "id":   "16",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MAXIMUM",
+    "doc":  "Element-wise maximum of array elements.",
+    "code": "op1 = op2 < op3 ? op3 : op2",
+    "id":   "17",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MINIMUM",
+    "doc":  "Element-wise minimum of array elements.",
+    "code": "op1 = op2 < op3 ? op2 : op3",
+    "id":   "18",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_AND",
+    "doc":  "Compute the bit-wise AND of two arrays element-wise.",
+    "code": "op1 = op2 & op3",
+    "id":   "19",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_OR",
+    "doc":  "Compute the bit-wise OR of two arrays element-wise.",
+    "code": "op1 = op2 | op3",
+    "id":   "20",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_XOR",
+    "doc":  "Compute the bit-wise XOR of two arrays element-wise.",
+    "code": "op1 = op2 ^ op3",
+    "id":   "21",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_INVERT",
+    "doc":  "Compute bit-wise inversion, or bit-wise NOT, element-wise.",
+    "code": "op1 = ~op2",
+    "id":   "22",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL" ],
+            [ "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LEFT_SHIFT",
+    "doc":  "Shift the bits of an integer to the left.",
+    "code": "op1 = (op2) << (op3)",
+    "id":   "23",
+    "nop":   3,
+    "types": [
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_RIGHT_SHIFT",
+    "doc":  "Shift the bits of an integer to the right.",
+    "code": "op1 = (op2) >> (op3)",
+    "id":   "24",
+    "nop":   3,
+    "types": [
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_COS",
+    "doc":  "Cosine elementwise.",
+    "code": "op1 = cos( op2 )",
+    "id":   "25",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SIN",
+    "doc":  "Trigonometric sine, element-wise.",
+    "code": "op1 = sin( op2 )",
+    "id":   "26",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_TAN",
+    "doc":  "Compute tangent element-wise.",
+    "code": "op1 = tan( op2 )",
+    "id":   "27",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_COSH",
+    "doc":  "Hyperbolic cosine, element-wise.",
+    "code": "op1 = cosh( op2 )",
+    "id":   "28",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SINH",
+    "doc":  "Hyperbolic sine, element-wise.",
+    "code": "op1 = sinh( op2 )",
+    "id":   "29",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_TANH",
+    "doc":  "Compute hyperbolic tangent element-wise.",
+    "code": "op1 = tanh( op2 )",
+    "id":   "30",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCSIN",
+    "doc":  "Inverse sine, element-wise.",
+    "code": "op1 = asin( op2 )",
+    "id":   "31",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCCOS",
+    "doc":  "Trigonometric inverse cosine, element-wise.",
+    "code": "op1 = acos( op2 )",
+    "id":   "32",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCTAN",
+    "doc":  "Trigonometric inverse tangent, element-wise.",
+    "code": "op1 = atan( op2 )",
+    "id":   "33",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCSINH",
+    "doc":  "Inverse hyperbolic sine elementwise.",
+    "code": "op1 = asinh( op2 )",
+    "id":   "34",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCCOSH",
+    "doc":  "Inverse hyperbolic cosine, elementwise.",
+    "code": "op1 = acosh( op2 )",
+    "id":   "35",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCTANH",
+    "doc":  "Inverse hyperbolic tangent elementwise.",
+    "code": "op1 = atanh( op2 )",
+    "id":   "36",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARCTAN2",
+    "doc":  "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.",
+    "code": "op1 = atan2( op2, op3 )",
+    "id":   "37",
+    "nop":   3,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_EXP",
+    "doc":  "Calculate the exponential of all elements in the input array.",
+    "code": "op1 = exp( op2 )",
+    "id":   "38",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_EXP2",
+    "doc":  "Calculate `2**p` for all `p` in the input array.",
+    "code": "op1 = pow( 2, op2 )",
+    "id":   "39",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_EXPM1",
+    "doc":  "Calculate ``exp(x) - 1`` for all elements in the array.",
+    "code": "op1 = expm1( op2 )",
+    "id":   "40",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOG",
+    "doc":  "Natural logarithm, element-wise.",
+    "code": "op1 = log( op2 )",
+    "id":   "41",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOG2",
+    "doc":  "Base-2 logarithm of `x`.",
+    "code": "op1 = log2( op2 )",
+    "id":   "42",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOG10",
+    "doc":  "Return the base 10 logarithm of the input array, element-wise.",
+    "code": "op1 = log10( op2 )",
+    "id":   "43",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOG1P",
+    "doc":  "Return the natural logarithm of one plus the input array, element-wise.",
+    "code": "op1 = log1p( op2 )",
+    "id":   "44",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SQRT",
+    "doc":  "Return the positive square-root of an array, element-wise.",
+    "code": "op1 = sqrt( op2 )",
+    "id":   "45",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_CEIL",
+    "doc":  "Return the ceiling of the input, element-wise.",
+    "code": "op1 = ceil( op2 )",
+    "id":   "46",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_TRUNC",
+    "doc":  "Return the truncated value of the input, element-wise.",
+    "code": "op1 = trunc( op2 )",
+    "id":   "47",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_FLOOR",
+    "doc":  "Return the floor of the input, element-wise.",
+    "code": "op1 = floor( op2 )",
+    "id":   "48",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_RINT",
+    "doc":  "Round elements of the array to the nearest integer.",
+    "code": "op1 = (op2 > 0.0) ? floor(op2 + 0.5) : ceil(op2 - 0.5)",
+    "id":   "49",
+    "nop":   2,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MOD",
+    "doc":  "Return the element-wise remainder of division.",
+    "code": "op1 = op2 - floor(op2 / op3) * op3",
+    "id":   "50",
+    "nop":   3,
+    "types": [
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C", "C" ],
+            [ "C", "C", "K" ],
+            [ "C", "C", "S" ],
+            [ "C", "K", "C" ],
+            [ "C", "K", "K" ],
+            [ "C", "K", "S" ],
+            [ "C", "S", "C" ],
+            [ "C", "S", "K" ],
+            [ "C", "S", "S" ],
+            [ "S", "C", "C" ],
+            [ "S", "C", "K" ],
+            [ "S", "C", "S" ],
+            [ "S", "K", "C" ],
+            [ "S", "K", "K" ],
+            [ "S", "K", "S" ],
+            [ "S", "S", "C" ],
+            [ "S", "S", "K" ],
+            [ "S", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ISNAN",
+    "doc":  "Test for NaN values.",
+    "code": "op1 = bh_isnan(op2)",
+    "id":   "51",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ISINF",
+    "doc":  "Test for infinity values.",
+    "code": "op1 = bh_isinf(op2)",
+    "id":   "52",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_IDENTITY",
+    "doc":  "The identity function that returns the input value converted to the output data type.",
+    "code": "op1 = op2",
+    "id":   "53",
+    "nop":   2,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL" ],
+            [ "BH_BOOL", "BH_FLOAT32" ],
+            [ "BH_BOOL", "BH_FLOAT64" ],
+            [ "BH_BOOL", "BH_INT16" ],
+            [ "BH_BOOL", "BH_INT32" ],
+            [ "BH_BOOL", "BH_INT64" ],
+            [ "BH_BOOL", "BH_INT8" ],
+            [ "BH_BOOL", "BH_UINT16" ],
+            [ "BH_BOOL", "BH_UINT32" ],
+            [ "BH_BOOL", "BH_UINT64" ],
+            [ "BH_BOOL", "BH_UINT8" ],
+            [ "BH_COMPLEX128", "BH_BOOL" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX64" ],
+            [ "BH_COMPLEX128", "BH_FLOAT32" ],
+            [ "BH_COMPLEX128", "BH_FLOAT64" ],
+            [ "BH_COMPLEX128", "BH_INT16" ],
+            [ "BH_COMPLEX128", "BH_INT32" ],
+            [ "BH_COMPLEX128", "BH_INT64" ],
+            [ "BH_COMPLEX128", "BH_INT8" ],
+            [ "BH_COMPLEX128", "BH_UINT16" ],
+            [ "BH_COMPLEX128", "BH_UINT32" ],
+            [ "BH_COMPLEX128", "BH_UINT64" ],
+            [ "BH_COMPLEX128", "BH_UINT8" ],
+            [ "BH_COMPLEX64", "BH_BOOL" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_COMPLEX64", "BH_FLOAT32" ],
+            [ "BH_COMPLEX64", "BH_FLOAT64" ],
+            [ "BH_COMPLEX64", "BH_INT16" ],
+            [ "BH_COMPLEX64", "BH_INT32" ],
+            [ "BH_COMPLEX64", "BH_INT64" ],
+            [ "BH_COMPLEX64", "BH_INT8" ],
+            [ "BH_COMPLEX64", "BH_UINT16" ],
+            [ "BH_COMPLEX64", "BH_UINT32" ],
+            [ "BH_COMPLEX64", "BH_UINT64" ],
+            [ "BH_COMPLEX64", "BH_UINT8" ],
+            [ "BH_FLOAT32", "BH_BOOL" ],
+            [ "BH_FLOAT32", "BH_FLOAT32" ],
+            [ "BH_FLOAT32", "BH_FLOAT64" ],
+            [ "BH_FLOAT32", "BH_INT16" ],
+            [ "BH_FLOAT32", "BH_INT32" ],
+            [ "BH_FLOAT32", "BH_INT64" ],
+            [ "BH_FLOAT32", "BH_INT8" ],
+            [ "BH_FLOAT32", "BH_UINT16" ],
+            [ "BH_FLOAT32", "BH_UINT32" ],
+            [ "BH_FLOAT32", "BH_UINT64" ],
+            [ "BH_FLOAT32", "BH_UINT8" ],
+            [ "BH_FLOAT64", "BH_BOOL" ],
+            [ "BH_FLOAT64", "BH_FLOAT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_FLOAT64", "BH_INT16" ],
+            [ "BH_FLOAT64", "BH_INT32" ],
+            [ "BH_FLOAT64", "BH_INT64" ],
+            [ "BH_FLOAT64", "BH_INT8" ],
+            [ "BH_FLOAT64", "BH_UINT16" ],
+            [ "BH_FLOAT64", "BH_UINT32" ],
+            [ "BH_FLOAT64", "BH_UINT64" ],
+            [ "BH_FLOAT64", "BH_UINT8" ],
+            [ "BH_INT16", "BH_BOOL" ],
+            [ "BH_INT16", "BH_FLOAT32" ],
+            [ "BH_INT16", "BH_FLOAT64" ],
+            [ "BH_INT16", "BH_INT16" ],
+            [ "BH_INT16", "BH_INT32" ],
+            [ "BH_INT16", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT8" ],
+            [ "BH_INT16", "BH_UINT16" ],
+            [ "BH_INT16", "BH_UINT32" ],
+            [ "BH_INT16", "BH_UINT64" ],
+            [ "BH_INT16", "BH_UINT8" ],
+            [ "BH_INT32", "BH_BOOL" ],
+            [ "BH_INT32", "BH_FLOAT32" ],
+            [ "BH_INT32", "BH_FLOAT64" ],
+            [ "BH_INT32", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32" ],
+            [ "BH_INT32", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT8" ],
+            [ "BH_INT32", "BH_UINT16" ],
+            [ "BH_INT32", "BH_UINT32" ],
+            [ "BH_INT32", "BH_UINT64" ],
+            [ "BH_INT32", "BH_UINT8" ],
+            [ "BH_INT64", "BH_BOOL" ],
+            [ "BH_INT64", "BH_FLOAT32" ],
+            [ "BH_INT64", "BH_FLOAT64" ],
+            [ "BH_INT64", "BH_INT16" ],
+            [ "BH_INT64", "BH_INT32" ],
+            [ "BH_INT64", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT8" ],
+            [ "BH_INT64", "BH_UINT16" ],
+            [ "BH_INT64", "BH_UINT32" ],
+            [ "BH_INT64", "BH_UINT64" ],
+            [ "BH_INT64", "BH_UINT8" ],
+            [ "BH_INT8", "BH_BOOL" ],
+            [ "BH_INT8", "BH_FLOAT32" ],
+            [ "BH_INT8", "BH_FLOAT64" ],
+            [ "BH_INT8", "BH_INT16" ],
+            [ "BH_INT8", "BH_INT32" ],
+            [ "BH_INT8", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8" ],
+            [ "BH_INT8", "BH_UINT16" ],
+            [ "BH_INT8", "BH_UINT32" ],
+            [ "BH_INT8", "BH_UINT64" ],
+            [ "BH_INT8", "BH_UINT8" ],
+            [ "BH_UINT16", "BH_BOOL" ],
+            [ "BH_UINT16", "BH_FLOAT32" ],
+            [ "BH_UINT16", "BH_FLOAT64" ],
+            [ "BH_UINT16", "BH_INT16" ],
+            [ "BH_UINT16", "BH_INT32" ],
+            [ "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT16", "BH_INT8" ],
+            [ "BH_UINT16", "BH_UINT16" ],
+            [ "BH_UINT16", "BH_UINT32" ],
+            [ "BH_UINT16", "BH_UINT64" ],
+            [ "BH_UINT16", "BH_UINT8" ],
+            [ "BH_UINT32", "BH_BOOL" ],
+            [ "BH_UINT32", "BH_FLOAT32" ],
+            [ "BH_UINT32", "BH_FLOAT64" ],
+            [ "BH_UINT32", "BH_INT16" ],
+            [ "BH_UINT32", "BH_INT32" ],
+            [ "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT32", "BH_INT8" ],
+            [ "BH_UINT32", "BH_UINT16" ],
+            [ "BH_UINT32", "BH_UINT32" ],
+            [ "BH_UINT32", "BH_UINT64" ],
+            [ "BH_UINT32", "BH_UINT8" ],
+            [ "BH_UINT64", "BH_BOOL" ],
+            [ "BH_UINT64", "BH_FLOAT32" ],
+            [ "BH_UINT64", "BH_FLOAT64" ],
+            [ "BH_UINT64", "BH_INT16" ],
+            [ "BH_UINT64", "BH_INT32" ],
+            [ "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT8" ],
+            [ "BH_UINT64", "BH_UINT16" ],
+            [ "BH_UINT64", "BH_UINT32" ],
+            [ "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT64", "BH_UINT8" ],
+            [ "BH_UINT8", "BH_BOOL" ],
+            [ "BH_UINT8", "BH_FLOAT32" ],
+            [ "BH_UINT8", "BH_FLOAT64" ],
+            [ "BH_UINT8", "BH_INT16" ],
+            [ "BH_UINT8", "BH_INT32" ],
+            [ "BH_UINT8", "BH_INT64" ],
+            [ "BH_UINT8", "BH_INT8" ],
+            [ "BH_UINT8", "BH_UINT16" ],
+            [ "BH_UINT8", "BH_UINT32" ],
+            [ "BH_UINT8", "BH_UINT64" ],
+            [ "BH_UINT8", "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "K" ],
+            [ "C", "S" ],
+            [ "S", "C" ],
+            [ "S", "K" ],
+            [ "S", "S" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_DISCARD",
+    "doc":  "System instruction that informs the child component to forget the array and release any metadata allocated.",
+    "code": "forget(op1)",
+    "id":   "54",
+    "nop":   1,
+    "types": [
+
+    ],
+    "layout": [
+            [ "C" ],
+            [ "S" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": true
+},
+{
+    "opcode": "BH_FREE",
+    "doc":  "System instruction that informs the child component to deallocate the data storage associated with the array.",
+    "code": "free(op1)",
+    "id":   "55",
+    "nop":   1,
+    "types": [
+
+    ],
+    "layout": [
+            [ "C" ],
+            [ "S" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": true
+},
+{
+    "opcode": "BH_SYNC",
+    "doc":  "System instruction that informs the child component to make data synchronized and available.",
+    "code": "SYNC",
+    "id":   "56",
+    "nop":   1,
+    "types": [
+
+    ],
+    "layout": [
+            [ "C" ],
+            [ "S" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": true
+},
+{
+    "opcode": "BH_NONE",
+    "doc":  "A opcode that should be ignored.",
+    "code": "No operation.",
+    "id":   "57",
+    "nop":   0,
+    "types": [
+
+    ],
+    "layout": [
+
+    ],
+    "elementwise":   true,
+    "system_opcode": true
+},
+{
+    "opcode": "BH_ADD_REDUCE",
+    "doc":  "Sums all elements in the specified dimension.",
+    "code": "sum(a, axis)",
+    "id":   "59",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_INT64" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_INT64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_INT64" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MULTIPLY_REDUCE",
+    "doc":  "Multiplies all elements in the specified dimension.",
+    "code": "product(a, axis)",
+    "id":   "60",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_INT64" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_INT64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_INT64" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MINIMUM_REDUCE",
+    "doc":  "Finds the smallest elements in the specified dimension.",
+    "code": "min(a, axis)",
+    "id":   "61",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_INT64" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MAXIMUM_REDUCE",
+    "doc":  "Finds the largest elements in the specified dimension.",
+    "code": "max(a, axis)",
+    "id":   "62",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_FLOAT32", "BH_FLOAT32", "BH_INT64" ],
+            [ "BH_FLOAT64", "BH_FLOAT64", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_AND_REDUCE",
+    "doc":  "Logical AND of all elements in the specified dimension.",
+    "code": "all(a, axis)",
+    "id":   "63",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_AND_REDUCE",
+    "doc":  "Bitwise AND of all elements in the specified dimension.",
+    "code": "all(a, axis)",
+    "id":   "64",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_OR_REDUCE",
+    "doc":  "Logical OR of all elements in the specified dimension.",
+    "code": "any(a, axis)",
+    "id":   "65",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_OR_REDUCE",
+    "doc":  "Bitwise OR of all elements in the specified dimension.",
+    "code": "any(a, axis)",
+    "id":   "66",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_LOGICAL_XOR_REDUCE",
+    "doc":  "Logical XOR of all elements in the specified dimension.",
+    "code": "any(a, axis)",
+    "id":   "67",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_BITWISE_XOR_REDUCE",
+    "doc":  "Bitwise XOR of all elements in the specified dimension.",
+    "code": "any(a, axis)",
+    "id":   "68",
+    "nop":   3,
+    "types": [
+            [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
+            [ "BH_INT16", "BH_INT16", "BH_INT64" ],
+            [ "BH_INT32", "BH_INT32", "BH_INT64" ],
+            [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+            [ "BH_INT8", "BH_INT8", "BH_INT64" ],
+            [ "BH_UINT16", "BH_UINT16", "BH_INT64" ],
+            [ "BH_UINT32", "BH_UINT32", "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_INT64" ],
+            [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
+    ],
+    "layout": [
+            [ "C", "C", "K" ],
+            [ "C", "S", "K" ],
+            [ "S", "C", "K" ],
+            [ "S", "S", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_RANDOM",
+    "doc":  "Random123: The returned result is a deterministic function of the key and counter, i.e. a unique (seed, indexes) tuple will always produce the same result. The result is highly sensitive to small changes in the inputs, so that the sequence of values produced by simply incrementing the counter (or key) is effectively indistinguishable from a sequence of samples of a uniformly distributed random variable.",
+    "code": "op1 = threefry2x64(op2, op3)",
+    "id":   "69",
+    "nop":   3,
+    "types": [
+            [ "BH_UINT32", "BH_UINT64", "BH_UINT64" ],
+            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ]
+    ],
+    "layout": [
+            [ "C", "K", "K" ],
+            [ "S", "K", "K" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_RANGE",
+    "doc":  "",
+    "code": "op1 = op2++",
+    "id":   "70",
+    "nop":   1,
+    "types": [
+            [ "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64" ],
+            [ "BH_FLOAT32" ],
+            [ "BH_FLOAT64" ],
+            [ "BH_INT16" ],
+            [ "BH_INT32" ],
+            [ "BH_INT64" ],
+            [ "BH_INT8" ],
+            [ "BH_UINT16" ],
+            [ "BH_UINT32" ],
+            [ "BH_UINT64" ],
+            [ "BH_UINT8" ]
+    ],
+    "layout": [
+            [ "C" ],
+            [ "S" ]
+    ],
+    "elementwise":   false,
+    "system_opcode": false
+}
 ]
