@@ -5,8 +5,8 @@ directiveStartToken = %
 %slurp
 
 #include <bh.hpp>
-#include "include/bh_c_data_types.h"
-#include "include/bh_c_interface.h"
+#include <bh_c_data_types.h>
+#include <bh_c_interface.h>
 
 using namespace bh;
 
