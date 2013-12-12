@@ -89,7 +89,6 @@ void batch_schedule_inst(bh_opcode opcode, bh_view *operands,
     t.inst.inst.userfunc = ufunc;
     if(ufunc == NULL)
     {
-        assert(opcode != BH_USERFUNC);
         memcpy(t.inst.inst.operand, operands, bh_operands(opcode)
                                               * sizeof(bh_view));
     }

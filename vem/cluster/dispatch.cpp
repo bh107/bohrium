@@ -299,8 +299,6 @@ void dispatch_bhir(const bh_ir *bhir)
      * 1   x bh_ir bhir  //serialized BhIR
      * 1   x bh_intp NOA //number of new arrays
      * NOA x dispatch_array //list of new arrays unknown to the slaves
-     * 1   x bh_intp NOU //number of user-defined funstions
-     * NOU x bh_userfunc //list of user-defined funstions
      */
 
     //Pack the BhIR.
@@ -347,27 +345,6 @@ void dispatch_bhir(const bh_ir *bhir)
     }
     //Save the number of new arrays
     *((bh_intp*)(msg->payload+msg_noa_offset)) = noa;
-
-    //Make reservation for the number of new arrays (NOU).
-    bh_intp msg_nou_offset, nou=0;
-    void *msg_nou;
-    dispatch_reserve_payload(sizeof(bh_intp), &msg_nou);
-
-    //Again we need a message offset.
-    msg_nou_offset = msg->size - sizeof(bh_intp);
-
-    //Pack the user-defined function list
-    for(bh_intp i=0; i<bhir->ninstr; ++i)
-    {
-        const bh_instruction *inst = &bhir->instr_list[i];
-        if(inst->opcode == BH_USERFUNC)
-        {
-            dispatch_add2payload(inst->userfunc->struct_size, inst->userfunc);
-            ++nou;
-        }
-    }
-    //Save the number of user-defined functions
-    *((bh_intp*)(msg->payload+msg_nou_offset)) = nou;
 
     //Dispath the execution message
     dispatch_send(BH_CLUSTER_DISPATCH_EXEC);
