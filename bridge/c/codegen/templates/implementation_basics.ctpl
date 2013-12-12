@@ -8,8 +8,8 @@ directiveStartToken = %
 
 
 #include <bh.hpp>
-#include "include/bh_c_data_types.h"
-#include "include/bh_c_interface.h"
+#include <bh_c_data_types.h>
+#include <bh_c_interface.h>
 #include "bh_c_type_definitions.hpp"
 
 using namespace bh;
@@ -88,7 +88,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_b
 {
     const int64_t stride = 1;
     const int64_t shape = base->nelem;
-    bh_multi_array_${bh_ctype}_p self = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);    
+    bh_multi_array_${bh_ctype}_p self = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);
     ((multi_array<${ctype}>*)self)->link(base);
 
     return self;
@@ -184,7 +184,7 @@ void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, 
 }
 
 %for $opname, $enum in $reduce_ops
-// Partial ${opname} reduction 
+// Partial ${opname} reduction
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
     return (bh_multi_array_${bh_ctype}_p)&reduce(*((multi_array<${ctype}>*)self), ${enum}, axis);
 }

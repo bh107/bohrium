@@ -54,21 +54,21 @@ void batch_schedule_inst(const bh_instruction& inst)
 }
 
 
-/* Schedule an instruction that only takes one instruction.
+/* Schedule an instruction that only takes one operand.
  *
  * @opcode   The opcode of the instruction
- * @operand  The local base array in the instruction
+ * @base  The local base array in the instruction
  */
-void batch_schedule_inst(bh_opcode opcode, bh_base *operand)
+void batch_schedule_inst_on_base(bh_opcode opcode, bh_base *base)
 {
     //insert returns True if the operand didn't exist in the discard_store
-    if(opcode == BH_DISCARD && !discard_store.insert(operand).second)
+    if(opcode == BH_DISCARD && !discard_store.insert(base).second)
         return;//Avoid discarding a base array multiple times
 
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    bh_assign_complete_base(&t.inst.inst.operand[0], operand);
+    bh_assign_complete_base(&t.inst.inst.operand[0], base);
     assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t);
 }
@@ -78,21 +78,14 @@ void batch_schedule_inst(bh_opcode opcode, bh_base *operand)
  *
  * @opcode   The opcode of the instruction
  * @operands The local operands in the instruction
- * @ufunc    The user-defined function struct when opcode is BH_USERFUNC.
  */
-void batch_schedule_inst(bh_opcode opcode, bh_view *operands,
-                         bh_userfunc *ufunc)
+void batch_schedule_inst(bh_opcode opcode, bh_view *operands)
 {
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    t.inst.inst.userfunc = ufunc;
-    if(ufunc == NULL)
-    {
-        assert(opcode != BH_USERFUNC);
-        memcpy(t.inst.inst.operand, operands, bh_operands(opcode)
-                                              * sizeof(bh_view));
-    }
+    memcpy(t.inst.inst.operand, operands, bh_operands(opcode)
+                                          * sizeof(bh_view));
     batch_schedule(t);
 }
 

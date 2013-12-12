@@ -22,6 +22,7 @@ impl = /opt/bohrium/libbh_vem_node.so
 type = ve
 ocldir = /opt/bohrium/lib/ocl_source
 impl = /opt/bohrium/libbh_ve_gpu.so
+children = cpu
 
 [cpu]
 type = ve

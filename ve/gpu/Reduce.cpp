@@ -27,28 +27,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
-    assert(userFuncArg->operands.size() == 2);
-    if (bh_is_scalar(&inst->operand[0]))
-    {
-        static_cast<BaseArray*>(userFuncArg->operands[1])->sync();
-        bh_error err = bh_data_malloc(inst->operand[0].base);
-        if (err != BH_SUCCESS)
-            return err;		  
-        err = bh_compute_reduce(inst);
-        return err;
-    }
-    else {
-        bh_view* out = &inst->operand[0];
-        std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
-        Kernel kernel = getKernel(inst, userFuncArg, shape);
-        Kernel::Parameters kernelParameters;
-        kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
-        kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
-        std::vector<size_t> globalShape;
-        for (int i = shape.size()-1; i>=0; --i)
-            globalShape.push_back(shape[i]);
-        kernel.call(kernelParameters, globalShape);
-    }
+    bh_view* out = &inst->operand[0];
+    std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
+    Kernel kernel = getKernel(inst, userFuncArg, shape);
+    Kernel::Parameters kernelParameters;
+    kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
+    kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
+    std::vector<size_t> globalShape;
+    for (int i = shape.size()-1; i>=0; --i)
+        globalShape.push_back(shape[i]);
+    kernel.call(kernelParameters, globalShape);
     return BH_SUCCESS;
 }
 

@@ -381,3 +381,16 @@ std::string ResourceManager::getKernelPath()
         return std::string("/opt/bohrium/lib/ocl_source");
     return std::string(dir);
 }
+
+bh_error ResourceManager::childExecute(bh_ir* bhir)
+{
+    bh_error err = BH_ERROR;
+    for (int i = 0; i < component->nchildren; ++i)
+    {
+        bh_component_iface* child = &component->children[i];
+        err = child->execute(bhir);
+        if (err == BH_SUCCESS)
+            break;
+    }
+    return err;
+}
