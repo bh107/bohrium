@@ -55,9 +55,9 @@ Scalar::Scalar(bh_constant constant)
     case BH_UINT64:
         value.ul = constant.value.uint64;
         break;
-    case BH_FLOAT16:
-        value.h = constant.value.float16;
-        break;
+    // case BH_FLOAT16:
+    //     value.h = constant.value.float16;
+    //     break;
     case BH_FLOAT32:
         value.f = constant.value.float32;
         break;
@@ -103,9 +103,9 @@ Scalar::Scalar(bh_base* spec)
     case BH_UINT64:
         value.ul = *(bh_uint64*)spec->data;
         break;
-    case BH_FLOAT16:
-        value.h = *(bh_float16*)spec->data;
-        break;
+    // case BH_FLOAT16:
+    //     value.h = *(bh_float16*)spec->data;
+    //     break;
     case BH_FLOAT32:
         value.f = *(bh_float32*)spec->data;
         break;
@@ -161,9 +161,9 @@ void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
     case OCL_UINT64:
         kernel.setArg(argIndex, value.ul);
         break;
-    case OCL_FLOAT16:
-        kernel.setArg(argIndex, value.h);
-        break;
+    // case OCL_FLOAT16:
+    //     kernel.setArg(argIndex, value.h);
+    //     break;
     case OCL_FLOAT32:
         kernel.setArg(argIndex, value.f);
         break;

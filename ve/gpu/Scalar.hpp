@@ -36,7 +36,7 @@ private:
         cl_ushort us;
         cl_uint ui;
         cl_ulong ul;
-        cl_half h;
+        // cl_half h;
         cl_float f;
         cl_double d;
     } value;
