@@ -37,12 +37,12 @@ void batch_schedule(const task& t);
 void batch_schedule_inst(const bh_instruction& inst);
 
 
-/* Schedule an instruction that only takes one instruction.
+/* Schedule an instruction that only takes one operand.
  *
  * @opcode   The opcode of the instruction
- * @operand  The local base array in the instruction
+ * @base  The local base array in the instruction
  */
-void batch_schedule_inst(bh_opcode opcode, bh_base *operand);
+void batch_schedule_inst_on_base(bh_opcode opcode, bh_base *base);
 
 
 /* Schedule an instruction.

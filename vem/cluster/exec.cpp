@@ -115,6 +115,7 @@ bh_error exec_extmethod(const char *name, bh_opcode opcode)
  *
  * @instruction The instructionto execute
  */
+/*
 static void fallback_exec(bh_instruction *inst)
 {
     int nop = bh_operands_in_instruction(inst);
@@ -165,11 +166,11 @@ static void fallback_exec(bh_instruction *inst)
     for(std::set<bh_base*>::iterator it=arys2discard.begin();
         it != arys2discard.end(); ++it)
     {
-        batch_schedule_inst(BH_FREE, *it);
-        batch_schedule_inst(BH_DISCARD, *it);
+        batch_schedule_inst_on_base(BH_FREE, *it);
+        batch_schedule_inst_on_base(BH_DISCARD, *it);
     }
 }
-
+*/
 
 /* Execute a regular computation instruction
  *
@@ -220,8 +221,8 @@ static void execute_regular(bh_instruction *inst)
             ary_chunk *chunk = &chunks[k+c];
             if(chunk->temporary)
             {
-                batch_schedule_inst(BH_FREE, chunk->ary.base);
-                batch_schedule_inst(BH_DISCARD, chunk->ary.base);
+                batch_schedule_inst_on_base(BH_FREE, chunk->ary.base);
+                batch_schedule_inst_on_base(BH_DISCARD, chunk->ary.base);
             }
         }
     }
@@ -267,7 +268,7 @@ static bh_error execute_instr(bh_instruction *inst)
             bh_base *l_ary = array_get_existing_local(g_ary);
             if(l_ary != NULL)
             {
-                batch_schedule_inst(BH_DISCARD, l_ary);
+                batch_schedule_inst_on_base(BH_DISCARD, l_ary);
             }
             dispatch_slave_known_remove(g_ary);
             break;
@@ -278,7 +279,7 @@ static bh_error execute_instr(bh_instruction *inst)
             bh_base *l_ary = array_get_existing_local(g_ary);
             bh_data_free(g_ary);
             if(l_ary != NULL)
-                batch_schedule_inst(BH_FREE, l_ary);
+                batch_schedule_inst_on_base(BH_FREE, l_ary);
             break;
         }
         case BH_SYNC:
