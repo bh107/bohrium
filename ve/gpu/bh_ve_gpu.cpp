@@ -23,11 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "bh_ve_gpu.h"
 
-bh_error bh_ve_gpu_init(bh_component* _component)
+bh_error bh_ve_gpu_init(const char *name)
 {
-    component = _component;
+    bh_error err;
+    if((err = bh_component_init(&component, name)) != BH_SUCCESS)
+        return err;
     try {
-        resourceManager = new ResourceManager(component);
+        resourceManager = new ResourceManager(&component);
         instructionScheduler = new InstructionScheduler(resourceManager);
     } 
     catch (std::exception& e)
@@ -68,19 +70,22 @@ bh_error bh_ve_gpu_shutdown()
 {
     delete instructionScheduler;
     delete resourceManager;
+    bh_component_destroy(&component);
     return BH_SUCCESS;
 }
 
-bh_error bh_ve_gpu_reg_func(char *fun, 
-                            bh_intp *id)
+bh_error bh_ve_gpu_extmethod(const char *fun_name, 
+                             bh_opcode opcode)
 {
-    bh_userfunc_impl userfunc;
-    bh_component_get_func(component, fun, &userfunc);
-    if (userfunc != NULL)
+    bh_extmethod_impl extmethod;
+    bh_error err = bh_component_extmethod(&component, fun_name, &extmethod);
+    if(err != BH_SUCCESS)
+        return err;
+    if (extmethod != NULL)
     {
-        instructionScheduler->registerFunction(*id, userfunc);
+        instructionScheduler->registerFunction(opcode, extmethod);
     	return BH_SUCCESS;
     }
     else
-	    return BH_USERFUNC_NOT_SUPPORTED;
+	    return BH_EXTMETHOD_NOT_SUPPORTED;
 }
