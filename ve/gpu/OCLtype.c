@@ -60,6 +60,8 @@ OCLtype oclType(bh_type vbtype)
         return OCL_COMPLEX64;
     case BH_COMPLEX128:
         return OCL_COMPLEX128;
+    case BH_R123:
+        return OCL_R123;
     default:
         assert(false);
     }
@@ -83,6 +85,7 @@ const char* oclTypeStr(OCLtype type)
     case OCL_FLOAT64: return "double";
     case OCL_COMPLEX64: return "float2";
     case OCL_COMPLEX128: return "double2";
+    case OCL_R123: return "ulong2";
     case OCL_UNKNOWN: return "void";
     default: assert(false);
         
@@ -106,6 +109,7 @@ const char* oclAPItypeStr(OCLtype type)
     case OCL_FLOAT64: return "cl_double";
     case OCL_COMPLEX64: return "cl_float2";
     case OCL_COMPLEX128: return "cl_double2";
+    case OCL_R123: return "cl_ulong2";
     default: assert(false);
         
     }
@@ -141,6 +145,8 @@ size_t oclSizeOf(OCLtype type)
         return sizeof(cl_float2);
     case OCL_COMPLEX128:
         return sizeof(cl_double2);
+    case OCL_R123:
+        return sizeof(cl_ulong2);
     default:
         assert(false);
     }

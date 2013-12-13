@@ -42,6 +42,7 @@ typedef enum
     OCL_FLOAT64,
     OCL_COMPLEX64,
     OCL_COMPLEX128,
+    OCL_R123,
     OCL_UNKNOWN
 } OCLtype;
 
