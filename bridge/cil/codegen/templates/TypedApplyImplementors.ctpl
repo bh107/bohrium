@@ -104,16 +104,17 @@ namespace NumCIL.Bohrium2
             using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
             using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
             using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+            {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
+                // If the output is CIL-managed, we must sync immediately
+                if (!(@out.DataAccessor is DataAccessor_float32))
+                    v0.Sync();
+            }
 
             if (@out.DataAccessor is DataAccessor_${bh_ctype})
                 ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
             else
-            {
-                // If the output is CIL-managed, we must sync immediately
-                Utility.Flush();
                 PinnedArrayTracker.Release();
-            }
             
             return true;
         }
@@ -136,11 +137,20 @@ namespace NumCIL.Bohrium2
                 {
                     if (isScalarIn1)
                         using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                        {                                
                             PInvoke.bh_multi_array_${bh_ctype}_assign_scalar(v2, _in.DataAccessor[0]);
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v2.Sync();
+                        }
                     else
                         using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
                         using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                        {
                             PInvoke.bh_multi_array_${bh_ctype}_assign_array(v2, v1);
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v2.Sync();
+
+                        }
                 };
             }
                     
@@ -163,7 +173,11 @@ namespace NumCIL.Bohrium2
                     {
                         using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
                         using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                        {
                             PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1));
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v0.Sync();
+                        }
                     };
                 }
             }
@@ -179,10 +193,7 @@ namespace NumCIL.Bohrium2
             if (@out.DataAccessor is DataAccessor_${bh_ctype})
                 ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
             else
-            {
-                Utility.Flush();
                 PinnedArrayTracker.Release();
-            }
             
             return true;
         }

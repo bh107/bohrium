@@ -42,8 +42,8 @@ namespace NumCIL.Bohrium2
             if (!m_binOpLookup.TryGetValue(c, out m))
             {
                 m = (from n in m_binOps
-                                    where n.Item1.IsAssignableFrom(c)
-                                    select n.Item2).FirstOrDefault();
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
                 m_binOpLookup[c] = m;
             }
         
@@ -61,8 +61,12 @@ namespace NumCIL.Bohrium2
             using (var v1 = new PInvoke.bh_multi_array_float32_p(@in1))
             using (var v2 = new PInvoke.bh_multi_array_float32_p(@in2))
             using (var v0 = new PInvoke.bh_multi_array_float32_p(@out))
+            {
                 PInvoke.bh_multi_array_float32_assign_array(v0, m(v1, v2));
-                
+                if (!(@out.DataAccessor is DataAccessor_float32))
+                    v0.Sync();
+            }
+
             if (@out.DataAccessor is DataAccessor_float32)
                 ((DataAccessor_float32)@out.DataAccessor).SetDirty();
             else
@@ -93,11 +97,19 @@ namespace NumCIL.Bohrium2
                 {
                     if (isScalarIn1)
                         using (var v2 = new PInvoke.bh_multi_array_float32_p(_out))
+                        {
                             PInvoke.bh_multi_array_float32_assign_scalar(v2, _in.DataAccessor[0]);
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v2.Sync();
+                    }
                     else
                         using (var v1 = new PInvoke.bh_multi_array_float32_p(_in))
                         using (var v2 = new PInvoke.bh_multi_array_float32_p(_out))
+                        {
                             PInvoke.bh_multi_array_float32_assign_array(v2, v1);
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v2.Sync();
+                        }
                 };
             }
                     
@@ -120,7 +132,11 @@ namespace NumCIL.Bohrium2
                     {
                         using (var v1 = new PInvoke.bh_multi_array_float32_p(_in))
                         using (var v0 = new PInvoke.bh_multi_array_float32_p(_out))
+                        {
                             PInvoke.bh_multi_array_float32_assign_array(v0, m(v1));
+                            if (!(_out.DataAccessor is DataAccessor_float32))
+                                v0.Sync();
+                        }
                     };
                 }
             }
