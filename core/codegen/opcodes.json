@@ -2005,12 +2005,12 @@
     "id":   "69",
     "nop":   3,
     "types": [
-            [ "BH_UINT32", "BH_UINT64", "BH_UINT64" ],
-            [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ]
+            [ "BH_UINT32", "BH_R123" ],
+            [ "BH_UINT64", "BH_R123" ]
     ],
     "layout": [
-            [ "C", "K", "K" ],
-            [ "S", "K", "K" ]
+            [ "C", "K" ],
+            [ "S", "K" ]
     ],
     "elementwise":   false,
     "system_opcode": false
@@ -2022,18 +2022,8 @@
     "id":   "70",
     "nop":   1,
     "types": [
-            [ "BH_COMPLEX128" ],
-            [ "BH_COMPLEX64" ],
-            [ "BH_FLOAT32" ],
-            [ "BH_FLOAT64" ],
-            [ "BH_INT16" ],
-            [ "BH_INT32" ],
-            [ "BH_INT64" ],
-            [ "BH_INT8" ],
-            [ "BH_UINT16" ],
             [ "BH_UINT32" ],
-            [ "BH_UINT64" ],
-            [ "BH_UINT8" ]
+            [ "BH_UINT64" ]
     ],
     "layout": [
             [ "C" ],

@@ -41,7 +41,7 @@ typedef float         bh_float32;
 typedef double        bh_float64;
 typedef struct { float real, imag; } bh_complex64;
 typedef struct { double real, imag; } bh_complex128;
-
+typedef struct { bh_uint64 start, key; } bh_r123;
 
 /* Codes for data types */
 enum /* bh_type */
@@ -59,14 +59,15 @@ enum /* bh_type */
     BH_FLOAT64,
     BH_COMPLEX64,
     BH_COMPLEX128,
+    BH_R123,
     BH_UNKNOWN
 };
 
 typedef int64_t    bh_intp;
-typedef bh_intp bh_index;
-typedef bh_intp bh_type;
-typedef bh_intp bh_opcode;
-typedef bh_intp bh_error;
+typedef bh_intp    bh_index;
+typedef bh_intp    bh_type;
+typedef bh_intp    bh_opcode;
+typedef bh_intp    bh_error;
 typedef void*      bh_data_ptr;
 
 typedef union /* bh_constant_value */
@@ -84,6 +85,7 @@ typedef union /* bh_constant_value */
     bh_float64    float64;
     bh_complex64  complex64;
     bh_complex128 complex128;
+    bh_r123       r123;
 } bh_constant_value;
 
 typedef struct

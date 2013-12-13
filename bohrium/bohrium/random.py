@@ -13,7 +13,7 @@ import os
 import bohriumbridge as bridge
 
 
-def random123(shape, key, start_idx=0, dtype=np.uint64, bohrium=True):
+def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
     """
     New array of uniform pseudo numbers based on the random123 algorithm.
 
@@ -35,8 +35,7 @@ def random123(shape, key, start_idx=0, dtype=np.uint64, bohrium=True):
 
     totalsize = reduce(operator.mul, shape, 1)
     out = np.empty(totalsize, bohrium=bohrium, dtype=dtype)
-    arange = start_idx + np.arange(totalsize, bohrium=bohrium, dtype=np.uint64)
-    bridge.random123(out, key, arange)
+    bridge.random123(out, start_index, key)
     return out.reshape(shape)
 
 
