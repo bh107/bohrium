@@ -161,12 +161,23 @@ def genesis(bytecodes, types, operands):
 
         #print opcode, func, typesig, layout, op_setup
         try:
-            func(*op_setup)
+            a = func(*op_setup)
+            a = np.sum(a)
+            a == 1
         except:
-            print "DAMMM ", opcode, func, typesig, layout
-            func(*op_setup)
+            print "Bad things happened when trying to execute", opcode,
+            typesig, layout
 
+    """
     # 4) Then range came into the world
+    for typesigs in (opcode['types'] for opcode in opcodes
+                     if 'BH_RANGE' in opcode['opcode']):
+        for typesig in typesigs:
+            tn = typemap[typesig[0]]
+            a = np.sum(np.arange(1,10, bohrium=True, dtype=tn))
+            a == 1
+    """
+
 
     # 5) Then identity was ensured
 

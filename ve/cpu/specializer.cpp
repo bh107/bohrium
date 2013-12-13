@@ -52,16 +52,17 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
 
                                                         // String representation
             if (optimized && (sij.ndims <= 3)) {        // Optimized
-                sprintf(symbol_c, "%s_%s_%ld_%s",
+                sprintf(symbol_c, "%s_%s_%s_%ldD",
                     bh_opcode_text(sij.instr->opcode),
                     bh_typesig_to_shorthand(sij.tsig),
-                    sij.ndims,
-                    bh_layoutmask_to_shorthand(sij.lmask)
+                    bh_layoutmask_to_shorthand(sij.lmask),
+                    sij.ndims
                 );
             } else {                                    // General-case
-                sprintf(symbol_c, "%s_%s",
+                sprintf(symbol_c, "%s_%s_%s_ND",
                     bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig)
+                    bh_typesig_to_shorthand(sij.tsig),
+                    bh_layoutmask_to_shorthand(sij.lmask)
                 );
             }
 
@@ -74,19 +75,11 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
             sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
             sij.tsig  = bh_typesig(sij.instr);          // Type signature
 
-            if (optimized) {
-                sprintf(symbol_c, "%s_%s_ND_%s",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask)
-                );
-            } else {
-                sprintf(symbol_c, "%s_%s_%s",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask)
-                );
-            }
+            sprintf(symbol_c, "%s_%s_%s_ND",
+                bh_opcode_text(sij.instr->opcode),
+                bh_typesig_to_shorthand(sij.tsig),
+                bh_layoutmask_to_shorthand(sij.lmask)
+            );
 
             sij.symbol = string(symbol_c);
             break;
@@ -99,14 +92,14 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
 
                                                         // String representation
             if (optimized && (sij.ndims <= 3)) {        // Optimized                       
-                sprintf(symbol_c, "%s_%s_%ld_%s",
+                sprintf(symbol_c, "%s_%s_%s_%ldD",
                     bh_opcode_text(sij.instr->opcode),
                     bh_typesig_to_shorthand(sij.tsig),
-                    sij.ndims,
-                    bh_layoutmask_to_shorthand(sij.lmask)
+                    bh_layoutmask_to_shorthand(sij.lmask),
+                    sij.ndims
                 );
             } else {                                    // General-case
-                sprintf(symbol_c, "%s_%s_%s",
+                sprintf(symbol_c, "%s_%s_%s_ND",
                     bh_opcode_text(sij.instr->opcode),
                     bh_typesig_to_shorthand(sij.tsig),
                     bh_layoutmask_to_shorthand(sij.lmask)
@@ -211,10 +204,9 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
                 dict.ShowSection("a1_dense");
                 dict.ShowSection("a2_dense");
             }
-            if (optimized && \
-                ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
-                 (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT + A2_CONTIGUOUS)) || \
-                 (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT)))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
                 if (optimized && (sij.ndims<=3)) {
@@ -271,9 +263,8 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
                 dict.ShowSection("a1_dense");
             }
 
-            if (optimized && \
-                ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
-                 (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT)))) {
+            if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
 
