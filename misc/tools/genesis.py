@@ -111,8 +111,8 @@ def creation(config, opcodes, types):
                 operands[tn][ndim] = {}
             for op in [0,1,2]:                  # Create three
                 operands[tn][ndim][op] = {      # Of different layout
-                    'C': np.ones( [3]*ndim, dtype = typemap[tn] ),
-                    'S': np.ones( [3]*ndim, dtype = typemap[tn] ),
+                    'C': np.ones([3]*ndim,      dtype = typemap[tn] ),
+                    'S': np.ones(pow(3,ndim)*2, dtype = typemap[tn])[::2].reshape([3]*ndim), 
                     'K': 3
                 }
 
@@ -120,11 +120,12 @@ def creation(config, opcodes, types):
 
 def genesis(bytecodes, types, operands):
 
-     # Grab Bohrium/NumPy
+    # 1) Grab Bohrium/NumPy
     np = bhutils.import_bohrium()
    
     earth = []
 
+    # 2) First there was the element-wise operations
     exclude_opc = ['BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY']
     for bytecode in (bytecode for bytecode in bytecodes 
                    if bytecode['opcode'] not in exclude_opc):
@@ -135,11 +136,44 @@ def genesis(bytecodes, types, operands):
             for layout in bytecode['layout']:
                 earth.append([opcode, typesig, layout])
 
-    # Execute all opcodes except for RANDOM, RANGE, and IDENTITY
+    # 3) Execute all opcodes except for RANDOM, RANGE, and IDENTITY
     for opcode, typesig, layout in earth:
-        func = eval(numpy_map[opcode])    # Grab the NumPy functions
+        func = eval(numpy_map[opcode])  # Grab the NumPy functions
 
-        print opcode, func, typesig, layout
+        ndim = 4                        # Setup operands
+        if len(typesig) == 3:
+            op_setup = [
+                operands[typesig[1]][ndim][1][layout[1]],
+                operands[typesig[2]][ndim][2][layout[2]],
+                operands[typesig[0]][ndim][0][layout[0]]
+            ]
+        elif len(typesig) == 2:
+            op_setup = [
+                operands[typesig[1]][ndim][1][layout[1]],
+                operands[typesig[0]][ndim][0][layout[0]]
+            ]
+        elif len(typesig) == 1:
+            op_setup = [
+                operands[typesig[0]][ndim][0][layout[0]]
+            ]
+        else:
+            print "WTF!"
+
+        #print opcode, func, typesig, layout, op_setup
+        try:
+            func(*op_setup)
+        except:
+            print "DAMMM ", opcode, func, typesig, layout
+            func(*op_setup)
+
+    # 4) Then range came into the world
+
+    # 5) Then identity was ensured
+
+    # 6) And uncertainty introduced
+
+    # 7) And the seventh step is to lay back and let the compiler
+    #    do the rest of the work
 
     print len(earth)
     return (None, None)
