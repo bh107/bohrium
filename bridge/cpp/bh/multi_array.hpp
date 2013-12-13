@@ -73,6 +73,7 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(N
 {
     meta = operand.meta;
     meta.base = NULL;
+    meta.start = 0;
 
     int64_t stride = 1;                 // Reset strides
     for(int64_t i=meta.ndim-1; 0 <= i; --i) {
