@@ -64,6 +64,18 @@ Scalar::Scalar(bh_constant constant)
     case BH_FLOAT64:
         value.d = constant.value.float64;
         break;
+    case BH_COMPLEX64:
+        value.fcx.s0 = constant.value.complex64.real;
+        value.fcx.s1 = constant.value.complex64.imag;
+        break;
+    case BH_COMPLEX128:
+        value.dcx.s0 = constant.value.complex128.real;
+        value.dcx.s1 = constant.value.complex128.imag;
+        break;
+    case BH_R123:
+        value.r123.s0 = constant.value.r123.start;
+        value.r123.s1 = constant.value.r123.key;
+        break;
     default:
         throw std::runtime_error("Scalar: Unknown type.");
     }
@@ -111,6 +123,14 @@ Scalar::Scalar(bh_base* spec)
         break;
     case BH_FLOAT64:
         value.d = *(bh_float64*)spec->data;
+        break;
+    case BH_COMPLEX64:
+        value.fcx.s0 = (*(bh_complex64*)spec->data).real;
+        value.fcx.s1 = (*(bh_complex64*)spec->data).imag;
+        break;
+    case BH_COMPLEX128:
+        value.dcx.s0 = (*(bh_complex128*)spec->data).real;
+        value.dcx.s1 = (*(bh_complex128*)spec->data).imag;
         break;
     default:
         throw std::runtime_error("Scalar: Unknown type.");
@@ -169,6 +189,15 @@ void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
         break;
     case OCL_FLOAT64:
         kernel.setArg(argIndex, value.d);
+        break;
+    case OCL_COMPLEX64:
+        kernel.setArg(argIndex, value.fcx);
+        break;
+    case OCL_COMPLEX128:
+        kernel.setArg(argIndex, value.dcx);
+        break;
+    case OCL_R123:
+        kernel.setArg(argIndex, value.r123);
         break;
     default:
         assert(false);

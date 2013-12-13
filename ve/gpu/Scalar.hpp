@@ -39,6 +39,9 @@ private:
         // cl_half h;
         cl_float f;
         cl_double d;
+        cl_float2 fcx;
+        cl_double2 dcx;
+        cl_ulong2 r123;
     } value;
 
 protected:
