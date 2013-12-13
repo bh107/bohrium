@@ -19,18 +19,18 @@ def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
 
     Parameters
     ----------
-    shape     : tuple of ints
-                Defines the shape of the returned array of random floats.
-    key       : The key or seed for the random123 algorithm
-    start_idx : The start index (must be positive)
-    dtype     : The data type of the output array (uint32 or uint64)
+    shape       : tuple of ints
+                  Defines the shape of the returned array of random floats.
+    key         : The key or seed for the random123 algorithm
+    start_index : The start index (must be positive)
+    dtype       : The data type of the output array (uint32 or uint64)
 
     Returns
     -------
     out : Array of uniform pseudo numbers
     """
     assert bohrium is True
-    assert start_idx >= 0
+    assert start_index >= 0
     assert dtype is np.uint32 or dtype is np.uint64
 
     totalsize = reduce(operator.mul, shape, 1)
@@ -61,7 +61,7 @@ class Random:
                 self.seed = hash(datetime.datetime.now())
         else:
             self.seed = hash(x)
-        self.idx = 0;
+        self.index = 0;
 
     def random(self, shape=None, dtype=np.float64, bohrium=True):
         """
@@ -119,13 +119,13 @@ class Random:
                 s = shape #It might be a tuble already
 
         #Generate random numbers as uint
-        r = random123(s, self.seed, start_idx=self.idx, dtype=dtype_uint, bohrium=bohrium)
+        r = random123(s, self.seed, start_index=self.index, dtype=dtype_uint, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
         r = np.asarray(r, dtype=dtype)
         r /= float(np.iinfo(dtype_uint).max)
 
         #Update the index offset for the next random call
-        self.idx += reduce(operator.mul, s, 1)
+        self.index += reduce(operator.mul, s, 1)
 
         if shape is None:
             return r[0]
