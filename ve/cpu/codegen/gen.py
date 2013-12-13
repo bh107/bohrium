@@ -216,6 +216,7 @@ def cexpr_todo(opcodes, types):
 
     return [data, {'opcodes': opcodes}]
 
+
 def typesig_to_shorthand(opcodes, types):
 
     etu = dict([(t["enum"], t["id"]+1) for t in types])
@@ -266,6 +267,9 @@ def typesig_to_shorthand(opcodes, types):
         cases.append((nsig, hsig, tsig))
 
     return [{"cases": cases}]
+
+def bh_typesig_check(opcodes, types):
+    return typesig_to_shorthand(opcodes, types)
 
 if __name__ == "__main__":
     main(sys.modules[__name__])

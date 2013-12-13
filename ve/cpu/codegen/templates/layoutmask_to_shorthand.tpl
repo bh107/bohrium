@@ -11,7 +11,6 @@ const char* bh_layoutmask_to_shorthand(const int mask)
         %end for
 
         default:
-            printf("cpu(bh_layoutmask_to_shorthand): Unsupported layoutmask [%d]\n", mask);
             return "{{UNSUPPORTED}}";
     }
 }

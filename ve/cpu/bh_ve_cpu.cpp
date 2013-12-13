@@ -222,14 +222,16 @@ static bh_error exec(bh_instruction *instr)
         }
     }
 
-    symbolize(instr, sij, jit_optimize);             // Construct symbol
+    if (!symbolize(instr, sij, jit_optimize)) {     
+        return BH_ERROR;
+    }
 
     if (jit_enabled && \
         (sij.symbol!="") && \
         (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
 
         string sourcecode = specialize(sij, jit_optimize);   // Specialize sourcecode
-        if (jit_dumpsrc==1) {                          // Dump sourcecode to file
+        if (jit_dumpsrc==1) {                       // Dump sourcecode to file
             target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
         }                                           // Send to code generator
         target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());

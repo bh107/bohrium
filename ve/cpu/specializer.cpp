@@ -23,17 +23,21 @@ void specializer_init()
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
-void symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
+bool symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
 
     char symbol_c[500]; // String representation buffers
-    
+
     sij.instr = instr;
+    sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
+    sij.tsig  = bh_typesig(sij.instr);          // Type signature
+    
     switch (sij.instr->opcode) {    // [OPCODE_SWITCH]
 
         case BH_NONE:                                   // System opcodes
         case BH_DISCARD:
         case BH_SYNC:
-        case BH_FREE:
+        case BH_FREE:               // Return without a symbol
+            return true;
             break;
 
         case BH_ADD_REDUCE:                             // Reductions
@@ -47,67 +51,38 @@ void symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
             sij.ndims = sij.instr->operand[1].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
 
-                                                        // String representation
-            if (optimized && (sij.ndims <= 3)) {        // Optimized
-                sprintf(symbol_c, "%s_%s_%s_%ldD",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask),
-                    sij.ndims
-                );
-            } else {                                    // General-case
-                sprintf(symbol_c, "%s_%s_%s_ND",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask)
-                );
-            }
-
-            sij.symbol = string(symbol_c);
-            break;
-
-        case BH_RANGE:
-
-            sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
-
-            sprintf(symbol_c, "%s_%s_%s_ND",
-                bh_opcode_text(sij.instr->opcode),
-                bh_typesig_to_shorthand(sij.tsig),
-                bh_layoutmask_to_shorthand(sij.lmask)
-            );
-
-            sij.symbol = string(symbol_c);
             break;
 
         default:                                        // Built-in
-            
             sij.ndims = sij.instr->operand[0].ndim;     // Dimensions
-            sij.lmask = bh_layoutmask(sij.instr);       // Layout mask
-            sij.tsig  = bh_typesig(sij.instr);          // Type signature
-
-                                                        // String representation
-            if (optimized && (sij.ndims <= 3)) {        // Optimized                       
-                sprintf(symbol_c, "%s_%s_%s_%ldD",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask),
-                    sij.ndims
-                );
-            } else {                                    // General-case
-                sprintf(symbol_c, "%s_%s_%s_ND",
-                    bh_opcode_text(sij.instr->opcode),
-                    bh_typesig_to_shorthand(sij.tsig),
-                    bh_layoutmask_to_shorthand(sij.lmask)
-                );
-            }
-
-            sij.symbol = string(symbol_c);
             break;
+    }
+
+    // String representation
+    if (optimized && (sij.ndims <= 3)) {        // Optimized                       
+        sprintf(symbol_c, "%s_%s_%s_%lldD",
+            bh_opcode_text(sij.instr->opcode),
+            bh_typesig_to_shorthand(sij.tsig),
+            bh_layoutmask_to_shorthand(sij.lmask),
+            (long long)sij.ndims
+        );
+    } else {                                    // General-case
+        sprintf(symbol_c, "%s_%s_%s_ND",
+            bh_opcode_text(sij.instr->opcode),
+            bh_typesig_to_shorthand(sij.tsig),
+            bh_layoutmask_to_shorthand(sij.lmask)
+        );
+    }
+
+    if (!bh_typesig_check(sij.tsig)) {
+        printf("cpu( Invalid type signature[%d] ): Bridge check yourself! Instruction:\n", sij.tsig);
+        bh_pprint_instr(instr);
+        printf("\n");
+        return false;
+    } else {
+        sij.symbol = string(symbol_c);      // Assign the symbol
+        return true;
     }
 }
 
@@ -148,7 +123,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
 
             if (optimized && (sij.ndims <= 3)) {
-                sprintf(template_fn, "reduction.%ldd.tpl", sij.ndims);
+                sprintf(template_fn, "reduction.%lldd.tpl", (long long)sij.ndims);
             } else {
                 sprintf(template_fn, "reduction.nd.tpl");
             }
