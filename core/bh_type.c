@@ -103,6 +103,8 @@ const char* bh_type_text(bh_type type)
         return "BH_COMPLEX64";
     case BH_COMPLEX128:
         return "BH_COMPLEX128";
+    case BH_R123:
+        return "BH_R123";
     case BH_UNKNOWN:
         return "BH_UNKNOWN";
     default:
