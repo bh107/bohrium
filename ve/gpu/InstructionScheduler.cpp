@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -27,15 +27,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "Scalar.hpp"
 #include "Reduce.hpp"
 
-InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_) 
-    : resourceManager(resourceManager_) 
+InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
+    : resourceManager(resourceManager_)
     , batch(0)
 {}
 
 bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
 {
 #ifdef DEBUG
-    std::cout << "[VE GPU] InstructionScheduler: recieved batch with " << 
+    std::cout << "[VE GPU] InstructionScheduler: recieved batch with " <<
         bhir->instructions->count << " instructions." << std::endl;
 #endif
     for (std::vector<bh_instruction*>::iterator it = inst_list.begin(); it != inst_list.end(); ++it)
@@ -47,7 +47,7 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
             bh_pprint_instr(inst);
 #endif
 			bh_error res;
-			
+
             switch (inst->opcode)
             {
             case BH_SYNC:
@@ -61,7 +61,7 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
             case BH_FREE:
                 bh_data_free(inst->operand[0].base);
                 res = BH_SUCCESS;
-                break;                
+                break;
             case BH_ADD_REDUCE:
             case BH_MULTIPLY_REDUCE:
             case BH_MINIMUM_REDUCE:
@@ -78,7 +78,7 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
                 res = random(inst);
                 break;
             default:
-                if (inst->opcode < BH_NO_OPCODES)
+                if (inst->opcode < BH_MAX_OPCODE_ID)
                     res = ufunc(inst);
                 else
                     res = extmethod(inst);
@@ -137,8 +137,8 @@ void InstructionScheduler::discard(bh_base* base)
     }
     if (batch && !batch->discard(it->second))
     {
-        discardSet.insert(it->second); 
-    } 
+        discardSet.insert(it->second);
+    }
     else
     {
         delete it->second;
@@ -188,12 +188,12 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
         {
             try {
                 batch->add(inst, operands);
-            } 
+            }
             catch (BatchException& be)
             {
                 executeBatch();
                 batch = new InstructionBatch(inst, operands);
-            } 
+            }
         } else {
             batch = new InstructionBatch(inst, operands);
         }
@@ -220,17 +220,17 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
         userFuncArg.resourceManager = resourceManager;
         userFuncArg.operands = getKernelParameters(inst);
 
-        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) || 
+        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
                       batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
         {
             executeBatch();
         }
         return Reduce::reduce(inst, &userFuncArg);
-    } 
+    }
     catch (bh_error e)
     {
         return e;
-    }    
+    }
 }
 
 bh_error InstructionScheduler::random(bh_instruction* inst)
@@ -246,7 +246,7 @@ bh_error InstructionScheduler::random(bh_instruction* inst)
             executeBatch();
         }
         return Random::random(inst, &userFuncArg);
-    } 
+    }
     catch (bh_error e)
     {
         return e;
@@ -300,5 +300,5 @@ bh_error InstructionScheduler::extmethod(bh_instruction* inst)
     catch (bh_error e)
     {
         return e;
-    }    
+    }
 }
