@@ -13,12 +13,10 @@ If you also want to build the Mono libraries, you also need the Mono package::
 
 .. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
 
-Download and extract the source code::
+Download and extract the current version (v0.2)::
 
-  git clone https://bitbucket.org/bohrium/bohrium.git
-  cd bohrium
-  git submodule init
-  git submodule update
+  wget http://bohrium-v0.2.tgz
+  tar -xzf bohrium-v0.2.tg
 
 When building and install Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
 

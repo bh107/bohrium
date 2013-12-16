@@ -3,41 +3,70 @@ using NumCIL.Generic;
 using System.Collections.Generic;
 using System.Linq;
 
-using multi32 = NumCIL.Bohrium2.PInvoke.bh_multi_array_float32_p;
+using ma_float32 = NumCIL.Bohrium2.PInvoke.bh_multi_array_float32_p;
+using float32 = System.Single;
 
 namespace NumCIL.Bohrium2
 {
     public class ApplyImplementor_float32 : ITypedApplyImplementor<float>
     {
-        private Tuple<Type, Func<multi32, multi32>>[] m_unOps = 
+        private Tuple<Type, Func<ma_float32, ma_float32>>[] m_unOps = 
         {
-            new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute),
-            new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.IFloor), PInvoke.bh_multi_array_float32_floor),
-            new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.ICeiling), PInvoke.bh_multi_array_float32_ceil),
-            new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.IRound), PInvoke.bh_multi_array_float32_rint),
-            new Tuple<Type, Func<multi32, multi32>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_float32_sqrt),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IFloor), PInvoke.bh_multi_array_float32_floor),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ICeiling), PInvoke.bh_multi_array_float32_ceil),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IRound), PInvoke.bh_multi_array_float32_rint),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_float32_sqrt),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IExp), PInvoke.bh_multi_array_float32_exp),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ILog), PInvoke.bh_multi_array_float32_log),
         };
         
-        private Tuple<Type, Func<multi32, multi32, multi32>>[] m_binOps = 
+        private Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>[] m_binOps = 
         {
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_float32_add),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_float32_subtract),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_float32_multiply),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_float32_divide),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_float32_modulo),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_maximum),
-            new Tuple<Type, Func<multi32, multi32, multi32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_minimin),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_float32_add),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_float32_subtract),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_float32_multiply),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_float32_divide),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_float32_modulo),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_maximum),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_minimin),
+            new Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IPow), PInvoke.bh_multi_array_float32_power),
         };
         
+        private Tuple<Type, Func<ma_float32, float32>>[] m_aggOps = 
+        {
+            new Tuple<Type, Func<ma_float32, float32>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_float32_sum),
+            new Tuple<Type, Func<ma_float32, float32>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_float32_product),
+            new Tuple<Type, Func<ma_float32, float32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_min),
+            new Tuple<Type, Func<ma_float32, float32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_max)
+        };
+        
+        private Tuple<Type, Func<ma_float32, long, ma_float32>>[] m_reduceOps = 
+        {
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_float32_partial_reduce_add),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_float32_partial_reduce_multiply),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_partial_reduce_min),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_partial_reduce_max),
+            
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_float32_partial_reduce_bitwise_and),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_float32_partial_reduce_bitwise_or),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_float32_partial_reduce_bitwise_xor),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_float32_partial_reduce_logical_and),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_float32_partial_reduce_logical_or),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_float32_partial_reduce_logical_xor),
+        };
 
-        private Dictionary<Type, Func<multi32, multi32, multi32>> m_binOpLookup = new Dictionary<Type, Func<multi32, multi32, multi32>>();
-        private Dictionary<Type, Func<multi32, multi32>> m_unOpLookup = new Dictionary<Type, Func<multi32, multi32>>();
+        private Dictionary<Type, Func<ma_float32, ma_float32, ma_float32>> m_binOpLookup = new Dictionary<Type, Func<ma_float32, ma_float32, ma_float32>>();
+        private Dictionary<Type, Func<ma_float32, ma_float32>> m_unOpLookup = new Dictionary<Type, Func<ma_float32, ma_float32>>();
+        private Dictionary<Type, Func<ma_float32, float32>> m_aggLookup = new Dictionary<Type, Func<ma_float32, float>>();
+        private Dictionary<Type, Func<ma_float32, long, ma_float32>> m_reduceLookup = new Dictionary<Type, Func<ma_float32, long, ma_float32>>();
 
         #region ITypedApplyImplementor implementation
 
         public bool ApplyBinaryOp(Type c, NdArray<float> in1, NdArray<float> in2, NdArray<float> @out)
         {
-            Func<multi32, multi32, multi32> m;
+            Func<ma_float32, ma_float32, ma_float32> m;
             // This lookup prevents a linear scan of the supported operands
             if (!m_binOpLookup.TryGetValue(c, out m))
             {
@@ -49,7 +78,7 @@ namespace NumCIL.Bohrium2
         
             if (m == null)
             {
-                Console.WriteLine("No registered match for: {0}: {1}", c.FullName, @out.DataAccessor.GetType().FullName, in1.DataAccessor.GetType().FullName, in2.DataAccessor.GetType().FullName);
+                Console.WriteLine("No registered match for: {0}: {1}, {2}, {3}", c.FullName, @out.DataAccessor.GetType().FullName, in1.DataAccessor.GetType().FullName, in2.DataAccessor.GetType().FullName);
                 return false;
             }
                 
@@ -113,9 +142,9 @@ namespace NumCIL.Bohrium2
                 };
             }
                     
-            if (exec != null)
+            if (exec == null)
             {
-                Func<multi32, multi32> m;
+                Func<ma_float32, ma_float32> m;
             
                 // This lookup prevents a linear scan of the supported operands
                 if (!m_unOpLookup.TryGetValue(c, out m))
@@ -143,7 +172,7 @@ namespace NumCIL.Bohrium2
             
             if (exec == null)
             {
-                Console.WriteLine("No registered match for: {0}: ", c.FullName, @out.DataAccessor.GetType().FullName, in1.DataAccessor.GetType().FullName);
+                Console.WriteLine("No registered match for: {0}: {1}, {2}", c.FullName, @out.DataAccessor.GetType().FullName, in1.DataAccessor.GetType().FullName);
                 return false;
             }
             
@@ -172,7 +201,39 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyReduce(Type c, long axis, NdArray<float> in1, NdArray<float> @out)
         {
-            return false;
+            Func<ma_float32, long, ma_float32> m;
+            if (!m_reduceLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_reduceOps
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
+                m_reduceLookup[c] = m;
+            }
+            
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for reduce: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
+                return false;
+            }
+            
+            using (var v1 = new PInvoke.bh_multi_array_float32_p(@in1))
+            using (var v0 = new PInvoke.bh_multi_array_float32_p(@out))
+            {
+                PInvoke.bh_multi_array_float32_assign_array(v0, m(v1, axis));
+                if (!(@out.DataAccessor is DataAccessor_float32))
+                    v0.Sync();
+            }
+
+            if (@out.DataAccessor is DataAccessor_float32)
+                ((DataAccessor_float32)@out.DataAccessor).SetDirty();
+            else
+            {
+                // If the output is CIL-managed, we must sync immediately
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+            
+            return true;
         }
 
         public bool ApplyMatmul(Type cadd, Type cmul, NdArray<float> in1, NdArray<float> in2, NdArray<float> @out = null)
@@ -182,8 +243,31 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyAggregate(Type c, NdArray<float> in1, out float result)
         {
-            result = default(float);
-            return false;
+            Func<ma_float32, float32> m;
+            if (!m_aggLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_aggOps
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
+                m_aggLookup[c] = m;
+            }
+            
+            if (m == null)
+            {
+                //TODO: Attempt to build one using multiple partial reductions ...
+            }
+             
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for aggregate: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
+                result = default(float);
+                return false;
+            }
+
+            using(var v0 = new PInvoke.bh_multi_array_float32_p(in1))
+                result = m(v0);
+
+            return true;
         }
 
         #endregion

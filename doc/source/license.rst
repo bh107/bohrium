@@ -3,13 +3,13 @@
 History and License
 ===================
 
-Bohrium is an active research project started by Mads R. B. Kristensen, Troels Blum and Brian Vinter at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ at the `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
+Bohrium is an active research project started by Mads R. B. Kristensen, Troels Blum, and Brian Vinter at the `Niels Bohr Institute <http://www.nbi.ku.dk/>`_ - `University of Copenhagen <http://www.ku.dk/>`_. Contributors include those listed below in no particular order:
 
-    * Troels Blum
-    * Brian Vinter
-    * Kenneth Skovhede
-    * Simon Andreas Frimann Lund
-    * Mads Ruben Burgdorff Kristensen
+    * Troels Blum <blum@nbi.dk>
+    * Brian Vinter <vinter@nbi.dk>
+    * Kenneth Skovhede <skovhede@nbi.dk>
+    * Simon Andreas Frimann Lund <safl@nbi.dk>
+    * Mads Ruben Burgdorff Kristensen <madsbk@nbi.dk>
 
 Contributors are welcome, do not hesitate to contact us!
 

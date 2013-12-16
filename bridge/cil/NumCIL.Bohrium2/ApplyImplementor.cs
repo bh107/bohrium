@@ -49,7 +49,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(T), out h))
             {
                 var i = (ITypedApplyImplementor<T>)h;
-                return i.ApplyBinaryOp(op.GetType(), in1, in2, @out);
+                if (i.ApplyBinaryOp(op.GetType(), in1, in2, @out))
+                    return true;
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
@@ -62,7 +63,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(T), out h))
             {
                 var i = (ITypedApplyImplementor<T>)h;
-                return i.ApplyUnaryOp(op.GetType(), in1, @out);
+                if (i.ApplyUnaryOp(op.GetType(), in1, @out))
+                    return true;
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
@@ -75,7 +77,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(Tb), out h))
             {
                 var i = (ITypedApplyImplementor<Tb>)h;
-                return i.ApplyBinaryConvOp<Ta>(op.GetType(), in1, in2, @out);
+                if(i.ApplyBinaryConvOp<Ta>(op.GetType(), in1, in2, @out))
+                    return true;
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
@@ -88,7 +91,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(Tb), out h))
             {
                 var i = (ITypedApplyImplementor<Tb>)h;
-                return i.ApplyUnaryConvOp<Ta>(op.GetType(), in1, @out);
+                if(i.ApplyUnaryConvOp<Ta>(op.GetType(), in1, @out))
+                    return true;
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
@@ -113,7 +117,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(T), out h))
             {
                 var i = (ITypedApplyImplementor<T>)h;
-                return i.ApplyReduce(op.GetType(), axis, in1, @out);
+                if (i.ApplyReduce(op.GetType(), axis, in1, @out))
+                    return true;
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), @out.DataAccessor.GetType() });
@@ -126,7 +131,8 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(T), out h))
             {
                 var i = (ITypedApplyImplementor<T>)h;
-                return i.ApplyMatmul(addop.GetType(), mulop.GetType(), in1, in2, @out);
+                if (i.ApplyMatmul(addop.GetType(), mulop.GetType(), in1, in2, @out))
+                    return true;
             }
             DEBUG_FALLBACK(addop.GetType(), new Type[] { mulop.GetType(), in1.DataAccessor.GetType(), in2.DataAccessor.GetType(), @out.DataAccessor.GetType() });
             return false;
@@ -138,7 +144,9 @@ namespace NumCIL.Bohrium2
             if (_implementors.TryGetValue(typeof(T), out h))
             {
                 var i = (ITypedApplyImplementor<T>)h;
-                return i.ApplyAggregate(op.GetType(), in1, out result);
+                if (i.ApplyAggregate(op.GetType(), in1, out result))
+                    return true;
+                
             }
             
             DEBUG_FALLBACK(op.GetType(), new Type[] {in1.DataAccessor.GetType(), typeof(T) });

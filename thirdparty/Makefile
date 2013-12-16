@@ -5,6 +5,9 @@ CXX?=g++
 WARNOPTS=-Wall
 INSTALLDIR?=/opt/bohrium/
 
+all:
+	echo ""
+
 install:
 	mkdir -p $(INSTALLDIR)/include
 	cp -r Random123/include/Random123 $(INSTALLDIR)/include/
