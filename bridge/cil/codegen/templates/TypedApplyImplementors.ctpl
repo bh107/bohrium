@@ -85,8 +85,8 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_add),
             new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_multiply),
 %if $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_min),
-            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_max),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_min),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_max),
             
             new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_bitwise_and),
             new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_bitwise_or),

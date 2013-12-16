@@ -46,8 +46,8 @@ namespace NumCIL.Bohrium2
         {
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_float32_partial_reduce_add),
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_float32_partial_reduce_multiply),
-            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_partial_reduce_min),
-            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_partial_reduce_max),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_float32_partial_reduce_min),
+            new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_float32_partial_reduce_max),
             
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_float32_partial_reduce_bitwise_and),
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_float32_partial_reduce_bitwise_or),
