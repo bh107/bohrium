@@ -73,7 +73,7 @@ numpy_map = {
 
     "BH_RANDOM":    "np.random.random",
     "BH_RANGE":     "np.arange",
-    "BH_IDENTITY":  "np.identity",
+    "BH_IDENTITY":  "np.copyto",
     "BH_DISCARD":   "np.discard",
     "BH_FREE":      "np.free",
     "BH_SYNC":      "np.sync",
@@ -82,7 +82,7 @@ numpy_map = {
 
 # Ignore types
 ignore_types    = ['BH_UNKNOWN', 'BH_R123', 'BH_COMPLEX64', 'BH_COMPLEX128']
-exclude_opc     = ['BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY']
+exclude_opc     = ['BH_RANDOM', 'BH_RANGE']
 
 def creation(config, opcodes, types):
 
@@ -141,7 +141,21 @@ def genesis(bytecodes, types, operands):
 
     print "When done the earth should have", len(earth), "species."
 
-    # 3) Execute all opcodes except for RANDOM, RANGE, and IDENTITY
+    # 3) Then range came into the world
+    for bytecode in (bytecode for bytecode in bytecodes
+                     if 'BH_RANGE' in bytecode['opcode']):
+        
+        opcode = bytecode['opcode']
+        for typesig in bytecode['types']:
+            for layout in bytecode['layout']:
+                earth.append([opcode, typesig, layout])
+
+    # 5) Then identity was ensured
+
+    # 6) And uncertainty introduced
+
+
+    # 5) Execute all opcodes except for RANDOM, RANGE, and IDENTITY
     for opcode, typesig, layout in earth:
         func = eval(numpy_map[opcode])  # Grab the NumPy functions
 
@@ -178,19 +192,6 @@ def genesis(bytecodes, types, operands):
                 print "Bad things happened when trying to execute", opcode,
                 typesig, layout
 
-    """
-    # 4) Then range came into the world
-    for typesigs in (opcode['types'] for opcode in opcodes
-                     if 'BH_RANGE' in opcode['opcode']):
-        for typesig in typesigs:
-            tn = typemap[typesig[0]]
-            a = np.sum(np.arange(1,10, bohrium=True, dtype=tn))
-            a == 1
-    """
-
-    # 5) Then identity was ensured
-
-    # 6) And uncertainty introduced
 
     # 7) And the seventh step is to lay back and let the compiler
     #    do the rest of the work

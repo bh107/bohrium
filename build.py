@@ -183,6 +183,7 @@ if __name__ == "__main__":
                   ("INIPARSER","iniparser",True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
+                  ("THIRDPARTY", "thirdparty", True),\
                   ("VE-GPU", "ve/gpu", False),\
                   ("VE-CPU", "ve/cpu", True),\
                   ("VEM-NODE", "vem/node", True),\

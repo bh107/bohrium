@@ -26,7 +26,7 @@ children = cpu
 
 [cpu]
 type = ve
-compiler_cmd="gcc -I/opt/bohrium/cpu/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
+compiler_cmd="gcc -I/opt/bohrium/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="gcc -lm -O2 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="clang -lm -O3 -march=native -fPIC -std=c99 -x c -shared - -o "
 #compiler_cmd="/opt/a64/bin/opencc -lm -O2 -fPIC -std=c99 -x c -shared - -o "
