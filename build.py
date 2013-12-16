@@ -36,6 +36,9 @@ HEAD = '\033[93m'
 makecommand = "make"
 makefilename = "Makefile"
 
+install_summary = []
+build_summary = []
+
 def build(components,interpreter):
     for (name, dir, fatal) in components:
         print HEAD,"***Building %s***"%name, ENDC
@@ -58,6 +61,7 @@ def build(components,interpreter):
                 sys.exit(-1)
             else:
                 print FAIL, "A build error in %s is not fatal. Continuing."%name, ENDC
+        build_summary.append((name, err))
 
 def clean(components):
     for (name, dir, fatal) in components:
@@ -90,13 +94,14 @@ def install(components,prefix,interpreter):
             p.terminate()
 
         if err == 0:
-            print OK, "Build %s successfully."%name, ENDC
+            print OK, "Installed %s successfully."%name, ENDC
         else:
             if fatal:
                 print FAIL, "A build error in %s is fatal. Exiting."%name, ENDC
                 sys.exit(-1)
             else:
                 print FAIL, "A build error in %s is not fatal. Continuing."%name, ENDC
+        install_summary.append((name, err))
 
 
 def install_config(prefix):
@@ -205,6 +210,12 @@ if __name__ == "__main__":
         clean(components)
     if cmd == "build" or cmd == "rebuild":
         build(components,interpreter)
+        print HEAD, "Build Summary (%s):"%prefix,ENDC
+        for i in build_summary:
+            if i[1] == 0:
+                print OK,  "\t%s: SUCCESS"%i[0], ENDC
+            else:
+                print FAIL, "\t%s: FAILED"%i[0], ENDC
     elif cmd == "clean":
         clean(components)
     elif cmd == "install":
@@ -215,6 +226,12 @@ if __name__ == "__main__":
             os.makedirs(prefix)
         install(components,prefix,interpreter)
         install_config(prefix);
+        print HEAD, "Install Summary (%s):"%prefix,ENDC
+        for i in install_summary:
+            if i[1] == 0:
+                print OK,  "\t%s: SUCCESS"%i[0], ENDC
+            else:
+                print FAIL, "\t%s: FAILED"%i[0], ENDC
     else:
         print "Unknown command: '%s'."%cmd
         print ""
