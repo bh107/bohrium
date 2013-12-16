@@ -75,18 +75,18 @@ static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
                                               instr->constant.value.float64);
             break;
         case BH_R123:
-            sprintf(buf, "[ CONST(%s)={start=%llu,key=%llu} ]", 
+            sprintf(buf, "[ CONST(%s)={start=%llu,key=%llu} ]",
                     bh_type_text(instr->constant.type),
-                    instr->constant.value.r123.start,
-                    instr->constant.value.r123.key);
+                    (unsigned long long)instr->constant.value.r123.start,
+                    (unsigned long long)instr->constant.value.r123.key);
             break;
         case BH_COMPLEX64:
-            sprintf(buf, "[ CONST(%s)={real=%f,img=%f} ]", 
+            sprintf(buf, "[ CONST(%s)={real=%f,img=%f} ]",
                     bh_type_text(instr->constant.type),
                     instr->constant.value.complex64.real,
                     instr->constant.value.complex64.imag);
         case BH_COMPLEX128:
-            sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]", 
+            sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]",
                     bh_type_text(instr->constant.type),
                     instr->constant.value.complex128.real,
                     instr->constant.value.complex128.imag);
@@ -146,7 +146,7 @@ static void bh_sprint_instr(const bh_instruction *instr, char buf[])
     char tmp[PPRINT_BUF_OPSTR_SIZE];
     int op_count = bh_operands(instr->opcode);
     int i;
-    if(instr->opcode > BH_NO_OPCODES)//It is a extension method
+    if(instr->opcode > BH_MAX_OPCODE_ID)//It is a extension method
         sprintf(buf, "Extension Method (%d) OPS=%d{\n", (int)instr->opcode, op_count);
     else
         sprintf(buf, "%s OPS=%d{\n", bh_opcode_text(instr->opcode), op_count);
