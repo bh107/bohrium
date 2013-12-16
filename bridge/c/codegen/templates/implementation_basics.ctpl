@@ -190,23 +190,41 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}
 }
 
 %end for
-%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128"
 
+%if $bh_atype == "bh_complex64" or $bh_atype == "bh_complex128"
+// Sum
+${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
+    ${bh_atype} t1;
+    ${ctype} t0 = scalar(sum(*((multi_array<${ctype}>*)self)));
+    t1.real = t0.real();     
+    t1.imag = t0.imag();
+    return t1;
+}
+// Product
+${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
+    ${bh_atype} t1;
+    ${ctype} t0 = scalar(product(*((multi_array<${ctype}>*)self)));
+    t1.real = t0.real();     
+    t1.imag = t0.imag();
+    return t1;
+}
+%else
 // Sum
 ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
     return scalar(sum(*((multi_array<${ctype}>*)self)));
 }
-
 // Product
 ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
     return scalar(product(*((multi_array<${ctype}>*)self)));
 }
+%end if
+
+%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128"
 
 // Max
 ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self) {
     return scalar(max(*((multi_array<${ctype}>*)self)));
 }
-
 
 // Min
 ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self) {
