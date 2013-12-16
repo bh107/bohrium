@@ -250,7 +250,7 @@ static bh_error exec(bh_instruction *instr)
         return res;
     }
 
-    switch (sij.instr->opcode) {    // OPCODE_SWITCH
+    switch (sij.instr->opcode) {    // OPCODE_SWITCH    - DISPATCH
 
         case BH_NONE:               // NOOP.
         case BH_DISCARD:
@@ -260,6 +260,16 @@ static bh_error exec(bh_instruction *instr)
 
         case BH_FREE:                           // Store data-pointer in malloc-cache
             res = bh_vcache_free(sij.instr);
+            break;
+
+        case BH_RANDOM:
+            target->funcs[sij.symbol](0,
+                bh_base_array(&sij.instr->operand[0])->data,
+                bh_base_array(&sij.instr->operand[0])->nelem,
+                sij.instr->constant.value.r123.start,
+                sij.instr->constant.value.r123.key
+            );
+            res = BH_SUCCESS;
             break;
 
         case BH_RANGE:
@@ -322,7 +332,6 @@ static bh_error exec(bh_instruction *instr)
         case BH_RIGHT_SHIFT:
         case BH_ARCTAN2:
         case BH_MOD:
-        case BH_RANDOM:
 
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
                 target->funcs[sij.symbol](0,

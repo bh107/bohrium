@@ -8,7 +8,9 @@ void specializer_init()
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
     ctemplate::LoadTemplate("license.tpl",  ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
+
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
     
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
@@ -93,9 +95,17 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
     bool cres = false;
 
     ctemplate::TemplateDictionary dict("codegen");
-    ctemplate::TemplateDictionary include_dict("INCLUDE");
 
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
+
+        case BH_RANDOM:
+            dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("SYMBOL",     sij.symbol);
+            dict.SetValue("TYPE_A0",    enum_to_ctypestr(sij.instr->operand[0].base->type));
+            sprintf(template_fn, "random.tpl");
+
+            cres = true;
+            break;
 
         case BH_RANGE:
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
@@ -154,7 +164,6 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_RIGHT_SHIFT:
         case BH_ARCTAN2:
         case BH_MOD:
-        case BH_RANDOM:
 
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
@@ -262,8 +271,15 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         throw runtime_error("cpu-ve: Failed specializing code.");
     }
 
-    string sourcecode = "";
-    ctemplate::ExpandTemplate("include.tpl", ctemplate::STRIP_BLANK_LINES, &include_dict, &sourcecode);
+    string sourcecode  = "";
+    ctemplate::TemplateDictionary include_dict("INCLUDE");
+    ctemplate::ExpandTemplate(
+        "include.tpl", 
+        ctemplate::STRIP_BLANK_LINES,
+        &include_dict,
+        &sourcecode
+    );
+
     ctemplate::ExpandTemplate(
         template_fn,
         ctemplate::STRIP_BLANK_LINES,

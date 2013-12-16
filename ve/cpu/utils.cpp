@@ -152,10 +152,6 @@ int bh_typesig(bh_instruction *instr)
             break;
     }
 
-    if (false) {
-        bh_pprint_instr(instr);
-        printf("typesig = %d.\n\n", typesig);
-    }
     return typesig;
 }
 

@@ -14,6 +14,7 @@ const char* enumstr_to_shorthand(const char* enumstr)
     else if (strcmp("BH_FLOAT64", enumstr)==0) { return "d"; }
     else if (strcmp("BH_COMPLEX64", enumstr)==0) { return "c"; }
     else if (strcmp("BH_COMPLEX128", enumstr)==0) { return "C"; }
+    else if (strcmp("BH_R123", enumstr)==0) { return "R"; }
     else if (strcmp("BH_UNKNOWN", enumstr)==0) { return "U"; }
     else { return "{{UNKNOWN}}"; }
 }
@@ -129,6 +130,7 @@ const char* enumstr_to_ctypestr(const char* enumstr)
     else if (strcmp("BH_FLOAT64", enumstr)==0) { return "double"; }
     else if (strcmp("BH_COMPLEX64", enumstr)==0) { return "float complex"; }
     else if (strcmp("BH_COMPLEX128", enumstr)==0) { return "double complex"; }
+    else if (strcmp("BH_R123", enumstr)==0) { return "bh_r123"; }
     else if (strcmp("BH_UNKNOWN", enumstr)==0) { return "<UNKNOWN>"; }
     else { return "{{UNKNOWN}}"; }
 }
@@ -174,7 +176,6 @@ bool bh_typesig_check(int typesig)
         case 1416: return true; // IIl: BH_UINT32 + (BH_UINT32 << 4) + (BH_INT64 << 8)
         case 1433: return true; // LLl: BH_UINT64 + (BH_UINT64 << 4) + (BH_INT64 << 8)
         case 1382: return true; // BBl: BH_UINT8 + (BH_UINT8 << 4) + (BH_INT64 << 8)
-        case 2456: return true; // ILL: BH_UINT32 + (BH_UINT64 << 4) + (BH_UINT64 << 8)
         case 17: return true; // zz: BH_BOOL + (BH_BOOL << 4)
         case 170: return true; // ff: BH_FLOAT32 + (BH_FLOAT32 << 4)
         case 187: return true; // dd: BH_FLOAT64 + (BH_FLOAT64 << 4)
@@ -322,18 +323,10 @@ bool bh_typesig_check(int typesig)
         case 118: return true; // BS: BH_UINT8 + (BH_UINT16 << 4)
         case 134: return true; // BI: BH_UINT8 + (BH_UINT32 << 4)
         case 150: return true; // BL: BH_UINT8 + (BH_UINT64 << 4)
-        case 13: return true; // C: BH_COMPLEX128
-        case 12: return true; // c: BH_COMPLEX64
-        case 10: return true; // f: BH_FLOAT32
-        case 11: return true; // d: BH_FLOAT64
-        case 3: return true; // s: BH_INT16
-        case 4: return true; // i: BH_INT32
-        case 5: return true; // l: BH_INT64
-        case 2: return true; // b: BH_INT8
-        case 7: return true; // S: BH_UINT16
+        case 232: return true; // IR: BH_UINT32 + (BH_R123 << 4)
+        case 233: return true; // LR: BH_UINT64 + (BH_R123 << 4)
         case 8: return true; // I: BH_UINT32
         case 9: return true; // L: BH_UINT64
-        case 6: return true; // B: BH_UINT8
 
         default:
             return false;
@@ -357,6 +350,7 @@ const char* enum_to_shorthand(bh_type type)
         case BH_FLOAT64: return "d";
         case BH_COMPLEX64: return "c";
         case BH_COMPLEX128: return "C";
+        case BH_R123: return "R";
         case BH_UNKNOWN: return "U";
 
         default:
@@ -405,7 +399,6 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 1416: return "IIl"; // BH_UINT32 + (BH_UINT32 << 4) + (BH_INT64 << 8)
         case 1433: return "LLl"; // BH_UINT64 + (BH_UINT64 << 4) + (BH_INT64 << 8)
         case 1382: return "BBl"; // BH_UINT8 + (BH_UINT8 << 4) + (BH_INT64 << 8)
-        case 2456: return "ILL"; // BH_UINT32 + (BH_UINT64 << 4) + (BH_UINT64 << 8)
         case 17: return "zz"; // BH_BOOL + (BH_BOOL << 4)
         case 170: return "ff"; // BH_FLOAT32 + (BH_FLOAT32 << 4)
         case 187: return "dd"; // BH_FLOAT64 + (BH_FLOAT64 << 4)
@@ -553,18 +546,10 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 118: return "BS"; // BH_UINT8 + (BH_UINT16 << 4)
         case 134: return "BI"; // BH_UINT8 + (BH_UINT32 << 4)
         case 150: return "BL"; // BH_UINT8 + (BH_UINT64 << 4)
-        case 13: return "C"; // BH_COMPLEX128
-        case 12: return "c"; // BH_COMPLEX64
-        case 10: return "f"; // BH_FLOAT32
-        case 11: return "d"; // BH_FLOAT64
-        case 3: return "s"; // BH_INT16
-        case 4: return "i"; // BH_INT32
-        case 5: return "l"; // BH_INT64
-        case 2: return "b"; // BH_INT8
-        case 7: return "S"; // BH_UINT16
+        case 232: return "IR"; // BH_UINT32 + (BH_R123 << 4)
+        case 233: return "LR"; // BH_UINT64 + (BH_R123 << 4)
         case 8: return "I"; // BH_UINT32
         case 9: return "L"; // BH_UINT64
-        case 6: return "B"; // BH_UINT8
 
         default:
             //printf( "cpu(bh_typesig_to_shorthand): "
@@ -590,6 +575,7 @@ const char* enum_to_ctypestr(bh_type type)
         case BH_FLOAT64: return "double";
         case BH_COMPLEX64: return "float complex";
         case BH_COMPLEX128: return "double complex";
+        case BH_R123: return "bh_r123";
         case BH_UNKNOWN: return "<UNKNOWN>";
 
         default:
