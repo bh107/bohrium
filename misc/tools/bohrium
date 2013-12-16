@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     out, err = (None, None)
     if args.genesis:
-        out, err = genesis.genesis(*genesis.creation(config, opcodes, types))
+        out, err = genesis.genesis(opcodes, types)
     if args.merge_kernels:
         out, err = cpu.merge_kernels(config)
     if args.mangle:

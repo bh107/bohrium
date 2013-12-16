@@ -2009,8 +2009,7 @@
             [ "BH_UINT64", "BH_R123" ]
     ],
     "layout": [
-            [ "C", "K" ],
-            [ "S", "K" ]
+            [ "C", "K" ]
     ],
     "elementwise":   false,
     "system_opcode": false
@@ -2026,8 +2025,7 @@
             [ "BH_UINT64" ]
     ],
     "layout": [
-            [ "C" ],
-            [ "S" ]
+            [ "C" ]
     ],
     "elementwise":   false,
     "system_opcode": false
