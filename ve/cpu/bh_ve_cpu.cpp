@@ -183,6 +183,13 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
     bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
 
+    if (!jit_enabled) {
+        jit_preload     = 1;
+        jit_fusion      = 0;
+        jit_optimize    = 0;
+        jit_dumpsrc     = 0;
+    }
+
     if (false) {
         std::cout << "ENVIRONMENT {" << std::endl;
         std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
