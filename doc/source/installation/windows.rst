@@ -1,17 +1,19 @@
 Windows
 -------
 
+.. warning:: The newest version of Bohrium (v0.2) does not support Windows. Bohrium on Windows only supports the much older version 0.1. We are working on a new windows version but for now, we do not requirement using Bohrium on windows.
+
 The follow explains how to get Bohrium installed on Windows. Note that only 64bit Windows is supported by the Bohrium binaries (the NumCIL binaries are 32bit and 64bit compatible).
 
-The Bohrium package is distributed as a zip archive, that you can get from here:
-https://bitbucket.org/bohrium/bohrium/downloads/Bohrium-v0.1-win.zip
+.. The Bohrium package is distributed as a zip archive, that you can get from here:
+    https://bitbucket.org/bohrium/bohrium/downloads/Bohrium-v0.1-win.zip
 
-Simply extract the contents of the folder. If you run your program from the folder where the files reside it will work correctly.
+..  Simply extract the contents of the folder. If you run your program from the folder where the files reside it will work correctly.
 
-You can either place the dll files in the folder of the project you are working on, or place them somewhere on your machine, and change your PATH environment variable to include this location. See the guide `How to change your path environment variable <http://www.computerhope.com/issues/ch000549.htm>`_.
+.. You can either place the dll files in the folder of the project you are working on, or place them somewhere on your machine, and change your PATH environment variable to include this location. See the guide `How to change your path environment variable <http://www.computerhope.com/issues/ch000549.htm>`_.
 
-If you want to place the files somewhere so multiple programs can use them, we recommend that you use "%PROGRAMFILES%\bohrium".
-For an installation with shared libraries, you should edit the file config.ini and set all absolute paths to libraries. The config.ini file should then be placed in %PROGRAMFILES%\bohrium\config.ini.
+..  If you want to place the files somewhere so multiple programs can use them, we recommend that you use "%PROGRAMFILES%\bohrium".
+.. For an installation with shared libraries, you should edit the file config.ini and set all absolute paths to libraries. The config.ini file should then be placed in %PROGRAMFILES%\bohrium\config.ini.
 
 You also need the `Microsoft Visual C++ 2010 Runtime <http://www.microsoft.com/en-us/download/details.aspx?id=14632>`_ installed.
 

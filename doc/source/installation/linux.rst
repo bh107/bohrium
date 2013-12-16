@@ -3,6 +3,16 @@ Linux
 
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
+Get it!
+~~~~~~~
+
+Download and extract the current version (v0.2)::
+
+  wget http://bohrium-v0.2.tgz
+  tar -xzf bohrium-v0.2.tg
+
+
+.. _numpy_installation:
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -13,18 +23,11 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev git
-  sudo pip install breathe numpydoc
-
-Download and extract the source code::
-
-  git clone https://bitbucket.org/bohrium/bohrium.git
-  cd bohrium
-  git submodule init
-  git submodule update
+  sudo apt-get install libctemplate-dev python-cheetah g++
 
 Build and install::
 
+  cd bohrium-v0.2
   make
   make install
 
@@ -32,12 +35,7 @@ Build and install::
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
 
-Finally, you need to set the ``PYTHONPATH`` and the ``LD_LIBRARY_PATH`` environment variables.
-The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium::
-
-  export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
-  #Example
-  export PYTHONPATH=/opt/bohrium/lib/python2.7/site-packages:$PYTHONPATH
+Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local`` your need to set ``PYTHONPATH`` as well.
 
 The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
 
@@ -45,47 +43,53 @@ The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
   #Example
   export LD_LIBRARY_PATH="$HOME/.local:$LD_LIBRARY_PATH"
 
+
+The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium. ::
+
+  export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
+  #Example
+  export PYTHONPATH=/opt/bohrium/lib/python2.7/site-packages:$PYTHONPATH
+
 Now the basic installation should work. Try running the NumPy test suite::
 
   python test/numpy/numpytest.py
 
 And you should see a result similar to this::
 
-  *** Testing the equivalency of Bohrium-NumPy and NumPy ***
-  Testing test_array_create.py/array_create/zeros
-  Testing test_sor.py/sor/sor
-  Testing test_primitives.py/bh_opcodes/ufunc
-  Testing test_primitives.py/numpy_ufunc/ufunc
-  Testing test_reduce.py/reduce/reduce
-  Testing test_benchmarks.py/gameoflife/gameoflife
-  Testing test_benchmarks.py/jacobi/jacobi
-  Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
-  Testing test_benchmarks.py/shallow_water/shallow_water
-  Testing test_matmul.py/matmul/dot
-  Testing test_matmul.py/matmul/matmul
-  Testing test_views.py/diagonal/diagonal
-  Testing test_views.py/flatten/flatten
-  ************************ Finish ************************
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
+    Testing test_primitives.py/bh_opcodes/ufunc
+    Testing test_primitives.py/numpy_ufunc/ufunc
+    Testing test_specials.py/doubletranspose/doubletranspose
+    Testing test_specials.py/largedim/largedim
+    Testing test_array_create.py/array_create/zeros
+    Testing test_benchmarks.py/gameoflife/gameoflife
+    Testing test_benchmarks.py/jacobi/jacobi
+    Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
+    Testing test_benchmarks.py/shallow_water/shallow_water
+    Testing test_matmul.py/matmul/dot
+    Testing test_matmul.py/matmul/matmul
+    Testing test_types.py/different_inputs/typecast
+    Testing test_reduce.py/reduce/reduce
+    Testing test_reduce.py/reduce1D/reduce
+    Testing test_views.py/diagonal/diagonal
+    Testing test_views.py/flatten/flatten
+    Testing test_sor.py/sor/sor
+    ************************ Finish ************************
+
+C / C++
+~~~~~~~
+
+See the installation process for :ref:`Python / NumPy <numpy_installation>`, the C and C++ bridge requires no additional tasks.
+
 
 Mono / .NET
 ~~~~~~~~~~~
 
-You need to install some packages used by the build process::
-
-  sudo apt-get install g++ python-dev python-pip python-cheetah python-sphinx doxygen libmpich2-dev git
-
-The Mono libraries require some additional packages::
+In addition to the installation process for :ref:`Python / NumPy <numpy_installation>`, the .NET bridge requires Mono::
 
   sudo apt-get install mono-devel
   #This minimal version should work too:
   #sudo apt-get install mono-xbuild mono-dmcs libmono2.0-cil
-
-Download and extract the source code::
-
-  git clone https://bitbucket.org/bohrium/bohrium.git
-  cd bohrium
-  git submodule init
-  git submodule update
 
 Build and install::
 
@@ -104,12 +108,6 @@ The NumCIL libraries are installed in your install dir, together with the docume
    gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
    gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
 
-To use the Bohrium extensions, you need to make sure the LD_LIBRARY_PATH is also set::
-
-  export LD_LIBRARY_PATH=<install dir>:$LD_LIBRARY_PATH
-  #Example
-  export LD_LIBRARY_PATH=/opt/bohrium:$LD_LIBRARY_PATH
-
 You can now try an example and test the installation::
 
   xbuild /property:Configuration=Release test/CIL/Unittest.sln
@@ -125,10 +123,6 @@ And you should see a result similar to this::
    Running benchmark tests - Bohrium
    benchmark tests: 0,44233
 
-C++
-~~~
-
-...
 
 OpenCL / GPU Engine
 ~~~~~~~~~~~~~~~~~~~
