@@ -74,12 +74,27 @@ static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
             sprintf(buf, "[ CONST(%s)=%lf ]", bh_type_text(instr->constant.type),
                                               instr->constant.value.float64);
             break;
+        case BH_R123:
+            sprintf(buf, "[ CONST(%s)={start=%llu,key=%llu} ]", 
+                    bh_type_text(instr->constant.type),
+                    instr->constant.value.r123.start,
+                    instr->constant.value.r123.key);
+            break;
         case BH_COMPLEX64:
+            sprintf(buf, "[ CONST(%s)={real=%f,img=%f} ]", 
+                    bh_type_text(instr->constant.type),
+                    instr->constant.value.complex64.real,
+                    instr->constant.value.complex64.imag);
         case BH_COMPLEX128:
-        case BH_UNKNOWN:
+            sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]", 
+                    bh_type_text(instr->constant.type),
+                    instr->constant.value.complex128.real,
+                    instr->constant.value.complex128.imag);
 
+        case BH_UNKNOWN:
+            sprintf(buf, "[ CONST(BH_UNKNOWN)=? ]");
         default:
-            sprintf(buf, "[ CONST=? ]");
+            sprintf(buf, "[ CONST(?)=? ]");
     }
 
 }
