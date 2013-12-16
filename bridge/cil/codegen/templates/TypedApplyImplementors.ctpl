@@ -42,6 +42,7 @@ namespace NumCIL.Bohrium2
 %if $bh_ctype  != "bool8" and $bh_ctype != "int8" and $bh_ctype != "int16" and $bh_ctype != "int32"  and $bh_ctype != "int64"  and $bh_ctype != "uint16" and $bh_ctype != "uint32"  and $bh_ctype != "uint64"            
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_${bh_ctype}_sqrt),
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IExp), PInvoke.bh_multi_array_${bh_ctype}_exp),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ILog), PInvoke.bh_multi_array_${bh_ctype}_log),
 %end if
 %if $bh_ctype != "complex64" and $bh_ctype != "complex128"
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_${bh_ctype}_absolute),
@@ -69,9 +70,37 @@ namespace NumCIL.Bohrium2
 %end if
         };
 
+        private Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>[] m_aggOps = 
+        {
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_sum),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_product),
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_max),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_min)
+%end if
+        };
+
+        private Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>[] m_reduceOps = 
+        {
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_add),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_multiply),
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_min),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_max),
+            
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_bitwise_and),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_bitwise_or),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_bitwise_xor),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_logical_and),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_logical_or),
+            new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_logical_xor),
+%end if
+        };        
         
         private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>> m_aggLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>>();
+        private Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>> m_reduceLookup = new Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>();
 
         #region ITypedApplyImplementor implementation
 
@@ -107,7 +136,7 @@ namespace NumCIL.Bohrium2
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
                 // If the output is CIL-managed, we must sync immediately
-                if (!(@out.DataAccessor is DataAccessor_float32))
+                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
                     v0.Sync();
             }
 
@@ -139,7 +168,7 @@ namespace NumCIL.Bohrium2
                         using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                         {                                
                             PInvoke.bh_multi_array_${bh_ctype}_assign_scalar(v2, _in.DataAccessor[0]);
-                            if (!(_out.DataAccessor is DataAccessor_float32))
+                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
                                 v2.Sync();
                         }
                     else
@@ -147,14 +176,14 @@ namespace NumCIL.Bohrium2
                         using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                         {
                             PInvoke.bh_multi_array_${bh_ctype}_assign_array(v2, v1);
-                            if (!(_out.DataAccessor is DataAccessor_float32))
+                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
                                 v2.Sync();
 
                         }
                 };
             }
                     
-            if (exec != null)
+            if (exec == null)
             {
                 Func<ma_${bh_ctype}, ma_${bh_ctype}> m;
             
@@ -175,7 +204,7 @@ namespace NumCIL.Bohrium2
                         using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                         {
                             PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1));
-                            if (!(_out.DataAccessor is DataAccessor_float32))
+                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
                                 v0.Sync();
                         }
                     };
@@ -210,7 +239,39 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyReduce(Type c, long axis, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
         {
-            return false;
+            Func<ma_${bh_ctype}, long, ma_${bh_ctype}> m;
+            if (!m_reduceLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_reduceOps
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
+                m_reduceLookup[c] = m;
+            }
+            
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for reduce: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
+                return false;
+            }
+            
+            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+            {
+                PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, axis));
+                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                    v0.Sync();
+            }
+
+            if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+            else
+            {
+                // If the output is CIL-managed, we must sync immediately
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+            
+            return true;
         }
 
         public bool ApplyMatmul(Type cadd, Type cmul, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out = null)
@@ -220,8 +281,31 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyAggregate(Type c, NdArray<${bh_atype}> in1, out ${bh_atype} result)
         {
-            result = default(${bh_atype});
-            return false;
+            Func<ma_${bh_ctype}, ${bh_atype}> m;
+            if (!m_aggLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_aggOps
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
+                m_aggLookup[c] = m;
+            }
+            
+            if (m == null)
+            {
+                //TODO: Attempt to build one using multiple partial reductions ...
+            }
+             
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for aggregate: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
+                result = default(${bh_atype});
+                return false;
+            }
+
+            using(var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(in1))
+                result = m(v0);
+
+            return true;
         }
 
         #endregion
