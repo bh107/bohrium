@@ -76,7 +76,7 @@ bool symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
     }
 
     if (!bh_typesig_check(sij.tsig)) {
-        printf("cpu( Invalid type signature[%d] ): Bridge check yourself! Instruction:\n", sij.tsig);
+        printf("cpu( Invalid type signature[%lld] ): Bridge check yourself! Instruction:\n", (long long)sij.tsig);
         bh_pprint_instr(instr);
         printf("\n");
         return false;
@@ -185,7 +185,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
                 if (optimized && (sij.ndims<=3)) {
-                    sprintf(template_fn, "traverse.%ldd.tpl", sij.ndims);
+                    sprintf(template_fn, "traverse.%lldd.tpl", (long long)sij.ndims);
                 } else {
                     sprintf(template_fn, "traverse.nd.tpl");
                 }
@@ -244,7 +244,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             } else {
 
                 if (optimized && (sij.ndims<=3)) {
-                    sprintf(template_fn, "traverse.%ldd.tpl", sij.ndims);
+                    sprintf(template_fn, "traverse.%lldd.tpl", (long long)sij.ndims);
                 } else {
                     sprintf(template_fn, "traverse.nd.tpl");
                 }

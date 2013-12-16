@@ -80,6 +80,10 @@ numpy_map = {
     "BH_NONE":      "np.none",
 }
 
+# Ignore types
+ignore_types    = ['BH_UNKNOWN', 'BH_R123', 'BH_COMPLEX64', 'BH_COMPLEX128']
+exclude_opc     = ['BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY']
+
 def creation(config, opcodes, types):
 
     # Grab Bohrium/NumPy
@@ -87,7 +91,7 @@ def creation(config, opcodes, types):
 
     dimensions = [1,2,3,4]
     # Filter out the unknown type
-    types = [t for t in types if 'UNKNOWN' not in t['enum']]
+    types = [t for t in types if t['enum'] not in ignore_types]
 
     # Filter out system opcodes
     opcodes = [opcode for opcode in opcodes if not opcode['system_opcode']]
@@ -126,7 +130,6 @@ def genesis(bytecodes, types, operands):
     earth = []
 
     # 2) First there was the element-wise operations
-    exclude_opc = ['BH_RANDOM', 'BH_RANGE', 'BH_IDENTITY']
     for bytecode in (bytecode for bytecode in bytecodes 
                    if bytecode['opcode'] not in exclude_opc):
         opcode  = bytecode['opcode']
@@ -136,37 +139,44 @@ def genesis(bytecodes, types, operands):
             for layout in bytecode['layout']:
                 earth.append([opcode, typesig, layout])
 
+    print "When done the earth should have", len(earth), "species."
+
     # 3) Execute all opcodes except for RANDOM, RANGE, and IDENTITY
     for opcode, typesig, layout in earth:
         func = eval(numpy_map[opcode])  # Grab the NumPy functions
 
-        ndim = 4                        # Setup operands
-        if len(typesig) == 3:
-            op_setup = [
-                operands[typesig[1]][ndim][1][layout[1]],
-                operands[typesig[2]][ndim][2][layout[2]],
-                operands[typesig[0]][ndim][0][layout[0]]
-            ]
-        elif len(typesig) == 2:
-            op_setup = [
-                operands[typesig[1]][ndim][1][layout[1]],
-                operands[typesig[0]][ndim][0][layout[0]]
-            ]
-        elif len(typesig) == 1:
-            op_setup = [
-                operands[typesig[0]][ndim][0][layout[0]]
-            ]
-        else:
-            print "WTF!"
+        # Ignore functions with
+        broken = len([t for t in typesig if t in ignore_types])>0
+        if broken:
+            continue
 
-        #print opcode, func, typesig, layout, op_setup
-        try:
-            a = func(*op_setup)
-            a = np.sum(a)
-            a == 1
-        except:
-            print "Bad things happened when trying to execute", opcode,
-            typesig, layout
+        for ndim in [1,2,3,4]:          # Setup operands
+            if len(typesig) == 3:
+                op_setup = [
+                    operands[typesig[1]][ndim][1][layout[1]],
+                    operands[typesig[2]][ndim][2][layout[2]],
+                    operands[typesig[0]][ndim][0][layout[0]]
+                ]
+            elif len(typesig) == 2:
+                op_setup = [
+                    operands[typesig[1]][ndim][1][layout[1]],
+                    operands[typesig[0]][ndim][0][layout[0]]
+                ]
+            elif len(typesig) == 1:
+                op_setup = [
+                    operands[typesig[0]][ndim][0][layout[0]]
+                ]
+            else:
+                print "WTF!"
+
+            #print opcode, func, typesig, layout, op_setup
+            try:
+                a = func(*op_setup)
+                a = np.sum(a)
+                a == 1
+            except:
+                print "Bad things happened when trying to execute", opcode,
+                typesig, layout
 
     """
     # 4) Then range came into the world
@@ -178,7 +188,6 @@ def genesis(bytecodes, types, operands):
             a == 1
     """
 
-
     # 5) Then identity was ensured
 
     # 6) And uncertainty introduced
@@ -186,7 +195,6 @@ def genesis(bytecodes, types, operands):
     # 7) And the seventh step is to lay back and let the compiler
     #    do the rest of the work
 
-    print len(earth)
     return (None, None)
 
 """

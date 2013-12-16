@@ -40,4 +40,3 @@ install: all
 		mkdir -p $(INSTALLDIR)/cpu/objects
 		mkdir -p $(INSTALLDIR)/cpu/templates
 		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
-		cp -r include $(INSTALLDIR)/cpu/
