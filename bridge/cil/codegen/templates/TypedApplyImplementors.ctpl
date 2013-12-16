@@ -106,9 +106,6 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyBinaryOp(Type c, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out)
         {
-            var isScalarIn1 = @in1.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in1.DataAccessor.Length == 1;
-            var isScalarIn2 = @in2.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in2.DataAccessor.Length == 1;
-            
             Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}> m;
             // This lookup prevents a linear scan of the supported operands
             if (!m_binOpLookup.TryGetValue(c, out m))
