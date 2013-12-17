@@ -30,7 +30,15 @@ void compute()
     multi_array<double> x;
     x = ones<double>(3,3);
     cout << x << endl;
-    
+
+    multi_array<uint64_t> r;
+    r = random<uint64_t>(3,3);
+    cout << r << endl;
+
+    multi_array<double> ru;
+    ru = randu<double>(3,3);
+    cout << ru << endl;
+
     /*
     x = randn<double>(3,3);
     cout << "RANDOM: " << x << endl;

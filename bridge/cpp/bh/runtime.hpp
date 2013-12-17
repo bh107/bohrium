@@ -255,6 +255,28 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi
     if (op2.getTemp()) { delete &op2; }
 }
 
+/**
+ *  This function should only be used by random to encode the degenerate bh_r123 type.
+ */
+template <typename T>
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1, const uint64_t op2)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0] = op0.meta;
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
+
+    instr->constant.type = BH_R123;
+    instr->constant.value.r123.start = op1;
+    instr->constant.value.r123.key   = op2;
+}
+
 template <typename T>
 inline
 void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T>& op1)
