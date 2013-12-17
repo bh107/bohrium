@@ -90,8 +90,6 @@ suppress_types  = ['BH_UNKNOWN', 'BH_R123']
 ignore_types    = ['BH_COMPLEX64', 'BH_COMPLEX128']
 ignore_types = []
 
-
-
 def genesis(bytecodes, types):
 
     times=[('start', time.time())]  # Why this? Well because it is always fun to know
@@ -110,7 +108,7 @@ def genesis(bytecodes, types):
         destination[:] = np.real(source)
 
     def wrap_imag(source, destination):
-        destination[:] = np.real(source)
+        destination[:] = np.imag(source)
 
     times.append(('import', time.time()))
 

@@ -331,7 +331,7 @@ const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
         case BH_REAL: 
             return (type==BH_FLOAT32) ? "*a0_current = crealf(*a1_current)": "*a0_current = creal(*a1_current)";
         case BH_IMAG:
-            return (type==BH_FLOAT32) ? "*a0_current = cimagf(*a1_current)": "*a0_current = creal(*a1_current)";
+            return (type==BH_FLOAT32) ? "*a0_current = cimagf(*a1_current)": "*a0_current = cimagf(*a1_current)";
 
         default:
             return "__UNKNOWN__";
