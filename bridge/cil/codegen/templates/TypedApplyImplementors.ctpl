@@ -24,8 +24,6 @@ using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
 %end for
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-%if $bh_ctype != "float32"
-
 namespace NumCIL.Bohrium2
 {
     public class ApplyImplementor_${bh_ctype} : ITypedApplyImplementor<${bh_atype}>
@@ -85,12 +83,13 @@ namespace NumCIL.Bohrium2
 
 %if $bh_ctype == "bool8"
 %for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        private Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>> m_compareLookup_${bh_ctype2} = new Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>();
         private Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>[] m_compareOps_${bh_ctype2} =
         {
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_to),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_to),
-%if $bh_ctype  != "bool8"
+%if $bh_ctype2  != "bool8"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_than_or_equal_to),
@@ -99,7 +98,6 @@ namespace NumCIL.Bohrium2
 %end if
         };
 
-        private Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>> m_compareLookup_${bh_ctype2} = new Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>();
 %end for
 %end if
         
@@ -153,6 +151,44 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyBinaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<${bh_atype}> @out)
         {
+%if $bh_ctype == "bool8"
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+            if (typeof(Ta) == typeof($bh_atype2))
+            {
+                Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8> m;
+                if (!m_compareLookup_${bh_ctype2}.TryGetValue(c, out m))
+                {
+                    m = (from n in m_compareOps_${bh_ctype2}
+                                        where n.Item1.IsAssignableFrom(c)
+                                        select n.Item2).FirstOrDefault();
+                    m_compareLookup_${bh_ctype2}[c] = m;
+                }
+            
+                if (m == null)
+                {
+                    Console.WriteLine("No registered match for: {0}", c.FullName);
+                    return false;
+                }
+
+                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in1))
+                using (var v2 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in2))
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                {
+                    PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
+                    // If the output is CIL-managed, we must sync immediately
+                    if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                        v0.Sync();
+                }
+
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                else
+                    PinnedArrayTracker.Release();
+
+                return true;
+            }
+%end for
+%end if
             return false;
         }
 
@@ -377,5 +413,4 @@ namespace NumCIL.Bohrium2
     }       
 }
 
-%end if
 %end for
