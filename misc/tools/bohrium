@@ -3,6 +3,7 @@ import traceback
 import argparse
 import genesis
 import pprint
+import cpu
 import sys
 
 import bhutils

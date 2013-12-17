@@ -2,6 +2,7 @@ from itertools import chain
 import subprocess
 import traceback
 import itertools
+import tempfile
 import pprint
 import os
 
@@ -84,12 +85,18 @@ numpy_map = {
 # Ignore types
 suppress_types  = ['BH_UNKNOWN', 'BH_R123']
 ignore_types    = ['BH_COMPLEX64', 'BH_COMPLEX128']
-ignore_types    = ['BH_COMPLEX128']
 
 def copy_operands(source, destination):
     destination[:] = source
+    destination[:] = 1
+    destination[:] = True
 
 def genesis(bytecodes, types):
+
+    def flattened_str(opcode, typesig, layout):
+        return "%s_{%s}_%s" % (
+            opcode, ','.join(typesig), ''.join(layout)
+        )
 
     # 1) Grab Bohrium/NumPy
     np = bhutils.import_bohrium()
@@ -103,6 +110,7 @@ def genesis(bytecodes, types):
 
     # Get a map from enum to numpy type
     typemap = dict([(t['enum'], eval("np.{0}".format(t['numpy']))) for t in types])
+    type_sh = dict([(t['enum'], t['shorthand']) for t in types])
 
     #
     # Setup operands of every type, layout and dimensions 1-4
@@ -136,7 +144,15 @@ def genesis(bytecodes, types):
                 for layout in bytecode['layout']:
                     earth.append([opcode, typesig, layout])
 
-    print "When done ", len(earth), " kernels should be ready in kernel-path."
+    with tempfile.NamedTemporaryFile(delete=False) as fd:
+        for opcode, typesig, layout in earth:
+            bytecode_str = "%s_%s_%s\n" % (
+                opcode, ''.join([type_sh[t] for t in typesig]), ''.join(layout)
+            )
+            fd.write(bytecode_str)
+
+        print "When done", len(earth), "kernels should be ready in kernel-path."
+        print "See the list of function-names in the file [%s]" % fd.name
 
     # Execute it 
     for opcode, typesig, layout in earth:
@@ -162,7 +178,6 @@ def genesis(bytecodes, types):
                     typemap[typesig[0]],
                     True
                 ]
-                print typemap[typesig[0]]
             elif "_REDUCE" in opcode:
                 ndim = 2 if ndim == 1 else ndim
                 op_setup = [
