@@ -226,7 +226,7 @@ namespace NumCIL.Bohrium2
                         () => new PInvoke.bh_multi_array_int64_p((NdArray<long>)(object)in1),
                         PInvoke.bh_multi_array_float32_convert_int64);
             }
-            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
                     PInvoke.bh_multi_array_float64_convert_complex64_real);
@@ -234,6 +234,7 @@ namespace NumCIL.Bohrium2
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
                     PInvoke.bh_multi_array_float64_convert_complex64_imag);
+            */
             return false;
         }
 
