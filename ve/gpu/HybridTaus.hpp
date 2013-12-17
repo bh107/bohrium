@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __USERFUNCTIONRANDOM_HPP
-#define __USERFUNCTIONRANDOM_HPP
+#ifndef __HYBRIDTAUS_HPP
+#define __HYBRIDTAUS_HPP
 
 #include <map>
 #include <bh.h>
@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 
-class UserFunctionRandom
+class HybridTaus
 {
 private:
     typedef std::map<bh_type, Kernel> KernelMap;
@@ -36,8 +36,9 @@ private:
     Buffer* state;
     static void CL_CALLBACK hostDataDelete(cl_event ev, cl_int eventStatus, void* data);
 public:
-    UserFunctionRandom(ResourceManager* rm);
-    ~UserFunctionRandom();
+    static bh_error bh_random(bh_instruction *inst, void* ve_arg);
+    HybridTaus(ResourceManager* rm);
+    ~HybridTaus();
     bh_error fill(UserFuncArg* userFuncArg);
 };
 

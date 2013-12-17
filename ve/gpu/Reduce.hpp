@@ -32,7 +32,7 @@ namespace Reduce
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    bh_error reduce(bh_instruction* inst, UserFuncArg* userFuncArg);
+    bh_error bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg);
     Kernel getKernel(bh_instruction* inst,
                      UserFuncArg* userFuncArg,
                      std::vector<bh_index> shape);
