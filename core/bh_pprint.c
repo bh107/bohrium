@@ -85,12 +85,13 @@ static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
                     bh_type_text(instr->constant.type),
                     instr->constant.value.complex64.real,
                     instr->constant.value.complex64.imag);
+            break;
         case BH_COMPLEX128:
             sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]",
                     bh_type_text(instr->constant.type),
                     instr->constant.value.complex128.real,
                     instr->constant.value.complex128.imag);
-
+            break;
         case BH_UNKNOWN:
             sprintf(buf, "[ CONST(BH_UNKNOWN)=? ]");
         default:
