@@ -73,7 +73,7 @@ def merge_kernels(config):
         stdout  = subprocess.PIPE
     )
     out, err = p.communicate(input=source)
-    times.append('compiled', time.time())
+    times.append(('compiled', time.time()))
 
     with open(idx_path, 'w+') as fd:            # Create the index-file
         symbols.sort()
