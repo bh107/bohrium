@@ -1,41 +1,17 @@
-ROOT=../..
-HEADER=$(ROOT)/include/*
-
-EXAMPLE_SRC	= $(wildcard examples/*.cpp)
-EXAMPLES	= $(subst .cpp,, $(subst examples/,,$(EXAMPLE_SRC)))
-
-#CXX=clang
-CXX=g++
-#CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++98 -Wno-variadic-macros $(EXTRAS)
-CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++0x -Wno-variadic-macros $(EXTRAS)
-
-all: gen examples
-
-examples: $(EXAMPLES)
-testing: $(TESTS)
-
-print:
-	echo $(TESTS)
-
-install: all
-	@-(echo 'Done.')
-
-clean:
-	rm -rf *.o *~ codegen/output/*.hpp
-	rm -rf bin/
+INSTALLDIR?=/opt/bohrium/
 
 gen:
 	./codegen/gen.py
 	mv codegen/output/*.hpp bh/.
+	@-(echo 'Bytecode based autogeneration is done.')
 
-#
-# Examples
-#
-hello_world: examples/hello_world.cpp $(HEADER)
-	mkdir -p bin
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
+install: gen
+	mkdir -p $(INSTALLDIR)/include
+	cp -r bh $(INSTALLDIR)/include/
+	@-(echo 'Installation is done.')
 
-#slicing: examples/slicing.cpp $(HEADER)
-#	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I./ -lbh $(LCFLAGS) $(CXXFLAGS)
-
+clean:
+	rm -rf *.o *~ codegen/output/*.hpp
+	rm -rf bin/
+	@-(echo 'Cleaning is done.')
 

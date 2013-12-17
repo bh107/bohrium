@@ -96,10 +96,12 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
     ctemplate::TemplateDictionary dict("codegen");
 
+    bh_type type = sij.instr->operand[0].base->type;// Magic parameter to cexpr-function
+
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
 
         case BH_RANDOM:
-            dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode, type));
             dict.SetValue("SYMBOL",     sij.symbol);
             dict.SetValue("TYPE_A0",    enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "random.tpl");
@@ -108,7 +110,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             break;
 
         case BH_RANGE:
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
             dict.SetValue("SYMBOL", sij.symbol);
             dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "range.tpl");
@@ -127,7 +129,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
             dict.SetValue("SYMBOL", sij.symbol);
             dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
             dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
@@ -165,7 +167,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_ARCTAN2:
         case BH_MOD:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
                 dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
@@ -203,6 +205,8 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             cres = true;
             break;
 
+        case BH_IMAG:   // These use the width parameter to switch between
+        case BH_REAL:   // different cexpressions
         case BH_ABSOLUTE:
         case BH_LOGICAL_NOT:
         case BH_INVERT:
@@ -234,7 +238,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_ISINF:
         case BH_IDENTITY:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode));
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
             if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 dict.SetValue("SYMBOL", sij.symbol);
                 dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
