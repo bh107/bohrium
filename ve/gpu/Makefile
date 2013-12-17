@@ -30,3 +30,4 @@ clean:
 
 install: all
 		cp $(LIB) $(INSTALLDIR)
+		cp -r ocl_source $(INSTALLDIR)/lib/

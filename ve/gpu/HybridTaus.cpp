@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <cstdlib>
 #include <ctime>
-#include "UserFunctionRandom.hpp"
+#include "HybridTaus.hpp"
 #include "Scalar.hpp"
 
 #ifdef _WIN32
@@ -30,23 +30,22 @@ If not, see <http://www.gnu.org/licenses/>.
 #define random rand
 #endif
 
-UserFunctionRandom* userFunctionRandom = NULL;
+HybridTaus* hybridTaus = NULL;
 
-bh_error bh_random(bh_instruction *inst, void* ve_arg)
+bh_error HybridTaus::bh_random(bh_instruction *inst, void* ve_arg)
 {
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
-    assert (userFuncArg->operands.size() == 1);
-    if (userFunctionRandom == NULL)
+    if (hybridTaus == NULL)
     {
-        userFunctionRandom = new UserFunctionRandom(userFuncArg->resourceManager);
+        hybridTaus = new HybridTaus(userFuncArg->resourceManager);
     }
-    return userFunctionRandom->fill(userFuncArg);
+    return hybridTaus->fill(userFuncArg);
 }
 
 #define TPB 128
 #define BPG 128
 
-UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
+HybridTaus::HybridTaus(ResourceManager* rm)
     : resourceManager(rm)
 {
     cl_uint4* init_data = new cl_uint4[BPG*TPB];
@@ -84,18 +83,18 @@ UserFunctionRandom::UserFunctionRandom(ResourceManager* rm)
         kernelMap.insert(std::make_pair(OCL_FLOAT64, kernels[5]));    
 }
 
-UserFunctionRandom::~UserFunctionRandom()
+HybridTaus::~HybridTaus()
 {
     delete state;
 }
 
-void CL_CALLBACK UserFunctionRandom::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
+void CL_CALLBACK HybridTaus::hostDataDelete(cl_event ev, cl_int eventStatus, void* data)
 {
     assert(eventStatus == CL_COMPLETE);
     delete [](cl_uint4*)data;
 }
 
-bh_error UserFunctionRandom::fill(UserFuncArg* userFuncArg)
+bh_error HybridTaus::fill(UserFuncArg* userFuncArg)
 {
     assert (userFuncArg->resourceManager == resourceManager);
     BaseArray* ba = static_cast<BaseArray*>(userFuncArg->operands[0]);
