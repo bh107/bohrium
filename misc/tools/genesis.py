@@ -61,6 +61,8 @@ numpy_map = {
     "BH_MOD":    "np.mod",
     "BH_ISNAN":    "np.isnan",
     "BH_ISINF":    "np.isinf",
+    "BH_REAL":  "np.real",
+    "BH_IMAG":   "np.imag",
 
     "BH_ADD_REDUCE":            "np.add.reduce",
     "BH_MULTIPLY_REDUCE":       "np.multiply.reduce",
