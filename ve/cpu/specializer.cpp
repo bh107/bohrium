@@ -268,7 +268,9 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             break;
 
         default:
-            printf("cpu-ve: Err=[Unsupported ufunc...]\n");
+            printf("specializer: Err=[Unsupported opcode.] {\n");
+            bh_pprint_instr(sij.instr);
+            printf("}\n");
     }
 
     if (!cres) {

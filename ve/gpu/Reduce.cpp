@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "GenerateSourceCode.hpp"
 #include "Reduce.hpp"
 
-bh_error Reduce::reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
+bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
     bh_view* out = &inst->operand[0];
     std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);

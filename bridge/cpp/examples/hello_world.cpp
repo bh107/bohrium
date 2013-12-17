@@ -18,37 +18,25 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
+#include <complex>
 #include "bh/bh.hpp"
 
-using namespace std;
 using namespace bh;
 
 void compute()
 {
-    cout << "Hello World." << endl;
+    std::cout << "Hello World." << std::endl;
 
-    multi_array<double> x;
-    x = ones<double>(3,3);
-    cout << x << endl;
+    multi_array<std::complex<float> > cc;
+    multi_array<float> output;
 
-    multi_array<uint64_t> r;
-    r = random<uint64_t>(3,3);
-    cout << r << endl;
+    cc = ones<std::complex<float> >(3,3);
 
-    multi_array<double> ru;
-    ru = randu<double>(3,3);
-    cout << ru << endl;
+    output = real<std::complex<float>, float>(cc);
+    std::cout << output << std::endl;
 
-    /*
-    x = randn<double>(3,3);
-    cout << "RANDOM: " << x << endl;
-
-    x = range<double>(1,10,2);
-    cout << "RANGE: " << x << endl;
-
-    x = range<double>(10,1,(int64_t)(-2));
-    cout << "RANGE: " << x << endl;
-    */
+    output = imag<std::complex<float>, float>(cc);
+    std::cout << output << std::endl;
 }
 
 int main()

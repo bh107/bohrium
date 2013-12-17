@@ -46,6 +46,9 @@
 ["!", "BH_LOGICAL_NOT",  "operator.ext", true],
 ["~", "BH_INVERT",       "operator.ext", true],
 
+["real",    "BH_IMAG", "operator.fun", false],
+["imag",    "BH_REAL", "operator.fun", false],
+
 ["pow",     "BH_POWER", "operator.fun", true],
 ["abs",     "BH_ABSOLUTE", "operator.fun", true],
 ["max",     "BH_MAXIMUM", "operator.fun", true],

@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "Reduce.hpp"
+#include "HybridTaus.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     : resourceManager(resourceManager_)
@@ -209,6 +210,10 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
 {
     if(inst->operand[0].base->nelem < 2)
     {
+        // TODO these two syncs are a hack. Are we sure this is correct?????
+        sync(inst->operand[1].base);
+        sync(inst->operand[0].base);
+        
         bh_ir bhir;
         bh_error err = bh_ir_create(&bhir, 1, inst);
         if(err != BH_SUCCESS)
@@ -225,7 +230,7 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
         {
             executeBatch();
         }
-        return Reduce::reduce(inst, &userFuncArg);
+        return Reduce::bh_reduce(inst, &userFuncArg);
     }
     catch (bh_error e)
     {
@@ -235,7 +240,6 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
 
 bh_error InstructionScheduler::random(bh_instruction* inst)
 {
-/*
     try {
         UserFuncArg userFuncArg;
         userFuncArg.resourceManager = resourceManager;
@@ -245,13 +249,12 @@ bh_error InstructionScheduler::random(bh_instruction* inst)
         {
             executeBatch();
         }
-        return Random::random(inst, &userFuncArg);
+        return HybridTaus::bh_random(inst, &userFuncArg);
     }
     catch (bh_error e)
     {
         return e;
     }
-*/
     return BH_ERROR;
 }
 
