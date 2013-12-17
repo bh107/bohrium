@@ -22,7 +22,7 @@ namespace NumCIL.Bohrium2
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static void bh_runtime_flush();
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
@@ -34,7 +34,7 @@ namespace NumCIL.Bohrium2
 
 // Binary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $data
 %if $opcode != "BH_IDENTITY" and opcount == 3
 %for $op1_type, $op2_type, $op3_type in $typesigs
 %if $inplace == False
@@ -58,7 +58,7 @@ namespace NumCIL.Bohrium2
 
 // Unary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $data
 %if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
 %for $op1_type, $op2_type in $typesigs
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
