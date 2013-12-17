@@ -17,6 +17,7 @@ using NumCIL.Generic;
 
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
+%set $methods = $data[2]
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
 using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
@@ -31,57 +32,28 @@ namespace NumCIL.Bohrium2
     {
         private Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_unOps = 
         {
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_${bh_ctype}_absolute),
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $methods
+%if $opcode != "BH_IDENTITY" and opcount == 2 and $cilname != ""
+%for $op1_type, $op2_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] == $bh_ctype
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(${cilname}), PInvoke.bh_multi_array_${bh_ctype}_${opname}),
 %end if
-%if $bh_ctype  != "bool8" and $bh_ctype != "int8" and $bh_ctype != "int16" and $bh_ctype != "int32"  and $bh_ctype != "int64"  and $bh_ctype != "uint16" and $bh_ctype != "uint32" and $bh_ctype != "uint64" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IFloor), PInvoke.bh_multi_array_${bh_ctype}_floor),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICeiling), PInvoke.bh_multi_array_${bh_ctype}_ceil),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IRound), PInvoke.bh_multi_array_${bh_ctype}_rint),
+%end for
 %end if
-%if $bh_ctype  != "bool8" and $bh_ctype != "int8" and $bh_ctype != "int16" and $bh_ctype != "int32"  and $bh_ctype != "int64"  and $bh_ctype != "uint16" and $bh_ctype != "uint32"  and $bh_ctype != "uint64"            
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_${bh_ctype}_sqrt),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IExp), PInvoke.bh_multi_array_${bh_ctype}_exp),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ILog), PInvoke.bh_multi_array_${bh_ctype}_log),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ILog10), PInvoke.bh_multi_array_${bh_ctype}_log10),
-%end if
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128" and $bh_ctype != "float32" and $bh_ctype != "float64"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IInvert), PInvoke.bh_multi_array_${bh_ctype}_bitwise_invert),
-%end if
-%if $bh_ctype == "complex64" or $bh_ctype == "complex128" or $bh_ctype == "float32" or $bh_ctype == "float64"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISin), PInvoke.bh_multi_array_${bh_ctype}_sin),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICos), PInvoke.bh_multi_array_${bh_ctype}_cos),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ITan), PInvoke.bh_multi_array_${bh_ctype}_tan),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISinh), PInvoke.bh_multi_array_${bh_ctype}_sinh),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICosh), PInvoke.bh_multi_array_${bh_ctype}_cosh),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ITanh), PInvoke.bh_multi_array_${bh_ctype}_tanh),
-%end if
+%end for
         };
         
         private Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOps = 
         {
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_add),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISub), PInvoke.bh_multi_array_${bh_ctype}_subtract),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_multiply),
-%if $bh_ctype  != "bool8"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IDiv), PInvoke.bh_multi_array_${bh_ctype}_divide),
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $methods
+%if $opcode != "BH_IDENTITY" and opcount == 3 and $cilname != ""
+%for $op1_type, $op2_type, $op3_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] == $bh_ctype and op3_type[2] == $bh_ctype
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(${cilname}), PInvoke.bh_multi_array_${bh_ctype}_${opname}),
 %end if
-%if $bh_ctype  != "bool8" and $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMod), PInvoke.bh_multi_array_${bh_ctype}_modulo),
+%end for
 %end if
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_maximum),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_minimin),
-%if $bh_ctype  != "bool8"            
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IPow), PInvoke.bh_multi_array_${bh_ctype}_power),
-%end if
-%end if
-
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128" and $bh_ctype != "float32" and $bh_ctype != "float64"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_bitwise_and),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_bitwise_or),
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_${bh_ctype}_bitwise_xor),
-%end if
+%end for
         };
 
         private Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>[] m_aggOps = 
@@ -286,14 +258,16 @@ namespace NumCIL.Bohrium2
             {
                 if (typeof(Ta) == typeof(${bh_atype}))
                     return ApplyUnaryOp(c, (NdArray<${bh_atype}>)(object)in1, @out);
-%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
-%if $bh_ctype2 != $bh_ctype
-%if ($bh_ctype2 != "complex64" and $bh_ctype2 != "complex128") and ($bh_ctype != "complex64" or $bh_ctype != "complex128")
-                else if (typeof(Ta) == typeof(${bh_atype2}))
+%for $op, $opcode, $opname, $opcount, $inplace, $typesigs, $cilname in $methods
+%if $opcode == "BH_IDENTITY" and opcount == 2
+%for $op1_type, $op2_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] != $bh_ctype
+                else if (typeof(Ta) == typeof(${op2_type[1]}))
                     return DoConvert(@out, 
-                        () => new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)in1),
-                        PInvoke.bh_multi_array_${bh_ctype}_convert_${bh_ctype2});
+                        () => new PInvoke.bh_multi_array_${op2_type[2]}_p((NdArray<${op2_type[1]}>)(object)in1),
+                        PInvoke.bh_multi_array_${bh_ctype}_convert_${op2_type[2]});
 %end if
+%end for
 %end if
 %end for
             }
