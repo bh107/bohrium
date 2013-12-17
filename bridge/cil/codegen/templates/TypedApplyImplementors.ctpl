@@ -237,7 +237,7 @@ namespace NumCIL.Bohrium2
             using (var v1 = constructor())
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, converter(v1));
-                if ((@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
                     v0.Sync();
             }
             

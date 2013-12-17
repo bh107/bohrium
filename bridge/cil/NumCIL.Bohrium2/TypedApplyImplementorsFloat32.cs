@@ -196,7 +196,7 @@ namespace NumCIL.Bohrium2
             using (var v1 = constructor())
             {
                 PInvoke.bh_multi_array_float32_assign_array(v0, converter(v1));
-                if ((@out.DataAccessor is DataAccessor_float32))
+                if (!(@out.DataAccessor is DataAccessor_float32))
                     v0.Sync();
             }
             
