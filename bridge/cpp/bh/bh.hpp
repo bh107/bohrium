@@ -252,6 +252,9 @@ public:
     template <typename T>   // x = 1 + y;
     void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
 
+    template <typename T>   // x = 1 + y;
+    void enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1, const uint64_t op2);
+
     template <typename T>   // x = y;
     void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);
 

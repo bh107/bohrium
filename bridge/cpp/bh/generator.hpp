@@ -78,12 +78,7 @@ multi_array<T>& random(const Dimensions&... shape)
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *rand_input);
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *rand_input, *rand_input, (uint64_t)1);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *rand_input, *rand_input, (uint64_t)0);
-    rand_input->setTemp(true);
-
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)time(NULL), *rand_input);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)time(NULL), (uint64_t)0);
     result->setTemp(true);
 
     return *result;
