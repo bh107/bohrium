@@ -8,7 +8,7 @@ Get it!
 
 Download and extract the current version (v0.2)::
 
-  wget http://bohrium-v0.2.tgz
+  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.2.tgz
   tar -xzf bohrium-v0.2.tg
 
 
