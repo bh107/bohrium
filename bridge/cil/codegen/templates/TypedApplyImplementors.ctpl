@@ -24,8 +24,6 @@ using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
 %end for
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-%if $bh_ctype != "float32"
-
 namespace NumCIL.Bohrium2
 {
     public class ApplyImplementor_${bh_ctype} : ITypedApplyImplementor<${bh_atype}>
@@ -377,5 +375,4 @@ namespace NumCIL.Bohrium2
     }       
 }
 
-%end if
 %end for

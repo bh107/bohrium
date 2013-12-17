@@ -78,6 +78,7 @@ def main():
         ('PInvoke.basics.ctpl',         'PInvoke.basics.cs',            (types, reductions)),
         ('BohriumDataAccessor.ctpl',    'BohriumDataAccessor.cs',       (types, reductions)),
         ('TypedApplyImplementors.ctpl', 'TypedApplyImplementors.cs',    (types, reductions, op_map)),
+        ('BohriumAccessorFactory.ctpl', 'BohriumAccessorFactory.cs',    types),
         ('PInvoke.operations.ctpl',     'PInvoke.operations.cs',        op_map)
     ]
 

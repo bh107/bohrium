@@ -43,17 +43,18 @@
       <Link>PInvoke.operations.cs</Link>
     </Compile>
     <Compile Include="Utility.cs" />
-    <Compile Include="BohriumAccessorFactory.cs" />
     <Compile Include="PinnedArrayTracker.cs" />
     <Compile Include="..\codegen\output\BohriumDataAccessor.cs">
       <Link>BohriumDataAccessor.cs</Link>
     </Compile>
     <Compile Include="ITypedApplyImplementor.cs" />
-    <Compile Include="TypedApplyImplementorsFloat32.cs" />
     <Compile Include="..\codegen\output\TypedApplyImplementors.cs">
       <Link>TypedApplyImplementors.cs</Link>
     </Compile>
     <Compile Include="ApplyImplementor.cs" />
+    <Compile Include="..\codegen\output\BohriumAccessorFactory.cs">
+      <Link>BohriumAccessorFactory.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
