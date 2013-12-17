@@ -13,6 +13,11 @@ if __name__ == "__main__":
 
     p = argparse.ArgumentParser(description='A bunch of Bohrium related stuff...')
     p.add_argument(
+        'bohrium',
+        help='Path to Bohrium source-code.',
+        nargs='?'
+    )
+    p.add_argument(
         '--config',
         help='Path to Bohrium config-file.'
     )
@@ -30,10 +35,6 @@ if __name__ == "__main__":
         '--merge_kernels',
         help='Compile all kernels in cpu(kernel-path) into a shared library.',
         action='store_true'
-    )
-    p.add_argument(
-        'bohrium',
-        help='Path to Bohrium source-code.'
     )
     args = p.parse_args()
 

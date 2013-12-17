@@ -57,6 +57,9 @@ def load_bytecode(path):
 
     Returns (opcodes, types)
     """
+    if not path:
+        path = os.sep.join(['..', '..'])
+
     opcodes = json.load(open(os.sep.join([
         path, 'core', 'codegen', 'opcodes.json'
     ])))
@@ -113,7 +116,10 @@ def import_bohrium():
     os.environ['BH_VE_CPU_JIT_OPTIMIZE']    = "0"
     os.environ['BH_VE_CPU_JIT_FUSION']      = "0"
     os.environ['BH_VE_CPU_JIT_DUMPSRC']     = "1"
+    import warnings
     import bohrium as np
+    from bohriumbridge import flush
+    warnings.simplefilter('error')
 
-    return np
+    return (np, flush)
 
