@@ -325,6 +325,8 @@ bool bh_typesig_check(int typesig)
         case 150: return true; // BL: BH_UINT8 + (BH_UINT64 << 4)
         case 232: return true; // IR: BH_UINT32 + (BH_R123 << 4)
         case 233: return true; // LR: BH_UINT64 + (BH_R123 << 4)
+        case 219: return true; // dC: BH_FLOAT64 + (BH_COMPLEX128 << 4)
+        case 202: return true; // fc: BH_FLOAT32 + (BH_COMPLEX64 << 4)
         case 8: return true; // I: BH_UINT32
         case 9: return true; // L: BH_UINT64
 
@@ -548,6 +550,8 @@ const char* bh_typesig_to_shorthand(int typesig)
         case 150: return "BL"; // BH_UINT8 + (BH_UINT64 << 4)
         case 232: return "IR"; // BH_UINT32 + (BH_R123 << 4)
         case 233: return "LR"; // BH_UINT64 + (BH_R123 << 4)
+        case 219: return "dC"; // BH_FLOAT64 + (BH_COMPLEX128 << 4)
+        case 202: return "fc"; // BH_FLOAT32 + (BH_COMPLEX64 << 4)
         case 8: return "I"; // BH_UINT32
         case 9: return "L"; // BH_UINT64
 

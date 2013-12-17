@@ -154,6 +154,60 @@ multi_array<T>& tanh (multi_array<T> &rhs)
     return *result;
 }
 template <typename T>
+multi_array<T>& asin (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& acos (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& atan (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& asinh (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& acosh (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& atanh (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
+    return *result;
+}
+template <typename T>
 multi_array<T>& exp (multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ma_float32 = NumCIL.Bohrium2.PInvoke.bh_multi_array_float32_p;
+using ma_bool8 = NumCIL.Bohrium2.PInvoke.bh_multi_array_bool8_p;
 using float32 = System.Single;
 
 namespace NumCIL.Bohrium2
@@ -18,8 +19,7 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IRound), PInvoke.bh_multi_array_float32_rint),
             new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_float32_sqrt),
             new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IExp), PInvoke.bh_multi_array_float32_exp),
-            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute),
-            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.ILog), PInvoke.bh_multi_array_float32_log),
+            new Tuple<Type, Func<ma_float32, ma_float32>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_float32_absolute)
         };
         
         private Tuple<Type, Func<ma_float32, ma_float32, ma_float32>>[] m_binOps = 
@@ -56,7 +56,7 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_float32_partial_reduce_logical_or),
             new Tuple<Type, Func<ma_float32, long, ma_float32>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_float32_partial_reduce_logical_xor),
         };
-
+        
         private Dictionary<Type, Func<ma_float32, ma_float32, ma_float32>> m_binOpLookup = new Dictionary<Type, Func<ma_float32, ma_float32, ma_float32>>();
         private Dictionary<Type, Func<ma_float32, ma_float32>> m_unOpLookup = new Dictionary<Type, Func<ma_float32, ma_float32>>();
         private Dictionary<Type, Func<ma_float32, float32>> m_aggLookup = new Dictionary<Type, Func<ma_float32, float>>();
@@ -189,8 +189,52 @@ namespace NumCIL.Bohrium2
             return true;
         }
 
+        private bool DoConvert<T>(NdArray<float> @out, Func<T> constructor, Func<T, ma_float32> converter)
+            where T : IDisposable
+        {
+            using (var v0 = new PInvoke.bh_multi_array_float32_p(@out))
+            using (var v1 = constructor())
+            {
+                PInvoke.bh_multi_array_float32_assign_array(v0, converter(v1));
+                if (!(@out.DataAccessor is DataAccessor_float32))
+                    v0.Sync();
+            }
+            
+            if (@out.DataAccessor is DataAccessor_float32)
+                ((DataAccessor_float32)@out.DataAccessor).SetDirty();
+            else
+            {
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+
+            return true;
+        }
+
         public bool ApplyUnaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<float> @out)
         {
+            if (typeof(NumCIL.Generic.Operators.ITypeConversion).IsAssignableFrom(c))
+            {
+                if (typeof(Ta) == typeof(float))
+                    return ApplyUnaryOp(c, (NdArray<float>)(object)in1, @out);
+                else if (typeof(Ta) == typeof(double))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_float64_p((NdArray<double>)(object)in1),
+                        PInvoke.bh_multi_array_float32_convert_float64);
+                else if (typeof(Ta) == typeof(long))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_int64_p((NdArray<long>)(object)in1),
+                        PInvoke.bh_multi_array_float32_convert_int64);
+            }
+            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                    PInvoke.bh_multi_array_float64_convert_complex64_real);
+            else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                    PInvoke.bh_multi_array_float64_convert_complex64_imag);
+            */
             return false;
         }
 

@@ -17,7 +17,7 @@ using namespace bh;
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other) {
-    return (bh_multi_array_${op1_type[2]}_p)new multi_array<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
+    return (bh_multi_array_${op1_type[2]}_p)&as<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
 }
 
 %end for
