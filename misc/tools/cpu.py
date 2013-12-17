@@ -22,6 +22,7 @@
 import subprocess
 import glob
 import os
+import re
 
 def merge_kernels(config):
     """
