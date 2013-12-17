@@ -2034,8 +2034,8 @@
     "opcode": "BH_REAL",
     "doc":  "Return the real part of the elements of the array.",
     "code": "op1 = real(op2)",
-    "id":   "3",
-    "nop":   71,
+    "id":   "71",
+    "nop":   2,
     "types": [
             [ "BH_FLOAT64", "BH_COMPLEX128" ],
             [ "BH_FLOAT32", "BH_COMPLEX64" ]
@@ -2053,10 +2053,10 @@
 },
 {
     "opcode": "BH_IMAG",
-    "doc":  "Return the real part of the elements of the array.",
+    "doc":  "Return the imaginary part of the elements of the array.",
     "code": "op1 = imag(op2)",
-    "id":   "3",
-    "nop":   72,
+    "id":   "72",
+    "nop":   2,
     "types": [
             [ "BH_FLOAT64", "BH_COMPLEX128" ],
             [ "BH_FLOAT32", "BH_COMPLEX64" ]
