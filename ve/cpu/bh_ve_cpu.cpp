@@ -257,6 +257,8 @@ static bh_error exec(bh_instruction *instr)
             res = BH_SUCCESS;
             break;
 
+        case BH_REAL:
+        case BH_IMAG:
         case BH_ABSOLUTE:
         case BH_LOGICAL_NOT:
         case BH_INVERT:
@@ -318,7 +320,10 @@ static bh_error exec(bh_instruction *instr)
 
         default:                            // Shit hit the fan
             res = BH_ERROR;
-            printf("cpu: Err=[Unsupported ufunc...\n");
+            printf("cpu-exec: Err=[Unsupported ufunc] {\n");
+            bh_pprint_instr(sij.instr);
+            printf("}\n");
+
     }
     return res;
 }
