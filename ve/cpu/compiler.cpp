@@ -81,12 +81,12 @@ public:
         std::string kernel_path,
         bool do_preload
     ) :
-        process_str(process_str), 
+        process_str(process_str),
         object_path(object_path),
         kernel_path(kernel_path)
     {
         // Create an identifier with low collision...
-        static const char alphanum[] = 
+        static const char alphanum[] =
             "0123456789"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "abcdefghijklmnopqrstuvwxyz";
@@ -158,7 +158,7 @@ public:
             }
             symbol_file.close();
         }
-        std::cout << nloaded-prev << " from a single shared library." << std::endl;
+//        std::cout << nloaded-prev << " from a single shared library." << std::endl;
 
         res = true;     // Load a single function from shared library
         prev = nloaded;
@@ -170,7 +170,7 @@ public:
                 nloaded += res;
             }
         }
-        std::cout << nloaded-prev << " from multiple shared libraries." << std::endl;
+//        std::cout << nloaded-prev << " from multiple shared libraries." << std::endl;
         return nloaded;
     }
 
@@ -188,7 +188,7 @@ public:
         );
 
         if (0==handles.count(library)) {    // Open library
-            handles[library] = dlopen(          
+            handles[library] = dlopen(
                 library_fn.c_str(),
                 RTLD_NOW
             );
