@@ -43,11 +43,19 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISqrt), PInvoke.bh_multi_array_${bh_ctype}_sqrt),
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IExp), PInvoke.bh_multi_array_${bh_ctype}_exp),
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ILog), PInvoke.bh_multi_array_${bh_ctype}_log),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ILog10), PInvoke.bh_multi_array_${bh_ctype}_log10),
 %end if
-%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
-            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAbs), PInvoke.bh_multi_array_${bh_ctype}_absolute),
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128" and $bh_ctype != "float32" and $bh_ctype != "float64"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IInvert), PInvoke.bh_multi_array_${bh_ctype}_bitwise_invert),
 %end if
-
+%if $bh_ctype == "complex64" or $bh_ctype == "complex128" or $bh_ctype == "float32" or $bh_ctype == "float64"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISin), PInvoke.bh_multi_array_${bh_ctype}_sin),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICos), PInvoke.bh_multi_array_${bh_ctype}_cos),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ITan), PInvoke.bh_multi_array_${bh_ctype}_tan),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ISinh), PInvoke.bh_multi_array_${bh_ctype}_sinh),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ICosh), PInvoke.bh_multi_array_${bh_ctype}_cosh),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.ITanh), PInvoke.bh_multi_array_${bh_ctype}_tanh),
+%end if
         };
         
         private Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOps = 
@@ -67,6 +75,12 @@ namespace NumCIL.Bohrium2
 %if $bh_ctype  != "bool8"            
             new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IPow), PInvoke.bh_multi_array_${bh_ctype}_power),
 %end if
+%end if
+
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128" and $bh_ctype != "float32" and $bh_ctype != "float64"
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_bitwise_and),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_bitwise_or),
+            new Tuple<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_${bh_ctype}_bitwise_xor),
 %end if
         };
 
@@ -96,11 +110,31 @@ namespace NumCIL.Bohrium2
             new Tuple<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>(typeof(NumCIL.Generic.Operators.IXor), PInvoke.bh_multi_array_${bh_ctype}_partial_reduce_logical_xor),
 %end if
         };        
+
+%if $bh_ctype == "bool8"
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        private Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>[] m_compareOps_${bh_ctype2} =
+        {
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_to),
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_to),
+%if $bh_ctype  != "bool8"
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_than),
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_than),
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_than_or_equal_to),
+            new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_greater_than_or_equal_to),
+%end if
+%end if
+        };
+
+        private Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>> m_compareLookup_${bh_ctype2} = new Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>();
+%end for
+%end if
         
+        private Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>> m_reduceLookup = new Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>();
         private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>> m_aggLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>>();
-        private Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>> m_reduceLookup = new Dictionary<Type, Func<ma_${bh_ctype}, long, ma_${bh_ctype}>>();
 
         #region ITypedApplyImplementor implementation
 
@@ -224,8 +258,66 @@ namespace NumCIL.Bohrium2
             return true;
         }
 
+        private bool DoConvert<T>(NdArray<${bh_atype}> @out, Func<T> constructor, Func<T, ma_${bh_ctype}> converter)
+            where T : IDisposable
+        {
+            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+            using (var v1 = constructor())
+            {
+                PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, converter(v1));
+                if ((@out.DataAccessor is DataAccessor_${bh_ctype}))
+                    v0.Sync();
+            }
+            
+            if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+            else
+            {
+                Utility.Flush();
+                PinnedArrayTracker.Release();
+            }
+
+            return true;
+        }
+
         public bool ApplyUnaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<${bh_atype}> @out)
         {
+            if (typeof(NumCIL.Generic.Operators.ITypeConversion).IsAssignableFrom(c))
+            {
+                if (typeof(Ta) == typeof(${bh_atype}))
+                    return ApplyUnaryOp(c, (NdArray<${bh_atype}>)(object)in1, @out);
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+%if $bh_ctype2 != $bh_ctype
+%if ($bh_ctype2 != "complex64" and $bh_ctype2 != "complex128") and ($bh_ctype != "complex64" or $bh_ctype != "complex128")
+                else if (typeof(Ta) == typeof(${bh_atype2}))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)in1),
+                        PInvoke.bh_multi_array_${bh_ctype}_convert_${bh_ctype2});
+%end if
+%end if
+%end for
+            }
+%if $bh_ctype == "float32"
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_real);
+            else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_imag);
+%end if
+%if $bh_ctype == "float64"
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
+                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_real);
+            else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+                return DoConvert(@out, 
+                    () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
+                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_imag);
+%end if
+
             return false;
         }
 
