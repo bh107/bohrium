@@ -9,7 +9,7 @@ import re
 def load_opcodes():
     script_dir = os.path.abspath(os.path.dirname(__file__))
     file_path  = os.path.join(script_dir,'..','..','core','codegen','opcodes.json')
-    f = open(file_path) 
+    f = open(file_path)
     ret = json.loads(f.read())
     f.close()
     return ret
@@ -37,35 +37,37 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
                 if self.name in ["BH_ARCSIN","BH_ARCTANH","BH_ARCCOS"]:
                     floating = ",floating=True"
                 else:
-                    floating = "" 
+                    floating = ""
                 cmd = ""
                 for i in xrange(len(t)):
                     tname = type_bh2numpy(t[i])
                     cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,floating)
                 exec cmd
                 yield (a,cmd)
-                
+
     def test_ufunc(self,a):
         cmd = "%s("%("np.%s"%self.name[3:].lower())
-        for i in xrange(1,self.nops):
-            cmd += "a[%d],"%(i)
-        cmd += "a[0])"
+
+        if self.name in ["BH_REAL","BH_IMAG"]:
+            cmd = "a[0] = %sa[1])"%cmd
+        else:
+            for i in xrange(1,self.nops):
+                cmd += "a[%d],"%(i)
+            cmd += "a[0])"
         exec cmd
         return (a[0],cmd)
-
-
 
 def get_type_sig(nop, dtype_in, dtype_out):
     sig = [dtype_out]
     for i in xrange(nop-1):
         sig += [dtype_in]
-    return sig 
+    return sig
 
 def type_float(nop):
     sig = []
     for t in ['BH_FLOAT32','BH_FLOAT64']:
         sig += [get_type_sig(nop,t,t)]
-    return sig 
+    return sig
 
 def type_int(nop):
     sig = []
@@ -73,13 +75,13 @@ def type_int(nop):
         sig += [get_type_sig(nop,t,t)]
     for t in ['BH_UINT8','BH_UINT16','BH_UINT32','BH_UINT64']:
         sig += [get_type_sig(nop,t,t)]
-    return sig 
+    return sig
 
 def type_bool(nop):
     return [get_type_sig(nop,'BH_BOOL','BH_BOOL')]
 
 def type_all(nop):
-    return type_float(nop) + type_int(nop) + type_bool(nop) 
+    return type_float(nop) + type_int(nop) + type_bool(nop)
 
 
 class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
@@ -109,7 +111,7 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
                     {'opcode':'copysign'},\
                     {'opcode':'nextafter'},\
                     {'opcode':'spacing'},\
-                    {'opcode':'modf'}] 
+                    {'opcode':'modf'}]
 
     def init(self):
         for op in self.ops:
@@ -126,7 +128,7 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
                     cmd += "a[%d] = self.array((10),%s);"%(i,tname)
                 exec cmd
                 yield (a,cmd)
-                
+
     def test_ufunc(self,a):
         cmd = "%s("%("np.%s"%self.name)
         for i in xrange(1,self.nops):
