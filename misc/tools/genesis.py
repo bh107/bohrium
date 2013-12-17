@@ -4,6 +4,7 @@ import traceback
 import itertools
 import tempfile
 import pprint
+import time
 import os
 
 import bhutils
@@ -61,8 +62,8 @@ numpy_map = {
     "BH_MOD":    "np.mod",
     "BH_ISNAN":    "np.isnan",
     "BH_ISINF":    "np.isinf",
-    "BH_REAL":  "np.real",
-    "BH_IMAG":   "np.imag",
+    "BH_REAL":  "wrap_real",
+    "BH_IMAG":   "wrap_imag",
 
     "BH_ADD_REDUCE":            "np.add.reduce",
     "BH_MULTIPLY_REDUCE":       "np.multiply.reduce",
@@ -89,20 +90,29 @@ suppress_types  = ['BH_UNKNOWN', 'BH_R123']
 ignore_types    = ['BH_COMPLEX64', 'BH_COMPLEX128']
 ignore_types = []
 
-def copy_operands(source, destination):
-    destination[:] = source
-    destination[:] = 1
-    destination[:] = True
+
 
 def genesis(bytecodes, types):
 
-    def flattened_str(opcode, typesig, layout):
-        return "%s_{%s}_%s" % (
-            opcode, ','.join(typesig), ''.join(layout)
-        )
+    times=[('start', time.time())]  # Why this? Well because it is always fun to know
+                                    # how long it took to do everything in the 
+                                    # world of bytecode through the ether of Python/NumPy
 
     # 1) Grab Bohrium/NumPy
     (np, flush) = bhutils.import_bohrium()
+
+    def copy_operands(source, destination):
+        destination[:] = source
+        destination[:] = 1
+        destination[:] = True
+
+    def wrap_real(source, destination):
+        destination[:] = np.real(source)
+
+    def wrap_imag(source, destination):
+        destination[:] = np.real(source)
+
+    times.append(('import', time.time()))
 
     dimensions = [1,2,3,4]
 
@@ -135,6 +145,8 @@ def genesis(bytecodes, types):
                     'K': typemap[tn](3)
                 }
 
+    times.append(('setup', time.time()))
+    
     earth = []                                  # Flatten bytecode
     for bytecode in (bytecode for bytecode in bytecodes):
         opcode  = bytecode['opcode']
@@ -148,6 +160,9 @@ def genesis(bytecodes, types):
                 for layout in bytecode['layout']:
                     earth.append([opcode, typesig, layout])
 
+    #
+    # Persist the flattened bytecode
+    #
     with tempfile.NamedTemporaryFile(delete=False) as fd:
         for opcode, typesig, layout in earth:
             bytecode_str = "%s_%s_%s\n" % (
@@ -158,7 +173,11 @@ def genesis(bytecodes, types):
         print "When done", len(earth), "kernels should be ready in kernel-path."
         print "See the list of function-names in the file [%s]" % fd.name
 
+    times.append(('flatten', time.time()))
+
+    #
     # Execute it 
+    #
     for opcode, typesig, layout in earth:
 
         func = eval(numpy_map[opcode])  # Grab the NumPy functions
@@ -217,7 +236,12 @@ def genesis(bytecodes, types):
                 print "Error when executing: %s {%s}_%s, err[%s]." % (
                     opcode, ','.join(typesig), ''.join(layout), e
                 )
-                raise
+    
+    times.append(('execute', time.time()))
+
+    _, first = times[0]
+    for what, when in times:
+        print what, when-first
 
     print "Run 'bohrium --merge_kernels' to create a stand-alone library."
 
