@@ -316,6 +316,26 @@ multi_array<T>& rint (multi_array<T> &rhs)
     return *result;
 }
 
+// TODO: Fix this hack-slash support for BH_REAL/IMAG
+template <typename InT, typename OutT>
+multi_array<OutT>& real (multi_array<InT> &rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT,InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
+    return *result;
+}
+template <typename InT, typename OutT>
+multi_array<OutT>& imag (multi_array<InT> &rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT,InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
+    return *result;
+}
+
 }
 #endif
 
