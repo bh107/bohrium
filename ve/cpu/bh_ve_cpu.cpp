@@ -68,151 +68,6 @@ typedef struct bh_sij {
 
 process* target;
 
-void bh_string_option(char *&option, const char *env_name, const char *conf_name)
-{
-    option = getenv(env_name);           // For the compiler
-    if (NULL==option) {
-        option = bh_component_config_lookup(&myself, conf_name);
-    }
-    char err_msg[100];
-
-    if (!option) {
-        sprintf(err_msg, "cpu-ve: String is not set; option (%s).\n", conf_name);
-        throw runtime_error(err_msg);
-    }
-}
-
-void bh_path_option(char *&option, const char *env_name, const char *conf_name)
-{
-    option = getenv(env_name);           // For the compiler
-    if (NULL==option) {
-        option = bh_component_config_lookup(&myself, conf_name);
-    }
-    char err_msg[100];
-
-    if (!option) {
-        sprintf(err_msg, "cpu-ve: Path is not set; option (%s).\n", conf_name);
-        throw runtime_error(err_msg);
-    }
-    if (0 != access(option, F_OK)) {
-        if (ENOENT == errno) {
-            sprintf(err_msg, "cpu-ve: Path does not exist; path (%s).\n", option);
-        } else if (ENOTDIR == errno) {
-            sprintf(err_msg, "cpu-ve: Path is not a directory; path (%s).\n", option);
-        } else {
-            sprintf(err_msg, "cpu-ve: Path is broken somehow; path (%s).\n", option);
-        }
-        throw runtime_error(err_msg);
-    }
-}
-
-/* Component interface: init (see bh_component.h) */
-bh_error bh_ve_cpu_init(const char *name)
-{
-    char *env;
-    bh_error err;
-
-    if((err = bh_component_init(&myself, name)) != BH_SUCCESS)
-        return err;
-    if(myself.nchildren != 0)
-    {
-        std::cerr << "[CPU-VE] Unexpected number of children, must be 0" << std::endl;
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
-    if (NULL != env) {
-        vcache_size = atoi(env);
-    }
-    if (0 > vcache_size) {                          // Verify it
-        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_VE_CPU_JIT_ENABLED");
-    if (NULL != env) {
-        jit_enabled = atoi(env);
-    }
-    if (!((0==jit_enabled) || (1==jit_enabled))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_ENABLED (%ld) should 0 or 1.\n", (long int)jit_enabled);
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_VE_CPU_JIT_PRELOAD");
-    if (NULL != env) {
-        jit_preload = atoi(env);
-    }
-    if (!((0==jit_preload) || (1==jit_preload))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_PRELOAD (%ld) should 0 or 1.\n", (long int)jit_preload);
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_VE_CPU_JIT_FUSION");
-    if (NULL != env) {
-        jit_fusion = atoi(env);
-    }
-    if (!((0==jit_fusion) || (1==jit_fusion))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_FUSION (%ld) should 0 or 1.\n", (long int)jit_fusion);
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_VE_CPU_JIT_OPTIMIZE");
-    if (NULL != env) {
-        jit_optimize = atoi(env);
-    }
-    if (!((0==jit_optimize) || (1==jit_optimize))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_OPTIMIZE (%ld) should 0 or 1.\n", (long int)jit_optimize);
-        return BH_ERROR;
-    }
-
-    env = getenv("BH_VE_CPU_JIT_DUMPSRC");
-    if (NULL != env) {
-        jit_dumpsrc = atoi(env);
-    }
-    if (!((0==jit_dumpsrc) || (1==jit_dumpsrc))) {
-         fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
-        return BH_ERROR;
-    }
-
-    // Victim cache
-    bh_vcache_init(vcache_size);
-
-    // Configuration
-    bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
-    bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
-    bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
-    bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
-
-    if (!jit_enabled) {
-        jit_preload     = 1;
-        jit_fusion      = 0;
-        jit_optimize    = 0;
-        jit_dumpsrc     = 0;
-    }
-
-    if (false) {
-        std::cout << "ENVIRONMENT {" << std::endl;
-        std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_ENABLED="   << jit_enabled  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_PRELOAD="   << jit_preload  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_FUSION="    << jit_fusion   << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_OPTIMIZE="  << jit_optimize << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_DUMPSRC="   << jit_dumpsrc  << std::endl;
-        std::cout << "}" << std::endl;
-    }
-
-    // JIT machinery
-    target = new process(compiler_cmd, object_path, kernel_path, jit_preload);
-    specializer_init();     // Code templates and opcode-specialization.
-
-    #ifdef PROFILE
-    memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    #endif
-
-    return BH_SUCCESS;
-}
-
 // Execute a single instruction
 static bh_error exec(bh_instruction *instr)
 {
@@ -247,7 +102,17 @@ static bh_error exec(bh_instruction *instr)
     if ((sij.symbol!="") && \
         (!target->symbol_ready(sij.symbol)) && \
         (!target->load(sij.symbol, sij.symbol))) {  // Need but cannot load
-        return BH_ERROR;
+
+        if (jit_optimize) {                         // Try unoptimized symbol
+            symbolize(instr, sij, false);
+            if ((sij.symbol!="") && \
+                (!target->symbol_ready(sij.symbol)) && \
+                (!target->load(sij.symbol, sij.symbol))) {  // Still cannot load
+                return BH_ERROR;
+            }
+        } else {
+            return BH_ERROR;
+        }
     }
 
     res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
@@ -456,6 +321,113 @@ static bh_error exec(bh_instruction *instr)
             printf("cpu: Err=[Unsupported ufunc...\n");
     }
     return res;
+}
+
+/* Component interface: init (see bh_component.h) */
+bh_error bh_ve_cpu_init(const char *name)
+{
+    char *env;
+    bh_error err;
+
+    if((err = bh_component_init(&myself, name)) != BH_SUCCESS)
+        return err;
+    if(myself.nchildren != 0)
+    {
+        std::cerr << "[CPU-VE] Unexpected number of children, must be 0" << std::endl;
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_CORE_VCACHE_SIZE");      // Override block_size from environment-variable.
+    if (NULL != env) {
+        vcache_size = atoi(env);
+    }
+    if (0 > vcache_size) {                          // Verify it
+        fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_ENABLED");
+    if (NULL != env) {
+        jit_enabled = atoi(env);
+    }
+    if (!((0==jit_enabled) || (1==jit_enabled))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_ENABLED (%ld) should 0 or 1.\n", (long int)jit_enabled);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_PRELOAD");
+    if (NULL != env) {
+        jit_preload = atoi(env);
+    }
+    if (!((0==jit_preload) || (1==jit_preload))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_PRELOAD (%ld) should 0 or 1.\n", (long int)jit_preload);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_FUSION");
+    if (NULL != env) {
+        jit_fusion = atoi(env);
+    }
+    if (!((0==jit_fusion) || (1==jit_fusion))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_FUSION (%ld) should 0 or 1.\n", (long int)jit_fusion);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_OPTIMIZE");
+    if (NULL != env) {
+        jit_optimize = atoi(env);
+    }
+    if (!((0==jit_optimize) || (1==jit_optimize))) {
+        fprintf(stderr, "BH_VE_CPU_JIT_OPTIMIZE (%ld) should 0 or 1.\n", (long int)jit_optimize);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_JIT_DUMPSRC");
+    if (NULL != env) {
+        jit_dumpsrc = atoi(env);
+    }
+    if (!((0==jit_dumpsrc) || (1==jit_dumpsrc))) {
+         fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
+        return BH_ERROR;
+    }
+
+    // Victim cache
+    bh_vcache_init(vcache_size);
+
+    // Configuration
+    bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
+    bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
+    bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
+    bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
+
+    if (!jit_enabled) {
+        jit_preload     = 1;
+        jit_fusion      = 0;
+        jit_optimize    = 0;
+        jit_dumpsrc     = 0;
+    }
+
+    if (false) {
+        std::cout << "ENVIRONMENT {" << std::endl;
+        std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_ENABLED="   << jit_enabled  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_PRELOAD="   << jit_preload  << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_FUSION="    << jit_fusion   << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_OPTIMIZE="  << jit_optimize << std::endl;
+        std::cout << "  BH_VE_CPU_JIT_DUMPSRC="   << jit_dumpsrc  << std::endl;
+        std::cout << "}" << std::endl;
+    }
+
+    // JIT machinery
+    target = new process(compiler_cmd, object_path, kernel_path, jit_preload);
+    specializer_init();     // Code templates and opcode-specialization.
+
+    #ifdef PROFILE
+    memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
+    memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
+    #endif
+
+    return BH_SUCCESS;
 }
 
 /* Component interface: execute (see bh_component.h) */
