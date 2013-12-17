@@ -21,8 +21,11 @@
 #!/usr/bin/env python
 import subprocess
 import glob
+import time
 import os
 import re
+
+import bhutils
 
 def merge_kernels(config):
     """
@@ -31,6 +34,8 @@ def merge_kernels(config):
     A 'bh_libsij.idx' is also produced containing all the bohrium
     functions in the '.so' file.
     """
+
+    times = [('start', time.time())]
 
     krn_path = config.get('cpu', 'kernel_path')
     obj_path = config.get('cpu', 'object_path')
@@ -60,16 +65,22 @@ def merge_kernels(config):
                 files.append(fn)
     
     source = "\n".join(sources)                 # Compile them
+    times.append(('merged', time.time()))
+
     p = subprocess.Popen(
         cmd,
         stdin   = subprocess.PIPE,
         stdout  = subprocess.PIPE
     )
     out, err = p.communicate(input=source)
+    times.append('compiled', time.time())
 
     with open(idx_path, 'w+') as fd:            # Create the index-file
         symbols.sort()
         fd.write("\n".join(symbols))
+
+    times.append(('done', time.time()))
+    bhutils.print_timings(times)
 
     return (out, err)
 

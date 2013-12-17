@@ -238,11 +238,8 @@ def genesis(bytecodes, types):
                 )
     
     times.append(('execute', time.time()))
-
-    _, first = times[0]
-    for what, when in times:
-        print what, when-first
-
+    
+    bhutils.print_timings(times)
     print "Run 'bohrium --merge_kernels' to create a stand-alone library."
 
     return (None, None)

@@ -3,6 +3,13 @@ import ConfigParser
 import json
 import os
 
+def print_timings(times):
+    _, start = times[0]
+    for what, when in times:
+        m, s = divmod(when-start, 60)
+        h, m = divmod(m, 60)
+        print "%s@%d:%02d:%02d" % (what, h, m, s)
+
 def bytecode_format(bytecodes, indent):
     """
     Custom json-encoding for improved human-readability
