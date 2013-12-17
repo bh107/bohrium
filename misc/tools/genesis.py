@@ -128,7 +128,7 @@ def genesis(bytecodes, types):
                 operands[tn][ndim][op] = {      # Of different layout
                     'C': np.ones([3]*ndim,      dtype = typemap[tn] ),
                     'S': np.ones(pow(3,ndim)*2, dtype = typemap[tn])[::2].reshape([3]*ndim), 
-                    'K': 3
+                    'K': typemap[tn](3)
                 }
 
     earth = []                                  # Flatten bytecode
