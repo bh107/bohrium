@@ -2029,5 +2029,48 @@
     ],
     "elementwise":   false,
     "system_opcode": false
+},
+{
+    "opcode": "BH_REAL",
+    "doc":  "Return the real part of the elements of the array.",
+    "code": "op1 = real(op2)",
+    "id":   "3",
+    "nop":   71,
+    "types": [
+            [ "BH_FLOAT64", "BH_COMPLEX128" ],
+            [ "BH_FLOAT32", "BH_COMPLEX64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "S" ],
+            [ "C", "K" ],
+            [ "S", "C" ],
+            [ "S", "S" ],
+            [ "S", "K" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_IMAG",
+    "doc":  "Return the real part of the elements of the array.",
+    "code": "op1 = imag(op2)",
+    "id":   "3",
+    "nop":   72,
+    "types": [
+            [ "BH_FLOAT64", "BH_COMPLEX128" ],
+            [ "BH_FLOAT32", "BH_COMPLEX64" ]
+    ],
+    "layout": [
+            [ "C", "C" ],
+            [ "C", "S" ],
+            [ "C", "K" ],
+            [ "S", "C" ],
+            [ "S", "S" ],
+            [ "S", "K" ]
+    ],
+    "elementwise":   true,
+    "system_opcode": false
 }
+
 ]
