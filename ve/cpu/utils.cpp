@@ -56,9 +56,9 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 size_t read_file(const char* filename, char** contents)
 {
     int size = 0;
-    
+
     std::ifstream file(filename, std::ios::in|std::ios::binary|std::ios::ate);
-    
+
     if (file.is_open()) {
         size = file.tellg();
         *contents = (char*)malloc(size);
@@ -137,11 +137,6 @@ int bh_layoutmask(bh_instruction *instr)
 
         case 1:
             mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
-            if (bh_is_constant(&instr->operand[1])) {
-                mask |= A1_CONSTANT;
-            } else {
-                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
-            }           
             break;
 
         case 0:
@@ -159,15 +154,15 @@ int bh_typesig(bh_instruction *instr)
         case 3:
             typesig = instr->operand[0].base->type+1;
 
-            if (bh_is_constant(&instr->operand[1])) {             
+            if (bh_is_constant(&instr->operand[1])) {
                 typesig += ((1+instr->constant.type) << 4) \
                           +((1+instr->operand[2].base->type) << 8);
 
-            } else if (bh_is_constant(&instr->operand[2])) {      
+            } else if (bh_is_constant(&instr->operand[2])) {
                 typesig += ((1+instr->operand[1].base->type) << 4) \
                           +((1+instr->constant.type) << 8);
 
-            } else {                                                
+            } else {
                 typesig += ((1+instr->operand[1].base->type) << 4) \
                           +((1+instr->operand[2].base->type) << 8);
             }
@@ -328,7 +323,7 @@ const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
             return "*a0_current = isinf(*a1_current)";
         case BH_IDENTITY:
             return "*a0_current = *a1_current";
-        case BH_REAL: 
+        case BH_REAL:
             return (type==BH_FLOAT32) ? "*a0_current = crealf(*a1_current)": "*a0_current = creal(*a1_current)";
         case BH_IMAG:
             return (type==BH_FLOAT32) ? "*a0_current = cimagf(*a1_current)": "*a0_current = cimagf(*a1_current)";
