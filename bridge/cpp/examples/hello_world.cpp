@@ -54,12 +54,19 @@ void compute()
 {
     std::cout << "Hello World." << std::endl;
 
+    /*
     complex_ones<double>();
     complex_ones<float>();
 
     complex_constant<double>();
     complex_constant<float>();
+    */
 
+    multi_array<float> a;
+    a = ones<float>(3,3,3); 
+
+    //std::cout << reduce(a, ADD, 0) << std::endl;
+    std::cout << scan(a, SUM, 0) << std::endl;
 }
 
 int main()
