@@ -143,7 +143,7 @@ public:
         }
 
         res = true;     // Load multiple functions from shared library
-        size_t prev = nloaded;
+        //size_t prev = nloaded;
         for(std::vector<std::string>::iterator lib_fn=multiples.begin();
             (lib_fn != multiples.end()) && res;
             ++lib_fn) {
@@ -161,7 +161,7 @@ public:
 //        std::cout << nloaded-prev << " from a single shared library." << std::endl;
 
         res = true;     // Load a single function from shared library
-        prev = nloaded;
+        //prev = nloaded;
         for(std::vector<std::string>::iterator lib_fn=singles.begin();
             (lib_fn != singles.end()) && res;
             ++lib_fn) {
