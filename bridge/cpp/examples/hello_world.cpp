@@ -63,10 +63,11 @@ void compute()
     */
 
     multi_array<float> a;
-    a = ones<float>(3,3,3); 
+    a = scan(ones<float>(20), SUM, 0); 
 
     //std::cout << reduce(a, ADD, 0) << std::endl;
     std::cout << scan(a, SUM, 0) << std::endl;
+    std::cout << scan(a, PRODUCT, 0) << std::endl;
 }
 
 int main()

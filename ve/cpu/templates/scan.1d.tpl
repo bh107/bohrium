@@ -40,15 +40,16 @@ int {{SYMBOL}}(int tool, ...)
 
     {{TYPE_A0}} *a0_current = a0_first + a0_start;  // Ptr to first output elem
     {{TYPE_A1}} *a1_current = a1_first + a1_start;  // Ptr to first input elem
-    {{TYPE_A1}} cvar = 0;                           // Carry the accumulated
+    {{TYPE_A1}} cvar = *a0_current;                 // Carry the accumulated
 
     int64_t nelements = a1_shape[axis];
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
-    for(int64_t j=0; j<a1_shape[axis]; ++j) {
-        {{TYPE_A1}} *tmp_current;
-        *tmp_current = j;
+    for(int64_t j=0; j<a0_shape[axis]; ++j) {
+        {{OPERATOR}};
+        a0_current += a0_stride[axis];
+        a1_current += a1_stride[axis];
     }
     
     return 1;
