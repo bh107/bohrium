@@ -24,7 +24,7 @@ void bh_runtime_flush() {
 // $bh_enum
 
 // Create a base pointer from existing data
-bh_base_p bh_multi_array_${bh_ctype}_create_base(bh_data_ptr data, int64_t nelem)
+bh_base_p bh_multi_array_${bh_ctype}_create_base(${bh_atype}* data, int64_t nelem)
 {
     bh_base_p base = new bh_base;
     assign_array_type<${bh_atype}>(base);
@@ -41,9 +41,9 @@ void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base)
 }
 
 // Gets the data pointer from a base
-bh_data_ptr bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
+${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
 {
-    return base->data;
+    return (${bh_atype}*)base->data;
 }
 
 // Gets the number of elements in a base
@@ -53,7 +53,7 @@ int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base)
 }
 
 // Sets the data pointer for a base
-void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, bh_data_ptr data)
+void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data)
 {
     base->data = data;
 }
