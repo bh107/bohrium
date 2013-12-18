@@ -122,12 +122,14 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_
 // Product
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
 
+%if $bh_ctype != "complex64" and $bh_ctype != "complex128"
 // Max
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self);
 
 // Min
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
 
+%end if
 %end for
 
 #ifdef __cplusplus
