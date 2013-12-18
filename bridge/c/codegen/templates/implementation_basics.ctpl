@@ -130,7 +130,17 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, 
 
 // Construct a new array with sequential numbers
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip) {
-    return (bh_multi_array_${bh_ctype}_p)&(range<${ctype}>(start, end, skip));
+    bh_multi_array_uint64_p tmp;
+    tmp = (bh_multi_array_uint64_p)&(range<uint64_t>(start, end, skip));
+
+%if $bh_ctype != "uint64"
+    bh_multi_array_${bh_ctype}_p result;
+    result = bh_multi_array_${bh_ctype}_convert_uint64(tmp);
+    bh_multi_array_uint64_destroy(tmp);
+    return result;
+%else
+    return tmp;
+%end if
 }
 
 // Construct a new random-filled array
