@@ -10,7 +10,7 @@ LDFLAGS= $(ARCH_OPTS) -shared -L../../core -L/usr/lib/nvidia-current -lOpenCL -l
 SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
 HEADER=$(ALL_H_FILES) $(ALL_HPP_FILES)
 OBJC = $(SRC:.c=.o)
-OBJ=$(OBJC:.cpp=.o) $(ROOT)/ve/shared/compute/*.o
+OBJ=$(OBJC:.cpp=.o)
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
