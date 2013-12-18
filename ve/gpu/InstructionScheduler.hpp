@@ -44,6 +44,7 @@ private:
     std::vector<KernelParameter*> getKernelParameters(bh_instruction* inst);
     bh_error ufunc(bh_instruction* inst);
     bh_error reduce(bh_instruction* inst);
+    bh_error accumulate(bh_instruction* inst);
     bh_error random(bh_instruction* inst);
     bh_error extmethod(bh_instruction* inst);
 public:
