@@ -63,11 +63,12 @@ void compute()
     */
 
     multi_array<float> a;
-    a = scan(ones<float>(20), SUM, 0); 
+    a = ones<float>(20);
+    a = scan(a, SUM, 0);
 
-    //std::cout << reduce(a, ADD, 0) << std::endl;
-    std::cout << scan(a, SUM, 0) << std::endl;
-    std::cout << scan(a, PRODUCT, 0) << std::endl;
+    std::cout << "a= 1,2,3, ... , 20:" << a << std::endl;
+    std::cout << "prefix-sum(a): "  << scan(a, SUM, 0) << std::endl;
+    std::cout << "prefix-prod(a): " << scan(a, PRODUCT, 0) << std::endl;
 }
 
 int main()
