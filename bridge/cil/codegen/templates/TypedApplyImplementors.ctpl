@@ -137,15 +137,17 @@ namespace NumCIL.Bohrium2
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
                 // If the output is CIL-managed, we must sync immediately
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
 
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-                PinnedArrayTracker.Release();
-            
             return true;
         }
 
@@ -176,14 +178,16 @@ namespace NumCIL.Bohrium2
                 {
                     PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
                     // If the output is CIL-managed, we must sync immediately
-                    if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                    {
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    }
+                    else
+                    {
                         v0.Sync();
+                        PinnedArrayTracker.Release();
+                    }
                 }
-
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                else
-                    PinnedArrayTracker.Release();
 
                 return true;
             }
@@ -273,18 +277,17 @@ namespace NumCIL.Bohrium2
             using (var v1 = constructor())
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, converter(v1));
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
             
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-            {
-                Utility.Flush();
-                PinnedArrayTracker.Release();
-            }
-
             return true;
         }
 
@@ -359,19 +362,17 @@ namespace NumCIL.Bohrium2
             using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, axis));
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
 
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-            {
-                // If the output is CIL-managed, we must sync immediately
-                Utility.Flush();
-                PinnedArrayTracker.Release();
-            }
-            
             return true;
         }
 
