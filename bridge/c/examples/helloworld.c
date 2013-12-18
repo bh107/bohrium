@@ -45,7 +45,7 @@ void compute()
 
     // And clean up what has not been auto-cleaned
     bh_multi_array_float32_destroy(output);
-    bh_multi_array_float32_destroy(r_flat);
+    bh_multi_array_uint32_destroy(r_flat);
 }
 
 int main()
