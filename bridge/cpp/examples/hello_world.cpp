@@ -23,20 +23,43 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bh;
 
+template <typename T>
+void complex_ones()
+{
+    multi_array<std::complex<T> > cc;
+    multi_array<T> r, i;
+
+    cc      = ones<std::complex<T> >(3,3);
+    r       = real<std::complex<T>, T>(cc);
+    i       = imag<std::complex<T>, T>(cc);
+
+    std::cout << r << "111" << i << "222" << cc << "!!!" << std::endl;
+}
+
+template <typename T>
+void complex_constant()
+{
+    multi_array<std::complex<T> > cc;
+    multi_array<T> r, i;
+
+    cc      = ones<std::complex<T> >(3,3);
+    cc      = (T)4.5;
+    r       = real<std::complex<T>, T>(cc);
+    i       = imag<std::complex<T>, T>(cc);
+
+    std::cout << r << "111" << i << "222" << cc << "!!!" << std::endl;
+}
+
 void compute()
 {
     std::cout << "Hello World." << std::endl;
 
-    multi_array<std::complex<float> > cc;
-    multi_array<float> output;
+    complex_ones<double>();
+    complex_ones<float>();
 
-    cc = ones<std::complex<float> >(3,3);
+    complex_constant<double>();
+    complex_constant<float>();
 
-    output = real<std::complex<float>, float>(cc);
-    std::cout << output << std::endl;
-
-    output = imag<std::complex<float>, float>(cc);
-    std::cout << output << std::endl;
 }
 
 int main()
