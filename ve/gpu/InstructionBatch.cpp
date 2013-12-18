@@ -314,10 +314,8 @@ std::string InstructionBatch::generateCode()
             std::stringstream ss;
             ss << "v" << iit->second[0];
             kernelVariables[(iit->second)[0]] = ss.str();
-            ss.str(std::string());
-            ss << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << 
-                kernelVariables[(iit->second)[0]];
             operands.push_back(ss.str());
+            source << "\t" << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str() << ";\n";
         }
         else
         {
