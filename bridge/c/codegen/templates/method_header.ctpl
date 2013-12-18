@@ -3,6 +3,9 @@
 directiveStartToken = %
 #end compiler-settings
 
+#ifndef __BH_C_INTERFACE_H
+#define __BH_C_INTERFACE_H
+
 #include <stdint.h>
 #include <bh_type.h>
 
@@ -62,4 +65,6 @@ DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -4,6 +4,9 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 
+#ifndef __BH_C_DATA_TYPES_H
+#define __BH_C_DATA_TYPES_H
+
 #include <stdint.h>
 #include <bh_type.h>
 
@@ -150,4 +153,6 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
