@@ -1452,7 +1452,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
         /// <summary>
         /// The factory class that produces the NdArray instances
         /// </summary>
-        public static NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=typename#>, NumCIL.Generic.NumberConverter<#=typename#>> Generator = new NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=typename#>, NumCIL.Generic.NumberConverter<#=typename#>>();
+        public static NumCIL.Generic.IGenerator<T> Generator = new NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=typename#>, NumCIL.Generic.NumberConverter<#=typename#>>();
 
         /// <summary>
         /// Creates a range sequential integers, starting with zero
