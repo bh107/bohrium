@@ -311,26 +311,24 @@ namespace NumCIL.Bohrium2
 %end for
             }
 %if $bh_ctype == "float32"
-            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_real);
+                    PInvoke.bh_multi_array_complex64_real);
             else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_imag);
-            */
+                    PInvoke.bh_multi_array_complex64_imag);
 %end if
 %if $bh_ctype == "float64"
-            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_real);
+                    PInvoke.bh_multi_array_complex128_real);
             else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_imag);
-            */
+                    PInvoke.bh_multi_array_complex128_imag);
 %end if
 
             return false;
