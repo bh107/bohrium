@@ -55,6 +55,7 @@ namespace UnitTest
                 throw new Exception("Error in accessor");
 
             var test = Generate.Arange(3) * 4;
+            test.Transpose();
 
             Shape s = new Shape(
                 new long[] { 2, 1, 2, 3 },  //Dimension sizes
