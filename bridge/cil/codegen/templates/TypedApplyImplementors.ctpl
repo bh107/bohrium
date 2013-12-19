@@ -86,15 +86,13 @@ namespace NumCIL.Bohrium2
         private Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>> m_compareLookup_${bh_ctype2} = new Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>();
         private Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>[] m_compareOps_${bh_ctype2} =
         {
-%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_to),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_to),
-%if $bh_ctype2  != "bool8"
+%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128" and $bh_ctype2  != "bool8"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_than_or_equal_to),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_greater_than_or_equal_to),
-%end if
 %end if
         };
 
