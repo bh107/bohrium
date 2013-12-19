@@ -87,8 +87,6 @@ def main():
 
         new_typesigs = []
         for ttt in typesigs:
-            if 'BH_UINT8' in ttt: # UINT8 not supported by cpp-bridge
-               continue
             sig = [map_type(typesig,types)  for typesig in ttt]
             new_typesigs.append(sig)
 

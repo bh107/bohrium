@@ -108,6 +108,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank,
     return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
 }
 
+%if $bh_ctype != "bool8"
 // Construct a new zero-filled array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
@@ -141,11 +142,12 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t 
     return tmp;
 %end if
 }
+%end if
 
 // Construct a new random-filled array
-/*bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
     return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(length));
-}*/
+}
 
 // Construct a new array, filled with the specified value
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, uint64_t rank, const int64_t* shape) {
@@ -217,6 +219,18 @@ ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self
     t1.imag = t0.imag();
     return t1;
 }
+%else if $bh_atype == "bh_bool"
+
+// All
+${bh_atype} bh_multi_array_${bh_ctype}_all(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(all(*((multi_array<${ctype}>*)self)));
+}
+
+// Any
+${bh_atype} bh_multi_array_${bh_ctype}_any(bh_multi_array_${bh_ctype}_p self) {
+    return scalar(any(*((multi_array<${ctype}>*)self)));
+}
+
 %else
 // Sum
 ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {

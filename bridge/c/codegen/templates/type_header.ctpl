@@ -87,6 +87,7 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(
 // Construct a new empty array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape);
 
+%if $bh_ctype != "bool8"
 // Construct a new zero-filled array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uint64_t rank, const int64_t* shape);
 
@@ -95,6 +96,7 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint6
 
 // Construct a new array with sequential numbers
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip);
+%end if
 
 // Construct a new random-filled array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length);
@@ -129,11 +131,20 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_mul
 // Transpose view
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self);
 
+%if $bh_atype == "bh_bool"
+
+// All
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_all(bh_multi_array_${bh_ctype}_p self);
+
+// Any
+DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_any(bh_multi_array_${bh_ctype}_p self);
+%else
 %for $opname, $enum in $reduce_ops
 // Partial ${opname} reduction 
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis);
 
 %end for
+%end if
 
 // Sum
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
