@@ -1,4 +1,4 @@
-﻿﻿#region Copyright
+﻿#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -385,7 +385,128 @@ namespace NumCIL.Bohrium2
         /// <typeparam name="T">The type of data to copy</typeparam>
         public static void WriteArrayToPointer<T>(T[] source, IntPtr target)
         {
-            UnsafeAPI.CopyToIntPtr(source, target, source.Length);
+            if (!UnsafeAPI.CopyToIntPtr(source, target, source.Length))
+            {
+                if (typeof(T) == typeof(NumCIL.Complex64.DataType))
+                {
+                    var t = (NumCIL.Complex64.DataType[])(object)target;
+                    var elsize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(float));
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i].Real), 0, target, elsize); 
+                        target += elsize;
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i].Imaginary), 0, target, elsize); 
+                        target += elsize;
+                    }
+   
+                    return;
+                }
+                else if (typeof(T) == typeof(System.Numerics.Complex))
+                {
+                    var t = (System.Numerics.Complex[])(object)target;
+                    var elsize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(double));
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i].Real), 0, target, elsize); 
+                        target += elsize;
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i].Imaginary), 0, target, elsize); 
+                        target += elsize;
+                    }
+                    
+                    return;
+                }
+                else if (typeof(T) == typeof(byte))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((byte[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(sbyte))
+                {
+                    var t = (sbyte[])(object)target;
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i]), 0, target, 1); 
+                        target += 1;
+                    }
+
+                }
+                else if (typeof(T) == typeof(short))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((short[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(ushort))
+                {
+                    var t = (ushort[])(object)target;
+                    var elsize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(ushort));
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i]), 0, target, elsize); 
+                        target += elsize;
+                    }
+                    
+                    return;
+                }
+                else if (typeof(T) == typeof(int))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((int[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(uint))
+                {
+                    var t = (uint[])(object)target;
+                    var elsize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(uint));
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i]), 0, target, elsize); 
+                        target += elsize;
+                    }
+
+                    
+                    return;
+                }
+                else if (typeof(T) == typeof(long))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((long[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(ulong))
+                {
+                    var t = (ulong[])(object)target;
+                    var elsize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(ulong));
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(BitConverter.GetBytes(t[i]), 0, target, elsize); 
+                        target += elsize;
+                    }
+                    
+                    return;
+                }
+                else if (typeof(T) == typeof(float))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((float[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(double))
+                {
+                    System.Runtime.InteropServices.Marshal.Copy((double[])(object)source, 0, target, source.Length);
+                    return;
+                }
+                else if (typeof(T) == typeof(bool))
+                {
+                    var t = (bool[])(object)target;
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.WriteByte(target, t[i] ? (byte)1 : (byte)0); 
+                        target += 1;
+                    }
+
+                    
+                    return;
+                }
+                
+                throw new Exception("No copy performed");
+            }
         }
         
     }
