@@ -136,7 +136,6 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t 
 %if $bh_ctype != "uint64"
     bh_multi_array_${bh_ctype}_p result;
     result = bh_multi_array_${bh_ctype}_convert_uint64(tmp);
-    bh_multi_array_uint64_destroy(tmp);
     return result;
 %else
     return tmp;
