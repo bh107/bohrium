@@ -379,7 +379,7 @@ bh_base* multi_array<T>::unlink()
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if (base == rhs.getBase()) {  // Self-aliasing is a NOOP
+    if ((base) && (base == rhs.getBase())) {  // Self-aliasing is a NOOP
         return *this;
     }
 
@@ -545,12 +545,12 @@ multi_array<T>& transpose(multi_array<T>& rhs)
                                  "something that does not exist!\n");
     }
 
-    throw std::runtime_error("transpose: Not implemented.\n");
+    multi_array<T>* result = &Runtime::instance().temp_view<T>(rhs);
 
-    multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    for(bh_intp i=0, j=result->meta.ndim-1; i<result->meta.ndim; ++i, --j) {
+        result->meta.stride[i]  = rhs.meta.stride[j];
+        result->meta.shape[i]   = rhs.meta.shape[j];
+    }
 
     return *result;
 }
