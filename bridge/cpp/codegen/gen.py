@@ -19,7 +19,10 @@ def render( gens, tmpl_dir, output_dir, mtime ):
         last = count == c
 
         if (output_fn != prev_output_fn ):
-            open( output_dir + prev_output_fn, 'w').write( str(prev_output) )
+            with open(output_dir + prev_output_fn, 'w') as f:
+                f.write( str(prev_output) )
+                f.close()
+                set_timestamp(f.name, (mtime,mtime))
             prev_output = ""
 
         prev_output += str(t_tmpl)
