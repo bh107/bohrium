@@ -86,15 +86,13 @@ namespace NumCIL.Bohrium2
         private Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>> m_compareLookup_${bh_ctype2} = new Dictionary<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>();
         private Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>[] m_compareOps_${bh_ctype2} =
         {
-%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_to),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_to),
-%if $bh_ctype2  != "bool8"
+%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128" and $bh_ctype2  != "bool8"
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_than),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_than_or_equal_to),
             new Tuple<Type, Func<ma_${bh_ctype2}, ma_${bh_ctype2}, ma_bool8>>(typeof(NumCIL.Generic.Operators.IGreaterThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_greater_than_or_equal_to),
-%end if
 %end if
         };
 
@@ -137,15 +135,17 @@ namespace NumCIL.Bohrium2
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
                 // If the output is CIL-managed, we must sync immediately
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
 
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-                PinnedArrayTracker.Release();
-            
             return true;
         }
 
@@ -176,14 +176,16 @@ namespace NumCIL.Bohrium2
                 {
                     PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, v2));
                     // If the output is CIL-managed, we must sync immediately
-                    if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                    {
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    }
+                    else
+                    {
                         v0.Sync();
+                        PinnedArrayTracker.Release();
+                    }
                 }
-
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                else
-                    PinnedArrayTracker.Release();
 
                 return true;
             }
@@ -273,18 +275,17 @@ namespace NumCIL.Bohrium2
             using (var v1 = constructor())
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, converter(v1));
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
             
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-            {
-                Utility.Flush();
-                PinnedArrayTracker.Release();
-            }
-
             return true;
         }
 
@@ -308,26 +309,24 @@ namespace NumCIL.Bohrium2
 %end for
             }
 %if $bh_ctype == "float32"
-            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_real);
+                    PInvoke.bh_multi_array_complex64_real);
             else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex64_imag);
-            */
+                    PInvoke.bh_multi_array_complex64_imag);
 %end if
 %if $bh_ctype == "float64"
-            /*else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_real);
+                    PInvoke.bh_multi_array_complex128_real);
             else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
                 return DoConvert(@out, 
                     () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_${bh_ctype}_convert_complex128_imag);
-            */
+                    PInvoke.bh_multi_array_complex128_imag);
 %end if
 
             return false;
@@ -359,19 +358,17 @@ namespace NumCIL.Bohrium2
             using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
             {
                 PInvoke.bh_multi_array_${bh_ctype}_assign_array(v0, m(v1, axis));
-                if (!(@out.DataAccessor is DataAccessor_${bh_ctype}))
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
                     v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
             }
 
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-            {
-                // If the output is CIL-managed, we must sync immediately
-                Utility.Flush();
-                PinnedArrayTracker.Release();
-            }
-            
             return true;
         }
 

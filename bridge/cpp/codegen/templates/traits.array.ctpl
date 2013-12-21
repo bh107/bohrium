@@ -13,7 +13,7 @@ void assign_array_type(bh_base* base) {
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 template <>
 inline
-void assign_array_type<$bh_atype>(bh_base* base)
+void assign_array_type<$ctype>(bh_base* base)
 {
     base->type = $bh_enum;
 }
@@ -22,14 +22,14 @@ void assign_array_type<$bh_atype>(bh_base* base)
 
 template <>
 inline
-void assign_array_type<std::complex<float> >(bh_base* base)
+void assign_array_type<bh_complex64>(bh_base* base)
 {
     base->type = BH_COMPLEX64;
 }
 
 template <>
 inline
-void assign_array_type<std::complex<double> >(bh_base* base)
+void assign_array_type<bh_complex128>(bh_base* base)
 {
     base->type = BH_COMPLEX128;
 }

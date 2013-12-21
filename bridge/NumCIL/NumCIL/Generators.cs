@@ -65,6 +65,12 @@ namespace NumCIL.Generic
         /// <returns>An NdArray with uninitialized</returns>
         NdArray<T> Empty(long size);
         /// <summary>
+        /// Generates an NdArray with uninitialized data
+        /// </summary>
+        /// <param name="shape">The shape of the generated array</param>
+        /// <returns>An NdArray with uninitialized</returns>
+        NdArray<T> Empty(Shape shape);
+        /// <summary>
         /// Generates an NdArray with all elements set to a random value
         /// </summary>
         /// <param name="size">The length of the generated array</param>

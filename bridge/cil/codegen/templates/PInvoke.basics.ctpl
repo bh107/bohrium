@@ -441,6 +441,38 @@ namespace NumCIL.Bohrium2
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
 
+%if $bh_atype == "bh_complex64"
+
+        /// <summary>
+        /// Get the real component of a complex number
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_float32_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Get the imaginary component of a complex number
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
+
+        %end if
+
+        %if $bh_atype == "bh_complex128"
+
+        /// <summary>
+        /// Get the real component of a complex number
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_float64_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Get the imaginary component of a complex number
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
+
+%end if
+
         %end for
     }
 }

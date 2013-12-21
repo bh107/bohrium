@@ -102,21 +102,22 @@ multi_array<T>& randu(const Dimensions&... shape)
 template <typename T>
 multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip)
 {
+    int64_t adj_end = end - 1;
     if ((start > end) && (skip>0)) {
         throw std::runtime_error("Error: Invalid range [start>end when skip>0].");
-    } else if((start < end) && (skip<0)) {
+    } else if((start < adj_end) && (skip<0)) {
         throw std::runtime_error("Error: Invalid range [start<end when skip<0].");
     } else if (skip==0) {
         throw std::runtime_error("Error: Invalid range [skip=0].");
-    } else if (start==end) {
+    } else if (start==adj_end) {
         throw std::runtime_error("Error: Invalid range [start=end].");
     }
     
     uint64_t nelem;
     if (skip>0) {
-        nelem = (end-start+1)/skip;
+        nelem = (adj_end-start+1)/skip;
     } else {
-        nelem = (start-end+1)/abs(skip);
+        nelem = (start-adj_end+1)/abs(skip);
     }
 
     multi_array<T>* result = new multi_array<T>(nelem);

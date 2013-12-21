@@ -1,5 +1,5 @@
 [
-{"id": 0,   "enum": "BH_BOOL",          "size": "1",    "shorthand": "z",   "bhtype": "bh_bool",        "numpy": "bool_",         "union": "bool8",       "c": "unsigned char",   "cpp": "unsigned char"  },
+{"id": 0,   "enum": "BH_BOOL",          "size": "1",    "shorthand": "z",   "bhtype": "bh_bool",        "numpy": "bool_",         "union": "bool8",       "c": "unsigned char",   "cpp": "bool"  },
                                 
 {"id": 1,   "enum": "BH_INT8",          "size": "1",    "shorthand": "b",   "bhtype": "bh_int8",        "numpy": "int8",          "union": "int8",        "c": "int8_t",          "cpp": "int8_t"         },
 {"id": 2,   "enum": "BH_INT16",         "size": "2",    "shorthand": "s",   "bhtype": "bh_int16",       "numpy": "int16",         "union": "int16",       "c": "int16_t",         "cpp": "int16_t"        },

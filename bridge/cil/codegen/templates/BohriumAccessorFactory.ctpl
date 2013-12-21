@@ -1,0 +1,61 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include "codegen/templates/warn.txt"
+%include "codegen/templates/license.txt"
+
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using NumCIL.Generic;
+
+%include "codegen/templates/typemap.cs"
+
+namespace NumCIL.Bohrium2
+{
+    /// <summary>
+    /// Basic factory for creating Bohrium accessors
+    /// </summary>
+    /// <typeparam name="T">The type of data kept in the underlying array</typeparam>
+    public class BohriumAccessorFactory<T> : NumCIL.Generic.IAccessorFactory<T>
+    {
+        /// <summary>
+        /// Creates a new accessor for a data chunk of the given size
+        /// </summary>
+        /// <param name="size">The size of the array</param>
+        /// <returns>An accessor</returns>
+        public IDataAccessor<T> Create(long size) 
+        { 
+            if (size == 1)
+                return new DefaultAccessor<T>(size);
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
+            if (typeof(T) == typeof(${bh_atype}))
+                return (IDataAccessor<T>)new DataAccessor_${bh_ctype}(size); 
+%end for
+                
+            return new DefaultAccessor<T>(size);
+        }
+        /// <summary>
+        /// Creates a new accessor for a preallocated array
+        /// </summary>
+        /// <param name="data">The data to wrap</param>
+        /// <returns>An accessor</returns>
+        public IDataAccessor<T> Create(T[] data)
+        {                
+            if (data.Length == 1)
+                return new DefaultAccessor<T>(data);
+                
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
+            if (typeof(T) == typeof(${bh_atype}))
+                return (IDataAccessor<T>)new DataAccessor_${bh_ctype}((${bh_atype}[])(object)data); 
+%end for
+
+            return new DefaultAccessor<T>(data);
+        }
+    }
+}
+

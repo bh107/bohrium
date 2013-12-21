@@ -39,7 +39,7 @@ void assign_const_type( bh_constant* constant, T value ) {
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_bool value )
+void assign_const_type( bh_constant* constant, bool value )
 {
     constant->value.bool8 = value;
     constant->type = BH_BOOL;
@@ -47,7 +47,7 @@ void assign_const_type( bh_constant* constant, bh_bool value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_int8 value )
+void assign_const_type( bh_constant* constant, int8_t value )
 {
     constant->value.int8 = value;
     constant->type = BH_INT8;
@@ -55,7 +55,7 @@ void assign_const_type( bh_constant* constant, bh_int8 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_int16 value )
+void assign_const_type( bh_constant* constant, int16_t value )
 {
     constant->value.int16 = value;
     constant->type = BH_INT16;
@@ -63,7 +63,7 @@ void assign_const_type( bh_constant* constant, bh_int16 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_int32 value )
+void assign_const_type( bh_constant* constant, int32_t value )
 {
     constant->value.int32 = value;
     constant->type = BH_INT32;
@@ -71,7 +71,7 @@ void assign_const_type( bh_constant* constant, bh_int32 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_int64 value )
+void assign_const_type( bh_constant* constant, int64_t value )
 {
     constant->value.int64 = value;
     constant->type = BH_INT64;
@@ -79,7 +79,15 @@ void assign_const_type( bh_constant* constant, bh_int64 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_uint16 value )
+void assign_const_type( bh_constant* constant, uint8_t value )
+{
+    constant->value.uint8 = value;
+    constant->type = BH_UINT8;
+}
+
+template <>
+inline
+void assign_const_type( bh_constant* constant, uint16_t value )
 {
     constant->value.uint16 = value;
     constant->type = BH_UINT16;
@@ -87,7 +95,7 @@ void assign_const_type( bh_constant* constant, bh_uint16 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_uint32 value )
+void assign_const_type( bh_constant* constant, uint32_t value )
 {
     constant->value.uint32 = value;
     constant->type = BH_UINT32;
@@ -95,7 +103,7 @@ void assign_const_type( bh_constant* constant, bh_uint32 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_uint64 value )
+void assign_const_type( bh_constant* constant, uint64_t value )
 {
     constant->value.uint64 = value;
     constant->type = BH_UINT64;
@@ -103,7 +111,7 @@ void assign_const_type( bh_constant* constant, bh_uint64 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_float32 value )
+void assign_const_type( bh_constant* constant, float value )
 {
     constant->value.float32 = value;
     constant->type = BH_FLOAT32;
@@ -111,11 +119,12 @@ void assign_const_type( bh_constant* constant, bh_float32 value )
 
 template <>
 inline
-void assign_const_type( bh_constant* constant, bh_float64 value )
+void assign_const_type( bh_constant* constant, double value )
 {
     constant->value.float64 = value;
     constant->type = BH_FLOAT64;
 }
+
 
 template <>
 inline
@@ -132,7 +141,6 @@ void assign_const_type( bh_constant* constant, bh_complex128 value )
     constant->value.complex128 = value;
     constant->type = BH_COMPLEX128;
 }
-
 
 template <>
 inline
@@ -151,7 +159,6 @@ void assign_const_type( bh_constant* constant, std::complex<double> value )
     constant->value.complex128.imag = value.imag();
     constant->type = BH_COMPLEX128;
 }
-
 template <typename T>
 inline
 void assign_array_type(bh_base* base) {
@@ -161,88 +168,80 @@ void assign_array_type(bh_base* base) {
 
 template <>
 inline
-void assign_array_type<bh_bool>(bh_base* base)
+void assign_array_type<bool>(bh_base* base)
 {
     base->type = BH_BOOL;
 }
 
 template <>
 inline
-void assign_array_type<bh_int8>(bh_base* base)
+void assign_array_type<int8_t>(bh_base* base)
 {
     base->type = BH_INT8;
 }
 
 template <>
 inline
-void assign_array_type<bh_int16>(bh_base* base)
+void assign_array_type<int16_t>(bh_base* base)
 {
     base->type = BH_INT16;
 }
 
 template <>
 inline
-void assign_array_type<bh_int32>(bh_base* base)
+void assign_array_type<int32_t>(bh_base* base)
 {
     base->type = BH_INT32;
 }
 
 template <>
 inline
-void assign_array_type<bh_int64>(bh_base* base)
+void assign_array_type<int64_t>(bh_base* base)
 {
     base->type = BH_INT64;
 }
 
 template <>
 inline
-void assign_array_type<bh_uint16>(bh_base* base)
+void assign_array_type<uint8_t>(bh_base* base)
+{
+    base->type = BH_UINT8;
+}
+
+template <>
+inline
+void assign_array_type<uint16_t>(bh_base* base)
 {
     base->type = BH_UINT16;
 }
 
 template <>
 inline
-void assign_array_type<bh_uint32>(bh_base* base)
+void assign_array_type<uint32_t>(bh_base* base)
 {
     base->type = BH_UINT32;
 }
 
 template <>
 inline
-void assign_array_type<bh_uint64>(bh_base* base)
+void assign_array_type<uint64_t>(bh_base* base)
 {
     base->type = BH_UINT64;
 }
 
 template <>
 inline
-void assign_array_type<bh_float32>(bh_base* base)
+void assign_array_type<float>(bh_base* base)
 {
     base->type = BH_FLOAT32;
 }
 
 template <>
 inline
-void assign_array_type<bh_float64>(bh_base* base)
+void assign_array_type<double>(bh_base* base)
 {
     base->type = BH_FLOAT64;
 }
-
-template <>
-inline
-void assign_array_type<bh_complex64>(bh_base* base)
-{
-    base->type = BH_COMPLEX64;
-}
-
-template <>
-inline
-void assign_array_type<bh_complex128>(bh_base* base)
-{
-    base->type = BH_COMPLEX128;
-}
-
 
 template <>
 inline
@@ -254,6 +253,21 @@ void assign_array_type<std::complex<float> >(bh_base* base)
 template <>
 inline
 void assign_array_type<std::complex<double> >(bh_base* base)
+{
+    base->type = BH_COMPLEX128;
+}
+
+
+template <>
+inline
+void assign_array_type<bh_complex64>(bh_base* base)
+{
+    base->type = BH_COMPLEX64;
+}
+
+template <>
+inline
+void assign_array_type<bh_complex128>(bh_base* base)
 {
     base->type = BH_COMPLEX128;
 }
