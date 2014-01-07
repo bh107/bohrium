@@ -29,6 +29,7 @@ namespace NumCIL.Bohrium2
         {
             _implementors[typeof(bh_bool)] = new ApplyImplementor_bool8();
             _implementors[typeof(bh_int8)] = new ApplyImplementor_int8();
+            _implementors[typeof(bh_uint8)] = new ApplyImplementor_uint8();
             _implementors[typeof(bh_int16)] = new ApplyImplementor_int16();
             _implementors[typeof(bh_uint16)] = new ApplyImplementor_uint16();
             _implementors[typeof(bh_int32)] = new ApplyImplementor_int32();

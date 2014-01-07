@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import json
 import os
+from os.path import join, exists
 from pprint import pprint
 from Cheetah.Template import Template
+import stat
 
-def render( gens, tmpl_dir, output_dir ):
+def render( gens, tmpl_dir, output_dir, mtime ):
 
     prev_output_fn   = gens[0][1]
     prev_output      = ""
@@ -17,13 +19,19 @@ def render( gens, tmpl_dir, output_dir ):
         last = count == c
 
         if (output_fn != prev_output_fn ):
-            open( output_dir + prev_output_fn, 'w').write( str(prev_output) )
+            with open(output_dir + prev_output_fn, 'w') as f:
+                f.write( str(prev_output) )
+                f.close()
+                set_timestamp(f.name, (mtime,mtime))
             prev_output = ""
 
         prev_output += str(t_tmpl)
 
         if last:
-            open( output_dir + output_fn, 'w').write( str(prev_output) )
+            with open(output_dir + output_fn, 'w') as f:
+                f.write(str(prev_output))
+                f.close()
+                set_timestamp(f.name, (mtime,mtime))
 
         prev_output_fn = output_fn
 
@@ -34,16 +42,36 @@ def map_type(typename, types):
 
     return "ERR"
 
+def get_timestamp(f):
+    st = os.stat(f)
+    atime = st[stat.ST_ATIME] #access time
+    mtime = st[stat.ST_MTIME] #modification time
+    return (atime,mtime)
+
+def set_timestamp(f,timestamp):
+    os.utime(f,timestamp)
+
 def main():
 
     script_dir  = "." + os.sep + "codegen" + os.sep
     output_dir  = script_dir + "output" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
 
-    types       = json.loads(open(script_dir+'element_types.json').read())
-    opcodes     = json.loads(open(script_dir+'..'+ os.sep+'..'+ os.sep +'..'+ os.sep +'core'+ os.sep +'codegen'+ os.sep +'opcodes.json').read())
-    
-    operators   = json.loads(open(script_dir +'operators.json').read())
+    paths = {'types'     : join(script_dir,'element_types.json'),
+             'opcodes'  : join(script_dir,'..','..','..','core','codegen','opcodes.json'),
+             'operators': join(script_dir,'operators.json'),
+             'self'     : join(script_dir,'gen.py')}
+
+    types       = json.loads(open(paths['types']).read())
+    opcodes     = json.loads(open(paths['opcodes']).read())
+    operators   = json.loads(open(paths['operators']).read())
+
+    #Find the latest modification time
+    mtime = 0
+    for _,p in paths.iteritems():
+        t = get_timestamp(p)
+        if t[1] > mtime:
+            mtime = t[1]
 
     op_map  = []
     for name, opcode, t, mapped in (x for x in operators if x[3]):
@@ -77,7 +105,7 @@ def main():
         ('operators.ctpl',  'operators.hpp', op_map),
     ]
 
-    render( gens, tmpl_dir, output_dir )
+    render( gens, tmpl_dir, output_dir, mtime )
 
 if __name__ == "__main__":
     main()
