@@ -163,7 +163,8 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             BaseArray* ba = dynamic_cast<BaseArray*>(kp);
             if (ba)
             {
-                if (op == 2 && sameView(inst->operand[1], inst->operand[2]))
+                if (op == 2 && inst->operand[1].base == inst->operand[2].base && 
+                    sameView(inst->operand[1], inst->operand[2]))
                 {    //catch when same input is used twice and don't allready have en id
                     opids[2] = opids[1];
                     continue;
