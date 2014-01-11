@@ -63,6 +63,13 @@ typedef struct bh_sij {
     string symbol;          // String representation
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
 
+typedef struct bh_kernel {
+    bh_instruction instr[10];
+    int ninstr;
+
+    string symbol;
+} bh_kernel_t;
+
 #include "compiler.cpp"
 #include "specializer.cpp"
 
@@ -136,18 +143,18 @@ static bh_error exec(bh_instruction *instr)
 
         case BH_RANDOM:
             target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->data,
                 bh_base_array(&sij.instr->operand[0])->nelem,
                 sij.instr->constant.value.r123.start,
-                sij.instr->constant.value.r123.key
+                sij.instr->constant.value.r123.key,
+                bh_base_array(&sij.instr->operand[0])->data
             );
             res = BH_SUCCESS;
             break;
 
         case BH_RANGE:
             target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->data,
-                bh_base_array(&sij.instr->operand[0])->nelem
+                bh_base_array(&sij.instr->operand[0])->nelem,
+                bh_base_array(&sij.instr->operand[0])->data
             );
             res = BH_SUCCESS;
             break;
@@ -176,7 +183,7 @@ static bh_error exec(bh_instruction *instr)
                 sij.instr->operand[1].shape,
                 sij.instr->operand[1].ndim,
 
-                sij.instr->constant.value
+                &(sij.instr->constant.value)
             );
             res = BH_SUCCESS;
             break;
@@ -207,6 +214,9 @@ static bh_error exec(bh_instruction *instr)
 
             if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
                 target->funcs[sij.symbol](0,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
+
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
@@ -215,13 +225,13 @@ static bh_error exec(bh_instruction *instr)
                     sij.instr->operand[1].start,
                     sij.instr->operand[1].stride,
 
-                    &(sij.instr->constant.value),
-
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim
+                    &(sij.instr->constant.value)
                 );
             } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
                 target->funcs[sij.symbol](0,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
+
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
@@ -230,13 +240,13 @@ static bh_error exec(bh_instruction *instr)
 
                     bh_base_array(&sij.instr->operand[2])->data,
                     sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride,
-
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim
+                    sij.instr->operand[2].stride
                 );
             } else {                                        // DDD
                 target->funcs[sij.symbol](0,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
+
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
@@ -247,10 +257,7 @@ static bh_error exec(bh_instruction *instr)
 
                     bh_base_array(&sij.instr->operand[2])->data,
                     sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride,
-
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim
+                    sij.instr->operand[2].stride
                 );
             }
 
@@ -292,27 +299,27 @@ static bh_error exec(bh_instruction *instr)
 
             if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
                 target->funcs[sij.symbol](0,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
+
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
 
-                    &(sij.instr->constant.value),
-
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim
+                    &(sij.instr->constant.value)
                 );
             } else {
                 target->funcs[sij.symbol](0,
+                    sij.instr->operand[0].shape,
+                    sij.instr->operand[0].ndim,
+
                     bh_base_array(&sij.instr->operand[0])->data,
                     sij.instr->operand[0].start,
                     sij.instr->operand[0].stride,
 
                     bh_base_array(&sij.instr->operand[1])->data,
                     sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride,
-
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim
+                    sij.instr->operand[1].stride
                 );
             }
             res = BH_SUCCESS;

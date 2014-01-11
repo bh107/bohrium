@@ -49,18 +49,8 @@ type = filter
 impl = /opt/bohrium/libbh_filter_pprint.so
 children = cpu
 
-[power]
+[range]
 type = filter
-impl = /opt/bohrium/libbh_filter_power.so
-children = cpu
-
-[fusion]
-type = filter
-impl = /opt/bohrium/libbh_filter_fusion.so
-children = cpu
-
-[streaming]
-type = filter
-impl = /opt/bohrium/libbh_filter_streaming.so
+impl = /opt/bohrium/libbh_filter_range.so
 children = cpu
 

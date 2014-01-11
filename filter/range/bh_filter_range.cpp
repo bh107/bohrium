@@ -24,40 +24,35 @@ If not, see <http://www.gnu.org/licenses/>.
 //
 // Components
 //
+static bh_component myself; // Myself
 
-static bh_component *myself = NULL; // Myself
+//Function pointers to our child.
+static bh_component_iface *child;
 
-static bh_component **children;     // My children
-static bh_init      child_init;     
-static bh_execute   child_execute;
-static bh_shutdown  child_shutdown;
-static bh_reg_func  child_reg_func;
 
 //
 // Component interface init/execute/shutdown
 //
 
-bh_error bh_filter_range_init(bh_component *self)
+bh_error bh_filter_range_init(const char* name)
 {
-    bh_intp children_count;
     bh_error ret;
-    myself = self;
-
-    ret = bh_component_children(self, &children_count, &children);
-    if (children_count != 1) {
-        fprintf(stderr, "Unexpected number of children for filter, must be 1");
-		return BH_ERROR;
-    }
-    if (ret != BH_SUCCESS) {
-	    return ret;
+    ret = bh_component_init(&myself, name); // Initialize self
+    if (BH_SUCCESS != ret) {
+        return ret;
     }
 
-    child_init      = children[0]->init;    // Initialize the child
-    child_execute   = children[0]->execute;
-    child_shutdown  = children[0]->shutdown;
-    child_reg_func  = children[0]->reg_func;
+    if (myself.nchildren != 1) {     // Check that we only have one child
+        fprintf(
+            stderr,
+            "[RANGE-FILTER] Unexpected number of children, must be 1"
+        );
+        return BH_ERROR;
+    }
 
-    if ((ret = child_init(children[0])) != 0) {
+    child = &myself.children[0];            // Initialize child
+    ret = child->init(child->name);
+    if(0 != ret) {
         return ret;
     }
 
@@ -67,27 +62,19 @@ bh_error bh_filter_range_init(bh_component *self)
 bh_error bh_filter_range_execute(bh_ir* bhir)
 {
     range_filter(bhir);                     // Run the filter
-    return child_execute(bhir);             // Execute the filtered bhir
+    return child->execute(bhir);             // Execute the filtered bhir
 }
 
 bh_error bh_filter_range_shutdown(void)
 {
-    bh_error ret;
-
-    ret = child_shutdown();                 // Shutdown child
-    bh_component_free(children[0]);
-    child_init     = NULL;
-    child_execute  = NULL;
-    child_shutdown = NULL;
-    child_reg_func = NULL;
-    bh_component_free_ptr(children);
-    children = NULL;
+    bh_error ret = child->shutdown();
+    bh_component_destroy(&myself);
 
     return ret;
 }
 
-bh_error bh_filter_range_reg_func(const char *fun, bh_intp *id)
+bh_error bh_filter_range_extmethod(const char *name, bh_opcode opcode)
 {
-    return child_reg_func(fun, id);
+    return child->extmethod(name, opcode);
 }
 
