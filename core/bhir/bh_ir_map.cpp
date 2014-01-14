@@ -24,8 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 
 
-typedef bh_error (*bh_ir_map_instr_func)(bh_instruction *instr);
-
 /* Applies the 'func' on each instruction in the 'dag' and it's
  * sub-dags topologically.
  *
