@@ -34,14 +34,10 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
                 continue
             for t in op['types']:
                 a = {}
-                if self.name in ["BH_ARCSIN","BH_ARCTANH","BH_ARCCOS"]:
-                    floating = ",floating=True"
-                else:
-                    floating = ""
                 cmd = ""
                 for i in xrange(len(t)):
                     tname = type_bh2numpy(t[i])
-                    cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,floating)
+                    cmd += "a[%d] = self.array((10),%s);"%(i,tname)
                 exec cmd
                 yield (a,cmd)
 
