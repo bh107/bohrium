@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
  *
  * @bhir        The BhIR handle
  * @dag         The dag to start the map from
- * @func        The func to call with all instructions
+ * @func        The func to call with each instructions
  * @return      Error code (BH_SUCCESS, BH_ERROR)
  */
 bh_error bh_ir_map_instr(bh_ir *bhir, bh_dag *dag,
