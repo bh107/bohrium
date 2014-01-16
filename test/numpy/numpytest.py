@@ -134,7 +134,7 @@ class numpytest:
         self.random.seed(42)
     def init(self):
         pass
-    def array(self,dims,dtype):
+    def array(self,dims,dtype,high=False):
         try: 
             total = reduce(mul,dims)
         except TypeError:
@@ -150,6 +150,8 @@ class numpytest:
             res = np.random.random_integers(1,6,dims)
         elif dtype in [np.float32, np.float64]: 
             res = np.random.random(size=dims)
+            if high:
+                res = (res+1)*10
         elif dtype in [np.complex64, np.complex128]: 
             res = np.random.random(size=dims)+np.random.random(size=dims)*1j
         else:
