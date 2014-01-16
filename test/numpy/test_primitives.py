@@ -22,7 +22,7 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
+        self.config['maxerror'] = 0.00001
         self.ops = load_opcodes()
 
     def init(self):
