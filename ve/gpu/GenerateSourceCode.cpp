@@ -117,6 +117,12 @@ void generateInstructionSource(bh_opcode opcode,
         case BH_SQRT:
             source << "\tCSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
+        case BH_IDENTITY:
+            if (isComplex(type.second))
+                source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
+            else
+                source << "\t" << parameters[0] << ".s0 = " << parameters[1] << ";\n";
+            break;
         case BH_REAL:
             source << "\t" << parameters[0] << " = " << parameters[1] << ".s0;\n";
             break;
