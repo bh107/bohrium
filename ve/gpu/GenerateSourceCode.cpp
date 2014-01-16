@@ -55,37 +55,74 @@ void generateOffsetSource(const bh_view& operand, std::ostream& source)
     source << "gidx*" << operand.stride[ndim-1] << " + " << operand.start;
 }
 
+#define TYPE ((type.second == OCL_COMPLEX64) ? "float" : "double")
 void generateInstructionSource(bh_opcode opcode,
-                               OCLtype returnType,
+                               std::pair<OCLtype,OCLtype> type,
                                std::vector<std::string>& parameters, 
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)bh_operands(opcode));
-    if (isComplex(returnType))
+    if (isComplex(type.first) || isComplex(type.second))
     {
+
         switch(opcode)
         {
         case BH_ADD:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+            source << "\tCADD(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
             break;
         case BH_SUBTRACT:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
+            source << "\tCSUB(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
             break;
         case BH_MULTIPLY:
-            source << "\t" << parameters[0] << ".s0 = " << parameters[1] << ".s0 * " << parameters[2] << ".s0" 
-                   << " - " << parameters[1] << ".s1 * " << parameters[2] << ".s1; "
-                   << parameters[0] << ".s1 = " << parameters[1] << ".s1 * " << parameters[2] << ".s0" 
-                   << " + " << parameters[1] << ".s0 * " << parameters[2] << ".s1;\n";
+            source << "\tCMUL(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
             break;
         case BH_DIVIDE:
-            source << "\t" << oclTypeStr(returnType) << " " << parameters[0] << "d = " 
-                   << parameters[2] << " * " << parameters[2] << "; "
-                   << parameters[0] << ".s0 = " << parameters[1] << ".s0 * " << parameters[2] << ".s0" 
-                   << " + " << parameters[1] << ".s1 * " << parameters[2] << ".s1; "
-                   << parameters[0] << ".s1 = " << parameters[1] << ".s1 * " << parameters[2] << ".s0" 
-                   << " - " << parameters[1] << ".s0 * " << parameters[2] << ".s1; "
-                   << parameters[0] << " = " << parameters[0] << " / " << parameters[0] << "d;\n";   
-                   break;
+            source << "\tCDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
+            break;
+        case BH_EQUAL:
+            source << "\tCEQ(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            break;
+        case BH_NOT_EQUAL:
+            source << "\tCNEQ(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            break;
+        case BH_COS:
+            source << "\tCCOS(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_SIN:
+            source << "\tCSIN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_TAN:
+            source << "\tCTAN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_COSH:
+            source << "\tCCOSH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_SINH:
+            source << "\tCSINH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_TANH:
+            source << "\tCTANH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_EXP:
+            source << "\tCEXP(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_LOG:
+            source << "\tCLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_LOG10:
+            source << "\tCLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
+            source << "\t" << parameters[0] << " /= log(10.0f);\n";
+            break;
+        case BH_SQRT:
+            source << "\tCSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
+        case BH_REAL:
+            source << "\t" << parameters[0] << " = " << parameters[1] << ".s0;\n";
+            break;
+        case BH_IMAG:
+            source << "\t" << parameters[0] << " = " << parameters[1] << ".s1;\n";
+            break;
         default:
 #ifdef DEBUG
             std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
@@ -93,7 +130,7 @@ void generateInstructionSource(bh_opcode opcode,
             throw std::runtime_error("Instruction not supported.");
         }
     }
-    else // Non complex returntype
+    else // Non complex calculation
     {
         switch(opcode)
         {
@@ -110,19 +147,19 @@ void generateInstructionSource(bh_opcode opcode,
             source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
             break;
         case BH_POWER:
-            if (isFloat(returnType))
+            if (isFloat(type.second))
                 source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
                 source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
             break;
         case BH_MOD:
-            if (isFloat(returnType))
+            if (isFloat(type.second))
                 source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
                 source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
             break;
         case BH_ABSOLUTE:
-            if (isFloat(returnType))
+            if (isFloat(type.second))
                 source << "\t" << parameters[0] << " = fabs(" << parameters[1] << ");\n";
             else
                 source << "\t" << parameters[0] << " = abs(" << parameters[1] << ");\n";

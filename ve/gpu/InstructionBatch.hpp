@@ -59,6 +59,7 @@ private:
     int scalarnum;
     bool float16;
     bool float64;
+    bool complex;
     static KernelMap kernelMap;
 #ifdef STATS
     timeval createTime;

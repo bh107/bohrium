@@ -34,6 +34,7 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
     , scalarnum(0)
     , float16(false)
     , float64(false)
+    , complex(false)
 {
 #ifdef STATS
     gettimeofday(&createTime,NULL);
@@ -195,13 +196,23 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 kernelVariables[opids[op]] = ss.str();
                 parameters[kp] = ss.str();
             }
-            if (kp->type() == OCL_FLOAT64)
+            switch (kp->type())
             {
-                float64 = true;
-            } 
-            else if (kp->type() == OCL_FLOAT16)
-            {
+            case OCL_FLOAT16:
                 float16 = true;
+                break;
+            case OCL_FLOAT64:
+                float64 = true;
+                break;
+            case OCL_COMPLEX64:
+                complex = true;
+                break;
+            case OCL_COMPLEX128:
+                float64 = true;
+                complex = true;
+                break;
+            default:
+                break;
             }
         }
     }
@@ -234,6 +245,10 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
         if (float64)
         {
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+        }
+        if (complex)
+        {
+            source << "#include <complex.h>\n";
         }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
@@ -327,9 +342,12 @@ std::string InstructionBatch::generateCode()
         {
             operands.push_back(kernelVariables[iit->second[op]]);  
         }
-
         // generate source code for the instruction
-        generateInstructionSource(iit->first->opcode, oclType(iit->first->operand[0].base->type), 
+        generateInstructionSource(iit->first->opcode, 
+                                  std::make_pair(oclType(iit->first->operand[0].base->type),
+                                                 oclType(iit->first->operand[1].base ? 
+                                                         iit->first->operand[1].base->type : 
+                                                         iit->first->constant.type)), 
                                   operands, source);
     }
 

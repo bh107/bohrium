@@ -86,6 +86,7 @@ public:
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
     std::string getKernelPath();
+    std::string getIncludeStr();
     bool float16support();
     bool float64support();
     bh_error childExecute(bh_ir* bhir);

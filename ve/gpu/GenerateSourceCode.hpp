@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 void generateGIDSource(std::vector<bh_index> shape, std::ostream& source);
 void generateOffsetSource(const bh_view& operand, std::ostream& source);
 void generateInstructionSource(bh_opcode opcode,
-                               OCLtype returnType, 
+                               std::pair<OCLtype,OCLtype> type, 
                                std::vector<std::string>& parameters, 
                                std::ostream& source);
 
