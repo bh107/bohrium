@@ -44,6 +44,8 @@ extern "C" {
 */
 typedef struct
 {
+    //Number of rows (and columns) in the square adjacency matrix
+    bh_intp nrows;
     //Adjacency matrix with a top-down direction, i.e. the adjacencies
     //of a row is its dependencies (who it depends on).
     bh_boolmat *m;
@@ -61,6 +63,19 @@ typedef struct
  */
 DLLEXPORT bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat);
 
+/* Creates an empty adjacency matrix (Square Matrix)
+ * @nrows   Number of rows (and columns) in the matrix.
+ * @return  The adjmat handle, or NULL when out-of-memory
+ */
+DLLEXPORT bh_adjmat *bh_adjmat_create(bh_intp nrows);
+
+/* Finalize the adjacency matrix such that it is accessible through
+ * bh_adjmat_fill_empty_row(), bh_adjmat_serialize(), etc.
+ *
+ * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
+ */
+DLLEXPORT bh_error bh_adjmat_finalize(bh_adjmat *adjmat);
+
 /* Creates an adjacency matrix based on a instruction list
  * where an index in the instruction list refer to a row or
  * a column index in the adjacency matrix.
@@ -72,6 +87,44 @@ DLLEXPORT bh_intp bh_adjmat_totalsize(const bh_adjmat *adjmat);
 DLLEXPORT bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
                                                  const bh_instruction instr_list[]);
 
+/* Fills a empty row in the adjacency matrix where all
+ * the preceding rows are empty as well. That is, registrate whom
+ * the row'th node depends on in the DAG.
+ * Hint: use this function to build a adjacency matrix from
+ *       scratch by filling each row in an ascending order.
+ * NB: The adjmat must have been finalized.
+ *
+ * @adjmat    The adjmat matrix
+ * @row       The index to the empty row
+ * @ncol_idx  Number of column indexes (i.e. number of dependencies)
+ * @col_idx   List of column indexes (i.e. whom the node depends on)
+ *            NB: this list will be sorted thus any order is acceptable
+ * @return    Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
+ */
+DLLEXPORT bh_error bh_adjmat_fill_empty_row(bh_adjmat *adjmat,
+                                            bh_intp row,
+                                            bh_intp ncol_idx,
+                                            const bh_intp col_idx[]);
+
+/* Fills a empty column in the adjacency matrix where all
+ * the preceding columns are empty as well. That is, registrate whom
+ * in the DAG depends on the col'th node.
+ * Hint: use this function to build a adjacency matrix from
+ *       scratch by filling each column in an ascending order.
+ * NB: The adjmat must have been finalized.
+ *
+ * @adjmat    The adjmat matrix
+ * @col       The index to the empty column
+ * @nrow_idx  Number of row indexes (i.e. number of dependencies)
+ * @row_idx   List of row indexes (i.e. whom that depends on the node)
+ *            NB: this list will be sorted thus any order is acceptable
+ * @return    Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
+ */
+DLLEXPORT bh_error bh_adjmat_fill_empty_col(bh_adjmat *adjmat,
+                                            bh_intp col,
+                                            bh_intp nrow_idx,
+                                            const bh_intp row_idx[]);
+
 /* De-allocate the adjacency matrix
  *
  * @adjmat  The adjacency matrix in question
@@ -79,6 +132,7 @@ DLLEXPORT bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
 DLLEXPORT void bh_adjmat_destroy(bh_adjmat **adjmat);
 
 /* Makes a serialized copy of the adjmat
+ * NB: The adjmat must have been finalized.
  *
  * @adjmat   The adjmat matrix in question
  * @dest     The destination of the serialized adjmat
@@ -93,6 +147,7 @@ DLLEXPORT void bh_adjmat_deserialize(bh_adjmat *adjmat);
 
 /* Retrieves a reference to a row in the adjacency matrix, i.e retrieval of the
  * node indexes that depend on the row'th node.
+ * NB: The adjmat must have been finalized.
  *
  * @adjmat    The adjacency matrix
  * @row       The index to the row
@@ -104,6 +159,7 @@ DLLEXPORT const bh_intp *bh_adjmat_get_row(const bh_adjmat *adjmat, bh_intp row,
 
 /* Retrieves a reference to a column in the adjacency matrix, i.e retrieval of the
  * node indexes that the col'th node depend on.
+ * NB: The adjmat must have been finalized.
  *
  * @adjmat    The adjacency matrix
  * @col       The index of the column
