@@ -79,7 +79,7 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
                 res = random(inst);
                 break;
             default:
-                if (inst->opcode < BH_MAX_OPCODE_ID)
+                if (inst->opcode <= BH_MAX_OPCODE_ID)
                     res = ufunc(inst);
                 else
                     res = extmethod(inst);
