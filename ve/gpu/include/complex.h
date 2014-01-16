@@ -28,12 +28,14 @@
                       r.s1 = (c + d * ratio) / denom; }
 #define CEQ(r,a,b) r = (a.s0 == b.s0) && (a.s1 == b.s1);
 #define CNEQ(r,a,b) r = (a.s0 != b.s0) || (a.s1 != b.s1);
-#define CPOW(t,r,a,b) { t logr = log(hypot(a.s0, a.s1));        \
-                        t logi = atan2(a.s1, a.s0);             \
-                        t x = exp(logr * b.s0 - logi * b.s1);   \
-                        t y = logr * b.s1 + logi * b.s0;        \
-                        r.s1 = sincos(y, &r.s0);                \
-                        r = x*r; }
+#define CPOW(t,r,a,b) { t logr, logi, x, y, cosy, siny;         \
+                        logr = log(hypot(a.s0, a.s1));          \
+                        logi = atan2(a.s1, a.s0);               \
+                        x = exp(logr * b.s0 - logi * b.s1);     \
+                        y = logr * b.s1 + logi * b.s0;          \
+                        siny = sincos(y, &cosy);                \
+                        r.s0 = x*cosy;                          \
+                        r.s1 = x*siny; }
 #define CSQRT(r,a) r.s0 = hypot(a.s0, a.s1);                    \
                    if (r.s0 == 0.0)                             \
                        r.s0 = r.s1 = 0.0;                       \

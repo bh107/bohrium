@@ -80,6 +80,10 @@ void generateInstructionSource(bh_opcode opcode,
             source << "\tCDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
                 parameters[2] << ")\n";
             break;
+        case BH_POWER:
+            source << "\tCPOW(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
+            break;
         case BH_EQUAL:
             source << "\tCEQ(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
             break;
