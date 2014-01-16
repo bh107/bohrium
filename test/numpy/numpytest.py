@@ -41,7 +41,10 @@ def _array_equal(A,B,maxerror=0.0):
     if type(A) != type(B):
         return False 
     if np.isscalar(A):
-        return A == B
+        if A == B:
+            return True
+        else:
+            return (abs(A - B)/(np.abs(A) + np.abs(B))/2) < maxerror
 
     bohriumbridge.unhandle_array(A)
     bohriumbridge.unhandle_array(B)
@@ -224,6 +227,9 @@ if __name__ == "__main__":
                                 print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC 
                                 print _C.OKGREEN + str(res1) + _C.ENDC 
                                 print _C.FAIL + str(res2) + _C.ENDC
+                                print cls_inst.config['maxerror']
+                                print res1 - res2
+                                sys.exit()
                                 
     print "*"*24, "Finish", "*"*24
 
