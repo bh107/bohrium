@@ -160,37 +160,42 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
 
 
     // OK so we can accept the instruction
-    // Register unknow parameters
     for (size_t op = 0; op < operands.size(); ++op)
     {
-        if (opids[op]<0 || load_store[op])
+        // Assign new view id's
+        if (opids[op]<0 && inst->operand[op].base)
+        {
+            int i = op-1;
+            for (; i >= 0; --i)
+            {   //catch when same view is used twice within oparation and doesn't allready have an id
+                if (inst->operand[op].base == inst->operand[i].base && 
+                    sameView(inst->operand[op], inst->operand[i]))
+                {
+                    opids[op] = opids[i];
+                    if (op > 0 && i > 0) // both input
+                        load_store[op] = false;
+                    break;
+                }
+            }
+            if (opids[op] < 0)
+            {   // Unkwown view
+                opids[op] = views.size();
+                views.push_back(inst->operand[op]);
+            }
+        }
+        
+        // Register new parameters and input / output variables
+        if (load_store[op])
         {
             KernelParameter* kp = operands[op];
             BaseArray* ba = dynamic_cast<BaseArray*>(kp);
             if (ba)
             {
-                int i = op-1;
-                for (; i >= 0; --i)
-                {   //catch when same view is used twice within oparation and doesn't allready have an id
-                    if (inst->operand[op].base == inst->operand[i].base && 
-                        sameView(inst->operand[op], inst->operand[i]))
-                    {
-                        opids[op] = opids[i];
-                        if (op > 0 && i > 0) // both input
-                            load_store[op] = false;
-                        break;
-                    }
-                }
-                if (opids[op] < 0)
-                {   // Unkwown view
-                    opids[op] = views.size();
-                    views.push_back(inst->operand[op]);
-                }
-                if (op == 0 && load_store[op])
+                if (op == 0)
                 {
                     output.insert(std::make_pair(ba, opids[op]));
                 }
-                else if (load_store[op])
+                else
                 {
                     input.insert(std::make_pair(ba, opids[op]));
                 }
@@ -230,7 +235,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
         }
     }
     instructions.push_back(make_pair(inst, opids));
-
 }
 
 Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
