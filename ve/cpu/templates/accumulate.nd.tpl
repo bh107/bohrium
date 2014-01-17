@@ -1,5 +1,5 @@
 /*
-int scan(
+int accumulate(
     int tool,
 
     T       *a0_first,

@@ -18,7 +18,7 @@ def mangle(bytecodes, types):
         if not (('ADD' in opcode) or ('MUL' in opcode)):
             continue
     
-        bytecode['opcode']  = opcode.replace('REDUCE', 'SCAN')
+        bytecode['opcode']  = opcode.replace('REDUCE', 'ACCUMULATE')
         bytecode['id']      = count
         scans.append(bytecode)
 

@@ -2075,9 +2075,9 @@
     "system_opcode": false
 },
 {
-    "opcode": "BH_ADD_SCAN",
+    "opcode": "BH_ADD_ACCUMULATE",
     "doc":  "Computes the prefix sum.",
-    "code": "prefixsum(a, axis)",
+    "code": "cumsum(a, axis)",
     "id":   "73",
     "nop":   3,
     "types": [
@@ -2105,9 +2105,9 @@
     "system_opcode": false
 },
 {
-    "opcode": "BH_MULTIPLY_SCAN",
+    "opcode": "BH_MULTIPLY_ACCUMULATE",
     "doc":  "Computes the prefix product.",
-    "code": "prefixproduct(a, axis)",
+    "code": "cumprod(a, axis)",
     "id":   "75",
     "nop":   3,
     "types": [

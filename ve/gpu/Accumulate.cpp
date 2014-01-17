@@ -94,10 +94,10 @@ std::string Accumulate::generateCode(bh_instruction* inst,
     bh_opcode opcode = 0;
     switch (inst->opcode)
     {
-    case BH_ADD_SCAN:
+    case BH_ADD_ACCUMULATE:
         opcode = BH_ADD;
         break;
-    case BH_MULTIPLY_SCAN:
+    case BH_MULTIPLY_ACCUMULATE:
         opcode = BH_MULTIPLY;
         break;
     default:
@@ -131,7 +131,7 @@ std::string Accumulate::generateCode(bh_instruction* inst,
     source << "\tout[element] = accu;\n";
     source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[axis] << ";\n\t";
-    generateInstructionSource(opcode, outType, operands, source);
+    generateInstructionSource(opcode, std::make_pair(outType,inType), operands, source);
     source << "\t\tout[element] = accu;\n\t}\n}\n";
     return source.str();
 }

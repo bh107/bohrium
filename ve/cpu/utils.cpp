@@ -191,9 +191,9 @@ int bh_typesig(bh_instruction *instr)
 const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
 {
     switch(opcode) {
-        case BH_ADD_SCAN:
+        case BH_ADD_ACCUMULATE:
             return "cvar += *a1_current; *a0_current = cvar;";
-        case BH_MULTIPLY_SCAN:
+        case BH_MULTIPLY_ACCUMULATE:
             return "cvar *= *a1_current; *a0_current = cvar;";
 
         case BH_ADD_REDUCE:

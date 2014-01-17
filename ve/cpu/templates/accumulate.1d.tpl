@@ -1,5 +1,5 @@
 /*
-int scan(
+int accumulate(
     int tool,
 
     T       *a0_first,
@@ -23,18 +23,18 @@ int {{SYMBOL}}(int tool, ...)
     va_start(list, tool);
 
     {{TYPE_A0}} *a0_first   = va_arg(list, {{TYPE_A0}}*);
-    int64_t  a0_start   = va_arg(list, int64_t);    // Scan result
+    int64_t  a0_start   = va_arg(list, int64_t);    // Accumulate result
     int64_t *a0_stride  = va_arg(list, int64_t*);
     int64_t *a0_shape   = va_arg(list, int64_t*);
     int64_t  a0_ndim    = va_arg(list, int64_t);
 
     {{TYPE_A1}} *a1_first    = va_arg(list, {{TYPE_A1}}*);
-    int64_t  a1_start   = va_arg(list, int64_t);    // Input to scan
+    int64_t  a1_start   = va_arg(list, int64_t);    // Input to accumulate
     int64_t *a1_stride  = va_arg(list, int64_t*);
     int64_t *a1_shape   = va_arg(list, int64_t*);
     int64_t  a1_ndim    = va_arg(list, int64_t);
 
-    int64_t axis = va_arg(list, int64_t);           // Axis to scan
+    int64_t axis = va_arg(list, int64_t);           // Axis to accumulate
 
     va_end(list);                                   // **DONE UNPACKING**
 

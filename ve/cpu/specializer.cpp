@@ -10,8 +10,8 @@ void specializer_init()
     ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
 
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("scan.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("scan.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("accumulate.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("accumulate.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
     
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
@@ -135,13 +135,13 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             cres = true;
             break;
 
-        case BH_ADD_SCAN:
-        case BH_MULTIPLY_SCAN:
+        case BH_ADD_ACCUMULATE:
+        case BH_MULTIPLY_ACCUMULATE:
             dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
             dict.SetValue("SYMBOL",   sij.symbol);
             dict.SetValue("TYPE_A0",  enum_to_ctypestr(sij.instr->operand[0].base->type));
             dict.SetValue("TYPE_A1",  enum_to_ctypestr(sij.instr->operand[1].base->type));
-            sprintf(template_fn, "scan.1d.tpl");
+            sprintf(template_fn, "accumulate.1d.tpl");
 
             cres = true;
             break;

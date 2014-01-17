@@ -76,8 +76,8 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
             case BH_BITWISE_XOR_REDUCE:
                 res = reduce(inst);
                 break;
-            case BH_ADD_SCAN:
-            case BH_MULTIPLY_SCAN:
+            case BH_ADD_ACCUMULATE:
+            case BH_MULTIPLY_ACCUMULATE:
                 res = accumulate(inst);
                 break;
             case BH_RANDOM:
