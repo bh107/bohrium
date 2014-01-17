@@ -28,6 +28,7 @@ using namespace std;
 
 typedef enum { NONE, RANGE, FUSABLE, STREAMABLE } tag_t;
 
+/*
 bh_error void ref_count(bh_ir* bhir, dag)
 {
     for(bh_intp i=0; i< bhir->dag_list[dag].nnode; ++i) {
@@ -44,7 +45,7 @@ bh_error void ref_count(bh_ir* bhir, dag)
         }
     }
     return BH_SUCCESS;
-}
+}*/
 
 void range_filter(bh_ir* bhir)
 {

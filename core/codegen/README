@@ -6,22 +6,26 @@ it uses the JSON (JavaScript Object Notation) syntax <http://json.org>.
 The file contains a list of opcode definitions on the form::
 
     {
-        "_opcode":  "BH_ADD", 
+        "opcode":  "BH_ADD",
         "doc":      "Add arguments element-wise.",
         "code":     "op1 = op2 + op3",
         "nop":      3,
-        "id":     1, 
-        "system_opcode": false, 
+        "id":     1,
+        "system_opcode": false,
         "types": [
             ["BH_BOOL", "BH_BOOL", "BH_BOOL"],
             ["BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32"],
             ["BH_UINT8", "BH_UINT8", "BH_UINT8"],
         ]
-    } 
+        "layout": [
+                [ "C", "C", "C" ],
+                [ "C", "C", "K" ]
+        ]
+    }
 
 A description of the opcode structure follows::
 
-_opcode
+opcode
   The unique symbol identifying a Bohrium opcode.
 doc
   A textual description of the opcode.
@@ -33,8 +37,9 @@ nop
   The amount of operands the instruction uses.
 system_opcode
   Specifies whether a given opcode is a regular arithmetic instruction or a special system instruction.
+elementwise
+  Specifies whether a given opcode is a elementwise instruction or not
 types
-  A list of lists, where each list is a valid type-signature for the opcode. In the example above the ADD opcode can add bools, floats and unsigned short integers. NB: the first type is the output type and the rest is the input types.
-
-NOTE:: opcodes with multiple inputs should always have identical input-data types!
-
+  A list of lists where each list is a valid type-signature for the opcode. In the example above the ADD opcode can add bools, floats and unsigned short integers. NB: the first type is the output type and the rest is the input types.
+layout
+  A list of lists where each list is a valid layout-signature for the opcode.

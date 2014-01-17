@@ -149,7 +149,7 @@ std::string Reduce::generateCode(bh_instruction* inst,
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
     source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[axis] << ";\n\t";
-    generateInstructionSource(opcode, outType, operands, source);
+    generateInstructionSource(opcode, std::make_pair(outType,inType), operands, source);
     source << "\t}\n\tout[";
     generateOffsetSource(*out, source);
     source << "] = accu;\n}\n";

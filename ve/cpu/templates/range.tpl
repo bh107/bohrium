@@ -2,8 +2,10 @@ void {{SYMBOL}}(int tool, ...)
 {
     va_list list;
     va_start(list,tool);
-    {{TYPE_A0}} *a0_data = va_arg(list, {{TYPE_A0}}*);
     int64_t nelements = va_arg(list, int64_t);
+    {{#OPERAND}}
+    {{TYPE}} *a{{NR}}_data = va_arg(list, {{TYPE}}*);
+    {{/OPERAND}}
     va_end(list);
 
     int mthreads = omp_get_max_threads();
@@ -22,7 +24,9 @@ void {{SYMBOL}}(int tool, ...)
         int64_t work_end = work_offset+work;
                                                 // Fill up the array
         for(int64_t i=work_offset; i<work_end; ++i) {
-            a0_data[i] = i;
+            {{#OPERAND}}
+            a{{NR}}_data[i] = i;
+            {{/OPERAND}}
         }
     }
 }

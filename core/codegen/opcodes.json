@@ -173,6 +173,8 @@
     "id":   "5",
     "nop":   3,
     "types": [
+            [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64", "BH_COMPLEX64" ],
             [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
             [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
             [ "BH_INT16", "BH_INT16", "BH_INT16" ],

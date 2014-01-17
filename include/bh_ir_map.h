@@ -35,11 +35,11 @@ typedef bh_error (*bh_ir_map_instr_func)(bh_instruction *instr);
  *
  * @bhir        The BhIR handle
  * @dag         The dag to start the map from
- * @func        The func to call with all instructions
+ * @func        The func to call for each instruction
  * @return      Error code (BH_SUCCESS, BH_ERROR)
  */
 DLLEXPORT bh_error bh_ir_map_instr(bh_ir *bhir, bh_dag *dag,
-                         bh_ir_map_instr_func func);
+                                   bh_ir_map_instr_func func);
 
 #ifdef __cplusplus
 }

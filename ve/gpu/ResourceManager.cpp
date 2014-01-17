@@ -280,16 +280,16 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     gettimeofday(&start,NULL);
 #endif
 
-//#ifdef DEBUG
+#ifdef DEBUG
     std::cout << "Program build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
-//#endif
+#endif
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices);
+        program.build(devices,getIncludeStr().c_str());
     } catch (cl::Error) {
 #ifdef DEBUG
         std::cerr << "Program build error:\n";
@@ -378,8 +378,16 @@ std::string ResourceManager::getKernelPath()
 {
     char* dir = bh_component_config_lookup(component, "ocldir");
     if (dir == NULL)
-        return std::string("/opt/bohrium/lib/ocl_source");
+        return std::string("/opt/bohrium/gpu/ocl_source");
     return std::string(dir);
+}
+
+std::string ResourceManager::getIncludeStr()
+{
+    char* dir = bh_component_config_lookup(component, "include");
+    if (dir == NULL)
+        return std::string("/opt/bohrium/gpu/include");
+    return std::string("-I") + std::string(dir);
 }
 
 bh_error ResourceManager::childExecute(bh_ir* bhir)

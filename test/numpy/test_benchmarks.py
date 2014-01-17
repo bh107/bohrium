@@ -6,7 +6,7 @@ from bohrium import examples as exp
 class test_jacobi(numpytest):
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
+        self.config['maxerror'] = 0.00001
         self.size = 20
     def init(self):
         for t in ['np.float32','np.float64']:
@@ -25,7 +25,7 @@ class test_jacobi(numpytest):
 class test_jacobi_stencil(numpytest):
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.01
+        self.config['maxerror'] = 0.001
         self.size = 20
     def init(self):
         a = {}
@@ -51,10 +51,14 @@ class test_gameoflife(numpytest):
         return (res,cmd)
 
 class test_shallow_water(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 20
     def init(self):
         for t in ['np.float32','np.float64']:
             a = {}
-            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(16,t)
+            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(self.size,t)
             exec cmd
             yield (a,cmd)
 
@@ -62,4 +66,3 @@ class test_shallow_water(numpytest):
         cmd = "res = exp.shallow_water.simulate(a[0],10);"
         exec cmd
         return (res,cmd)
-

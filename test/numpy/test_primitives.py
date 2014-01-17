@@ -22,7 +22,7 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
+        self.config['maxerror'] = 0.00001
         self.ops = load_opcodes()
 
     def init(self):
@@ -35,13 +35,13 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
             for t in op['types']:
                 a = {}
                 if self.name in ["BH_ARCSIN","BH_ARCTANH","BH_ARCCOS"]:
-                    floating = ",floating=True"
+                    high = ",high=False"
                 else:
-                    floating = ""
+                    high = ",high=True"
                 cmd = ""
                 for i in xrange(len(t)):
                     tname = type_bh2numpy(t[i])
-                    cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,floating)
+                    cmd += "a[%d] = self.array((10),%s%s);"%(i,tname,high)
                 exec cmd
                 yield (a,cmd)
 

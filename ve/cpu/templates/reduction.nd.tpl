@@ -14,42 +14,39 @@ int reduction(
     int64_t *a1_shape,
     int64_t  a1_ndim,
 
-    int64_t axis
+    T       *a2_first
 )
 */
 int {{SYMBOL}}(int tool, ...)
 {
-    va_list list;                                   // **Unpack arguments**
+    va_list list;                                   // **UNPACK PARAMETERS**
     va_start(list, tool);
 
-    {{TYPE_A0}} *a0_current;
-    {{TYPE_A0}} *a0_first   = va_arg(list, {{TYPE_A0}}*);
-    int64_t  a0_start   = va_arg(list, int64_t);    // Reduction result
-    int64_t *a0_stride  = va_arg(list, int64_t*);
-    int64_t *a0_shape   = va_arg(list, int64_t*);
-    int64_t  a0_ndim    = va_arg(list, int64_t);
+    {{#OPERAND}}
+    {{TYPE}} *a{{NR}}_first   = va_arg(list, {{TYPE}}*);
+    {{#ARRAY}}
+    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
+    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
+    int64_t *a{{NR}}_shape   = va_arg(list, int64_t*);
+    int64_t  a{{NR}}_ndim    = va_arg(list, int64_t);
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
+    {{/ARRAY}}
+    {{/OPERAND}}
 
-    //{{TYPE_A1}} *a1_current;
-    {{TYPE_A1}} *a1_first    = va_arg(list, {{TYPE_A1}}*);
-    int64_t  a1_start   = va_arg(list, int64_t);    // Input to reduce
-    int64_t *a1_stride  = va_arg(list, int64_t*);
-    int64_t *a1_shape   = va_arg(list, int64_t*);
-    int64_t  a1_ndim    = va_arg(list, int64_t);
+    va_end(list);                                   // **DONE UNPACKING**
 
-    int64_t axis = va_arg(list, int64_t);           // Reduction axis
-
-    va_end(list);                                   // **DONE**
+    {{TYPE_AXIS}} axis = *a2_first;                 // Use the first element as temp
 
     int64_t a1_i;               // Iterator variables...
 
-    {{TYPE_A1}} *tmp_current;    // Intermediate array
-    {{TYPE_A1}} *tmp_first;      
+    {{TYPE_INPUT}} *tmp_current;    // Intermediate array
+    {{TYPE_INPUT}} *tmp_first;      
     int64_t tmp_start;
     int64_t tmp_stride[CPU_MAXDIM];    
 
     if (1 == a1_ndim) {                             // ** 1D Special Case **
         a0_current = a0_first + a0_start;           // Point to first element in output.
-        {{TYPE_A0}} rvar = *(a1_first+a1_start);    // Use the first element as temp
+        {{TYPE_INPUT}} rvar = *(a1_first+a1_start);    // Use the first element as temp
         for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
             a1_i < a1_shape[axis];
             tmp_current += a1_stride[axis], a1_i++) {
@@ -65,7 +62,7 @@ int {{SYMBOL}}(int tool, ...)
                 cur_e,
                 coord[CPU_MAXDIM];
 
-        tmp_first    = a1_first;                  // Use the temporary as a copy of input
+        tmp_first   = a1_first;                  // Use the temporary as a copy of input
         tmp_start   = a1_start;                 // without the 'axis' dimension
 
         int64_t tmp_dim;
@@ -116,7 +113,7 @@ int {{SYMBOL}}(int tool, ...)
                         coord[last_dim]++,              // Coordinates
                         cur_e++
                     ) {
-                        {{TYPE_A1}} rvar = *a0_current; // Scalar-temp
+                        {{TYPE_INPUT}} rvar = *a0_current; // Scalar-temp
                         {{OPERATOR}};
                         *a0_current = rvar;
 

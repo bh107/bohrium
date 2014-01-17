@@ -8,7 +8,7 @@ The ``core`` module provide the essential functions, such as all the array creat
 import numpy
 from numpy import *
 import bohriumbridge as bridge
-
+from math import ceil
 def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array.
@@ -1130,5 +1130,41 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     array([3, 5])
 
     """
-    return numpy.arange(start, stop, step, dtype, bohrium)
+    if (not bohrium):
+        return numpy.arange(start,stop,step,dtype)
+    if (not stop):
+        stop = start
+        start = type(stop)(0)
+    size = int(ceil((float(stop) - float(start)) / float(step)))
+    if (dtype):
+        start = dtype(start)
+        stop  = dtype(stop)
+        step  = dtype(step)
+    else:
+        dtype = int64
+    return range(size,dtype=dtype) * step + start
 
+def range(size, dtype=uint64):
+    if (not isinstance(size, (int,long))):
+        raise ValueError("size must be an integer")
+    if (size < 1):
+        raise ValueError("size must be greater than 0")
+    if (dtype == int8 or
+        dtype == int16 or
+        dtype == int32 or
+        dtype == uint8 or
+        dtype == uint16 or
+        dtype == uint32 or
+        dtype == float16 or
+        dtype == float32 or
+        dtype == complex64):
+        A = empty(size,dtype=uint32,bohrium=True)
+    else:
+        A = empty(size,dtype=uint64,bohrium=True)
+    bridge.range(A)
+    if (dtype != A.dtype.type):
+        B = empty_like(A,dtype=dtype)
+        B[:] = A[:]
+        return B
+    else:
+        return A

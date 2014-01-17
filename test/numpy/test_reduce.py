@@ -3,6 +3,9 @@ from numpytest import numpytest,gen_views,TYPES
 
 
 class test_reduce(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
     
     def init(self):
         for v in gen_views(5,10,6):
@@ -22,6 +25,9 @@ class test_reduce(numpytest):
 
 
 class test_reduce1D(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
     
     def init(self):
         for v in gen_views(1,100,10):

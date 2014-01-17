@@ -193,6 +193,7 @@ if __name__ == "__main__":
                   ("VE-CPU", "ve/cpu", True),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
+                  ("FILTER-RANGE", "filter/range", False),\
                   ("FILTER-PPRINT", "filter/pprint", True),\
                   ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   ("EXT-METHOD-MATMUL", "extmethods/matmul", True),\

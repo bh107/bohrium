@@ -25,6 +25,7 @@ $(LIB): $(OBJ)
 
 clean:
 	rm -rf *.o *~ *.so
+	rm graph*dot trace*txt
 
 install: all
 	cp $(LIB) $(INSTALLDIR)

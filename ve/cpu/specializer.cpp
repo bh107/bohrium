@@ -99,23 +99,39 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
     bh_type type = sij.instr->operand[0].base->type;// Magic parameter to cexpr-function
 
+    dict.SetValue("SYMBOL",     sij.symbol);
+    dict.ShowSection("LOOP_BODY");  // We only have a single expression so we just show it.
+    dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode, type));
+
+    int nops = bh_operands(sij.instr->opcode);
+
+    for(int i=0; i<nops; ++i) {     // Operand dict
+        ctemplate::TemplateDictionary* op_dict   = dict.AddSectionDictionary("OPERAND");
+
+        op_dict->SetIntValue("NR", i);
+        if (bh_is_constant(&sij.instr->operand[i])) {    // Constant
+            op_dict->SetValue(
+                "TYPE",
+                enum_to_ctypestr(sij.instr->constant.type)
+            );  
+        } else {                        // Array
+            op_dict->SetValue(
+                "TYPE", 
+                enum_to_ctypestr(sij.instr->operand[i].base->type)
+            );
+            op_dict->ShowSection("ARRAY");
+        }
+    }
+
     switch (sij.instr->opcode) {                    // OPCODE_SWITCH
 
         case BH_RANDOM:
-            dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode, type));
-            dict.SetValue("SYMBOL",     sij.symbol);
-            dict.SetValue("TYPE_A0",    enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "random.tpl");
-
             cres = true;
             break;
 
         case BH_RANGE:
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
-            dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
             sprintf(template_fn, "range.tpl");
-
             cres = true;
             break;
 
@@ -141,11 +157,8 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
-            dict.SetValue("SYMBOL", sij.symbol);
-            dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
-
+            dict.SetValue("TYPE_INPUT", enum_to_ctypestr(sij.instr->operand[1].base->type));
+            dict.SetValue("TYPE_AXIS", "int64_t");
             if (optimized && (sij.ndims <= 3)) {
                 sprintf(template_fn, "reduction.%lldd.tpl", (long long)sij.ndims);
             } else {
@@ -179,31 +192,8 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_ARCTAN2:
         case BH_MOD:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
-            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->constant.type));
-                dict.ShowSection("a1_dense");
-                dict.ShowSection("a2_scalar");
-            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
-                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
-                dict.ShowSection("a1_scalar");
-                dict.ShowSection("a2_dense");
-            } else {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
-                dict.SetValue("TYPE_A2", enum_to_ctypestr(sij.instr->operand[2].base->type));
-                dict.ShowSection("a1_dense");
-                dict.ShowSection("a2_dense");
-            }
             if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
-                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT + A2_CONTIGUOUS)) || \
+                (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
                 (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
@@ -250,30 +240,15 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
         case BH_ISINF:
         case BH_IDENTITY:
 
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
-            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->constant.type));
-                dict.ShowSection("a1_scalar");
-            } else {
-                dict.SetValue("SYMBOL", sij.symbol);
-                dict.SetValue("TYPE_A0", enum_to_ctypestr(sij.instr->operand[0].base->type));
-                dict.SetValue("TYPE_A1", enum_to_ctypestr(sij.instr->operand[1].base->type));
-                dict.ShowSection("a1_dense");
-            }
-
             if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
                 (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 sprintf(template_fn, "traverse.nd.ddd.tpl");
             } else {
-
                 if (optimized && (sij.ndims<=3)) {
                     sprintf(template_fn, "traverse.%lldd.tpl", (long long)sij.ndims);
                 } else {
                     sprintf(template_fn, "traverse.nd.tpl");
                 }
-
             }
 
             cres = true;
