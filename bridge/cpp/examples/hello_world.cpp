@@ -63,16 +63,16 @@ void compute()
     complex_constant<float>();
     */
 
-    /*
-    // Accumulate
+    // Scan
     multi_array<float> a;
     a = ones<float>(20);
-    a = accumulate(a, SUM, 0);
+    a = scan(a, SUM, 0);
 
     std::cout << "a= 1,2,3, ... , 20:" << a << std::endl;
-    std::cout << "prefix-sum(a): "  << accumulate(a, SUM, 0) << std::endl;
-    std::cout << "prefix-prod(a): " << accumulate(a, PRODUCT, 0) << std::endl;
-    */
+    std::cout << "prefix-sum(a): "  << scan(a, SUM, 0) << std::endl;
+    std::cout << "prefix-prod(a): " << scan(a, PRODUCT, 0) << std::endl;
+
+    /*
     multi_array<float> a;
     multi_array<float> b;
 
@@ -82,6 +82,7 @@ void compute()
     //b = sin(a);
     //b = a;
     std::cout << (b+a) << std::endl;
+    */
 }
 
 int main()
