@@ -357,13 +357,14 @@ std::string InstructionBatch::generateCode()
         for (int op = 1; op < bh_operands(iit->first->opcode); ++op)
         {
             operands.push_back(kernelVariables[iit->second[op]]);  
-        }
+        } 
         // generate source code for the instruction
         generateInstructionSource(iit->first->opcode, 
                                   std::make_pair(oclType(iit->first->operand[0].base->type),
-                                                 oclType(iit->first->operand[1].base ? 
-                                                         iit->first->operand[1].base->type : 
-                                                         iit->first->constant.type)), 
+                                                 bh_operands(iit->first->opcode) > 1 ? 
+                                                 (oclType(iit->first->operand[1].base ? 
+                                                          iit->first->operand[1].base->type : 
+                                                          iit->first->constant.type)) : OCL_UNKNOWN), 
                                   operands, source);
     }
 
