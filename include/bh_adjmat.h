@@ -76,16 +76,11 @@ DLLEXPORT bh_adjmat *bh_adjmat_create(bh_intp nrows);
  */
 DLLEXPORT bh_error bh_adjmat_finalize(bh_adjmat *adjmat);
 
-/* Creates an adjacency matrix based on a instruction list
- * where an index in the instruction list refer to a row or
- * a column index in the adjacency matrix.
+/* De-allocate the adjacency matrix
  *
- * @ninstr      Number of instructions
- * @instr_list  The instruction list
- * @return      The adjmat handle, or NULL when out-of-memory
+ * @adjmat  The adjacency matrix in question
  */
-DLLEXPORT bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
-                                                 const bh_instruction instr_list[]);
+DLLEXPORT void bh_adjmat_destroy(bh_adjmat **adjmat);
 
 /* Fills a empty row in the adjacency matrix where all
  * the preceding rows are empty as well. That is, registrate whom
@@ -124,12 +119,6 @@ DLLEXPORT bh_error bh_adjmat_fill_empty_col(bh_adjmat *adjmat,
                                             bh_intp col,
                                             bh_intp nrow_idx,
                                             const bh_intp row_idx[]);
-
-/* De-allocate the adjacency matrix
- *
- * @adjmat  The adjacency matrix in question
- */
-DLLEXPORT void bh_adjmat_destroy(bh_adjmat **adjmat);
 
 /* Makes a serialized copy of the adjmat
  * NB: The adjmat must have been finalized.

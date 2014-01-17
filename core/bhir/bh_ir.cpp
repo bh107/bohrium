@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include "bh_ir.h"
 #include "bh_vector.h"
+#include "bh_adjlist.h"
 
 /* Returns the total size of the BhIR including overhead (in bytes).
  *
@@ -66,26 +67,13 @@ bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
         return BH_OUT_OF_MEMORY;
     memcpy(bhir->instr_list, instr_list, instr_nbytes);
     bhir->ninstr = ninstr;
+    bhir->dag_list = NULL;
     bhir->self_allocated = true;
-
-    //Allocate the DAG list
-    bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), 1, 10);
-    if(bhir->dag_list == NULL)
-        return BH_OUT_OF_MEMORY;
-    bhir->ndag = 1;
-
-    //Initiate the first (and only) DAG
-    bh_dag *dag = &bhir->dag_list[0];
-    dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), ninstr, ninstr);
-    if(dag->node_map == NULL)
-        return BH_OUT_OF_MEMORY;
-    for(bh_intp i=0; i<ninstr; ++i)
-        dag->node_map[i] = i;//A simple 1:1 map
-    dag->nnode = ninstr;
-    dag->tag = 0;
-    dag->adjmat = bh_adjmat_create_from_instr(ninstr, instr_list);
-    if(dag->adjmat == NULL)
-        return BH_OUT_OF_MEMORY;
+    //Create an adjacency list based on the instruction list
+    bh_adjlist adjlist;
+    bh_adjlist_create_from_instr(adjlist, ninstr, instr_list);
+    //Fill the bhir based on the adjacency list
+    bh_adjlist_fill_bhir(adjlist, bhir);
     return BH_SUCCESS;
 }
 
