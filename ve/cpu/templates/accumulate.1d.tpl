@@ -1,4 +1,6 @@
 /*
+AKA Scan
+
 int accumulate(
     int tool,
 
@@ -22,25 +24,21 @@ int {{SYMBOL}}(int tool, ...)
     va_list list;                                   // **UNPACK PARAMETERS**
     va_start(list, tool);
 
-    {{TYPE_A0}} *a0_first   = va_arg(list, {{TYPE_A0}}*);
-    int64_t  a0_start   = va_arg(list, int64_t);    // Accumulate result
-    int64_t *a0_stride  = va_arg(list, int64_t*);
-    int64_t *a0_shape   = va_arg(list, int64_t*);
-    int64_t  a0_ndim    = va_arg(list, int64_t);
-
-    {{TYPE_A1}} *a1_first    = va_arg(list, {{TYPE_A1}}*);
-    int64_t  a1_start   = va_arg(list, int64_t);    // Input to accumulate
-    int64_t *a1_stride  = va_arg(list, int64_t*);
-    int64_t *a1_shape   = va_arg(list, int64_t*);
-    int64_t  a1_ndim    = va_arg(list, int64_t);
-
-    int64_t axis = va_arg(list, int64_t);           // Axis to accumulate
+    {{#OPERAND}}
+    {{TYPE}} *a{{NR}}_first   = va_arg(list, {{TYPE}}*);
+    {{#ARRAY}}
+    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
+    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
+    int64_t *a{{NR}}_shape   = va_arg(list, int64_t*);
+    int64_t  a{{NR}}_ndim    = va_arg(list, int64_t);
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
+    {{/ARRAY}}
+    {{/OPERAND}}
 
     va_end(list);                                   // **DONE UNPACKING**
 
-    {{TYPE_A0}} *a0_current = a0_first + a0_start;  // Ptr to first output elem
-    {{TYPE_A1}} *a1_current = a1_first + a1_start;  // Ptr to first input elem
-    {{TYPE_A1}} cvar = *a1_current;                 // Carry the accumulated
+    {{TYPE_AXIS}} axis  = *a2_first;                // Use the first element as temp
+    {{TYPE_INPUT}} cvar = *a1_current;              // Carry the accumulated
 
     int64_t nelements = a1_shape[axis];
     int mthreads = omp_get_max_threads();
@@ -48,8 +46,9 @@ int {{SYMBOL}}(int tool, ...)
 
     *a0_current = cvar;
     for(int64_t j=1; j<a0_shape[axis]; ++j) {
-        a0_current += a0_stride[axis];
-        a1_current += a1_stride[axis];
+        {{#OPERAND}}{{#ARRAY}}
+        a{{NR}}_current += a{{NR}}_stride[axis];
+        {{/ARRAY}}{{/OPERAND}}
         {{OPERATOR}};
     }
     
