@@ -227,9 +227,6 @@ if __name__ == "__main__":
                                 print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC 
                                 print _C.OKGREEN + str(res1) + _C.ENDC 
                                 print _C.FAIL + str(res2) + _C.ENDC
-                                print cls_inst.config['maxerror']
-                                print res1 - res2
-                                sys.exit()
                                 
     print "*"*24, "Finish", "*"*24
 
