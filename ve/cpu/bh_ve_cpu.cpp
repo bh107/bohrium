@@ -64,8 +64,13 @@ typedef struct bh_sij {
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
 
 typedef struct bh_kernel {
-    bh_instruction instr[10];
-    int ninstr;
+    bh_sij_t sijs[10];
+    int nsijs;
+
+    int64_t ndims;
+
+    int lmask;
+    int tsig;
 
     string symbol;
 } bh_kernel_t;

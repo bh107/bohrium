@@ -137,10 +137,9 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
         case BH_ADD_ACCUMULATE:
         case BH_MULTIPLY_ACCUMULATE:
-            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
-            dict.SetValue("SYMBOL",   sij.symbol);
-            dict.SetValue("TYPE_A0",  enum_to_ctypestr(sij.instr->operand[0].base->type));
-            dict.SetValue("TYPE_A1",  enum_to_ctypestr(sij.instr->operand[1].base->type));
+
+            dict.SetValue("TYPE_INPUT", enum_to_ctypestr(sij.instr->operand[1].base->type));
+            dict.SetValue("TYPE_AXIS",  "int64_t");
             sprintf(template_fn, "accumulate.1d.tpl");
 
             cres = true;
