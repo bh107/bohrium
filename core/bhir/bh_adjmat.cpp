@@ -91,6 +91,22 @@ bh_error bh_adjmat_finalize(bh_adjmat *adjmat)
     return BH_SUCCESS;
 }
 
+/* De-allocate the adjacency matrix
+ *
+ * @adjmat  The adjacency matrix in question
+ */
+void bh_adjmat_destroy(bh_adjmat **adjmat)
+{
+    bh_adjmat *a = *adjmat;
+    if(a->m != NULL)
+        bh_boolmat_destroy(&a->m);
+    if(a->mT != NULL)
+        bh_boolmat_destroy(&a->mT);
+    if(a->self_allocated)
+        free(a);
+    a = NULL;
+}
+
 /* Fills a empty row in the adjacency matrix where all
  * the preceding rows are empty as well. That is, registrate whom
  * the row'th node depends on in the DAG.
@@ -192,115 +208,6 @@ bh_error bh_adjmat_fill_empty_col(bh_adjmat *adjmat,
     }
     return bh_boolmat_fill_empty_row(adjmat->mT, col, nrow_idx, row_idx);
 }
-
-
-/* Creates an adjacency matrix based on a instruction list
- * where an index in the instruction list refer to a row or
- * a column index in the adjacency matrix.
- *
- * @ninstr      Number of instructions
- * @instr_list  The instruction list
- * @return      The adjmat handle, or NULL when out-of-memory
- */
-bh_adjmat *bh_adjmat_create_from_instr(bh_intp ninstr,
-                                       const bh_instruction instr_list[])
-{
-    bh_adjmat *adjmat = bh_adjmat_create(ninstr);
-    if(adjmat == NULL)
-        return NULL;
-
-    //Record over which instructions (identified by indexes in the instruction list)
-    //are reading to a specific array. We use a std::vector since multiple instructions
-    //may read to the same array.
-    std::map<bh_base*, std::vector<bh_intp> > reads;
-
-    //Record over the last instruction (identified by indexes in the instruction list)
-    //that wrote to a specific array.
-    //We only need the most recent write instruction since that instruction will depend on
-    //all preceding write instructions.
-    std::map<bh_base*, bh_intp> writes;
-
-//    bh_pprint_instr_list(instr_list, ninstr, "Batch");
-    for(bh_intp i=0; i<ninstr; ++i)
-    {
-        const bh_instruction *inst = &instr_list[i];
-        const bh_view *ops = bh_inst_operands((bh_instruction *)inst);
-        int nops = bh_operands_in_instruction(inst);
-
-        if(nops == 0)//Instruction does nothing.
-            continue;
-
-        //Find the instructions that the i'th instruction depend on and insert them into
-        //the sorted set 'deps'.
-        std::set<bh_intp> deps;
-        for(bh_intp j=0; j<nops; ++j)
-        {
-            if(bh_is_constant(&ops[j]))
-                continue;//Ignore constants
-            bh_base *base = bh_base_array(&ops[j]);
-            //When we are accessing an array, we depend on the instruction that wrote
-            //to it previously (if any).
-            std::map<bh_base*, bh_intp>::iterator w = writes.find(base);
-            if(w != writes.end())
-                deps.insert(w->second);
-
-        }
-        //When we are writing to an array, we depend on all previous reads that hasn't
-        //already been overwritten
-        bh_base *base = bh_base_array(&ops[0]);
-        std::vector<bh_intp> &r(reads[base]);
-        deps.insert(r.begin(), r.end());
-
-        //Now all previous reads is overwritten
-        r.clear();
-
-        //Fill the i'th column in the boolean matrix with the found dependencies
-        if(deps.size() > 0)
-        {
-            std::vector<bh_intp> sorted_vector(deps.begin(), deps.end());
-            bh_error e = bh_adjmat_fill_empty_col(adjmat, i,
-                                                  deps.size(),
-                                                  &sorted_vector[0]);
-            if(e != BH_SUCCESS)
-            {
-                assert(e == BH_OUT_OF_MEMORY);
-                return NULL;
-            }
-        }
-
-        //The i'th instruction is now the newest write to array 'ops[0]'
-        writes[base] = i;
-        //and among the reads to arrays 'ops[1:]'
-        for(bh_intp j=1; j<nops; ++j)
-        {
-            if(bh_is_constant(&ops[j]))
-                continue;//Ignore constants
-            bh_base *base = bh_base_array(&ops[j]);
-            reads[base].push_back(i);
-        }
-    }
-    if(bh_adjmat_finalize(adjmat) != BH_SUCCESS)
-        return NULL;
-    return adjmat;
-}
-
-
-/* De-allocate the adjacency matrix
- *
- * @adjmat  The adjacency matrix in question
- */
-void bh_adjmat_destroy(bh_adjmat **adjmat)
-{
-    bh_adjmat *a = *adjmat;
-    if(a->m != NULL)
-        bh_boolmat_destroy(&a->m);
-    if(a->mT != NULL)
-        bh_boolmat_destroy(&a->mT);
-    if(a->self_allocated)
-        free(a);
-    a = NULL;
-}
-
 
 /* Makes a serialized copy of the adjmat.
  * NB: The adjmat must have been finalized.
