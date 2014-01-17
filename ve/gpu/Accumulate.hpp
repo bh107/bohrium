@@ -18,18 +18,27 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <vector>
-#include <iostream>
-#ifdef _WIN32
-#include <sstream>
-#endif
+#ifndef __ACCUMULATE_HPP
+#define __ACCUMULATE_HPP
+
+#include <string>
+#include <map>
 #include <bh.h>
-#include "OCLtype.h"
+#include "Kernel.hpp"
+#include "StringHasher.hpp"
+#include "UserFuncArg.hpp"
 
-void generateGIDSource(std::vector<bh_index> shape, std::ostream& source);
-void generateOffsetSource(const bh_view& operand, std::ostream& source);
-void generateInstructionSource(bh_opcode opcode,
-                               std::pair<OCLtype,OCLtype> type, 
-                               std::vector<std::string>& parameters, 
-                               std::ostream& source);
+namespace Accumulate
+{
+    typedef std::map<size_t, Kernel> KernelMap;
+    static KernelMap kernelMap;
+    bh_error bh_accumulate(bh_instruction* inst, UserFuncArg* userFuncArg);
+    Kernel getKernel(bh_instruction* inst,
+                     UserFuncArg* userFuncArg,
+                     std::vector<bh_index> shape);
+    std::string generateCode(bh_instruction* inst,
+                             OCLtype outType, OCLtype inType,
+                             std::vector<bh_index> shape);
+}
 
+#endif

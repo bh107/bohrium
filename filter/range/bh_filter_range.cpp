@@ -29,7 +29,6 @@ static bh_component myself; // Myself
 //Function pointers to our child.
 static bh_component_iface *child;
 
-
 //
 // Component interface init/execute/shutdown
 //

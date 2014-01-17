@@ -54,12 +54,34 @@ void compute()
 {
     std::cout << "Hello World." << std::endl;
 
+    /*
+    // Complex numbers
     complex_ones<double>();
     complex_ones<float>();
 
     complex_constant<double>();
     complex_constant<float>();
+    */
 
+    /*
+    // Accumulate
+    multi_array<float> a;
+    a = ones<float>(20);
+    a = accumulate(a, SUM, 0);
+
+    std::cout << "a= 1,2,3, ... , 20:" << a << std::endl;
+    std::cout << "prefix-sum(a): "  << accumulate(a, SUM, 0) << std::endl;
+    std::cout << "prefix-prod(a): " << accumulate(a, PRODUCT, 0) << std::endl;
+    */
+    multi_array<float> a;
+    multi_array<float> b;
+
+    // Transposition
+    a = ones<float>(3,2,5);
+    b = transpose(a);
+    //b = sin(a);
+    //b = a;
+    std::cout << (b+a) << std::endl;
 }
 
 int main()

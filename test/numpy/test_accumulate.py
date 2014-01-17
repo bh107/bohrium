@@ -2,13 +2,13 @@ import numpy as np
 from numpytest import numpytest,gen_views,TYPES
 
 
-class test_reduce(numpytest):
+class test_accumulate(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
     
     def init(self):
-        for v in gen_views(5,10,6):
+        for v in gen_views(4,10,6,min_ndim=2):
             a = {}
             self.axis = 0
             exec v
@@ -18,13 +18,18 @@ class test_reduce(numpytest):
                 self.axis = axis
                 yield (a,v)
                 
-    def test_reduce(self,a):
-        cmd = "res = np.add.reduce(a[0],axis=%d)"%self.axis
+    def test_cumsum(self,a):
+        cmd = "res = np.cumsum(a[0],axis=%d)"%self.axis
+        exec cmd
+        return (res,cmd)
+    
+    def test_cumprod(self,a):
+        cmd = "res = np.cumprod(a[0],axis=%d)"%self.axis
         exec cmd
         return (res,cmd)
 
 
-class test_reduce1D(numpytest):
+class test_accumulate1D(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
@@ -40,8 +45,13 @@ class test_reduce1D(numpytest):
                 exec v2
                 yield (a,v2)
                 
-    def test_reduce(self,a):
-        cmd = "np.add.reduce(a[0], out=a[2])"
+    def test_cumsum(self,a):
+        cmd = "np.cumsum(a[0], out=a[2])"
+        exec cmd
+        return (a[1],cmd)
+
+    def test_cumprod(self,a):
+        cmd = "np.cumprod(a[0], out=a[2])"
         exec cmd
         return (a[1],cmd)
 

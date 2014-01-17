@@ -30,4 +30,5 @@ clean:
 
 install: all
 		cp $(LIB) $(INSTALLDIR)
-		cp -r ocl_source $(INSTALLDIR)/lib/
+		cp -r ocl_source $(INSTALLDIR)/gpu/
+		cp -r include $(INSTALLDIR)/gpu/

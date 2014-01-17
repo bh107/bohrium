@@ -10,6 +10,8 @@ void specializer_init()
     ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
 
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("accumulate.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("accumulate.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
     
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
@@ -53,7 +55,6 @@ bool symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
             sij.ndims = sij.instr->operand[1].ndim;     // Dimensions
-
             break;
 
         default:                                        // Built-in
@@ -131,6 +132,17 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
         case BH_RANGE:
             sprintf(template_fn, "range.tpl");
+            cres = true;
+            break;
+
+        case BH_ADD_ACCUMULATE:
+        case BH_MULTIPLY_ACCUMULATE:
+            dict.SetValue("OPERATOR", bhopcode_to_cexpr(sij.instr->opcode, type));
+            dict.SetValue("SYMBOL",   sij.symbol);
+            dict.SetValue("TYPE_A0",  enum_to_ctypestr(sij.instr->operand[0].base->type));
+            dict.SetValue("TYPE_A1",  enum_to_ctypestr(sij.instr->operand[1].base->type));
+            sprintf(template_fn, "accumulate.1d.tpl");
+
             cres = true;
             break;
 

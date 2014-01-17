@@ -80,6 +80,11 @@ enum reducible {
     BITWISE_XOR  = BH_BITWISE_XOR
 };
 
+enum accumulable {
+    SUM     = BH_ADD_ACCUMULATE,
+    PRODUCT = BH_MULTIPLY_ACCUMULATE
+};
+
 //
 // Slicing
 //
@@ -369,6 +374,9 @@ multi_array<bool>& all(multi_array<T>& op);
 template <typename T>       // Mixed...
 multi_array<size_t>& count(multi_array<T>& op);
 
+template <typename T>       // Accumulate
+multi_array<T>& accumulate(multi_array<T>& op, accumulable opc, size_t axis);
+
 template <typename T>       // Turn the result of full reduction into a scalar
 T scalar(multi_array<T>& op);
 
@@ -398,6 +406,7 @@ void pprint(multi_array<T>& op);
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
 #include "reduction.hpp"    // Communication with Bohrium runtime
+#include "accumulate.hpp"   // Communication with Bohrium runtime
 #include "generator.hpp"    // Communication with Bohrium runtime
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.

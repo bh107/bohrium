@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "Reduce.hpp"
+#include "Accumulate.hpp"
 #include "HybridTaus.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
@@ -75,11 +76,15 @@ bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
             case BH_BITWISE_XOR_REDUCE:
                 res = reduce(inst);
                 break;
+            case BH_ADD_ACCUMULATE:
+            case BH_MULTIPLY_ACCUMULATE:
+                res = accumulate(inst);
+                break;
             case BH_RANDOM:
                 res = random(inst);
                 break;
             default:
-                if (inst->opcode < BH_MAX_OPCODE_ID)
+                if (inst->opcode <= BH_MAX_OPCODE_ID)
                     res = ufunc(inst);
                 else
                     res = extmethod(inst);
@@ -231,6 +236,38 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
             executeBatch();
         }
         return Reduce::bh_reduce(inst, &userFuncArg);
+    }
+    catch (bh_error e)
+    {
+        return e;
+    }
+}
+
+bh_error InstructionScheduler::accumulate(bh_instruction* inst)
+{
+    if(inst->operand[0].ndim < 2)
+    {
+        // TODO these two syncs are a hack. Are we sure this is correct?????
+        sync(inst->operand[1].base);
+        sync(inst->operand[0].base);
+        
+        bh_ir bhir;
+        bh_error err = bh_ir_create(&bhir, 1, inst);
+        if(err != BH_SUCCESS)
+            return err;
+        return resourceManager->childExecute(&bhir);
+    }
+    try {
+        UserFuncArg userFuncArg;
+        userFuncArg.resourceManager = resourceManager;
+        userFuncArg.operands = getKernelParameters(inst);
+
+        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
+                      batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
+        {
+            executeBatch();
+        }
+        return Accumulate::bh_accumulate(inst, &userFuncArg);
     }
     catch (bh_error e)
     {

@@ -41,7 +41,10 @@ def _array_equal(A,B,maxerror=0.0):
     if type(A) != type(B):
         return False 
     if np.isscalar(A):
-        return A == B
+        if A == B:
+            return True
+        else:
+            return (abs(A - B)/(np.abs(A) + np.abs(B))/2) < maxerror
 
     bohriumbridge.unhandle_array(A)
     bohriumbridge.unhandle_array(B)
@@ -49,8 +52,9 @@ def _array_equal(A,B,maxerror=0.0):
     B = B.flatten()
     if len(A) != len(B):
         return False
-
-    C = np.abs(A - B)
+    D = (np.abs(A) + np.abs(B))/2
+    D += np.equal(D,np.zeros_like(D))
+    C = np.abs(A - B) / D
     R = C > maxerror
     if R.any():
         return False
@@ -133,7 +137,7 @@ class numpytest:
         self.random.seed(42)
     def init(self):
         pass
-    def array(self,dims,dtype,floating=False):
+    def array(self,dims,dtype,high=False):
         try: 
             total = reduce(mul,dims)
         except TypeError:
@@ -141,8 +145,18 @@ class numpytest:
             dims = (dims,)
         if dtype is np.bool:
             res = np.random.random_integers(0,1,dims)
-        elif floating: 
+        elif dtype in [np.int8, np.uint8]: 
+            res = np.random.random_integers(1,3,dims)
+        elif dtype is np.int16: 
+            res = np.random.random_integers(1,5,dims)
+        elif dtype is np.uint16: 
+            res = np.random.random_integers(1,6,dims)
+        elif dtype in [np.float32, np.float64]: 
             res = np.random.random(size=dims)
+            if high:
+                res = (res+1)*10
+        elif dtype in [np.complex64, np.complex128]: 
+            res = np.random.random(size=dims)+np.random.random(size=dims)*1j
         else:
             res = np.random.random_integers(1,8,size=dims)
         if len(res.shape) == 0:#Make sure scalars is arrays.
@@ -206,14 +220,13 @@ if __name__ == "__main__":
                             bohriumbridge.flush() 
                         except RuntimeError as error_msg:
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
-                            print _C.FAIL + str(error_msg) + _C.ENDC 
+                            print _C.FAIL + str(error_msg) + _C.ENDC
                         else:
                             if not _array_equal(res1, res2, cls_inst.config['maxerror']):
                                 print _C.FAIL + "[Error] %s"%(name) + _C.ENDC 
                                 print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC 
                                 print _C.OKGREEN + str(res1) + _C.ENDC 
-                                print _C.FAIL + str(res2) + _C.ENDC 
-                                print 
-
+                                print _C.FAIL + str(res2) + _C.ENDC
+                                
     print "*"*24, "Finish", "*"*24
 

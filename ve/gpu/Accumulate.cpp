@@ -23,12 +23,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
-#include "Reduce.hpp"
+#include "Accumulate.hpp"
 
-bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
+bh_error Accumulate::bh_accumulate(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
     bh_view* out = &inst->operand[0];
-    std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
+    std::vector<bh_index> shape;
+    for (int i = 0; i < out->ndim; ++i)
+    {
+        if(i == inst->constant.value.int64)
+            continue;
+        shape.push_back(out->shape[i]);
+    }
     Kernel kernel = getKernel(inst, userFuncArg, shape);
     Kernel::Parameters kernelParameters;
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
@@ -40,7 +46,7 @@ bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
     return BH_SUCCESS;
 }
 
-Kernel Reduce::getKernel(bh_instruction* inst, 
+Kernel Accumulate::getKernel(bh_instruction* inst, 
                          UserFuncArg* userFuncArg,
                          std::vector<bh_index> shape)
 {
@@ -60,7 +66,7 @@ Kernel Reduce::getKernel(bh_instruction* inst,
     if (kit == kernelMap.end())
     {
         std::stringstream source, kname;
-        kname << "reduce" << std::hex << codeHash;
+        kname << "accumulate" << std::hex << codeHash;
         if (userFuncArg->operands[0]->type() == OCL_FLOAT16 || 
             userFuncArg->operands[1]->type() == OCL_FLOAT16)
         {
@@ -72,7 +78,7 @@ Kernel Reduce::getKernel(bh_instruction* inst,
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, inst->operand[0].ndim, source.str(), kname.str());
+        Kernel kernel(userFuncArg->resourceManager, inst->operand[0].ndim-1, source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -81,47 +87,22 @@ Kernel Reduce::getKernel(bh_instruction* inst,
 }
 
 
-std::string Reduce::generateCode(bh_instruction* inst, 
-                                 OCLtype outType, OCLtype inType,
-                                 std::vector<bh_index> shape)
+std::string Accumulate::generateCode(bh_instruction* inst, 
+                                     OCLtype outType, OCLtype inType,
+                                     std::vector<bh_index> shape)
 {
     bh_opcode opcode = 0;
     switch (inst->opcode)
     {
-    case BH_ADD_REDUCE:
+    case BH_ADD_ACCUMULATE:
         opcode = BH_ADD;
         break;
-    case BH_MULTIPLY_REDUCE:
+    case BH_MULTIPLY_ACCUMULATE:
         opcode = BH_MULTIPLY;
-        break;
-    case BH_MINIMUM_REDUCE:
-        opcode = BH_MINIMUM;
-        break;
-    case BH_MAXIMUM_REDUCE:
-        opcode = BH_MAXIMUM;
-        break;
-    case BH_LOGICAL_AND_REDUCE:
-        opcode = BH_LOGICAL_AND;
-        break;
-    case BH_BITWISE_AND_REDUCE:
-        opcode = BH_BITWISE_AND;
-        break;
-    case BH_LOGICAL_OR_REDUCE:
-        opcode = BH_LOGICAL_OR;
-        break;
-    case BH_BITWISE_OR_REDUCE:
-        opcode = BH_BITWISE_OR;
-        break;
-    case BH_LOGICAL_XOR_REDUCE:
-        opcode = BH_LOGICAL_XOR;
-        break;
-    case BH_BITWISE_XOR_REDUCE:
-        opcode = BH_BITWISE_XOR;
         break;
     default:
         assert(false);
     }
-    bh_view* out = &inst->operand[0];
     bh_view* in = &inst->operand[1];
     std::stringstream source;
     std::vector<std::string> operands(3);
@@ -147,11 +128,10 @@ std::string Reduce::generateCode(bh_instruction* inst,
     generateOffsetSource(inn, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
+    source << "\tout[element] = accu;\n";
     source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[axis] << ";\n\t";
     generateInstructionSource(opcode, std::make_pair(outType,inType), operands, source);
-    source << "\t}\n\tout[";
-    generateOffsetSource(*out, source);
-    source << "] = accu;\n}\n";
+    source << "\t\tout[element] = accu;\n\t}\n}\n";
     return source.str();
 }

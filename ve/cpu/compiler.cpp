@@ -162,7 +162,6 @@ public:
 
         res = true;     // Load a single function from shared library
         //prev = nloaded;
-
         for(std::vector<std::string>::iterator lib_fn=singles.begin();
             (lib_fn != singles.end()) && res;
             ++lib_fn) {
