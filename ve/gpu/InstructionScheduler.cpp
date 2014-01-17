@@ -36,10 +36,6 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
 
 bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
 {
-#ifdef DEBUG
-    std::cout << "[VE GPU] InstructionScheduler: recieved batch with " <<
-        bhir->instructions->count << " instructions." << std::endl;
-#endif
     for (std::vector<bh_instruction*>::iterator it = inst_list.begin(); it != inst_list.end(); ++it)
     {
         bh_instruction* inst = *it;
