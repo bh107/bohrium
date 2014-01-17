@@ -117,6 +117,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
         throw BatchException(0);
 
     std::vector<int> opids(operands.size(),-1);
+    std::vector<bool> load_store(operands.size(),true); //do we need to load/store variables
     for (size_t op = 0; op < operands.size(); ++op)
     {
         BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
@@ -128,22 +129,26 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             {
                 if (sameView(views[oit->second], inst->operand[op]))
                 {
-                    // Same view so we use the same bh_array* for it
+                    // Same view so we use the ID for it
                     opids[op] = oit->second;
+                    if (op == 0) // also output
+                        load_store[op] = false;
                 } 
                 else if (!disjointView(views[oit->second], inst->operand[op])) 
                 { 
                     throw BatchException(0);
                 }
             }
-            // If the output operans is allready used as input it has to be alligned or disjoint
+            // If the output operand is allready used as input it has to be alligned or disjoint
             ArrayRange irange = input.equal_range(ba);
             for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
                 if (sameView(views[iit->second], inst->operand[op]))
                 {
-                    // Same view so we use the same bh_array* for it
+                    // Same view so we use the same ID for it
                     opids[op] =  iit->second;
+                    if (op > 0) // also input
+                        load_store[op] = false;
                 } 
                 else if (op == 0 && !disjointView(views[iit->second], inst->operand[0]))
                 {
@@ -158,26 +163,36 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     // Register unknow parameters
     for (size_t op = 0; op < operands.size(); ++op)
     {
-        if (opids[op]<0)
+        std::cout << "opids[" << op << "]: " << opids[op] << ", load_store[" << op << "]: " << load_store[op] << std::endl;
+        if (opids[op]<0 || load_store[op])
         {
             KernelParameter* kp = operands[op];
             BaseArray* ba = dynamic_cast<BaseArray*>(kp);
             if (ba)
             {
-                if (op == 2 && inst->operand[1].base == inst->operand[2].base && 
-                    sameView(inst->operand[1], inst->operand[2]))
-                {    //catch when same input is used twice and don't allready have en id
-                    opids[2] = opids[1];
-                    continue;
-                } else {
+                int i = op-1;
+                for (; i >= 0; --i)
+                {   //catch when same view is used twice within oparation and doesn't allready have an id
+                    if (inst->operand[op].base == inst->operand[i].base && 
+                        sameView(inst->operand[op], inst->operand[i]))
+                    {
+                        opids[op] = opids[i];
+                        if (op > 0 && i > 0) // both input
+                            load_store[op] = false;
+                        break;
+                    }
+                }
+                if (opids[op] < 0)
+                {   // Unkwown view
                     opids[op] = views.size();
                     views.push_back(inst->operand[op]);
                 }
-                if (op == 0)
+                if (op == 0 && load_store[op])
                 {
+                    std::cout << "output.insert[" << opids[op] << "]" << std::endl;
                     output.insert(std::make_pair(ba, opids[op]));
                 }
-                else
+                else if (load_store[op])
                 {
                     input.insert(std::make_pair(ba, opids[op]));
                 }
@@ -215,6 +230,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 break;
             }
         }
+        std::cout << "opids[" << op << "]: " << opids[op] << ", load_store[" << op << "]: " << load_store[op] << std::endl;
     }
     instructions.push_back(make_pair(inst, opids));
 
