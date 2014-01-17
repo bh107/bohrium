@@ -131,8 +131,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 {
                     // Same view so we use the ID for it
                     opids[op] = oit->second;
-                    if (op == 0) // also output
-                        load_store[op] = false;
+                    load_store[op] = false; // Allready exists
                 } 
                 else if (!disjointView(views[oit->second], inst->operand[op])) 
                 { 
@@ -147,7 +146,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 {
                     // Same view so we use the same ID for it
                     opids[op] =  iit->second;
-                    if (op > 0) // also input
+                    if (op > 0) // also input: no need to load again
                         load_store[op] = false;
                 } 
                 else if (op == 0 && !disjointView(views[iit->second], inst->operand[0]))
@@ -172,7 +171,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                     sameView(inst->operand[op], inst->operand[i]))
                 {
                     opids[op] = opids[i];
-                    if (op > 0 && i > 0) // both input
+                    if (op > 0 && i > 0) // both input: no need to load twice
                         load_store[op] = false;
                     break;
                 }
