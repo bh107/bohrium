@@ -163,7 +163,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     // Register unknow parameters
     for (size_t op = 0; op < operands.size(); ++op)
     {
-        std::cout << "opids[" << op << "]: " << opids[op] << ", load_store[" << op << "]: " << load_store[op] << std::endl;
         if (opids[op]<0 || load_store[op])
         {
             KernelParameter* kp = operands[op];
@@ -189,7 +188,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 }
                 if (op == 0 && load_store[op])
                 {
-                    std::cout << "output.insert[" << opids[op] << "]" << std::endl;
                     output.insert(std::make_pair(ba, opids[op]));
                 }
                 else if (load_store[op])
@@ -230,7 +228,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 break;
             }
         }
-        std::cout << "opids[" << op << "]: " << opids[op] << ", load_store[" << op << "]: " << load_store[op] << std::endl;
     }
     instructions.push_back(make_pair(inst, opids));
 
