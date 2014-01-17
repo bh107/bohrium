@@ -228,7 +228,14 @@ const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
         case BH_DIVIDE:
             return "*a0_current = *a1_current / *a2_current";
         case BH_POWER:
-            return "*a0_current = pow( *a1_current, *a2_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = cpowf( *a1_current, *a2_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = cpow( *a1_current, *a2_current )";
+                default:
+                    return "*a0_current = pow( *a1_current, *a2_current )";
+            }
         case BH_GREATER:
             return "*a0_current = *a1_current > *a2_current";
         case BH_GREATER_EQUAL:
@@ -274,45 +281,164 @@ const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
         case BH_INVERT:
             return "*a0_current = ~*a1_current";
         case BH_COS:
-            return "*a0_current = cos( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = ccosf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = ccos( *a1_current )";
+                default:
+                    return "*a0_current = cos( *a1_current )";
+            }
         case BH_SIN:
-            return "*a0_current = sin( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = csinf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = csin( *a1_current )";
+                default:
+                    return "*a0_current = sin( *a1_current )";
+            }
         case BH_TAN:
-            return "*a0_current = tan( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = ctanf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = ctan( *a1_current )";
+                default:
+                    return "*a0_current = tan( *a1_current )";
+            }
         case BH_COSH:
-            return "*a0_current = cosh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = ccoshf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = ccosh( *a1_current )";
+                default:
+                    return "*a0_current = cosh( *a1_current )";
+            }
         case BH_SINH:
-            return "*a0_current = sinh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = csinhf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = csinh( *a1_current )";
+                default:
+                    return "*a0_current = sinh( *a1_current )";
+            }
         case BH_TANH:
-            return "*a0_current = tanh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = ctanhf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = ctanh( *a1_current )";
+                default:
+                    return "*a0_current = tanh( *a1_current )";
+            }
         case BH_ARCSIN:
-            return "*a0_current = asin( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = casinf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = casin( *a1_current )";
+                default:
+                    return "*a0_current = asin( *a1_current )";
+            }
         case BH_ARCCOS:
-            return "*a0_current = acos( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = cacosf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = cacos( *a1_current )";
+                default:
+                    return "*a0_current = acos( *a1_current )";
+            }
         case BH_ARCTAN:
-            return "*a0_current = atan( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = catanf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = catan( *a1_current )";
+                default:
+                    return "*a0_current = atan( *a1_current )";
+            }
         case BH_ARCSINH:
-            return "*a0_current = asinh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = casinhf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = casinh( *a1_current )";
+                default:
+                    return "*a0_current = asinh( *a1_current )";
+            }
         case BH_ARCCOSH:
-            return "*a0_current = acosh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = cacoshf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = cacosh( *a1_current )";
+                default:
+                    return "*a0_current = acosh( *a1_current )";
+            }
         case BH_ARCTANH:
-            return "*a0_current = atanh( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = catanhf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = catanh( *a1_current )";
+                default:
+                    return "*a0_current = atanh( *a1_current )";
+            }
         case BH_EXP:
-            return "*a0_current = exp( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = cexpf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = cexp( *a1_current )";
+                default:
+                    return "*a0_current = exp( *a1_current )";
+            }
         case BH_EXP2:
-            return "*a0_current = pow( 2, *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = cpowf( 2, *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = cpow( 2, *a1_current )";
+                default:
+                    return "*a0_current = pow( 2, *a1_current )";
+            }
         case BH_EXPM1:
             return "*a0_current = expm1( *a1_current )";
         case BH_LOG:
-            return "*a0_current = log( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = clogf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = clog( *a1_current )";
+                default:
+                    return "*a0_current = log( *a1_current )";
+            }
         case BH_LOG2:
             return "*a0_current = log2( *a1_current )";
         case BH_LOG10:
-            return "*a0_current = log10( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = clogf( *a1_current )/log(10)";
+                case BH_COMPLEX128:
+                    return "*a0_current = clog( *a1_current )/log(10)";
+                default:
+                    return "*a0_current = log( *a1_current )/log(10)";
+            }
         case BH_LOG1P:
             return "*a0_current = log1p( *a1_current )";
         case BH_SQRT:
-            return "*a0_current = sqrt( *a1_current )";
+            switch(type) {
+                case BH_COMPLEX64:
+                    return "*a0_current = csqrtf( *a1_current )";
+                case BH_COMPLEX128:
+                    return "*a0_current = csqrt( *a1_current )";
+                default:
+                    return "*a0_current = sqrt( *a1_current )";
+            }
         case BH_CEIL:
             return "*a0_current = ceil( *a1_current )";
         case BH_TRUNC:
