@@ -207,3 +207,55 @@ void bh_adjlist_fill_bhir(const bh_adjlist &adjlist, bh_ir *bhir)
             throw std::bad_alloc();
     }
 }
+
+/* Pretty Print the adjlist
+ *
+ * @adjmat  The adjacency list in question
+ */
+void bh_adjlist_pprint(const bh_adjlist &adjlist)
+{
+    printf("Adjacency list - nodes (%d){\n", (int) adjlist.node.size());
+    printf("instr:\tDAG:\tdeps:\n");
+    int i=0;
+    for(std::vector<bh_adjlist_node>::const_iterator it=adjlist.node.begin();
+        it!=adjlist.node.end(); it++)
+    {
+        printf("%2d,\t%2ld,\t[", i, it->sub_dag);
+        for(std::set<bh_intp>::iterator dep=it->adj.begin(); dep!=it->adj.end(); dep++)
+        {
+            if(dep == it->adj.begin())//First iteration
+                printf("%ld", *dep);
+            else
+                printf(",%ld", *dep);
+        }
+        printf("]\n");
+        i++;
+    }
+    printf("}\n");
+    printf("Adjacency list - sub-DAGs (%d){\n", (int) adjlist.sub_dag.size());
+    printf("DAG:\tdeps:\t\tnodes:\n");
+    i=0;
+    for(std::vector<bh_adjlist_sub_dag>::const_iterator it=adjlist.sub_dag.begin();
+        it!=adjlist.sub_dag.end(); it++)
+    {
+        printf("%2d,\t[", i);
+        for(std::set<bh_intp>::iterator dep=it->adj.begin(); dep!=it->adj.end(); dep++)
+        {
+            if(dep == it->adj.begin())//First iteration
+                printf("%ld", *dep);
+            else
+                printf(",%ld", *dep);
+        }
+        printf("],\t\t[");
+        for(std::set<bh_intp>::iterator node=it->node.begin(); node!=it->node.end(); node++)
+        {
+            if(node == it->node.begin())//First iteration
+                printf("%ld", *node);
+            else
+                printf(",%ld", *node);
+        }
+        printf("]\n");
+        i++;
+    }
+    printf("}\n");
+}
