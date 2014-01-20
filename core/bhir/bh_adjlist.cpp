@@ -170,6 +170,8 @@ void bh_adjlist_fill_bhir(const bh_adjlist &adjlist, bh_ir *bhir)
             }
             node_count++;
         }
+        if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
+            throw std::bad_alloc();
     }
 
     //Lets build the root DAG
