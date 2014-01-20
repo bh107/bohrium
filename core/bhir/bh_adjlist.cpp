@@ -125,20 +125,51 @@ void bh_adjlist_fill_bhir(const bh_adjlist &adjlist, bh_ir *bhir)
     bhir->ndag = ndags;
 
     //Lets build all sub-DAGs
-    for(bh_intp i=1; i<ndags; i++)
+    for(bh_intp i=0; i<(bh_intp)adjlist.sub_dag.size(); i++)
     {
-        bh_dag *dag = &bhir->dag_list[i];
-        dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), 1, 1);
+        const std::set<bh_intp> &instr_idx(adjlist.sub_dag[i].node);//Instructions in the i'th sub-DAG
+        bh_dag *dag = &bhir->dag_list[i+1];
+        dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), instr_idx.size(), instr_idx.size());
         if(dag->node_map == NULL)
             throw std::bad_alloc();
-        dag->node_map[0] = i-1;//The instruction list is zero-indexed
-        dag->nnode = 1;
+        dag->nnode = instr_idx.size();
         dag->tag = 0;
-        dag->adjmat = bh_adjmat_create(1);//For now we have one sub-DAG per instruction
+        dag->adjmat = bh_adjmat_create(instr_idx.size());
         if(dag->adjmat == NULL)
             throw std::bad_alloc();
-        if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
-            throw std::bad_alloc();
+
+        //Fill the adjmat sequentially starting at row zero
+        bh_intp node_count = 0;
+        std::map<bh_intp,bh_intp> instr2node;
+        for(std::set<bh_intp>::iterator it=instr_idx.begin(); it!=instr_idx.end(); it++)
+        {
+            const std::set<bh_intp> &deps(adjlist.node[*it].adj);//The instruction's dependencies
+            //Note that the order of 'it' is ascending thus the topological order is preserved.
+            dag->node_map[node_count] = *it;
+            //Mapping from the original instruction to local node index within the sub-DAG.
+            //(i.e. the inverse of the node_map)
+            instr2node[*it] = node_count;
+
+            if(deps.size() > 0)
+            {
+                //Convert instruction indices to indices in the local sub-DAG
+                std::vector<bh_intp> sorted_vector;
+                for(std::set<bh_intp>::iterator it = deps.begin(); it != deps.end(); it++)
+                {
+                    std::map<bh_intp,bh_intp>::iterator n = instr2node.find(*it);
+                    //If 'it' is not in 'instr2node' it must be a dependency to another sub-DAG,
+                    //which we will handle later.
+                    if(n != instr2node.end())
+                        sorted_vector.push_back(n->second);
+                }
+                bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, node_count,
+                                                      sorted_vector.size(),
+                                                      &sorted_vector[0]);
+                if(e != BH_SUCCESS)
+                    throw std::bad_alloc();
+            }
+            node_count++;
+        }
     }
 
     //Lets build the root DAG
