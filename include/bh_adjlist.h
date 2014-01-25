@@ -87,6 +87,12 @@ DLLEXPORT void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
  */
 DLLEXPORT void bh_adjlist_fill_bhir(const bh_adjlist &adjlist, bh_ir *bhir);
 
+/* Pretty Print the adjlist
+ *
+ * @adjmat  The adjacency list in question 
+*/
+DLLEXPORT void bh_adjlist_pprint(const bh_adjlist &adjlist);
+
 #endif
 #endif
 
