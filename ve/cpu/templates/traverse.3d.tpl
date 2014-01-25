@@ -1,4 +1,3 @@
-void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);

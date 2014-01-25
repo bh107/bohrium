@@ -1,13 +1,11 @@
-/**
-
-    int64_t *shape,
-    int64_t ndim,
-    [operand] -> [
-
-
-*/
-void {{SYMBOL}}(int tool, ...)
 {
+    /**
+        The argment unpacking must unpack:
+
+        int64_t *shape,
+        int64_t ndim,
+        [operand]{2-3} -> [array|constant]
+    */
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
@@ -61,4 +59,3 @@ void {{SYMBOL}}(int tool, ...)
         }
     }
 }
-

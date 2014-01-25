@@ -1,24 +1,24 @@
-/*
-int reduction(
-    int tool,
-
-    T       *a0_first,
-    int64_t  a0_start,
-    int64_t *a0_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    T       *a1_first,
-    int64_t  a1_start,
-    int64_t *a1_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    T       *a2_first
-)
-*/
-int {{SYMBOL}}(int tool, ...)
 {
+    /*
+    int reduction(
+        int tool,
+
+        T       *a0_first,
+        int64_t  a0_start,
+        int64_t *a0_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        T       *a1_first,
+        int64_t  a1_start,
+        int64_t *a1_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        T       *a2_first
+    )
+    */
+
     va_list list;                                   // **UNPACK PARAMETERS**
     va_start(list, tool);
 
@@ -50,6 +50,5 @@ int {{SYMBOL}}(int tool, ...)
     }
     *a0_current = rvar;
     
-    return 1;
 }
 

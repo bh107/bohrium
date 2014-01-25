@@ -1,26 +1,26 @@
-/*
-Handles the currently misnamed BH_*_ACCUMULATE opcodes.
-
-int scan(
-    int tool,
-
-    T       *a0_first,
-    int64_t  a0_start,
-    int64_t *a0_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    T       *a1_first,
-    int64_t  a1_start,
-    int64_t *a1_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    int64_t axis
-)
-*/
-int {{SYMBOL}}(int tool, ...)
 {
+    /*
+    Handles the currently misnamed BH_*_ACCUMULATE opcodes.
+
+    int scan(
+        int tool,
+
+        T       *a0_first,
+        int64_t  a0_start,
+        int64_t *a0_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        T       *a1_first,
+        int64_t  a1_start,
+        int64_t *a1_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        int64_t axis
+    )
+    */
+
     va_list list;                                   // **Unpack arguments**
     va_start(list, tool);
 
@@ -59,7 +59,6 @@ int {{SYMBOL}}(int tool, ...)
             {{OPERATOR}};
         }
         *a0_current = rvar;
-        return 1;
     } else {                                    // ** ND General Case **
         int64_t j,                              // Traversal variables
                 last_dim,
@@ -140,7 +139,6 @@ int {{SYMBOL}}(int tool, ...)
                 }
             }
         }
-        return 1;
     }
 }
 

@@ -30,3 +30,4 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
+void {{SYMBOL}}(int tool, ...)

@@ -7,7 +7,7 @@ void specializer_init()
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
     ctemplate::LoadTemplate("license.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("skeleton.tpl", ctemplate::STRIP_BLANK_LINES);
 
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("scan.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
@@ -95,11 +95,12 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
     bool cres = false;
 
+    ctemplate::TemplateDictionary skeleton_dict("SKELETON");
     ctemplate::TemplateDictionary dict("codegen");
 
     bh_type type = sij.instr->operand[0].base->type;// Magic parameter to cexpr-function
 
-    dict.SetValue("SYMBOL",     sij.symbol);
+    skeleton_dict.SetValue("SYMBOL", sij.symbol);
     dict.ShowSection("LOOP_BODY");  // We only have a single expression so we just show it.
     dict.SetValue("OPERATOR",   bhopcode_to_cexpr(sij.instr->opcode, type));
 
@@ -264,11 +265,10 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
     }
 
     string sourcecode  = "";
-    ctemplate::TemplateDictionary include_dict("INCLUDE");
     ctemplate::ExpandTemplate(
-        "include.tpl", 
+        "skeleton.tpl", 
         ctemplate::STRIP_BLANK_LINES,
-        &include_dict,
+        &skeleton_dict,
         &sourcecode
     );
 

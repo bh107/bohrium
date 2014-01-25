@@ -1,27 +1,26 @@
+{
 #define OUTER 1
 #define INNER 0
+    /*
+    int reduction(
+        int tool,
 
-/*
-int reduction(
-    int tool,
+        T       *a0_first,
+        int64_t  a0_start,
+        int64_t *a0_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
 
-    T       *a0_first,
-    int64_t  a0_start,
-    int64_t *a0_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
+        T       *a1_first,
+        int64_t  a1_start,
+        int64_t *a1_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
 
-    T       *a1_first,
-    int64_t  a1_start,
-    int64_t *a1_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
+        T       *a2_first
+    )
+    */
 
-    T       *a2_first
-)
-*/
-int {{SYMBOL}}(int tool, ...)
-{
     va_list list;                                   // **UNPACK PARAMETERS**
     va_start(list, tool);
 
@@ -72,7 +71,5 @@ int {{SYMBOL}}(int tool, ...)
             *(a0_first + a0_start + i*a0_stride[OUTER] + j*a0_stride[INNER]) = rvar;
         }
     }
-
-    return 1;
 }
 
