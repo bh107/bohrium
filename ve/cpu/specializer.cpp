@@ -66,15 +66,15 @@ bool symbolize(bh_instruction *instr, bh_sij_t &sij, bh_intp optimized) {
 
     // String representation
     if (optimized && (sij.ndims <= 3)) {        // Optimized                       
-        sprintf(symbol_c, "%s_%s_%s_%lldD",
-            bh_opcode_text(sij.instr->opcode),
+        sprintf(symbol_c, "BH_%s_%s_%s_%lldD",
+            bh_opcode_to_cstr_short(sij.instr->opcode),
             bh_typesig_to_shorthand(sij.tsig),
             bh_layoutmask_to_shorthand(sij.lmask),
             (long long)sij.ndims
         );
     } else {                                    // General-case
-        sprintf(symbol_c, "%s_%s_%s_ND",
-            bh_opcode_text(sij.instr->opcode),
+        sprintf(symbol_c, "BH_%s_%s_%s_ND",
+            bh_opcode_to_cstr_short(sij.instr->opcode),
             bh_typesig_to_shorthand(sij.tsig),
             bh_layoutmask_to_shorthand(sij.lmask)
         );

@@ -587,4 +587,85 @@ const char* enum_to_ctypestr(bh_type type)
     }
 }
 
+const char* bh_opcode_to_cstr_short(bh_opcode const opcode)
+{
+    switch(opcode) {
+        case BH_ADD: return "ADD";
+        case BH_SUBTRACT: return "SUBTRACT";
+        case BH_MULTIPLY: return "MULTIPLY";
+        case BH_DIVIDE: return "DIVIDE";
+        case BH_POWER: return "POWER";
+        case BH_ABSOLUTE: return "ABSOLUTE";
+        case BH_GREATER: return "GREATER";
+        case BH_GREATER_EQUAL: return "GREATER_EQUAL";
+        case BH_LESS: return "LESS";
+        case BH_LESS_EQUAL: return "LESS_EQUAL";
+        case BH_EQUAL: return "EQUAL";
+        case BH_NOT_EQUAL: return "NOT_EQUAL";
+        case BH_LOGICAL_AND: return "LOGICAL_AND";
+        case BH_LOGICAL_OR: return "LOGICAL_OR";
+        case BH_LOGICAL_XOR: return "LOGICAL_XOR";
+        case BH_LOGICAL_NOT: return "LOGICAL_NOT";
+        case BH_MAXIMUM: return "MAXIMUM";
+        case BH_MINIMUM: return "MINIMUM";
+        case BH_BITWISE_AND: return "BITWISE_AND";
+        case BH_BITWISE_OR: return "BITWISE_OR";
+        case BH_BITWISE_XOR: return "BITWISE_XOR";
+        case BH_INVERT: return "INVERT";
+        case BH_LEFT_SHIFT: return "LEFT_SHIFT";
+        case BH_RIGHT_SHIFT: return "RIGHT_SHIFT";
+        case BH_COS: return "COS";
+        case BH_SIN: return "SIN";
+        case BH_TAN: return "TAN";
+        case BH_COSH: return "COSH";
+        case BH_SINH: return "SINH";
+        case BH_TANH: return "TANH";
+        case BH_ARCSIN: return "ARCSIN";
+        case BH_ARCCOS: return "ARCCOS";
+        case BH_ARCTAN: return "ARCTAN";
+        case BH_ARCSINH: return "ARCSINH";
+        case BH_ARCCOSH: return "ARCCOSH";
+        case BH_ARCTANH: return "ARCTANH";
+        case BH_ARCTAN2: return "ARCTAN2";
+        case BH_EXP: return "EXP";
+        case BH_EXP2: return "EXP2";
+        case BH_EXPM1: return "EXPM1";
+        case BH_LOG: return "LOG";
+        case BH_LOG2: return "LOG2";
+        case BH_LOG10: return "LOG10";
+        case BH_LOG1P: return "LOG1P";
+        case BH_SQRT: return "SQRT";
+        case BH_CEIL: return "CEIL";
+        case BH_TRUNC: return "TRUNC";
+        case BH_FLOOR: return "FLOOR";
+        case BH_RINT: return "RINT";
+        case BH_MOD: return "MOD";
+        case BH_ISNAN: return "ISNAN";
+        case BH_ISINF: return "ISINF";
+        case BH_IDENTITY: return "IDENTITY";
+        case BH_DISCARD: return "DISCARD";
+        case BH_FREE: return "FREE";
+        case BH_SYNC: return "SYNC";
+        case BH_NONE: return "NONE";
+        case BH_ADD_REDUCE: return "ADD_REDUCE";
+        case BH_MULTIPLY_REDUCE: return "MULTIPLY_REDUCE";
+        case BH_MINIMUM_REDUCE: return "MINIMUM_REDUCE";
+        case BH_MAXIMUM_REDUCE: return "MAXIMUM_REDUCE";
+        case BH_LOGICAL_AND_REDUCE: return "LOGICAL_AND_REDUCE";
+        case BH_BITWISE_AND_REDUCE: return "BITWISE_AND_REDUCE";
+        case BH_LOGICAL_OR_REDUCE: return "LOGICAL_OR_REDUCE";
+        case BH_BITWISE_OR_REDUCE: return "BITWISE_OR_REDUCE";
+        case BH_LOGICAL_XOR_REDUCE: return "LOGICAL_XOR_REDUCE";
+        case BH_BITWISE_XOR_REDUCE: return "BITWISE_XOR_REDUCE";
+        case BH_RANDOM: return "RANDOM";
+        case BH_RANGE: return "RANGE";
+        case BH_REAL: return "REAL";
+        case BH_IMAG: return "IMAG";
+        case BH_ADD_ACCUMULATE: return "ADD_ACCUMULATE";
+        case BH_MULTIPLY_ACCUMULATE: return "MULTIPLY_ACCUMULATE";
+
+        default:
+            return "{{UNKNOWN}}";
+    }
+}
 
