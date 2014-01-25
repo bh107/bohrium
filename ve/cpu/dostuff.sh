@@ -11,8 +11,8 @@ cd $WHERE
 #BH_VE_CPU_JIT_PRELOAD=0 BH_VE_CPU_JIT_ENABLED=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_OPTIMIZE=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_reduce.py
 #../../bridge/cpp/bin/hello_world
 
-BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/test_accumulate.py
-BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+#BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/test_accumulate.py
+BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --exclude=test_accumulate.py
 #python ../../test/numpy/numpytest.py -f test_benchmarks.py
 #python ../../test/numpy/numpytest.py -f test_matmul.py
 #python ../../test/numpy/numpytest.py -f test_array_create.py
