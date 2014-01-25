@@ -48,7 +48,10 @@
         {{#OPERAND}}{{#ARRAY}}
         a{{NR}}_current += a{{NR}}_stride[axis];
         {{/ARRAY}}{{/OPERAND}}
+
+        {{#LOOP_BODY}}
         {{OPERATOR}};
+        {{/LOOP_BODY}}
     }
     
 }

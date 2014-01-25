@@ -50,8 +50,10 @@
         for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
             a1_i < a1_shape[axis];
             tmp_current += a1_stride[axis], a1_i++) {
-            
+
+            {{#LOOP_BODY}}
             {{OPERATOR}};
+            {{/LOOP_BODY}}
         }
         *a0_current = rvar;
     } else {                                    // ** ND General Case **
@@ -113,7 +115,11 @@
                         cur_e++
                     ) {
                         {{TYPE_INPUT}} rvar = *a0_current; // Scalar-temp
+
+                        {{#LOOP_BODY}}
                         {{OPERATOR}};
+                        {{/LOOP_BODY}}
+
                         *a0_current = rvar;
 
                         a0_current   += a0_stride[last_dim]; // Offsets

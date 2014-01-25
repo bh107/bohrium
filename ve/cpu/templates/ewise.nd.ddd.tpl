@@ -45,7 +45,9 @@
         {{/OPERAND}}
 
         for (int64_t i = work_offset; i<work_end; ++i) {
+            {{#LOOP_BODY}}
             {{OPERATOR}};
+            {{/LOOP_BODY}}
 
             {{#OPERAND}}{{#ARRAY}}
             ++a{{NR}}_current;

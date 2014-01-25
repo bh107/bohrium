@@ -47,8 +47,10 @@
 
         for(int64_t j=work_offset; j<work_end; ++j) {
             for (int64_t i = 0; i < shape[ld]; ++i) {
+                {{#LOOP_BODY}}
                 {{OPERATOR}};
-                
+                {{/LOOP_BODY}}
+               
                 {{#OPERAND}}{{#ARRAY}}
                 a{{NR}}_current += a{{NR}}_stride_ld;
                 {{/ARRAY}}{{/OPERAND}}

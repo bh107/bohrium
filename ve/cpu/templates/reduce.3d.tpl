@@ -66,7 +66,10 @@
             {{TYPE_INPUT}} rvar = *tmp_current;
             for(int64_t k=1; k<a1_shape[axis]; ++k) {
                 tmp_current += a1_stride[axis];
+
+                {{#LOOP_BODY}}
                 {{OPERATOR}};
+                {{/LOOP_BODY}}
             }
             *(a0_first + a0_start + i*a0_stride[OUTER] + j*a0_stride[INNER]) = rvar;
         }

@@ -46,7 +46,9 @@
     for(int64_t j=0; j<a1_shape[axis]; ++j) {
         {{TYPE_INPUT}} *tmp_current = a1_current + a1_stride[axis]*j;
 
+        {{#LOOP_BODY}}
         {{OPERATOR}};
+        {{/LOOP_BODY}}
     }
     *a0_current = rvar;
     
