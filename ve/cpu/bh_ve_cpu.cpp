@@ -81,7 +81,7 @@ typedef struct bh_kernel {
 process* target;
 
 // Execute a single instruction
-static bh_error exec(bh_instruction *instr)
+static bh_error exec_sij(bh_instruction *instr)
 {
     bh_sij_t sij;
     bh_error res = BH_SUCCESS;
@@ -454,7 +454,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec);
+    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec_sij);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
