@@ -1,7 +1,7 @@
 /*
-AKA Scan
+Handles the currently misnamed BH_*_ACCUMULATE opcodes.
 
-int accumulate(
+int scan(
     int tool,
 
     T       *a0_first,

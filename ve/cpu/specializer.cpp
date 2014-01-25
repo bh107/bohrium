@@ -10,8 +10,8 @@ void specializer_init()
     ctemplate::LoadTemplate("include.tpl",  ctemplate::STRIP_BLANK_LINES);
 
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("accumulate.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("accumulate.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("scan.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("scan.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
     
     ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
@@ -140,7 +140,7 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
             dict.SetValue("TYPE_INPUT", enum_to_ctypestr(sij.instr->operand[1].base->type));
             dict.SetValue("TYPE_AXIS",  "int64_t");
-            sprintf(template_fn, "accumulate.1d.tpl");
+            sprintf(template_fn, "scan.1d.tpl");
 
             cres = true;
             break;
