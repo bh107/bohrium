@@ -164,7 +164,7 @@ static bh_error exec(bh_instruction *instr)
             res = BH_SUCCESS;
             break;
 
-        case BH_ADD_ACCUMULATE:                       // Accumulate
+        case BH_ADD_ACCUMULATE:                 // Scan
         case BH_MULTIPLY_ACCUMULATE:
 
         case BH_ADD_REDUCE:                     // Partial Reductions
