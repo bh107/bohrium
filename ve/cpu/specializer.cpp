@@ -10,20 +10,22 @@ void specializer_init()
     ctemplate::LoadTemplate("skeleton.tpl", ctemplate::STRIP_BLANK_LINES);
 
     ctemplate::LoadTemplate("range.tpl",    ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
+
+    ctemplate::LoadTemplate("ewise.1d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("ewise.2d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("ewise.3d.tpl",      ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("ewise.nd.ddd.tpl",  ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("ewise.nd.tpl",      ctemplate::STRIP_BLANK_LINES);
+
+    ctemplate::LoadTemplate("reduce.1d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduce.2d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduce.3d.tpl", ctemplate::STRIP_BLANK_LINES);
+    ctemplate::LoadTemplate("reduce.nd.tpl", ctemplate::STRIP_BLANK_LINES);
+
     ctemplate::LoadTemplate("scan.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
     ctemplate::LoadTemplate("scan.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("random.tpl",   ctemplate::STRIP_BLANK_LINES);
-    
-    ctemplate::LoadTemplate("reduction.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduction.nd.tpl", ctemplate::STRIP_BLANK_LINES);
 
-    ctemplate::LoadTemplate("traverse.1d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.2d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.3d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.ddd.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("traverse.nd.tpl",      ctemplate::STRIP_BLANK_LINES);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
@@ -160,9 +162,9 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             dict.SetValue("TYPE_INPUT", enum_to_ctypestr(sij.instr->operand[1].base->type));
             dict.SetValue("TYPE_AXIS", "int64_t");
             if (optimized && (sij.ndims <= 3)) {
-                sprintf(template_fn, "reduction.%lldd.tpl", (long long)sij.ndims);
+                sprintf(template_fn, "reduce.%lldd.tpl", (long long)sij.ndims);
             } else {
-                sprintf(template_fn, "reduction.nd.tpl");
+                sprintf(template_fn, "reduce.nd.tpl");
             }
 
             cres = true;
@@ -195,12 +197,12 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
             if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
                 (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
                 (sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
-                sprintf(template_fn, "traverse.nd.ddd.tpl");
+                sprintf(template_fn, "ewise.nd.ddd.tpl");
             } else {
                 if (optimized && (sij.ndims<=3)) {
-                    sprintf(template_fn, "traverse.%lldd.tpl", (long long)sij.ndims);
+                    sprintf(template_fn, "ewise.%lldd.tpl", (long long)sij.ndims);
                 } else {
-                    sprintf(template_fn, "traverse.nd.tpl");
+                    sprintf(template_fn, "ewise.nd.tpl");
                 }
             }
 
@@ -242,12 +244,12 @@ string specialize(bh_sij_t &sij, bh_intp optimized) {
 
             if ((sij.lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
                 (sij.lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
-                sprintf(template_fn, "traverse.nd.ddd.tpl");
+                sprintf(template_fn, "ewise.nd.ddd.tpl");
             } else {
                 if (optimized && (sij.ndims<=3)) {
-                    sprintf(template_fn, "traverse.%lldd.tpl", (long long)sij.ndims);
+                    sprintf(template_fn, "ewise.%lldd.tpl", (long long)sij.ndims);
                 } else {
-                    sprintf(template_fn, "traverse.nd.tpl");
+                    sprintf(template_fn, "ewise.nd.tpl");
                 }
             }
 
