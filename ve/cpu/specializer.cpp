@@ -353,7 +353,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
 
 string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
 
-    char template_fn[500];   // NOTE: constants like these are often traumatizing!
+    std::string template_fn;
 
     bool cres = false;
 
@@ -365,13 +365,12 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
     for(int j=0; j<kernel.ninstr; ++j) {
         bh_instruction *instr = &kernel.instr[j];
         int lmask = kernel.lmask[j];
-        int ndim = kernel.ndim[j];
+        int ndim  = kernel.ndim[j];
+        int nops = bh_operands(instr->opcode);
 
         ctemplate::TemplateDictionary* operator_dict = dict.AddSectionDictionary("LOOP_BODY");
-        bh_type type = instr->operand[0].base->type;// Magic parameter to cexpr-function
+        bh_type type = instr->operand[0].base->type;    // Magic parameter to cexpr-function
         operator_dict->SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode, type));
-
-        int nops = bh_operands(instr->opcode);
 
         for(int i=0; i<nops; ++i) {     // Operand dict
             ctemplate::TemplateDictionary* op_dict = dict.AddSectionDictionary("OPERAND");
@@ -394,12 +393,12 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         switch (instr->opcode) {                    // OPCODE_SWITCH
 
             case BH_RANDOM:
-                sprintf(template_fn, "random.tpl");
+                template_fn = "random.tpl";
                 cres = true;
                 break;
 
             case BH_RANGE:
-                sprintf(template_fn, "range.tpl");
+                template_fn = "range.tpl";
                 cres = true;
                 break;
 
@@ -408,7 +407,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
 
                 dict.SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
                 dict.SetValue("TYPE_AXIS",  "int64_t");
-                sprintf(template_fn, "scan.1d.tpl");
+                template_fn = "scan.1d.tpl";
 
                 cres = true;
                 break;
@@ -427,9 +426,11 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
                 dict.SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
                 dict.SetValue("TYPE_AXIS", "int64_t");
                 if (optimized && (ndim <= 3)) {
-                    sprintf(template_fn, "reduce.%lldd.tpl", (long long)ndim);
+                    template_fn = "reduce.";
+                    template_fn += std::to_string(ndim);
+                    template_fn += "d.tpl";
                 } else {
-                    sprintf(template_fn, "reduce.nd.tpl");
+                    template_fn = "reduce.nd.tpl";
                 }
 
                 cres = true;
@@ -462,12 +463,14 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
                 if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
                     (lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
                     (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
-                    sprintf(template_fn, "ewise.nd.ddd.tpl");
+                    template_fn = "ewise.nd.ddd.tpl";
                 } else {
                     if (optimized && (ndim<=3)) {
-                        sprintf(template_fn, "ewise.%lldd.tpl", (long long)ndim);
+                        template_fn = "ewise.";
+                        template_fn = std::to_string(ndim);
+                        template_fn = "d.tpl";
                     } else {
-                        sprintf(template_fn, "ewise.nd.tpl");
+                        template_fn = "ewise.nd.tpl";
                     }
                 }
 
@@ -509,12 +512,14 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
 
                 if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
                     (lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
-                    sprintf(template_fn, "ewise.nd.ddd.tpl");
+                    template_fn = "ewise.nd.ddd.tpl";
                 } else {
                     if (optimized && (ndim<=3)) {
-                        sprintf(template_fn, "ewise.%lldd.tpl", (long long)ndim);
+                        template_fn = "ewise.";
+                        template_fn = std::to_string(ndim);
+                        template_fn = "d.tpl";
                     } else {
-                        sprintf(template_fn, "ewise.nd.tpl");
+                        template_fn = "ewise.nd.tpl";
                     }
                 }
 

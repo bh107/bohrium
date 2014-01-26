@@ -345,43 +345,37 @@ static bh_error exec_sij(bh_instruction *instr)
 // Execute a kernel
 static bh_error exec_kernel(bh_instruction *instr)
 {
-    bh_sij_t sij;
+    bh_kernel_t kernel;
     bh_error res = BH_SUCCESS;
 
-    // Lets check if it is a known extension method
-    {
-        map<bh_opcode,bh_extmethod_impl>::iterator ext;
-        ext = extmethod_op2impl.find(instr->opcode);
-        if (ext != extmethod_op2impl.end()) {
-            bh_extmethod_impl extmethod = ext->second;
-            return extmethod(instr, NULL);
-        }
-    }
-
-    if (!symbolize(instr, sij, jit_optimize)) {     
+    if (!symbolize(kernel, jit_optimize)) {
         return BH_ERROR;
     }
 
     if (jit_enabled && \
-        (sij.symbol!="") && \
-        (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
-
-        string sourcecode = specialize(sij, jit_optimize);   // Specialize sourcecode
+        (kernel.symbol!="") && \
+        (!target->symbol_ready(kernel.symbol))) {   // JIT-compile the function
+                                                    // Specialize sourcecode
+        string sourcecode = specialize(kernel, jit_optimize);   
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-            target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
+            target->src_to_file(
+                kernel.symbol,
+                sourcecode.c_str(),
+                sourcecode.size()
+            );
         }                                           // Send to code generator
-        target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
+        target->compile(kernel.symbol, sourcecode.c_str(), sourcecode.size());
     }
 
-    if ((sij.symbol!="") && \
-        (!target->symbol_ready(sij.symbol)) && \
-        (!target->load(sij.symbol, sij.symbol))) {  // Need but cannot load
+    if ((kernel.symbol!="") && \
+        (!target->symbol_ready(kernel.symbol)) && \
+        (!target->load(kernel.symbol, kernel.symbol))) {  // Need but cannot load
 
         if (jit_optimize) {                         // Try unoptimized symbol
-            symbolize(instr, sij, false);
-            if ((sij.symbol!="") && \
-                (!target->symbol_ready(sij.symbol)) && \
-                (!target->load(sij.symbol, sij.symbol))) {  // Still cannot load
+            symbolize(kernel, false);
+            if ((kernel.symbol!="") && \
+                (!target->symbol_ready(kernel.symbol)) && \
+                (!target->load(kernel.symbol, kernel.symbol))) {  // Still cannot load
                 return BH_ERROR;
             }
         } else {
@@ -389,219 +383,17 @@ static bh_error exec_kernel(bh_instruction *instr)
         }
     }
 
-    res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
-    if (BH_SUCCESS != res) {
-        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                        "called from bh_ve_cpu_execute()\n");
-        return res;
+    for(int i=0; i<kernel.ninstr; ++i) {        // Allocate memory for operands
+        res = bh_vcache_malloc(&kernel.instr[i]);
+        if (BH_SUCCESS != res) {
+            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                            "called from bh_ve_cpu_execute()\n");
+            return res;
+        }
     }
+    
+    // TODO: Figure out another way to dispatch/call the compiled function.
 
-    switch (sij.instr->opcode) {    // OPCODE_SWITCH    - DISPATCH
-
-        case BH_NONE:               // NOOP.
-        case BH_DISCARD:
-        case BH_SYNC:
-            res = BH_SUCCESS;
-            break;
-
-        case BH_FREE:                           // Store data-pointer in malloc-cache
-            res = bh_vcache_free(sij.instr);
-            break;
-
-        case BH_RANDOM:
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->nelem,
-                sij.instr->constant.value.r123.start,
-                sij.instr->constant.value.r123.key,
-                bh_base_array(&sij.instr->operand[0])->data
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_RANGE:
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->nelem,
-                bh_base_array(&sij.instr->operand[0])->data
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_ADD_ACCUMULATE:                 // Scan
-        case BH_MULTIPLY_ACCUMULATE:
-
-        case BH_ADD_REDUCE:                     // Partial Reductions
-        case BH_MULTIPLY_REDUCE:
-        case BH_MINIMUM_REDUCE:
-        case BH_MAXIMUM_REDUCE:
-        case BH_LOGICAL_AND_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_LOGICAL_OR_REDUCE:
-        case BH_LOGICAL_XOR_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->data,
-                sij.instr->operand[0].start,
-                sij.instr->operand[0].stride,
-                sij.instr->operand[0].shape,
-                sij.instr->operand[0].ndim,
-
-                bh_base_array(&sij.instr->operand[1])->data,
-                sij.instr->operand[1].start,
-                sij.instr->operand[1].stride,
-                sij.instr->operand[1].shape,
-                sij.instr->operand[1].ndim,
-
-                &(sij.instr->constant.value)
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_ADD:
-        case BH_SUBTRACT:
-        case BH_MULTIPLY:
-        case BH_DIVIDE:
-        case BH_POWER:
-        case BH_GREATER:
-        case BH_GREATER_EQUAL:
-        case BH_LESS:
-        case BH_LESS_EQUAL:
-        case BH_EQUAL:
-        case BH_NOT_EQUAL:
-        case BH_LOGICAL_AND:
-        case BH_LOGICAL_OR:
-        case BH_LOGICAL_XOR:
-        case BH_MAXIMUM:
-        case BH_MINIMUM:
-        case BH_BITWISE_AND:
-        case BH_BITWISE_OR:
-        case BH_BITWISE_XOR:
-        case BH_LEFT_SHIFT:
-        case BH_RIGHT_SHIFT:
-        case BH_ARCTAN2:
-        case BH_MOD:
-
-            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
-
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
-
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride,
-
-                    &(sij.instr->constant.value)
-                );
-            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
-
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
-
-                    &(sij.instr->constant.value),
-
-                    bh_base_array(&sij.instr->operand[2])->data,
-                    sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride
-                );
-            } else {                                        // DDD
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
-
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
-
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride,
-
-                    bh_base_array(&sij.instr->operand[2])->data,
-                    sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride
-                );
-            }
-
-            res = BH_SUCCESS;
-            break;
-
-        case BH_REAL:
-        case BH_IMAG:
-        case BH_ABSOLUTE:
-        case BH_LOGICAL_NOT:
-        case BH_INVERT:
-        case BH_COS:
-        case BH_SIN:
-        case BH_TAN:
-        case BH_COSH:
-        case BH_SINH:
-        case BH_TANH:
-        case BH_ARCSIN:
-        case BH_ARCCOS:
-        case BH_ARCTAN:
-        case BH_ARCSINH:
-        case BH_ARCCOSH:
-        case BH_ARCTANH:
-        case BH_EXP:
-        case BH_EXP2:
-        case BH_EXPM1:
-        case BH_LOG:
-        case BH_LOG2:
-        case BH_LOG10:
-        case BH_LOG1P:
-        case BH_SQRT:
-        case BH_CEIL:
-        case BH_TRUNC:
-        case BH_FLOOR:
-        case BH_RINT:
-        case BH_ISNAN:
-        case BH_ISINF:
-        case BH_IDENTITY:
-
-            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
-
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
-
-                    &(sij.instr->constant.value)
-                );
-            } else {
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
-
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
-
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride
-                );
-            }
-            res = BH_SUCCESS;
-            break;
-
-        default:                            // Shit hit the fan
-            res = BH_ERROR;
-            printf("cpu-exec: Err=[Unsupported ufunc] {\n");
-            bh_pprint_instr(sij.instr);
-            printf("}\n");
-
-    }
     return res;
 }
 
