@@ -234,14 +234,6 @@ DLLEXPORT bool bh_is_constant(const bh_view* o);
  */
 DLLEXPORT void bh_flag_constant(bh_view* o);
 
-/* Determines whether the two views are the same
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_same_view(const bh_view* a, const bh_view* b);
-
 /* Determines whether two views access some of the same data points
  *
  * @a The first view
