@@ -54,19 +54,10 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
-typedef struct bh_sij {
-    bh_instruction *instr;  // Pointer to instruction
-    int64_t ndim;          // Number of dimensions
-    int lmask;              // Layout mask
-    int tsig;               // Type signature
-
-    string symbol;          // String representation
-} bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
-
 typedef struct bh_kernel {
     int ninstr;
 
-    bh_instruction instr[10];
+    bh_instruction* instr[10];
     int tsig[10];
     int lmask[10];
     int64_t ndim[10];
@@ -79,86 +70,45 @@ typedef struct bh_kernel {
 
 process* target;
 
-// Execute a single instruction
-static bh_error exec_sij(bh_instruction *instr)
+/**
+ *  Dispatches / executes a single instruction from a kernel.
+ *
+ *  Note: System opcodes (including BH_FREE) are ignored.
+ *
+ *  @param kernel Pointer to the kernel.
+ *  @param idx Index of the instruction to execute.
+ *  @returns bh_error BH_SUCCESS or BH_ERROR
+ */
+static bh_error dispatch_si(bh_kernel_t* kernel, int idx)
 {
-    bh_sij_t sij;
-    bh_error res = BH_SUCCESS;
+    bh_instruction* instr = kernel->instr[idx];
+    int lmask = kernel->lmask[idx];
+    bh_error res = BH_ERROR;
+    func f = target->funcs[kernel->symbol];
 
-    // Lets check if it is a known extension method
-    {
-        map<bh_opcode,bh_extmethod_impl>::iterator ext;
-        ext = extmethod_op2impl.find(instr->opcode);
-        if (ext != extmethod_op2impl.end()) {
-            bh_extmethod_impl extmethod = ext->second;
-            return extmethod(instr, NULL);
-        }
-    }
-
-    if (!symbolize(instr, sij, jit_optimize)) {     
-        return BH_ERROR;
-    }
-
-    if (jit_enabled && \
-        (sij.symbol!="") && \
-        (!target->symbol_ready(sij.symbol))) {      // JIT-compile the function
-
-        string sourcecode = specialize(sij, jit_optimize);   // Specialize sourcecode
-        if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-            target->src_to_file(sij.symbol, sourcecode.c_str(), sourcecode.size());
-        }                                           // Send to code generator
-        target->compile(sij.symbol, sourcecode.c_str(), sourcecode.size());
-    }
-
-    if ((sij.symbol!="") && \
-        (!target->symbol_ready(sij.symbol)) && \
-        (!target->load(sij.symbol, sij.symbol))) {  // Need but cannot load
-
-        if (jit_optimize) {                         // Try unoptimized symbol
-            symbolize(instr, sij, false);
-            if ((sij.symbol!="") && \
-                (!target->symbol_ready(sij.symbol)) && \
-                (!target->load(sij.symbol, sij.symbol))) {  // Still cannot load
-                return BH_ERROR;
-            }
-        } else {
-            return BH_ERROR;
-        }
-    }
-
-    res = bh_vcache_malloc(sij.instr);              // Allocate memory for operands
-    if (BH_SUCCESS != res) {
-        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                        "called from bh_ve_cpu_execute()\n");
-        return res;
-    }
-
-    switch (sij.instr->opcode) {    // OPCODE_SWITCH    - DISPATCH
+    switch (instr->opcode) {    // OPCODE_SWITCH    - DISPATCH
 
         case BH_NONE:               // NOOP.
         case BH_DISCARD:
         case BH_SYNC:
+        case BH_FREE:
             res = BH_SUCCESS;
             break;
 
-        case BH_FREE:                           // Store data-pointer in malloc-cache
-            res = bh_vcache_free(sij.instr);
-            break;
-
         case BH_RANDOM:
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->nelem,
-                sij.instr->constant.value.r123.start,
-                sij.instr->constant.value.r123.key,
-                bh_base_array(&sij.instr->operand[0])->data
+            f(0,
+                bh_base_array(&instr->operand[0])->nelem,
+                instr->constant.value.r123.start,
+                instr->constant.value.r123.key,
+                bh_base_array(&instr->operand[0])->data
             );
             res = BH_SUCCESS;
             break;
 
         case BH_RANGE:
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->nelem,
-                bh_base_array(&sij.instr->operand[0])->data
+            f(0,
+                bh_base_array(&instr->operand[0])->nelem,
+                bh_base_array(&instr->operand[0])->data
             );
             res = BH_SUCCESS;
             break;
@@ -177,20 +127,20 @@ static bh_error exec_sij(bh_instruction *instr)
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
 
-            target->funcs[sij.symbol](0,
-                bh_base_array(&sij.instr->operand[0])->data,
-                sij.instr->operand[0].start,
-                sij.instr->operand[0].stride,
-                sij.instr->operand[0].shape,
-                sij.instr->operand[0].ndim,
+            f(0,
+                bh_base_array(&instr->operand[0])->data,
+                instr->operand[0].start,
+                instr->operand[0].stride,
+                instr->operand[0].shape,
+                instr->operand[0].ndim,
 
-                bh_base_array(&sij.instr->operand[1])->data,
-                sij.instr->operand[1].start,
-                sij.instr->operand[1].stride,
-                sij.instr->operand[1].shape,
-                sij.instr->operand[1].ndim,
+                bh_base_array(&instr->operand[1])->data,
+                instr->operand[1].start,
+                instr->operand[1].stride,
+                instr->operand[1].shape,
+                instr->operand[1].ndim,
 
-                &(sij.instr->constant.value)
+                &(instr->constant.value)
             );
             res = BH_SUCCESS;
             break;
@@ -219,52 +169,52 @@ static bh_error exec_sij(bh_instruction *instr)
         case BH_ARCTAN2:
         case BH_MOD:
 
-            if ((sij.lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
+            if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
+                f(0,
+                    instr->operand[0].shape,
+                    instr->operand[0].ndim,
 
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
+                    bh_base_array(&instr->operand[0])->data,
+                    instr->operand[0].start,
+                    instr->operand[0].stride,
 
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride,
+                    bh_base_array(&instr->operand[1])->data,
+                    instr->operand[1].start,
+                    instr->operand[1].stride,
 
-                    &(sij.instr->constant.value)
+                    &(instr->constant.value)
                 );
-            } else if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
+            } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
+                f(0,
+                    instr->operand[0].shape,
+                    instr->operand[0].ndim,
 
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
+                    bh_base_array(&instr->operand[0])->data,
+                    instr->operand[0].start,
+                    instr->operand[0].stride,
 
-                    &(sij.instr->constant.value),
+                    &(instr->constant.value),
 
-                    bh_base_array(&sij.instr->operand[2])->data,
-                    sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride
+                    bh_base_array(&instr->operand[2])->data,
+                    instr->operand[2].start,
+                    instr->operand[2].stride
                 );
             } else {                                        // DDD
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
+                f(0,
+                    instr->operand[0].shape,
+                    instr->operand[0].ndim,
 
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
+                    bh_base_array(&instr->operand[0])->data,
+                    instr->operand[0].start,
+                    instr->operand[0].stride,
 
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride,
+                    bh_base_array(&instr->operand[1])->data,
+                    instr->operand[1].start,
+                    instr->operand[1].stride,
 
-                    bh_base_array(&sij.instr->operand[2])->data,
-                    sij.instr->operand[2].start,
-                    sij.instr->operand[2].stride
+                    bh_base_array(&instr->operand[2])->data,
+                    instr->operand[2].start,
+                    instr->operand[2].stride
                 );
             }
 
@@ -304,29 +254,29 @@ static bh_error exec_sij(bh_instruction *instr)
         case BH_ISINF:
         case BH_IDENTITY:
 
-            if ((sij.lmask & A1_CONSTANT) == A1_CONSTANT) {
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
+            if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
+                f(0,
+                    instr->operand[0].shape,
+                    instr->operand[0].ndim,
 
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
+                    bh_base_array(&instr->operand[0])->data,
+                    instr->operand[0].start,
+                    instr->operand[0].stride,
 
-                    &(sij.instr->constant.value)
+                    &(instr->constant.value)
                 );
             } else {
-                target->funcs[sij.symbol](0,
-                    sij.instr->operand[0].shape,
-                    sij.instr->operand[0].ndim,
+                f(0,
+                    instr->operand[0].shape,
+                    instr->operand[0].ndim,
 
-                    bh_base_array(&sij.instr->operand[0])->data,
-                    sij.instr->operand[0].start,
-                    sij.instr->operand[0].stride,
+                    bh_base_array(&instr->operand[0])->data,
+                    instr->operand[0].start,
+                    instr->operand[0].stride,
 
-                    bh_base_array(&sij.instr->operand[1])->data,
-                    sij.instr->operand[1].start,
-                    sij.instr->operand[1].stride
+                    bh_base_array(&instr->operand[1])->data,
+                    instr->operand[1].start,
+                    instr->operand[1].stride
                 );
             }
             res = BH_SUCCESS;
@@ -335,26 +285,42 @@ static bh_error exec_sij(bh_instruction *instr)
         default:                            // Shit hit the fan
             res = BH_ERROR;
             printf("cpu-exec: Err=[Unsupported ufunc] {\n");
-            bh_pprint_instr(sij.instr);
+            bh_pprint_instr(instr);
             printf("}\n");
-
     }
+
     return res;
 }
 
 // Execute a kernel
 static bh_error exec_kernel(bh_instruction *instr)
 {
-    bh_kernel_t kernel;
     bh_error res = BH_SUCCESS;
+
+    // Lets check if it is a known extension method
+    {
+        map<bh_opcode,bh_extmethod_impl>::iterator ext;
+        ext = extmethod_op2impl.find(instr->opcode);
+        if (ext != extmethod_op2impl.end()) {
+            bh_extmethod_impl extmethod = ext->second;
+            return extmethod(instr, NULL);
+        }
+    }
+
+    bh_kernel_t kernel;
+    kernel.instr[0] = instr;
+    kernel.ninstr = 1;
 
     if (!symbolize(kernel, jit_optimize)) {
         return BH_ERROR;
     }
 
+    //
+    // JIT-compile the kernel if enabled
+    //
     if (jit_enabled && \
         (kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol))) {   // JIT-compile the function
+        (!target->symbol_ready(kernel.symbol))) {   
                                                     // Specialize sourcecode
         string sourcecode = specialize(kernel, jit_optimize);   
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file
@@ -363,19 +329,22 @@ static bh_error exec_kernel(bh_instruction *instr)
                 sourcecode.c_str(),
                 sourcecode.size()
             );
-        }                                           // Send to code generator
+        }                                           // Send to compiler
         target->compile(kernel.symbol, sourcecode.c_str(), sourcecode.size());
     }
 
+    //
+    // Load the compiled code
+    //
     if ((kernel.symbol!="") && \
         (!target->symbol_ready(kernel.symbol)) && \
-        (!target->load(kernel.symbol, kernel.symbol))) {  // Need but cannot load
+        (!target->load(kernel.symbol, kernel.symbol))) {// Need but cannot load
 
-        if (jit_optimize) {                         // Try unoptimized symbol
+        if (jit_optimize) {                             // Unoptimized fallback
             symbolize(kernel, false);
             if ((kernel.symbol!="") && \
                 (!target->symbol_ready(kernel.symbol)) && \
-                (!target->load(kernel.symbol, kernel.symbol))) {  // Still cannot load
+                (!target->load(kernel.symbol, kernel.symbol))) {        // Fail
                 return BH_ERROR;
             }
         } else {
@@ -383,20 +352,51 @@ static bh_error exec_kernel(bh_instruction *instr)
         }
     }
 
-    for(int i=0; i<kernel.ninstr; ++i) {        // Allocate memory for operands
-        res = bh_vcache_malloc(&kernel.instr[i]);
+    //
+    // Allocate memory for output
+    //
+    for(int i=0; i<kernel.ninstr; ++i) {
+        res = bh_vcache_malloc(kernel.instr[i]);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_execute()\n");
+                            "called from bh_ve_cpu_exec_kernel()\n");
             return res;
         }
     }
     
+    //
     // TODO: Figure out another way to dispatch/call the compiled function.
+    // 
+
+    for(int i=0; i<kernel.ninstr; ++i) {
+        res = dispatch_si(&kernel, i);
+        if (BH_SUCCESS != res) {
+            fprintf(stderr, "Unhandled error returned by dispatch_si "
+                            "called from bh_ve_cpu_exec_kernel(...)\n");
+            return res;
+        }
+    }
+
+    //
+    // De-Allocate memory
+    //
+    for(int i=0; i<kernel.ninstr; ++i) {
+        if (kernel.instr[i]->opcode == BH_FREE) {
+            res = bh_vcache_free(kernel.instr[i]);
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                "called from bh_ve_cpu_exec_kernel)\n");
+                return res;
+            }
+        }
+    }
 
     return res;
 }
 
+//
+//  Methods below implement the component interface
+//
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
@@ -509,7 +509,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec_sij);
+    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec_kernel);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
