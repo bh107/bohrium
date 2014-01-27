@@ -188,7 +188,7 @@ int bh_typesig(bh_instruction *instr)
     return typesig;
 }
 
-const char* bhopcode_to_cexpr(bh_opcode opcode, const bh_type type)
+const char* bhopcode_to_cexpr(bh_opcode const opcode, const bh_type type)
 {
     switch(opcode) {
         case BH_ADD_ACCUMULATE:

@@ -1,5 +1,11 @@
-void {{SYMBOL}}(int tool, ...)
 {
+    /**
+        The argment unpacking must unpack:
+
+        int64_t *shape,
+        int64_t ndim,
+        [operand]{2-3} -> [array|constant]
+    */
     va_list list;               // Unpack arguments
     va_start(list, tool);
 
@@ -16,15 +22,13 @@ void {{SYMBOL}}(int tool, ...)
 
     va_end(list);
 
-    int64_t ld  = ndim-1,   // Traversal variables
-            sld = ndim-2,
-            nelements = shape[sld];
+    int64_t last_dim    = ndim-1,
+            nelements   = shape[last_dim];
 
     {{#OPERAND}}{{#ARRAY}}
-    int64_t a{{NR}}_stride_ld    = a{{NR}}_stride[ld];
-    int64_t a{{NR}}_stride_sld   = a{{NR}}_stride[sld];
-    int64_t a{{NR}}_rewind_ld = shape[ld]*a{{NR}}_stride_ld;
+    assert(a{{NR}}_first != NULL);
     a{{NR}}_first += a{{NR}}_start;
+    int64_t a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];
     {{/ARRAY}}{{/OPERAND}}
 
     int mthreads = omp_get_max_threads();
@@ -35,30 +39,25 @@ void {{SYMBOL}}(int tool, ...)
         int tid      = omp_get_thread_num();    // Work partitioning
         int nthreads = omp_get_num_threads();
 
-        int64_t work = shape[sld] / nthreads;
+        int64_t work = nelements / nthreads;
         int64_t work_offset = work * tid;
         if (tid==nthreads-1) {
-            work += shape[sld] % nthreads;
+            work += nelements % nthreads;
         }
         int64_t work_end = work_offset+work;
                                                 // Pointer fixes
         {{#OPERAND}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + (work_offset * a{{NR}}_stride_sld){{/ARRAY}};
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + (work_offset *a{{NR}}_stride_ld){{/ARRAY}};
         {{/OPERAND}}
 
-        for(int64_t j=work_offset; j<work_end; ++j) {
-            for (int64_t i = 0; i < shape[ld]; ++i) {
-                {{OPERATOR}};
-                
-                {{#OPERAND}}{{#ARRAY}}
-                a{{NR}}_current += a{{NR}}_stride_ld;
-                {{/ARRAY}}{{/OPERAND}}
-            }
+        for (int64_t i = work_offset; i < work_end; ++i) {
+            {{#LOOP_BODY}}
+            {{OPERATOR}};
+            {{/LOOP_BODY}}
+        
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current -= a{{NR}}_rewind_ld;
-            a{{NR}}_current += a{{NR}}_stride_sld;
+            a{{NR}}_current += a{{NR}}_stride_ld;
             {{/ARRAY}}{{/OPERAND}}
         }
     }
 }
-

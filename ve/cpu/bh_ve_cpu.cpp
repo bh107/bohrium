@@ -56,7 +56,7 @@ static char* template_path;
 
 typedef struct bh_sij {
     bh_instruction *instr;  // Pointer to instruction
-    int64_t ndims;          // Number of dimensions
+    int64_t ndim;          // Number of dimensions
     int lmask;              // Layout mask
     int tsig;               // Type signature
 
@@ -64,13 +64,12 @@ typedef struct bh_sij {
 } bh_sij_t;                 // Encapsulation of single-instruction(expression)-jit
 
 typedef struct bh_kernel {
-    bh_sij_t sijs[10];
-    int nsijs;
+    int ninstr;
 
-    int64_t ndims;
-
-    int lmask;
-    int tsig;
+    bh_instruction instr[10];
+    int tsig[10];
+    int lmask[10];
+    int64_t ndim[10];
 
     string symbol;
 } bh_kernel_t;
@@ -81,7 +80,7 @@ typedef struct bh_kernel {
 process* target;
 
 // Execute a single instruction
-static bh_error exec(bh_instruction *instr)
+static bh_error exec_sij(bh_instruction *instr)
 {
     bh_sij_t sij;
     bh_error res = BH_SUCCESS;
@@ -164,7 +163,7 @@ static bh_error exec(bh_instruction *instr)
             res = BH_SUCCESS;
             break;
 
-        case BH_ADD_ACCUMULATE:                       // Accumulate
+        case BH_ADD_ACCUMULATE:                 // Scan
         case BH_MULTIPLY_ACCUMULATE:
 
         case BH_ADD_REDUCE:                     // Partial Reductions
@@ -343,6 +342,62 @@ static bh_error exec(bh_instruction *instr)
     return res;
 }
 
+// Execute a kernel
+static bh_error exec_kernel(bh_instruction *instr)
+{
+    bh_kernel_t kernel;
+    bh_error res = BH_SUCCESS;
+
+    if (!symbolize(kernel, jit_optimize)) {
+        return BH_ERROR;
+    }
+
+    if (jit_enabled && \
+        (kernel.symbol!="") && \
+        (!target->symbol_ready(kernel.symbol))) {   // JIT-compile the function
+                                                    // Specialize sourcecode
+        string sourcecode = specialize(kernel, jit_optimize);   
+        if (jit_dumpsrc==1) {                       // Dump sourcecode to file
+            target->src_to_file(
+                kernel.symbol,
+                sourcecode.c_str(),
+                sourcecode.size()
+            );
+        }                                           // Send to code generator
+        target->compile(kernel.symbol, sourcecode.c_str(), sourcecode.size());
+    }
+
+    if ((kernel.symbol!="") && \
+        (!target->symbol_ready(kernel.symbol)) && \
+        (!target->load(kernel.symbol, kernel.symbol))) {  // Need but cannot load
+
+        if (jit_optimize) {                         // Try unoptimized symbol
+            symbolize(kernel, false);
+            if ((kernel.symbol!="") && \
+                (!target->symbol_ready(kernel.symbol)) && \
+                (!target->load(kernel.symbol, kernel.symbol))) {  // Still cannot load
+                return BH_ERROR;
+            }
+        } else {
+            return BH_ERROR;
+        }
+    }
+
+    for(int i=0; i<kernel.ninstr; ++i) {        // Allocate memory for operands
+        res = bh_vcache_malloc(&kernel.instr[i]);
+        if (BH_SUCCESS != res) {
+            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                            "called from bh_ve_cpu_execute()\n");
+            return res;
+        }
+    }
+    
+    // TODO: Figure out another way to dispatch/call the compiled function.
+
+    return res;
+}
+
+
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
@@ -454,7 +509,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec);
+    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec_sij);
 }
 
 /* Component interface: shutdown (see bh_component.h) */

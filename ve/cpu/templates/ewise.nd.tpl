@@ -1,4 +1,3 @@
-void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
@@ -50,7 +49,9 @@ void {{SYMBOL}}(int tool, ...)
         }
 
         for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
+            {{#LOOP_BODY}}
             {{OPERATOR}};
+            {{/LOOP_BODY}}
 
             {{#OPERAND}}{{#ARRAY}}
             a{{NR}}_current += a{{NR}}_stride_ld;

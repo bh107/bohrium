@@ -1,24 +1,26 @@
-/*
-int accumulate(
-    int tool,
-
-    T       *a0_first,
-    int64_t  a0_start,
-    int64_t *a0_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    T       *a1_first,
-    int64_t  a1_start,
-    int64_t *a1_stride,
-    int64_t *a1_shape,
-    int64_t  a1_ndim,
-
-    int64_t axis
-)
-*/
-int {{SYMBOL}}(int tool, ...)
 {
+    /*
+    Handles the currently misnamed BH_*_ACCUMULATE opcodes.
+
+    int scan(
+        int tool,
+
+        T       *a0_first,
+        int64_t  a0_start,
+        int64_t *a0_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        T       *a1_first,
+        int64_t  a1_start,
+        int64_t *a1_stride,
+        int64_t *a1_shape,
+        int64_t  a1_ndim,
+
+        int64_t axis
+    )
+    */
+
     va_list list;                                   // **Unpack arguments**
     va_start(list, tool);
 
@@ -53,11 +55,12 @@ int {{SYMBOL}}(int tool, ...)
         for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
             a1_i < a1_shape[axis];
             tmp_current += a1_stride[axis], a1_i++) {
-            
+
+            {{#LOOP_BODY}}
             {{OPERATOR}};
+            {{/LOOP_BODY}}
         }
         *a0_current = rvar;
-        return 1;
     } else {                                    // ** ND General Case **
         int64_t j,                              // Traversal variables
                 last_dim,
@@ -117,7 +120,11 @@ int {{SYMBOL}}(int tool, ...)
                         cur_e++
                     ) {
                         {{TYPE_A1}} rvar = *a0_current; // Scalar-temp
+
+                        {{#LOOP_BODY}}
                         {{OPERATOR}};
+                        {{/LOOP_BODY}}
+
                         *a0_current = rvar;
 
                         a0_current   += a0_stride[last_dim]; // Offsets
@@ -138,7 +145,6 @@ int {{SYMBOL}}(int tool, ...)
                 }
             }
         }
-        return 1;
     }
 }
 

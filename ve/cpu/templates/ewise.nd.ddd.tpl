@@ -1,4 +1,3 @@
-void {{SYMBOL}}(int tool, ...)
 {
     va_list list;               // Unpack arguments
     va_start(list, tool);
@@ -46,7 +45,9 @@ void {{SYMBOL}}(int tool, ...)
         {{/OPERAND}}
 
         for (int64_t i = work_offset; i<work_end; ++i) {
+            {{#LOOP_BODY}}
             {{OPERATOR}};
+            {{/LOOP_BODY}}
 
             {{#OPERAND}}{{#ARRAY}}
             ++a{{NR}}_current;
