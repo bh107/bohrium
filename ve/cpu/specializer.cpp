@@ -169,12 +169,12 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
  */
 bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
 
-    int non_system = 0;
     std::string symbol_opcode, 
                 symbol_lmask,
                 symbol_tsig,
                 symbol_ndim;
 
+    kernel.nnonsys = 0;
     for (int i=0; i<kernel.ninstr; ++i) {
 
         bh_instruction *instr = kernel.instr[i];
@@ -183,7 +183,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
             continue;
         }
-        ++non_system;
+        kernel.nnonsys++;
 
         int tsig    = bh_typesig(instr);
         int lmask   = bh_layoutmask(instr);
@@ -235,7 +235,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     //  If the kernel contained nothing but system opcodes, then
     //  a symbol must not be created.
     //
-    if (non_system>0) {
+    if (kernel.nnonsys>0) {
         kernel.symbol += "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\

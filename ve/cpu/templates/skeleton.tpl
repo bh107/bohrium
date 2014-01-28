@@ -30,4 +30,13 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
-void {{SYMBOL}}(int tool, ...)
+typedef struct bh_kernel_args {
+    int nargs;
+
+    void*    data[30];
+    int64_t  start[30];
+    int64_t* stride[30];
+
+} bh_kernel_args_t;
+
+void {{SYMBOL}}(bh_kernel_args_t* args, int64_t nelements)

@@ -9,10 +9,9 @@ def sample(args):
 
     a = np.ones(args.shape, dtype=np.float32)
     for _ in range(args.iterations[0]):
-        a += 42
-        b = a*a
-        c = np.sqrt(b)
-        d = c+c
+        b = np.sin(a)
+        c = np.cos(a)
+        d = np.absolute(a)
 
     return d
 

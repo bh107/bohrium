@@ -1,28 +1,10 @@
 {
-    va_list list;               // Unpack arguments
-    va_start(list, tool);
-
-    int64_t *shape      = va_arg(list, int64_t*);
-    int64_t ndim        = va_arg(list, int64_t);
-
     {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_first   = va_arg(list, {{TYPE}}*);
-    {{#ARRAY}}
-    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
-    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
-    {{/ARRAY}}
+    {{TYPE}} *a{{NR}}_first = args->data[{{NR}}];
     {{/OPERAND}}
-
-    va_end(list);
-
-    int64_t nelements = shape[0];
-    for(int64_t i=1; i<ndim; ++i) {
-        nelements *= shape[i];
-    }
 
     {{#OPERAND}}{{#ARRAY}}
     assert(a{{NR}}_first != NULL);
-    a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}{{/OPERAND}}
 
     int mthreads     = omp_get_max_threads();
