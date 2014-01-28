@@ -22,6 +22,14 @@ INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
 
+sample:
+	python misc/sample.py 10 5 --be numpy
+	python misc/sample.py 10 5 --be bohrium
+
+graph:
+	dot -T svg graph-1.dot > /tmp/graph-1.svg
+	[ -f /tmp/graph-1.svg ] && xdg-open /tmp/graph-1.svg
+
 %.o: %.c $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
 

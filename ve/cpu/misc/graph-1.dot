@@ -1,0 +1,27 @@
+digraph {
+compound=true;
+subgraph clusterDAG0 {
+label="ID: 0 TAG: 0";
+d0_n0 [label="D1_sub-DAG"];
+d0_n0 -> d0_n1;
+d0_n1 [label="D2_sub-DAG"];
+}
+subgraph clusterDAG1 {
+label="ID: 1 TAG: 0";
+d1_n0 [shape=box style="filled,rounded" fillcolor="#CBD5E8" label="I_0 - BH_IDENTITY"];
+d1_n0 -> d1_n1;
+d1_n1 [shape=box style="filled,rounded" fillcolor="#CBD5E8" label="I_1 - BH_ADD"];
+d1_n1 -> d1_n2;
+d1_n2 [shape=box style="filled,rounded" fillcolor="#CBD5E8" label="I_2 - BH_MULTIPLY"];
+d1_n2 -> d1_n3;
+d1_n3 [shape=box style="dashed,rounded" fillcolor="#ffffE8" label="I_5 - BH_FREE"];
+d1_n3 -> d1_n4;
+d1_n4 [shape=box style="dashed,rounded" fillcolor="#ffffE8" label="I_6 - BH_DISCARD"];
+}
+subgraph clusterDAG2 {
+label="ID: 2 TAG: 0";
+d2_n0 [shape=box style="dashed,rounded" fillcolor="#ffffE8" label="I_3 - BH_FREE"];
+d2_n0 -> d2_n1;
+d2_n1 [shape=box style="dashed,rounded" fillcolor="#ffffE8" label="I_4 - BH_DISCARD"];
+}
+}
