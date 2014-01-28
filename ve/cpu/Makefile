@@ -23,8 +23,8 @@ INSTALLDIR?=/opt/bohrium/
 all: $(LIB)
 
 sample:
-	python misc/sample.py 10 5 --be numpy
-	python misc/sample.py 10 5 --be bohrium
+	python misc/sample.py 10 3 --be numpy
+	python misc/sample.py 10 3 --be bohrium
 
 graph:
 	dot -T svg graph-1.dot > /tmp/graph-1.svg

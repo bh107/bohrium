@@ -12,8 +12,9 @@ def sample(args):
         a += 42
         b = a*a
         c = np.sqrt(b)
+        d = c+c
 
-    return c
+    return d
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')
@@ -30,7 +31,6 @@ def main():
         help="The backend to use"
     )
     args = p.parse_args()
-    print args
 
     print sample(args)
 
