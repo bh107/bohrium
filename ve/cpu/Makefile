@@ -32,7 +32,7 @@ $(LIB): $(OBJ)
 		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core
+		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot
 
 install: all
 		cp $(LIB) $(INSTALLDIR)/
