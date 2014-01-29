@@ -19,10 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_flow.h>
+#include <assert.h>
 #include <iostream>
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 //Registrate access by the 'node_idx'
@@ -177,3 +179,70 @@ void bh_flow::fprint(const char* filename)
     fclose(file);
 }
 
+// Write the flow object in the DOT format.
+void bh_flow::dot(const char* filename)
+{
+    ofstream fs(filename);
+
+    fs << "digraph {" << std::endl;
+    fs << "compound=true;" << std::endl;
+
+    //Write all nodes and conflict edges
+    map<const bh_base *, vector<bh_intp> >::const_iterator b;
+    for(b=bases.begin(); b != bases.end(); b++)
+    {
+        fs << "subgraph clusterBASE" << b->first << " {" << endl;
+        fs << "label=\"" << b->first << "\";" << endl;
+
+        //Define all nodes
+        vector<bh_intp>::const_iterator v,w;
+        for(v=b->second.begin(); v != b->second.end(); v++)
+        {
+            const bh_flow_node &n = node_list[*v];
+            fs << "n" << *v << "[label=\"t" << n.timestep;
+            if(n.readonly)
+                fs << "R";
+            else
+                fs << "W";
+
+            fs << "_" << bh_opcode_text(instr_list[n.instr_idx].opcode)+3;
+            fs << "(" << n.instr_idx << ")\"";
+            fs << " shape=box style=rounded]";
+
+        }
+        //Write invisible edges in order to get correct layout
+        for(v=b->second.begin(); v != b->second.end()-1; v++)
+        {
+            fs << "n" << *v << " -> n" << *(v+1) << "[style=\"invis\"];" << endl;
+        }
+
+        //Write conflict edges
+        for(v=b->second.begin(); v != b->second.end()-1; v++)
+        {
+            for(w=v+1; w != b->second.end(); w++)
+            {
+                if(!bh_view_identical(node_list[*v].view, node_list[*w].view))
+                    fs << "n" << *v << " -> n" << *w << " [color=red];" << endl;
+            }
+        }
+        fs << "}" << endl;
+    }
+    //Write all flow edges
+    for(vector<bh_flow_node>::size_type i=0; i<node_list.size(); i++)
+    {
+        const bh_flow_node &n = node_list[i];
+        set<bh_intp>::const_iterator it;
+        for(it=n.parents.begin(); it != n.parents.end(); it++)
+        {
+
+            assert(n.timestep >= node_list[*it].timestep);
+            fs << "{";
+     //       if(n.timestep == node_list[*it].timestep)
+     //           fs << "rank=same; ";
+            fs << "n" << *it << " -> n" << i << ";";
+            fs << "}" << endl;
+        }
+    }
+    fs << "}" << std::endl;
+    fs.close();
+}

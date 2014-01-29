@@ -72,6 +72,8 @@ public:
     void pprint(void);
     //Pretty print the flow object to file 'filename'
     void fprint(const char* filename);
+    // Write the flow object in the DOT format.
+    void dot(const char* filename);
 };
 
 
