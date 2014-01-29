@@ -287,7 +287,6 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         //
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
         string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
-        cout << "filename: " << tf << endl;
         operation_d->SetFilename(tf);
 
         //
@@ -305,6 +304,9 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
             ((instr->opcode >= BH_ADD_ACCUMULATE) && (instr->opcode <= BH_MULTIPLY_ACCUMULATE))) {
             operation_d->SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
+            operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel+1));
+        } else {
+            operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
         }
 
         //
@@ -321,7 +323,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
             ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
 
             argument_d->SetIntValue("NR", nops_kernel);
-            operand_d->SetIntValue("NR", nops_kernel);
+            operand_d->SetIntValue("NR",  nops_kernel);
             if (bh_is_constant(&instr->operand[i])) {   // Constant
                 argument_d->SetValue(                   // As argument
                     "TYPE",

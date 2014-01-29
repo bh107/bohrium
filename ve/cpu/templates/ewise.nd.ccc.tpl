@@ -1,5 +1,6 @@
 // Elementwise operation on contigous arrays of any dimension/rank
 {
+    int64_t nelements = a{{NR_OUTPUT}}_nelem;
     int mthreads     = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 

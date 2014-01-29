@@ -64,6 +64,7 @@ typedef struct bh_kernel_args {
     int nargs;                  
 
     void*    data[30];
+    int64_t  nelem[30];
     int64_t  ndim[30];
     int64_t  start[30];
     int64_t* shape[30];
@@ -446,6 +447,7 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
 
                 // Output is always an array...
                 kernel->args.data[nargs]     = bh_base_array(&instr->operand[0])->data;
+                kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[0])->nelem;
                 kernel->args.ndim[nargs]     = instr->operand[0].ndim;
                 kernel->args.start[nargs]    = instr->operand[0].start;
                 kernel->args.shape[nargs]    = instr->operand[0].shape;
@@ -456,9 +458,10 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
                     kernel->args.data[nargs++] = &(instr->constant.value);
                 } else {
                     kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
+                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args.ndim[nargs]     = instr->operand[1].ndim;
                     kernel->args.start[nargs]    = instr->operand[1].start;
-                    kernel->args.shape[nargs++]  = instr->operand[1].shape;
+                    kernel->args.shape[nargs]    = instr->operand[1].shape;
                     kernel->args.stride[nargs++] = instr->operand[1].stride;
                 }
 
@@ -562,7 +565,7 @@ static bh_error exec_kernel(bh_instruction *instr)
                             "called from bh_ve_cpu_exec_kernel(...)\n");
             return res;
         }
-        target->funcs[kernel.symbol](&kernel.args, 10);
+        target->funcs[kernel.symbol](&kernel.args);
     }
 
     //

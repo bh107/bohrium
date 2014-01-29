@@ -1,8 +1,8 @@
 // Elementwise operation on one-dimensional arrays using strided indexing
 {
+    int64_t nelements = a{{NR_OUTPUT}}_nelem;
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
-
     #pragma omp parallel num_threads(nworkers)
     {
         int tid      = omp_get_thread_num();    // Work partitioning
@@ -25,7 +25,7 @@
             {{/OPERATORS}}
         
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += a{{NR}}_stride[{{NR}}];
+            a{{NR}}_current += a{{NR}}_stride[0];
             {{/ARRAY}}{{/OPERAND}}
         }
     }
