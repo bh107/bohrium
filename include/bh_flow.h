@@ -58,14 +58,20 @@ private:
     std::map<const bh_base *, std::vector<bh_intp> > bases;
     //The original instruction list
     bh_intp ninstr; const bh_instruction *instr_list;
-
-void add_access(bh_intp node_idx);
-bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
+    //Registrate access by the 'node_idx'
+    void add_access(bh_intp node_idx);
+    //Get the latest access that conflicts with 'view'
+    bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
 
 public:
+    //Create a new flow object based on an instruction list
     bh_flow(bh_intp ninstr, const bh_instruction *instr_list);
+    //Pretty print the flow object to 'buf'
+    void sprint(char *buf);
+    //Pretty print the flow object to stdout
     void pprint(void);
-
+    //Pretty print the flow object to file 'filename'
+    void fprint(const char* filename);
 };
 
 

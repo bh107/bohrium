@@ -17,20 +17,27 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include<bh.h>
-#include<bh_flow.h>
-
+#include <bh.h>
+#include <bh_flow.h>
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <sstream>
 using namespace std;
 
+//Registrate access by the 'node_idx'
 void bh_flow::add_access(bh_intp node_idx)
 {
     bases[node_list[node_idx].view->base].push_back(node_idx);
 }
 
+//Get the latest access that conflicts with 'view'
 bh_intp bh_flow::get_latest_conflicting_access(const bh_view *view, bool readonly)
 {
-    const vector<bh_intp> &same_base = bases[view->base];//All nodes with the same base as 'node_idx'
-    for(vector<bh_intp>::const_reverse_iterator it = same_base.rbegin(); it != same_base.rend(); ++it)
+    //Search through all nodes with the same base as 'node_idx'
+    const vector<bh_intp> &same_base = bases[view->base];
+    for(vector<bh_intp>::const_reverse_iterator it = same_base.rbegin();
+        it != same_base.rend(); ++it)
     {
         const bh_flow_node &n = node_list[*it];
         if(readonly && n.readonly)
@@ -42,7 +49,7 @@ bh_intp bh_flow::get_latest_conflicting_access(const bh_view *view, bool readonl
     return -1;//No conflict
 }
 
-
+//Create a new flow object based on an instruction list
 bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list)
 {
     this->ninstr = ninstr;
@@ -108,13 +115,11 @@ bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list)
     }
 }
 
-void bh_flow::pprint(void)
+//Pretty print the flow object to 'buf'
+void bh_flow::sprint(char *buf)
 {
-    char str[10000];
-    bh_pprint_instr_list(instr_list, ninstr, str);
-    printf("%s",str);
-
-    printf("id:\ttime:\tR/W:\tparent:\tinstr:\n");
+    stringstream str;
+    str << "id:\ttime:\tR/W:\tparent:\tinstr:" << endl;
     bh_intp t = 0;//The current time step
     bool not_finished = true;
     while(not_finished)
@@ -125,31 +130,50 @@ void bh_flow::pprint(void)
             const bh_flow_node &n = node_list[i];
             if(n.timestep == t)
             {
-                printf("%2u\t", i);
-                printf("%2ld\t", n.timestep);
+                str << i << "\t";
+                str << n.timestep << "\t";
                 if(n.readonly)
-                    printf(" R\t");
+                    str << " R ";
                 else
-                    printf(" W\t");
-                printf("[");
+                    str << " W ";
+                str << "\t" << "[";
                 for(set<bh_intp>::const_iterator p=n.parents.begin(); p!=n.parents.end(); p++)
                 {
-                    if(p == n.parents.begin())//First iteration
-                        printf("%ld", *p);
-                    else
-                        printf(",%ld", *p);
+                    if(p != n.parents.begin())//Not the first iteration
+                        str << ",";
+                    str << *p;
                 }
-                printf("]\t");
+                str << "]\t";
 
-                printf("%2ld-%s\t", n.instr_idx, bh_opcode_text(instr_list[n.instr_idx].opcode)+3);
+                str << n.instr_idx << "." << (bh_opcode_text(instr_list[n.instr_idx].opcode)+3);
 
-                printf("\n");
+                str << endl;
 
                 not_finished = true;//We found one thus there might be more
             }
         }
         t++;
     }
+    //Write the stream to a C string
+    strcpy(buf, str.str().c_str());
 }
 
+//Pretty print the flow object to stdout
+void bh_flow::pprint(void)
+{
+    char buf[10000];
+    sprint(buf);
+    puts(buf);
+}
+
+//Pretty print the flow object to file 'filename'
+void bh_flow::fprint(const char* filename)
+{
+    char buf[10000];
+    FILE *file;
+    file = fopen(filename, "w");
+    sprint(buf);
+    fputs(buf, file);
+    fclose(file);
+}
 
