@@ -13,7 +13,7 @@
 #include <omp.h>
 #else
 inline int omp_get_max_threads() { return 1; }
-inline int omp_get_thread_num() { return 0; }
+inline int omp_get_thread_num()  { return 0; }
 inline int omp_get_num_threads() { return 1; }
 #endif
 #endif
@@ -40,3 +40,20 @@ typedef struct bh_kernel_args {
 } bh_kernel_args_t;
 
 void {{SYMBOL}}(bh_kernel_args_t* args, int64_t nelements)
+{
+    //
+    // Argument unpacking
+    //
+    {{#ARGUMENT}}
+    {{TYPE}} *a{{NR}}_first = args->data[{{NR}}];
+    {{/ARGUMENT}}
+
+    {{#ARGUMENT}}{{#ARRAY}}
+    assert(a{{NR}}_first != NULL);
+    {{/ARRAY}}{{/ARGUMENT}}
+
+    //
+    // Operation(s)
+    //
+    {{>OPERATIONS}}
+}

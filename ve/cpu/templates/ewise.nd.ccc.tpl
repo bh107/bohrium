@@ -1,12 +1,5 @@
+// Elementwise operation on contigous arrays of any dimension/rank
 {
-    {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_first = args->data[{{NR}}];
-    {{/OPERAND}}
-
-    {{#OPERAND}}{{#ARRAY}}
-    assert(a{{NR}}_first != NULL);
-    {{/ARRAY}}{{/OPERAND}}
-
     int mthreads     = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
@@ -27,9 +20,9 @@
         {{/OPERAND}}
 
         for (int64_t i = work_offset; i<work_end; ++i) {
-            {{#LOOP_BODY}}
+            {{#OPERATORS}}
             {{OPERATOR}};
-            {{/LOOP_BODY}}
+            {{/OPERATORS}}
 
             {{#OPERAND}}{{#ARRAY}}
             ++a{{NR}}_current;
