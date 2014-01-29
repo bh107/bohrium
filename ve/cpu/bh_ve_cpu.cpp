@@ -54,13 +54,20 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
-typedef struct bh_kernel_args {
-    int nargs;
+//
+// NOTE: Changes to bk_kernel_args_t must be 
+//       replicated to "templates/kernel.tpl".
+//
+// TODO: Change this structure....
+//
+typedef struct bh_kernel_args { 
+    int nargs;                  
 
     void*    data[30];
+    int64_t  ndim[30];
     int64_t  start[30];
+    int64_t* shape[30];
     int64_t* stride[30];
-
 } bh_kernel_args_t;
 
 typedef struct bh_kernel {
@@ -436,14 +443,22 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_ISNAN:
             case BH_ISINF:
             case BH_IDENTITY:
+
+                // Output is always an array...
                 kernel->args.data[nargs]     = bh_base_array(&instr->operand[0])->data;
+                kernel->args.ndim[nargs]     = instr->operand[0].ndim;
                 kernel->args.start[nargs]    = instr->operand[0].start;
+                kernel->args.shape[nargs]    = instr->operand[0].shape;
                 kernel->args.stride[nargs++] = instr->operand[0].stride;
+
+                // Input might be a constant
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args.data[nargs++] = &(instr->constant.value);
                 } else {
                     kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
+                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
                     kernel->args.start[nargs]    = instr->operand[1].start;
+                    kernel->args.shape[nargs++]  = instr->operand[1].shape;
                     kernel->args.stride[nargs++] = instr->operand[1].stride;
                 }
 

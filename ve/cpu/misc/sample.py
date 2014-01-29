@@ -7,7 +7,7 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    a = np.ones(args.shape, dtype=np.float32)
+    a = np.ones(args.shape, dtype=np.float32)[::2]
     for _ in range(args.iterations[0]):
         b = np.sin(a)
         c = np.cos(a)

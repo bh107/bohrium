@@ -34,9 +34,10 @@ typedef struct bh_kernel_args {
     int nargs;
 
     void*    data[30];
+    int64_t  ndim[30];
     int64_t  start[30];
+    int64_t* shape[30];
     int64_t* stride[30];
-
 } bh_kernel_args_t;
 
 void {{SYMBOL}}(bh_kernel_args_t* args, int64_t nelements)
@@ -46,11 +47,14 @@ void {{SYMBOL}}(bh_kernel_args_t* args, int64_t nelements)
     //
     {{#ARGUMENT}}
     {{TYPE}} *a{{NR}}_first = args->data[{{NR}}];
-    {{/ARGUMENT}}
-
-    {{#ARGUMENT}}{{#ARRAY}}
     assert(a{{NR}}_first != NULL);
-    {{/ARRAY}}{{/ARGUMENT}}
+    {{#ARRAY}}
+    int64_t  a{{NR}}_ndim   = args->ndim[{{NR}}];
+    int64_t  a{{NR}}_start  = args->start[{{NR}}];
+    int64_t *a{{NR}}_shape  = args->shape[{{NR}}];
+    int64_t *a{{NR}}_stride = args->stride[{{NR}}];
+    {{/ARRAY}}
+    {{/ARGUMENT}}
 
     //
     // Operation(s)

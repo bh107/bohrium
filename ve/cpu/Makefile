@@ -34,20 +34,20 @@ graph:
 	[ -f /tmp/graph-1.svg ] && xdg-open /tmp/graph-1.svg
 
 %.o: %.c $(HEADER)
-		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
+	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
 
 %.o: %.cpp $(HEADER)
-		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
+	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
 
 $(LIB): $(OBJ)
-		$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-		rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot
+	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot
 
 install: all
-		cp $(LIB) $(INSTALLDIR)/
-		mkdir -p $(INSTALLDIR)/cpu/kernels
-		mkdir -p $(INSTALLDIR)/cpu/objects
-		mkdir -p $(INSTALLDIR)/cpu/templates
-		cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+	cp $(LIB) $(INSTALLDIR)/
+	mkdir -p $(INSTALLDIR)/cpu/kernels
+	mkdir -p $(INSTALLDIR)/cpu/objects
+	mkdir -p $(INSTALLDIR)/cpu/templates
+	cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
